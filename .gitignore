@@ -1,0 +1,13 @@
+build/*
+*.so
+*.a
+*CMakeFiles/*
+*Makefile
+*.cmake
+*CMakeCache.txt
+*~
+*.swp
+*.idea/*
+*.pyc
+*__pycache__*
+*ipynb_checkpoints*
