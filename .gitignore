@@ -1,4 +1,5 @@
 build/*
+*configure.hpp
 *.so
 *.a
 *CMakeFiles/*

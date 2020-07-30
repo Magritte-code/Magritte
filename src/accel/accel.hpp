@@ -1,6 +1,0 @@
-#ifndef PARACABS_ACCEL_HPP
-#define PARACABS_ACCEL_HPP
-
-
-
-#endif //PARACABS_ACCEL_HPP
