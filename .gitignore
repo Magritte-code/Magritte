@@ -8,6 +8,7 @@ build/*
 *CMakeCache.txt
 *~
 *.swp
+*cmake-build-debug/
 *.idea/*
 *.pyc
 *__pycache__*
