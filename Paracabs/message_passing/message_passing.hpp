@@ -26,7 +26,11 @@
 #endif
 
 
-namespace message_passing
-{
-    #define distributed_for (i, total) for (size_t i = start(total); i < stop(total); i++)
-}
+#define distributed_for(i, i_loc, total, ...)                           \
+            for (size_t i = message_passing::start(total);              \
+                        i < message_passing::stop (total);              \
+                        i++                               )             \
+            {                                                           \
+                const size_t i_loc = i - message_passing::start(total); \
+                __VA_ARGS__                                             \
+            }
