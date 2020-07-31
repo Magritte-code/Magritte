@@ -4,17 +4,22 @@ project ("Paracabs")
 # Set minimun required CMake version
 cmake_minimum_required (VERSION 3.11)
 
-
+if    (PARACABS_USE_OPENMP)
+    find_package (OpenMP REQUIRED)
+    # Set compiler and linker flags
+    set (CMAKE_C_FLAGS          "${CMAKE_C_FLAGS}          ${OpenMP_C_FLAGS}")
+    set (CMAKE_CXX_FLAGS        "${CMAKE_CXX_FLAGS}        ${OpenMP_CXX_FLAGS}")
+    set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+endif (PARACABS_USE_OPENMP)
 if    (PARACABS_USE_MPI)
-    message (STATUS "Getting ready for MPI...")
-    # Look for package
     find_package (MPI REQUIRED)
     # Include headers
     include_directories (SYSTEM ${MPI_INCLUDE_PATH})
-else  (PARACABS_USE_MPI)
-    message (STATUS "NOT ready for MPI...")
 endif (PARACABS_USE_MPI)
-
+if    (PARACABS_USE_CUDA)
+    find_package (CUDA REQUIRED)
+    set (CUDA_NVCC_FLAGS "-x")
+endif (PARACABS_USE_CUDA)
 
 #include (CMakePackageConfigHelpers)
 #

@@ -1,7 +1,7 @@
 #pragma once
 
 
-#include "Paracabs/configure.hpp"
+#include "configure.hpp"
 
 
 #if PARACABS_USE_MESSAGE_PASSING && PARACABS_USE_MPI

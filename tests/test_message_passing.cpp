@@ -4,7 +4,8 @@ using std::endl;
 #include <vector>
 using std::vector;
 
-#include "Paracabs/message_passing/message_passing.hpp"
+#include "paracabs.hpp"
+using namespace paracabs;
 
 
 int main ()
