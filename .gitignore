@@ -1,0 +1,50 @@
+# CMake related files
+#####################
+CMakeFiles/
+Makefile
+*.cmake
+CMakeCache.txt
+
+# build, bin, docs and run folders
+##################################
+build/*
+bin/*
+docs/html/*
+docs/latex/*
+run/*
+tests/performance/build/*
+
+# Configuration
+###############
+configure.hpp
+
+# compiled libraries
+####################
+*.a
+*.so
+
+# editor generated files
+########################
+*~
+*.swp
+*.idea/*
+
+# Python related cache
+######################
+*.pyc
+*__pycache__*
+*ipynb_checkpoints*
+
+# data files
+############
+*.hdf5
+*model_*
+!*model_*.py
+!*model_*.ipynb
+
+# dependencies
+##############
+*dependencies/Eigen*
+*dependencies/Grid-SIMD*
+*dependencies/pybind11*
+*dependencies/scorep*
