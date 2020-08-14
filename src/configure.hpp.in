@@ -1,0 +1,16 @@
+// Directory containing Magritte's source code
+#define MAGRITTE_FOLDER "@CMAKE_SOURCE_DIR@"
+
+// Magritte's version numbers
+#define MAGRITTE_VERSION_MAJOR "@MAGRITTE_VERSION_MAJOR@"
+#define MAGRITTE_VERSION_MINOR "@MAGRITTE_VERSION_MINOR@"
+
+// Python bindings
+#define PYTHON_IO @MAGRITTE_PYTHON_IO@
+
+// Parallelisation
+#define MPI_PARALLEL @MAGRITTE_MPI_PARALLEL@
+#define OMP_PARALLEL @MAGRITTE_OMP_PARALLEL@
+
+// GPU acceleration
+#define GPU_ACCELERATION @MAGRITTE_GPU_ACCELERATION@
