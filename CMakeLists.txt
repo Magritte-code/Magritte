@@ -6,10 +6,9 @@ set (MAGRITTE_VERSION_MAJOR 1)
 set (MAGRITTE_VERSION_MINOR 0)
 
 # Set build type
-#set (CMAKE_BUILD_TYPE Release)
-set (CMAKE_BUILD_TYPE Debug)
-#set (CUDA_NVCC_FLAGS " -g")
-#set (CUDA_NVCC_FLAGS "-O5 -use_fast_math")
+set (CMAKE_BUILD_TYPE Release)
+#set (CMAKE_BUILD_TYPE Debug)
+set (CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --extended-lambda --use_fast_math --expt-relaxed-constexpr")
 
 # Set minimun required CMake version
 cmake_minimum_required (VERSION 3.11)
@@ -60,6 +59,13 @@ set (PARACABS_USE_OPENMP          ${MAGRITTE_OMP_PARALLEL})
 set (PARACABS_USE_ACCELERATOR     ${MAGRITTE_GPU_ACCELERATION})
 set (PARACABS_USE_CUDA            ${MAGRITTE_GPU_ACCELERATION})
 set (PARACABS_USE_SIMD            false)
+
+# Enable CUDA if required
+if    (GPU_ACCELERATION)
+    enable_language (CUDA)
+    # Specify the accelerator architecture (currently we don't)
+    set (CMAKE_CUDA_ARCHITECTURES OFF)
+endif (GPU_ACCELERATION)
 
 # Include Paracabs directory
 include             (~/Dropbox/GitHub/Paracabs/CMakeLists.txt)

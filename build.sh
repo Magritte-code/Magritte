@@ -21,7 +21,7 @@ cmake                                             \
   -DPYTHON_BINDINGS=ON                            \
   -DOMP_PARALLEL=ON                               \
   -DMPI_PARALLEL=OFF                              \
-  -DGPU_ACCELERATION=OFF                          \
+  -DGPU_ACCELERATION=ON                           \
   $DIR
 
 # Run make

@@ -30,9 +30,9 @@ IoPython :: IoPython (const string &imp, const string &io_file)
 ///    @param[out] length    : length to be read
 ///////////////////////////////////////////////////////////////
 
-int IoPython :: read_length (const string file_name, size_t &length) const
+int IoPython :: read_length (const string file_name, Size &length) const
 {
-   return read_in_python <size_t> ("read_length", file_name, length);
+   return read_in_python <Size> ("read_length", file_name, length);
 }
 
 
@@ -44,9 +44,9 @@ int IoPython :: read_length (const string file_name, size_t &length) const
 ///    @param[out] width     : width to be read
 ///////////////////////////////////////////////////////////////
 
-int IoPython :: read_width (const string file_name, size_t &length) const
+int IoPython :: read_width (const string file_name, Size &length) const
 {
-    return read_in_python <size_t> ("read_width", file_name, length);
+    return read_in_python <Size> ("read_width", file_name, length);
 }
 
 
@@ -253,6 +253,105 @@ int IoPython :: write_list (const string file_name, const Double1 &list) const
     if (list.size() > 0)
     {
         err = write_in_python <Double1> ("write_array", file_name, list);
+    }
+
+    return err;
+}
+
+
+
+
+///  Reader for a list of doubles from a file
+///    @param[in] file_name : path to file containing the list
+///    @param[in] list      : list to be read
+//////////////////////////////////////////////////////////////
+
+int IoPython :: read_list (const string file_name, Size_t1 &list) const
+{
+    return read_in_python <Size_t1> ("read_array", file_name, list);
+}
+
+
+
+
+///  Writer for a list of doubles to a file
+///    @param[in] file_name : path to file to be written
+///    @param[in] list      : list to be written
+////////////////////////////////////////////////////////
+
+int IoPython :: write_list (const string file_name, const Size_t1 &list) const
+{
+    int err = 0;
+
+    if (list.size() > 0)
+    {
+        err = write_in_python <Size_t1> ("write_array", file_name, list);
+    }
+
+    return err;
+}
+
+
+
+
+///  Reader for a list of doubles from a file
+///    @param[in] file_name : path to file containing the list
+///    @param[in] list      : list to be read
+//////////////////////////////////////////////////////////////
+
+int IoPython :: read_list (const string file_name, Size1 &list) const
+{
+    return read_in_python <Size1> ("read_array", file_name, list);
+}
+
+
+
+
+///  Writer for a list of doubles to a file
+///    @param[in] file_name : path to file to be written
+///    @param[in] list      : list to be written
+////////////////////////////////////////////////////////
+
+int IoPython :: write_list (const string file_name, const Size1 &list) const
+{
+    int err = 0;
+
+    if (list.size() > 0)
+    {
+        err = write_in_python <Size1> ("write_array", file_name, list);
+    }
+
+    return err;
+}
+
+
+
+
+///  Reader for a list of doubles from a file
+///    @param[in] file_name : path to file containing the list
+///    @param[in] list      : list to be read
+//////////////////////////////////////////////////////////////
+
+int IoPython :: read_list (const string file_name, Real1 &list) const
+{
+    return read_in_python <Real1> ("read_array", file_name, list);
+}
+
+
+
+
+///  Writer for a list of doubles to a file
+///    @param[in] file_name : path to file to be written
+///    @param[in] list      : list to be written
+////////////////////////////////////////////////////////
+
+int IoPython :: write_list (const string file_name, const Real1 &list) const
+{
+    int err = 0;
+
+    if (list.size() > 0)
+    {
+        err = write_in_python <Real1> ("write_array", file_name, list);
     }
 
     return err;

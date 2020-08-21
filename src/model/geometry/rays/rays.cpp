@@ -10,23 +10,28 @@ void Rays :: read (const Io& io)
 
     io.read_length (prefix+"direction", nrays);
 
-    direction = (Vector*) pc::accelerator::malloc (nrays*sizeof(Vector));
-    antipod   = (size_t*) pc::accelerator::malloc (nrays*sizeof(size_t));
-    weight    = (double*) pc::accelerator::malloc (nrays*sizeof(double));
+    direction.resize (nrays);
+      antipod.resize (nrays);
+       weight.resize (nrays);
+
+//    direction = (Vector3D*) pc::accelerator::malloc (nrays*sizeof(Vector3D));
+//    antipod   = (size_t*)   pc::accelerator::malloc (nrays*sizeof(size_t));
+//    weight    = (double*)   pc::accelerator::malloc (nrays*sizeof(double));
 
     Double2 direction_buffer (nrays, Double1(3));
-    Double1    weight_buffer (nrays);
+//    Double1    weight_buffer (nrays);
 
     io.read_array (prefix+"direction", direction_buffer);
-    io.read_list  (prefix+"weight",       weight_buffer);
+//    io.read_list  (prefix+"weight",       weight_buffer);
+    io.read_list  (prefix+"weight",    weight.vec);
 
     for (size_t r = 0; r < nrays; r++)
     {
-        direction[r] = Vector (direction_buffer[r][0],
-                               direction_buffer[r][1],
-                               direction_buffer[r][2] );
-
-           weight[r] = weight_buffer[r];
+        direction.vec[r] = Vector3D (direction_buffer[r][0],
+                                     direction_buffer[r][1],
+                                     direction_buffer[r][2] );
+//
+//           weight[r] = weight_buffer[r];
     }
 
     cout << "nrays = " << nrays << endl;
@@ -37,29 +42,34 @@ void Rays :: read (const Io& io)
     {
         for (size_t r2 = 0; r2 < nrays; r2++)
         {
-            if ((direction[r1] + direction[r2]).squaredNorm() < tolerance)
+            if ((direction.vec[r1] + direction.vec[r2]).squaredNorm() < tolerance)
             {
-                antipod[r1] = r2;
+                antipod.vec[r1] = r2;
             }
         }
     }
+
+    direction.copy_vec_to_ptr ();
+    antipod  .copy_vec_to_ptr ();
+    weight   .copy_vec_to_ptr ();
 }
 
 
 void Rays :: write (const Io& io) const
 {
     Double2 direction_buffer (nrays, Double1(3));
-    Double1    weight_buffer (nrays);
+//    Double1    weight_buffer (nrays);
 
-    for (size_t r = r; r < nrays; r++)
+    for (Size r = 0; r < nrays; r++)
     {
-        direction_buffer[r] = {direction[r].x(),
-                               direction[r].y(),
-                               direction[r].z() };
+        direction_buffer[r] = {direction.vec[r].x(),
+                               direction.vec[r].y(),
+                               direction.vec[r].z() };
 
-           weight_buffer[r] = weight[r];
+//           weight_buffer[r] = weight[r];
     }
 
-    io.read_array (prefix+"direction", direction_buffer);
-    io.read_list  (prefix+"weight",       weight_buffer);
+    io.write_array (prefix+"direction", direction_buffer);
+//    io.write_list  (prefix+"weight",       weight_buffer);
+    io.write_list  (prefix+"weight",    weight.vec);
 }

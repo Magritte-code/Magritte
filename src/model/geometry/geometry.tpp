@@ -1,12 +1,28 @@
-inline void Geometry :: set_npoints (const size_t n)
+#include <limits>
+#include <cmath>
+
+
+accel inline void Geometry :: set_npoints (const Size n)
 {
     npoints = n;
 }
 
 
-inline size_t Geometry :: get_npoints () const
+accel inline Size Geometry :: get_npoints () const
 {
     return npoints;
+}
+
+
+accel inline void Geometry :: set_nrays (const Size n)
+{
+    nrays = n;
+}
+
+
+accel inline Size Geometry :: get_nrays () const
+{
+    return nrays;
 }
 
 
@@ -19,28 +35,30 @@ inline size_t Geometry :: get_npoints () const
 ///    @param[out]    dZ : reference to the distance increment to the next ray
 ///    @return number of the next cell on the ray after the current cell
 ///////////////////////////////////////////////////////////////////////////////////
-inline size_t Geometry :: get_next (
-    const size_t  o,
-    const size_t  r,
-    const size_t  c,
-          double& Z,
-          double& dZ               ) const
+accel inline Size Geometry :: get_next (
+    const Size  o,
+    const Size  r,
+    const Size  c,
+          Real& Z,
+          Real& dZ                     ) const
 {
-    const size_t     n_nbs = points.    n_neighbors[c];
-    const size_t cum_n_nbs = points.cum_n_neighbors[c];
+    const Size     n_nbs = points.    n_neighbors[c];
+    const Size cum_n_nbs = points.cum_n_neighbors[c];
 
-    double dmin = std::numeric_limits<double>::max();   // Initialize to "infinity"
-    size_t next = npoints;                              // return npoints when there is no next
+    Real dmin = std::numeric_limits<Real>::max();   // Initialize to "infinity"
+    Size next = npoints;                            // return npoints when there is no next
 
-    for (size_t i = 0; i < n_nbs; i++)
+//    for (Size i = 0; i < nnbs; i++)
+    for (Size i = 0; i < n_nbs; i++)
     {
-        const size_t n     = points.neighbors[cum_n_nbs+i];
-        const Vector R     = points.position[n] - points.position[o];
-        const double Z_new = R.dot(rays.direction[r]);
+//        const Size     n     = points.nbs[c*nnbs+i];
+        const Size     n     = points.neighbors[cum_n_nbs+i];
+        const Vector3D R     = points.position[n] - points.position[o];
+        const Real     Z_new = R.dot(rays.direction[r]);
 
         if (Z_new > Z)
         {
-            const double distance_from_ray2 = R.dot(R) - Z_new*Z_new;
+            const Real distance_from_ray2 = R.dot(R) - Z_new*Z_new;
 
             if (distance_from_ray2 < dmin)
             {
@@ -58,6 +76,20 @@ inline size_t Geometry :: get_next (
 }
 
 
+///  Getter for the doppler shift along the ray between the current cell and the origin
+///    @param[in] o   : number of cell from which the ray originates
+///    @param[in] r   : number of the ray along which we are looking
+///    @param[in] crt : number of the cell for which we want the velocity
+///    @return doppler shift along the ray between the current cell and the origin
+///////////////////////////////////////////////////////////////////////////////////////
+template <>
+inline Real Geometry :: get_shift <CoMoving> (
+    const Size  o,
+    const Size  r,
+    const Size  crt                          ) const
+{
+    return Real(1.0) - (points.velocity[crt] - points.velocity[o]).dot(rays.direction[r]);
+}
 
 
 ///  Getter for the doppler shift along the ray between the current cell and the origin
@@ -66,102 +98,62 @@ inline size_t Geometry :: get_next (
 ///    @param[in] crt : number of the cell for which we want the velocity
 ///    @return doppler shift along the ray between the current cell and the origin
 ///////////////////////////////////////////////////////////////////////////////////////
-template <Frame frame>
-inline double Geometry :: get_shift (
-    const size_t  o,
-    const size_t  r,
-    const size_t  crt               ) const
+template <>
+inline Real Geometry :: get_shift <Rest> (
+    const Size  o,
+    const Size  r,
+    const Size  crt                      ) const
 {
-    // Co-moving frame implementation
-    if (frame == CoMoving)
+    Size r_correct = r;
+
+    if (r >= nrays/2)
     {
-        return 1.0 - (points.velocity[crt] - points.velocity[o]).dot(rays.direction[r]);
+        r_correct = rays.antipod[r];
     }
 
-    // Rest frame implementation
-    if (frame == Rest)
-    {
-        // In the rest frame the direction of the projected should be fixed
-        // We choose to fix it to "up the ray"
-
-        size_t r_correct = r;
-
-        if (r >= nrays/2)
-        {
-            r_correct = rays.antipod[r];
-        }
-
-        return 1.0 - points.velocity[crt].dot(rays.direction[r_correct]);
-    }
+    return Real(1.0) - points.velocity[crt].dot(rays.direction[r_correct]);
 }
 
 
-//inline double Geometry :: get_shift <CoMoving> (
-//        const size_t  o,
-//        const size_t  r,
-//        const size_t  crt                      ) const
-//{
-//        return 1.0 - (points.velocity[crt] - points.velocity[o]).dot(rays.direction[r]);
-//}
-//
-//inline double Geometry :: get_shift <Rest> (
-//        const size_t  o,
-//        const size_t  r,
-//        const size_t  crt                  ) const
-//{
-//    size_t r_correct = r;
-//
-//    if (r >= nrays/2)
-//    {
-//        r_correct = rays.antipod[r];
-//    }
-//
-//    return 1.0 - points.velocity[crt].dot(rays.direction[r_correct]);
-//}
-
-
-inline size_t Geometry :: get_n_interpl (
-        const double  shift_crt,
-        const double  shift_nxt,
-        const double  dshift_max      ) const
+accel inline Size Geometry :: get_n_interpl (
+    const Real shift_crt,
+    const Real shift_nxt,
+    const Real dshift_max                   ) const
 {
-    const double dshift_abs = fabs (shift_nxt - shift_crt);
+    const Real dshift_abs = fabs (shift_nxt - shift_crt);
 
-    if (dshift_abs > dshift_max) {return dshift_abs/dshift_max + 1;}
-    else                         {return 1;                        }
+    if (dshift_abs > dshift_max) {return dshift_abs/dshift_max + Real(1);}
+    else                         {return 1;                              }
 }
 
 
 
 template <Frame frame>
-inline size_t Geometry :: get_ray_length (
-        const size_t    o,
-        const size_t    r,
-        const double    dshift_max     ) const
+accel inline Size Geometry :: get_ray_length (
+    const Size o,
+    const Size r,
+    const Real dshift_max                    ) const
 {
-    size_t  l = 0;        // ray length
-    double  Z = 0.0;      // distance from origin (o)
-    double dZ = 0.0;      // last increment in Z
+    Size  l = 0;     // ray length
+    Real  Z = 0.0;   // distance from origin (o)
+    Real dZ = 0.0;   // last increment in Z
 
-    size_t nxt = get_next (o, r, o, Z, dZ);
+    Size nxt = get_next (o, r, o, Z, dZ);
 
     if (nxt != get_npoints()) // if we are not going out of mesh
     {
-        size_t       crt = o;
-        double shift_crt = get_shift <frame> (o, r, crt);
-        double shift_nxt = get_shift <frame> (o, r, nxt);
+        Size       crt = o;
+        Real shift_crt = get_shift <frame> (o, r, crt);
+        Real shift_nxt = get_shift <frame> (o, r, nxt);
 
         l += get_n_interpl (shift_crt, shift_nxt, dshift_max);
 
-        while (!boundary.is_on_boundary[nxt])
+        while (boundary.point2boundary[nxt] == get_npoints()) // while nxt not on boundary
         {
                   crt =       nxt;
             shift_crt = shift_nxt;
                   nxt = get_next (o, r, nxt, Z, dZ);
-            if (nxt == get_npoints()) {
-                printf ("ERROR (nxt < 0): o = %ld, crt = %ld, ray = %ld\n", o, crt, r);
-
-                throw "PROBLEM";};
+//            if (nxt == get_npoints()) {printf ("ERROR (nxt < 0): o = %ld, crt = %ld, ray = %ld\n", o, crt, r); throw "";};
             shift_nxt = get_shift <frame> (o, r, nxt);
 
             l += get_n_interpl (shift_crt, shift_nxt, dshift_max);
@@ -172,28 +164,83 @@ inline size_t Geometry :: get_ray_length (
 }
 
 
-inline Long2 Geometry :: get_ray_lengths () const
+
+//__global__ inline void kernel (Geometry* geometry)
+//{
+//    printf ("Hi, from the GPU!\n");
+//
+//    geometry->points.position[0] += geometry->points.position[1];
+//};
+
+
+//inline void Geometry :: test ()
+//{
+//    points.position.vec[0].print();
+//    points.position.vec[1].print();
+//
+//    Geometry* geometry_copy = (Geometry*) pc::accelerator::malloc(sizeof(Geometry));
+//    pc::accelerator::memcpy_to_accelerator (geometry_copy, this, sizeof(Geometry));
+//
+//
+//    kernel<<<1,1>>> (geometry_copy);
+//
+//    points.position.vec[0].print();
+//    points.position.copy_ptr_to_vec ();
+//    points.position.vec[0].print();
+//}
+
+
+
+inline Size1 Geometry :: get_ray_lengths ()
 {
-    const size_t hnrays  = rays  .get_nrays  ()/2;
-    const size_t npoints = points.get_npoints();
+    const Size hnrays  = rays  .get_nrays  ()/2;
+    const Size npoints = points.get_npoints();
 
-    Long2 lengths (hnrays, Long1 (npoints, 0));
-
-    for (size_t rr = 0; rr < hnrays; rr++)
+    for (Size rr = 0; rr < hnrays; rr++)
     {
+        const Size ar = rays.antipod[rr];
+
         cout << "rr = " << rr << endl;
 
-        const size_t ar = rays.antipod[rr];
-
-//        for (size_t o = 0; o < npoints; o++)
         threaded_for (o, npoints,
         {
-            const double dshift_max = 1.0e+99;
+            const Real dshift_max = 1.0e+99;
 
-            lengths[rr][o] += get_ray_length <CoMoving> (o, rr, dshift_max);
-            lengths[rr][o] += get_ray_length <CoMoving> (o, ar, dshift_max);
+            lengths.vec[npoints*rr+o] =   get_ray_length <CoMoving> (o, rr, dshift_max)
+                                        + get_ray_length <CoMoving> (o, ar, dshift_max);
         })
     }
 
-    return lengths;
+    return lengths.vec;
+}
+
+
+inline Size1 Geometry :: get_ray_lengths_gpu (
+    const Size nblocks,
+    const Size nthreads                      )
+{
+    const Size hnrays  = rays  .get_nrays  ()/2;
+    const Size npoints = points.get_npoints();
+
+    Geometry* this_cpy = (Geometry*) pc::accelerator::malloc(sizeof(Geometry));
+    pc::accelerator::memcpy_to_accelerator (this_cpy, this, sizeof(Geometry));
+
+    for (Size rr = 0; rr < hnrays; rr++)
+    {
+        const Size ar = rays.antipod.vec[rr];
+
+        cout << "rr = " << rr << endl;
+
+        accelerated_for (o, 10000, nblocks, nthreads,
+        {
+            const Real dshift_max = 1.0e+99;
+
+            this_cpy->lengths[npoints*rr+o] =   this_cpy->get_ray_length <CoMoving> (o, rr, dshift_max)
+                                              + this_cpy->get_ray_length <CoMoving> (o, ar, dshift_max);
+        })
+    }
+
+    lengths.copy_ptr_to_vec ();
+
+    return lengths.vec;
 }

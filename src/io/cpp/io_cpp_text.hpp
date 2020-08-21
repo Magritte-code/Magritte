@@ -13,9 +13,9 @@ struct IoText : public Io
     // Constructor
     IoText (const string &io_file);
 
-    int  read_length   (const string fname,       size_t  &length) const override;
+    int  read_length   (const string fname,       Size    &length) const override;
 
-    int  read_width    (const string fname,       size_t  &width ) const override;
+    int  read_width    (const string fname,       Size    &width ) const override;
 
     int  read_number   (const string fname,       size_t  &number) const override;
     int write_number   (const string fname, const size_t  &number) const override;
@@ -37,6 +37,15 @@ struct IoText : public Io
 
     int  read_list     (const string fname,       Double1 &list  ) const override;
     int write_list     (const string fname, const Double1 &list  ) const override;
+
+    int  read_list     (const string fname,       Size_t1 &list  ) const override;
+    int write_list     (const string fname, const Size_t1 &list  ) const override;
+
+    int  read_list     (const string fname,       Real1   &list  ) const override;
+    int write_list     (const string fname, const Real1   &list  ) const override;
+
+    int  read_list     (const string fname,       Size1   &list  ) const override;
+    int write_list     (const string fname, const Size1   &list  ) const override;
 
     int  read_list     (const string fname,       String1 &list  ) const override;
     int write_list     (const string fname, const String1 &list  ) const override;

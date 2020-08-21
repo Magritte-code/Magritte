@@ -36,7 +36,7 @@ bool pathExist (const string &path)
 ///    @param[out] length    : length to be read
 ///////////////////////////////////////////////////////////////
 
-int IoText :: read_length (const string file_name, size_t &length) const
+int IoText :: read_length (const string file_name, Size &length) const
 {
   string fname = io_file + file_name;
 
@@ -76,7 +76,7 @@ int IoText :: read_length (const string file_name, size_t &length) const
 ///    @param[out] width     : width to be read
 ///////////////////////////////////////////////////////////////
 
-int IoText :: read_width (const string file_name, size_t &width) const
+int IoText :: read_width (const string file_name, Size &width) const
 {
   string fname = io_file + file_name;
 
@@ -444,6 +444,150 @@ int IoText :: write_list (const string file_name, const Double1 &list) const
   file.close();
 
   return (0);
+}
+
+
+
+
+///  Reader for a list of doubles from a text file
+///    @param[in] file_name : path to file containing the list
+///    @param[in] list      : list to be read
+//////////////////////////////////////////////////////////////
+
+int IoText :: read_list (const string file_name, Size_t1 &list) const
+{
+    std::ifstream file (io_file + file_name + ".txt");
+
+    long   n = 0;
+
+    while (file >> list[n])
+    {
+        n++;
+    }
+
+    file.close();
+
+    return (0);
+}
+
+
+
+
+///  Writer for a list of strings to a text file
+///    @param[in] file_name : path to file to be written
+///    @param[in] list      : list to be written
+////////////////////////////////////////////////////////
+
+int IoText :: write_list (const string file_name, const Size_t1 &list) const
+{
+    std::ofstream file (io_file + file_name + ".txt");
+
+    file << std::scientific << std::setprecision (16);
+
+    for (long n = 0; n < list.size(); n++)
+    {
+        file << list[n] << endl;
+    }
+
+    file.close();
+
+    return (0);
+}
+
+
+
+
+///  Reader for a list of doubles from a text file
+///    @param[in] file_name : path to file containing the list
+///    @param[in] list      : list to be read
+//////////////////////////////////////////////////////////////
+
+int IoText :: read_list (const string file_name, Size1 &list) const
+{
+    std::ifstream file (io_file + file_name + ".txt");
+
+    long   n = 0;
+
+    while (file >> list[n])
+    {
+        n++;
+    }
+
+    file.close();
+
+    return (0);
+}
+
+
+
+
+///  Writer for a list of strings to a text file
+///    @param[in] file_name : path to file to be written
+///    @param[in] list      : list to be written
+////////////////////////////////////////////////////////
+
+int IoText :: write_list (const string file_name, const Size1 &list) const
+{
+    std::ofstream file (io_file + file_name + ".txt");
+
+    file << std::scientific << std::setprecision (16);
+
+    for (long n = 0; n < list.size(); n++)
+    {
+        file << list[n] << endl;
+    }
+
+    file.close();
+
+    return (0);
+}
+
+
+
+
+///  Reader for a list of doubles from a text file
+///    @param[in] file_name : path to file containing the list
+///    @param[in] list      : list to be read
+//////////////////////////////////////////////////////////////
+
+int IoText :: read_list (const string file_name, Real1 &list) const
+{
+    std::ifstream file (io_file + file_name + ".txt");
+
+    long   n = 0;
+
+    while (file >> list[n])
+    {
+        n++;
+    }
+
+    file.close();
+
+    return (0);
+}
+
+
+
+
+///  Writer for a list of strings to a text file
+///    @param[in] file_name : path to file to be written
+///    @param[in] list      : list to be written
+////////////////////////////////////////////////////////
+
+int IoText :: write_list (const string file_name, const Real1 &list) const
+{
+    std::ofstream file (io_file + file_name + ".txt");
+
+    file << std::scientific << std::setprecision (16);
+
+    for (long n = 0; n < list.size(); n++)
+    {
+        file << list[n] << endl;
+    }
+
+    file.close();
+
+    return (0);
 }
 
 

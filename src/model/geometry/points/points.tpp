@@ -1,10 +1,10 @@
-inline void Points :: set_npoints (const size_t n)
+inline void Points :: set_npoints (const Size n)
 {
     npoints = n;
 }
 
 
-inline size_t Points :: get_npoints () const
+inline Size Points :: get_npoints () const
 {
     return npoints;
 }

@@ -14,11 +14,11 @@ class Model
         void read  (const Io& io);
         void write (const Io& io) const;
 
-        inline void   set_npoints (const size_t npoints);
-        inline size_t get_npoints () const;
+        inline void set_npoints (const Size npoints);
+        inline Size get_npoints () const;
 
     private:
-        size_t npoints;
+        Size npoints;
 };
 
 

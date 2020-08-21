@@ -1,17 +1,17 @@
 #include "solver.hpp"
 
 
-Solver :: Solver (const size_t l, const size_t w)
+Solver :: Solver (const Size l, const Size w)
     : length (l)
     , centre (l/2)
     , width  (w)
 {
-    dZ    = (double*) pc::accelerator::malloc (length*sizeof(double));
-    nr    = (size_t*) pc::accelerator::malloc (length*sizeof(size_t));
-    shift = (double*) pc::accelerator::malloc (length*sizeof(double));
+    dZ    = (Real*) pc::accelerator::malloc (length*sizeof(Real));
+    nr    = (Size*) pc::accelerator::malloc (length*sizeof(Size));
+    shift = (Real*) pc::accelerator::malloc (length*sizeof(Real));
 
-    first = (size_t*) pc::accelerator::malloc (width *sizeof(size_t));
-    last  = (size_t*) pc::accelerator::malloc (width *sizeof(size_t));
+    first = (Size*) pc::accelerator::malloc (width *sizeof(Size));
+    last  = (Size*) pc::accelerator::malloc (width *sizeof(Size));
 }
 
 

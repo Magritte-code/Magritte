@@ -1,22 +1,22 @@
-inline void Boundary :: set_npoints (const size_t n)
+inline void Boundary :: set_npoints (const Size n)
 {
     npoints = n;
 }
 
 
-inline size_t Boundary :: get_npoints () const
+inline Size Boundary :: get_npoints () const
 {
     return npoints;
 }
 
 
-inline void Boundary :: set_nboundary (const size_t n)
+inline void Boundary :: set_nboundary (const Size n)
 {
     nboundary = n;
 }
 
 
-inline size_t Boundary :: get_nboundary () const
+inline Size Boundary :: get_nboundary () const
 {
     return npoints;
 }

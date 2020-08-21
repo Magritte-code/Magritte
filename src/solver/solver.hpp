@@ -8,41 +8,44 @@
 class Solver
 {
     public:
-        double* dZ;      ///< distance increments along the ray
-        size_t* nr;      ///< corresponding point number on the ray
-        double* shift;   ///< Doppler shift along the ray
+        Real* dZ;      ///< distance increments along the ray
+        Size* nr;      ///< corresponding point number on the ray
+        Real* shift;   ///< Doppler shift along the ray
 
-    private:
-        const size_t length;
-        const size_t centre;
-        const size_t width;
+        Size nblocks  = 512;
+        Size nthreads = 512;
 
-        size_t* first;
-        size_t* last;
-
-         Solver (const size_t l, const size_t w);
+        Solver (const Size l, const Size w);
         ~Solver ();
 
+        void trace (Model& model);
+        void solve (Model& model);
 
-        void trace (const Model& model);
+    private:
+        const Size length;
+        const Size centre;
+        const Size width;
+
+        Size* first;
+        Size* last;
 
         template <Frame frame>
-        inline void trace_ray (
+        accel inline Size trace_ray (
             const Geometry& geometry,
-            const size_t    o,
-            const size_t    r,
-            const double    dshift_max,
-            const int       increment   );
+            const Size      o,
+            const Size      r,
+            const Real      dshift_max,
+            const int       increment );
 
-        inline void set_data (
-            const size_t  crt,
-            const size_t  nxt,
-            const double  shift_crt,
-            const double  shift_nxt,
-            const double  dZ_loc,
-            const double  dshift_max,
-            const int    increment,
-                  size_t& id         );
+        accel inline void set_data (
+            const Size  crt,
+            const Size  nxt,
+            const Real  shift_crt,
+            const Real  shift_nxt,
+            const Real  dZ_loc,
+            const Real  dshift_max,
+            const int   increment,
+                  Size& id );
 };
 
 

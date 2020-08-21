@@ -1,4 +1,4 @@
-inline size_t Rays :: get_nrays () const
+inline Size Rays :: get_nrays () const
 {
     return nrays;
 }

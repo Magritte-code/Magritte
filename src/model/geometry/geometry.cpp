@@ -15,6 +15,12 @@ void Geometry :: read (const Io& io)
     nrays = rays.get_nrays();
 
     boundary.read (io);
+
+    cout << "Resizing lengths" << endl;
+
+    lengths.resize (nrays/2*npoints);
+
+    cout << "Done Reading!" << endl;
 }
 
 

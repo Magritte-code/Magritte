@@ -8,17 +8,20 @@
 class Rays
 {
     public:
-        Vector* direction;
-        size_t* antipod;
-        double* weight;
+        Vector<Vector3D> direction;
+        Vector<Size>     antipod;
+        Vector<Real>     weight;
+//        Vector3D* direction;
+//        size_t*   antipod;
+//        double*   weight;
 
         void read  (const Io& io);
         void write (const Io& io) const;
 
-        inline size_t get_nrays () const;
+        inline Size get_nrays () const;
 
     private:
-        size_t nrays;
+        Size nrays;
 };
 
 
