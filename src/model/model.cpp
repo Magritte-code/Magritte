@@ -3,11 +3,23 @@
 
 void Model :: read (const Io& io)
 {
-    geometry.read (io);
+//    chemistry.read (io);
+     geometry.read (io);
+
+//     lines.set_npoints (geometry.get_npoints());
+
+//        lines.read (io);
+
+    thermodynamics.read (io);
+
 }
 
 
 void Model :: write (const Io& io) const
 {
-    geometry.write (io);
+//    chemistry.write (io);
+     geometry.write (io);
+//        lines.write (io);
+
+    thermodynamics.write (io);
 }

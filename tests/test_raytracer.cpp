@@ -35,7 +35,7 @@ int main ()
 
     pc::accelerator::list_accelerators();
 
-    IoPython io ("hdf5", "/home/frederik/Magritte_all/Models/Benchmarks/5_GPU_ray_tracer/test_model.hdf5");
+    IoPython io ("hdf5", "/home/frederik/Magritte_all/Models/Benchmarks/5_GPU_ray_tracer/test_model_0.hdf5");
 
 
     cout << "sizeof Model    = " << sizeof(Model)    << endl;
@@ -60,7 +60,7 @@ int main ()
 //    for (auto& t : test.vec) {t.copy_vec_to_ptr ();}
 
 //    Long2 lengths = model.geometry.get_ray_lengths ();
-    Size1 lengths = model.geometry.get_ray_lengths_gpu (1, 1);
+    Size1 lengths = model.geometry.get_ray_lengths_gpu (512, 512);
 
     cout << "Done." << endl;
 

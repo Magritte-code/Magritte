@@ -9,7 +9,8 @@
 class Model
 {
     public:
-        Geometry geometry;
+//        Chemistry chemistry;
+        Geometry  geometry;
 
         void read  (const Io& io);
         void write (const Io& io) const;

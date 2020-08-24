@@ -164,33 +164,6 @@ accel inline Size Geometry :: get_ray_length (
 }
 
 
-
-//__global__ inline void kernel (Geometry* geometry)
-//{
-//    printf ("Hi, from the GPU!\n");
-//
-//    geometry->points.position[0] += geometry->points.position[1];
-//};
-
-
-//inline void Geometry :: test ()
-//{
-//    points.position.vec[0].print();
-//    points.position.vec[1].print();
-//
-//    Geometry* geometry_copy = (Geometry*) pc::accelerator::malloc(sizeof(Geometry));
-//    pc::accelerator::memcpy_to_accelerator (geometry_copy, this, sizeof(Geometry));
-//
-//
-//    kernel<<<1,1>>> (geometry_copy);
-//
-//    points.position.vec[0].print();
-//    points.position.copy_ptr_to_vec ();
-//    points.position.vec[0].print();
-//}
-
-
-
 inline Size1 Geometry :: get_ray_lengths ()
 {
     const Size hnrays  = rays  .get_nrays  ()/2;
@@ -222,12 +195,9 @@ inline Size1 Geometry :: get_ray_lengths_gpu (
     const Size hnrays  = rays  .get_nrays  ()/2;
     const Size npoints = points.get_npoints();
 
-    Geometry* this_cpy = (Geometry*) pc::accelerator::malloc(sizeof(Geometry));
-    pc::accelerator::memcpy_to_accelerator (this_cpy, this, sizeof(Geometry));
-
     for (Size rr = 0; rr < hnrays; rr++)
     {
-        const Size ar = rays.antipod.vec[rr];
+        const Size ar = rays.antipod[rr];
 
         cout << "rr = " << rr << endl;
 
@@ -235,9 +205,11 @@ inline Size1 Geometry :: get_ray_lengths_gpu (
         {
             const Real dshift_max = 1.0e+99;
 
-            this_cpy->lengths[npoints*rr+o] =   this_cpy->get_ray_length <CoMoving> (o, rr, dshift_max)
-                                              + this_cpy->get_ray_length <CoMoving> (o, ar, dshift_max);
+            lengths[npoints*rr+o] =  get_ray_length <CoMoving> (o, rr, dshift_max)
+                                   + get_ray_length <CoMoving> (o, ar, dshift_max);
         })
+
+        pc::accelerator::synchronize();
     }
 
     lengths.copy_ptr_to_vec ();

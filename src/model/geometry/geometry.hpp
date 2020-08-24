@@ -12,8 +12,8 @@
 enum Frame {CoMoving, Rest};
 
 
-///  Geometry class
-///////////////////
+///  Data structure for geometry
+////////////////////////////////
 class Geometry
 {
     public:

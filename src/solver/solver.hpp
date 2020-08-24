@@ -8,15 +8,14 @@
 class Solver
 {
     public:
-        Real* dZ;      ///< distance increments along the ray
-        Size* nr;      ///< corresponding point number on the ray
-        Real* shift;   ///< Doppler shift along the ray
+        Vector<Real> dZ;      ///< distance increments along the ray
+        Vector<Size> nr;      ///< corresponding point number on the ray
+        Vector<Real> shift;   ///< Doppler shift along the ray
 
         Size nblocks  = 512;
         Size nthreads = 512;
 
         Solver (const Size l, const Size w);
-        ~Solver ();
 
         void trace (Model& model);
         void solve (Model& model);
@@ -26,8 +25,8 @@ class Solver
         const Size centre;
         const Size width;
 
-        Size* first;
-        Size* last;
+        Vector<Size> first;
+        Vector<Size> last;
 
         template <Frame frame>
         accel inline Size trace_ray (

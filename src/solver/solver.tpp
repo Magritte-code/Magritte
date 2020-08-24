@@ -3,15 +3,9 @@ inline void Solver :: trace (Model& model)
     const Size hnrays  = model.geometry.rays  .get_nrays  ()/2;
     const Size npoints = model.geometry.points.get_npoints();
 
-    Solver* solver_cpy = (Solver*) pc::accelerator::malloc (sizeof(Solver));
-     Model*  model_cpy = ( Model*) pc::accelerator::malloc (sizeof( Model));
-
-    pc::accelerator::memcpy_to_accelerator (solver_cpy,  this,  sizeof(Solver));
-    pc::accelerator::memcpy_to_accelerator ( model_cpy, &model, sizeof( Model));
-
     for (Size rr = 0; rr < hnrays; rr++)
     {
-        const Size ar = model.geometry.rays.antipod.vec[rr];
+        const Size ar = model.geometry.rays.antipod[rr];
 
         cout << "rr = " << rr << endl;
 
@@ -19,9 +13,9 @@ inline void Solver :: trace (Model& model)
         {
             const Real dshift_max = 1.0e+99;
 
-            model_cpy->geometry.lengths[npoints*rr+o]  =
-                solver_cpy->trace_ray <CoMoving> (model_cpy->geometry, o, rr, dshift_max, +1);
-              - solver_cpy->trace_ray <CoMoving> (model_cpy->geometry, o, ar, dshift_max, -1);
+            model.geometry.lengths[npoints*rr+o] =
+                trace_ray <CoMoving> (model.geometry, o, rr, dshift_max, +1)
+              - trace_ray <CoMoving> (model.geometry, o, ar, dshift_max, -1);
         })
     }
 

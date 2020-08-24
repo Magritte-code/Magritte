@@ -120,15 +120,44 @@ py::class_<Model> (module, "Model")
 
 
     // Vector <Size>
-    py::class_<Vector<Size>> (module, "Vector_Size")
+    py::class_<Vector<Size>> (module, "Vector_Size", py::buffer_protocol())
+        // buffer
+        .def_buffer(
+            [](Vector<Size> &v) -> py::buffer_info
+            {
+                return py::buffer_info(
+                    v.dat,                                 // Pointer to buffer
+                    sizeof(Size),                          // Size of one element
+                    py::format_descriptor<Size>::format(), // Python struct-style format descriptor
+                    1,                                     // Number of dimensions
+                    {v.vec.size()},                        // Buffer dimensions
+                    {sizeof(Size)}                         // Strides (in bytes) for each index
+                );
+            }
+        )
         // attributes
         .def_readwrite ("vec", &Vector<Size>::vec)
         // constructor
         .def (py::init());
 
 
+
     // Vector <Real>
     py::class_<Vector<Real>> (module, "Vector_Real")
+        // buffer
+        .def_buffer(
+            [](Vector<Real> &v) -> py::buffer_info
+            {
+                return py::buffer_info(
+                    v.dat,                                 // Pointer to buffer
+                    sizeof(Real),                          // Size of one element
+                    py::format_descriptor<Real>::format(), // Python struct-style format descriptor
+                    1,                                     // Number of dimensions
+                    {v.vec.size()},                        // Buffer dimensions
+                    {sizeof(Real)}                         // Strides (in bytes) for each index
+                );
+            }
+        )
         // attributes
         .def_readwrite ("vec", &Vector<Real>::vec)
         // constructor
