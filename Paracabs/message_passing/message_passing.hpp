@@ -10,27 +10,30 @@
 
 #else
 
-    namespace message_passing
+    namespace paracabs
     {
-        inline void initialize () {}
-        inline void   finalize () {}
+        namespace message_passing
+        {
+            inline void initialize () {}
+            inline void   finalize () {}
 
-        inline unsigned int comm_size () {return 1;}
-        inline unsigned int comm_rank () {return 0;}
+            inline unsigned int comm_size () {return 1;}
+            inline unsigned int comm_rank () {return 0;}
 
-        inline size_t start  (const size_t total) {return 0;    }
-        inline size_t stop   (const size_t total) {return total;}
-        inline size_t length (const size_t total) {return total;}
+            inline size_t start  (const size_t total) {return 0;    }
+            inline size_t stop   (const size_t total) {return total;}
+            inline size_t length (const size_t total) {return total;}
+        }
     }
 
 #endif
 
 
-#define distributed_for(i, i_loc, total, ...)                           \
-            for (size_t i = message_passing::start(total);              \
-                        i < message_passing::stop (total);              \
-                        i++                               )             \
-            {                                                           \
-                const size_t i_loc = i - message_passing::start(total); \
-                __VA_ARGS__                                             \
-            }
+#define distributed_for(i, i_loc, total, ...)                               \
+    for (size_t i = paracabs::message_passing::start(total);                \
+                i < paracabs::message_passing::stop (total);                \
+                i++                                         )               \
+    {                                                                       \
+        const size_t i_loc = i - paracabs::message_passing::start(total);   \
+        __VA_ARGS__                                                         \
+    }

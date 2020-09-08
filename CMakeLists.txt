@@ -1,6 +1,14 @@
 # Set project title
 project ("Paracabs")
 
+# Set build type to Release to set all optimisation flags
+#set (CMAKE_BUILD_TYPE Release)
+#set (CMAKE_BUILD_TYPE Relwithdebinfo)
+#set (CMAKE_BUILD_TYPE Debug)
+#set (CUDA_NVCC_FLAGS " -g -G -x cu -O5") WARNING -G cfr issue:#112
+#set (CUDA_NVCC_FLAGS " -g")
+#set (CUDA_NVCC_FLAGS "-O5 -use_fast_math")
+
 # Set minimun required CMake version
 cmake_minimum_required (VERSION 3.11)
 
@@ -18,7 +26,6 @@ if    (PARACABS_USE_MPI)
 endif (PARACABS_USE_MPI)
 if    (PARACABS_USE_CUDA)
     find_package (CUDA REQUIRED)
-    set (CUDA_NVCC_FLAGS "-x")
 endif (PARACABS_USE_CUDA)
 
 #include (CMakePackageConfigHelpers)
