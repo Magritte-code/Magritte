@@ -6,6 +6,7 @@ using std::endl;
 #include "model/model.hpp"
 #include "solver/solver.hpp"
 
+
 //__global__
 //void kernel ()
 //{
@@ -27,15 +28,13 @@ using std::endl;
 //}
 
 
-
-
 int main ()
 {
     cout << "Running test_raytracing..." << endl;
 
     pc::accelerator::list_accelerators();
 
-    IoPython io ("hdf5", "/home/frederik/Magritte_all/Models/Benchmarks/5_GPU_ray_tracer/test_model_0.hdf5");
+    IoPython io ("hdf5", "/home/frederik/Magritte_all/Models/Benchmarks/5_GPU_ray_tracer/model.hdf5");
 
 
     cout << "sizeof Model    = " << sizeof(Model)    << endl;
@@ -49,20 +48,48 @@ int main ()
 
 //    t.resize (100);
 
+    cout << "n threads = " << paracabs::multi_threading::n_threads() << endl;
+
+    Solver solver (10000, 100);
 
     Model model;
     model.read (io);
-//    model.geometry.test();
 
-//    Vector<Vector<size_t>> test (10, Vector<size_t> (20, 3));
+//    Parameters params1;
+//    params1.a() = 5;
+
+//    model.parameters.set_a(5);
+
+    solver.trace (model);
 //
-//    test.copy_vec_to_ptr ();
-//    for (auto& t : test.vec) {t.copy_vec_to_ptr ();}
+//    for (Size i = 0; i < 10; i++)
+//    {
+//        cout << model.geometry.lengths[i] << endl;
+//    }
 
-//    Long2 lengths = model.geometry.get_ray_lengths ();
-    Size1 lengths = model.geometry.get_ray_lengths_gpu (512, 512);
+//    Size1 lengths = model.geometry.get_ray_lengths ();
+//    Size1 lengths = model.geometry.get_ray_lengths_gpu (512, 512);
+
+    for (Size i = 0; i < 100; i++)
+    {
+        cout << model.geometry.lengths[i] << endl;
+    }
 
     cout << "Done." << endl;
+
+//    cout << params1.a() << endl;
+
+//    params1.a() = 8;
+
+//    cout << params1.a() << endl;
+
+//    Parameters params2;
+//    cout << params2.a() << endl;
+
+//    params2.a() = 13;
+
+//    cout << params1.a() << endl;
+
 
     return (0);
 }

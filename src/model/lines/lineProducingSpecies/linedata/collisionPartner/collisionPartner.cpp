@@ -8,7 +8,7 @@ const string prefix = "lines/lineProducingSpecies_";
 ///  read: read in collision partner data
 ///    @param[in] io: io object
 /////////////////////////////////////////
-void CollisionPartner :: read (const Io &io, const Size l, const Size c)
+void CollisionPartner :: read (const Io& io, const Size l, const Size c)
 {
     cout << "Reading collisionPartner..." << endl;
 
@@ -49,22 +49,22 @@ void CollisionPartner :: read (const Io &io, const Size l, const Size c)
 ///  write: read in collision partner data
 ///    @param[in] io: io object
 //////////////////////////////////////////
-void CollisionPartner :: write (const Io &io, const Size l, const Size c) const
+void CollisionPartner :: write (const Io& io, const Size l, const Size c) const
 {
-  cout << "Writing collisionPartner..." << endl;
-  cout << "(l, c) = " << l << ", " << c << endl;
+    cout << "Writing collisionPartner..." << endl;
+    cout << "(l, c) = " << l << ", " << c << endl;
 
-  const string prefix_lc = prefix + std::to_string (l) + "/linedata"
-                           + "/collisionPartner_" + std::to_string (c) + "/";
+    const string prefix_lc = prefix + std::to_string (l) + "/linedata"
+                             + "/collisionPartner_" + std::to_string (c) + "/";
 
-  io.write_number (prefix_lc+".num_col_partner", num_col_partner);
-  io.write_word   (prefix_lc+".orth_or_para_H2", orth_or_para_H2);
+    io.write_number (prefix_lc+".num_col_partner", num_col_partner);
+    io.write_word   (prefix_lc+".orth_or_para_H2", orth_or_para_H2);
 
-  io.write_list (prefix_lc+"icol", icol);
-  io.write_list (prefix_lc+"jcol", jcol);
+    io.write_list (prefix_lc+"icol", icol);
+    io.write_list (prefix_lc+"jcol", jcol);
 
-  io.write_list (prefix_lc+"tmp", tmp);
+    io.write_list (prefix_lc+"tmp", tmp);
 
-  io.write_array (prefix_lc+"Ce", Ce);
-  io.write_array (prefix_lc+"Cd", Cd);
+    io.write_array (prefix_lc+"Ce", Ce);
+    io.write_array (prefix_lc+"Cd", Cd);
 }

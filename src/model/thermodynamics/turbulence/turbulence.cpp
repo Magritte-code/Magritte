@@ -11,9 +11,9 @@ void Turbulence :: read (const Io& io)
 {
     cout << "Reading turbulence..." << endl;
 
-    io.read_length (prefix+"vturb2", npoints);
+    parameters.set_npoints (io.get_length (prefix+"vturb2"));
 
-    vturb2.resize (npoints);
+    vturb2.resize (parameters.npoints());
 
     io.read_list (prefix+"vturb2", vturb2);
 }

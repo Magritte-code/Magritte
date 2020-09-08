@@ -2,30 +2,6 @@
 #include <cmath>
 
 
-accel inline void Geometry :: set_npoints (const Size n)
-{
-    npoints = n;
-}
-
-
-accel inline Size Geometry :: get_npoints () const
-{
-    return npoints;
-}
-
-
-accel inline void Geometry :: set_nrays (const Size n)
-{
-    nrays = n;
-}
-
-
-accel inline Size Geometry :: get_nrays () const
-{
-    return nrays;
-}
-
-
 ///  Getter for the number of the next cell on ray and its distance along ray in
 ///  the general case without any further assumptions
 ///    @param[in]      o : number of cell from which the ray originates
@@ -46,7 +22,7 @@ accel inline Size Geometry :: get_next (
     const Size cum_n_nbs = points.cum_n_neighbors[c];
 
     Real dmin = std::numeric_limits<Real>::max();   // Initialize to "infinity"
-    Size next = npoints;                            // return npoints when there is no next
+    Size next = parameters.npoints();               // return npoints when there is no next
 
 //    for (Size i = 0; i < nnbs; i++)
     for (Size i = 0; i < n_nbs; i++)
@@ -106,7 +82,7 @@ inline Real Geometry :: get_shift <Rest> (
 {
     Size r_correct = r;
 
-    if (r >= nrays/2)
+    if (r >= parameters.hnrays())
     {
         r_correct = rays.antipod[r];
     }
@@ -140,7 +116,7 @@ accel inline Size Geometry :: get_ray_length (
 
     Size nxt = get_next (o, r, o, Z, dZ);
 
-    if (nxt != get_npoints()) // if we are not going out of mesh
+    if (nxt != parameters.npoints()) // if we are not going out of mesh
     {
         Size       crt = o;
         Real shift_crt = get_shift <frame> (o, r, crt);
@@ -148,7 +124,7 @@ accel inline Size Geometry :: get_ray_length (
 
         l += get_n_interpl (shift_crt, shift_nxt, dshift_max);
 
-        while (boundary.point2boundary[nxt] == get_npoints()) // while nxt not on boundary
+        while (boundary.point2boundary[nxt] == parameters.npoints()) // while nxt not on boundary
         {
                   crt =       nxt;
             shift_crt = shift_nxt;
@@ -166,21 +142,19 @@ accel inline Size Geometry :: get_ray_length (
 
 inline Size1 Geometry :: get_ray_lengths ()
 {
-    const Size hnrays  = rays  .get_nrays  ()/2;
-    const Size npoints = points.get_npoints();
-
-    for (Size rr = 0; rr < hnrays; rr++)
+    for (Size rr = 0; rr < parameters.hnrays(); rr++)
     {
         const Size ar = rays.antipod[rr];
 
         cout << "rr = " << rr << endl;
 
-        threaded_for (o, npoints,
+        threaded_for (o, parameters.npoints(),
         {
             const Real dshift_max = 1.0e+99;
 
-            lengths.vec[npoints*rr+o] =   get_ray_length <CoMoving> (o, rr, dshift_max)
-                                        + get_ray_length <CoMoving> (o, ar, dshift_max);
+            lengths.vec[parameters.npoints()*rr+o] =
+                get_ray_length <CoMoving> (o, rr, dshift_max)
+              + get_ray_length <CoMoving> (o, ar, dshift_max);
         })
     }
 
@@ -192,10 +166,7 @@ inline Size1 Geometry :: get_ray_lengths_gpu (
     const Size nblocks,
     const Size nthreads                      )
 {
-    const Size hnrays  = rays  .get_nrays  ()/2;
-    const Size npoints = points.get_npoints();
-
-    for (Size rr = 0; rr < hnrays; rr++)
+    for (Size rr = 0; rr < parameters.hnrays(); rr++)
     {
         const Size ar = rays.antipod[rr];
 
@@ -205,8 +176,9 @@ inline Size1 Geometry :: get_ray_lengths_gpu (
         {
             const Real dshift_max = 1.0e+99;
 
-            lengths[npoints*rr+o] =  get_ray_length <CoMoving> (o, rr, dshift_max)
-                                   + get_ray_length <CoMoving> (o, ar, dshift_max);
+            lengths[parameters.npoints()*rr+o] =
+                get_ray_length <CoMoving> (o, rr, dshift_max)
+              + get_ray_length <CoMoving> (o, ar, dshift_max);
         })
 
         pc::accelerator::synchronize();

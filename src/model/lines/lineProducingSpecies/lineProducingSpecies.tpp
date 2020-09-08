@@ -5,18 +5,6 @@
 #include "tools/types.hpp"
 
 
-accel inline void LineProducingSpecies :: set_npoints (const Size n)
-{
-    npoints = n;
-}
-
-
-accel inline Size LineProducingSpecies :: get_npoints () const
-{
-    return npoints;
-}
-
-
 ///  Indexer for level populations
 ///    @param[in] p : index of the cell
 ///    @param[in] i : index of the level
@@ -33,7 +21,7 @@ inline Size LineProducingSpecies :: index (const Size p, const Size i) const
 ///    @param[in] k : index of the transition
 ///    @return line emissivity for cell p and transition k
 //////////////////////////////////////////////////////////
-inline double LineProducingSpecies :: get_emissivity (const Size p, const Size k) const
+inline Real LineProducingSpecies :: get_emissivity (const Size p, const Size k) const
 {
   const Size i = index (p, linedata.irad[k]);
 
@@ -46,7 +34,7 @@ inline double LineProducingSpecies :: get_emissivity (const Size p, const Size k
 ///    @param[in] k : index of the transition
 ///    @return line opacity for cell p and transition k
 ///////////////////////////////////////////////////////
-inline double LineProducingSpecies :: get_opacity (const Size p, const Size k) const
+inline Real LineProducingSpecies :: get_opacity (const Size p, const Size k) const
 {
   const Size i = index (p, linedata.irad[k]);
   const Size j = index (p, linedata.jrad[k]);
@@ -64,17 +52,17 @@ inline double LineProducingSpecies :: get_opacity (const Size p, const Size k) c
 ///////////////////////////////////////////////////////////
 inline void LineProducingSpecies :: update_using_LTE (
     const Double2 &abundance,
-    const Double1 &temperature )
+    const Resl1   &temperature )
 {
-    threaded_for (p, ncells)
+    threaded_for (p, parameters.npoints())
     {
         population_tot[p] = abundance[p][linedata.num];
 
-        double partition_function = 0.0;
+        Real partition_function = 0.0;
 
         for (Size i = 0; i < linedata.nlev; i++)
         {
-            const long ind = index (p, i);
+            const Size ind = index (p, i);
 
             population(ind) = linedata.weight[i]
                               * exp (-linedata.energy[i] / (KB*temperature[p]));
@@ -84,7 +72,7 @@ inline void LineProducingSpecies :: update_using_LTE (
 
         for (Size i = 0; i < linedata.nlev; i++)
         {
-            const long ind = index (p, i);
+            const Size ind = index (p, i);
 
             population(ind) *= population_tot[p] / partition_function;
         }
@@ -92,31 +80,28 @@ inline void LineProducingSpecies :: update_using_LTE (
 }
 
 
-
-
-inline void LineProducingSpecies :: check_for_convergence (const double pop_prec)
+inline void LineProducingSpecies :: check_for_convergence (const Real pop_prec)
 {
-    const double weight = 1.0 / (ncells * linedata.nlev);
+    const Real weight = 1.0 / (ncells * linedata.nlev);
 
-    double fnc = 0.0;
-    double rcm = 0.0;
+    Real fnc = 0.0;
+    Real rcm = 0.0;
 
     relative_change_max = 0.0;
 
-
 //    for (long p = 0; p < ncells; p++)
 #   pragma omp parallel for reduction (+: fnc, rcm)
-    for (Size p = 0; p < ncells; p++)
+    for (Size p = 0; p < parameters.npoints(); p++)
     {
         const double min_pop = 1.0E-10 * population_tot[p];
 
         for (Size i = 0; i < linedata.nlev; i++)
         {
-            const long ind = index (p, i);
+            const Size ind = index (p, i);
 
             if (population(ind) > min_pop)
             {
-                double relative_change = 2.0;
+                Real relative_change = 2.0;
 
                 relative_change *= fabs (population (ind) - population_prev1 (ind));
                 relative_change /=      (population (ind) + population_prev1 (ind));
@@ -142,15 +127,13 @@ inline void LineProducingSpecies :: check_for_convergence (const double pop_prec
 }
 
 
-
-
 ///  update_using_Ng_acceleration: perform a Ng accelerated iteration step
 ///    for level populations. All variable names are based on lecture notes
 ///    by C.P. Dullemond which are based on Olson, Auer and Buchler (1985).
 ///////////////////////////////////////////////////////////////////////////
 void LineProducingSpecies :: update_using_Ng_acceleration ()
 {
-    VectorXd Wt (ncells*linedata.nlev);
+    VectorXd Wt (parameters.npoints()*linedata.nlev);
 
     VectorXd Q1 = population - 2.0*population_prev1 + population_prev2;
     VectorXd Q2 = population -     population_prev1 - population_prev2 + population_prev3;
@@ -175,23 +158,22 @@ void LineProducingSpecies :: update_using_Ng_acceleration ()
     //const double C1 = Q1.dot (Wt.asDiagonal()*Q3);
     //const double C2 = Q2.dot (Wt.asDiagonal()*Q3);
 
-    const double A1 = Q1.dot(Q1);
-    const double A2 = Q1.dot(Q2);
-    const double B2 = Q2.dot(Q2);
-    const double C1 = Q1.dot(Q3);
-    const double C2 = Q2.dot(Q3);
+    const Real A1 = Q1.dot(Q1);
+    const Real A2 = Q1.dot(Q2);
+    const Real B2 = Q2.dot(Q2);
+    const Real C1 = Q1.dot(Q3);
+    const Real C2 = Q2.dot(Q3);
 
-    const double B1 = A2;
+    const Real B1 = A2;
 
-    const double denominator = A1*B2 - A2*B1;
-
+    const Real denominator = A1*B2 - A2*B1;
 
     if (denominator != 0.0)
     {
         const VectorXd pop_tmp = population;
 
-        const double a = (C1*B2 - C2*B1) / denominator;
-        const double b = (C2*A1 - C1*A2) / denominator;
+        const Real a = (C1*B2 - C2*B1) / denominator;
+        const Real b = (C2*A1 - C1*A2) / denominator;
 
         population = (1.0 - a - b)*population
                                + a*population_prev1
@@ -201,10 +183,7 @@ void LineProducingSpecies :: update_using_Ng_acceleration ()
         population_prev2 = population_prev1;
         population_prev1 = pop_tmp;
     }
-
 }
-
-
 
 
 ///  update_using_statistical_equilibrium: computes level populations by solving
@@ -212,96 +191,88 @@ void LineProducingSpecies :: update_using_Ng_acceleration ()
 ///    @param[in] abundance: chemical abundances of species in the model
 ///    @param[in] temperature: gas temperature in the model
 /////////////////////////////////////////////////////////////////////////////////
-
-inline void LineProducingSpecies ::
-    update_using_statistical_equilibrium (
-        const Double2 &abundance,
-        const Double1 &temperature       )
+inline void LineProducingSpecies :: update_using_statistical_equilibrium (
+    const Double2 &abundance,
+    const Real1   &temperature )
 {
-
-    const size_t non_zeros = ncells * (      linedata.nlev
-                                       + 6 * linedata.nrad
-                                       + 4 * linedata.ncol_tot );
-
+    const Size non_zeros = parameters.npoints() * (      linedata.nlev
+                                                   + 6 * linedata.nrad
+                                                   + 4 * linedata.ncol_tot );
 
     population_prev3 = population_prev2;
     population_prev2 = population_prev1;
     population_prev1 = population;
 
-
 //    SparseMatrix<double> RT (ncells*linedata.nlev, ncells*linedata.nlev);
 
-    VectorXd y = VectorXd::Zero (ncells*linedata.nlev);
+    VectorXd y = VectorXd::Zero (parameters.npoints()*linedata.nlev);
 
-    vector<Triplet<double, int>> triplets;
-    vector<Triplet<double, int>> triplets_LT;
-    vector<Triplet<double, int>> triplets_LS;
+    vector<Triplet<Real, Size>> triplets;
+    vector<Triplet<Real, Size>> triplets_LT;
+    vector<Triplet<Real, Size>> triplets_LS;
 
     triplets   .reserve (non_zeros);
     triplets_LT.reserve (non_zeros);
     triplets_LS.reserve (non_zeros);
 
-    for (size_t p = 0; p < ncells; p++) // !!! no OMP because push_back is not thread safe !!!
+    for (Size p = 0; p < parameters.npoints(); p++) // !!! no OMP because push_back is not thread safe !!!
     {
-
         // Radiative transitions
 
-        for (size_t k = 0; k < linedata.nrad; k++)
+        for (Size k = 0; k < linedata.nrad; k++)
         {
-            const double v_IJ = linedata.A[k] + linedata.Bs[k] * Jeff[p][k];
-            const double v_JI =                 linedata.Ba[k] * Jeff[p][k];
+            const Real v_IJ = linedata.A[k] + linedata.Bs[k] * Jeff[p][k];
+            const Real v_JI =                 linedata.Ba[k] * Jeff[p][k];
 
-            const double t_IJ = linedata.Bs[k] * Jdif[p][k];
-            const double t_JI = linedata.Ba[k] * Jdif[p][k];
-
+            const Real t_IJ = linedata.Bs[k] * Jdif[p][k];
+            const Real t_JI = linedata.Ba[k] * Jdif[p][k];
 
             // Note: we define our transition matrix as the transpose of R in the paper.
-            const size_t I = index (p, linedata.irad[k]);
-            const size_t J = index (p, linedata.jrad[k]);
+            const Size I = index (p, linedata.irad[k]);
+            const Size J = index (p, linedata.jrad[k]);
 
             if (linedata.jrad[k] != linedata.nlev-1)
             {
-                triplets   .push_back (Triplet<double, int> (J, I, +v_IJ));
-                triplets   .push_back (Triplet<double, int> (J, J, -v_JI));
+                triplets   .push_back (Triplet<Real, Size> (J, I, +v_IJ));
+                triplets   .push_back (Triplet<Real, Size> (J, J, -v_JI));
 
-                triplets_LS.push_back (Triplet<double, int> (J, I, +t_IJ));
-                triplets_LS.push_back (Triplet<double, int> (J, J, -t_JI));
+                triplets_LS.push_back (Triplet<Real, Size> (J, I, +t_IJ));
+                triplets_LS.push_back (Triplet<Real, Size> (J, J, -t_JI));
             }
 
             if (linedata.irad[k] != linedata.nlev-1)
             {
-                triplets   .push_back (Triplet<double, int> (I, J, +v_JI));
-                triplets   .push_back (Triplet<double, int> (I, I, -v_IJ));
+                triplets   .push_back (Triplet<Real, Size> (I, J, +v_JI));
+                triplets   .push_back (Triplet<Real, Size> (I, I, -v_IJ));
 
-                triplets_LS.push_back (Triplet<double, int> (I, J, +t_JI));
-                triplets_LS.push_back (Triplet<double, int> (I, I, -t_IJ));
+                triplets_LS.push_back (Triplet<Real, Size> (I, J, +t_JI));
+                triplets_LS.push_back (Triplet<Real, Size> (I, I, -t_IJ));
             }
         }
 
-
         // Approximated Lambda operator
 
-        for (size_t k = 0; k < linedata.nrad; k++)
+        for (Size k = 0; k < linedata.nrad; k++)
         {
-            for (size_t m = 0; m < lambda.get_size(p,k); m++)
+            for (Size m = 0; m < lambda.get_size(p,k); m++)
             {
-                const size_t   nr =  lambda.get_nr(p, k, m);
-                const double v_IJ = -lambda.get_Ls(p, k, m) * get_opacity(p, k);
+                const Size   nr =  lambda.get_nr(p, k, m);
+                const Real v_IJ = -lambda.get_Ls(p, k, m) * get_opacity(p, k);
 
                 // Note: we define our transition matrix as the transpose of R in the paper.
-                const size_t I = index (nr, linedata.irad[k]);
-                const size_t J = index (p,  linedata.jrad[k]);
+                const Size I = index (nr, linedata.irad[k]);
+                const Size J = index (p,  linedata.jrad[k]);
 
                 if (linedata.jrad[k] != linedata.nlev-1)
                 {
-                    triplets   .push_back (Triplet<double, int> (J, I, +v_IJ));
-                    triplets_LT.push_back (Triplet<double, int> (J, I, +v_IJ));
+                    triplets   .push_back (Triplet<Real, Size> (J, I, +v_IJ));
+                    triplets_LT.push_back (Triplet<Real, Size> (J, I, +v_IJ));
                 }
 
                 if (linedata.irad[k] != linedata.nlev-1)
                 {
-                    triplets   .push_back (Triplet<double, int> (I, I, -v_IJ));
-                    triplets_LT.push_back (Triplet<double, int> (I, I, -v_IJ));
+                    triplets   .push_back (Triplet<Real, Size> (I, I, -v_IJ));
+                    triplets_LT.push_back (Triplet<Real, Size> (I, I, -v_IJ));
                 }
             }
         }
@@ -312,44 +283,44 @@ inline void LineProducingSpecies ::
 
         for (CollisionPartner &colpar : linedata.colpar)
         {
-            double abn = abundance[p][colpar.num_col_partner];
-            double tmp = temperature[p];
+            Real abn = abundance[p][colpar.num_col_partner];
+            Real tmp = temperature[p];
 
             colpar.adjust_abundance_for_ortho_or_para (tmp, abn);
             colpar.interpolate_collision_coefficients (tmp);
 
 
-            for (size_t k = 0; k < colpar.ncol; k++)
+            for (Size k = 0; k < colpar.ncol; k++)
             {
-                const double v_IJ = colpar.Cd_intpld[k] * abn;
-                const double v_JI = colpar.Ce_intpld[k] * abn;
+                const Real v_IJ = colpar.Cd_intpld[k] * abn;
+                const Real v_JI = colpar.Ce_intpld[k] * abn;
 
 
                 // Note: we define our transition matrix as the transpose of R in the paper.
-                const size_t I = index (p, colpar.icol[k]);
-                const size_t J = index (p, colpar.jcol[k]);
+                const Size I = index (p, colpar.icol[k]);
+                const Size J = index (p, colpar.jcol[k]);
 
                 if (colpar.jcol[k] != linedata.nlev-1)
                 {
-                    triplets.push_back (Triplet<double, int> (J, I, +v_IJ));
-                    triplets.push_back (Triplet<double, int> (J, J, -v_JI));
+                    triplets.push_back (Triplet<Real, Size> (J, I, +v_IJ));
+                    triplets.push_back (Triplet<Real, Size> (J, J, -v_JI));
                 }
 
                 if (colpar.icol[k] != linedata.nlev-1)
                 {
-                    triplets.push_back (Triplet<double, int> (I, J, +v_JI));
-                    triplets.push_back (Triplet<double, int> (I, I, -v_IJ));
+                    triplets.push_back (Triplet<Real, Size> (I, J, +v_JI));
+                    triplets.push_back (Triplet<Real, Size> (I, I, -v_IJ));
                 }
             }
         }
 
 
-        for (size_t i = 0; i < linedata.nlev; i++)
+        for (Size i = 0; i < linedata.nlev; i++)
         {
-            const long I = index (p, linedata.nlev-1);
-            const long J = index (p, i);
+            const Size I = index (p, linedata.nlev-1);
+            const Size J = index (p, i);
 
-            triplets.push_back (Triplet<double, int> (I, J, 1.0));
+            triplets.push_back (Triplet<Real, Size> (I, J, 1.0));
         }
 
         //y.insert (index (p, linedata.nlev-1)) = population_tot[p];
@@ -394,7 +365,7 @@ inline void LineProducingSpecies ::
     //assert (false);
 
 
-    SparseLU <SparseMatrix<double>, COLAMDOrdering<int>> solver;
+    SparseLU <SparseMatrix<Real>, COLAMDOrdering<int>> solver;
     //Eigen::SimplicialLDLT<Eigen::SparseMatrix<double>> solver;
 
 
@@ -416,7 +387,6 @@ inline void LineProducingSpecies ::
         assert (false);
     }
 
-
     //cout << "Try compute" << endl;
 
     //solver.compute (RT);
@@ -426,7 +396,6 @@ inline void LineProducingSpecies ::
     //  cout << "Decomposition failed" << endl;
     //  //assert(false);
     //}
-
 
     cout << "Solving rate equations for the level populations..." << endl;
 
@@ -440,7 +409,6 @@ inline void LineProducingSpecies ::
     }
 
     cout << "Succesfully solved for the level populations!"       << endl;
-
 
     //OMP_PARALLEL_FOR (p, ncells)
     //{
@@ -457,6 +425,4 @@ inline void LineProducingSpecies ::
     //    //}
     //  }
     //}
-
-
 }

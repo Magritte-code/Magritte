@@ -10,7 +10,7 @@ const string prefix = "lines/lineProducingSpecies_";
 ///    @param[in] io: io object
 ///    @param[in] l: nr of line producing species
 /////////////////////////////////////////////////
-void Linedata :: read (const Io &io, const Size l)
+void Linedata :: read (const Io& io, const Size l)
 {
     cout << "Reading linedata..." << endl;
 
@@ -48,10 +48,8 @@ void Linedata :: read (const Io &io, const Size l)
     io.read_list (prefix_l+"Bs", Bs);
     io.read_list (prefix_l+"Ba", Ba);
 
-
     // Get ncolpar
     io.read_length (prefix_l+"collisionPartner_", ncolpar);
-
 
     colpar.resize (ncolpar);
 
@@ -59,7 +57,6 @@ void Linedata :: read (const Io &io, const Size l)
     {
         colpar[c].read (io, l, c);
     }
-
 
     ncol_tot = 0;
 
@@ -74,7 +71,7 @@ void Linedata :: read (const Io &io, const Size l)
 ///    @param[in] io: io object
 ///    @param[in] l: nr of line producing species
 /////////////////////////////////////////////////
-void Linedata :: write (const Io &io, const Size l) const
+void Linedata :: write (const Io& io, const Size l) const
 {
     cout << "Writing linedata..." << endl;
 

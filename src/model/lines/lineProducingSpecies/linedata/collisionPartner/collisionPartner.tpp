@@ -1,12 +1,12 @@
-#include "Functions/interpolation.hpp"
+#include "tools/interpolation.hpp"
 
 
 ///  interpolate_collision_coefficients:
 ///    @param[in] temperature_gas: local gas temperature
 ////////////////////////////////////////////////////////
-inline void CollisionPartner :: interpolate_collision_coefficients (const double temperature_gas)
+inline void CollisionPartner :: interpolate_collision_coefficients (const Real temperature_gas)
 {
-    const int t = search (tmp, temperature_gas);
+    const Size t = search (tmp, temperature_gas);
 
     if (t == 0)
     {
@@ -37,7 +37,7 @@ inline void CollisionPartner :: adjust_abundance_for_ortho_or_para (
 {
     if (orth_or_para_H2 != "n")
     {
-        const Real frac_H2_para = 1.0 / (1.0 + 9.0*exp (-170.5/temperature_gas));
+        const Real frac_H2_para = 1.0 / (1.0 + 9.0*expf (-170.5/temperature_gas));
 
         if (orth_or_para_H2 == "o")
         {

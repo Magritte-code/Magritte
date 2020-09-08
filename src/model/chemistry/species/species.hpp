@@ -1,19 +1,20 @@
 #pragma once
 
+
 #include "io/io.hpp"
+#include "model/parameters/parameters.hpp"
 #include "tools/types.hpp"
 
 
-class Species
+///  Data structure for Species
+///////////////////////////////
+struct Species
 {
-    public:
-        Double2 abundance_init;   ///< abundance before chemical evolution
-        Double2 abundance;        ///< (current) abundance in every cell
+    Parameters parameters;
 
-        void read  (const Io& io);
-        void write (const Io& io) const;
+    Double2 abundance_init;   ///< abundance before chemical evolution
+    Double2 abundance;        ///< (current) abundance in every cell
 
-    private:
-        Size npoints;   ///< number of points
-        Size nspecs;    ///< number of chemical species
+    void read  (const Io& io);
+    void write (const Io& io) const;
 };

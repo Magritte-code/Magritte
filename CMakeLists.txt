@@ -6,8 +6,8 @@ set (MAGRITTE_VERSION_MAJOR 1)
 set (MAGRITTE_VERSION_MINOR 0)
 
 # Set build type
-set (CMAKE_BUILD_TYPE Release)
-#set (CMAKE_BUILD_TYPE Debug)
+#set (CMAKE_BUILD_TYPE Release)
+set (CMAKE_BUILD_TYPE Debug)
 set (CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --extended-lambda --use_fast_math --expt-relaxed-constexpr")
 
 # Set minimun required CMake version

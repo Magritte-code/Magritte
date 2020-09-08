@@ -1,9 +1,6 @@
 inline void Solver :: trace (Model& model)
 {
-    const Size hnrays  = model.geometry.rays  .get_nrays  ()/2;
-    const Size npoints = model.geometry.points.get_npoints();
-
-    for (Size rr = 0; rr < hnrays; rr++)
+    for (Size rr = 0; rr < model.parameters.hnrays(); rr++)
     {
         const Size ar = model.geometry.rays.antipod[rr];
 
@@ -13,10 +10,12 @@ inline void Solver :: trace (Model& model)
         {
             const Real dshift_max = 1.0e+99;
 
-            model.geometry.lengths[npoints*rr+o] =
+            model.geometry.lengths[model.parameters.npoints()*rr+o] =
                 trace_ray <CoMoving> (model.geometry, o, rr, dshift_max, +1)
               - trace_ray <CoMoving> (model.geometry, o, ar, dshift_max, -1);
         })
+
+        pc::accelerator::synchronize();
     }
 
     model.geometry.lengths.copy_ptr_to_vec ();
@@ -37,7 +36,7 @@ accel inline Size Solver :: trace_ray (
 
     Size nxt = geometry.get_next (o, r, o, Z, dZ);
 
-    if (nxt != geometry.get_npoints()) // if we are not going out of mesh
+    if (nxt != geometry.parameters.npoints()) // if we are not going out of mesh
     {
         Size       crt = o;
         Real shift_crt = geometry.get_shift <frame> (o, r, crt);
@@ -45,12 +44,12 @@ accel inline Size Solver :: trace_ray (
 
         set_data (crt, nxt, shift_crt, shift_nxt, dZ, dshift_max, increment, id);
 
-        while (geometry.boundary.point2boundary[nxt] == geometry.get_npoints()) // while nxt not on boundary
+        while (geometry.boundary.point2boundary[nxt] == geometry.parameters.npoints()) // while nxt not on boundary
         {
                   crt =       nxt;
             shift_crt = shift_nxt;
                   nxt = geometry.get_next (o, r, nxt, Z, dZ);
-            if (nxt == geometry.get_npoints()) printf ("ERROR (nxt < 0): o = %ld, crt = %ld, ray = %ld", o, crt, r);
+            if (nxt == geometry.parameters.npoints()) printf ("ERROR (nxt < 0): o = %ld, crt = %ld, ray = %ld", o, crt, r);
             shift_nxt = geometry.get_shift <frame> (o, r, nxt);
 
             set_data (crt, nxt, shift_crt, shift_nxt, dZ, dshift_max, increment, id);

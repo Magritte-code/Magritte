@@ -1,7 +1,7 @@
 #pragma once
 
 #include <assert.h>
-#include "Tools/types.hpp"
+#include "tools/types.hpp"
 
 
 inline Size max (const Double1& a, const Size n, const Size i, const Size j, const Size k)

@@ -2,18 +2,6 @@
 #include "tools/types.hpp"
 
 
-accel inline void Lines :: set_npoints (const Size n)
-{
-    npoints = n;
-}
-
-
-accel inline Size Lines :: get_npoints () const
-{
-    return npoints;
-}
-
-
 ///  Indexer for cell, line producing species and transition indices
 ///    @param[in] p : index of the cell
 ///    @param[in] l : index of the line producing species
@@ -21,7 +9,7 @@ accel inline Size Lines :: get_npoints () const
 ////////////////////////////////////////////////////////////////////
 inline Size Lines :: index (const Size p, const Size l, const Size k) const
 {
-    return k + nrad_cum[l] + p*nlines;
+    return k + nrad_cum[l] + p*parameters.nlines();
 }
 
 
@@ -31,7 +19,7 @@ inline Size Lines :: index (const Size p, const Size l, const Size k) const
 ////////////////////////////////////////////////
 inline Size Lines :: index (const Size p, const Size line_index) const
 {
-    return line_index + p*nlines;
+    return line_index + p*parameters.nlines();
 }
 
 
@@ -41,9 +29,9 @@ inline Size Lines :: index (const Size p, const Size line_index) const
 /////////////////////////////////////////////////////////
 inline void Lines :: set_emissivity_and_opacity ()
 {
-    threaded_for (p, npoints)
+    threaded_for (p, parameters.npoints())
     {
-        for (Size l = 0; l < nlspecs; l++)
+        for (Size l = 0; l < parameters.nlspecs(); l++)
         {
             for (Size k = 0; k < lineProducingSpecies[l].linedata.nrad; k++)
             {

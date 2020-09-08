@@ -3,22 +3,14 @@
 
 void Geometry :: read (const Io& io)
 {
-    points.read (io);
-
-    npoints = points.get_npoints();
-    boundary.set_npoints (npoints);
-
-    cout << npoints << endl;
-
-    rays.read (io);
-
-    nrays = rays.get_nrays();
-
+    points  .read (io);
+    rays    .read (io);
     boundary.read (io);
 
     cout << "Resizing lengths" << endl;
+    cout << parameters.hnrays() * parameters.npoints() << endl;
 
-    lengths.resize (nrays/2*npoints);
+    lengths.resize (parameters.hnrays()*parameters.npoints());
 
     cout << "Done Reading!" << endl;
 }

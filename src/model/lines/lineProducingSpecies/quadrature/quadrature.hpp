@@ -2,23 +2,19 @@
 
 
 #include "io/io.hpp"
+#include "model/parameters/parameters.hpp"
 #include "tools/types.hpp"
 
 
 struct Quadrature
 {
-    public:
-        Double1 roots;
-        Double1 weights;
+    Parameters parameters;
 
-        void read  (const Io &io, const Size l);
-        void write (const Io &io, const Size l) const;
+    Vector<Real> roots;
+    Vector<Real> weights;
 
-        accel inline void set_nquads (const Size n);
-        accel inline Size get_nquads () const;
-
-    private:
-        size_t nquads;   ///< number frequency quadrature points
+    void read  (const Io& io, const Size l);
+    void write (const Io& io, const Size l) const;
 };
 
 

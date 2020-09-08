@@ -1,17 +1,16 @@
-inline void Lambda :: initialize (const Size npoints_new, const Size nrad_new)
+inline void Lambda :: initialize (const Size nrad_new)
 {
-    npoints = npoints_new;
-    nrad    = nrad_new;
+    nrad = nrad_new;
 
-    Lss.reserve (npoints * nrad);
-    nrs.reserve (npoints * nrad);
+    Lss.reserve (parameters.npoints() * nrad);
+    nrs.reserve (parameters.npoints() * nrad);
 
-    size.resize (npoints * nrad);
+    size.resize (parameters.npoints() * nrad);
 
-    Ls.resize (npoints);
-    nr.resize (npoints);
+    Ls.resize (parameters.npoints());
+    nr.resize (parameters.npoints());
 
-    for (Size p = 0; p < npoints; p++)
+    for (Size p = 0; p < parameters.npoints(); p++)
     {
         Ls[p].resize (nrad);
         nr[p].resize (nrad);
@@ -30,14 +29,14 @@ inline void Lambda :: initialize (const Size npoints_new, const Size nrad_new)
 
 inline void Lambda :: clear ()
 {
-    threaded_for (p, npoints)
+    threaded_for (p, parameters.npoints(),
     {
         for (Size k = 0; k < nrad; k++)
         {
             Ls[p][k].clear();
             nr[p][k].clear();
         }
-    }
+    })
 }
 
 
@@ -123,7 +122,7 @@ inline void Lambda :: linearize_data ()
     Size size_total = 0;
 
 #   pragma omp parallel for reduction (+: size_total)
-    for (Size p = 0; p < npoints; p++)
+    for (Size p = 0; p < parameters.npoints(); p++)
     {
         for (Size k = 0; k < nrad; k++)
         {
@@ -137,10 +136,9 @@ inline void Lambda :: linearize_data ()
     Lss.resize (size_total);
     nrs.resize (size_total);
 
-
     Size index = 0;
 
-    for (Size p = 0; p < npoints; p++)
+    for (Size p = 0; p < parameters.npoints(); p++)
     {
         for (Size k = 0; k < nrad; k++)
         {
@@ -153,13 +151,12 @@ inline void Lambda :: linearize_data ()
             }
         }
     }
-
 }
 
 
 
 
-inline int Lambda :: MPI_gather ()
+inline void Lambda :: MPI_gather ()
 
 #if (MPI_PARALLEL)
 
@@ -189,23 +186,15 @@ inline int Lambda :: MPI_gather ()
     for (int w = 1; w < MPI_comm_size(); w++)
     {
         displacements[w] = buffer_lengths[w-1];
-
-//        cout << "buffer_lengths [w] = " << buffer_lengths[w-1] << endl;
-//        cout << "displacements  [w] = " << displacements [w-1] << endl;
     }
 
-//    cout << "buffer_lengths [f] = " << buffer_lengths[MPI_comm_size()-1] << endl;
-//    cout << "displacements  [f] = " << displacements [MPI_comm_size()-1] << endl;
+    Real1 Lss_total;
+    Size1 nrs_total;
+    Size1 szs_total;
 
+    Size total_buffer_length = 0;
 
-    Double1 Lss_total;
-    Long1   nrs_total;
-    Long1   szs_total;
-
-
-    long total_buffer_length = 0;
-
-    for (long length : buffer_lengths) {total_buffer_length += length;}
+    for (Size length : buffer_lengths) {total_buffer_length += length;}
 
     Lss_total.resize (total_buffer_length);
     nrs_total.resize (total_buffer_length);
@@ -247,42 +236,33 @@ inline int Lambda :: MPI_gather ()
     assert (ierr_sz == 0);
 
 
-    this->clear();
+    clear();
 
 
-    size_t index_1 = 0;
-    size_t index_2 = 0;
+    Size index_1 = 0;
+    Size index_2 = 0;
 
-    for (size_t w = 0; w < MPI_comm_size(); w++)
+    for (Size w = 0; w < MPI_comm_size(); w++)
     {
-        for (size_t p = 0; p < ncells; p++)
+        for (Size p = 0; p < ncells; p++)
         {
-            for (size_t k = 0; k < nrad; k++)
+            for (Size k = 0; k < nrad; k++)
             {
-                for (size_t m = 0; m < szs_total[index_1]; m++)
+                for (Size m = 0; m < szs_total[index_1]; m++)
                 {
                     add_element (p, k, nrs_total[index_2], Lss_total[index_2]);
-
-//                    if (MPI_comm_rank () == 0)
-//                    {
-//                      cout << p << " " << k << " " << nrs_total[index_2] << " " << Lss_total[index_2] << endl;
-//                    }
-
                     index_2++;
                 }
-
                 index_1++;
             }
         }
     }
-
-    return (0);
 }
 
 #else
 
 {
-    return (0);
+    return;
 }
 
 #endif

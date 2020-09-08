@@ -2,17 +2,16 @@
 
 
 #include "io/io.hpp"
+#include "model/parameters/parameters.hpp"
 #include "tools/types.hpp"
 
 
-class Turbulence
+struct Turbulence
 {
-    public:
-        Real1 vturb2;   ///< [.] microturbulence over c all squared
+    Parameters parameters;
 
-        void read  (const Io &io);
-        void write (const Io &io) const;
+    Vector<Real> vturb2;   ///< [.] microturbulence over c all squared
 
-    private:
-        Size npoints;
+    void read  (const Io& io);
+    void write (const Io& io) const;
 };

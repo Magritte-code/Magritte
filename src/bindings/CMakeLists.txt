@@ -11,10 +11,20 @@ set (SOURCE_FILES
     ../io/cpp/io_cpp_text.cpp
     ../io/python/io_python.cpp
     ../model/model.cpp
+    ../model/parameters/parameters.cpp
     ../model/geometry/geometry.cpp
     ../model/geometry/points/points.cpp
     ../model/geometry/rays/rays.cpp
     ../model/geometry/boundary/boundary.cpp
+#    ../model/chemistry/chemistry.cpp
+#    ../model/chemistry/species/species.cpp
+#    ../model/thermodynamics/thermodynamics.cpp
+#    ../model/thermodynamics/temperature/temperature.cpp
+#    ../model/thermodynamics/turbulence/turbulence.cpp
+#    ../model/lines/lines.cpp
+#    ../model/lines/lineProducingSpecies/lineProducingSpecies.cpp
+#    ../model/lines/lineProducingSpecies/linedata/linedata.cpp
+#    ../model/lines/lineProducingSpecies/quadrature/quadrature.cpp
     ../solver/solver.cpp
 )
 

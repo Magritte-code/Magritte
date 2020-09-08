@@ -17,17 +17,19 @@ struct IoPython : public Io
         IoPython (const string &implementation, const string &io_file);
 
         int  read_length   (const string fname,       Size    &length) const override;
+        Size  get_length   (const string fname                       ) const override;
 
         int  read_width    (const string fname,       Size    &width ) const override;
-
-        int  read_number   (const string fname,       size_t  &number) const override;
-        int write_number   (const string fname, const size_t  &number) const override;
+        Size  get_width    (const string fname                       ) const override;
 
         int  read_number   (const string fname,       long    &number) const override;
         int write_number   (const string fname, const long    &number) const override;
 
-        int  read_number   (const string fname,       double  &number) const override;
-        int write_number   (const string fname, const double  &number) const override;
+        int  read_number   (const string fname,       Size    &number) const override;
+        int write_number   (const string fname, const Size    &number) const override;
+
+        int  read_number   (const string fname,       Real    &number) const override;
+        int write_number   (const string fname, const Real    &number) const override;
 
         int  read_word     (const string fname,       string  &word  ) const override;
         int write_word     (const string fname, const string  &word  ) const override;

@@ -1,9 +1,3 @@
-// Magritte: Multidimensional Accelerated General-purpose Radiative Transfer
-//
-// Developed by: Frederik De Ceuster - University College London & KU Leuven
-// _________________________________________________________________________
-
-
 #include "Functions/interpolation.hpp"
 #include "Tools/debug.hpp"
 

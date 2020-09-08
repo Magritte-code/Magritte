@@ -1,37 +1,28 @@
-// Magritte: Multidimensional Accelerated General-purpose Radiative Transfer
-//
-// Developed by: Frederik De Ceuster - University College London & KU Leuven
-// _________________________________________________________________________
-
-
 #include <iostream>
 #include <iomanip>
 
 #include "radiation.hpp"
-#include "Tools/constants.hpp"
-#include "Tools/Parallel/wrap_omp.hpp"
-#include "Tools/Parallel/wrap_mpi.hpp"
-#include "Tools/Parallel/wrap_Grid.hpp"
-#include "Tools/logger.hpp"
+#include "tools/constants.hpp"
 
-const string Radiation::prefix = "Radiation/";
+const string prefix = "radiation/";
 
 
 ///  read: read in data structure
 ///    @param[in] io: io object
-///    @param[in] parameters: model parameters object
-/////////////////////////////////////////////////////
-
-void Radiation :: read (const Io &io, Parameters &parameters)
+/////////////////////////////////
+void Radiation :: read (const Io& io)
 {
     cout << "Reading radiation..." << endl;
 
     frequencies.read (io, parameters);
 
+
+
+
     ncells     = parameters.ncells     ();
     nrays      = parameters.nrays      ();
-    nfreqs     = parameters.nfreqs     ();
-    nfreqs_red = parameters.nfreqs_red ();
+    nfreqs     = frequencies.nfreqs();
+    nfreqs_red = frequencies.nfreqs_red();
     nboundary  = parameters.nboundary  ();
 
 
@@ -43,21 +34,19 @@ void Radiation :: read (const Io &io, Parameters &parameters)
 
     nrays_red = MPI_length (nrays/2);
 
-    parameters.set_nrays_red (nrays_red);
 
-
-    J.resize (ncells*nfreqs_red);
+    J.resize (npoints*nfreqs_red);
 
 
     // Size and initialize I_bdy, u, v, U and V
 
     I_bdy.resize (nrays_red);
 
-    for (size_t r = 0; r < nrays_red; r++)
+    for (Size r = 0; r < nrays_red; r++)
     {
         I_bdy[r].resize (nboundary);
 
-        for (size_t p = 0; p < nboundary; p++)
+        for (Size p = 0; p < nboundary; p++)
         {
             I_bdy[r][p].resize (nfreqs_red);
         }
@@ -66,31 +55,27 @@ void Radiation :: read (const Io &io, Parameters &parameters)
 
   if (use_scattering)
   {
-    u.resize (nrays_red);
-//    v.resize (nrays_red);
+      u.resize (nrays_red);
+      v.resize (nrays_red);
 
-//    U.resize (nrays_red);
-//    V.resize (nrays_red);
+      U.resize (nrays_red);
+      V.resize (nrays_red);
 
-    for (size_t r = 0; r < nrays_red; r++)
-    {
-      u[r].resize (ncells*nfreqs_red);
-//      v[r].resize (ncells*nfreqs_red);
+      for (Size r = 0; r < nrays_red; r++)
+      {
+          u[r].resize (npoints*nfreqs_red);
+//          v[r].resize (npoints*nfreqs_red);
 
-//      U[r].resize (ncells*nfreqs_red);
-//      V[r].resize (ncells*nfreqs_red);
+//          U[r].resize (npoints*nfreqs_red);
+//          V[r].resize (npoints*nfreqs_red);
+        }
     }
-  }
-
 }
-
-
 
 
 ///  write: write out data structure
 ///    @param[in] io: io object
 /////////////////////////////////
-
 void Radiation :: write (const Io &io) const
 {
     cout << "Writing radiation..." << endl;
@@ -249,7 +234,7 @@ void Radiation :: write (const Io &io) const
 ///  initialize: initialize vector with zero's
 //////////////////////////////////////////////
 
-int initialize (vReal1 &vec)
+int initialize (Real1 &vec)
 {
     OMP_PARALLEL_FOR (i, vec.size())
     {
@@ -329,14 +314,13 @@ int Radiation :: MPI_reduce_J ()
 
 /// calc_U_and_V: integrate scattering quantities over all directions
 /////////////////////////////////////////////////////////////////////
-
-int Radiation :: calc_U_and_V ()
+void Radiation :: calc_U_and_V ()
 
 #if (MPI_PARALLEL)
 
 {
-    vReal1 U_local (ncells*nfreqs_red);
-    vReal1 V_local (ncells*nfreqs_red);
+    vReal1 U_local (npoints*nfreqs_red);
+    vReal1 V_local (npoints*nfreqs_red);
 
 
     MPI_Datatype MPI_VREAL;
@@ -349,23 +333,23 @@ int Radiation :: calc_U_and_V ()
 
     for (int w = 0; w < MPI_comm_size(); w++)
     {
-        const size_t start = ( w   *(nrays/2)) / MPI_comm_size();
-        const size_t stop  = ((w+1)*(nrays/2)) / MPI_comm_size();
+        const Size start = ( w   *(nrays/2)) / MPI_comm_size();
+        const Size stop  = ((w+1)*(nrays/2)) / MPI_comm_size();
 
-        for (size_t r1 = start; r1 < stop; r1++)
+        for (Size r1 = start; r1 < stop; r1++)
         {
-            const size_t R1 = r1 - start;
+            const Size R1 = r1 - start;
 
             initialize (U_local);
             initialize (V_local);
 
             MPI_PARALLEL_FOR (r2, nrays/2)
             {
-                const size_t R2 = r2 - MPI_start (nrays/2);
+                const Size R2 = r2 - MPI_start (nrays/2);
 
-                OMP_PARALLEL_FOR (p, ncells)
+                OMP_PARALLEL_FOR (p, npoints)
                 {
-                    for (size_t f = 0; f < nfreqs_red; f++)
+                    for (Size f = 0; f < nfreqs_red; f++)
               	    {
                         U_local[index(p,f)] += u[R2][index(p,f)] ;//* scattering.phase[r1][r2][f];
                         V_local[index(p,f)] += v[R2][index(p,f)] ;//* scattering.phase[r1][r2][f];
@@ -397,26 +381,24 @@ int Radiation :: calc_U_and_V ()
 
     MPI_Type_free (&MPI_VREAL);
     MPI_Op_free   (&MPI_VSUM);
-
-    return (0);
 }
 
 #else
 
 {
-    vReal1 U_local (ncells*nfreqs_red);
-    vReal1 V_local (ncells*nfreqs_red);
+    vReal1 U_local (npoints*nfreqs_red);
+    vReal1 V_local (npoints*nfreqs_red);
 
-    for (size_t r1 = 0; r1 < nrays/2; r1++)
+    for (Size r1 = 0; r1 < nrays/2; r1++)
     {
         initialize (U_local);
         initialize (V_local);
 
-        for (size_t r2 = 0; r2 < nrays/2; r2++)
+        for (Size r2 = 0; r2 < nrays/2; r2++)
         {
-            OMP_PARALLEL_FOR (p, ncells)
+            OMP_PARALLEL_FOR (p, npoints)
             {
-                for (size_t f = 0; f < nfreqs_red; f++)
+                for (Size f = 0; f < nfreqs_red; f++)
                 {
                     U_local[index(p,f)] += u[r2][index(p,f)] ;//* scattering.phase[r1][r2][f];
                     V_local[index(p,f)] += v[r2][index(p,f)] ;//* scattering.phase[r1][r2][f];
@@ -427,8 +409,6 @@ int Radiation :: calc_U_and_V ()
         U[r1] = U_local;
         V[r1] = V_local;
     }
-
-    return (0);
 }
 
 #endif

@@ -1,62 +1,47 @@
 #pragma once
 
 #include "io/io.hpp"
+#include "model/parameters/parameters.hpp"
 #include "tools/types.hpp"
 #include "lineProducingSpecies/lineProducingSpecies.hpp"
 
 
-class Lines
+struct Lines
 {
-    public:
-        std::vector <LineProducingSpecies> lineProducingSpecies;
+    Parameters parameters;
 
-        Double1 line;         ///< [Hz] line center frequencies orderd
-        Long1   line_index;   ///< index of the corresponding frequency in line
+    std::vector <LineProducingSpecies> lineProducingSpecies;
 
-        Double1 emissivity;   ///< line emissivity (p,l,k)
-        Double1 opacity;      ///< line opacity    (p,l,k)
+    Real1 line;         ///< [Hz] line center frequencies orderd
+    Size1 line_index;   ///< index of the corresponding frequency in line
 
-        void read  (const Io &io);
-        void write (const Io &io) const;
+    Size1 nrad_cum;
 
-        accel inline void set_npoints (const Size n);
-        accel inline Size get_npoints () const;
+    Real1 emissivity;   ///< line emissivity (p,l,k)
+    Real1 opacity;      ///< line opacity    (p,l,k)
 
-        int iteration_using_LTE (
-            const Double2 &abundance,
-            const Double1 &temperature);
+    void read  (const Io& io);
+    void write (const Io& io) const;
 
-        int iteration_using_statistical_equilibrium (
-            const Double2 &abundance,
-            const Double1 &temperature,
-            const double   pop_prec                 );
+    void iteration_using_LTE (
+        const Double2 &abundance,
+        const Double1 &temperature);
 
-        int iteration_using_Ng_acceleration (
-            const double   pop_prec         );
+    void iteration_using_statistical_equilibrium (
+        const Double2 &abundance,
+        const Double1 &temperature,
+        const double   pop_prec                 );
 
-
-        // Inline functions
-        inline long index (
-            const long p,
-            const int  l,
-            const int  k) const;
-
-        inline long index (
-            const long p,
-            const long line_index) const;
-
-        inline void set_emissivity_and_opacity ();
+    void iteration_using_Ng_acceleration (
+        const double   pop_prec         );
 
 
-        int gather_emissivities_and_opacities ();
+    inline Size index (const Size p, const Size l, const Size k) const;
+    inline Size index (const Size p, const Size line_index     ) const;
 
+    inline void set_emissivity_and_opacity ();
 
-    private:
-        Size npoints;
-        Size nlines;
-        Size nlspecs;
-
-        Long1 nrad_cum;
+    int gather_emissivities_and_opacities ();
 };
 
 

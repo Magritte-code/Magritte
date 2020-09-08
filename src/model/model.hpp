@@ -2,24 +2,22 @@
 
 
 #include "io/io.hpp"
+#include "parameters/parameters.hpp"
 #include "tools/types.hpp"
 #include "geometry/geometry.hpp"
+#include "chemistry/chemistry.hpp"
+#include "thermodynamics/thermodynamics.hpp"
 
 
-class Model
+struct Model
 {
-    public:
-//        Chemistry chemistry;
-        Geometry  geometry;
+    Parameters     parameters;
+    Geometry       geometry;
+//    Chemistry      chemistry;
+//    Thermodynamics thermodynamics;
 
-        void read  (const Io& io);
-        void write (const Io& io) const;
-
-        inline void set_npoints (const Size npoints);
-        inline Size get_npoints () const;
-
-    private:
-        Size npoints;
+    void read  (const Io& io);
+    void write (const Io& io) const;
 };
 
 

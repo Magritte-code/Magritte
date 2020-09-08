@@ -1,16 +1,18 @@
 #pragma once
 
+
 #include "io/io.hpp"
+#include "model/parameters/parameters.hpp"
 #include "species/species.hpp"
 
 
 ///  Data structure for Chemistry
 /////////////////////////////////
-class Chemistry
+struct Chemistry
 {
-    public:
-        Species  species;
+    Parameters parameters;
+    Species    species;
 
-        void read  (const Io& io);
-        void write (const Io& io) const;
+    void read  (const Io& io);
+    void write (const Io& io) const;
 };

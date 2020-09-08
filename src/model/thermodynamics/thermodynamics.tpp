@@ -14,7 +14,7 @@ inline Real Thermodynamics :: profile (
     const Real sqrtExponent  = inverse_width * freq_diff;
     const Real exponent      = sqrtExponent * sqrtExponent;
 
-    return inverse_width * INVERSE_SQRT_PI * vExpMinus (exponent);
+    return inverse_width * INVERSE_SQRT_PI * expf (-exponent);
 }
 
 
@@ -46,6 +46,6 @@ inline Real Thermodynamics :: profile_width (
     const Real inverse_mass,
     const Size p ) const
 {
-    return sqrt (TWO_KB_OVER_AMU_C_SQUARED * inverse_mass * temperature.gas[p]
+    return sqrt (TWO_KB_OVER_AMU_CC_SQUARED * inverse_mass * temperature.gas[p]
                  + turbulence.vturb2[p]);
 }

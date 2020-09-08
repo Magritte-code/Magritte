@@ -1,6 +1,6 @@
 #include "frequencies.hpp"
-#include "Tools/constants.hpp"
-#include "Tools/types.hpp"
+#include "tools/constants.hpp"
+#include "tools/types.hpp"
 
 
 const string prefix = "radiation/frequencies/";
@@ -13,9 +13,9 @@ void Frequencies :: read (const Io& io)
 {
     cout << "Reading frequencies..." << endl;
 
-    cout << "ncells = " << ncells << endl;
-    cout << "nlines = " << nlines << endl;
-    cout << "nquads = " << nquads << endl;
+    cout << "ncells = " << npoints << endl;
+    cout << "nlines = " << nlines  << endl;
+    cout << "nquads = " << nquads  << endl;
 
     // Count line frequencies
     nfreqs = nlines * nquads;

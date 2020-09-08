@@ -8,9 +8,9 @@ using std::list;
 #include <string>
 using std::string;
 using std::to_string;
-//#include <Eigen/Core>
+#include <Eigen/Core>
 //using Eigen::Vector3d;
-//using Eigen::VectorXd;
+using Eigen::VectorXd;
 //using Eigen::MatrixXd;
 
 #include "paracabs.hpp"
@@ -83,11 +83,11 @@ typedef vector<String2>  String3;
 //typedef vector<Vector3d1>  Vector3d2;
 //typedef vector<Vector3d2>  Vector3d3;
 //
-//// Vectors of Eigen::VectorXd
-//typedef vector<VectorXd>   VectorXd1;
-//typedef vector<VectorXd1>  VectorXd2;
-//typedef vector<VectorXd2>  VectorXd3;
-//
+// Vectors of Eigen::VectorXd
+typedef vector<VectorXd>   VectorXd1;
+typedef vector<VectorXd1>  VectorXd2;
+typedef vector<VectorXd2>  VectorXd3;
+
 //// Vectors of Eigen::MatrixXd
 //typedef vector<MatrixXd>   MatrixXd1;
 //typedef vector<MatrixXd1>  MatrixXd2;

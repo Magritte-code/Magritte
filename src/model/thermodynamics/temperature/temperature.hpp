@@ -2,17 +2,16 @@
 
 
 #include "io/io.hpp"
+#include "model/parameters/parameters.hpp"
 #include "tools/types.hpp"
 
 
-class Temperature
+struct Temperature
 {
-    public:
-        Double1 gas;   ///< [K] gas temperature
+    Parameters parameters;
 
-        void read  (const Io &io);
-        void write (const Io &io) const;
+    Vector<Real> gas;   ///< [K] gas temperature
 
-    private:
-        Size npoints;
+    void read  (const Io& io);
+    void write (const Io& io) const;
 };
