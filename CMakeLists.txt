@@ -73,8 +73,8 @@ if    (GPU_ACCELERATION)
 endif (GPU_ACCELERATION)
 
 # Include Paracabs directory
-include             (~/Dropbox/GitHub/Paracabs/CMakeLists.txt)
-include_directories (~/Dropbox/GitHub/Paracabs/Paracabs      )
+include             (dependencies/Paracabs/CMakeLists.txt)
+include_directories (dependencies/Paracabs/Paracabs      )
 
 # Link to pybind11 directory if required
 if    (PYTHON_BINDINGS OR PYTHON_IO)

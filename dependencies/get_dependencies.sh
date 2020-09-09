@@ -3,6 +3,7 @@
 # Remove everything
 rm -rf Eigen
 rm -rf pybind11
+rm -rf Paracabs
 
 # Get latest Eigen (there is no stable release yet that works with latest CUDA)
 wget https://github.com/eigenteam/eigen-git-mirror/archive/master.zip
@@ -23,3 +24,12 @@ tar -zxvf v2.2.4.tar.gz
 mv pybind11-2.2.4 pybind11
 # Remove tar ball
 rm v2.2.4.tar.gz
+
+# Get Paracabs
+wget https://github.com/FredDeCeuster/Paracabs/archive/master.zip
+# Extract the whole directory
+unzip master.zip
+# Rename the folder
+mv Paracabs-master Paracabs
+# Remove zip file
+rm master.zip
