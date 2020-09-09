@@ -4,22 +4,21 @@
 #include <string>
 using std::string;
 
-#include <cuda_runtime.h>
+#include <CL/sycl.hpp>
 
-#define PARACABS_DEBUG true
+#define PARACABS_DEBUG false
 
 #if PARACABS_DEBUG
-    #define handle_cuda_error(body)                                                  \
-    {                                                                                \
-        cudaError_t err = body;                                                      \
-        if (err!=cudaSuccess) printf ("CUDA ERROR : %s\n", cudaGetErrorString(err)); \
+    #define handle_sycl_error(body)   \
+    {                                 \
+        body                          \
     }
 #else
-    #define handle_cuda_error(body) body
+    #define handle_sycl_error(body) body
 #endif
 
 
-#define accel  __host__ __device__
+#define accel
 
 
 namespace paracabs
