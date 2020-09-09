@@ -9,6 +9,10 @@ project ("Paracabs")
 #set (CUDA_NVCC_FLAGS " -g")
 #set (CUDA_NVCC_FLAGS "-O5 -use_fast_math")
 
+set (CMAKE_C_FLAGS          "${CMAKE_C_FLAGS}          -std=c++11")
+set (CMAKE_CXX_FLAGS        "${CMAKE_CXX_FLAGS}        -std=c++11")
+set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -std=c++11")
+
 # Set minimun required CMake version
 cmake_minimum_required (VERSION 3.11)
 
