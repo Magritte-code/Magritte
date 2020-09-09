@@ -148,7 +148,8 @@ inline Size1 Geometry :: get_ray_lengths ()
 
         cout << "rr = " << rr << endl;
 
-        threaded_for (o, parameters.npoints(),
+//        threaded_for (o, parameters.npoints(),
+        threaded_for (o, 10000,
         {
             const Real dshift_max = 1.0e+99;
 

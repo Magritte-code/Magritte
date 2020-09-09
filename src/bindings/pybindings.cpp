@@ -188,9 +188,8 @@ PYBIND11_MODULE (core, module)
         .def (py::init());
 
 
-
     // Vector <Real>
-    py::class_<Vector<Real>> (module, "Vector_Real")
+    py::class_<Vector<Real>> (module, "Vector_Real", py::buffer_protocol())
         // buffer
         .def_buffer(
             [](Vector<Real> &v) -> py::buffer_info
