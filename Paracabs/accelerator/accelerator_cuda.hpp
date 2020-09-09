@@ -111,6 +111,8 @@ namespace paracabs
 }
 
 
+/// Assumes to be used within a class!
+
 #define accelerated_for(i, total, nblocks, nthreads, ... )   \
 {							                                 \
     copyContextAccelerator() = true;                         \
