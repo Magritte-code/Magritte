@@ -40,10 +40,10 @@ namespace paracabs
                 ////////////////////////////////////
                 inline Vector (const Vector& v)
                 {
-                    ptr = v.ptr;
-                    set_dat ();
+                    ptr            = v.ptr;
                     allocated      = false;
                     allocated_size = 0;
+                    set_dat ();
                 }
 
                 ///  Constructor (single argument)
@@ -52,6 +52,7 @@ namespace paracabs
                 inline Vector (const vector<type>& v) : vec(v)
                 {
                     copy_vec_to_ptr ();
+                    set_dat ();
                 }
 
                 ///  Constructor (single argument)
@@ -60,6 +61,7 @@ namespace paracabs
                 inline Vector (const size_t s) : vec(s)
                 {
                     copy_vec_to_ptr ();
+                    set_dat ();
                 }
 
                 ///  Constructor (two arguments)
@@ -69,6 +71,7 @@ namespace paracabs
                 inline Vector (const size_t s, const type i) : vec(s, i)
                 {
                     copy_vec_to_ptr ();
+                    set_dat ();
                 }
 
                 ///  Destructor
@@ -80,44 +83,52 @@ namespace paracabs
                 ///////////////////////////////////////////
                 inline void allocate (const size_t size)
                 {
-                    if (allocated_size != size)
-                    {
-                        if (allocated) deallocate();
-                        ptr = (type*) paracabs::accelerator::malloc (size*sizeof(type));
-                        allocated = true;
-                        allocated_size = size;
-                        set_dat ();
-                    }
+                    #if PARACABS_USE_ACCELERATOR
+                        if (allocated_size != size)
+                        {
+                            if (allocated) deallocate();
+                            ptr = (type*) paracabs::accelerator::malloc (size*sizeof(type));
+                            allocated = true;
+                            allocated_size = size;
+                            set_dat ();
+                        }
+                    #endif
                 }
 
                 ///  Memory deallocator
                 ///////////////////////
                 inline void deallocate ()
                 {
-                    if (allocated)
-                    {
-                        paracabs::accelerator::free (ptr);
-                        allocated = false;
-                        allocated_size = 0;
-                    }
+                    #if PARACABS_USE_ACCELERATOR
+                        if (allocated)
+                        {
+                            paracabs::accelerator::free (ptr);
+                            allocated = false;
+                            allocated_size = 0;
+                        }
+                    #endif
                 }
 
                 ///  Copier for data from std::vector to allocated memory
                 /////////////////////////////////////////////////////////
                 inline void copy_vec_to_ptr ()
                 {
-                    allocate (vec.size());
-                    paracabs::accelerator::memcpy_to_accelerator (ptr, vec.data(), vec.size()*sizeof(type));
-                    set_dat ();
+                    #if PARACABS_USE_ACCELERATOR
+                        allocate (vec.size());
+                        paracabs::accelerator::memcpy_to_accelerator (ptr, vec.data(), vec.size()*sizeof(type));
+                        set_dat ();
+                    #endif
                 }
 
                 ///  Copier for data from allocated memory tp std::vector
                 /////////////////////////////////////////////////////////
                 inline void copy_ptr_to_vec ()
                 {
-                    vec.resize (allocated_size);
-                    paracabs::accelerator::memcpy_from_accelerator (vec.data(), ptr, vec.size()*sizeof(type));
-                    set_dat ();
+                    #if PARACABS_USE_ACCELERATOR
+                        vec.resize (allocated_size);
+                        paracabs::accelerator::memcpy_from_accelerator (vec.data(), ptr, vec.size()*sizeof(type));
+                        set_dat ();
+                    #endif
                 }
 
                 ///  Resizing both the std::vector and the allocated memory

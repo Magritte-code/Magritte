@@ -1,5 +1,8 @@
 #pragma once
 
+#include <iostream>
+#include <string>
+using std::string;
 
 #include "configure.hpp"
 
@@ -24,7 +27,6 @@
                 return 0;
             }
 
-
             ///  Getter for the name of a GPU
             ///    @param[in] i : number of the GPU
             ///    @returns name of GPU with number i
@@ -33,7 +35,6 @@
             {
                 return "";
             }
-
 
             ///  Lists the available accelerators
             /////////////////////////////////////
@@ -45,14 +46,12 @@
                 }
             }
 
-
             ///  Barrier for accelerator threads
             ////////////////////////////////////
             inline void synchronize ()
             {
                 return;
             }
-
 
             ///  Allocate memory on the device
             ///    @param[in] num : number of bytes to allocate
@@ -63,21 +62,18 @@
                 return std::malloc (num);
             }
 
-
             ///  Free memory on the device
             ///    @param[in] ptr : pointer to the block to free
             ////////////////////////////////////////////////////
             inline void free (void* ptr)
             {
-                free (ptr);
+                std::free (ptr);
             }
-
 
 //        inline void memcpy (void* dst, const void* src, const size_t size)
 //        {
 //            handle_cuda_error (cudaMemcpy (dst, src, size, cudaMemcpyDeviceToDevice));
 //        }
-
 
             inline void memcpy_to_accelerator (void* dst, const void* src, const size_t size)
             {
@@ -95,8 +91,24 @@
 
     #define accel
 
-    #define accelerated_for(i, total, nblocks, nthreads, ... ) \
-        threaded_for(i, total, __VA_ARGS__)
+//    #define accelerated_for(i, total, nblocks, nthreads, ... )   \
+//    {                                                            \
+//        copyContextAccelerator() = true;                         \
+//        auto lambda = [=] (size_t i) mutable                     \
+//        {		                                                 \
+//            __VA_ARGS__;						                 \
+//        };									                     \
+//        for (size_t i = 0; i < total; i++)                       \
+//        {                                                        \
+//            lambda(i);                                           \
+//        }                                                        \
+//        copyContextAccelerator() = false;                        \
+//    }
+
+#define accelerated_for(i, total, nblocks, nthreads, ... )   \
+    {                                                        \
+        threaded_for(i, total, __VA_ARGS__);                 \
+    }
 
 #endif
 
