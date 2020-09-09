@@ -48,3 +48,4 @@ configure.hpp
 *dependencies/Grid-SIMD*
 *dependencies/pybind11*
 *dependencies/scorep*
+*dependencies/Paracabs*
