@@ -11,11 +11,11 @@ set (CMAKE_BUILD_TYPE Debug)
 #set (CMAKE_CUDA_FLAGS "-O5 -use_fast_math")
 set (CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --extended-lambda --use_fast_math --expt-relaxed-constexpr")
 
-set (PARACABS_USE_MESSAGE_PASSING true)
-set (PARACABS_USE_MPI             true)
+set (PARACABS_USE_MESSAGE_PASSING false)
+set (PARACABS_USE_MPI             false)
 
-set (PARACABS_USE_MULTI_THREADING true)
-set (PARACABS_USE_OPENMP          true)
+set (PARACABS_USE_MULTI_THREADING false)
+set (PARACABS_USE_OPENMP          false)
 
 set (PARACABS_USE_ACCELERATOR     true)
 set (PARACABS_USE_CUDA            false)
