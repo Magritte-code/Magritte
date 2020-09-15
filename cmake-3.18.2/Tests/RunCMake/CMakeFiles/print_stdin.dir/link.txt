@@ -1,0 +1,1 @@
+/usr/bin/gcc -O3 -DNDEBUG CMakeFiles/print_stdin.dir/print_stdin.c.o -o print_stdin 

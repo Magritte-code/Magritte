@@ -7,11 +7,11 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 mkdir build; cd build
 
 # Get compilers
-COMPILER_CC=$(which dpcpp)
-COMPILER_CXX=$(which dpcpp)
+COMPILER_CC=$(which icx)
+COMPILER_CXX=$(which icpx)
 
 # Run cmake
-CC=$COMPILER_CCC \
+CC=$COMPILER_CC \
 CXX=$COMPILER_CXX \
 cmake $DIR/tests
 

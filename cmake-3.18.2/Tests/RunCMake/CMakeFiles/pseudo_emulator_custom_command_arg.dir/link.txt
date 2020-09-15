@@ -1,0 +1,1 @@
+/usr/bin/gcc -O3 -DNDEBUG CMakeFiles/pseudo_emulator_custom_command_arg.dir/pseudo_emulator_custom_command_arg.c.o -o pseudo_emulator_custom_command_arg 

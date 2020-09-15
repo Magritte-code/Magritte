@@ -1,0 +1,14 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/u48518/Paracabs/cmake-3.18.2/Tests/RunCMake/pseudo_tidy.c
+stdio.h
+-
+string.h
+-
+

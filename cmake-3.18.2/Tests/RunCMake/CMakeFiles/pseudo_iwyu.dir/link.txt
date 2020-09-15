@@ -1,0 +1,1 @@
+/usr/bin/gcc -O3 -DNDEBUG CMakeFiles/pseudo_iwyu.dir/pseudo_iwyu.c.o -o pseudo_iwyu 

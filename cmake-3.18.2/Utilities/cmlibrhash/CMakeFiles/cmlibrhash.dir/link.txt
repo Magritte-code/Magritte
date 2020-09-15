@@ -1,0 +1,2 @@
+/usr/bin/ar qc libcmlibrhash.a CMakeFiles/cmlibrhash.dir/librhash/algorithms.c.o CMakeFiles/cmlibrhash.dir/librhash/byte_order.c.o CMakeFiles/cmlibrhash.dir/librhash/hex.c.o CMakeFiles/cmlibrhash.dir/librhash/md5.c.o CMakeFiles/cmlibrhash.dir/librhash/rhash.c.o CMakeFiles/cmlibrhash.dir/librhash/sha1.c.o CMakeFiles/cmlibrhash.dir/librhash/sha256.c.o CMakeFiles/cmlibrhash.dir/librhash/sha3.c.o CMakeFiles/cmlibrhash.dir/librhash/sha512.c.o
+/usr/bin/ranlib libcmlibrhash.a

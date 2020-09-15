@@ -5,6 +5,7 @@
 using std::string;
 
 #include <CL/sycl.hpp>
+namespace sycl = cl::sycl;
 
 #define PARACABS_DEBUG true
 
@@ -25,6 +26,9 @@ namespace paracabs
 {
     namespace accelerator
     {
+
+        extern sycl::queue acceleratorQueue;
+
         ///  Getter for the number of available GPUs
         ///    @returns number of available GPUs
         ////////////////////////////////////////////
@@ -50,20 +54,29 @@ namespace paracabs
 
         ///  Lists the available accelerators
         /////////////////////////////////////
-//        inline void list_accelerators ()
-//        {
-//            for (unsigned int i = 0; i < nGPUs (); i++)
-//            {
-//                std::cout << get_gpu_name (i) << std::endl;
-//            }
-//        }
+        inline void list_accelerators ()
+        {
+	    // getting the list of all supported sycl platforms
+	    auto platform_list = sycl::platform::get_platforms();
+	    // looping over platforms
+	    for (const auto &platform : platform_list)
+	    {
+	        // getting the list of devices from the platform
+	        auto device_list = platform.get_devices();
+	        // looping over devices
+	        for (const auto &device : device_list)
+		{
+		    cout << device.get_info <sycl::info::device::name>() << endl;
+	        }
+	    }
+        }
 
 
         ///  Barrier for accelerator threads
         ////////////////////////////////////
         inline void synchronize ()
         {
-//            handle_cuda_error (cudaDeviceSynchronize ());
+            acceleratorQueue.wait();
         }
 
 
@@ -73,10 +86,7 @@ namespace paracabs
         ////////////////////////////////////////////////////////
         inline void* malloc (const size_t num)
         {
-            void* ptr;
-//            handle_cuda_error (cudaMalloc (&ptr, num));
-//            handle_cuda_error (cudaDeviceSynchronize ());
-            return ptr;
+            return sycl::malloc_device (num, acceleratorQueue);
         }
 
 
@@ -85,8 +95,8 @@ namespace paracabs
         ////////////////////////////////////////////////////
         inline void free (void* ptr)
         {
-//            handle_cuda_error (cudaDeviceSynchronize ());
-//            handle_cuda_error (cudaFree (ptr));
+            acceleratorQueue.wait();
+            sycl::free (ptr, acceleratorQueue);
         }
 
 
@@ -98,13 +108,15 @@ namespace paracabs
 
         inline void memcpy_to_accelerator (void* dst, const void* src, const size_t size)
         {
-//            handle_cuda_error (cudaMemcpy (dst, src, size, cudaMemcpyHostToDevice));
+            acceleratorQueue.memcpy (dst, src, size);
+            acceleratorQueue.wait();
         }
 
 
         inline void memcpy_from_accelerator (void* dst, const void* src, const size_t size)
         {
-//            handle_cuda_error (cudaMemcpy (dst, src, size, cudaMemcpyDeviceToHost));
+            acceleratorQueue.memcpy (dst, src, size);
+            acceleratorQueue.wait();
         }
     }
 }
@@ -113,15 +125,22 @@ namespace paracabs
 /// Assumes to be used within a class!
 
 #define accelerated_for(i, total, nblocks, nthreads, ... )   \
-//{                                                            \
-//    copyContextAccelerator() = true;                         \
-//    auto lambda = [=, *this] __device__ (size_t i) mutable   \
-//    {	                                                       \
-//        __VA_ARGS__;                                         \
-//    };                                                       \
-//    apply_lambda <<<nblocks, nthreads>>> (total, lambda);    \
-//    copyContextAccelerator() = false;                        \
-//}
+{                                                            \
+    copyContextAccelerator() = true;                         \
+    paracabs::accelerator::acceleratorQueue.submit (         \
+        [&](sycl::handler &cgh)                              \
+        {                                                    \
+            cgh.parallel_for<class kernel> (                 \
+                sycl::range<1> {total},                      \
+                [=] (sycl::id<1> i) mutable                  \
+                {                                            \
+                    __VA_ARGS__                              \
+                }                                            \
+            );                                               \
+        }                                                    \
+    );                                                       \
+    copyContextAccelerator() = false;                        \
+}
 
 
 #define accelerated_for_outside_class(i, total, nblocks, nthreads, ... )   \
@@ -135,15 +154,3 @@ namespace paracabs
 //    copyContextAccelerator() = false;                                      \
 //}
 
-
-//template <typename Lambda>
-//__global__ void apply_lambda (const size_t stop, Lambda lambda)
-//{
-//    const size_t start  = blockIdx.x * blockDim.x + threadIdx.x;
-//    const size_t stride =  gridDim.x * blockDim.x;
-//
-//    for (size_t i = start; i < stop; i += stride)
-//    {
-//        lambda (i);
-//    }
-//}

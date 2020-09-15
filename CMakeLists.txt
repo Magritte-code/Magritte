@@ -9,9 +9,13 @@ project ("Paracabs")
 #set (CUDA_NVCC_FLAGS " -g")
 #set (CUDA_NVCC_FLAGS "-O5 -use_fast_math")
 
-set (CMAKE_C_FLAGS          "${CMAKE_C_FLAGS}          -std=c++11 -fsycl --gcc-toolchain=/cosma/local/gcc/7.3.0/")
-set (CMAKE_CXX_FLAGS        "${CMAKE_CXX_FLAGS}        -std=c++11 -fsycl --gcc-toolchain=/cosma/local/gcc/7.3.0/")
-set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -std=c++11 -fsycl --gcc-toolchain=/cosma/local/gcc/7.3.0/")
+set (CMAKE_C_FLAGS          "${CMAKE_C_FLAGS}          -std=c++17 -fsycl")
+set (CMAKE_CXX_FLAGS        "${CMAKE_CXX_FLAGS}        -std=c++17 -fsycl")
+set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -std=c++17 -fsycl")
+
+#set (CMAKE_C_FLAGS          "${CMAKE_C_FLAGS}          -std=c++11 -fsycl --gcc-toolchain=/cosma/local/gcc/7.3.0/")
+#set (CMAKE_CXX_FLAGS        "${CMAKE_CXX_FLAGS}        -std=c++11 -fsycl --gcc-toolchain=/cosma/local/gcc/7.3.0/")
+#set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -std=c++11 -fsycl --gcc-toolchain=/cosma/local/gcc/7.3.0/")
 
 #set (OpenMP_C_FLAGS   "-qopenmp")
 #set (OpenMP_CXX_FLAGS "-qopenmp")

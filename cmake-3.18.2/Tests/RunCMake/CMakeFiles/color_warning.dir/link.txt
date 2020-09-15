@@ -1,0 +1,1 @@
+/usr/bin/gcc -O3 -DNDEBUG CMakeFiles/color_warning.dir/color_warning.c.o -o color_warning 

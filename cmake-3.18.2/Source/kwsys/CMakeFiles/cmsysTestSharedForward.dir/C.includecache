@@ -1,0 +1,40 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: ^([ 	]*[#%][ 	]*(include|import)[ 	]*)(KWSYS_HEADER)[ 	]*\(([^),]*)\) KWSYS_HEADER(%)=<cmsys/%>
+
+/home/u48518/Paracabs/cmake-3.18.2/Source/kwsys/testSharedForward.c
+cmsys/SharedForward.h
+-
+
+Source/cmsys/SharedForward.h
+cmsys/SharedForward.h
+-
+errno.h
+-
+limits.h
+-
+stddef.h
+-
+stdio.h
+-
+stdlib.h
+-
+string.h
+-
+windows.h
+-
+io.h
+-
+process.h
+-
+sys/stat.h
+-
+unistd.h
+-
+sys/isa_defs.h
+-
+

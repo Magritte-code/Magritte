@@ -1,0 +1,1 @@
+/usr/bin/gcc -O3 -DNDEBUG CMakeFiles/exit_code.dir/exit_code.c.o -o exit_code 
