@@ -9,7 +9,7 @@ Based on:
 - Nvidia's/Mark Harris' hemi
 - Eigen
 
-## Available interfaces
+## Available abstraction back ends
 
 Multi-threading
 - OpenMP
@@ -18,5 +18,5 @@ Message passing
 - MPI
 
 Acceleration
-- GPU
-    - cuda
+- Cuda
+- Sycl

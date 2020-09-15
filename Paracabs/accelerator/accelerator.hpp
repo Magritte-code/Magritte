@@ -7,13 +7,17 @@ using std::string;
 #include "configure.hpp"
 
 
-#if PARACABS_USE_ACCELERATOR && PARACABS_USE_CUDA
+#if   PARACABS_USE_ACCELERATOR && PARACABS_USE_CUDA
 
     #include "accelerator_cuda.hpp"
 
+#elif PARACABS_USE_ACCELERATOR && PARACABS_USE_SYCL
+
+    #include "accelerator_sycl.hpp"
+
 #else
 
-    #include "multi_threading/multi_threading.hpp"
+#include "multi_threading/multi_threading.hpp"
 
     namespace paracabs
     {

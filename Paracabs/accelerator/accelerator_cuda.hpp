@@ -4,7 +4,7 @@
 #include <string>
 using std::string;
 
-#include "cuda_runtime.h"
+#include <cuda_runtime.h>
 
 #define PARACABS_DEBUG true
 
