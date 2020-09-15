@@ -1,2 +1,0 @@
--- Configuring incomplete, errors occurred!
-See also ".*/Tests/RunCMake/CTestCommandExpandLists/multipleExpandOptions-build/CMakeFiles/CMakeOutput\.log".

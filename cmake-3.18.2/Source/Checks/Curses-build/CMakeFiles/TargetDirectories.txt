@@ -1,2 +1,0 @@
-/home/u48518/Paracabs/cmake-3.18.2/Source/Checks/Curses-build/CMakeFiles/rebuild_cache.dir
-/home/u48518/Paracabs/cmake-3.18.2/Source/Checks/Curses-build/CMakeFiles/edit_cache.dir
