@@ -24,9 +24,9 @@ struct LineProducingSpecies
     Quadrature quadrature;           ///< data for integral over line
     Lambda     lambda;               ///< Approximate Lambda Operator (ALO)
 
-    Double2 Jlin;                    ///< actual mean intensity in the line
-    Double2 Jeff;                    ///< effective mean intensity in the line (actual - ALO)
-    Double2 Jdif;                    ///< effective mean intensity in the line (actual - ALO)
+    Real2 Jlin;                      ///< actual mean intensity in the line
+    Real2 Jeff;                      ///< effective mean intensity in the line (actual - ALO)
+    Real2 Jdif;                      ///< effective mean intensity in the line (actual - ALO)
 
     Long3 nr_line;                   ///< frequency number corresponing to line (p,k,z)
 
@@ -34,16 +34,16 @@ struct LineProducingSpecies
     double relative_change_max;      ///< maximum relative change
     double fraction_not_converged;   ///< fraction of levels that is not converged
 
-    VectorXd population;             ///< level population (most recent)
+    VectorXr population;             ///< level population (most recent)
     Real1    population_tot;         ///< total level population (sum over levels)
 
-    VectorXd population_prev1;       ///< level populations 1 iteration  back
-    VectorXd population_prev2;       ///< level populations 2 iterations back
-    VectorXd population_prev3;       ///< level populations 3 iterations back
+    VectorXr population_prev1;       ///< level populations 1 iteration  back
+    VectorXr population_prev2;       ///< level populations 2 iterations back
+    VectorXr population_prev3;       ///< level populations 3 iterations back
 
-    SparseMatrix<double> RT;
-    SparseMatrix<double> LambdaTest;
-    SparseMatrix<double> LambdaStar;
+    SparseMatrix<Real> RT;
+    SparseMatrix<Real> LambdaTest;
+    SparseMatrix<Real> LambdaStar;
 
     void read  (const Io& io, const Size l);
     void write (const Io& io, const Size l) const;

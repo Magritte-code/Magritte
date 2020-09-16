@@ -3,6 +3,7 @@
 
 #include "tools/constants.hpp"
 #include "tools/types.hpp"
+#include "paracabs.hpp"
 
 
 ///  Indexer for level populations
@@ -52,9 +53,9 @@ inline Real LineProducingSpecies :: get_opacity (const Size p, const Size k) con
 ///////////////////////////////////////////////////////////
 inline void LineProducingSpecies :: update_using_LTE (
     const Double2 &abundance,
-    const Resl1   &temperature )
+    const Real1   &temperature )
 {
-    threaded_for (p, parameters.npoints())
+    threaded_for (p, parameters.npoints(),
     {
         population_tot[p] = abundance[p][linedata.num];
 
@@ -76,13 +77,13 @@ inline void LineProducingSpecies :: update_using_LTE (
 
             population(ind) *= population_tot[p] / partition_function;
         }
-    }
+    })
 }
 
 
 inline void LineProducingSpecies :: check_for_convergence (const Real pop_prec)
 {
-    const Real weight = 1.0 / (ncells * linedata.nlev);
+    const Real weight = 1.0 / (parameters.npoints() * linedata.nlev);
 
     Real fnc = 0.0;
     Real rcm = 0.0;
@@ -133,11 +134,11 @@ inline void LineProducingSpecies :: check_for_convergence (const Real pop_prec)
 ///////////////////////////////////////////////////////////////////////////
 void LineProducingSpecies :: update_using_Ng_acceleration ()
 {
-    VectorXd Wt (parameters.npoints()*linedata.nlev);
+    VectorXr Wt (parameters.npoints()*linedata.nlev);
 
-    VectorXd Q1 = population - 2.0*population_prev1 + population_prev2;
-    VectorXd Q2 = population -     population_prev1 - population_prev2 + population_prev3;
-    VectorXd Q3 = population -     population_prev1;
+    VectorXr Q1 = population - 2.0*population_prev1 + population_prev2;
+    VectorXr Q2 = population -     population_prev1 - population_prev2 + population_prev3;
+    VectorXr Q3 = population -     population_prev1;
 
     //OMP_PARALLEL_FOR (ind, ncells*linedata.nlev)
     //{
@@ -170,7 +171,7 @@ void LineProducingSpecies :: update_using_Ng_acceleration ()
 
     if (denominator != 0.0)
     {
-        const VectorXd pop_tmp = population;
+        const VectorXr pop_tmp = population;
 
         const Real a = (C1*B2 - C2*B1) / denominator;
         const Real b = (C2*A1 - C1*A2) / denominator;
@@ -205,7 +206,7 @@ inline void LineProducingSpecies :: update_using_statistical_equilibrium (
 
 //    SparseMatrix<double> RT (ncells*linedata.nlev, ncells*linedata.nlev);
 
-    VectorXd y = VectorXd::Zero (parameters.npoints()*linedata.nlev);
+    VectorXr y = VectorXr::Zero (parameters.npoints()*linedata.nlev);
 
     vector<Triplet<Real, Size>> triplets;
     vector<Triplet<Real, Size>> triplets_LT;

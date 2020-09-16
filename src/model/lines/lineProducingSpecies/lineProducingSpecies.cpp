@@ -22,7 +22,7 @@ void LineProducingSpecies :: read (const Io& io, const Size l)
     LambdaTest.resize (parameters.npoints()*linedata.nlev,
                        parameters.npoints()*linedata.nlev );
 
-    lambda.initialize (parameters.npoints(), linedata.nrad);
+    lambda.initialize (linedata.nrad);
 
     Jeff.resize (parameters.npoints());
     Jlin.resize (parameters.npoints());
@@ -67,7 +67,7 @@ void LineProducingSpecies :: read (const Io& io, const Size l)
     int err_prev2 = io.read_array (prefix_l+"population_prev2", pops_prev2);
     int err_prev3 = io.read_array (prefix_l+"population_prev3", pops_prev3);
 
-    threaded_for (p, parameters.ncells(),
+    threaded_for (p, parameters.npoints(),
     {
         for (Size i = 0; i < linedata.nlev; i++)
         {
@@ -121,7 +121,7 @@ void LineProducingSpecies :: write (const Io& io, const Size l) const
 ///    @param[in] l   : number of line producing species
 ///    @param[in] tag : extra info tag
 ////////////////////////////////////////////////////////
-int LineProducingSpecies :: read_populations (const Io &io, const Size l, const string tag)
+void LineProducingSpecies :: read_populations (const Io &io, const Size l, const string tag)
 {
     const string prefix_l = prefix + std::to_string (l) + "/";
 

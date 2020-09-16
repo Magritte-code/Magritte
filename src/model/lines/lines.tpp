@@ -29,7 +29,7 @@ inline Size Lines :: index (const Size p, const Size line_index) const
 /////////////////////////////////////////////////////////
 inline void Lines :: set_emissivity_and_opacity ()
 {
-    threaded_for (p, parameters.npoints())
+    threaded_for (p, parameters.npoints(),
     {
         for (Size l = 0; l < parameters.nlspecs(); l++)
         {
@@ -41,5 +41,5 @@ inline void Lines :: set_emissivity_and_opacity ()
                    opacity[ind] = lineProducingSpecies[l].get_opacity    (p, k);
             }
         }
-    }
+    })
 }

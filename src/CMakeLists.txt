@@ -4,22 +4,24 @@ include_directories (../dependencies)
 
 set (SOURCE_FILES
     io/cpp/io_cpp_text.cpp
-    io/python/io_python.cpp
     model/model.cpp
     model/parameters/parameters.cpp
     model/geometry/geometry.cpp
     model/geometry/points/points.cpp
     model/geometry/rays/rays.cpp
     model/geometry/boundary/boundary.cpp
-#    model/chemistry/chemistry.cpp
-#    model/chemistry/species/species.cpp
-#    model/thermodynamics/thermodynamics.cpp
-#    model/thermodynamics/temperature/temperature.cpp
-#    model/thermodynamics/turbulence/turbulence.cpp
-#    model/lines/lines.cpp
-#    model/lines/lineProducingSpecies/lineProducingSpecies.cpp
-#    model/lines/lineProducingSpecies/linedata/linedata.cpp
-#    model/lines/lineProducingSpecies/quadrature/quadrature.cpp
+    model/chemistry/chemistry.cpp
+    model/chemistry/species/species.cpp
+    model/thermodynamics/thermodynamics.cpp
+    model/thermodynamics/temperature/temperature.cpp
+    model/thermodynamics/turbulence/turbulence.cpp
+    model/lines/lines.cpp
+    model/lines/lineProducingSpecies/lineProducingSpecies.cpp
+    model/lines/lineProducingSpecies/linedata/linedata.cpp
+    model/lines/lineProducingSpecies/linedata/collisionPartner/collisionPartner.cpp
+    model/lines/lineProducingSpecies/quadrature/quadrature.cpp
+    model/radiation/radiation.cpp
+    model/radiation/frequencies/frequencies.cpp
     solver/solver.cpp
 )
 
@@ -29,9 +31,9 @@ if    (MPI_PARALLEL)
 endif (MPI_PARALLEL)
 if    (OMP_PARALLEL)
     find_package (OpenMP REQUIRED)
-    set (CMAKE_C_FLAGS          "${CMAKE_C_FLAGS}          ${OpenMP_C_FLAGS}")
-    set (CMAKE_CXX_FLAGS        "${CMAKE_CXX_FLAGS}        ${OpenMP_CXX_FLAGS}")
-    set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+#    set (CMAKE_C_FLAGS          "${CMAKE_C_FLAGS}          ${OpenMP_C_FLAGS}")
+#    set (CMAKE_CXX_FLAGS        "${CMAKE_CXX_FLAGS}        ${OpenMP_CXX_FLAGS}")
+#    set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
 endif (OMP_PARALLEL)
 if    (GPU_ACCELERATION)
     set_source_files_properties(${SOURCE_FILES} PROPERTIES LANGUAGE CUDA)

@@ -30,6 +30,24 @@ inline Size search (const Real1 &x, const Real value)
 }
 
 
+///  Linear search for value in ordered list vec
+///    @param[in] vec: vectorized (and ordered) list in which to search value
+///    @param[in/out] notch: start for search, increase until higher than value
+///    @param[in] value: the value we look for in vec
+///////////////////////////////////////////////////////////////////////////////
+inline void search_with_notch (const Real1 &vec, Size &notch, const Real value)
+{
+    while (notch < vec.size())
+    {
+        if (value <= vec[notch]) return;
+        notch++;
+    }
+
+    notch = vec.size()-1;
+    return;
+}
+
+
 ///  Linear interpolation of f(x) in interval [x1, x2]
 ///    @param[in] x1: function argument 1
 ///    @param[in] f1: f(x1)

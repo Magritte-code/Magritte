@@ -88,6 +88,12 @@ typedef vector<VectorXd>   VectorXd1;
 typedef vector<VectorXd1>  VectorXd2;
 typedef vector<VectorXd2>  VectorXd3;
 
+typedef Eigen::Matrix<Real, Eigen::Dynamic, 1> VectorXr;
+typedef vector<VectorXr>  VectorXr1;
+typedef vector<VectorXr1> VectorXr2;
+typedef vector<VectorXr2> VectorXr3;
+
+
 //// Vectors of Eigen::MatrixXd
 //typedef vector<MatrixXd>   MatrixXd1;
 //typedef vector<MatrixXd1>  MatrixXd2;

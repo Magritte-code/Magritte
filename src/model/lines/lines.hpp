@@ -25,15 +25,15 @@ struct Lines
 
     void iteration_using_LTE (
         const Double2 &abundance,
-        const Double1 &temperature);
+        const Real1   &temperature);
 
     void iteration_using_statistical_equilibrium (
         const Double2 &abundance,
-        const Double1 &temperature,
-        const double   pop_prec                 );
+        const Real1   &temperature,
+        const Real     pop_prec                  );
 
     void iteration_using_Ng_acceleration (
-        const double   pop_prec         );
+        const Real pop_prec              );
 
 
     inline Size index (const Size p, const Size l, const Size k) const;
@@ -41,7 +41,7 @@ struct Lines
 
     inline void set_emissivity_and_opacity ();
 
-    int gather_emissivities_and_opacities ();
+    void gather_emissivities_and_opacities ();
 };
 
 

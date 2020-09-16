@@ -4,7 +4,8 @@
 #include "tools/types.hpp"
 
 
-inline Size max (const Double1& a, const Size n, const Size i, const Size j, const Size k)
+template <typename type>
+inline Size max (const vector<type>& a, const Size n, const Size i, const Size j, const Size k)
 {
     Size m = i;
 
@@ -15,7 +16,8 @@ inline Size max (const Double1& a, const Size n, const Size i, const Size j, con
 }
 
 
-inline void downheap (Double1& a, Size1& b, Size n, Size i)
+template <typename type>
+inline void downheap (vector<type>& a, Size1& b, Size n, Size i)
 {
     while (1)
     {
@@ -37,7 +39,8 @@ inline void downheap (Double1& a, Size1& b, Size n, Size i)
 }
 
 
-inline void heapsort (Double1& a, Size1& b)
+template <typename type>
+inline void heapsort (vector<type>& a, Size1& b)
 {
     // Get vector length
     const Size n = a.size();

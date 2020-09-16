@@ -13,12 +13,12 @@ void Frequencies :: read (const Io& io)
 {
     cout << "Reading frequencies..." << endl;
 
-    cout << "ncells = " << npoints << endl;
-    cout << "nlines = " << nlines  << endl;
-    cout << "nquads = " << nquads  << endl;
+    cout << "npoints = " << parameters.npoints() << endl;
+    cout << "nlines  = " << parameters.nlines()  << endl;
+    cout << "nquads  = " << parameters.nquads()  << endl;
 
     // Count line frequencies
-    nfreqs = nlines * nquads;
+    parameters.set_nfreqs (parameters.nlines() * parameters.nquads());
 
     // Add extra frequency bins around lines to get nicer spectrum
     //nfreqs += nlines * 2 * nbins;
@@ -26,30 +26,26 @@ void Frequencies :: read (const Io& io)
     // Add ncont bins background
     //nfreqs += ncont;
 
-    // Ensure that nfreq is a multiple of n_simd_lanes
-    nfreqs_red = reduced (nfreqs);
-    nfreqs     = nfreqs_red * n_simd_lanes;
+    nu.resize (parameters.npoints());
 
-    nu.resize (npoints);
-
-    for (Size p = 0; p < npoints; p++)
+    for (Size p = 0; p < parameters.npoints(); p++)
     {
-        nu[p].resize (nfreqs_red);
+        nu[p].resize (parameters.nfreqs());
     }
 
-    appears_in_line_integral.resize (nfreqs);
-    corresponding_l_for_spec.resize (nfreqs);
-    corresponding_k_for_tran.resize (nfreqs);
-    corresponding_z_for_line.resize (nfreqs);
+    appears_in_line_integral.resize (parameters.nfreqs());
+    corresponding_l_for_spec.resize (parameters.nfreqs());
+    corresponding_k_for_tran.resize (parameters.nfreqs());
+    corresponding_z_for_line.resize (parameters.nfreqs());
 
     // frequencies.nu has to be initialized (for unused entries)
-    threaded_for (p, npoints)
+    threaded_for (p, parameters.npoints(),
     {
-        for (Size f = 0; f < nfreqs_red; f++)
+        for (Size f = 0; f < parameters.nfreqs(); f++)
         {
             nu[p][f] = 0.0;
         }
-    }
+    })
 }
 
 

@@ -61,6 +61,9 @@ struct IoPython : public Io
         int  read_array    (const string fname,       Double2 &array ) const override;
         int write_array    (const string fname, const Double2 &array ) const override;
 
+        int  read_array    (const string fname,       Real2   &array ) const override;
+        int write_array    (const string fname, const Real2   &array ) const override;
+
         int  read_3_vector (const string fname,       Double1 &x,
                                                       Double1 &y,
                                                       Double1 &z     ) const override;

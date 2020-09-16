@@ -10,18 +10,17 @@ mkdir build; cd build
 PYTHON_EXECUTABLE=$(which python)
 
 # Get compilers
-CC_FLAG=$(which gcc)
-CXX_FLAG=$(which g++)
+COMPILER_CC=$(which gcc)
+COMPILER_CXX=$(which g++)
 
 # Run cmake
-CC=$CC_FLAG CXX=$CXX_FLAG                         \
-cmake                                             \
-  -DPYTHON_EXECUTABLE:FILEPATH=$PYTHON_EXECUTABLE \
-  -DPYTHON_IO=ON                                  \
-  -DPYTHON_BINDINGS=ON                            \
-  -DOMP_PARALLEL=ON                               \
-  -DMPI_PARALLEL=OFF                              \
-  -DGPU_ACCELERATION=OFF                          \
+CC=$COMPILER_CC                                     \
+CXX=$COMPILER_CXX                                   \
+cmake                                               \
+  -DPYTHON_EXECUTABLE:FILEPATH=$PYTHON_EXECUTABLE   \
+  -DOMP_PARALLEL=ON                                 \
+  -DMPI_PARALLEL=OFF                                \
+  -DGPU_ACCELERATION=OFF                            \
   $DIR
 
 # Run make

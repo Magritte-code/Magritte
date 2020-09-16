@@ -59,6 +59,9 @@ struct Io
     virtual int  read_array    (const string fname,       Double2 &array ) const = 0;
     virtual int write_array    (const string fname, const Double2 &array ) const = 0;
 
+    virtual int  read_array    (const string fname,       Real2   &array ) const = 0;
+    virtual int write_array    (const string fname, const Real2   &array ) const = 0;
+
     virtual int  read_3_vector (const string fname,       Double1 &x,
                                                           Double1 &y,
                                                           Double1 &z     ) const = 0;

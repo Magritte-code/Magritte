@@ -16,15 +16,18 @@ set (SOURCE_FILES
     ../model/geometry/points/points.cpp
     ../model/geometry/rays/rays.cpp
     ../model/geometry/boundary/boundary.cpp
-#    ../model/chemistry/chemistry.cpp
-#    ../model/chemistry/species/species.cpp
-#    ../model/thermodynamics/thermodynamics.cpp
-#    ../model/thermodynamics/temperature/temperature.cpp
-#    ../model/thermodynamics/turbulence/turbulence.cpp
-#    ../model/lines/lines.cpp
-#    ../model/lines/lineProducingSpecies/lineProducingSpecies.cpp
-#    ../model/lines/lineProducingSpecies/linedata/linedata.cpp
-#    ../model/lines/lineProducingSpecies/quadrature/quadrature.cpp
+    ../model/chemistry/chemistry.cpp
+    ../model/chemistry/species/species.cpp
+    ../model/thermodynamics/thermodynamics.cpp
+    ../model/thermodynamics/temperature/temperature.cpp
+    ../model/thermodynamics/turbulence/turbulence.cpp
+    ../model/lines/lines.cpp
+    ../model/lines/lineProducingSpecies/lineProducingSpecies.cpp
+    ../model/lines/lineProducingSpecies/linedata/linedata.cpp
+    ../model/lines/lineProducingSpecies/linedata/collisionPartner/collisionPartner.cpp
+    ../model/lines/lineProducingSpecies/quadrature/quadrature.cpp
+    ../model/radiation/radiation.cpp
+    ../model/radiation/frequencies/frequencies.cpp
     ../solver/solver.cpp
 )
 

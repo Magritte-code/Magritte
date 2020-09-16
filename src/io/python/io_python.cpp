@@ -395,6 +395,33 @@ int IoPython :: write_array (const string file_name, const Double2 &array) const
 }
 
 
+///  Reader for an array of doubles from a file
+///    @param[in] file_name : path to file containing the array
+///    @param[in] array     : array to be read
+///////////////////////////////////////////////////////////////
+int IoPython :: read_array (const string file_name, Real2 &array) const
+{
+    return read_in_python <Real2> ("read_array", file_name, array);
+}
+
+
+///  Writer for an array of doubles from a file
+///    @param[in] file_name : path to file to be written
+///    @param[in] array     : array to be written
+////////////////////////////////////////////////////////
+int IoPython :: write_array (const string file_name, const Real2 &array) const
+{
+    int err = 0;
+
+    if (array.size() > 0)
+    {
+        err = write_in_python <Real2> ("write_array", file_name, array);
+    }
+
+    return err;
+}
+
+
 ///  Reader for a list of 3-vectors of doubles from a file
 ///    @param[in] file_name : path to file containing the vectors
 ///    @param[in] x         : x component of the vector to be read

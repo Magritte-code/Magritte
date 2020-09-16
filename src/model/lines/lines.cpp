@@ -123,7 +123,7 @@ void Lines :: iteration_using_statistical_equilibrium (
 }
 
 
-int Lines :: gather_emissivities_and_opacities ()
+void Lines :: gather_emissivities_and_opacities ()
 
 #if (MPI_PARALLEL)
 

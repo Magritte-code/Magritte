@@ -11,7 +11,7 @@ set (CMAKE_BUILD_TYPE Debug)
 set (CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --extended-lambda --use_fast_math --expt-relaxed-constexpr")
 
 # Set minimun required CMake version
-cmake_minimum_required (VERSION 3.11)
+cmake_minimum_required (VERSION 3.18)
 
 # Write all binary files to the bin directory
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
@@ -24,11 +24,13 @@ set (CMAKE_CXX_FLAGS        "${CMAKE_CXX_FLAGS}        -std=c++11")
 set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -std=c++11")
 
 # Build options
-option (PYTHON_IO        "Handling all io through python (slow)" OFF)
-option (PYTHON_BINDINGS  "Python front-end?"                     OFF)
+option (PYTHON_IO        "Handling all io through python (slow)" ON)
+option (PYTHON_BINDINGS  "Python front end?"                     ON)
 option (OMP_PARALLEL     "OpenMP parallelisation required?"      OFF)
 option (MPI_PARALLEL     "MPI parallelisation required?"         OFF)
-option (GPU_ACCELERATION "Build using the CUDA GPU solver"       OFF)
+option (GPU_ACCELERATION "Use the GPU solver"                    OFF)
+option (GPU_CUDA         "Use Paracabs CUDA implementation"      OFF)
+option (GPU_SYCL         "Usa Paracabs SYCL implementation"      OFF)
 
 # Convert options to bools for configuration file (MUST BE A BETTER WAY!)
 if    (PYTHON_IO)
@@ -48,8 +50,17 @@ else  (MPI_PARALLEL)
 endif (MPI_PARALLEL)
 if    (GPU_ACCELERATION)
     set (MAGRITTE_GPU_ACCELERATION true)
+    if    (GPU_SYCL)
+        set (MAGRITTE_GPU_SYCL true)
+        set (MAGRITTE_GPU_CUDA false)
+    else  (GPU_SYCL)
+        set (MAGRITTE_GPU_SYCL false)
+        set (MAGRITTE_GPU_CUDA true)
+    endif (GPU_SYCL)
 else  (GPU_ACCELERATION)
     set (MAGRITTE_GPU_ACCELERATION false)
+    set (MAGRITTE_GPU_CUDA         false)
+    set (MAGRITTE_GPU_SYCL         false)
 endif (GPU_ACCELERATION)
 
 # Write configuration file
@@ -62,7 +73,8 @@ set (PARACABS_USE_MPI             ${MAGRITTE_MPI_PARALLEL})
 set (PARACABS_USE_MULTI_THREADING ${MAGRITTE_OMP_PARALLEL})
 set (PARACABS_USE_OPENMP          ${MAGRITTE_OMP_PARALLEL})
 set (PARACABS_USE_ACCELERATOR     ${MAGRITTE_GPU_ACCELERATION})
-set (PARACABS_USE_CUDA            ${MAGRITTE_GPU_ACCELERATION})
+set (PARACABS_USE_CUDA            ${MAGRITTE_GPU_CUDA})
+set (PARACABS_USE_SYCL            ${MAGRITTE_GPU_SYCL})
 set (PARACABS_USE_SIMD            false)
 
 # Enable CUDA if required
