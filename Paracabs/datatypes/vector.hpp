@@ -11,33 +11,31 @@ namespace paracabs
     namespace datatypes
     {
         template <typename type>
-        class Vector
+        struct Vector
         {
-            public:
-                type*  dat = nullptr;          ///< pointer to vector data
-                type*  ptr = nullptr;          ///< pointer to vector data
-                bool   allocated = false;      ///< true if ptr is malloc'ed
-                size_t allocated_size = 0;     ///< array size
+            type*  dat = nullptr;          ///< pointer to vector data
+            type*  ptr = nullptr;          ///< pointer to vector data
+            bool   allocated = false;      ///< true if ptr is malloc'ed
+            size_t allocated_size = 0;     ///< array size
+            vector<type> vec;              ///< stl::vector of data
 
-                vector<type> vec;              ///< stl::vector of data
+            ///  Constructor (no argument)
+            //////////////////////////////
+            inline Vector ()
+            {
+                set_dat ();
+            }
 
-                ///  Constructor (no argument)
-                //////////////////////////////
-                inline Vector ()
-                {
-                    set_dat ();
-                }
+            ///  Setter for ptr
+            ///////////////////
+            inline void set_dat ()
+            {
+                if (copyContextAccelerator()) dat = ptr;
+                else                          dat = vec.data();
+            }
 
-                ///  Setter for ptr
-                ///////////////////
-                inline void set_dat ()
-                {
-                    if (copyContextAccelerator()) dat = ptr;
-                    else                          dat = vec.data();
-                }
-
-                ///  Copy constructor (shallow copy)
-                ////////////////////////////////////
+            ///  Copy constructor (shallow copy)
+                 ////////////////////////////////////
                 inline Vector (const Vector& v)
                 {
                     ptr            = v.ptr;
@@ -145,25 +143,5 @@ namespace paracabs
                 accel inline type  operator[] (const size_t id) const {return dat[id];}
                 accel inline type &operator[] (const size_t id)       {return dat[id];}
         };
-
-
-//        template <class C>
-//        struct MM : public C
-//        {
-//            MM* ptr = nullptr;
-//
-//            MM ()
-//            {
-//                ptr = (MM*) paracabs::accelerator::malloc (sizeof(MM));
-//
-//                paracabs::accelerator::memcpy_to_accelerator (ptr, this, sizeof(MM));
-//            }
-//
-//            MM (const MM<C>& obj)
-//            {
-//                this = ptr
-//            }
-//        };
-
     }
 }

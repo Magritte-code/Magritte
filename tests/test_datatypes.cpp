@@ -15,7 +15,20 @@ template <typename type>
 using Array_acc = pc::Array <type, pc::MemTypeAccelerator>;
 
 
-namespace sycl = cl::sycl;
+// namespace sycl = cl::sycl;
+
+template <typename type>
+struct Mat : public pc::Vector<type>
+{
+
+
+    bool f()
+    {
+        return pc::Vector<type>::allocated;
+    }
+
+};
+
 
 
 struct Model
@@ -53,7 +66,7 @@ struct Model
 struct Test
 {
     size_t length = 3;
-    
+
     //pc::Vector <double> a = pc::Vector<double>(3);
     //double* a;
 
@@ -113,9 +126,9 @@ struct Test
 };
 
 
-sycl::default_selector device_selector;
-    
-sycl::queue paracabs::accelerator::acceleratorQueue = sycl::queue (device_selector);
+// sycl::default_selector device_selector;
+
+// sycl::queue paracabs::accelerator::acceleratorQueue = sycl::queue (device_selector);
 
 
 int main ()
@@ -125,7 +138,11 @@ int main ()
     paracabs::accelerator::list_accelerators();
 
 
-    
+    paracabs::datatypes::Matrix<double> m;
+    m.resize(3,4);
+
+
+
 
     Test t(3);
     t.test2();

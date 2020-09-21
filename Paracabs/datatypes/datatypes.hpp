@@ -5,6 +5,7 @@
 #include "memtypes.hpp"
 #include "vector3d.hpp"
 #include "vector.hpp"
+#include "matrix.hpp"
 #include "array.hpp"
 
 

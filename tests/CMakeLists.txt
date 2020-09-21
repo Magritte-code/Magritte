@@ -18,8 +18,8 @@ set (PARACABS_USE_MULTI_THREADING false)
 set (PARACABS_USE_OPENMP          false)
 
 set (PARACABS_USE_ACCELERATOR     true)
-set (PARACABS_USE_CUDA            false)
-set (PARACABS_USE_SYCL            true)
+set (PARACABS_USE_CUDA            true)
+set (PARACABS_USE_SYCL            false)
 
 set (PARACABS_USE_SIMD            false)
 
