@@ -15,7 +15,7 @@ void Model :: read (const Io& io)
     chemistry     .read (io);
     thermodynamics.read (io);
     lines         .read (io);
-//    radiation     .read (io);
+    radiation     .read (io);
 
     cout << "                                           " << endl;
     cout << "-------------------------------------------" << endl;
@@ -43,5 +43,5 @@ void Model :: write (const Io& io) const
     chemistry     .write (io);
     thermodynamics.write (io);
     lines         .write (io);
-//    radiation     .write (io);
+    radiation     .write (io);
 }

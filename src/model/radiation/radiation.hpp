@@ -45,21 +45,21 @@ struct Radiation
     inline Real get_J (const Size p, const Size f) const;
 
 
-    inline void rescale_U_and_V (
-        const Real &freq_scaled,
-        const Size  R,
-        const Size  p,
-              Size &notch,
-              Real &U_scaled,
-              Real &V_scaled   ) const;
+    //inline void rescale_U_and_V (
+    //    const Real &freq_scaled,
+    //    const Size  R,
+    //    const Size  p,
+    //          Size &notch,
+    //          Real &U_scaled,
+    //          Real &V_scaled   ) const;
 
-    inline void rescale_I_bdy (
-        const Real &freq_scaled,
-        const Size  R,
-        const Size  p,
-        const Size  b,
-              Size &notch,
-              Real &Ibdy_scaled) const;
+    //inline void rescale_I_bdy (
+    //    const Real &freq_scaled,
+    //    const Size  R,
+    //    const Size  p,
+    //    const Size  b,
+    //          Size &notch,
+    //          Real &Ibdy_scaled) const;
 
 
     void initialize_J ();

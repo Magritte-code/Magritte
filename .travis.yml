@@ -41,10 +41,10 @@ before_install:
         export LD_LIBRARY_PATH=/usr/local/clang/lib:$LD_LIBRARY_PATH
     fi
   - PYTHON_EXECUTABLE=$(which python)
-  - BUILD_FLAGS="-DPYTHON_EXECUTABLE:FILEPATH=$PYTHON_EXECUTABLE -DPYTHON_IO=ON -DPYTHON_BINDINGS=ON -DOMP_PARALLEL=ON"
+  - BUILD_FLAGS="-DPYTHON_EXECUTABLE:FILEPATH=$PYTHON_EXECUTABLE -DOMP_PARALLEL=ON"
 
 install:
-  - bash install.sh
+  - bash dependencies/get_dependencies.sh
   - mkdir build
   - cd build
   - cmake $BUILD_FLAGS ..

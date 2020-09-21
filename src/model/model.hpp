@@ -8,6 +8,7 @@
 #include "chemistry/chemistry.hpp"
 #include "thermodynamics/thermodynamics.hpp"
 #include "lines/lines.hpp"
+#include "radiation/radiation.hpp"
 
 
 struct Model
@@ -17,6 +18,7 @@ struct Model
     Chemistry      chemistry;
     Thermodynamics thermodynamics;
     Lines          lines;
+    Radiation      radiation;
 
     void read  (const Io& io);
     void write (const Io& io) const;
