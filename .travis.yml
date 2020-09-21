@@ -43,7 +43,7 @@ before_install:
 install:
   - mkdir build
   - cd build
-  - cmake $BUILD_FLAGS ..
+  - CC=$(which gcc) CXX=$(which g++) cmake $BUILD_FLAGS ../tests
   - make -j4
   - cd ../
 

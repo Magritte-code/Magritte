@@ -5,21 +5,22 @@
 Parallelization and acceleration abstractions for code and performance portability.
 By abstracting away the implementation specifics, we provide a limited but unified interface for parallelization and acceleration.
 
-_This library was initially built for use in the 3D radiative transfer code Magritte._
-
-Based on:
-- Grid
-- Nvidia's/Mark Harris' hemi
-- Eigen
 
 ## Abstraction back ends
 
-Multi-threading
+### Multi-threading
 - OpenMP
 
-Message passing
+### Message passing
 - MPI
 
-Acceleration
+### Acceleration
 - Cuda
 - Sycl
+
+
+_This library was built for use in the 3D radiative transfer code Magritte._
+_It is largly inspired by, but not as complete as:_
+- _Grid, by Peter Boyle et al._
+- _Hemi, by Mark Harris et al._
+- _Eigen_
