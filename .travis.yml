@@ -41,9 +41,11 @@ before_install:
   - BUILD_FLAGS="-DPYTHON_EXECUTABLE:FILEPATH=$PYTHON_EXECUTABLE -DOMP_PARALLEL=ON"
 
 install:
-  - mkdir build; cd build
-  # - cmake $BUILD_FLAGS ..
-  # - make -j4
+  - mkdir build
+  - cd build
+  - cmake $BUILD_FLAGS ..
+  - make -j4
+  - cd ../
 
 script:
   - cd tests

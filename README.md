@@ -1,4 +1,7 @@
 # Paracabs
+
+[![Build Status](https://travis-ci.com/FredDeCeuster/Paracabs.svg?branch=master)](https://travis-ci.com/FredDeCeuster/Paracabs)
+
 Parallelization and acceleration abstractions for code and performance portability.
 By abstracting away the implementation specifics, we provide a limited but unified interface for parallelization and acceleration.
 
@@ -9,7 +12,7 @@ Based on:
 - Nvidia's/Mark Harris' hemi
 - Eigen
 
-## Available abstraction back ends
+## Abstraction back ends
 
 Multi-threading
 - OpenMP
