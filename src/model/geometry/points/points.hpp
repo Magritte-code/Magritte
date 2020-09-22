@@ -15,13 +15,16 @@ struct Points
     Vector <Vector3D> velocity;          ///< velocity vectors of each point
 
     Vector <Size>     cum_n_neighbors;   ///< cumulative number of neighbors
-    Vector <Size>         n_neighbors;   ///< number of neighbors
-    Vector <Size>           neighbors;   ///< neighbors of each point
+    Vector <Size>         n_neighbors;   ///< number of neighbors each point has
+    Vector <Size>           neighbors;   ///< neighbors of each point, listed after eachother
+    ///< e.g.: [neighbors of point 1, neighbors of point 2, ...]
 
-    Vector <Size> nbs;
+    Vector <Size> nbs; //@Frederik: what does this do?
 
     void read  (const Io& io);
     void write (const Io& io) const;
+    //note to self: add set_neighbors and get_neighbors (should get/set all the different neighbors variables)
+    //note to self: points 'deleted' should have no neighbors
 };
 
 
