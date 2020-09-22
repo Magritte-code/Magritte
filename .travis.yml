@@ -78,7 +78,7 @@ install:
   - COMPILER_CXX=$(which $CXX)
   - echo $COMPILER_CXX
   - $COMPILER_CXX --version
-  - CC=COMPILER_CC CXX=COMPILER_CXX cmake $BUILD_FLAGS ../tests
+  - CC=$COMPILER_CC CXX=$COMPILER_CXX cmake $BUILD_FLAGS ../tests
   - make -j4
   - cd ../
 
