@@ -18,9 +18,9 @@ addons:
 
 matrix:
   include:
-    - os: osx
-      python: 3
-      env: CC=clang CXX=clang
+    # - os: osx
+    #   python: 3
+    #   env: CC=clang CXX=clang
     - os: osx
       python: 3
       env: CC=gcc-6 CXX=g++-6
