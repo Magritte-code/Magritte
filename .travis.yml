@@ -72,11 +72,9 @@ before_install:
 install:
   - mkdir build
   - cd build
-  - which $CC
-  - COMPILER_CC=$(which $CC)
+  - COMPILER_CC=$(which gcc)
   - $COMPILER_CC --version
-  - which $CXX
-  - COMPILER_CXX=$(which $CXX)
+  - COMPILER_CXX=$(which g++)
   - $COMPILER_CXX --version
   - CC=$COMPILER_CC CXX=$COMPILER_CXX cmake $BUILD_FLAGS ../tests
   - make -j4
