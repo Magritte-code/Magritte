@@ -30,7 +30,7 @@ using std::endl;
 
 int main (int argc, char **argv)
 {
-    cout << "Running test_raytracing..." << endl;
+    cout << "Running test_multigrid..." << endl;
 
     /// Store model name
     const string modelName = argv[1];
