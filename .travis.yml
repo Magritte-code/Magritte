@@ -13,7 +13,7 @@ addons:
       - python3-numpy
       - python3-pytest
       - libgomp1
-      - clang
+      # - clang
       - g++-6
 
 matrix:
@@ -51,15 +51,15 @@ before_install:
             rm mpich-3.2.tar.gz
             echo "configuring and building mpich."
             cd mpich-3.2
-            ./configure \
-                  --prefix=`pwd`/../mpich \
-                  --enable-static=false \
-                  --enable-alloca=true \
-                  --disable-long-double \
-                  --enable-threads=single \
-                  --enable-fortran=no \
-                  --enable-fast=all \
-                  --enable-g=none \
+            ./configure                     \
+                  --prefix=`pwd`/../mpich   \
+                  --enable-static=false     \
+                  --enable-alloca=true      \
+                  --disable-long-double     \
+                  --enable-threads=single   \
+                  --enable-fortran=no       \
+                  --enable-fast=all         \
+                  --enable-g=none           \
                   --enable-timing=none
             make -j4
             make install
@@ -72,15 +72,15 @@ before_install:
 install:
   - mkdir build
   - cd build
+  - which $CC
   - COMPILER_CC=$(which $CC)
-  - echo $COMPILER_CC
   - $COMPILER_CC --version
+  - which $CXX
   - COMPILER_CXX=$(which $CXX)
-  - echo $COMPILER_CXX
   - $COMPILER_CXX --version
   - CC=$COMPILER_CC CXX=$COMPILER_CXX cmake $BUILD_FLAGS ../tests
   - make -j4
-  - cd ../
+  - cd -
 
 script:
   - cd tests
