@@ -13,10 +13,14 @@ addons:
       - python3-numpy
       - python3-pytest
       - libgomp1
+      - clang
       - g++-6
 
 matrix:
   include:
+    - os: osx
+      python: 3
+      env: CC=clang CXX=clang
     - os: osx
       python: 3
       env: CC=gcc-6 CXX=g++-6
@@ -37,13 +41,44 @@ before_install:
   #       # see https://github.com/travis-ci/travis-ci/issues/8613N
   #       export LD_LIBRARY_PATH=/usr/local/clang/lib:$LD_LIBRARY_PATH
   #       fi
+  - |
+        if [ -f mpich/lib/libmpich.so ]; then
+            echo "libmpich.so found -- nothing to build."
+        else
+            echo "Downloading mpich source."
+            wget http://www.mpich.org/static/downloads/3.2/mpich-3.2.tar.gz
+            tar xfz mpich-3.2.tar.gz
+            rm mpich-3.2.tar.gz
+            echo "configuring and building mpich."
+            cd mpich-3.2
+            ./configure \
+                  --prefix=`pwd`/../mpich \
+                  --enable-static=false \
+                  --enable-alloca=true \
+                  --disable-long-double \
+                  --enable-threads=single \
+                  --enable-fortran=no \
+                  --enable-fast=all \
+                  --enable-g=none \
+                  --enable-timing=none
+            make -j4
+            make install
+            cd -
+            rm -rf mpich-3.2
+        fi
   - PYTHON_EXECUTABLE=$(which python)
   - BUILD_FLAGS="-DPYTHON_EXECUTABLE:FILEPATH=$PYTHON_EXECUTABLE -DOMP_PARALLEL=ON"
 
 install:
   - mkdir build
   - cd build
-  - CC=$(which gcc) CXX=$(which g++) cmake $BUILD_FLAGS ../tests
+  - COMPILER_CC=$(which $CC)
+  - echo $COMPILER_CC
+  - $COMPILER_CC --version
+  - COMPILER_CXX=$(which $CXX)
+  - echo $COMPILER_CXX
+  - $COMPILER_CXX --version
+  - CC=COMPILER_CC CXX=COMPILER_CXX cmake $BUILD_FLAGS ../tests
   - make -j4
   - cd ../
 

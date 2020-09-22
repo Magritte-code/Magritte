@@ -14,14 +14,15 @@ set (CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --extended-lambda --use_fast_math --e
 set (PARACABS_USE_MESSAGE_PASSING false)
 set (PARACABS_USE_MPI             false)
 
-set (PARACABS_USE_MULTI_THREADING false)
-set (PARACABS_USE_OPENMP          false)
+set (PARACABS_USE_MULTI_THREADING true)
+set (PARACABS_USE_OPENMP          true)
 
 set (PARACABS_USE_ACCELERATOR     false)
 set (PARACABS_USE_CUDA            false)
 set (PARACABS_USE_SYCL            false)
 
 set (PARACABS_USE_SIMD            false)
+
 
 set (SOURCE_FILES
         test_datatypes.cpp
