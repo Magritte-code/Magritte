@@ -14,7 +14,7 @@ void Lines :: read (const Io& io)
     cout << "Reading lines..." << endl;
 
     /// Read and set nlspecs
-    parameters.set_nlspecs (io.get_length (prefix+"LineProducingSpecies_"));
+    parameters.set_nlspecs (io.get_length (prefix+"lineProducingSpecies_"));
 
     /// Read line producing species data
     lineProducingSpecies.resize (parameters.nlspecs());
@@ -58,7 +58,9 @@ void Lines :: read (const Io& io)
         }
     }
 
+
     heapsort (line, line_index);
+
 
     emissivity.resize (parameters.npoints()*parameters.nlines());
     opacity   .resize (parameters.npoints()*parameters.nlines());

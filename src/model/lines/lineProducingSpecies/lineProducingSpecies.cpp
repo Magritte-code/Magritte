@@ -15,6 +15,7 @@ void LineProducingSpecies :: read (const Io& io, const Size l)
     linedata  .read (io, l);
     quadrature.read (io, l);
 
+
     RT        .resize (parameters.npoints()*linedata.nlev,
                        parameters.npoints()*linedata.nlev );
     LambdaStar.resize (parameters.npoints()*linedata.nlev,
@@ -27,6 +28,7 @@ void LineProducingSpecies :: read (const Io& io, const Size l)
     Jeff.resize (parameters.npoints());
     Jlin.resize (parameters.npoints());
     Jdif.resize (parameters.npoints());
+
 
     for (Size p = 0; p < parameters.npoints(); p++)
     {
@@ -47,6 +49,7 @@ void LineProducingSpecies :: read (const Io& io, const Size l)
         }
     }
 
+
     population_prev1.resize (parameters.npoints()*linedata.nlev);
     population_prev2.resize (parameters.npoints()*linedata.nlev);
     population_prev3.resize (parameters.npoints()*linedata.nlev);
@@ -57,7 +60,9 @@ void LineProducingSpecies :: read (const Io& io, const Size l)
 
     io.read_list (prefix_l+"population_tot", population_tot);
 
+
     read_populations (io, l, "");
+
 
     Double2 pops_prev1 (parameters.npoints(), Double1 (linedata.nlev));
     Double2 pops_prev2 (parameters.npoints(), Double1 (linedata.nlev));
@@ -66,6 +71,7 @@ void LineProducingSpecies :: read (const Io& io, const Size l)
     int err_prev1 = io.read_array (prefix_l+"population_prev1", pops_prev1);
     int err_prev2 = io.read_array (prefix_l+"population_prev2", pops_prev2);
     int err_prev3 = io.read_array (prefix_l+"population_prev3", pops_prev3);
+
 
     threaded_for (p, parameters.npoints(),
     {
