@@ -8,9 +8,8 @@ inline void Neighbors :: delete_single_neighbor(int point, int neighbor):
 {
   if (neighbor<parameters.npoints()&&point<parameters.npoints()):
   {
-    vec=self.neighbors[point];
-    vec.erase(std::remove(vec.begin(), vec.end(), neighbor), vec.end());
-    self.n_neighbors[point]=length(vec);
+    self.neighbors[point].erase(std::remove(self.neighbors[point].begin(), self.neighbors[point].end(), neighbor), self.neighbors[point].end());
+    self.n_neighbors[point]=vec.size());
     //TODO maybe make assumption that only one neighbor is deleted
   }
   else:
@@ -62,7 +61,7 @@ inline void Neighbors :: add_single_neighbor(int point, int neighbor)
 /////////////////////////////////
 inline void Neighbors :: set_all_neighbors(Vector <Size> new_n_neighbors, Vector <Size> new_neigbours)
 {
-  length_of_list=accumulate(begin(new_n_neighbors), end(new_n_neighbors), 0, plus<int>())
+  auto length_of_list=accumulate(begin(new_n_neighbors), end(new_n_neighbors), 0, plus<int>())
   if (length_of_list==std::size(new_neigbours)):
   {
     self.n_neighbors=new_n_neighbors;
