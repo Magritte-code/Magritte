@@ -14,15 +14,15 @@ struct Neighbors
     Size_2          neighbors;  ///
 
 
-    void delete_single_neighbor(int point, int neighbor);
-    void delete_all_neighbors(int point);
-    void add_single_neighbor(int point, int neighbor);
+    inline void delete_single_neighbor(int point, int neighbor);
+    inline void delete_all_neighbors(int point);
+    inline void add_single_neighbor(int point, int neighbor);
 
 //TODO set to private (probably), not intended for direct use
-    void set_all_neighbors(Vector <Size> new_n_neighbors, Vector <Size> new_neigbours);
+    inline void set_all_neighbors(Vector <Size> new_n_neighbors,
+       Vector <Size> new_neigbours);
 
-
-    Vector <Size> get_neighbors (int point);
+    inline Vector <Size> get_neighbors (int point);
 
 //TODO: add constructor
     Neighbors (Neighbors& other);//copy neighbors

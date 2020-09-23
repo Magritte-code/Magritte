@@ -90,7 +90,7 @@ inline Vector<Size> Neighbors :: get_neighbors (int point)
 
 /// Deep copy of the Neighbors construct
 /////////////////////
-inline Neighbors::Neighbors(Neighbors& other)
+Neighbors::Neighbors(Neighbors& other)
 {
   auto n_neighbors(other.n_neighbors);
   auto temp_neighbors(other.neighbors)
