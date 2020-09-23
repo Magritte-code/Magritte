@@ -46,7 +46,7 @@ inline void Neighbors :: add_single_neighbor(int point, int neighbor)
 {
   if (neighbor<parameters.npoints()&&point<parameters.npoints()):
   {
-    self.neighbors[point].insert(neighbor);
+    self.neighbors[point].push_back(neighbor);
     self.n_neighbors[point]++;
   }
   else:
