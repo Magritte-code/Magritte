@@ -60,7 +60,7 @@ Also assert that the lengths are the same; You can change this to any other exce
     io.read_list (prefix+"n_neighbors", n_neighbors);
     io.read_list (prefix+  "neighbors",   neighbors);
 
-    self.curr_neighbors=Neighbors(n_neighbors,neighbors);
+    this.curr_neighbors.set_all_neighbors(n_neighbors,neigbors);
 
     cout << "lists read = " << endl;
 
@@ -108,7 +108,7 @@ Also assert that the lengths are the same; You can change this to any other exce
 //     }
 //
 //     nbs.copy_vec_to_ptr ();
-// }
+}
 
 
 void Points :: write (const Io& io) const
@@ -131,6 +131,6 @@ void Points :: write (const Io& io) const
 
 //@Frederik: this might write different results depending on the current level of coarsening
 //TODO take another look at this
-    io.write_list (prefix+"n_neighbors", self.curr_neighbors.n_neighbors);
-    io.write_list (prefix+  "neighbors", self.curr_neighbors.get_flattened_neigbors_list());
+    io.write_list (prefix+"n_neighbors", this.curr_neighbors.n_neighbors);
+    io.write_list (prefix+  "neighbors", this.curr_neighbors.get_flattened_neigbors_list());
 }

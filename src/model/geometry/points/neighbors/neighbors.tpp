@@ -7,17 +7,16 @@
 ////////////////////
 inline void Neighbors :: delete_single_neighbor(int point, int neighbor)
 {
-  if (neighbor<parameters.npoints()&&point<parameters.npoints())
+  if ((neighbor<parameters.npoints())&&(point<parameters.npoints()))
   {
-    self.neighbors[point].erase(std::remove(self.neighbors[point].begin(), self.neighbors[point].end(), neighbor), self.neighbors[point].end());
-    self.n_neighbors[point]=vec.size());
+    neighbors[point].erase(std::remove(neighbors[point].begin(), neighbors[point].end(), neighbor), neighbors[point].end());
+    n_neighbors[point]=neighbors[point].size();
     //TODO maybe make assumption that only one neighbor is deleted
   }
   else
   {
     //Fixme: throw exception
   }
-
 }
 
 
@@ -26,10 +25,10 @@ inline void Neighbors :: delete_single_neighbor(int point, int neighbor)
 ////////////////////
 inline void Neighbors :: delete_all_neighbors(int point)
 {
-  if (neighbor<parameters.npoints()&&point<parameters.npoints())
+  if (point<parameters.npoints())
   {
-    self.neighbors[point].clear();
-    self.n_neighbors[point]=0;
+    neighbors[point].clear();
+    n_neighbors[point]=0;
   }
   else
   {
@@ -46,8 +45,8 @@ inline void Neighbors :: add_single_neighbor(int point, int neighbor)
 {
   if (neighbor<parameters.npoints()&&point<parameters.npoints())
   {
-    self.neighbors[point].push_back(neighbor);
-    self.n_neighbors[point]++;
+    neighbors[point].push_back(neighbor);
+    n_neighbors[point]++;
   }
   else
   {
@@ -60,23 +59,24 @@ inline void Neighbors :: add_single_neighbor(int point, int neighbor)
 ///   @param[in]  new_neigbours: A 1D array which contains all neighbors of all points (in order)
 /// assumed length = sum of new_n_neighbors
 /////////////////////////////////
-inline private void Neighbors :: set_all_neighbors(Vector <Size> new_n_neighbors, Vector <Size> new_neigbours)
+inline void Neighbors :: set_all_neighbors(Vector <Size> new_n_neighbors, Vector <Size> new_neigbours)
 {
-  auto length_of_list=accumulate(begin(new_n_neighbors), end(new_n_neighbors), 0, plus<int>())
-  if (length_of_list==std::size(new_neigbours))
-  {
-    self.n_neighbors=new_n_neighbors;
-    curr_index=0;
-    for (i=0, i<parameters.npoints(),i++):
+// Ignoring checking whether the lengths match for now: The paracabs vector does not support begin nor end
+//  auto length_of_list=accumulate(std::begin(new_n_neighbors), std::end(new_n_neighbors), 0, std::plus<Size>())
+//  if (length_of_list==std::size(new_neigbours))
+//  {
+    n_neighbors=new_n_neighbors;
+    int curr_index=0;
+    for (Size i=0; i<parameters.npoints(); i++)
     {
-      self.neighbors[i]=sub(&new_neigbours[curr_index],&new_neigbours[curr_index+self.n_neighbors[i]]);
-      curr_index+=self.n_neighbors[i]
+      neighbors[i]=std::sub(&new_neigbours[curr_index],&new_neigbours[curr_index+n_neighbors[i]]);
+      curr_index+=n_neighbors[i];
     }
-  }
-  else
-  {
+//  }
+//  else
+//  {
       //Fixme: throw exception, because size of new_neigbours is not correct
-  }
+//  }
 }
 
 
@@ -84,56 +84,42 @@ inline private void Neighbors :: set_all_neighbors(Vector <Size> new_n_neighbors
 ///   @param[in]  point: the point for which to return its neighbors
 ///   @return: the vector of neighbors of the point
 //////////////////
-inline Vector <Size> Neighbors :: get_neighbors (int point)
+const inline Vector <Size> Neighbors :: get_neighbors (int point)
 {
-  return self.neighbors[point];
+  return neighbors[point];
 }
 
 /// Returns the number of neigbours of a point
 ///   @param[in]  point: the point for which to return its #neighbors
 ///   @return: number of neighbors of the point
 //////////////////
-inline int Neighbors :: get_n_neighbors (int point)
+const inline int Neighbors :: get_n_neighbors (int point)
 {
-  return self.n_neighbors[point];
+  return n_neighbors[point];
 }
 
 /// Returns the flattened neighbors list
 ///   @return: the vector of neighbors of all points
 //////////////////
-inline Vector <Size> Neighbors :: get_flattened_neigbors_list()
+const inline Vector <Size> Neighbors :: get_flattened_neigbors_list()
 {
   Size total_size = 0;
-  for (const auto& part : self.neighbors)
-      total_size += part.size();//precalc the size of the resulting array
+  for (const auto& part : neighbors)
+      {total_size += part.size();}//precalc the size of the resulting array
   Vector<Size> result;
-  result.reserve(total_size);
-  for (const auto& part : self.neighbors)
-      result.insert(result.end(), sub.begin(), sub.end());
+  result.resize(total_size);
+  for (const auto& part : neighbors)
+      {result.insert(result.end(), sub.begin(), sub.end());}
   return result;
-}
-
-
-/// Constructs the Neighbors struct
-///   @param[in]  new_n_neighbors: Determines how much neighbors each point has
-///   @param[in]  new_neigbours: A 1D array which contains all neighbors of all points (in order)
-/// assumed length = sum of new_n_neighbors
-/////////////////////////////////
-Neighbors::Neighbors(Vector <Size> new_n_neighbors, Vector <Size> new_neigbours)
-{
-  self.set_all_neighbors(new_n_neighbors,new_neigbours);
 }
 
 
 /// Deep copy of the Neighbors construct
 /////////////////////
-Neighbors::Neighbors(Neighbors& other)
+/*Neighbors::Neighbors(Neighbors& other)
 {
   auto n_neighbors(other.n_neighbors);
   auto temp_neighbors(other.neighbors)
-  self.n_neighbors=temp_n_neighbors;
-  self.temp_neighbors=temp_neighbors;
-}
-
-
-}
+  n_neighbors=temp_n_neighbors;
+  neighbors=temp_neighbors;
+}*/

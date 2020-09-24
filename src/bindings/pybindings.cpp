@@ -128,9 +128,11 @@ PYBIND11_MODULE (core, module)
         // attributes
         .def_readwrite ("position",    &Points::position)
         .def_readwrite ("velocity",    &Points::velocity)
-        .def_readwrite ("n_neighbors", &Points::n_neighbors)
-        .def_readwrite ("neighbors",   &Points::neighbors)
-        .def_readwrite ("nbs",         &Points::nbs)
+//@Frederik: I'm commenting these out for now :
+// We should replace these with some methods from the Neighbors struct
+//        .def_readwrite ("n_neighbors", &Points::n_neighbors)
+//        .def_readwrite ("neighbors",   &Points::neighbors)
+//        .def_readwrite ("nbs",         &Points::nbs)
         // io
         .def ("read",                  &Points::read)
         .def ("write",                 &Points::write)
