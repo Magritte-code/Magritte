@@ -43,9 +43,13 @@ Also assert that the lengths are the same; You can change this to any other exce
 
     cout << "tot_n_neighbors = " << parameters.totnnbs() << endl;
 
-    cum_n_neighbors.resize (parameters.npoints());
-        n_neighbors.resize (parameters.npoints());
-          neighbors.resize (parameters.totnnbs());
+//Temporary vectors for neighbors
+    Vector <Size> n_neighbors;
+    Vector <Size>   neighbors;
+
+//    cum_n_neighbors.resize (parameters.npoints());
+    n_neighbors.resize (parameters.npoints());
+      neighbors.resize (parameters.totnnbs());
 
     cout << "memory_allocated = " << endl;
 
@@ -56,9 +60,11 @@ Also assert that the lengths are the same; You can change this to any other exce
     io.read_list (prefix+"n_neighbors", n_neighbors);
     io.read_list (prefix+  "neighbors",   neighbors);
 
+    self.curr_neighbors=Neighbors(n_neighbors,neighbors);
+
     cout << "lists read = " << endl;
 
-    cum_n_neighbors[0] = 0;
+//    cum_n_neighbors[0] = 0;
 
     cout << "first put" << endl;
 
@@ -67,41 +73,42 @@ Also assert that the lengths are the same; You can change this to any other exce
     cout << n_neighbors.dat       << endl;
     cout << n_neighbors.ptr       << endl;
 
-    for (Size p = 1; p < parameters.npoints(); p++)
-    {
-        cum_n_neighbors[p] = cum_n_neighbors[p-1] + n_neighbors[p-1];
-    }
+//    for (Size p = 1; p < parameters.npoints(); p++)
+//    {
+//        cum_n_neighbors[p] = cum_n_neighbors[p-1] + n_neighbors[p-1];
+//    }
 
     cout << "points put" << endl;
 
     position.copy_vec_to_ptr ();
     velocity.copy_vec_to_ptr ();
 
-    cum_n_neighbors.copy_vec_to_ptr ();
-        n_neighbors.copy_vec_to_ptr ();
-          neighbors.copy_vec_to_ptr ();
+//    cum_n_neighbors.copy_vec_to_ptr ();
+//        n_neighbors.copy_vec_to_ptr ();
+//          neighbors.copy_vec_to_ptr ();
 
     cout << "neighbors put" << endl;
 
-    nbs.resize (parameters.npoints()*nnbs);
-
-    for (Size p = 0; p < parameters.npoints(); p++)
-    {
-        const Size     n_nbs =     n_neighbors[p];
-        const Size cum_n_nbs = cum_n_neighbors[p];
-
-        for (Size i = 0; (i < n_nbs) && (i < nnbs); i++)
-        {
-            nbs[p*nnbs+i] = neighbors[cum_n_nbs+i];
-        }
-        for (Size i = n_nbs; i < nnbs; i++)
-        {
-            nbs[p*nnbs+i] = neighbors[cum_n_nbs+n_nbs-1];
-        }
-    }
-
-    nbs.copy_vec_to_ptr ();
-}
+//@Frederik: nbs does not seem to do anything remotely useful
+//     nbs.resize (parameters.npoints()*nnbs);
+//
+//     for (Size p = 0; p < parameters.npoints(); p++)
+//     {
+//         const Size     n_nbs =     n_neighbors[p];
+//         const Size cum_n_nbs = cum_n_neighbors[p];
+//
+//         for (Size i = 0; (i < n_nbs) && (i < nnbs); i++)
+//         {
+//             nbs[p*nnbs+i] = neighbors[cum_n_nbs+i];
+//         }
+//         for (Size i = n_nbs; i < nnbs; i++)
+//         {
+//             nbs[p*nnbs+i] = neighbors[cum_n_nbs+n_nbs-1];
+//         }
+//     }
+//
+//     nbs.copy_vec_to_ptr ();
+// }
 
 
 void Points :: write (const Io& io) const
@@ -122,6 +129,8 @@ void Points :: write (const Io& io) const
     io.write_array (prefix+"position", position_buffer);
     io.write_array (prefix+"velocity", velocity_buffer);
 
-    io.write_list (prefix+"n_neighbors", n_neighbors);
-    io.write_list (prefix+  "neighbors",   neighbors);
+//@Frederik: this might write different results depending on the current level of coarsening
+//TODO take another look at this
+    io.write_list (prefix+"n_neighbors", self.curr_neighbors.n_neighbors);
+    io.write_list (prefix+  "neighbors", self.curr_neighbors.get_flattened_neigbors_list());
 }

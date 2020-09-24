@@ -18,17 +18,19 @@ accel inline Size Geometry :: get_next (
           Real& Z,
           Real& dZ                     ) const
 {
-    const Size     n_nbs = points.    n_neighbors[c];
-    const Size cum_n_nbs = points.cum_n_neighbors[c];
+    const Size     n_nbs = points.curr_neighbors.get_n_neighbors(c)//    n_neighbors[c];
+//    const Size cum_n_nbs = points.cum_n_neighbors[c];
 
     Real dmin = std::numeric_limits<Real>::max();   // Initialize to "infinity"
     Size next = parameters.npoints();               // return npoints when there is no next
 
 //    for (Size i = 0; i < nnbs; i++)
+
+    Vector<Size> temp_neighbors=curr_neighbors.get_neighbors(c)
     for (Size i = 0; i < n_nbs; i++)
     {
 //        const Size     n     = points.nbs[c*nnbs+i];
-        const Size     n     = points.neighbors[cum_n_nbs+i];
+        const Size     n     = temp_neighbors[i]//points.neighbors[cum_n_nbs+i];
         const Vector3D R     = points.position[n] - points.position[o];
         const Real     Z_new = R.dot(rays.direction[r]);
 
