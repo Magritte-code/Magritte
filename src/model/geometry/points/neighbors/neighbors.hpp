@@ -10,7 +10,7 @@ struct Neighbors
 {
     Parameters parameters;
 //TODO set private variables to private
-    Vector <Size> n_neighbors;  ///< number of neighbors each point has
+    vector <Size> n_neighbors;  ///< number of neighbors each point has
     Size2          neighbors;   ///< 2d array which contains the neigbors of each point
 
     inline void delete_single_neighbor(int point, int neighbor);
@@ -18,17 +18,17 @@ struct Neighbors
     inline void add_single_neighbor(int point, int neighbor);
 
 //TODO set to private (probably), not intended for direct use
-    inline void set_all_neighbors(Vector <Size> new_n_neighbors,
-       Vector <Size> new_neigbours);
+    inline void set_all_neighbors(vector <Size>& new_n_neighbors,
+       vector <Size>& new_neigbours);
 
-    inline Vector <Size> get_neighbors (int point) const;
+    inline vector <Size> get_neighbors (int point) const;
     inline int get_n_neighbors (int point) const;
-    inline Vector <Size> get_flattened_neigbors_list() const;
+    inline vector <Size> get_flattened_neigbors_list() const;
 
 //maybe TODO also add constructor that needs 2d vector as input for new_neigbours
+Neighbors()=default;
 
-//TODO: add constructor
-/*    Neighbors (Neighbors& other);//copy neighbors*/
+//Neighbors (Neighbors& other);//deep copy of neighbors
 
 }
 ;

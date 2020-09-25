@@ -45,8 +45,8 @@ Also assert that the lengths are the same; You can change this to any other exce
     cout << "tot_n_neighbors = " << parameters.totnnbs() << endl;
 
 //Temporary vectors for neighbors
-    Vector <Size> n_neighbors;
-    Vector <Size>   neighbors;
+    vector <Size> n_neighbors;
+    vector <Size>   neighbors;
 
 //    cum_n_neighbors.resize (parameters.npoints());
     n_neighbors.resize (parameters.npoints());
@@ -56,34 +56,27 @@ Also assert that the lengths are the same; You can change this to any other exce
 
     cout << "lists made = " << endl;
 
-    cout << "flag1" << endl;
-    //TODO Fixme segfaults here?
+    cout << &n_neighbors << endl;
 
-    cout << n_neighbors.vec.data() << endl;
-
-    cout << "flag2" <<endl;
 
     io.read_list (prefix+"n_neighbors", n_neighbors);
     io.read_list (prefix+  "neighbors",   neighbors);
 
-    cout << "flag3" << endl;
     cout << n_neighbors[0] << endl;
     cout << neighbors[0] << endl;
 
     this->curr_neighbors.set_all_neighbors(n_neighbors,neighbors);
 
-    cout << "flag4" << endl;
 
     cout << "lists read = " << endl;
 
-//    cum_n_neighbors[0] = 0;
 
     cout << "first put" << endl;
 
-    cout << n_neighbors.vec.data() << endl;
+    cout << &n_neighbors << endl;
     cout << &n_neighbors[0]        << endl;
-    cout << n_neighbors.dat       << endl;
-    cout << n_neighbors.ptr       << endl;
+//    cout << n_neighbors.dat       << endl;
+    cout << &n_neighbors      << endl;
 
 //    for (Size p = 1; p < parameters.npoints(); p++)
 //    {

@@ -1,5 +1,6 @@
 #include <limits>
 #include <cmath>
+#include <algorithm>    // std::max
 
 
 ///  Getter for the number of the next cell on ray and its distance along ray in
