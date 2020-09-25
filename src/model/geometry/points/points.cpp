@@ -1,5 +1,6 @@
 #include <assert.h>
 #include "points.hpp"
+#include "tools/types.hpp"
 
 
 const string prefix = "geometry/points/";
@@ -55,12 +56,23 @@ Also assert that the lengths are the same; You can change this to any other exce
 
     cout << "lists made = " << endl;
 
+    cout << "flag1" << endl;
+    //TODO Fixme segfaults here?
+
     cout << n_neighbors.vec.data() << endl;
+
+    cout << "flag2" <<endl;
 
     io.read_list (prefix+"n_neighbors", n_neighbors);
     io.read_list (prefix+  "neighbors",   neighbors);
 
-    this.curr_neighbors.set_all_neighbors(n_neighbors,neigbors);
+    cout << "flag3" << endl;
+    cout << n_neighbors[0] << endl;
+    cout << neighbors[0] << endl;
+
+    this->curr_neighbors.set_all_neighbors(n_neighbors,neighbors);
+
+    cout << "flag4" << endl;
 
     cout << "lists read = " << endl;
 
@@ -131,6 +143,6 @@ void Points :: write (const Io& io) const
 
 //@Frederik: this might write different results depending on the current level of coarsening
 //TODO take another look at this
-    io.write_list (prefix+"n_neighbors", this.curr_neighbors.n_neighbors);
-    io.write_list (prefix+  "neighbors", this.curr_neighbors.get_flattened_neigbors_list());
+    io.write_list (prefix+"n_neighbors", this->curr_neighbors.n_neighbors);
+    io.write_list (prefix+  "neighbors", this->curr_neighbors.get_flattened_neigbors_list());
 }

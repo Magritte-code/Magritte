@@ -59,18 +59,40 @@ inline void Neighbors :: add_single_neighbor(int point, int neighbor)
 ///   @param[in]  new_neigbours: A 1D array which contains all neighbors of all points (in order)
 /// assumed length = sum of new_n_neighbors
 /////////////////////////////////
-inline void Neighbors :: set_all_neighbors(Vector <Size> new_n_neighbors, Vector <Size> new_neigbours)
+inline void Neighbors :: set_all_neighbors(Vector <Size> new_n_neighbors, Vector <Size> new_neighbors)
 {
 // Ignoring checking whether the lengths match for now: The paracabs vector does not support begin nor end
 //  auto length_of_list=accumulate(std::begin(new_n_neighbors), std::end(new_n_neighbors), 0, std::plus<Size>())
 //  if (length_of_list==std::size(new_neigbours))
 //  {
-    n_neighbors=new_n_neighbors;
+    cout << "flag5" << endl;
+    n_neighbors.resize(parameters.npoints());
+    cout << "flag5" << endl;
+    cout << new_neighbors[0] << endl;
+    cout << "flag5" << endl;
+    for (int i=0; i<parameters.npoints(); i++)
+    {
+      n_neighbors[i]=new_n_neighbors[i];
+    }// I cant figure out why the allocation fails....
+    //n_neighbors=new_n_neighbors.dat;
+    cout << "flag6" << endl;
+    neighbors.resize(parameters.npoints());
+    cout << "flag7" << endl;
     int curr_index=0;
     for (Size i=0; i<parameters.npoints(); i++)
     {
-      neighbors[i]=std::sub(&new_neigbours[curr_index],&new_neigbours[curr_index+n_neighbors[i]]);
-      curr_index+=n_neighbors[i];
+      cout << "flag8" << endl;
+      cout << n_neighbors[0] << endl;
+      cout << n_neighbors[i] << endl;
+      neighbors[i].resize(n_neighbors[i]);
+          cout << "flag8" << endl;
+      for (Size j=0; j<n_neighbors[i]; j++)
+      {
+        neighbors[i][j]=new_neighbors[curr_index];
+        curr_index++;
+      }
+      //neighbors[i]=std::sub(&new_neigbours[curr_index],&new_neigbours[curr_index+n_neighbors[i]]);
+      //curr_index+=n_neighbors[i];
     }
 //  }
 //  else
@@ -84,7 +106,7 @@ inline void Neighbors :: set_all_neighbors(Vector <Size> new_n_neighbors, Vector
 ///   @param[in]  point: the point for which to return its neighbors
 ///   @return: the vector of neighbors of the point
 //////////////////
-const inline Vector <Size> Neighbors :: get_neighbors (int point)
+inline Vector <Size> Neighbors :: get_neighbors (int point) const
 {
   return neighbors[point];
 }
@@ -93,7 +115,7 @@ const inline Vector <Size> Neighbors :: get_neighbors (int point)
 ///   @param[in]  point: the point for which to return its #neighbors
 ///   @return: number of neighbors of the point
 //////////////////
-const inline int Neighbors :: get_n_neighbors (int point)
+inline int Neighbors :: get_n_neighbors (int point) const
 {
   return n_neighbors[point];
 }
@@ -101,15 +123,20 @@ const inline int Neighbors :: get_n_neighbors (int point)
 /// Returns the flattened neighbors list
 ///   @return: the vector of neighbors of all points
 //////////////////
-const inline Vector <Size> Neighbors :: get_flattened_neigbors_list()
+inline Vector <Size> Neighbors :: get_flattened_neigbors_list() const
 {
   Size total_size = 0;
   for (const auto& part : neighbors)
       {total_size += part.size();}//precalc the size of the resulting array
   Vector<Size> result;
   result.resize(total_size);
+  int curr_index=0;
   for (const auto& part : neighbors)
-      {result.insert(result.end(), sub.begin(), sub.end());}
+      {for (int j=0; j<part.size(); j++)
+        {result[curr_index]=part[j];
+        curr_index++;}
+      }//Vector does not support .begin(), nor .end()
+      //{result.insert(result.end(), sub.begin(), sub.end());}
   return result;
 }
 

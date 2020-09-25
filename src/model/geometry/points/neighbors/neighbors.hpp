@@ -11,7 +11,7 @@ struct Neighbors
     Parameters parameters;
 //TODO set private variables to private
     Vector <Size> n_neighbors;  ///< number of neighbors each point has
-    Size2          neighbors;  ///
+    Size2          neighbors;   ///< 2d array which contains the neigbors of each point
 
     inline void delete_single_neighbor(int point, int neighbor);
     inline void delete_all_neighbors(int point);
@@ -21,9 +21,9 @@ struct Neighbors
     inline void set_all_neighbors(Vector <Size> new_n_neighbors,
        Vector <Size> new_neigbours);
 
-    const inline Vector <Size> get_neighbors (int point);
-    const inline int get_n_neighbors (int point);
-    const inline Vector <Size> get_flattened_neigbors_list();
+    inline Vector <Size> get_neighbors (int point) const;
+    inline int get_n_neighbors (int point) const;
+    inline Vector <Size> get_flattened_neigbors_list() const;
 
 //maybe TODO also add constructor that needs 2d vector as input for new_neigbours
 
