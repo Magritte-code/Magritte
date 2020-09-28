@@ -113,38 +113,47 @@ namespace paracabs
 
 /// Assumes to be used within a class!
 
-#define accelerated_for(i, total, nblocks, nthreads, ... )   \
-{							                                 \
-    copyContextAccelerator() = true;                         \
-    auto lambda = [=, *this] __device__ (size_t i) mutable   \
-    {		                                                 \
-        __VA_ARGS__;							             \
-    };									                     \
-    apply_lambda <<<nblocks, nthreads>>> (total, lambda);    \
-    copyContextAccelerator() = false;                        \
+
+#define accelerated_for(i, total, nblocks, nthreads, ... )                    \
+{							                                                  \
+    copyContextAccelerator() = true;                                          \
+    auto lambda = [=, *this] __device__ (size_t i) mutable                    \
+    {		                                                                  \
+        __VA_ARGS__;							                              \
+    };									                                      \
+    decltype(lambda)* lambda_ptr =                                            \
+        (decltype(lambda)*) paracabs::accelerator::malloc (sizeof(lambda));   \
+    paracabs::accelerator::memcpy_to_accelerator                              \
+        (lambda_ptr, &lambda, sizeof(lambda));                                \
+    apply_lambda <<<nblocks, nthreads>>> (total, lambda_ptr);                 \
+    copyContextAccelerator() = false;                                         \
 }
 
 
-#define accelerated_for_outside_class(i, total, nblocks, nthreads, ... )   \
-{							                                               \
-    copyContextAccelerator() = true;                                       \
-    auto lambda = [=] __device__ (size_t i) mutable                        \
-    {		                                                               \
-        __VA_ARGS__;							                           \
-    };									                                   \
-    apply_lambda <<<nblocks, nthreads>>> (total, lambda);                  \
-    copyContextAccelerator() = false;                                      \
+#define accelerated_for_outside_class(i, total, nblocks, nthreads, ... )      \
+{							                                                  \
+    copyContextAccelerator() = true;                                          \
+    auto lambda = [=] __device__ (size_t i) mutable                           \
+    {		                                                                  \
+        __VA_ARGS__;							                              \
+    };									                                      \
+    decltype(lambda)* lambda_ptr =                                            \
+        (decltype(lambda)*) paracabs::accelerator::malloc (sizeof(lambda));   \
+    paracabs::accelerator::memcpy_to_accelerator                              \
+        (lambda_ptr, &lambda, sizeof(lambda));                                \
+    apply_lambda <<<nblocks, nthreads>>> (total, lambda_ptr);                 \
+    copyContextAccelerator() = false;                                         \
 }
 
 
 template <typename Lambda>
-__global__ void apply_lambda (const size_t stop, Lambda lambda)
+__global__ void apply_lambda (const size_t stop, Lambda* lambda)
 {
     const size_t start  = blockIdx.x * blockDim.x + threadIdx.x;
     const size_t stride =  gridDim.x * blockDim.x;
 
     for (size_t i = start; i < stop; i += stride)
     {
-        lambda (i);
+        lambda->operator()(i);
     }
 }
