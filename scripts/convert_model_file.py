@@ -78,8 +78,16 @@ paths = {
         'Lines/LineProducingSpecies_0/Linedata/CollisionPartner_0/tmp'
 }
 
+groups = {
+    'lines/lineProducingSpecies_0/linedata':
+        'Lines/LineProducingSpecies_0/Linedata'
+}
+
 
 with h5.File(fname_old, 'r') as f_old:
     with h5.File(fname_new, 'w') as f_new:
         for (path_new, path_old) in paths.items():
             f_new[path_new] = np.array(f_old[path_old], dtype=f_old[path_old].dtype)
+        for (group_new, group_old) in groups.items():
+            for (key, value) in f_old[group_old].attrs.items():
+                f_new[group_new].attrs[key] = value

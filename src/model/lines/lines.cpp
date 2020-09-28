@@ -25,7 +25,8 @@ void Lines :: read (const Io& io)
     }
 
     /// Set nrad_cum, a helper variable for determining indices
-    nrad_cum.resize (parameters.nlspecs(), 0);
+    nrad_cum.resize (parameters.nlspecs());
+    nrad_cum[0] = 0;
 
     for (Size l = 1; l < parameters.nlspecs(); l++)
     {
@@ -44,7 +45,7 @@ void Lines :: read (const Io& io)
 
     /// Set and sort lines and their indices
     line      .resize (parameters.nlines());
-    line_index.resize (parameters.nlines());
+    // line_index.resize (parameters.nlines());
 
     Size index = 0;
 
@@ -53,17 +54,21 @@ void Lines :: read (const Io& io)
         for (Size k = 0; k < lspec.linedata.nrad; k++)
         {
             line      [index] = lspec.linedata.frequency[k];
-            line_index[index] = index;
+            // line_index[index] = index;
             index++;
         }
     }
 
 
-    heapsort (line, line_index);
+    // heapsort (line, line_index);
 
 
-    emissivity.resize (parameters.npoints()*parameters.nlines());
-    opacity   .resize (parameters.npoints()*parameters.nlines());
+    // emissivity.resize (parameters.npoints()*parameters.nlines());
+    // opacity   .resize (parameters.npoints()*parameters.nlines());
+
+    emissivity   .resize (parameters.npoints(), parameters.nlines());
+    opacity      .resize (parameters.npoints(), parameters.nlines());
+    inverse_width.resize (parameters.npoints(), parameters.nlines());
 }
 
 

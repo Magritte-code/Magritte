@@ -16,6 +16,3 @@ struct Quadrature
     void read  (const Io& io, const Size l);
     void write (const Io& io, const Size l) const;
 };
-
-
-#include "quadrature.tpp"

@@ -189,3 +189,46 @@ inline Size1 Geometry :: get_ray_lengths_gpu (
 
     return lengths.vec;
 }
+
+
+///  Check whether a point index is valid
+///    @param[in] p : point index
+///    @returns true if p is a valid index
+//////////////////////////////////////////
+inline bool Geometry :: valid_point (const Size p) const
+{
+    return (p < parameters.npoints());
+}
+
+
+///  Check whether a point is not on the boundary
+///    @param[in] p : point index
+///    @returns true if p is not on the boundary
+/////////////////////////////////////////////////
+inline bool Geometry :: not_on_boundary (const Size p) const
+{
+    return (boundary.point2boundary[p] == parameters.npoints());
+}
+
+
+///  Getter for the number of the next cell on ray and its distance along ray in
+///  the general case without any further assumptions
+///    @param[in]      o : number of cell from which the ray originates
+///    @param[in]      r : number of the ray along which we are looking
+///    @param[in]      c : number of the cell put last on the ray
+///    @param[in/out]  Z : reference to the current distance along the ray
+///    @param[out]    dZ : reference to the distance increment to the next ray
+///    @return number of the next cell on the ray after the current cell
+///////////////////////////////////////////////////////////////////////////////////
+accel inline void Geometry :: get_next (
+    const Size  o,
+    const Size  r,
+    const Size  crt,
+          Size& nxt,
+          Real& Z,
+          Real& dZ,
+          Real& shift ) const
+{
+    nxt   = get_next             (o, r, crt, Z, dZ);
+    shift = get_shift <CoMoving> (o, r, nxt       );
+}

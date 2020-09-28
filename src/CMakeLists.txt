@@ -36,7 +36,8 @@ if    (OMP_PARALLEL)
 #    set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
 endif (OMP_PARALLEL)
 if    (GPU_ACCELERATION)
-    set_source_files_properties(${SOURCE_FILES} PROPERTIES LANGUAGE CUDA)
+    set_source_files_properties(${SOURCE_FILES}         PROPERTIES LANGUAGE CUDA)
+    set_source_files_properties(io/python/io_python.cpp PROPERTIES LANGUAGE CUDA)
 endif (GPU_ACCELERATION)
 
 # Add Python package separately

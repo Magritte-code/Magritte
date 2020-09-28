@@ -17,6 +17,3 @@ struct Rays
     void read  (const Io& io);
     void write (const Io& io) const;
 };
-
-
-#include "rays.tpp"

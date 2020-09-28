@@ -27,10 +27,19 @@ struct Geometry
     void read  (const Io& io);
     void write (const Io& io) const;
 
+    accel inline void get_next (
+        const Size  o,
+        const Size  r,
+        const Size  crt,
+              Size& nxt,
+              Real& Z,
+              Real& dZ,
+              Real& shift ) const;
+
     accel inline Size get_next (
         const Size  o,
         const Size  r,
-        const Size  c,
+        const Size  crt,
               Real& Z,
               Real& dZ ) const;
 
@@ -55,6 +64,9 @@ struct Geometry
     inline Size1 get_ray_lengths_gpu (const Size nblocks, const Size nthreads);
 
     inline void test ();
+
+    inline bool valid_point     (const Size p) const;
+    inline bool not_on_boundary (const Size p) const;
 };
 
 

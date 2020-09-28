@@ -20,9 +20,13 @@ struct Model
     Lines          lines;
     Radiation      radiation;
 
+    enum SpectralDiscretisation {None, SD_Lines, SD_Image}
+         spectralDiscretisation = None;
+
     void read  (const Io& io);
     void write (const Io& io) const;
+
+    int compute_inverse_line_widths     ();
+    int compute_spectral_discretisation ();
+    int compute_spectral_discretisation (const Real width);
 };
-
-
-#include "model.tpp"
