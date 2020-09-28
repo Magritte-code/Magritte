@@ -28,7 +28,9 @@ struct Neighbors
 //maybe TODO also add constructor that needs 2d vector as input for new_neigbours
 Neighbors()=default;
 
-//Neighbors (Neighbors& other);//deep copy of neighbors
+//TODO check whether it is actually a deep copy
+Neighbors (const Neighbors& other):
+ neighbors(other.neighbors), n_neighbors(other.n_neighbors), parameters(other.parameters){}//deep copy of neighbors
 
 }
 ;

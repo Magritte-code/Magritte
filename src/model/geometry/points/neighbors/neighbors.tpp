@@ -137,11 +137,15 @@ inline vector <Size> Neighbors :: get_flattened_neigbors_list() const
 // }
 /// Deep copy of the Neighbors construct
 /////////////////////
-// Neighbors::Neighbors(Neighbors& other)
-// {
-//   n_neighbors=other.n_neighbors;
-//   neighbors=other.neighbors;
-//   // n_neighbors=std::copy(other.n_neighbors.begin(), other.n_neighbors.end(), back_inserter(n_neighbors));
-//   // neighbors=std::copy(other.neighbors.begin(), other.neighbors.end(), back_inserter(neighbors));;
-//   // parameters= new Parameters();
-// }
+/*Neighbors::Neighbors(const Neighbors& other)
+{
+  Size2 temp_neighbors(other.neighbors);
+  Size1 temp_n_neighbors(other.n_neighbors);
+  n_neighbors=temp_n_neighbors;
+  neighbors=temp_neighbors;
+  Parameters temp_params(other.parameters);
+  parameters=temp_params;
+  // n_neighbors=std::copy(other.n_neighbors.begin(), other.n_neighbors.end(), back_inserter(n_neighbors));
+  // neighbors=std::copy(other.neighbors.begin(), other.neighbors.end(), back_inserter(neighbors));;
+  // parameters= new Parameters();
+}*/
