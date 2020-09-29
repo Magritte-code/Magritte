@@ -1,4 +1,8 @@
 #include <cmath>
+#include <Eigen/Core>
+#include <Eigen/Dense>
+
+//NOTE: i have mistakenly called tetrahedra triangles throughout this entire piece of code
 
 // Calculates the relative difference of the density with respect to the neighbours
 //    @Returns: abs((d-d_other)/(d+d_other)) such that the smallest values will be assigned
@@ -63,11 +67,44 @@ inline iterator delete_vector_from_both_maps(std::multimap<vector<int>,double> &
 ///   @Returns bool: true if element in vect, false otherwise
 inline bool vector_contains_element(const vector<int> vect, int element)
 {
-  if(std::find(vect.begin(), vect.end(), element) != vect.end()) {
-    return true;
-  } else {
-    return false
-    }
+  return (std::find(vect.begin(), vect.end(), element) != vect.end());
+}
+
+
+
+/// Given a tetrahedron, this calculates the circumference and then returns the power of the circle given the point
+/// see https://mathworld.wolfram.com/Circumsphere.html for formulas
+inline double Model::power(vector<int> triangle, int point){
+  Vector3d pos1=geometry.points.position[triangle[0]];
+  Vector3d pos2=geometry.points.position[triangle[1]];
+  Vector3d pos3=geometry.points.position[triangle[2]];
+  Vector3d pos4=geometry.points.position[triangle[3]];
+  Matrix<double,4,5> large;//large matrix from which we get all necessary small matrices
+  large << pos1.squaredNorm(), pos1[0],pos1[1],pos1[2],1,
+           pos2.squaredNorm(), pos2[0],pos2[1],pos2[2],1,
+           pos3.squaredNorm(), pos3[0],pos3[1],pos3[2],1,
+           pos4.squaredNorm(), pos4[0],pos4[1],pos4[2],1;
+  VectorXd cols1=VectorXd(4);
+  cols1 << 1,2,3,4;
+  VectorXd cols2=VectorXd(4);
+  cols2 << 0,2,3,4;
+  VectorXd cols3=VectorXd(4);
+  cols3 << 0,1,3,4;
+  VectorXd cols4=VectorXd(4);
+  cols4 << 0,1,2,4;
+  VectorXc cols5=VectorXd(4);
+  cols5 << 0,1,2,3;
+  double a=large(Eigen::all,cols1).determinant();
+  double dx=large(Eigen::all,cols2).determinant();
+  double dy=-large(Eigen::all,cols3).determinant();
+  double dz=large(Eigen::all,cols4).determinant();
+  double c=large(Eigen::all,cols5).determinant();
+  Vector3d center;
+  center << dx/(2*a), dy/(2*a), dz/(2*a);
+  double radius=sqrt(dx*dx+dy*dy+dz*dz-4*a*c)/2*abs(a);
+
+
+  return TODO
 }
 
 
@@ -166,10 +203,12 @@ inline void Model :: coarsen_grid(const float perc_points_deleted)
         while(!ears_map.empty())
         {
           vector<int> triangle=rev_ears_map.begin().second;//triangle which we are currently adding to the mesh
+          if (!vector_contains_element(neighbors_lists[curr_coarsening_lvl].get_neighbors(triangle[0]),triangle[1]))
+          {//necessary because of 'hack' with setting absolute priority to ear which also tries to add the same neighbors
           neighbors_lists[curr_coarsening_lvl].add_single_neighbor(triangle[0], triangle[1]);
           neighbors_lists[curr_coarsening_lvl].add_single_neighbor(triangle[1], triangle[0]);
           //invariant: the first two element of the vector should correspond to the neighbors we want to add
-
+          }
           delete_vector_from_both_maps(ears_map,rev_ears_map,triangle);
           //check which possible ears need to be deleted
           for (auto it = ears_map.cbegin(); it != ears_map.cend();)
@@ -179,7 +218,13 @@ inline void Model :: coarsen_grid(const float perc_points_deleted)
               if ((curr_triangle[0]==triangle[0]&&curr_triangle[1]==triangle[1])||
                   (curr_triangle[1]==triangle[0]&&curr_triangle[0]==triangle[1]))
               {
+                double curr_power=(*it).second;
+                if (curr_power!=-DBL_MAX)//infinite loop protection
+                {
                 it = delete_vector_from_both_maps(ears_map, rev_ears_map, curr_triangle);
+                ears_map.insert(new_possible_ear,-DBL_MAX);
+                rev_ears_map.insert(-DBL_MAX,new_possible_ear);-DBL_MAX//giving maximum priority to this triangle
+                }//a better solution would be to also recalulte all other triangles which share a plane, but this requires some refactoring
               }
               else
               {
@@ -210,8 +255,9 @@ inline void Model :: coarsen_grid(const float perc_points_deleted)
               int point_not_neighbors_pl1;//just to not need to recalc which point of pl1 is not a neighbor
               int point_not_neighbors_pl2;
 
+              //maybe put this into a seperate function
               //now that we have deleted all redundant ears, it is time to readd some new ears based on the new planes created
-              for (int temp_point: neighbors_of_point)
+              for (int temp_point: neighbors_of_point)/
               { //we want to create new triangles, not just the current triangle again...
                 if (!vector_contains_element(triangle,temp_point))
                 {

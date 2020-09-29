@@ -33,7 +33,7 @@ struct Model
     void read  (const Io& io);
     void write (const Io& io) const;
 
-
+    inline double calc_power(vector<int> triangle, int point);
     inline double calc_diff_abundance_with_neighbours(int point, int next_coars_lvl);
     inline void coarsen_grid(const float perc_points_deleted=0.5);
         //TODO
