@@ -1,6 +1,7 @@
 #include <cmath>
 #include <Eigen/Core>
 #include <Eigen/Dense>
+#include <cfloat>
 
 //NOTE: i have mistakenly called tetrahedra triangles throughout this entire piece of code
 
@@ -72,39 +73,31 @@ inline bool vector_contains_element(const vector<int> vect, int element)
 
 
 
-/// Given a tetrahedron, this calculates the circumference and then returns the power of the circle given the point
-/// see https://mathworld.wolfram.com/Circumsphere.html for formulas
-inline double Model::power(vector<int> triangle, int point){
+/// Given a tetrahedron, this calculates the power of the point with respect to the circumsphere
+/// @Parameter [in] triangle: the tetrahedron from which we use the circumsphere
+/// @Para
+/// returns a positive value if the point is inside the circumsphere and a negative value if the point lies outside the circumsphere (zero if on the circumsphere)
+inline double Model::calc_power(const vector<int> &triangle, int point){
   Vector3d pos1=geometry.points.position[triangle[0]];
   Vector3d pos2=geometry.points.position[triangle[1]];
   Vector3d pos3=geometry.points.position[triangle[2]];
   Vector3d pos4=geometry.points.position[triangle[3]];
-  Matrix<double,4,5> large;//large matrix from which we get all necessary small matrices
-  large << pos1.squaredNorm(), pos1[0],pos1[1],pos1[2],1,
-           pos2.squaredNorm(), pos2[0],pos2[1],pos2[2],1,
-           pos3.squaredNorm(), pos3[0],pos3[1],pos3[2],1,
-           pos4.squaredNorm(), pos4[0],pos4[1],pos4[2],1;
-  VectorXd cols1=VectorXd(4);
-  cols1 << 1,2,3,4;
-  VectorXd cols2=VectorXd(4);
-  cols2 << 0,2,3,4;
-  VectorXd cols3=VectorXd(4);
-  cols3 << 0,1,3,4;
-  VectorXd cols4=VectorXd(4);
-  cols4 << 0,1,2,4;
-  VectorXc cols5=VectorXd(4);
-  cols5 << 0,1,2,3;
-  double a=large(Eigen::all,cols1).determinant();
-  double dx=large(Eigen::all,cols2).determinant();
-  double dy=-large(Eigen::all,cols3).determinant();
-  double dz=large(Eigen::all,cols4).determinant();
-  double c=large(Eigen::all,cols5).determinant();
-  Vector3d center;
-  center << dx/(2*a), dy/(2*a), dz/(2*a);
-  double radius=sqrt(dx*dx+dy*dy+dz*dz-4*a*c)/2*abs(a);
+  Vector3D posp=geometry.points.position[point];//position of point
 
+  //dividing insphere test with orientation test
+  Matrix<double,5,5> insphere;
+  insphere << pos1[0],pos2[0],pos3[0],pos4[0],posp[0],
+              pos1[1],pos2[1],pos3[1],pos4[1],posp[1],
+              pos1[2],pos2[2],pos3[2],pos4[2],posp[2],
+              pos1.squaredNorm(),pos2.squaredNorm(),pos3.squaredNorm(),pos4.squaredNorm(),posp.squaredNorm(),
+              1,1,1,1,1;
+  Matrix<double,4,4> orient;
+  orient << pos1[0],pos2[0],pos3[0],pos4[0],
+            pos1[1],pos2[1],pos3[1],pos4[1],
+            pos1[2],pos2[2],pos3[2],pos4[2],
+            1,1,1,1;
 
-  return TODO
+  return insphere.determinant()/orient.determinant();
 }
 
 
@@ -140,7 +133,7 @@ inline void Model :: coarsen_grid(const float perc_points_deleted)
       Size nb_points_to_remove=Size(perc_points_deleted*current_nb_points);
       for (Size i=0; i<nb_points_to_remove; i++)
       {
-        int curr_point=(*rev_density_diff_map.begin()).second;
+        int curr_point=(*rev_density_diff_map.begin()).second;//the current point to remove
         vector<Size> neighbors_of_point=neighbors_lists[curr_coarsening_lvl].get_neighbors(curr_point);
         for (int neighbor :neighbors_of_point)
         {//deleting the point from its neighbors, the point itself still has its neighbors (for now)
@@ -185,12 +178,10 @@ inline void Model :: coarsen_grid(const float perc_points_deleted)
                   if (point1<point2 && //just such that we do not have duplicates
                   vector_contains_element(neighbor_map[point1], point2))///if point1 and 2 are neighbors
                   {
-                    double power;//TODO calculate this!!!!!
-                    ///TODO
-                    ///TODO calculate the circle centre and radius
-                    ///TODO
-                    ears_map.insert(vector<int>(i,j,point1,point2),power);
-                    rev_ears_map.insert(power,vector<int>(i,j,point1,point2));
+                    vector<int> new_triangle=vector<int>(i,j,point1,point2);
+                    double power=calc_power(new_triangle,curr_point);
+                    ears_map.insert(new_triangle,power);
+                    rev_ears_map.insert(power,new_triangle);
                     //invariant: the first two element of the vector should correspond to the neighbors we want to add
                   }
                 }
@@ -222,13 +213,13 @@ inline void Model :: coarsen_grid(const float perc_points_deleted)
                 if (curr_power!=-DBL_MAX)//infinite loop protection
                 {
                 it = delete_vector_from_both_maps(ears_map, rev_ears_map, curr_triangle);
-                ears_map.insert(new_possible_ear,-DBL_MAX);
-                rev_ears_map.insert(-DBL_MAX,new_possible_ear);-DBL_MAX//giving maximum priority to this triangle
+                ears_map.insert(curr_triangle,-DBL_MAX);
+                rev_ears_map.insert(-DBL_MAX,curr_triangle);//giving maximum priority to this triangle
                 }//a better solution would be to also recalulte all other triangles which share a plane, but this requires some refactoring
               }
               else
               {
-                set<int> union_of_points;
+                std::set<int> union_of_points;
                 //insert all points in a set; easier to work with
                 for (int temp_point: &triangle)
                 {
@@ -287,15 +278,13 @@ inline void Model :: coarsen_grid(const float perc_points_deleted)
                       else
                       {points_neighbor_of_plane.push_back(point_of_pl1)}
                     }
-                    //TODO calculate
-                    //TODO
-                    //TODO
+                    //insert newly generated ear in maps
                     vector<int> new_possible_ear{temp_point,point_not_neighbor_of_plane,
                         points_neighbor_of_plane[0],points_neighbor_of_plane[1]};
-                    double power;//TODO calculate this!!!!!
+                    double power=calc_power(new_possible_ear,curr_point);//TODO calculate this!!!!!
                     ears_map.insert(new_possible_ear,power);
                     rev_ears_map.insert(power,new_possible_ear);
-                  }
+                    }
 
                   //if the candidate point is good for creating an ear with plane1
                   if (count_neighbours_pl2==2)
@@ -310,24 +299,18 @@ inline void Model :: coarsen_grid(const float perc_points_deleted)
                       else
                       {points_neighbor_of_plane.push_back(point_of_pl2)}
                     }
-                    //TODO calculate
-                    //TODO
-                    //TODO
+                    //insert newly generated ear in maps
                     vector<int> new_possible_ear{temp_point,point_not_neighbor_of_plane,
                         points_neighbor_of_plane[0],points_neighbor_of_plane[1]};
-                    double power;//TODO calculate this!!!!!
+                    double power=calc_power(new_possible_ear,curr_point);
                     ears_map.insert(new_possible_ear,power);
                     rev_ears_map.insert(power,new_possible_ear);
-                  }
+                    }
 
                 }
               }
             }
         }
-      //TODO add new neighbors to the neighbors==recalc mesh
-      //TODO
-      //TODO
-      //TODO
 
         //recalc density diff of neighbors (due to new mesh (and ofc deletion of point))
         for (int neighbor :neighbors_of_point)
@@ -344,7 +327,7 @@ inline void Model :: coarsen_grid(const float perc_points_deleted)
       //and remove this entry from density maps
       delete_int_from_both_maps(density_diff_map, rev_density_diff_map, curr_point);
     }
-    current_nb_points-=nb_points_to_remove;
+    current_nb_points-=nb_points_to_remove;//decrement the number of points remaining
   }
   else
   {//TODO check whether deep copy!!!!!!
@@ -362,9 +345,9 @@ inline void Model :: reset_grid()
 {
   curr_coarsening_lvl=0;
   max_reached_coarsening_lvl=0;
-  density_diff_map=new std::multimap<int,double>();
-  rev_density_diff_map=new std::multimap<double,int>();
+  density_diff_map=std::multimap<int,double>();
+  rev_density_diff_map=std::multimap<double,int>();
   geometry.points.curr_neighbors=Neighbors(neighbors_lists[0]);
-  neighbors_lists=new vector <Neighbors>;
+  neighbors_lists=vector<Neighbors>();
   current_nb_points=0;
 }
