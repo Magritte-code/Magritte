@@ -90,16 +90,16 @@ inline double Model :: calc_power(const vector<Size> &triangle, Size point){
   Vector3D posp=geometry.points.position[point];//position of point
 
   //dividing insphere test with orientation test
-  Matrix<double,5,5> insphere;
-  insphere << pos1[0],pos2[0],pos3[0],pos4[0],posp[0],
-              pos1[1],pos2[1],pos3[1],pos4[1],posp[1],
-              pos1[2],pos2[2],pos3[2],pos4[2],posp[2],
+  Eigen::Matrix<double,5,5> insphere;
+  insphere << pos1.x(),pos2.x(),pos3.x(),pos4.x(),posp.x(),
+              pos1.y(),pos2.y(),pos3.y(),pos4.y(),posp.y(),
+              pos1.z(),pos2.z(),pos3.z(),pos4.z(),posp.z(),
               pos1.squaredNorm(),pos2.squaredNorm(),pos3.squaredNorm(),pos4.squaredNorm(),posp.squaredNorm(),
               1,1,1,1,1;
-  Matrix<double,4,4> orient;
-  orient << pos1[0],pos2[0],pos3[0],pos4[0],
-            pos1[1],pos2[1],pos3[1],pos4[1],
-            pos1[2],pos2[2],pos3[2],pos4[2],
+  Eigen::Matrix<double,4,4> orient;
+  orient << pos1.x(),pos2.x(),pos3.x(),pos4.x(),
+            pos1.y(),pos2.y(),pos3.y(),pos4.y(),
+            pos1.z(),pos2.z(),pos3.z(),pos4.z(),
             1,1,1,1;
 
   return insphere.determinant()/orient.determinant();
