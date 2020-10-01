@@ -2,6 +2,8 @@
 #include <Eigen/Core>
 #include <Eigen/Dense>
 #include <cfloat>
+#include <set>
+#include "tools/types.hpp"
 
 //NOTE: i have mistakenly called tetrahedra triangles throughout this entire piece of code
 
@@ -26,11 +28,12 @@ inline double Model :: calc_diff_abundance_with_neighbours(Size point, Size next
 ///   @Param[in/out] std_map: the map with points as keys
 ///   @Param[in/out] reverse_map: the map with points as values
 ///   @Param[in] point_to_del: the point to delete from both maps
-inline void delete_int_from_both_maps(std::multimap<Size,double> &std_map, std::multimap<double,Size> &reverse_map, int point_to_del)
+inline void delete_int_from_both_maps(std::multimap<Size,double> &std_map, std::multimap<double,Size> &reverse_map, Size point_to_del)
 {
-  double curr_value=std_map.find(point_to_del).second;
+  double curr_value=(*std_map.find(point_to_del)).second;
   std_map.erase(point_to_del);//key is unique, so no problem
   //there are multiple points that currently have the same diff value, so we must iterate
+  typedef std::multimap<double,Size>::iterator iterator;
   std::pair<iterator, iterator> iterpair = reverse_map.equal_range(curr_value);
   iterator it = iterpair.first;
   for (; it != iterpair.second; ++it) {
@@ -42,19 +45,21 @@ inline void delete_int_from_both_maps(std::multimap<Size,double> &std_map, std::
 }
 
 ///Helper function for deleting stuff from the ears_maps
-///   @Param[in/out] std_map: the map with points as keys
-///   @Param[in/out] reverse_map: the map with points as values
-///   @Param[in] point_to_del: the point to delete from both maps
+///   @Param[in/out] std_map: the map with vectors as keys
+///   @Param[in/out] reverse_map: the map with vectors as values
+///   @Param[in] vect_to_del: the vector to delete from both maps
 ///   @Returns: Returns an iterator for the standard map (needed for being able to delete while iterating)
-inline iterator delete_vector_from_both_maps(std::multimap<vector<Size>,double> &std_map, std::multimap<double,vector<Size>> &reverse_map, vector<int> point_to_del)
+inline std::multimap<vector<Size>,double>::iterator delete_vector_from_both_maps(
+  std::multimap<vector<Size>,double> &std_map, std::multimap<double,vector<Size>> &reverse_map, vector<Size> vect_to_del)
 {
-  double curr_value=std_map.find(point_to_del).second;
-  iterator it2=std_map.erase(point_to_del);//key is unique, so no problem
+  double curr_value=(*std_map.find(vect_to_del)).second;
+  std::multimap<vector<Size>,double>::iterator it2=std_map.erase(std_map.find(vect_to_del));//key is unique, so no problem
   //there are multiple points that currently have the same diff value, so we must iterate
+  typedef std::multimap<double,vector<Size>>::iterator iterator;
   std::pair<iterator, iterator> iterpair = reverse_map.equal_range(curr_value);
   iterator it = iterpair.first;
   for (; it != iterpair.second; ++it) {
-    if (it->second == point_to_del) {
+    if (it->second == vect_to_del) {
       reverse_map.erase(it);
       break;
     }
@@ -77,11 +82,11 @@ inline bool vector_contains_element(const vector<Size> vect, Size element)
 /// @Parameter [in] triangle: the tetrahedron from which we use the circumsphere
 /// @Para
 /// returns a positive value if the point is inside the circumsphere and a negative value if the point lies outside the circumsphere (zero if on the circumsphere)
-inline double Model::calc_power(const vector<Size> &triangle, Size point){
-  Vector3d pos1=geometry.points.position[triangle[0]];
-  Vector3d pos2=geometry.points.position[triangle[1]];
-  Vector3d pos3=geometry.points.position[triangle[2]];
-  Vector3d pos4=geometry.points.position[triangle[3]];
+inline double Model :: calc_power(const vector<Size> &triangle, Size point){
+  Vector3D pos1=geometry.points.position[triangle[0]];
+  Vector3D pos2=geometry.points.position[triangle[1]];
+  Vector3D pos3=geometry.points.position[triangle[2]];
+  Vector3D pos4=geometry.points.position[triangle[3]];
   Vector3D posp=geometry.points.position[point];//position of point
 
   //dividing insphere test with orientation test
@@ -141,18 +146,20 @@ inline void Model :: coarsen_grid(const float perc_points_deleted)
         }
 
         //first calculate the relevant neighbors of the neighbors of the 'deleted' point
-        std::map<Size, std::set<int>> neighbor_map;//stores the relevant neighbors; WARNING does not get updated while recalculating mesh around the current point
+        std::map<Size, std::set<Size>> neighbor_map;//stores the relevant neighbors; WARNING does not get updated while recalculating mesh around the current point
         // use only for initial ear maps
-        vector<Size> cpy_of_neighbors=std::sort(vector<Size>(neighbors_of_point));
+        vector<Size> cpy_of_neighbors=vector<Size>(neighbors_of_point);
+        std::sort(cpy_of_neighbors.begin(),cpy_of_neighbors.end());
         for (Size neighbor: neighbors_of_point)
         {//intersecting the neighbors of the neighbor with the neighbors
-          vector<Size> cpy_of_curr_neighbors=std::sort(vector<Size>(
-            neighbors_lists[curr_coarsening_lvl].get_neighbors(neighbor)));
+          vector<Size> cpy_of_curr_neighbors=vector<Size>(
+            neighbors_lists[curr_coarsening_lvl].get_neighbors(neighbor));
+          std::sort(cpy_of_curr_neighbors.begin(),cpy_of_curr_neighbors.end());
           std::set<Size> rel_neigbors_of_neighbor;//relevant neighbors
           std::set_intersection(cpy_of_neighbors.begin(),cpy_of_neighbors.end(),
                       cpy_of_curr_neighbors.begin(),cpy_of_curr_neighbors.end(),
                       std::inserter(rel_neigbors_of_neighbor,rel_neigbors_of_neighbor.begin()));
-          neighbor_map.insert(neighbor,rel_neigbors_of_neighbor);
+          neighbor_map.insert(std::make_pair(neighbor,rel_neigbors_of_neighbor));
         }
         //calculating all possible new 'ears' by adding a single line
         //iterating over all lines neighbors_of_point[i],neighbors_of_point[j]
@@ -163,25 +170,25 @@ inline void Model :: coarsen_grid(const float perc_points_deleted)
         {
           for (Size j=0; j<i; j++)
           {
-            if (neighbor_map[i].find(j)=neighbor_map[i].end())//if those two points are not yet neighbors
+            if (neighbor_map[i].count(j)==0)//if those two points are not yet neighbors
             {
               std::set<Size> temp_intersection;
-              temp_intersection=std::set_intersection(neighbor_map[i].begin(),neighbor_map[i].end()
+              std::set_intersection(neighbor_map[i].begin(),neighbor_map[i].end(),
                             neighbor_map[j].begin(),neighbor_map[j].end(),
-                            std::inserter(temp_intersection,temp_intersection.begin()))
+                            std::inserter(temp_intersection,temp_intersection.begin()));
               //then for every pair in the intersection of the neighbors of both points, check if they are neighbors
               //a better implementation is probably possible
-              for (Size point1: &temp_intersection)
+              for (Size point1: temp_intersection)
               {
-                for (Size point2: &temp_intersection)
+                for (Size point2: temp_intersection)
                 {
                   if (point1<point2 && //just such that we do not have duplicates
-                  vector_contains_element(neighbor_map[point1], point2))///if point1 and 2 are neighbors
+                  neighbor_map[point1].count(point2)!=0)///if point1 and 2 are neighbors
                   {
-                    vector<Size> new_triangle=vector<Size>(i,j,point1,point2);
+                    vector<Size> new_triangle=vector<Size>{i,j,point1,point2};
                     double power=calc_power(new_triangle,curr_point);
-                    ears_map.insert(new_triangle,power);
-                    rev_ears_map.insert(power,new_triangle);
+                    ears_map.insert(std::make_pair(new_triangle,power));
+                    rev_ears_map.insert(std::make_pair(power,new_triangle));
                     //invariant: the first two element of the vector should correspond to the neighbors we want to add
                   }
                 }
@@ -193,7 +200,7 @@ inline void Model :: coarsen_grid(const float perc_points_deleted)
         //now that we have all initial 'triangles', we can finally start to add them
         while(!ears_map.empty())
         {
-          vector<Size> triangle=rev_ears_map.begin().second;//triangle which we are currently adding to the mesh
+          vector<Size> triangle=(*rev_ears_map.begin()).second;//triangle which we are currently adding to the mesh
           if (!vector_contains_element(neighbors_lists[curr_coarsening_lvl].get_neighbors(triangle[0]),triangle[1]))
           {//necessary because of 'hack' with setting absolute priority to ear which also tries to add the same neighbors
           neighbors_lists[curr_coarsening_lvl].add_single_neighbor(triangle[0], triangle[1]);
@@ -213,19 +220,19 @@ inline void Model :: coarsen_grid(const float perc_points_deleted)
                 if (curr_power!=-DBL_MAX)//infinite loop protection
                 {
                 it = delete_vector_from_both_maps(ears_map, rev_ears_map, curr_triangle);
-                ears_map.insert(curr_triangle,-DBL_MAX);
-                rev_ears_map.insert(-DBL_MAX,curr_triangle);//giving maximum priority to this triangle
+                ears_map.insert(std::make_pair(curr_triangle,-DBL_MAX));
+                rev_ears_map.insert(std::make_pair(-DBL_MAX,curr_triangle));//giving maximum priority to this triangle
                 }//a better solution would be to also recalulte all other triangles which share a plane, but this requires some refactoring
               }
               else
               {
                 std::set<Size> union_of_points;
                 //insert all points in a set; easier to work with
-                for (Size temp_point: &triangle)
+                for (Size temp_point: triangle)
                 {
                   union_of_points.insert(temp_point);
                 }
-                for (Size temp_point: &curr_triangle)
+                for (Size temp_point: curr_triangle)
                 {
                   union_of_points.insert(temp_point);
                 }
@@ -248,7 +255,7 @@ inline void Model :: coarsen_grid(const float perc_points_deleted)
 
               //maybe put this into a seperate function
               //now that we have deleted all redundant ears, it is time to readd some new ears based on the new planes created
-              for (Size temp_point: neighbors_of_point)/
+              for (Size temp_point: neighbors_of_point)
               { //we want to create new triangles, not just the current triangle again...
                 if (!vector_contains_element(triangle,temp_point))
                 {
@@ -271,19 +278,19 @@ inline void Model :: coarsen_grid(const float perc_points_deleted)
                     Size point_not_neighbor_of_plane;//the point which is not a neighbor
                     vector<Size> points_neighbor_of_plane;
                     points_neighbor_of_plane.reserve(2);
-                    for (Size point_of_pl1: &plane1)
+                    for (Size point_of_pl1: plane1)
                     {
-                      if (!vector_contains_element(neighbor_list_of_temp_point,point_of_pl1)
+                      if (!vector_contains_element(neighbor_list_of_temp_point,point_of_pl1))
                       {point_not_neighbor_of_plane=point_of_pl1;}
                       else
-                      {points_neighbor_of_plane.push_back(point_of_pl1)}
+                      {points_neighbor_of_plane.push_back(point_of_pl1);}
                     }
                     //insert newly generated ear in maps
                     vector<Size> new_possible_ear{temp_point,point_not_neighbor_of_plane,
                         points_neighbor_of_plane[0],points_neighbor_of_plane[1]};
                     double power=calc_power(new_possible_ear,curr_point);//TODO calculate this!!!!!
-                    ears_map.insert(new_possible_ear,power);
-                    rev_ears_map.insert(power,new_possible_ear);
+                    ears_map.insert(std::make_pair(new_possible_ear,power));
+                    rev_ears_map.insert(std::make_pair(power,new_possible_ear));
                     }
 
                   //if the candidate point is good for creating an ear with plane1
@@ -292,19 +299,19 @@ inline void Model :: coarsen_grid(const float perc_points_deleted)
                     Size point_not_neighbor_of_plane;//the point which is not a neighbor
                     vector<Size> points_neighbor_of_plane;
                     points_neighbor_of_plane.reserve(2);
-                    for (Size point_of_pl2: &plane2)
+                    for (Size point_of_pl2: plane2)
                     {
-                      if (!vector_contains_element(neighbor_list_of_temp_point,point_of_pl2)
+                      if (!vector_contains_element(neighbor_list_of_temp_point,point_of_pl2))
                       {point_not_neighbor_of_plane=point_of_pl2;}
                       else
-                      {points_neighbor_of_plane.push_back(point_of_pl2)}
+                      {points_neighbor_of_plane.push_back(point_of_pl2);}
                     }
                     //insert newly generated ear in maps
                     vector<Size> new_possible_ear{temp_point,point_not_neighbor_of_plane,
                         points_neighbor_of_plane[0],points_neighbor_of_plane[1]};
                     double power=calc_power(new_possible_ear,curr_point);
-                    ears_map.insert(new_possible_ear,power);
-                    rev_ears_map.insert(power,new_possible_ear);
+                    ears_map.insert(std::make_pair(new_possible_ear,power));
+                    rev_ears_map.insert(std::make_pair(power,new_possible_ear));
                     }
 
                 }
