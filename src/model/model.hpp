@@ -9,6 +9,7 @@
 #include "thermodynamics/thermodynamics.hpp"
 #include "lines/lines.hpp"
 #include "radiation/radiation.hpp"
+#include <set>
 
 
 struct Model
@@ -35,8 +36,7 @@ struct Model
 
     inline double calc_power(const vector<Size> &triangle, Size point);
     inline double calc_diff_abundance_with_neighbours(Size point, Size next_coars_lvl);
-    inline void generate_new_ears(const vector<Size> &neighbors_of_point,const vector<Size> &plane,const std::map<Size,std::set<Size>> &neighbor_map,
-      std::multimap<vector<Size>,double> &ears_map, std::multimap<double,vector<Size>> &rev_ears_map, Size &curr_point);
+    inline void generate_new_ears(const vector<Size> &neighbors_of_point,const vector<Size> &plane,std::map<Size,std::set<Size>> &neighbor_map, std::multimap<vector<Size>,double> &ears_map, std::multimap<double,vector<Size>> &rev_ears_map, Size &curr_point);
     inline void coarsen_grid(const float perc_points_deleted=0.5);
         //TODO
     inline void rerefine_grid();

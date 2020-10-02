@@ -108,7 +108,7 @@ inline double Model :: calc_power(const vector<Size> &triangle, Size point){
 
 //generates the new ears and inserts them into the ears maps
 //TODO add description
-inline void Model::generate_new_ears(const vector<Size> &neighbors_of_point,const vector<Size> &plane,std::map<Size, std::set<Size>> &neighbor_map,
+inline void Model::generate_new_ears(const vector<Size> &neighbors_of_point, const vector<Size> &plane, std::map<Size, std::set<Size>> &neighbor_map,
   std::multimap<vector<Size>,double> &ears_map, std::multimap<double,vector<Size>> &rev_ears_map, Size &curr_point)
 {
   Size count_neighbours;
