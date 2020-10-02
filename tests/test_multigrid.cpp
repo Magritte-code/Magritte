@@ -53,6 +53,11 @@ int main (int argc, char **argv)
     Model model;
     model.read (io);
 
+    //trying to delete 1 percent of the points in the grid
+    cout << "no of points to delete = " << int(sizeof(Points)*0.01) << endl;
+    model.coarsen_grid(0.01);
+    cout << "done with deleting points" << endl;
+
 //    Solver solver (10000, 100);
 //    solver.trace (model);
 //

@@ -136,8 +136,11 @@ inline void Model :: coarsen_grid(const float perc_points_deleted)
       curr_coarsening_lvl++;
       //repeat n times:
       Size nb_points_to_remove=Size(perc_points_deleted*current_nb_points);
+      //TODO: remove infinite loop in inner for loop
       for (Size i=0; i<nb_points_to_remove; i++)
       {
+        if (i%10==0)
+        {std::cout << "Ten points deleted" << std::endl;}
         Size curr_point=(*rev_density_diff_map.begin()).second;//the current point to remove
         vector<Size> neighbors_of_point=neighbors_lists[curr_coarsening_lvl].get_neighbors(curr_point);
         for (Size neighbor :neighbors_of_point)
@@ -147,9 +150,10 @@ inline void Model :: coarsen_grid(const float perc_points_deleted)
 
         //first calculate the relevant neighbors of the neighbors of the 'deleted' point
         std::map<Size, std::set<Size>> neighbor_map;//stores the relevant neighbors; WARNING does not get updated while recalculating mesh around the current point
-        // use only for initial ear maps
+        // use only for all
         vector<Size> cpy_of_neighbors=vector<Size>(neighbors_of_point);
         std::sort(cpy_of_neighbors.begin(),cpy_of_neighbors.end());
+
         for (Size neighbor: neighbors_of_point)
         {//intersecting the neighbors of the neighbor with the neighbors
           vector<Size> cpy_of_curr_neighbors=vector<Size>(
@@ -161,20 +165,19 @@ inline void Model :: coarsen_grid(const float perc_points_deleted)
                       std::inserter(rel_neigbors_of_neighbor,rel_neigbors_of_neighbor.begin()));
           neighbor_map.insert(std::make_pair(neighbor,rel_neigbors_of_neighbor));
         }
-        //calculating all possible new 'ears' by adding a single line
         //iterating over all lines neighbors_of_point[i],neighbors_of_point[j]
         std::multimap<vector<Size>,double> ears_map;
         std::multimap<double,vector<Size>> rev_ears_map;
 
-        for (Size i=0; neighbors_of_point.size(); i++)
+        for (Size i=0; i<neighbors_of_point.size(); i++)
         {
           for (Size j=0; j<i; j++)
           {
-            if (neighbor_map[i].count(j)==0)//if those two points are not yet neighbors
+            if (neighbor_map[neighbors_of_point[i]].count(j)==0)//if those two points are not yet neighbors
             {
               std::set<Size> temp_intersection;
-              std::set_intersection(neighbor_map[i].begin(),neighbor_map[i].end(),
-                            neighbor_map[j].begin(),neighbor_map[j].end(),
+              std::set_intersection(neighbor_map[neighbors_of_point[i]].begin(),neighbor_map[neighbors_of_point[i]].end(),
+                            neighbor_map[neighbors_of_point[j]].begin(),neighbor_map[neighbors_of_point[j]].end(),
                             std::inserter(temp_intersection,temp_intersection.begin()));
               //then for every pair in the intersection of the neighbors of both points, check if they are neighbors
               //a better implementation is probably possible
@@ -196,17 +199,23 @@ inline void Model :: coarsen_grid(const float perc_points_deleted)
             }
           }
         }
-
+        std::cout << "ears_map size: " << ears_map.size() << std::endl;
         //now that we have all initial 'triangles', we can finally start to add them
+        //infinite loop!!!! probably from deleting and readding some times
+        //while(ears_map.size()>7)//in the last iteration, you should have an octohedron left: -> 8 possible ears
         while(!ears_map.empty())
         {
+          std::cout << "Looping: current size of ears map: " << ears_map.size() << std::endl;
           vector<Size> triangle=(*rev_ears_map.begin()).second;//triangle which we are currently adding to the mesh
           if (!vector_contains_element(neighbors_lists[curr_coarsening_lvl].get_neighbors(triangle[0]),triangle[1]))
           {//necessary because of 'hack' with setting absolute priority to ear which also tries to add the same neighbors
           neighbors_lists[curr_coarsening_lvl].add_single_neighbor(triangle[0], triangle[1]);
           neighbors_lists[curr_coarsening_lvl].add_single_neighbor(triangle[1], triangle[0]);
+          //TODO: use these instead of neighbors_lists[...]
+          neighbor_map[triangle[0]].insert(triangle[1]);
+          neighbor_map[triangle[1]].insert(triangle[0]);
           //invariant: the first two element of the vector should correspond to the neighbors we want to add
-          }
+        }else{std::cout << "hack active" << std::endl;}
           delete_vector_from_both_maps(ears_map,rev_ears_map,triangle);
           //check which possible ears need to be deleted
           for (auto it = ears_map.cbegin(); it != ears_map.cend();)
@@ -219,10 +228,15 @@ inline void Model :: coarsen_grid(const float perc_points_deleted)
                 double curr_power=(*it).second;
                 if (curr_power!=-DBL_MAX)//infinite loop protection
                 {
+                std::cout << "Infinite loop prevention activated" << std::endl;
                 it = delete_vector_from_both_maps(ears_map, rev_ears_map, curr_triangle);
                 ears_map.insert(std::make_pair(curr_triangle,-DBL_MAX));
                 rev_ears_map.insert(std::make_pair(-DBL_MAX,curr_triangle));//giving maximum priority to this triangle
                 }//a better solution would be to also recalulte all other triangles which share a plane, but this requires some refactoring
+              else
+              {
+                ++it;
+              }
               }
               else
               {
@@ -246,77 +260,82 @@ inline void Model :: coarsen_grid(const float perc_points_deleted)
                 ++it;
                 }
               }
-              vector<Size> plane1{triangle[0],triangle[1],triangle[2]};
-              vector<Size> plane2{triangle[0],triangle[1],triangle[3]};
-              Size count_neighbours_pl1;//counts the number of neighbors with plane 1
-              Size count_neighbours_pl2;//counts the number of neighbors with plane 2
-              Size point_not_neighbors_pl1;//just to not need to recalc which point of pl1 is not a neighbor
-              Size point_not_neighbors_pl2;
+            }
+
+            vector<Size> plane1{triangle[0],triangle[1],triangle[2]};
+            vector<Size> plane2{triangle[0],triangle[1],triangle[3]};
+            Size count_neighbours_pl1;//counts the number of neighbors with plane 1
+            Size count_neighbours_pl2;//counts the number of neighbors with plane 2
+            Size point_not_neighbors_pl1;//just to not need to recalc which point of pl1 is not a neighbor
+            Size point_not_neighbors_pl2;
 
               //maybe put this into a seperate function
               //now that we have deleted all redundant ears, it is time to readd some new ears based on the new planes created
-              for (Size temp_point: neighbors_of_point)
-              { //we want to create new triangles, not just the current triangle again...
-                if (!vector_contains_element(triangle,temp_point))
+            for (Size temp_point: neighbors_of_point)
+            { //we want to create new triangles, not just the current triangle again...
+              if (!vector_contains_element(triangle,temp_point))
+              {
+                //we are currently adding far too many new ears (sometimes)??
+                count_neighbours_pl1=0;
+                count_neighbours_pl2=0;
+                //vector<Size> neighbor_list_of_temp_point=neighbors_lists[curr_coarsening_lvl].get_neighbors(temp_point);
+                for (Size point_of_pl1: plane1)
                 {
-                  count_neighbours_pl1=0;
-                  count_neighbours_pl2=0;
-                  vector<Size> neighbor_list_of_temp_point=neighbors_lists[curr_coarsening_lvl].get_neighbors(temp_point);
+                  if (neighbor_map[temp_point].count(point_of_pl1)!=0)//vector_contains_element(neighbor_list_of_temp_point,point_of_pl1))
+                  {count_neighbours_pl1++;}
+                }
+                for (Size point_of_pl2: plane2)
+                {
+                  if (neighbor_map[temp_point].count(point_of_pl2)!=0)//vector_contains_element(neighbor_list_of_temp_point,point_of_pl2))
+                  {count_neighbours_pl2++;}
+                }
+                //if the candidate point is good for creating an ear with plane1
+                if (count_neighbours_pl1==2)
+                {
+                  Size point_not_neighbor_of_plane;//the point which is not a neighbor
+                  vector<Size> points_neighbor_of_plane;
+                  points_neighbor_of_plane.reserve(2);
                   for (Size point_of_pl1: plane1)
                   {
-                    if (vector_contains_element(neighbor_list_of_temp_point,point_of_pl1))
-                    {count_neighbours_pl1++;}
+                    if (neighbor_map[temp_point].count(point_of_pl1)==0)//!vector_contains_element(neighbor_list_of_temp_point,point_of_pl1))
+                    {point_not_neighbor_of_plane=point_of_pl1;}
+                    else
+                    {points_neighbor_of_plane.push_back(point_of_pl1);}
                   }
+                  //insert newly generated ear in maps
+                  vector<Size> new_possible_ear{temp_point,point_not_neighbor_of_plane,
+                      points_neighbor_of_plane[0],points_neighbor_of_plane[1]};
+                  double power=calc_power(new_possible_ear,curr_point);//TODO calculate this!!!!!
+                  std::cout << "Inserting new ear 1" << std::endl;
+                  ears_map.insert(std::make_pair(new_possible_ear,power));
+                  rev_ears_map.insert(std::make_pair(power,new_possible_ear));
+                  }
+
+                //if the candidate point is good for creating an ear with plane1
+                if (count_neighbours_pl2==2)
+                {
+                  Size point_not_neighbor_of_plane;//the point which is not a neighbor
+                  vector<Size> points_neighbor_of_plane;
+                  points_neighbor_of_plane.reserve(2);
                   for (Size point_of_pl2: plane2)
                   {
-                    if (vector_contains_element(neighbor_list_of_temp_point,point_of_pl2))
-                    {count_neighbours_pl2++;}
+                    if (neighbor_map[temp_point].count(point_of_pl2)==0)//!vector_contains_element(neighbor_list_of_temp_point,point_of_pl2))
+                    {point_not_neighbor_of_plane=point_of_pl2;}
+                    else
+                    {points_neighbor_of_plane.push_back(point_of_pl2);}
                   }
-                  //if the candidate point is good for creating an ear with plane1
-                  if (count_neighbours_pl1==2)
-                  {
-                    Size point_not_neighbor_of_plane;//the point which is not a neighbor
-                    vector<Size> points_neighbor_of_plane;
-                    points_neighbor_of_plane.reserve(2);
-                    for (Size point_of_pl1: plane1)
-                    {
-                      if (!vector_contains_element(neighbor_list_of_temp_point,point_of_pl1))
-                      {point_not_neighbor_of_plane=point_of_pl1;}
-                      else
-                      {points_neighbor_of_plane.push_back(point_of_pl1);}
-                    }
-                    //insert newly generated ear in maps
-                    vector<Size> new_possible_ear{temp_point,point_not_neighbor_of_plane,
-                        points_neighbor_of_plane[0],points_neighbor_of_plane[1]};
-                    double power=calc_power(new_possible_ear,curr_point);//TODO calculate this!!!!!
-                    ears_map.insert(std::make_pair(new_possible_ear,power));
-                    rev_ears_map.insert(std::make_pair(power,new_possible_ear));
-                    }
-
-                  //if the candidate point is good for creating an ear with plane1
-                  if (count_neighbours_pl2==2)
-                  {
-                    Size point_not_neighbor_of_plane;//the point which is not a neighbor
-                    vector<Size> points_neighbor_of_plane;
-                    points_neighbor_of_plane.reserve(2);
-                    for (Size point_of_pl2: plane2)
-                    {
-                      if (!vector_contains_element(neighbor_list_of_temp_point,point_of_pl2))
-                      {point_not_neighbor_of_plane=point_of_pl2;}
-                      else
-                      {points_neighbor_of_plane.push_back(point_of_pl2);}
-                    }
-                    //insert newly generated ear in maps
-                    vector<Size> new_possible_ear{temp_point,point_not_neighbor_of_plane,
-                        points_neighbor_of_plane[0],points_neighbor_of_plane[1]};
-                    double power=calc_power(new_possible_ear,curr_point);
-                    ears_map.insert(std::make_pair(new_possible_ear,power));
-                    rev_ears_map.insert(std::make_pair(power,new_possible_ear));
-                    }
+                  //insert newly generated ear in maps
+                  vector<Size> new_possible_ear{temp_point,point_not_neighbor_of_plane,
+                      points_neighbor_of_plane[0],points_neighbor_of_plane[1]};
+                  double power=calc_power(new_possible_ear,curr_point);
+                  std::cout << "Inserting new ear 2" << std::endl;
+                  ears_map.insert(std::make_pair(new_possible_ear,power));
+                  rev_ears_map.insert(std::make_pair(power,new_possible_ear));
+                  }
 
                 }
               }
-            }
+
         }
 
         //recalc density diff of neighbors (due to new mesh (and ofc deletion of point))
