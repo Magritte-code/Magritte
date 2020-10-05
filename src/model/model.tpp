@@ -4,6 +4,7 @@
 #include <cfloat>
 #include <set>
 #include "tools/types.hpp"
+#include <limits>
 
 //NOTE: i have mistakenly called tetrahedra triangles throughout this entire piece of code
 
@@ -82,6 +83,7 @@ inline bool vector_contains_element(const vector<Size> vect, Size element)
 /// @Parameter [in] triangle: the tetrahedron from which we use the circumsphere
 /// @Para
 /// returns a positive value if the point is inside the circumsphere and a negative value if the point lies outside the circumsphere (zero if on the circumsphere)
+/// returns nan when the points of the 'tetrahedron' are (almost) coplanar
 inline double Model :: calc_power(const vector<Size> &triangle, Size point){
   Vector3D pos1=geometry.points.position[triangle[0]];
   Vector3D pos2=geometry.points.position[triangle[1]];
@@ -101,8 +103,18 @@ inline double Model :: calc_power(const vector<Size> &triangle, Size point){
             pos1.y(),pos2.y(),pos3.y(),pos4.y(),
             pos1.z(),pos2.z(),pos3.z(),pos4.z(),
             1,1,1,1;
-  //returns nan when tetrahedra coplanar (but how can this happen?????)
-  return insphere.determinant()/orient.determinant();
+  //result is nan or stupidly large when the tetrahedra is (almost) coplanar
+  double result=insphere.determinant()/orient.determinant();
+  if (std::isnan(result)||std::abs(result)>pow(10,5))//10^5 is chosen arbitrarily, maybe TODO: get a reasonable estimate for a cutoff value
+  {
+    std::cout << "tetradron is coplanar; power = " << result << std::endl;
+    return std::numeric_limits<double>::quiet_NaN();
+  }
+  else
+  {
+    std::cout << "reasonable tetrahedron; power = " << result << std::endl;
+    return result;
+  }
 }
 
 
