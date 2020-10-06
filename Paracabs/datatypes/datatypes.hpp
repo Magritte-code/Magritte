@@ -32,24 +32,24 @@ namespace paracabs
 //        ///    @param[in]     arr1 : array1 (MemTypeDefault)
 //        ///    @param[in,out] arr2 : array2 (MemTypeAccelerator)
 //        ////////////////////////////////////////////////////////
-        template <typename type1, typename type2>
-        inline void my_copy (const Array <type1, MemTypeDefault>*     arr1,
-                                   Array <type2, MemTypeAccelerator>* arr2 )
-        {
-            arr2->memcpy_to_accelerator (arr2->data, arr1->data, arr1->size*sizeof(type1));
-        }
-
-        template <typename type>
-        inline void my_copy (const vector<type, paracabs::allocator<type, MemTypeDefault>>     vec1,
-                                   vector<type, paracabs::allocator<type, MemTypeAccelerator>> vec2 )
-        {
+//        template <typename type1, typename type2>
+//        inline void my_copy (const Array <type1, MemTypeDefault>*     arr1,
+//                                   Array <type2, MemTypeAccelerator>* arr2 )
+//        {
+//            arr2->memcpy_to_accelerator (arr2->data, arr1->data, arr1->size*sizeof(type1));
+//        }
+//
+//        template <typename type>
+//        inline void my_copy (const vector<type, paracabs::allocator<type, MemTypeDefault>>     vec1,
+//                                   vector<type, paracabs::allocator<type, MemTypeAccelerator>> vec2 )
+//        {
 //            assert (vec1.size() == vec2.size());
-
-            for (size_t i = 0; i < vec1.size(); i++)
-            {
-                paracabs::accelerator::memcpy_to_accelerator (&vec2[i], &vec1[i], sizeof(type));
-            }
-        }
+//
+//            for (size_t i = 0; i < vec1.size(); i++)
+//            {
+//                paracabs::accelerator::memcpy_to_accelerator (&vec2[i], &vec1[i], sizeof(type));
+//            }
+//        }
 
 //        template <typename type>
 //        inline void my_copy (const array1d <type, MemTypeAccelerator>& arr1,

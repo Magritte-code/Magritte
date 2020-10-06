@@ -10,10 +10,9 @@ namespace paracabs
         template <typename type>
         class Vector3D
         {
-            private:
+            public:
                 type data[3];   ///< vector components
 
-            public:
                 ///  Constructor
                 /////////////////////////////////
                 accel inline Vector3D () {}

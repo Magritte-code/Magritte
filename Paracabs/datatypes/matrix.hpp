@@ -40,6 +40,13 @@ namespace paracabs
                 Vector<type>::set_dat ();
             }
 
+            ///  Constructor (double argument)
+            //////////////////////////////////
+            inline Matrix (const size_t nr, const size_t nc)
+            {
+                resize (nr, nc);
+            }
+
             ///  Resizing both the std::vector and the allocated memory
             ///    @param[in] size : new size for std::vector
             ///////////////////////////////////////////////////////////

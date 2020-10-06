@@ -1,4 +1,4 @@
-#pragma once
+    #pragma once
 
 
 #include <vector>
@@ -17,7 +17,7 @@ namespace paracabs
             type*  ptr = nullptr;          ///< pointer to vector data
             bool   allocated = false;      ///< true if ptr is malloc'ed
             size_t allocated_size = 0;     ///< array size
-            vector<type> vec;              ///< stl::vector of data
+            std::vector<type> vec;         ///< stl::vector of data
 
             ///  Constructor (no argument)
             //////////////////////////////
@@ -47,7 +47,7 @@ namespace paracabs
                 ///  Constructor (single argument)
                 ///    @param[in] v : std::vector to construct Vector from
                 //////////////////////////////////////////////////////////
-                inline Vector (const vector<type>& v) : vec(v)
+                inline Vector (const std::vector<type>& v) : vec(v)
                 {
                     copy_vec_to_ptr ();
                     set_dat ();
