@@ -17,12 +17,20 @@ void Linedata :: read (const Io& io, const Size l)
     const string prefix_l = prefix + std::to_string (l) + "/linedata/";
 
     io.read_number (prefix_l+".num", num);
+
+    cout << "read num " << num << endl;
+
     io.read_word   (prefix_l+".sym", sym);
+
+    cout << "read sym " << sym << endl;
 
     io.read_number (prefix_l+".inverse_mass", inverse_mass);
 
     io.read_number (prefix_l+".nlev", nlev);
     io.read_number (prefix_l+".nrad", nrad);
+
+    cout << "nlev = " << nlev << endl;
+    cout << "nrad = " << nrad << endl;
 
     irad.resize (nrad);
     jrad.resize (nrad);

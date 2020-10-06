@@ -60,12 +60,12 @@ struct LineProducingSpecies
         const Real pop_prec );
 
     inline void update_using_LTE (
-        const Double2 &abundance,
-        const Real1   &temperature );
+        const Double2      &abundance,
+        const Vector<Real> &temperature );
 
     inline void update_using_statistical_equilibrium (
-        const Double2 &abundance,
-        const Real1   &temperature );
+        const Double2      &abundance,
+        const Vector<Real> &temperature );
 
     inline void update_using_Ng_acceleration ();
 };

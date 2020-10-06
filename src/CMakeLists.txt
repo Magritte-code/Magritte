@@ -1,6 +1,7 @@
 # Include directories
 include_directories (.)
 include_directories (../dependencies)
+include_directories (../dependencies/pybind11/include)
 
 set (SOURCE_FILES
     io/cpp/io_cpp_text.cpp
@@ -36,7 +37,8 @@ if    (OMP_PARALLEL)
 #    set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
 endif (OMP_PARALLEL)
 if    (GPU_ACCELERATION)
-    set_source_files_properties(${SOURCE_FILES} PROPERTIES LANGUAGE CUDA)
+    set_source_files_properties(${SOURCE_FILES}         PROPERTIES LANGUAGE CUDA)
+    set_source_files_properties(io/python/io_python.cpp PROPERTIES LANGUAGE CUDA)
 endif (GPU_ACCELERATION)
 
 # Add Python package separately

@@ -8,21 +8,21 @@ def read_length (io_file, file_name):
     """
     with hp.File (io_file, 'r') as file:
 
-        print('In the file? here are the keys:')
-        print(file.keys())
+        # print('In the file? here are the keys:')
+        # print(file.keys())
 
         try:
-            print('fine')
+            # print('fine')
             # Try to open the object
             object = file [file_name]
             # Check if it is a Dataset
 
-            print ('length = ', object.len())
+            # print ('length = ', object.len())
             if isinstance (object, hp.Dataset):
                 return object.len()
         except:
 
-            print ('not supposed to be here')
+            # print ('not supposed to be here')
             # Get name of object we need to count
             object_name = file_name.split('/')[-1]
             # Get containing group

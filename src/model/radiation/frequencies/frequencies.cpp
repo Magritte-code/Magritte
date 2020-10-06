@@ -26,12 +26,7 @@ void Frequencies :: read (const Io& io)
     // Add ncont bins background
     //nfreqs += ncont;
 
-    nu.resize (parameters.npoints());
-
-    for (Size p = 0; p < parameters.npoints(); p++)
-    {
-        nu[p].resize (parameters.nfreqs());
-    }
+    nu.resize (parameters.npoints(), parameters.nfreqs());
 
     appears_in_line_integral.resize (parameters.nfreqs());
     corresponding_l_for_spec.resize (parameters.nfreqs());
@@ -43,7 +38,7 @@ void Frequencies :: read (const Io& io)
     {
         for (Size f = 0; f < parameters.nfreqs(); f++)
         {
-            nu[p][f] = 0.0;
+            nu(p,f) = 0.0;
         }
     })
 }

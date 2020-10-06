@@ -13,11 +13,25 @@
 namespace py = pybind11;
 
 
+PYBIND11_MAKE_OPAQUE (vector<LineProducingSpecies>);
+PYBIND11_MAKE_OPAQUE (vector<CollisionPartner>);
+
+
 PYBIND11_MODULE (core, module)
 {
     // Module docstring
     module.doc() = "Core module of Magritte: a modern software library for 3D radiative transfer.";
 
+    // Define vector types
+    py::bind_vector<vector<LineProducingSpecies>> (module, "vLineProducingSpecies");
+    py::bind_vector<vector<CollisionPartner>>     (module, "vCollisionPartner");
+
+    // Constants
+    module.attr("CC")    = CC;
+    module.attr("HH")    = HH;
+    module.attr("KB")    = KB;
+    module.attr("AMU")   = AMU;
+    module.attr("T_CMB") = T_CMB;
 
     // Io, base class
     py::class_<Io> (module, "Io");
@@ -46,20 +60,34 @@ PYBIND11_MODULE (core, module)
         // attributes
         // functions
         .def ("trace", &Solver::trace)
+        .def ("solve", &Solver::solve)
         // constructor
         .def (py::init<const Size&, const Size&>());
 
     // Model
     py::class_<Model> (module, "Model")
         // attributes
-        .def_readwrite ("parameters", &Model::parameters)
-        .def_readwrite ("geometry",   &Model::geometry)
-        // io
-        .def ("read",                 &Model::read)
-        .def ("write",                &Model::write)
+        .def_readwrite ("parameters",     &Model::parameters)
+        .def_readwrite ("geometry",       &Model::geometry)
+        .def_readwrite ("chemistry",      &Model::chemistry)
+        .def_readwrite ("lines",          &Model::lines)
+        .def_readwrite ("thermodynamics", &Model::thermodynamics)
+        .def_readwrite ("radiation",      &Model::radiation)
+        // io (void (Pet::*)(int))
+        .def ("read",  (void (Model::*)(void))            &Model::read )
+        .def ("write", (void (Model::*)(void) const)      &Model::write)
+        .def ("read",  (void (Model::*)(const Io&))       &Model::read )
+        .def ("write", (void (Model::*)(const Io&) const) &Model::write)
+        .def ("compute_inverse_line_widths",                                        &Model::compute_inverse_line_widths)
+        .def ("compute_spectral_discretisation", (int (Model::*)(void            )) &Model::compute_spectral_discretisation)
+        .def ("compute_spectral_discretisation", (int (Model::*)(const Real width)) &Model::compute_spectral_discretisation)
+        .def ("compute_LTE_level_populations",                                      &Model::compute_LTE_level_populations)
+        .def ("compute_radiation_field",                                            &Model::compute_radiation_field)
+        .def ("compute_Jeff",                                                       &Model::compute_Jeff)
         .def ("coarsen_grid",         &Model::coarsen_grid)
         // constructor
-        .def (py::init());
+        .def (py::init<const string>())
+        .def (py::init<>());
 
     // Parameters
     py::class_<Parameters> (module, "Parameters")
@@ -67,6 +95,8 @@ PYBIND11_MODULE (core, module)
         .def_readwrite ("n_off_diag",         &Parameters::n_off_diag)
         .def_readwrite ("max_width_fraction", &Parameters::max_width_fraction)
         // setters
+        .def ("set_model_name",               &Parameters::set_model_name          )
+        .def ("set_dimension",                &Parameters::set_dimension           )
         .def ("set_npoints",                  &Parameters::set_npoints             )
         .def ("set_nrays",                    &Parameters::set_nrays               )
         .def ("set_nrays_red",                &Parameters::set_nrays_red           )
@@ -84,6 +114,7 @@ PYBIND11_MODULE (core, module)
         .def ("set_spherical_symmetry",       &Parameters::set_spherical_symmetry  )
         .def ("set_adaptive_ray_tracing",     &Parameters::set_adaptive_ray_tracing)
         // getters
+        .def ("dimension",                    &Parameters::dimension           )
         .def ("npoints",                      &Parameters::npoints             )
         .def ("nrays",                        &Parameters::nrays               )
         .def ("nrays_red",                    &Parameters::nrays_red           )
@@ -165,17 +196,246 @@ PYBIND11_MODULE (core, module)
         .def (py::init<Parameters&>());
 
 
+    // Boundary Condition
+    py::enum_<BoundaryCondition>(module, "BoundaryCondition")
+        .value("Zero",    Zero)
+        .value("Thermal", Thermal)
+        .value("CMB",     CMB)
+        .export_values();
+
+
     // Boundary
     py::class_<Boundary> (module, "Boundary")
         // attributes
-        .def_readwrite ("boundary2point", &Boundary::boundary2point)
-        .def_readwrite ("point2boundary", &Boundary::point2boundary)
-//        .def_readwrite ("is_on_boundary", &Boundary::is_on_boundary)
+        .def_readwrite ("boundary2point",       &Boundary::boundary2point)
+        .def_readwrite ("point2boundary",       &Boundary::point2boundary)
+        .def_readwrite ("boundary_condition",   &Boundary::boundary_condition)
+        .def_readwrite ("boundary_temperature", &Boundary::boundary_temperature)
         // io
-        .def ("read",                     &Boundary::read)
-        .def ("write",                    &Boundary::write)
+        .def ("read",                           &Boundary::read)
+        .def ("write",                          &Boundary::write)
         // constructor
         .def (py::init<Parameters&>());
+
+
+    // Thermodynamics
+    py::class_<Thermodynamics> (module, "Thermodynamics")
+        // attributes
+        .def_readwrite ("temperature", &Thermodynamics::temperature)
+        .def_readwrite ("turbulence",  &Thermodynamics::turbulence)
+        // functions
+        .def ("read",                  &Thermodynamics::read)
+        .def ("write",                 &Thermodynamics::write)
+        // constructor
+        .def (py::init());
+
+
+    // Temperature
+    py::class_<Temperature> (module, "Temperature")
+        // attributes
+        .def_readwrite ("gas", &Temperature::gas)
+        // functions
+        .def ("read",          &Temperature::read)
+        .def ("write",         &Temperature::write)
+        // constructor
+        .def (py::init());
+
+
+    // Turbulence
+    py::class_<Turbulence> (module, "Turbulence")
+        // attributes
+        .def_readwrite ("vturb2", &Turbulence::vturb2)
+        // functions
+        .def ("read",             &Turbulence::read)
+        .def ("write",            &Turbulence::write)
+        // constructor
+        .def (py::init());
+
+
+    // Chemistry
+    py::class_<Chemistry> (module, "Chemistry")
+        // attributes
+        .def_readwrite ("species", &Chemistry::species)
+        // functions
+        .def ("read",              &Chemistry::read)
+        .def ("write",             &Chemistry::write)
+        // constructor
+        .def (py::init());
+
+
+    // Species
+    py::class_<Species> (module, "Species")
+        // attributes
+        .def_readwrite ("symbol",    &Species::symbol)
+        .def_readwrite ("abundance", &Species::abundance)
+        // functions
+        .def ("read",                &Species::read)
+        .def ("write",               &Species::write)
+        // constructor
+        .def (py::init());
+
+
+    // Lines
+    py::class_<Lines> (module, "Lines")
+        // attributes
+        .def_readwrite ("lineProducingSpecies", &Lines::lineProducingSpecies)
+        .def_readwrite ("emissivity",           &Lines::emissivity)
+        .def_readwrite ("opacity",              &Lines::opacity)
+        .def_readwrite ("inverse_width",        &Lines::inverse_width)
+        .def_readwrite ("line",                 &Lines::line)
+        // functions
+        .def ("read",                           &Lines::read)
+        .def ("write",                          &Lines::write)
+        .def ("set_emissivity_and_opacity",     &Lines::set_emissivity_and_opacity)
+        // constructor
+        .def (py::init<>());
+
+
+    // LineProducingSpecies
+    py::class_<LineProducingSpecies> (module, "LineProducingSpecies")
+        // attributes
+        .def_readwrite ("linedata",         &LineProducingSpecies::linedata)
+        .def_readwrite ("quadrature",       &LineProducingSpecies::quadrature)
+        .def_readwrite ("Lambda",           &LineProducingSpecies::lambda) // "lambda" is invalid in Python, use "Lambda"
+        .def_readwrite ("Jeff",             &LineProducingSpecies::Jeff)
+        .def_readwrite ("Jlin",             &LineProducingSpecies::Jlin)
+        .def_readwrite ("nr_line",          &LineProducingSpecies::nr_line)
+        .def_readwrite ("population",       &LineProducingSpecies::population)
+        .def_readwrite ("population_tot",   &LineProducingSpecies::population_tot)
+        .def_readwrite ("population_prev1", &LineProducingSpecies::population_prev1)
+        .def_readwrite ("population_prev2", &LineProducingSpecies::population_prev2)
+        .def_readwrite ("population_prev3", &LineProducingSpecies::population_prev3)
+        .def_readwrite ("RT",               &LineProducingSpecies::RT)
+        .def_readwrite ("LambdaStar",       &LineProducingSpecies::LambdaStar)
+        .def_readwrite ("LambdaTest",       &LineProducingSpecies::LambdaTest)
+        // functions
+        .def ("read",                       &LineProducingSpecies::read)
+        .def ("write",                      &LineProducingSpecies::write)
+        .def ("index",                      &LineProducingSpecies::index)
+        // constructor
+        .def (py::init<>());
+
+
+    // Lambda
+    py::class_<Lambda> (module, "Lambda")
+        // attributes
+        .def_readwrite ("Ls",   &Lambda::Ls)
+        .def_readwrite ("nr",   &Lambda::nr)
+        .def_readwrite ("size", &Lambda::size)
+        .def_readwrite ("Lss",  &Lambda::Lss)
+        .def_readwrite ("nrs",  &Lambda::nrs)
+        // functions
+        .def ("add_element",    &Lambda::add_element)
+        .def ("linearize_data", &Lambda::linearize_data)
+        .def ("MPI_gather",     &Lambda::MPI_gather)
+        // constructor
+        .def (py::init<>());
+
+
+    // Quadrature
+    py::class_<Quadrature> (module, "Quadrature")
+        // attributes
+        .def_readwrite ("roots",   &Quadrature::roots)
+        .def_readwrite ("weights", &Quadrature::weights)
+        // functions
+        .def ("read",              &Quadrature::read)
+        .def ("write",             &Quadrature::write)
+        // constructor
+        .def (py::init<>());
+
+
+    // Linedata
+    py::class_<Linedata> (module, "Linedata")
+        // attributes
+        .def_readwrite ("num",          &Linedata::num)
+        .def_readwrite ("sym",          &Linedata::sym)
+        .def_readwrite ("inverse_mass", &Linedata::inverse_mass)
+        .def_readwrite ("nlev",         &Linedata::nlev)
+        .def_readwrite ("nrad",         &Linedata::nrad)
+        .def_readwrite ("irad",         &Linedata::irad)
+        .def_readwrite ("jrad",         &Linedata::jrad)
+        .def_readwrite ("energy",       &Linedata::energy)
+        .def_readwrite ("weight",       &Linedata::weight)
+        .def_readwrite ("frequency",    &Linedata::frequency)
+        .def_readwrite ("A",            &Linedata::A)
+        .def_readwrite ("Ba",           &Linedata::Ba)
+        .def_readwrite ("Bs",           &Linedata::Bs)
+        .def_readwrite ("ncolpar",      &Linedata::ncolpar)
+        .def_readwrite ("colpar",       &Linedata::colpar)
+        // functions
+        .def ("read",                   &Linedata::read)
+        .def ("write",                  &Linedata::write)
+        // constructor
+        .def (py::init<>());
+
+
+    // Colpartner
+    py::class_<CollisionPartner> (module, "CollisionPartner")
+        // attributes
+        .def_readwrite ("num_col_partner", &CollisionPartner::num_col_partner)
+        .def_readwrite ("orth_or_para_H2", &CollisionPartner::orth_or_para_H2)
+        .def_readwrite ("ntmp",            &CollisionPartner::ntmp)
+        .def_readwrite ("ncol",            &CollisionPartner::ncol)
+        .def_readwrite ("icol",            &CollisionPartner::icol)
+        .def_readwrite ("jcol",            &CollisionPartner::jcol)
+        .def_readwrite ("tmp",             &CollisionPartner::tmp)
+        .def_readwrite ("Ce",              &CollisionPartner::Ce)
+        .def_readwrite ("Cd",              &CollisionPartner::Cd)
+        // functions
+        .def ("read",                      &CollisionPartner::read)
+        .def ("write",                     &CollisionPartner::write)
+        // constructor
+        .def (py::init<>());
+
+
+    // Radiation
+    py::class_<Radiation> (module, "Radiation")
+        // attributes
+        .def_readwrite ("frequencies", &Radiation::frequencies)
+        // .def_readwrite ("u",           &Radiation::u)
+        // .def_readwrite ("v",           &Radiation::v)
+        .def_readwrite ("I_bdy",       &Radiation::I_bdy)
+        .def_readwrite ("I",           &Radiation::I)
+        .def_readwrite ("J",           &Radiation::J)
+        // functions
+        .def ("read",                  &Radiation::read)
+        .def ("write",                 &Radiation::write)
+        // constructor
+        .def (py::init());
+
+
+    // Frequencies
+    py::class_<Frequencies> (module, "Frequencies")
+        // attributes
+        .def_readwrite ("nu", &Frequencies::nu)
+        // functions
+        .def ("read",         &Frequencies::read)
+        .def ("write",        &Frequencies::write)
+        // constructor
+        .def (py::init());
+
+
+    // Vector3D <Real>
+    py::class_<Vector3D> (module, "Vector3D", py::buffer_protocol())
+        // buffer
+        .def_buffer(
+            [](Vector3D &v) -> py::buffer_info
+            {
+                return py::buffer_info(
+                    &(v.data[0]),                            // Pointer to buffer
+                    3,                                       // Size of one element
+                    py::format_descriptor<Real>::format(),   // Python struct-style format descriptor
+                    1,                                       // Number of dimensions
+                    {3},                                     // Buffer dimensions
+                    {sizeof(Real)}                           // Strides (in bytes) for each index
+                );
+            }
+        )
+        // functions
+        // attributes
+        // .def_readwrite ("data", &Vector3D::data)
+        // constructor
+        .def (py::init());
 
 
     // Vector <Size>
@@ -224,4 +484,301 @@ PYBIND11_MODULE (core, module)
         .def_readwrite ("vec", &Vector<Real>::vec)
         // constructor
         .def (py::init());
+
+
+    // Vector <Vector3D>
+    py::class_<Vector<Vector3D>> (module, "Vector_Vector3D", py::buffer_protocol())
+        // buffer
+        .def_buffer(
+            [](Vector<Vector3D> &v) -> py::buffer_info
+            {
+                return py::buffer_info(
+                    v.dat,                                                               // Pointer to buffer
+                    sizeof(Real),                                                        // Size of one element
+                    py::format_descriptor<Real>::format(),                               // Python struct-style format descriptor
+                    2,                                                                   // Number of dimensions
+                    py::detail::any_container<ssize_t>({v.vec.size(), 3}),               // Buffer dimensions
+                    py::detail::any_container<ssize_t>({sizeof(Real)*3, sizeof(Real)})   // Strides (in bytes) for each index
+                );
+            }
+        )
+        // functions
+        .def ("resize",        &Vector<Vector3D>::resize)
+        // attributes
+        .def_readwrite ("vec", &Vector<Vector3D>::vec)
+
+        //.def("__init__",
+        //    [](Vector<Vector3D> &v, py::buffer b)
+        //    {
+        //        // typedef Eigen::Stride<Eigen::Dynamic, Eigen::Dynamic> Strides;
+
+        //        /* Request a buffer descriptor from Python */
+        //        py::buffer_info info = b.request();
+
+        //        /* Some sanity checks ... */
+        //        // if (info.format != py::format_descriptor<Real>::format())
+        //            // throw std::runtime_error("Incompatible format: expected a double array!");
+
+        //        // if (info.ndim != 2)
+        //            // throw std::runtime_error("Incompatible buffer dimension!");
+
+        //        // auto strides = Strides(
+        //            // info.strides[rowMajor ? 0 : 1] / (py::ssize_t)sizeof(Scalar),
+        //            // info.strides[rowMajor ? 1 : 0] / (py::ssize_t)sizeof(Scalar));
+
+        //        // auto map = Eigen::Map<Matrix, 0, Strides>(
+        //            // static_cast<Scalar *>(info.ptr), info.shape[0], info.shape[1], strides);
+
+        //        // new (&v) Matrix(map);
+
+
+        //        v.resize(info.shape[0]);
+
+        //        memcpy(v.vec.data(), info.ptr, info.shape[0]*sizeof(Vector3D));
+
+        //    }
+        //);
+        // constructor
+        .def (py::init());
+}
+
+
+namespace pybind11
+{
+    namespace detail
+    {
+        template<> struct type_caster<Vector3D>
+        {
+            PYBIND11_TYPE_CASTER(Vector3D, _("Vector3D"));
+
+            // Conversion part 1 (Python -> C++)
+            bool load(py::handle src, bool convert)
+            {
+                // if ( !convert and !py::array_t<T>::check_(src) )
+                    // return false;
+
+                // auto buf = py::array_t<Real, py::array::c_style | py::array::forcecast>::ensure(src);
+                auto buf = array::ensure(src);
+
+                if ( !buf )
+                    return false;
+
+                auto dims = buf.ndim();
+                if ( dims != 1  )
+                    return false;
+
+                // std::vector<size_t> shape(1);
+                // shape[0] = buf.shape()[0];
+                Real* data = (Real*) buf.data();
+
+                value = Vector3D (data[0], data[1], data[2]);
+
+                // auto ref = reinterpret_steal<array>(eigen_ref_array<props>(value));
+
+                // memcpy(value.vec.data(), buf.data(), shape[0]*sizeof(Vector3D));
+
+                // int result = detail::npy_api::get().PyArray_CopyInto_(ref.ptr(), buf.ptr());
+
+                // if (result < 0)   // Copy failed!
+                // {
+                   // PyErr_Clear();
+                   // return false;
+                // }
+
+                return true;
+            }
+
+            //Conversion part 2 (C++ -> Python)
+            static py::handle cast(const Vector3D& src, py::return_value_policy policy, py::handle parent)
+            {
+                std::vector<size_t> shape(1);
+                shape[0] = 3;
+
+                std::vector<size_t> strides(1);
+                strides[0] = sizeof(Real);
+
+                py::array arr (std::move(shape), std::move(strides), &(src.data[0]));
+
+                return arr.release();
+            }
+        };
+
+
+        template<> struct type_caster<Vector<Vector3D>>
+        {
+            PYBIND11_TYPE_CASTER(Vector<Vector3D>, _("Vector<Vector3D>"));
+
+            // Conversion part 1 (Python -> C++)
+            bool load(py::handle src, bool convert)
+            {
+                // if ( !convert and !py::array_t<T>::check_(src) )
+                    // return false;
+
+                // auto buf = py::array_t<Real, py::array::c_style | py::array::forcecast>::ensure(src);
+                auto buf = array::ensure(src);
+
+                if ( !buf )
+                    return false;
+
+                auto dims = buf.ndim();
+                if ( dims != 2  )
+                    return false;
+
+                std::vector<size_t> shape(2);
+                shape[0] = buf.shape()[0];
+                shape[1] = buf.shape()[1];
+
+                value = Vector<Vector3D> (shape[0]);
+
+                Vector<Vector3D>* data = (Vector<Vector3D>*) buf.data();
+
+                // auto ref = reinterpret_steal<array>(eigen_ref_array<props>(value));
+
+                memcpy(value.vec.data(), buf.data(), shape[0]*sizeof(Vector3D));
+
+                // int result = detail::npy_api::get().PyArray_CopyInto_(ref.ptr(), buf.ptr());
+
+                // if (result < 0)   // Copy failed!
+                // {
+                   // PyErr_Clear();
+                   // return false;
+                // }
+
+                return true;
+            }
+
+            //Conversion part 2 (C++ -> Python)
+            static py::handle cast(const Vector<Vector3D>& src, py::return_value_policy policy, py::handle parent)
+            {
+                std::vector<size_t> shape(2);
+                shape[0] = src.vec.size();
+                shape[1] = 3;
+
+                std::vector<size_t> strides(2);
+                strides[0] = sizeof(Real)*shape[1];
+                strides[1] = sizeof(Real);
+
+                py::array arr (std::move(shape), std::move(strides), &(src.vec[0].data[0]));
+
+                return arr.release();
+            }
+        };
+
+
+        template<typename type>
+        struct type_caster<Vector<type>>
+        {
+            PYBIND11_TYPE_CASTER(Vector<type>, _("Vector<type>"));
+
+            // Conversion part 1 (Python -> C++)
+            bool load(py::handle src, bool convert)
+            {
+                // if ( !convert and !py::array_t<T>::check_(src) )
+                    // return false;
+
+                // auto buf = py::array_t<Real, py::array::c_style | py::array::forcecast>::ensure(src);
+                auto buf = array::ensure(src);
+
+                if ( !buf )
+                    return false;
+
+                auto dims = buf.ndim();
+                if ( dims != 1  )
+                    return false;
+
+                std::vector<size_t> shape(1);
+                shape[0] = buf.shape()[0];
+
+                value = Vector<type> (shape[0]);
+
+                // auto ref = reinterpret_steal<array>(eigen_ref_array<props>(value));
+
+                memcpy(value.vec.data(), buf.data(), shape[0]*sizeof(type));
+
+                // int result = detail::npy_api::get().PyArray_CopyInto_(ref.ptr(), buf.ptr());
+
+                // if (result < 0)   // Copy failed!
+                // {
+                   // PyErr_Clear();
+                   // return false;
+                // }
+
+                return true;
+            }
+
+            //Conversion part 2 (C++ -> Python)
+            static py::handle cast(const Vector<type>& src, py::return_value_policy policy, py::handle parent)
+            {
+                std::vector<size_t> shape(1);
+                shape[0] = src.vec.size();
+
+                std::vector<size_t> strides(1);
+                strides[0] = sizeof(Real);
+
+                py::array arr (std::move(shape), std::move(strides), src.vec.data());
+
+                return arr.release();
+            }
+        };
+
+
+        template<typename type>
+        struct type_caster<Matrix<type>>
+        {
+            PYBIND11_TYPE_CASTER(Matrix<type>, _("Matrix<type>"));
+
+            // Conversion part 1 (Python -> C++)
+            bool load(py::handle src, bool convert)
+            {
+                // if ( !convert and !py::array_t<T>::check_(src) )
+                    // return false;
+
+                // auto buf = py::array_t<Real, py::array::c_style | py::array::forcecast>::ensure(src);
+                auto buf = array::ensure(src);
+
+                if ( !buf )
+                    return false;
+
+                auto dims = buf.ndim();
+                if ( dims != 2  )
+                    return false;
+
+                std::vector<size_t> shape(2);
+                shape[0] = buf.shape()[0];
+                shape[1] = buf.shape()[1];
+
+                value = Matrix<type> (shape[0], shape[1]);
+
+                // auto ref = reinterpret_steal<array>(eigen_ref_array<props>(value));
+
+                memcpy(value.vec.data(), buf.data(), shape[0]*shape[1]*sizeof(type));
+
+                // int result = detail::npy_api::get().PyArray_CopyInto_(ref.ptr(), buf.ptr());
+
+                // if (result < 0)   // Copy failed!
+                // {
+                   // PyErr_Clear();
+                   // return false;
+                // }
+
+                return true;
+            }
+
+            //Conversion part 2 (C++ -> Python)
+            static py::handle cast(const Matrix<type>& src, py::return_value_policy policy, py::handle parent)
+            {
+                std::vector<size_t> shape(2);
+                shape[0] = src.nrows;
+                shape[1] = src.ncols;
+
+                std::vector<size_t> strides(2);
+                strides[0] = sizeof(Real)*shape[1];
+                strides[1] = sizeof(Real);
+
+                py::array arr (std::move(shape), std::move(strides), src.vec.data());
+
+                return arr.release();
+            }
+        };
+    }
 }

@@ -28,6 +28,3 @@ struct Points
     //note to self: add set_neighbors and get_neighbors (should get/set all the different neighbors variables)
     //note to self: points 'deleted' should have no neighbors
 };
-
-
-#include "points.tpp"

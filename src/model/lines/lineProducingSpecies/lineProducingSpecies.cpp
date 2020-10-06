@@ -15,6 +15,7 @@ void LineProducingSpecies :: read (const Io& io, const Size l)
     linedata  .read (io, l);
     quadrature.read (io, l);
 
+
     RT        .resize (parameters.npoints()*linedata.nlev,
                        parameters.npoints()*linedata.nlev );
     LambdaStar.resize (parameters.npoints()*linedata.nlev,
@@ -27,6 +28,7 @@ void LineProducingSpecies :: read (const Io& io, const Size l)
     Jeff.resize (parameters.npoints());
     Jlin.resize (parameters.npoints());
     Jdif.resize (parameters.npoints());
+
 
     for (Size p = 0; p < parameters.npoints(); p++)
     {
@@ -47,6 +49,7 @@ void LineProducingSpecies :: read (const Io& io, const Size l)
         }
     }
 
+
     population_prev1.resize (parameters.npoints()*linedata.nlev);
     population_prev2.resize (parameters.npoints()*linedata.nlev);
     population_prev3.resize (parameters.npoints()*linedata.nlev);
@@ -57,7 +60,9 @@ void LineProducingSpecies :: read (const Io& io, const Size l)
 
     io.read_list (prefix_l+"population_tot", population_tot);
 
+
     read_populations (io, l, "");
+
 
     Double2 pops_prev1 (parameters.npoints(), Double1 (linedata.nlev));
     Double2 pops_prev2 (parameters.npoints(), Double1 (linedata.nlev));
@@ -66,6 +71,7 @@ void LineProducingSpecies :: read (const Io& io, const Size l)
     int err_prev1 = io.read_array (prefix_l+"population_prev1", pops_prev1);
     int err_prev2 = io.read_array (prefix_l+"population_prev2", pops_prev2);
     int err_prev3 = io.read_array (prefix_l+"population_prev3", pops_prev3);
+
 
     threaded_for (p, parameters.npoints(),
     {
@@ -92,27 +98,27 @@ void LineProducingSpecies :: write (const Io& io, const Size l) const
 
     write_populations (io, l, "");
 
-    const string prefix_l = prefix + std::to_string (l) + "/";
+    // const string prefix_l = prefix + std::to_string (l) + "/";
 
-    io.write_list (prefix_l + "population_tot", population_tot);
+    // io.write_list (prefix_l + "population_tot", population_tot);
 
-    Double2 pops_prev1 (parameters.npoints(), Double1 (linedata.nlev));
-    Double2 pops_prev2 (parameters.npoints(), Double1 (linedata.nlev));
-    Double2 pops_prev3 (parameters.npoints(), Double1 (linedata.nlev));
+    // Double2 pops_prev1 (parameters.npoints(), Double1 (linedata.nlev));
+    // Double2 pops_prev2 (parameters.npoints(), Double1 (linedata.nlev));
+    // Double2 pops_prev3 (parameters.npoints(), Double1 (linedata.nlev));
 
-    threaded_for (p, parameters.npoints(),
-    {
-        for (Size i = 0; i < linedata.nlev; i++)
-        {
-            pops_prev1[p][i] = population_prev1 (index (p, i));
-            pops_prev2[p][i] = population_prev2 (index (p, i));
-            pops_prev3[p][i] = population_prev3 (index (p, i));
-        }
-    })
+    // threaded_for (p, parameters.npoints(),
+    // {
+    //     for (Size i = 0; i < linedata.nlev; i++)
+    //     {
+    //         pops_prev1[p][i] = population_prev1 (index (p, i));
+    //         pops_prev2[p][i] = population_prev2 (index (p, i));
+    //         pops_prev3[p][i] = population_prev3 (index (p, i));
+    //     }
+    // })
 
-    io.write_array (prefix_l+"population_prev1", pops_prev1);
-    io.write_array (prefix_l+"population_prev2", pops_prev2);
-    io.write_array (prefix_l+"population_prev3", pops_prev3);
+    // io.write_array (prefix_l+"population_prev1", pops_prev1);
+    // io.write_array (prefix_l+"population_prev2", pops_prev2);
+    // io.write_array (prefix_l+"population_prev3", pops_prev3);
 }
 
 
@@ -154,20 +160,30 @@ void LineProducingSpecies :: write_populations (const Io& io, const Size l, cons
 {
     const string prefix_l = prefix + std::to_string (l) + "/";
 
-    Double2 pops (parameters.npoints(), Double1 (linedata.nlev));
-
     cout << "Writing populations..." << endl;
 
-    threaded_for (p, parameters.npoints(),
+    if (population.size() > 0)
     {
-        for (Size i = 0; i < linedata.nlev; i++)
+        Double2 pops (parameters.npoints(), Double1 (linedata.nlev));
+
+        threaded_for (p, parameters.npoints(),
         {
-            pops[p][i] = population (index (p, i));
-        }
-    })
+            for (Size i = 0; i < linedata.nlev; i++)
+            {
+                pops[p][i] = population (index (p, i));
+            }
+        })
 
-    io.write_array (prefix_l+"population"+tag, pops);
+        io.write_array (prefix_l+"population"+tag, pops);
+    }
 
-    io.write_array (prefix_l+"J_lin"+tag, Jlin);
-    io.write_array (prefix_l+"J_eff"+tag, Jeff);
+    if (Jlin.size() > 0)
+    {
+        io.write_array (prefix_l+"J_lin"+tag, Jlin);
+    }
+
+    if (Jeff.size() > 0)
+    {
+        io.write_array (prefix_l+"J_eff"+tag, Jeff);
+    }
 }

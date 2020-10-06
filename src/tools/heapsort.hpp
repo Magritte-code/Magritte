@@ -48,7 +48,7 @@ inline void heapsort (vector<type>& a, Size1& b)
     // Assert that both vectors have the same size
     assert (n == b.size());
 
-    for (Size i = (n-2)/2; i >=0 ; i--)
+    for (long i = (n-2)/2; i >=0 ; i--) // Warning: long is required here, couting down!!!
     {
         downheap (a, b, n, i);
     }

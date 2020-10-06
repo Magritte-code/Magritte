@@ -2,6 +2,7 @@
 
 
 #include "io/io.hpp"
+#include "io/python/io_python.hpp"
 #include "parameters/parameters.hpp"
 #include "tools/types.hpp"
 #include "geometry/geometry.hpp"
@@ -17,9 +18,19 @@ struct Model
     Parameters     parameters;
     Geometry       geometry;
     Chemistry      chemistry;
-    // Thermodynamics thermodynamics;
-    // Lines          lines;
-    // Radiation      radiation;
+    Thermodynamics thermodynamics;
+    Lines          lines;
+    Radiation      radiation;
+
+    enum SpectralDiscretisation {None, SD_Lines, SD_Image}
+         spectralDiscretisation = None;
+
+    Model () {};
+    Model (const string name)
+    {
+        parameters.model_name() = name;
+        read ();
+    }
 
 
     Size curr_coarsening_lvl=0;
@@ -43,7 +54,15 @@ struct Model
     inline void reset_grid();
 
 
-};
+    void read  ()       {read  (IoPython ("hdf5", parameters.model_name()));};
+    void write () const {write (IoPython ("hdf5", parameters.model_name()));};
 
+    int compute_inverse_line_widths     ();
+    int compute_spectral_discretisation ();
+    int compute_spectral_discretisation (const Real width);
+    int compute_LTE_level_populations   ();
+    int compute_radiation_field         ();
+    int compute_Jeff                    ();
+};
 
 #include "model.tpp"

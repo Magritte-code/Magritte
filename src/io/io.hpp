@@ -96,4 +96,18 @@ struct Io
     {
         return write_list (fname, v.vec);
     }
+
+
+    int read_array (const string fname, Matrix<Real>& v) const
+    {
+        int err = read_list (fname, v.vec);
+        v.set_dat ();
+        return err;
+    }
+
+
+    int write_array (const string fname, const Matrix<Real>& v) const
+    {
+        return write_list (fname, v.vec);
+    }
 };

@@ -127,6 +127,7 @@ struct Parameters
 //        accel inline bool spherical_symmetry  () const {return spherical_symmetry_  .get();}
 //        accel inline bool adaptive_ray_tracing() const {return adaptive_ray_tracing_.get();}
 
+
     long n_off_diag = 0;
 
     double max_width_fraction = 0.5;
@@ -134,8 +135,9 @@ struct Parameters
     void read (const Io &io);
     void write(const Io &io) const;
 
-    CREATE_PARAMETER (Size, a);
+    CREATE_PARAMETER (string, model_name);
 
+    CREATE_PARAMETER (Size, dimension );
     CREATE_PARAMETER (Size, npoints   );
     CREATE_PARAMETER (Size, totnnbs   );
     CREATE_PARAMETER (Size, nrays     );
@@ -160,8 +162,9 @@ struct Parameters
 
     Parameters ()
     {
-        CONSTRUCT_PARAMETER (Size, a);
+        CONSTRUCT_PARAMETER (string, model_name);
 
+        CONSTRUCT_PARAMETER (Size, dimension );
         CONSTRUCT_PARAMETER (Size, npoints   );
         CONSTRUCT_PARAMETER (Size, totnnbs   );
         CONSTRUCT_PARAMETER (Size, nrays     );
@@ -187,8 +190,9 @@ struct Parameters
 
     Parameters (const Parameters& parameters)
     {
-        COPY_PARAMETER (a);
+        COPY_PARAMETER (model_name);
 
+        COPY_PARAMETER (dimension );
         COPY_PARAMETER (npoints   );
         COPY_PARAMETER (totnnbs   );
         COPY_PARAMETER (nrays     );

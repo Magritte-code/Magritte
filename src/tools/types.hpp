@@ -24,6 +24,8 @@ using Vector3D = pc::datatypes::Vector3D <Real>;
 
 template <typename type>
 using Vector = pc::datatypes::Vector <type>;
+template <typename type>
+using Matrix = pc::datatypes::Matrix <type>;
 
 
 

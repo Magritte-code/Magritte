@@ -1,3 +1,28 @@
+///  Getter for the maximum allowed shift value determined by the smallest line
+///    @param[in] o : number of point under consideration
+///    @retrun maximum allowed shift value determined by the smallest line
+///////////////////////////////////////////////////////////////////////////////
+// accel inline Real Solver :: get_dshift_max (const Model& model, const Size o) const
+// {
+//
+//     Real dshift_max = std::numeric_limits<Real>::max();
+//
+//     for (const LineProducingSpecies &lspec : lines.lineProducingSpecies)
+//     {
+//         const Real inverse_mass   = lspec.linedata.inverse_mass;
+//         const Real new_dshift_max = parameters.max_width_fraction
+//                                     * thermodynamics.profile_width (inverse_mass, o);
+//
+//         if (dshift_max > new_dshift_max)
+//         {
+//             dshift_max = new_dshift_max;
+//         }
+//     }
+//
+//     return dshift_max;
+// }
+
+
 inline void Solver :: trace (Model& model)
 {
     for (Size rr = 0; rr < model.parameters.hnrays(); rr++)
@@ -6,13 +31,37 @@ inline void Solver :: trace (Model& model)
 
         cout << "rr = " << rr << endl;
 
-        accelerated_for (o, 10000, nblocks, nthreads,
+        accelerated_for (o, model.parameters.npoints(), nblocks, nthreads,
         {
+            // const Real dshift_max = get_dshift_max (o);
             const Real dshift_max = 1.0e+99;
 
             model.geometry.lengths[model.parameters.npoints()*rr+o] =
                 trace_ray <CoMoving> (model.geometry, o, rr, dshift_max, +1)
               - trace_ray <CoMoving> (model.geometry, o, ar, dshift_max, -1);
+        })
+
+        pc::accelerator::synchronize();
+    }
+
+    model.geometry.lengths.copy_ptr_to_vec ();
+}
+
+
+inline void Solver :: solve (Model& model)
+{
+    for (Size rr = 0; rr < model.parameters.hnrays(); rr++)
+    {
+        const Size ar = model.geometry.rays.antipod[rr];
+
+        cout << "rr = " << rr << endl;
+
+        accelerated_for (o, model.parameters.npoints(), nblocks, nthreads,
+        {
+            const Real dshift_max = 1.0e+99;
+
+            solve_0th_order_short_charateristics (model, o, rr, dshift_max);
+            solve_0th_order_short_charateristics (model, o, ar, dshift_max);
         })
 
         pc::accelerator::synchronize();
@@ -76,8 +125,8 @@ accel inline void Solver :: set_data (
     if (dshift_abs > dshift_max) // If velocity gradient is not well-sampled enough
     {
         // Interpolate velocity gradient field
-        const Real      n_interpl = dshift_abs / dshift_max + Real (1);
-        const Real half_n_interpl = Real (0.5) * n_interpl;
+        const Size      n_interpl = dshift_abs / dshift_max + Real (1);
+        const Size half_n_interpl = Real (0.5) * n_interpl;
         const Real     dZ_interpl =     dZ_loc / n_interpl;
         const Real dshift_interpl =     dshift / n_interpl;
 
@@ -334,5 +383,158 @@ accel inline void Solver :: set_data (
 // //            printf("check L_l(0, %ld)[%ld] = %le\n", In, M(0,In), L_lower[M(0,In)]);
 // //        }
 //     }
-// 
+//
 // }
+
+
+///  Gaussian line profile function
+///    @param[in] width : profile width
+///    @param[in] diff  : frequency difference with line centre
+///    @return profile function evaluated with this frequency difference
+////////////////////////////////////////////////////////////////////////
+accel inline Real Solver :: gaussian (const Real inverse_width, const Real diff) const
+{
+    const Real sqrt_exp = inverse_width * diff;
+
+    return inverse_width * INVERSE_SQRT_PI * expf (-sqrt_exp*sqrt_exp);
+}
+
+
+///  Planck function
+///    @param[in] temp : temperature of the corresponding black body
+///    @param[in] freq : frequency at which to evaluate the function
+///    @return Planck function evaluated at this frequency
+///////////////////////////////////////////////////////////////////////////
+accel inline Real Solver :: planck (const Real temp, const Real freq) const
+{
+    return TWO_HH_OVER_CC_SQUARED * (freq*freq*freq) / expm1 (HH_OVER_KB*freq/temp);
+}
+
+
+accel inline Real Solver :: boundary_intensity (const Model& model, const Size bdy_id, const Real freq) const
+{
+    switch (model.geometry.boundary.boundary_condition[bdy_id])
+    {
+        case Zero    : return 0.0;
+        case Thermal : return planck (model.geometry.boundary.boundary_temperature[bdy_id], freq);
+        default      : return planck (T_CMB, freq);
+    }
+}
+
+
+///  Getter for the emissivity (eta) and the opacity (chi)
+///    @param[in]  model : reference to model object
+///    @param[in]  p     : in dex of the cell
+///    @param[in]  freq  : frequency (in co-moving frame)
+///    @param[out] eta   : emissivity
+///    @param[out] chi   : opacity
+//////////////////////////////////////////////////////////
+accel inline void Solver :: get_eta_and_chi (
+    const Model& model,
+    const Size   p,
+    const Real   freq,
+          Real&  eta,
+          Real&  chi )
+{
+    // Initialize
+    eta = 0.0;
+    chi = 0.0;
+
+    // Set line emissivity and opacity
+    for (Size l = 0; l < model.parameters.nlines(); l++)
+    {
+        const Real diff = freq - model.lines.line[l];
+        const Real prof = freq * gaussian (model.lines.inverse_width(p, l), diff);
+
+        eta += prof * model.lines.emissivity(p, l);
+        chi += prof * model.lines.opacity   (p, l);
+    }
+}
+
+
+///  Apply trapezium rule to x_crt and x_nxt
+///    @param[in] x_crt : current value of x
+///    @param[in] x_nxt : next value of x
+///    @param[in] dZ    : distance inscrement along ray
+///    @returns integral x over dZ
+///////////////////////////////////////////////////////
+accel inline Real trap (const Real x_crt, const Real x_nxt, const Real dZ)
+{
+    return (Real) 0.5 * (x_crt + x_nxt) * dZ;
+}
+
+
+
+
+accel inline void Solver :: solve_0th_order_short_charateristics (
+          Model& model,
+    const Size   o,
+    const Size   r,
+    const Real   dshift_max)
+{
+    Matrix<Real>& I = model.radiation.I[r];
+
+    Real  Z = 0.0;   // distance along ray
+    Real dZ = 0.0;   // last distance increment
+
+    Size crt = o;
+    Size nxt = model.geometry.get_next (o, r, o, Z, dZ);
+
+    if (model.geometry.valid_point (nxt))
+    {
+        Real shift_crt = 1.0;
+        Real shift_nxt = model.geometry.get_shift <CoMoving> (o, r, nxt);
+
+        for (Size f = 0; f < model.parameters.nfreqs(); f++)
+        {
+            const Real freq = model.radiation.frequencies.nu(o, f);
+
+            get_eta_and_chi (model, crt, freq,           eta_crt[f], chi_crt[f]);
+            get_eta_and_chi (model, nxt, freq*shift_nxt, eta_nxt[f], chi_nxt[f]);
+
+            drho[f] = trap (eta_crt[f], eta_nxt[f], dZ);
+            dtau[f] = trap (chi_crt[f], chi_nxt[f], dZ);
+             tau[f] = dtau[f];
+             I(o,f) = drho[f] * expf(-tau[f]);
+        }
+
+        while (model.geometry.not_on_boundary (nxt))
+        {
+                  crt =       nxt;
+            shift_crt = shift_nxt;
+              eta_crt =   eta_nxt;
+              chi_crt =   chi_nxt;
+
+            model.geometry.get_next (o, r, crt, nxt, Z, dZ, shift_nxt);
+
+            for (Size f = 0; f < model.parameters.nfreqs(); f++)
+            {
+                const Real freq = model.radiation.frequencies.nu(o, f);
+
+                get_eta_and_chi (model, nxt, freq*shift_nxt, eta_nxt[f], chi_nxt[f]);
+
+                drho[f]  = trap (eta_crt[f], eta_nxt[f], dZ);
+                dtau[f]  = trap (chi_crt[f], chi_nxt[f], dZ);
+                 tau[f] += dtau[f];
+                 I(o,f) += drho[f] * expf(-tau[f]);
+            }
+        }
+
+        for (Size f = 0; f < model.parameters.nfreqs(); f++)
+        {
+            const Real freq = model.radiation.frequencies.nu(o, f);
+
+            I(o,f) += boundary_intensity(model, nxt, freq*shift_nxt) * expf(-tau[f]);
+        }
+    }
+
+    else
+    {
+        for (Size f = 0; f < model.parameters.nfreqs(); f++)
+        {
+            const Real freq = model.radiation.frequencies.nu(o, f);
+
+            I(o,f) = boundary_intensity(model, crt, freq);
+        }
+    }
+}

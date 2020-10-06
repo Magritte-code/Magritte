@@ -12,6 +12,8 @@ struct Species
 {
     Parameters parameters;
 
+    String1 symbol;
+
     Double2 abundance_init;   ///< abundance before chemical evolution
     Double2 abundance;        ///< (current) abundance in every cell
 

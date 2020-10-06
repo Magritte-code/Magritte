@@ -14,7 +14,7 @@ void Lines :: read (const Io& io)
     cout << "Reading lines..." << endl;
 
     /// Read and set nlspecs
-    parameters.set_nlspecs (io.get_length (prefix+"LineProducingSpecies_"));
+    parameters.set_nlspecs (io.get_length (prefix+"lineProducingSpecies_"));
 
     /// Read line producing species data
     lineProducingSpecies.resize (parameters.nlspecs());
@@ -25,7 +25,8 @@ void Lines :: read (const Io& io)
     }
 
     /// Set nrad_cum, a helper variable for determining indices
-    nrad_cum.resize (parameters.nlspecs(), 0);
+    nrad_cum.resize (parameters.nlspecs());
+    nrad_cum[0] = 0;
 
     for (Size l = 1; l < parameters.nlspecs(); l++)
     {
@@ -44,7 +45,7 @@ void Lines :: read (const Io& io)
 
     /// Set and sort lines and their indices
     line      .resize (parameters.nlines());
-    line_index.resize (parameters.nlines());
+    // line_index.resize (parameters.nlines());
 
     Size index = 0;
 
@@ -53,15 +54,21 @@ void Lines :: read (const Io& io)
         for (Size k = 0; k < lspec.linedata.nrad; k++)
         {
             line      [index] = lspec.linedata.frequency[k];
-            line_index[index] = index;
+            // line_index[index] = index;
             index++;
         }
     }
 
-    heapsort (line, line_index);
 
-    emissivity.resize (parameters.npoints()*parameters.nlines());
-    opacity   .resize (parameters.npoints()*parameters.nlines());
+    // heapsort (line, line_index);
+
+
+    // emissivity.resize (parameters.npoints()*parameters.nlines());
+    // opacity   .resize (parameters.npoints()*parameters.nlines());
+
+    emissivity   .resize (parameters.npoints(), parameters.nlines());
+    opacity      .resize (parameters.npoints(), parameters.nlines());
+    inverse_width.resize (parameters.npoints(), parameters.nlines());
 }
 
 
@@ -79,7 +86,7 @@ void Lines :: write (const Io& io) const
 }
 
 
-void Lines :: iteration_using_LTE (const Double2 &abundance, const Real1 &temperature)
+void Lines :: iteration_using_LTE (const Double2 &abundance, const Vector<Real> &temperature)
 {
     for (LineProducingSpecies &lspec : lineProducingSpecies)
     {
@@ -107,9 +114,9 @@ void Lines :: iteration_using_Ng_acceleration (const Real pop_prec)
 
 
 void Lines :: iteration_using_statistical_equilibrium (
-    const Double2 &abundance,
-    const Real1   &temperature,
-    const Real     pop_prec )
+    const Double2      &abundance,
+    const Vector<Real> &temperature,
+    const Real          pop_prec )
 {
     for (LineProducingSpecies &lspec : lineProducingSpecies)
     {

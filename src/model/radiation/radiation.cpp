@@ -46,21 +46,29 @@ void Radiation :: read (const Io& io)
     }
 
 
+    I.resize (parameters.nrays());
+
+    for (Size r = 0; r < parameters.nrays(); r++)
+    {
+        I[r].resize (parameters.npoints(), parameters.nfreqs());
+    }
+
     if (parameters.use_scattering())
     {
-        u.resize (parameters.nrays_red());
-        v.resize (parameters.nrays_red());
 
-        U.resize (parameters.nrays_red());
-        V.resize (parameters.nrays_red());
+        // u.resize (parameters.nrays_red());
+        // v.resize (parameters.nrays_red());
+
+        // U.resize (parameters.nrays_red());
+        // V.resize (parameters.nrays_red());
 
         for (Size r = 0; r < parameters.nrays_red(); r++)
         {
-            u[r].resize (parameters.npoints()*parameters.nfreqs());
-//            v[r].resize (npoints*nfreqs_red);
+            // u[r].resize (parameters.npoints(), parameters.nfreqs());
+//            v[r].resize (npoints, nfreqs_red);
 
-//            U[r].resize (npoints*nfreqs_red);
-//            V[r].resize (npoints*nfreqs_red);
+//            U[r].resize (npoints, nfreqs_red);
+//            V[r].resize (npoints, nfreqs_red);
         }
     }
 }
@@ -106,11 +114,8 @@ void Radiation :: write (const Io &io) const
 //
 //    io.write_array (prefix+"u", uu);
 
-    cout << "Writing u's..." << endl;
 
-    io.write_array (prefix+"u", u);
-
-    cout << "u's written..." << endl;
+    // io.write_array (prefix+"u", u);
 
 
 //    Double2 I_bdy_buffer (I_bdy.size(), Double1 (I_bdy[0].size()*I_bdy[0][0].size()));
@@ -277,82 +282,82 @@ void Radiation :: calc_U_and_V ()
 #if (MPI_PARALLEL)
 
 {
-    Real1 U_local (parameters.npoints()*parameters.nfreqs());
-    Real1 V_local (parameters.npoints()*parameters.nfreqs());
-
-    for (Size w = 0; w < pc::message_passing::comm_size(); w++)
-    {
-        const Size start = ( w   *(parameters.hnrays())) / pc::message_passing::comm_size();
-        const Size stop  = ((w+1)*(parameters.hnrays())) / pc::message_passing::comm_size();
-
-        for (Size r1 = start; r1 < stop; r1++)
-        {
-            const Size R1 = r1 - start;
-
-            initialize (U_local);
-            initialize (V_local);
-
-            distributed_for (r2, R2, parameters.hnrays(),
-            {
-                threaded_for (p, parameters.npoints(),
-                {
-                    for (Size f = 0; f < parameters.nfreqs(); f++)
-              	    {
-                        U_local[index(p,f)] += u[R2][index(p,f)]; // * scattering.phase[r1][r2][f];
-                        V_local[index(p,f)] += v[R2][index(p,f)]; // * scattering.phase[r1][r2][f];
-                    }
-                })
-            }) // end of r2 loop over raypairs2
-
-            int ierr_u = MPI_Reduce (
-                           U_local.data(),     // pointer to the data to be reduced
-                           U[R1].data(),       // pointer to the data to be received
-                           U_local.size(),     // size of the data to be received
-                           MPI_DOUBLE,         // type of the reduced data
-                           MPI_SUM,            // reduction operation
-                           w,                  // rank of root to which we reduce
-                           MPI_COMM_WORLD);
-            assert (ierr_u == 0);
-
-            int ierr_v = MPI_Reduce (
-                           V_local.data(),     // pointer to the data to be reduced
-                           V[R1].data(),       // pointer to the data to be received
-                           V_local.size(),     // size of the data to be received
-                           MPI_DOUBLE,         // type of the reduced data
-                           MPI_SUM,            // reduction operation
-                           w,                  // rank of root to which we reduce
-                           MPI_COMM_WORLD);
-            assert (ierr_v == 0);
-        }
-    }
+//    Real1 U_local (parameters.npoints()*parameters.nfreqs());
+//    Real1 V_local (parameters.npoints()*parameters.nfreqs());
+//
+//    for (Size w = 0; w < pc::message_passing::comm_size(); w++)
+//    {
+//        const Size start = ( w   *(parameters.hnrays())) / pc::message_passing::comm_size();
+//        const Size stop  = ((w+1)*(parameters.hnrays())) / pc::message_passing::comm_size();
+//
+//        for (Size r1 = start; r1 < stop; r1++)
+//        {
+//            const Size R1 = r1 - start;
+//
+//            initialize (U_local);
+//            initialize (V_local);
+//
+//            distributed_for (r2, R2, parameters.hnrays(),
+//            {
+//                threaded_for (p, parameters.npoints(),
+//                {
+//                    for (Size f = 0; f < parameters.nfreqs(); f++)
+//              	    {
+//                        U_local[index(p,f)] += u[R2][index(p,f)]; // * scattering.phase[r1][r2][f];
+//                        V_local[index(p,f)] += v[R2][index(p,f)]; // * scattering.phase[r1][r2][f];
+//                    }
+//                })
+//            }) // end of r2 loop over raypairs2
+//
+//            int ierr_u = MPI_Reduce (
+//                           U_local.data(),     // pointer to the data to be reduced
+//                           U[R1].data(),       // pointer to the data to be received
+//                           U_local.size(),     // size of the data to be received
+//                           MPI_DOUBLE,         // type of the reduced data
+//                           MPI_SUM,            // reduction operation
+//                           w,                  // rank of root to which we reduce
+//                           MPI_COMM_WORLD);
+//            assert (ierr_u == 0);
+//
+//            int ierr_v = MPI_Reduce (
+//                           V_local.data(),     // pointer to the data to be reduced
+//                           V[R1].data(),       // pointer to the data to be received
+//                           V_local.size(),     // size of the data to be received
+//                           MPI_DOUBLE,         // type of the reduced data
+//                           MPI_SUM,            // reduction operation
+//                           w,                  // rank of root to which we reduce
+//                           MPI_COMM_WORLD);
+//            assert (ierr_v == 0);
+//        }
+//    }
 }
 
 #else
 
 {
-    Real1 U_local (parameters.npoints()*parameters.nfreqs());
-    Real1 V_local (parameters.npoints()*parameters.nfreqs());
+//    Real1 U_local (parameters.npoints()*parameters.nfreqs());
+//    Real1 V_local (parameters.npoints()*parameters.nfreqs());
 
-    for (Size r1 = 0; r1 < parameters.hnrays(); r1++)
-    {
-        initialize (U_local);
-        initialize (V_local);
+//    for (Size r1 = 0; r1 < parameters.hnrays(); r1++)
+//    {
+//        initialize (U_local);
+//        initialize (V_local);
 
-        for (Size r2 = 0; r2 < parameters.hnrays(); r2++)
-        {
-            threaded_for (p, parameters.npoints(),
-            {
-                for (Size f = 0; f < parameters.nfreqs(); f++)
-                {
-                    U_local[index(p,f)] += u[r2][index(p,f)]; // * scattering.phase[r1][r2][f];
-                    V_local[index(p,f)] += v[r2][index(p,f)]; // * scattering.phase[r1][r2][f];
-                }
-            })
-        }
+//        for (Size r2 = 0; r2 < parameters.hnrays(); r2++)
+//        {
+//            threaded_for (p, parameters.npoints(),
+//            {
+//                for (Size f = 0; f < parameters.nfreqs(); f++)
+//                {
+//                    U_local[index(p,f)] += u[r2][index(p,f)]; // * scattering.phase[r1][r2][f];
+//                    V_local[index(p,f)] += v[r2][index(p,f)]; // * scattering.phase[r1][r2][f];
+//                }
+//            })
+//        }
 
-        U[r1] = U_local;
-        V[r1] = V_local;
-    }
+//        U[r1] = U_local;
+//        V[r1] = V_local;
+//    }
 }
 
 #endif
