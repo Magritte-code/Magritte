@@ -32,13 +32,13 @@ struct Lines
     void write (const Io& io) const;
 
     void iteration_using_LTE (
-        const Double2 &abundance,
-        const Real1   &temperature);
+        const Double2      &abundance,
+        const Vector<Real> &temperature);
 
     void iteration_using_statistical_equilibrium (
-        const Double2 &abundance,
-        const Real1   &temperature,
-        const Real     pop_prec                  );
+        const Double2      &abundance,
+        const Vector<Real> &temperature,
+        const Real          pop_prec             );
 
     void iteration_using_Ng_acceleration (
         const Real pop_prec              );

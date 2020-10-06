@@ -1,6 +1,7 @@
+#include "paracabs.hpp"
 #include "model.hpp"
 #include "tools/heapsort.hpp"
-#include "paracabs.hpp"
+#include "solver/solver.hpp"
 
 
 void Model :: read (const Io& io)
@@ -154,6 +155,7 @@ int Model :: compute_spectral_discretisation ()
 /////////////////////////////////////////////////////////////////////
 int Model :: compute_spectral_discretisation (const Real width)
 {
+    cout << "Computing spectral discretisation..." << endl;
 
     threaded_for (p, parameters.npoints(),
     {
@@ -234,6 +236,80 @@ int Model :: compute_spectral_discretisation (const Real width)
 
     // Set spectral discretisation setting
     spectralDiscretisation = SD_Image;
+
+    return (0);
+}
+
+
+/// Computer for the level populations, assuming LTE
+////////////////////////////////////////////////////
+int Model :: compute_LTE_level_populations ()
+{
+  // Initialize levels, emissivities and opacities with LTE values
+  lines.iteration_using_LTE (chemistry.species.abundance, thermodynamics.temperature.gas);
+
+  return (0);
+}
+
+
+///  Computer for the radiation field
+/////////////////////////////////////
+int Model :: compute_radiation_field ()
+{
+    const Size length_max = parameters.npoints();
+    const Size  width_max = parameters.nfreqs ();
+
+    Solver solver (length_max, width_max);
+    solver.solve  (*this);
+
+    return (0);
+}
+
+
+///  Compute the effective mean intensity in a line
+///////////////////////////////////////////////////
+int Model :: compute_Jeff ()
+{
+    for (LineProducingSpecies &lspec : lines.lineProducingSpecies)
+    {
+//        Lambda = MatrixXd::Zero (lspec.population.size(), lspec.population.size());
+
+        threaded_for (p, parameters.npoints(),
+        {
+            for (Size k = 0; k < lspec.linedata.nrad; k++)
+            {
+                const Long1 freq_nrs = lspec.nr_line[p][k];
+
+                // Initialize values
+                lspec.Jlin[p][k] = 0.0;
+
+                // Integrate over the line
+                for (Size z = 0; z < parameters.nquads(); z++)
+                {
+                    const Real JJ = radiation.get_J (p,freq_nrs[z]);
+
+                    lspec.Jlin[p][k] += lspec.quadrature.weights[z] * JJ;
+                }
+
+
+                double diff = 0.0;
+
+                // Collect the approximated part
+                for (Size m = 0; m < lspec.lambda.get_size(p,k); m++)
+                {
+                    const Size I = lspec.index(lspec.lambda.get_nr(p,k,m), lspec.linedata.irad[k]);
+//                    const long J = lspec.index(p,                          lspec.linedata.jrad[k]);
+
+                    diff += lspec.lambda.get_Ls(p,k,m) * lspec.population[I];
+
+//                    Lambda(I,J) = lspec.lambda.get_Ls(p,k,m);
+                }
+
+                lspec.Jeff[p][k] = lspec.Jlin[p][k] - HH_OVER_FOUR_PI * diff;
+                lspec.Jdif[p][k] = HH_OVER_FOUR_PI * diff;
+            }
+        })
+    }
 
     return (0);
 }

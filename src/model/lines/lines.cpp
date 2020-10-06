@@ -86,7 +86,7 @@ void Lines :: write (const Io& io) const
 }
 
 
-void Lines :: iteration_using_LTE (const Double2 &abundance, const Real1 &temperature)
+void Lines :: iteration_using_LTE (const Double2 &abundance, const Vector<Real> &temperature)
 {
     for (LineProducingSpecies &lspec : lineProducingSpecies)
     {
@@ -114,9 +114,9 @@ void Lines :: iteration_using_Ng_acceleration (const Real pop_prec)
 
 
 void Lines :: iteration_using_statistical_equilibrium (
-    const Double2 &abundance,
-    const Real1   &temperature,
-    const Real     pop_prec )
+    const Double2      &abundance,
+    const Vector<Real> &temperature,
+    const Real          pop_prec )
 {
     for (LineProducingSpecies &lspec : lineProducingSpecies)
     {

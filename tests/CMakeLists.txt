@@ -1,6 +1,15 @@
 # Include directory containing source
 include_directories (../src/)
 include_directories (../dependencies)
+include_directories (../dependencies/pybind11)
+include_directories (../dependencies/pybind11/include)
+
+    
+# Add Python package separately
+find_package (PythonLibs REQUIRED)
+# Add python dirs separately
+include_directories (${PYTHON_INCLUDE_DIRS})
+
 
 set (SOURCE_FILES
     test_raytracer.cpp

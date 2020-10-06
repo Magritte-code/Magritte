@@ -82,7 +82,7 @@ class Solver
                   Model& model,
             const Size   o,
             const Size   r,
-            const Real   dshift_max);
+            const Real   dshift_max );
 };
 
 

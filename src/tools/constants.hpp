@@ -19,6 +19,7 @@ const double ONE_THIRD                  = 1.0/3.0;
 const double TWO_THIRDS                 = 2.0/3.0;
 const double ONE_SIXTH                  = 1.0/6.0;
 
+// Physical constants
 const double CC                         = 2.99792458E+8;    ///< [m/s] speed of light
 const double HH                         = 6.62607004E-34;   ///< [J*s] Planck's constant
 const double KB                         = 1.38064852E-23;   ///< [J/K] Boltzmann's constant

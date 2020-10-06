@@ -52,8 +52,8 @@ inline Real LineProducingSpecies :: get_opacity (const Size p, const Size k) con
 ///    @param[in] l: number of line producing species
 ///////////////////////////////////////////////////////////
 inline void LineProducingSpecies :: update_using_LTE (
-    const Double2 &abundance,
-    const Real1   &temperature )
+    const Double2      &abundance,
+    const Vector<Real> &temperature )
 {
     threaded_for (p, parameters.npoints(),
     {
@@ -193,8 +193,8 @@ void LineProducingSpecies :: update_using_Ng_acceleration ()
 ///    @param[in] temperature: gas temperature in the model
 /////////////////////////////////////////////////////////////////////////////////
 inline void LineProducingSpecies :: update_using_statistical_equilibrium (
-    const Double2 &abundance,
-    const Real1   &temperature )
+    const Double2      &abundance,
+    const Vector<Real> &temperature )
 {
     const Size non_zeros = parameters.npoints() * (      linedata.nlev
                                                    + 6 * linedata.nrad

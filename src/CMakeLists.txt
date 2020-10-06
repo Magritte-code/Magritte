@@ -1,6 +1,7 @@
 # Include directories
 include_directories (.)
 include_directories (../dependencies)
+include_directories (../dependencies/pybind11/include)
 
 set (SOURCE_FILES
     io/cpp/io_cpp_text.cpp
