@@ -1,5 +1,17 @@
 from sys import path
-path.append()
+import numpy as np
+from scipy.spatial import Delaunay
+path.append("../")
 
-import magritte
+#import magritte
 
+modelname="../bin/model.hdf5"
+
+from magritte.core import Model, IoPython
+io=IoPython("hdf5", modelname)
+model=Model()
+model.read(io)
+
+model.coarsen_grid(0.01)
+
+print(model.geometry.points.curr_neighbors.neighbors)

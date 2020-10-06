@@ -57,6 +57,7 @@ PYBIND11_MODULE (core, module)
         // io
         .def ("read",                 &Model::read)
         .def ("write",                &Model::write)
+        .def ("coarsen_grid",         &Model::coarsen_grid)
         // constructor
         .def (py::init());
 
@@ -128,6 +129,7 @@ PYBIND11_MODULE (core, module)
         // attributes
         .def_readwrite ("position",    &Points::position)
         .def_readwrite ("velocity",    &Points::velocity)
+        .def_readwrite ("curr_neighbors", &Points::curr_neighbors)
 //@Frederik: I'm commenting these out for now :
 // We should replace these with some methods from the Neighbors struct
 //        .def_readwrite ("n_neighbors", &Points::n_neighbors)
@@ -138,6 +140,16 @@ PYBIND11_MODULE (core, module)
         .def ("write",                 &Points::write)
         // constructor
         .def (py::init<Parameters&>());
+
+
+    // Neighbors
+    py::class_<Neighbors> (module, "Neighbors")
+        // attributes
+        .def_readwrite ("n_neighbors",    &Neighbors::n_neighbors)
+        .def_readwrite ("neighbors",    &Neighbors::neighbors)
+            // constructor
+        .def (py::init<>());
+
 
 
     // Rays

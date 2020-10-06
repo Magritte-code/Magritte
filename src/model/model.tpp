@@ -16,8 +16,10 @@ inline double Model :: calc_diff_abundance_with_neighbours(Size point, Size next
   double temp_max=0;//current implementation is probably slow
   for (Size neigbor: neighbors_lists[next_coars_lvl].get_neighbors(point))
     {
-      double abundance_self=chemistry.species.abundance[point][0];
-      double abundance_other=chemistry.species.abundance[neigbor][0];
+      double abundance_self=chemistry.species.abundance[point][1];
+      double abundance_other=chemistry.species.abundance[neigbor][1];
+      //std::cout<< "abundance self: " << abundance_self << std::endl;
+      //std::cout<< "abundance other: " << abundance_other << std::endl;
       double temp_diff=std::abs((abundance_self-abundance_other)/(abundance_self+abundance_other));
       temp_max=std::max(temp_max, temp_diff);
     }
@@ -92,27 +94,30 @@ inline double Model :: calc_power(const vector<Size> &triangle, Size point){
   Vector3D posp=geometry.points.position[point];//position of point
 
   //dividing insphere test with orientation test
-  Eigen::Matrix<double,5,5> insphere;
-  insphere << pos1.x(),pos2.x(),pos3.x(),pos4.x(),posp.x(),
-              pos1.y(),pos2.y(),pos3.y(),pos4.y(),posp.y(),
-              pos1.z(),pos2.z(),pos3.z(),pos4.z(),posp.z(),
-              pos1.squaredNorm(),pos2.squaredNorm(),pos3.squaredNorm(),pos4.squaredNorm(),posp.squaredNorm(),
-              1,1,1,1,1;
+
   Eigen::Matrix<double,4,4> orient;
   orient << pos1.x(),pos2.x(),pos3.x(),pos4.x(),
             pos1.y(),pos2.y(),pos3.y(),pos4.y(),
             pos1.z(),pos2.z(),pos3.z(),pos4.z(),
             1,1,1,1;
   //result is nan or stupidly large when the tetrahedra is (almost) coplanar
+
+  Eigen::Matrix<double,5,5> insphere;
+  insphere << pos1.x(),pos2.x(),pos3.x(),pos4.x(),posp.x(),
+              pos1.y(),pos2.y(),pos3.y(),pos4.y(),posp.y(),
+              pos1.z(),pos2.z(),pos3.z(),pos4.z(),posp.z(),
+              pos1.squaredNorm(),pos2.squaredNorm(),pos3.squaredNorm(),pos4.squaredNorm(),posp.squaredNorm(),
+              1,1,1,1,1;
+  //dividing insphere test with orientation test
   double result=insphere.determinant()/orient.determinant();
-  if (std::isnan(result)||std::abs(result)>pow(10,5))//10^5 is chosen arbitrarily, maybe TODO: get a reasonable estimate for a cutoff value
+  if (std::isnan(result)||std::abs(result)>pow(10,22))//10^22 is chosen arbitrarily, maybe TODO: get a reasonable estimate for a cutoff value
   {
-    std::cout << "tetradron is coplanar; power = " << result << std::endl;
+    //std::cout << "tetradron is coplanar; power = " << result << std::endl;
     return std::numeric_limits<double>::quiet_NaN();
   }
   else
   {
-    std::cout << "reasonable tetrahedron; power = " << result << std::endl;
+    //std::cout << "reasonable tetrahedron; power = " << result << std::endl;
     return result;
   }
 }
@@ -154,7 +159,7 @@ inline void Model::generate_new_ears(const vector<Size> &neighbors_of_point, con
         double power=calc_power(new_possible_ear,curr_point);
         if (!std::isnan(power))
         {//otherwise we would be proposing a coplanar tetrahedron, which would be ridiculous
-        std::cout << "Inserting new ear; power is: " << power << std::endl;
+        //std::cout << "Inserting new ear; power is: " << power << std::endl;
         ears_map.insert(std::make_pair(new_possible_ear,power));
         rev_ears_map.insert(std::make_pair(power,new_possible_ear));
         }
@@ -223,7 +228,7 @@ inline vector<vector<Size>> return_all_relevant_planes(vector<vector<Size>> &tri
 /// Coarsens the grid
 ///   @Param[in] perc_points_deleted: if the grid has not yet been coarsened to the next level,
 /// then it determines the percentage of points deleted, otherwise does nothing
-inline void Model :: coarsen_grid(const float perc_points_deleted)
+inline void Model :: coarsen_grid(float perc_points_deleted)
 {
   if (curr_coarsening_lvl==max_reached_coarsening_lvl)//if we truly need to refine the grid
   {
@@ -239,7 +244,6 @@ inline void Model :: coarsen_grid(const float perc_points_deleted)
           density_diff_map.insert(std::pair<Size,double>(i,curr_diff));
           rev_density_diff_map.insert(std::pair<double,Size>(curr_diff,i));
           //std::cout << "point: " << i << " density diff: " << curr_diff<< std::endl;
-          //TODO: The density difference is zero everywhere????
         }
       }
       else
@@ -251,13 +255,10 @@ inline void Model :: coarsen_grid(const float perc_points_deleted)
       curr_coarsening_lvl++;
       //repeat n times:
       Size nb_points_to_remove=Size(perc_points_deleted*current_nb_points);
-      //TODO: remove infinite loop in inner for loop
       for (Size i=0; i<nb_points_to_remove; i++)
       {
-        if (i%10==0)
-        {std::cout << "Ten points deleted" << std::endl;}
         Size curr_point=(*rev_density_diff_map.begin()).second;//the current point to remove
-        std::cout << "current density diff: " << (*rev_density_diff_map.begin()).first << std::endl;
+        //std::cout << "current density diff: " << (*rev_density_diff_map.begin()).first << std::endl;
         std::cout << "current point: " << curr_point << std::endl;
         vector<Size> neighbors_of_point=neighbors_lists[curr_coarsening_lvl].get_neighbors(curr_point);
         for (Size neighbor :neighbors_of_point)
@@ -318,13 +319,13 @@ inline void Model :: coarsen_grid(const float perc_points_deleted)
             }
           }
         }
-        std::cout << "number of neigbors: " << neighbors_of_point.size() << std::endl;
-        std::cout << "ears_map size: " << ears_map.size() << std::endl;
+        //std::cout << "number of neigbors: " << neighbors_of_point.size() << std::endl;
+        //std::cout << "ears_map size: " << ears_map.size() << std::endl;
         //now that we have all initial 'triangles', we can finally start to add them
         //while(ears_map.size()>7)//in the last iteration, you should have an octohedron left: -> 8 possible ears
         while(!ears_map.empty())
         {
-          std::cout << "Looping: current size of ears map: " << ears_map.size() << std::endl;
+          //std::cout << "Looping: current size of ears map: " << ears_map.size() << std::endl;
           vector<Size> triangle=(*rev_ears_map.begin()).second;//triangle which we are currently adding to the mesh
           vector<vector<Size>> triangles_to_work_with;//vector of triangles from which we will generate new triangles
           triangles_to_work_with.push_back(triangle);
@@ -359,7 +360,7 @@ inline void Model :: coarsen_grid(const float perc_points_deleted)
           }
           //std::cout << "nb triangles to work with: " << triangles_to_work_with.size() << std::endl;
           vector<vector<Size>> relevant_planes=return_all_relevant_planes(triangles_to_work_with);
-          std::cout << "number of planes: " << relevant_planes.size() << std::endl;
+          //std::cout << "number of planes: " << relevant_planes.size() << std::endl;
           //TODO FIXME: check if the same ear can be generated twice and check if it would actually matter...
           for (vector<Size> plane: relevant_planes)
           {
