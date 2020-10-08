@@ -236,8 +236,11 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
       {
       current_nb_points=parameters.npoints();
       neighbors_lists.resize(2);
-      neighbors_lists[0]=Neighbors(geometry.points.curr_neighbors);//TODO properly implement deep copy
-      neighbors_lists[1]=Neighbors(geometry.points.curr_neighbors);//TODO properly implement deep copy
+      neighbors_lists[0]=Neighbors(geometry.points.curr_neighbors);
+      neighbors_lists[1]=Neighbors(geometry.points.curr_neighbors);
+      mask_list.resize(2);
+      mask_list[0]=std::vector<bool>(parameters.npoints(),true);
+      mask_list[1]=std::vector<bool>(parameters.npoints(),true);
       for (Size i=0; i<parameters.npoints(); i++)//calc 1-abs(d-d_other)/(d+d_other) for all points
         {
           double curr_diff=calc_diff_abundance_with_neighbours(i,1);
@@ -250,6 +253,8 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
       {
         neighbors_lists.resize(max_reached_coarsening_lvl+1);
         neighbors_lists[max_reached_coarsening_lvl+1]=Neighbors(neighbors_lists[max_reached_coarsening_lvl]);//should be deep copy
+        mask_list.resize(max_reached_coarsening_lvl+1);
+        mask_list[max_reached_coarsening_lvl+1]=std::vector<bool>(mask_list[max_reached_coarsening_lvl]);//should be a deep copy
       }
       max_reached_coarsening_lvl++;
       curr_coarsening_lvl++;
@@ -258,6 +263,7 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
       for (Size i=0; i<nb_points_to_remove; i++)
       {
         Size curr_point=(*rev_density_diff_map.begin()).second;//the current point to remove
+        mask_list[curr_coarsening_lvl][curr_point]=false;
         //std::cout << "current density diff: " << (*rev_density_diff_map.begin()).first << std::endl;
         std::cout << "current point: " << curr_point << std::endl;
         vector<Size> neighbors_of_point=neighbors_lists[curr_coarsening_lvl].get_neighbors(curr_point);
@@ -394,9 +400,6 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
 }
 
 
-
-
-
 /// Resets the grid
 inline void Model :: reset_grid()
 {
@@ -407,4 +410,68 @@ inline void Model :: reset_grid()
   geometry.points.curr_neighbors=Neighbors(neighbors_lists[0]);
   neighbors_lists=vector<Neighbors>();
   current_nb_points=0;
+}
+
+
+/// Calculates the barycentric coordinates of a point given the tetrahedron
+inline Eigen::Vector<double,4> Model :: calc_barycentric_coords(const vector<Size> &triangle, Size point){
+  Vector3D pos1=geometry.points.position[triangle[0]];
+  Vector3D pos2=geometry.points.position[triangle[1]];
+  Vector3D pos3=geometry.points.position[triangle[2]];
+  Vector3D pos4=geometry.points.position[triangle[3]];
+  Vector3D posp=geometry.points.position[point];//position of point
+  Vector3D temp_diff=posp-pos4;
+
+  Eigen::Vector3d diff;
+  diff << temp_diff.x(), temp_diff.y(), temp_diff.z();
+
+  //see wikipedia for explanation (for 2D case, but easily generalizable to 3D)
+  Eigen::Matrix<double,3,3> mat;
+  mat << pos1.x()-pos4.x(),pos2.x()-pos4.x(),pos3.x()-pos4.x(),
+         pos1.y()-pos4.y(),pos2.y()-pos4.y(),pos3.y()-pos4.y(),
+         pos1.z()-pos4.z(),pos2.z()-pos4.z(),pos3.z()-pos4.z();
+
+  Eigen::Vector<double,4> result;
+  result << mat.colPivHouseholderQr().solve(diff);
+  result[3]=1-result[0]-result[1]-result[2];
+  return result;
+}
+
+///Interpolates the vector with length nb_points_in_coarser level
+inline vector<double> Model::interpolate_vector(Size coarser_lvl, Size finer_lvl, const vector<double> &to_interpolate)
+{
+  Size nb_points=parameters.npoints();
+  Size count=0;
+  for (Size point=0; point<nb_points; point++)//counts number of points in finer grid
+  {if (mask_list[finer_lvl][point]){count++;}}//Maybe TODO: also save this number during coarsening, such that we do not have to recalc this every time
+  vector<double> toreturn;
+  toreturn.resize(count);
+
+  Size curr_count=0;//holds the index of the point for which we are currently interpolating (or just filling in)
+  for (Size point=0; point<nb_points; point++)
+  {
+  //if point in finer grid but not in coarser grid, we try to interpolate
+    if (mask_list[finer_lvl][point])
+    {
+      if (!mask_list[coarser_lvl][point])
+      {}//TODO: hard part (actually interpolating)
+      else
+      {
+        toreturn[curr_count]=to_interpolate[point];
+      }//else, if in finer grid, still add to new vector
+    curr_count++;
+    }
+  }
+;
+
+
+
+
+
+
+
+
+
+
+
 }

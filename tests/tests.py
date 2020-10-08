@@ -12,6 +12,8 @@ io=IoPython("hdf5", modelname)
 model=Model()
 model.read(io)
 
-model.coarsen_grid(0.01)
+# model.coarsen_grid(0.01)
 
-print(model.geometry.points.curr_neighbors.neighbors)
+#print(model.geometry.points.curr_neighbors.neighbors)
+print(model.geometry.points.position)
+delaunay=Delaunay(model.geometry.points.position);

@@ -41,6 +41,9 @@ struct Model
     vector <Neighbors> neighbors_lists;
     Size current_nb_points;
 
+    vector<vector<bool>> mask_list;//stores the list of masks
+    //true means point is still in grid, false means point is deleted
+
 
     void read  (const Io& io);
     void write (const Io& io) const;
@@ -49,8 +52,10 @@ struct Model
     inline double calc_diff_abundance_with_neighbours(Size point, Size next_coars_lvl);
     inline void generate_new_ears(const vector<Size> &neighbors_of_point,const vector<Size> &plane,std::map<Size,std::set<Size>> &neighbor_map, std::multimap<vector<Size>,double> &ears_map, std::multimap<double,vector<Size>> &rev_ears_map, Size &curr_point);
     inline void coarsen_grid(float perc_points_deleted);
-        //TODO
-    inline void rerefine_grid();
+
+    inline Eigen::Vector<double,4> calc_barycentric_coords(const vector<Size> &triangle, Size point);
+    //TODO:inline void rerefine_grid();
+    inline void interpolate_vector(Size coarser_lvl, Size finer_lvl)
     inline void reset_grid();
 
 
