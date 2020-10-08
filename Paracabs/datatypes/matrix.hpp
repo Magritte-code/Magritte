@@ -72,6 +72,35 @@ namespace paracabs
             {
                 return Vector<type>::dat[id_c + nwarp*id_r];
             }
+
+            /// Setters for Python
+            inline void set_2D_array (py::array_t<type> arr)
+            {
+                py::buffer_info buf = arr.request();
+
+                if (buf.ndim != 2)
+                {
+                    throw std::runtime_error("Number of dimensions must be two");
+                }
+
+                type* buf_ptr = (type*) buf.ptr;
+
+                nrows = buf.shape[0];
+                ncols = buf.shape[1];
+
+                nwrap = ncols;
+
+                Vector<type>::vec.resize (nrows*ncols);
+
+                for (size_t i = 0; i < nrows*ncols; i++)
+                {
+                    vec[i] = buf_ptr[i];
+                }
+
+                Vector<type>::copy_vec_to_ptr ();
+
+                Vector<type>::set_dat ();
+            }
         };
     }
 }
