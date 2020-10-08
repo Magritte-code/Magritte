@@ -1,10 +1,14 @@
-    #pragma once
+#pragma once
+
+
+#include "pybind11/pybind11.h"
+#include "pybind11/numpy.h"
+namespace py = pybind11;
 
 
 #include <vector>
 #include "accelerator/accelerator.hpp"
 #include "vector3d.hpp"
-
 
 
 namespace paracabs
