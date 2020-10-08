@@ -3,6 +3,7 @@
 
 #include <vector>
 #include "accelerator/accelerator.hpp"
+#include "vector3d.hpp"
 
 
 
@@ -30,8 +31,12 @@ namespace paracabs
             ///////////////////
             inline void set_dat ()
             {
-                if (copyContextAccelerator()) dat = ptr;
-                else                          dat = vec.data();
+                #if PARACABS_USE_ACCELERATOR
+                    if (copyContextAccelerator()) dat = ptr;
+                    else                          dat = vec.data();
+                #else
+                    dat = vec.data();
+                #endif
             }
 
             ///  Copy constructor (shallow copy)
@@ -142,6 +147,98 @@ namespace paracabs
                 ///  Access operators
                 accel inline type  operator[] (const size_t id) const {return dat[id];}
                 accel inline type &operator[] (const size_t id)       {return dat[id];}
+
+                /// Setters for Python
+                inline void set_1D_array (py::array_t<type>   arr);
+                inline void set_2D_array (py::array_t<float>  arr);
+                inline void set_2D_array (py::array_t<double> arr);
         };
+
+
+        template<typename type>
+        inline void Vector<type> :: set_1D_array (py::array_t<type> arr)
+        {
+            py::buffer_info buf = arr.request();
+
+            if (buf.ndim != 1)
+            {
+                throw std::runtime_error("Number of dimensions must be one");
+            }
+
+            type* buf_ptr = (type*) buf.ptr;
+
+            vec.resize (buf.shape[0]);
+
+            for (size_t i = 0; i < buf.shape[0]; i++)
+            {
+                vec[i] = buf_ptr[i];
+            }
+
+            copy_vec_to_ptr ();
+
+            set_dat();
+        }
+
+
+        template<>
+        inline void Vector<Vector3D<float>> :: set_2D_array (py::array_t<float> arr)
+        {
+            py::buffer_info buf = arr.request();
+
+            if (buf.ndim != 2)
+            {
+                throw std::runtime_error("Number of dimensions must be two");
+            }
+            if (buf.shape[1] != 3)
+            {
+                throw std::runtime_error("shape[1] should be 3");
+            }
+
+            float* buf_ptr = (float*) buf.ptr;
+
+            vec.resize (buf.shape[0]);
+
+            for (size_t i = 0; i < buf.shape[0]; i++)
+            {
+                vec[i] = Vector3D<float> (buf_ptr[3*i  ],
+                                          buf_ptr[3*i+1],
+                                          buf_ptr[3*i+2] );
+            }
+
+            copy_vec_to_ptr ();
+
+            set_dat();
+        }
+
+
+        template<>
+        inline void Vector<Vector3D<double>> :: set_2D_array (py::array_t<double> arr)
+        {
+            py::buffer_info buf = arr.request();
+
+            if (buf.ndim != 2)
+            {
+                throw std::runtime_error("Number of dimensions must be two");
+            }
+            if (buf.shape[1] != 3)
+            {
+                throw std::runtime_error("shape[1] should be 3");
+            }
+
+            double* buf_ptr = (double*) buf.ptr;
+
+            vec.resize (buf.shape[0]);
+
+            for (size_t i = 0; i < buf.shape[0]; i++)
+            {
+                vec[i] = Vector3D<double> (buf_ptr[3*i  ],
+                                           buf_ptr[3*i+1],
+                                           buf_ptr[3*i+2] );
+            }
+
+            copy_vec_to_ptr ();
+
+            set_dat();
+        }
     }
 }
