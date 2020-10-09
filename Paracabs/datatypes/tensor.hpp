@@ -48,7 +48,7 @@ namespace paracabs
 
             ///  Constructor (double argument)
             //////////////////////////////////
-            inline Matrix (const size_t nr, const size_t nc, const size_t nd)
+            inline Tensor (const size_t nr, const size_t nc, const size_t nd)
             {
                 resize (nr, nc, nd);
             }
