@@ -6,6 +6,7 @@
 #include "vector3d.hpp"
 #include "vector.hpp"
 #include "matrix.hpp"
+#include "tensor.hpp"
 #include "array.hpp"
 
 
