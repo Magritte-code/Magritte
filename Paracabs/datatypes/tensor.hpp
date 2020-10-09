@@ -94,13 +94,13 @@ namespace paracabs
                 nrows = buf.shape[0];
                 ncols = buf.shape[1];
                 depth = buf.shape[2];
-                nwrap = ncols;
+                nwarp = ncols;
 
                 Vector<type>::vec.resize (nrows*ncols*depth);
 
                 for (size_t i = 0; i < nrows*ncols*depth; i++)
                 {
-                    vec[i] = buf_ptr[i];
+                    Vector<type>::vec[i] = buf_ptr[i];
                 }
 
                 Vector<type>::copy_vec_to_ptr ();
