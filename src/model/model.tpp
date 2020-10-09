@@ -447,6 +447,17 @@ inline vector<double> Model::interpolate_vector(Size coarser_lvl, Size finer_lvl
   vector<double> toreturn;
   toreturn.resize(count);
 
+  count=0;
+  std::map<Size,double> value_map;//maps points of coarser grid to their values
+  for (Size point=0; i<nb_points; point++)
+  {
+    if (mask_list[coarser_lvl][point])//if point belongs to coarser grid
+    {
+    count++;
+    value_map.insert(std::pair<Size,double>(point,to_return[count]))
+    }
+  }
+
   Size curr_count=0;//holds the index of the point for which we are currently interpolating (or just filling in)
   for (Size point=0; point<nb_points; point++)
   {
@@ -454,10 +465,65 @@ inline vector<double> Model::interpolate_vector(Size coarser_lvl, Size finer_lvl
     if (mask_list[finer_lvl][point])
     {
       if (!mask_list[coarser_lvl][point])
-      {}//TODO: hard part (actually interpolating)
+      {
+        std::set<Size> neighbors_in_coarse_grid;
+        vector<Size> neighbors_of_point=neighbors_lists[finer_lvl][point];
+        std::set<Size> neighbors_in_fine_grid;//contains neighbors in fine grid, but not in coarse
+        for (Size neighbor: neighbors_of_point)
+        {
+          if (mask_list[coarser_lvl][neighbor])
+          {
+            neighbors_in_coarse_grid.insert(neighbor);
+          }
+          else
+          {
+            neighbors_in_fine_grid.insert(neigbor);
+          }
+        }
+
+        while (neighbors_in_coarse_grid.empty())//please note that we would be very unlucky if we would get in this loop...
+        {
+          std::set<Size> temp;//
+          for (Size fine_neighbor: neighbors_in_fine_grid)
+          {
+            for (Size neighbor_of_neighbor: neighbors_lists[finer_lvl][fine_neighbor])
+            {//if the neighbor of neighbor belong to the coarse grid, just insert it
+              if (!neighbors_lists[coarser_lvl][neighbor_of_neighbor].empty())
+              {neighbors_in_coarse_grid.insert(neighbor_of_neighbor);}
+              else          //TODO: add some protection such that we do not add the same neighbors again and again
+              {temp.insert(neighbor_of_neighbor);}
+            }
+          }
+          neighbors_in_fine_grid=temp;
+        }
+        vector<vector<Size>> tetrahedra;
+        for (Size coarse_neighbor: neighbors_in_coarse_grid)
+        {
+          //TODO: calculate all (useful) tetrahedra
+
+        }
+        //initialized with value much larger than anything we should encounter
+        double curr_min_sum_abs=10000;//criterion for determining which tetrahedron is the best; is the sum of abs values of the barycentric coords (is >=1;should be minimized)
+        double curr_best_interp;
+        for (vector<Size> tetrahedron: tetrahedra)
+        {//TODO: break when sum of abs of barycentric coords=1
+          Eigen::Vector<double,4> curr_coords=calc_barycentric_coords(&tetrahedron, point);
+          double curr_sum_abs=0
+          for (double coord: curr_coords)
+          {curr_sum_abs+=std::abs(coord);}
+          if (curr_sum_abs<curr_min_sum_abs)
+          {
+            Eigen::Vector<double,4> interp_values;
+            interp_values << value_map[tetrahedron[0]],value_map[tetrahedron[1]],
+                             value_map[tetrahedron[2]],value_map[tetrahedron[3]];
+            curr_best_interp=interp_values.dot(curr_coords);
+          }
+        }
+        toreturn[curr_count]=curr_best_interp;
+      }
       else
       {
-        toreturn[curr_count]=to_interpolate[point];
+        toreturn[curr_count]=value_map[point];
       }//else, if in finer grid, still add to new vector
     curr_count++;
     }
