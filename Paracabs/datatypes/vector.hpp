@@ -166,7 +166,7 @@ namespace paracabs
 
             if (buf.ndim != 1)
             {
-                throw std::runtime_error("Number of dimensions must be one");
+                throw std::runtime_error("Number of dimensions must be 1.");
             }
 
             type* buf_ptr = (type*) buf.ptr;
@@ -178,9 +178,8 @@ namespace paracabs
                 vec[i] = buf_ptr[i];
             }
 
-            copy_vec_to_ptr ();
-
-            set_dat();
+            copy_vec_to_ptr();
+            set_dat        ();
         }
 
 
@@ -191,11 +190,12 @@ namespace paracabs
 
             if (buf.ndim != 2)
             {
-                throw std::runtime_error("Number of dimensions must be two");
+                throw std::runtime_error("Number of dimensions must be 2.");
             }
+
             if (buf.shape[1] != 3)
             {
-                throw std::runtime_error("shape[1] should be 3");
+                throw std::runtime_error("shape[1] should be 3.");
             }
 
             float* buf_ptr = (float*) buf.ptr;
@@ -209,9 +209,8 @@ namespace paracabs
                                           buf_ptr[3*i+2] );
             }
 
-            copy_vec_to_ptr ();
-
-            set_dat();
+            copy_vec_to_ptr();
+            set_dat        ();
         }
 
 
@@ -222,11 +221,12 @@ namespace paracabs
 
             if (buf.ndim != 2)
             {
-                throw std::runtime_error("Number of dimensions must be two");
+                throw std::runtime_error("Number of dimensions must be 2.");
             }
+
             if (buf.shape[1] != 3)
             {
-                throw std::runtime_error("shape[1] should be 3");
+                throw std::runtime_error("shape[1] should be 3.");
             }
 
             double* buf_ptr = (double*) buf.ptr;
@@ -240,9 +240,8 @@ namespace paracabs
                                            buf_ptr[3*i+2] );
             }
 
-            copy_vec_to_ptr ();
-
-            set_dat();
+            copy_vec_to_ptr();
+            set_dat        ();
         }
     }
 }
