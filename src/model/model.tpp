@@ -83,7 +83,7 @@ inline bool vector_contains_element(const vector<Size> vect, Size element)
 
 /// Given a tetrahedron, this calculates the power of the point with respect to the circumsphere
 /// @Parameter [in] triangle: the tetrahedron from which we use the circumsphere
-/// @Para
+/// @Parameter [in] point: the point the calculate the power with
 /// returns a positive value if the point is inside the circumsphere and a negative value if the point lies outside the circumsphere (zero if on the circumsphere)
 /// returns nan when the points of the 'tetrahedron' are (almost) coplanar
 inline double Model :: calc_power(const vector<Size> &triangle, Size point){
@@ -412,8 +412,50 @@ inline void Model :: reset_grid()
   current_nb_points=0;
 }
 
+/// Calculates all tetrahedra that contain a given point and given the coarsening level
+///     @Returns: all tetrahedra (each tetrahedron has their points sorted)
+inline std::set<vector<Size>> Model :: calc_all_tetra_with_point(Size point, Size coars_lvl)
+{
+  std::set<vector<Size>> to_return;
+  vector<Size> curr_neighbors=vector<Size>(neighbors_lists[coars_lvl].get_neighbors(point));
+  std::sort(curr_neighbors.begin(),curr_neighbors.end());//copying and sorting our vectors, because we want to intersect them
+  vector<Size>::iterator it = curr_neighbors.begin();
+  while(it!=curr_neighbors.end())
+  {
+    Size neighbor=*it;
+    vector<Size> temp_intersection;
+    vector<Size> neighbors_of_neighbor=vector<Size>(neighbors_lists[coars_lvl].get_neighbors(neighbor));
+    std::sort(neighbors_of_neighbor.begin(),neighbors_of_neighbor.end());
+    std::set_intersection(curr_neighbors.begin(),curr_neighbors.end(),
+                          neighbors_of_neighbor.begin(),neighbors_of_neighbor.end(),
+                          back_inserter(temp_intersection));
+    if (temp_intersection.size()>=2)//then we check if we can truly form a tetrahedon (if we would not delete elements from curr_neighbors, this would always be true)
+    {
+      Size nb_elements=temp_intersection.size();
+      for (Size i=0; i<nb_elements; i++)
+      {
+        for (Size j=0; j<i; j++)
+        {
+          vector<Size> to_add({point, neighbor, temp_intersection[i], temp_intersection[j]});
+          std::sort(to_add.begin(),to_add.end());
+          to_return.insert(to_add);
+        }
+      }
+    }
+    // We are deleting the first element each time in order to not propose duplicates
+    //For the explanation, assume neighbors a<b<c: without this strange optimisation,
+    // we would try to add (before sorting them): (point,a,b,c), (point,b,a,c) and (point,c,a,b)
+    //Now these two last options are no longer there.
+    it=curr_neighbors.erase(it);
+  }
+  return to_return;
+}
+
 
 /// Calculates the barycentric coordinates of a point given the tetrahedron
+///   @Parameter [in] triangle: the tetrahedron for which we calculate these coordinates
+///   @Parameter [in] point: the point for which we calculate these coordinates
+///   Returns: the barycentric coordinates of the point with respect to the tetrahedron
 inline Eigen::Vector<double,4> Model :: calc_barycentric_coords(const vector<Size> &triangle, Size point){
   Vector3D pos1=geometry.points.position[triangle[0]];
   Vector3D pos2=geometry.points.position[triangle[1]];
@@ -449,12 +491,12 @@ inline vector<double> Model::interpolate_vector(Size coarser_lvl, Size finer_lvl
 
   count=0;
   std::map<Size,double> value_map;//maps points of coarser grid to their values
-  for (Size point=0; i<nb_points; point++)
+  for (Size point=0; point<nb_points; point++)
   {
     if (mask_list[coarser_lvl][point])//if point belongs to coarser grid
     {
     count++;
-    value_map.insert(std::pair<Size,double>(point,to_return[count]))
+    value_map.insert(std::pair<Size,double>(point,to_interpolate[count]));
     }
   }
 
@@ -467,7 +509,7 @@ inline vector<double> Model::interpolate_vector(Size coarser_lvl, Size finer_lvl
       if (!mask_list[coarser_lvl][point])
       {
         std::set<Size> neighbors_in_coarse_grid;
-        vector<Size> neighbors_of_point=neighbors_lists[finer_lvl][point];
+        vector<Size> neighbors_of_point=neighbors_lists[finer_lvl].get_neighbors(point);
         std::set<Size> neighbors_in_fine_grid;//contains neighbors in fine grid, but not in coarse
         for (Size neighbor: neighbors_of_point)
         {
@@ -477,7 +519,7 @@ inline vector<double> Model::interpolate_vector(Size coarser_lvl, Size finer_lvl
           }
           else
           {
-            neighbors_in_fine_grid.insert(neigbor);
+            neighbors_in_fine_grid.insert(neighbor);
           }
         }
 
@@ -486,9 +528,10 @@ inline vector<double> Model::interpolate_vector(Size coarser_lvl, Size finer_lvl
           std::set<Size> temp;//
           for (Size fine_neighbor: neighbors_in_fine_grid)
           {
-            for (Size neighbor_of_neighbor: neighbors_lists[finer_lvl][fine_neighbor])
-            {//if the neighbor of neighbor belong to the coarse grid, just insert it
-              if (!neighbors_lists[coarser_lvl][neighbor_of_neighbor].empty())
+            vector<Size> neighbors_of_fine_neighbor=neighbors_lists[finer_lvl].get_neighbors(fine_neighbor);
+            for (Size neighbor_of_neighbor: neighbors_of_fine_neighbor)
+            {//if the neighbor of neighbor belongs to the coarse grid, just insert it
+              if (value_map.count(neighbor_of_neighbor)>0)
               {neighbors_in_coarse_grid.insert(neighbor_of_neighbor);}
               else          //TODO: add some protection such that we do not add the same neighbors again and again
               {temp.insert(neighbor_of_neighbor);}
@@ -496,19 +539,28 @@ inline vector<double> Model::interpolate_vector(Size coarser_lvl, Size finer_lvl
           }
           neighbors_in_fine_grid=temp;
         }
-        vector<vector<Size>> tetrahedra;
+        std::set<vector<Size>> tetrahedra;
         for (Size coarse_neighbor: neighbors_in_coarse_grid)
         {
-          //TODO: calculate all (useful) tetrahedra
-
+          //For now, we just calculate all tetrahedra that have a point in neighbors_in_fine_grid
+          //This is NOT EFFICIENT, but simpler to think about
+          //Maybe TODO: first look at the points which have the maximal nb of neighbors in neighbors_in_fine_grid,
+          // then construct tetrahedra using those points
+          //Other possibility: add new datastructure which maps the points onto the tetrahedra
+          // should be calculated after refining the grid
+          std::set<vector<Size>> curr_tetrahedra=calc_all_tetra_with_point(point, coarser_lvl);
+          for (vector<Size> tetra_to_check: curr_tetrahedra)
+          {//try to add all non-duplicates to the tetrahedra set
+            tetrahedra.insert(tetra_to_check);
+          }
         }
         //initialized with value much larger than anything we should encounter
         double curr_min_sum_abs=10000;//criterion for determining which tetrahedron is the best; is the sum of abs values of the barycentric coords (is >=1;should be minimized)
-        double curr_best_interp;
+        double curr_best_interp=0;
         for (vector<Size> tetrahedron: tetrahedra)
         {//TODO: break when sum of abs of barycentric coords=1
-          Eigen::Vector<double,4> curr_coords=calc_barycentric_coords(&tetrahedron, point);
-          double curr_sum_abs=0
+          Eigen::Vector<double,4> curr_coords=calc_barycentric_coords(tetrahedron, point);
+          double curr_sum_abs=0;
           for (double coord: curr_coords)
           {curr_sum_abs+=std::abs(coord);}
           if (curr_sum_abs<curr_min_sum_abs)
@@ -528,11 +580,6 @@ inline vector<double> Model::interpolate_vector(Size coarser_lvl, Size finer_lvl
     curr_count++;
     }
   }
-;
-
-
-
-
 
 
 
