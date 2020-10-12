@@ -77,7 +77,7 @@ namespace paracabs
             }
 
             /// Setters for Python
-            inline void set_2D_array (py::array_t<type> arr)
+            inline void set_2D_array (py::array_t<type, py::array::c_style | py::array::forcecast> arr)
             {
                 py::buffer_info buf = arr.request();
 
@@ -100,7 +100,7 @@ namespace paracabs
                 }
 
                 Vector<type>::copy_vec_to_ptr ();
-                Vector<type>::set_dat ();
+                Vector<type>::set_dat         ();
             }
         };
     }

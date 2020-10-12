@@ -80,7 +80,7 @@ namespace paracabs
             }
 
             /// Setters for Python
-            inline void set_3D_array (py::array_t<type> arr)
+            inline void set_3D_array (py::array_t<type, py::array::c_style | py::array::forcecast> arr)
             {
                 py::buffer_info buf = arr.request();
 

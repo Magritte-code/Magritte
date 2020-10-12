@@ -153,14 +153,14 @@ namespace paracabs
                 accel inline type &operator[] (const size_t id)       {return dat[id];}
 
                 /// Setters for Python
-                inline void set_1D_array (py::array_t<type>   arr);
-                inline void set_2D_array (py::array_t<float>  arr);
-                inline void set_2D_array (py::array_t<double> arr);
+                inline void set_1D_array (py::array_t<type,   py::array::c_style | py::array::forcecast> arr);
+                inline void set_2D_array (py::array_t<float,  py::array::c_style | py::array::forcecast> arr);
+                inline void set_2D_array (py::array_t<double, py::array::c_style | py::array::forcecast> arr);
         };
 
 
         template<typename type>
-        inline void Vector<type> :: set_1D_array (py::array_t<type> arr)
+        inline void Vector<type> :: set_1D_array (py::array_t<type, py::array::c_style | py::array::forcecast> arr)
         {
             py::buffer_info buf = arr.request();
 
@@ -184,7 +184,7 @@ namespace paracabs
 
 
         template<>
-        inline void Vector<Vector3D<float>> :: set_2D_array (py::array_t<float> arr)
+        inline void Vector<Vector3D<float>> :: set_2D_array (py::array_t<float, py::array::c_style | py::array::forcecast> arr)
         {
             py::buffer_info buf = arr.request();
 
@@ -215,7 +215,7 @@ namespace paracabs
 
 
         template<>
-        inline void Vector<Vector3D<double>> :: set_2D_array (py::array_t<double> arr)
+        inline void Vector<Vector3D<double>> :: set_2D_array (py::array_t<double, py::array::c_style | py::array::forcecast> arr)
         {
             py::buffer_info buf = arr.request();
 
