@@ -15,5 +15,5 @@ model.read(io)
 # model.coarsen_grid(0.01)
 
 #print(model.geometry.points.curr_neighbors.neighbors)
-print(model.geometry.points.position)
-delaunay=Delaunay(model.geometry.points.position);
+print(np.array(model.geometry.points.position));
+#delaunay=Delaunay(model.geometry.points.position);

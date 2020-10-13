@@ -436,6 +436,7 @@ inline std::set<vector<Size>> Model :: calc_all_tetra_with_point(Size point, Siz
       {
         for (Size j=0; j<i; j++)
         {
+          //TODO: check if these two points are neighbors of eachother
           vector<Size> to_add({point, neighbor, temp_intersection[i], temp_intersection[j]});
           std::sort(to_add.begin(),to_add.end());
           to_return.insert(to_add);
@@ -554,11 +555,13 @@ inline vector<double> Model::interpolate_vector(Size coarser_lvl, Size finer_lvl
             tetrahedra.insert(tetra_to_check);
           }
         }
+        //TODO: using the tetrahedra we have found, we could also try to interpolate the neighboring points that we have found
+        //  should be quite a bit faster. (if we do this, we also need a map that maps the points of the fine grid to the index for the output vector)
         //initialized with value much larger than anything we should encounter
         double curr_min_sum_abs=10000;//criterion for determining which tetrahedron is the best; is the sum of abs values of the barycentric coords (is >=1;should be minimized)
         double curr_best_interp=0;
         for (vector<Size> tetrahedron: tetrahedra)
-        {//TODO: break when sum of abs of barycentric coords=1
+        {
           Eigen::Vector<double,4> curr_coords=calc_barycentric_coords(tetrahedron, point);
           double curr_sum_abs=0;
           for (double coord: curr_coords)
@@ -569,6 +572,12 @@ inline vector<double> Model::interpolate_vector(Size coarser_lvl, Size finer_lvl
             interp_values << value_map[tetrahedron[0]],value_map[tetrahedron[1]],
                              value_map[tetrahedron[2]],value_map[tetrahedron[3]];
             curr_best_interp=interp_values.dot(curr_coords);
+            //if all barycentric coordinates are greater than (or equal to) zero, this means that our point lies within the tetrahedron,
+            // and therefore we have found the best interpolation. So we stop searching
+            if (curr_coords[0]>=0&&curr_coords[1]>=0&&curr_coords[2]>=0&&curr_coords[3]>=0)
+            {
+              break;
+            }
           }
         }
         toreturn[curr_count]=curr_best_interp;
@@ -580,11 +589,4 @@ inline vector<double> Model::interpolate_vector(Size coarser_lvl, Size finer_lvl
     curr_count++;
     }
   }
-
-
-
-
-
-
-
 }

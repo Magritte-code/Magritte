@@ -90,11 +90,7 @@ PYBIND11_MODULE (core, module)
         .def ("compute_LTE_level_populations",                                      &Model::compute_LTE_level_populations)
         .def ("compute_radiation_field",                                            &Model::compute_radiation_field)
         .def ("compute_Jeff",                                                       &Model::compute_Jeff)
-<<<<<<< HEAD
         .def ("coarsen_grid",         &Model::coarsen_grid)
-=======
-        .def ("compute_level_populations",                                          &Model::compute_level_populations)
->>>>>>> 640dce3f9d1e67e0ccc99e6629edebe5685c21d5
         // constructor
         .def (py::init<const string>())
         .def (py::init<>());
@@ -168,19 +164,12 @@ PYBIND11_MODULE (core, module)
         // attributes
         .def_readwrite ("position",    &Points::position)
         .def_readwrite ("velocity",    &Points::velocity)
-<<<<<<< HEAD
         .def_readwrite ("curr_neighbors", &Points::curr_neighbors)
 //@Frederik: I'm commenting these out for now :
 // We should replace these with some methods from the Neighbors struct
 //        .def_readwrite ("n_neighbors", &Points::n_neighbors)
 //        .def_readwrite ("neighbors",   &Points::neighbors)
 //        .def_readwrite ("nbs",         &Points::nbs)
-=======
-        .def_readwrite ("n_neighbors", &Points::n_neighbors)
-        .def_readwrite ("neighbors",   &Points::neighbors)
-        // .def_readwrite ("nbs",         &Points::nbs)
-        .def ("print",                 &Points::print)
->>>>>>> 640dce3f9d1e67e0ccc99e6629edebe5685c21d5
         // io
         .def ("read",                  &Points::read)
         .def ("write",                 &Points::write)

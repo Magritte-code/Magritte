@@ -94,27 +94,6 @@ Also assert that the lengths are the same; You can change this to any other exce
 
     cout << "neighbors put" << endl;
 
-<<<<<<< HEAD
-//@Frederik: nbs does not seem to do anything remotely useful
-//     nbs.resize (parameters.npoints()*nnbs);
-//
-//     for (Size p = 0; p < parameters.npoints(); p++)
-//     {
-//         const Size     n_nbs =     n_neighbors[p];
-//         const Size cum_n_nbs = cum_n_neighbors[p];
-//
-//         for (Size i = 0; (i < n_nbs) && (i < nnbs); i++)
-//         {
-//             nbs[p*nnbs+i] = neighbors[cum_n_nbs+i];
-//         }
-//         for (Size i = n_nbs; i < nnbs; i++)
-//         {
-//             nbs[p*nnbs+i] = neighbors[cum_n_nbs+n_nbs-1];
-//         }
-//     }
-//
-//     nbs.copy_vec_to_ptr ();
-=======
     //nbs.resize (parameters.npoints()*nnbs);
 
     //for (Size p = 0; p < parameters.npoints(); p++)
@@ -133,7 +112,6 @@ Also assert that the lengths are the same; You can change this to any other exce
     //}
 
     //nbs.copy_vec_to_ptr ();
->>>>>>> 640dce3f9d1e67e0ccc99e6629edebe5685c21d5
 }
 
 

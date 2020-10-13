@@ -6,11 +6,7 @@
 #include "tools/types.hpp"
 #include "model/geometry/points/neighbors/neighbors.hpp"
 
-<<<<<<< HEAD
-//const Size nnbs = 12;
-=======
-// const Size nnbs = 12;
->>>>>>> 640dce3f9d1e67e0ccc99e6629edebe5685c21d5
+
 
 struct Points
 {
@@ -25,14 +21,6 @@ struct Points
 //    Vector <Size>           neighbors;   ///< neighbors of each point, listed after eachother
     ///< e.g.: [neighbors of point 1, neighbors of point 2, ...]
 
-<<<<<<< HEAD
-//    Vector <Size> nbs; //@Frederik: what does this do?
-
-    void read  (const Io& io);
-    void write (const Io& io) const;
-    //note to self: add set_neighbors and get_neighbors (should get/set all the different neighbors variables)
-    //note to self: points 'deleted' should have no neighbors
-=======
     // Vector <Size> nbs;
 
     void read  (const Io& io);
@@ -45,5 +33,4 @@ struct Points
             position[r].print();
         }
     }
->>>>>>> 640dce3f9d1e67e0ccc99e6629edebe5685c21d5
 };
