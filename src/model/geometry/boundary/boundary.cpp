@@ -40,6 +40,7 @@ void Boundary :: read (const Io& io)
     io.read_list (prefix+"boundary_temperature", boundary_temperature);
     io.read_list (prefix+"boundary_condition", boundary_condition_str);
 
+
     for (Size b = 0; b < parameters.nboundary(); b++)
     {
         if (boundary_condition_str[b].compare("zero"   )) boundary_condition[b] = Zero;
@@ -73,4 +74,19 @@ void Boundary :: write (const Io& io) const
 
     io.write_list (prefix+"boundary_temperature", boundary_temperature);
     io.write_list (prefix+"boundary_condition", boundary_condition_str);
+}
+
+
+BoundaryCondition Boundary :: set_boundary_condition (const Size b, const BoundaryCondition cd)
+{
+    boundary_condition.resize(parameters.nboundary());
+    boundary_condition[b] = cd;
+
+    return boundary_condition[b];
+}
+
+
+BoundaryCondition Boundary :: get_boundary_condition (const Size b) const
+{
+    return boundary_condition[b];
 }

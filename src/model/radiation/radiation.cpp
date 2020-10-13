@@ -28,7 +28,6 @@ void Radiation :: read (const Io& io)
     parameters.set_nrays_red (paracabs::message_passing::length (parameters.hnrays()));
 
 
-    J.resize (parameters.npoints()*parameters.nfreqs());
 
 
     // Size and initialize I_bdy, u, v, U and V
@@ -46,12 +45,13 @@ void Radiation :: read (const Io& io)
     }
 
 
-    I.resize (parameters.nrays());
+    I.resize (parameters.nrays(), parameters.npoints(), parameters.nfreqs());
+    J.resize (                    parameters.npoints(), parameters.nfreqs());
 
-    for (Size r = 0; r < parameters.nrays(); r++)
-    {
-        I[r].resize (parameters.npoints(), parameters.nfreqs());
-    }
+    // for (Size r = 0; r < parameters.nrays(); r++)
+    // {
+        // I[r].resize (parameters.npoints(), parameters.nfreqs());
+    // }
 
     if (parameters.use_scattering())
     {
@@ -243,7 +243,13 @@ void initialize (Real1 &vec)
 
 void Radiation :: initialize_J ()
 {
-    initialize (J);
+    for (Size p = 0; p < parameters.npoints(); p++)
+    {
+        for (Size f = 0; f < parameters.nfreqs(); f++)
+        {
+            J(p,f) = 0.0;
+        }
+    }
 }
 
 

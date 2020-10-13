@@ -29,7 +29,7 @@ void Model :: read (const Io& io)
     cout << "  nrays_red  = " << parameters.nrays_red  () << endl;
     cout << "  nboundary  = " << parameters.nboundary  () << endl;
     cout << "  nfreqs     = " << parameters.nfreqs     () << endl;
-    cout << "  nfreqs_red = " << parameters.nfreqs_red () << endl;
+    // cout << "  nfreqs_red = " << parameters.nfreqs_red () << endl;
     cout << "  nspecs     = " << parameters.nspecs     () << endl;
     cout << "  nlspecs    = " << parameters.nlspecs    () << endl;
     cout << "  nlines     = " << parameters.nlines     () << endl;
@@ -102,11 +102,13 @@ int Model :: compute_spectral_discretisation ()
         // Sort frequencies
         heapsort (freqs, nmbrs);
 
+
         // Set all frequencies nu
         for (Size fl = 0; fl < parameters.nfreqs(); fl++)
         {
             radiation.frequencies.nu(p, fl) = freqs[fl];
         }
+
 
         // Create lookup table for the frequency corresponding to each line
         Size1 nmbrs_inverted (parameters.nfreqs());
@@ -245,10 +247,12 @@ int Model :: compute_spectral_discretisation (const Real width)
 ////////////////////////////////////////////////////
 int Model :: compute_LTE_level_populations ()
 {
-  // Initialize levels, emissivities and opacities with LTE values
-  lines.iteration_using_LTE (chemistry.species.abundance, thermodynamics.temperature.gas);
+    cout << "Computing LTE level populations..." << endl;
 
-  return (0);
+    // Initialize levels, emissivities and opacities with LTE values
+    lines.iteration_using_LTE (chemistry.species.abundance, thermodynamics.temperature.gas);
+
+    return (0);
 }
 
 
@@ -256,6 +260,8 @@ int Model :: compute_LTE_level_populations ()
 /////////////////////////////////////
 int Model :: compute_radiation_field ()
 {
+    cout << "Computing radiation field..." << endl;
+
     const Size length_max = parameters.npoints();
     const Size  width_max = parameters.nfreqs ();
 
@@ -286,24 +292,19 @@ int Model :: compute_Jeff ()
                 // Integrate over the line
                 for (Size z = 0; z < parameters.nquads(); z++)
                 {
-                    const Real JJ = radiation.get_J (p,freq_nrs[z]);
-
-                    lspec.Jlin[p][k] += lspec.quadrature.weights[z] * JJ;
+                    lspec.Jlin[p][k] += lspec.quadrature.weights[z] * radiation.J(p, freq_nrs[z]);
                 }
 
 
                 double diff = 0.0;
 
                 // Collect the approximated part
-                for (Size m = 0; m < lspec.lambda.get_size(p,k); m++)
-                {
-                    const Size I = lspec.index(lspec.lambda.get_nr(p,k,m), lspec.linedata.irad[k]);
-//                    const long J = lspec.index(p,                          lspec.linedata.jrad[k]);
-
-                    diff += lspec.lambda.get_Ls(p,k,m) * lspec.population[I];
-
-//                    Lambda(I,J) = lspec.lambda.get_Ls(p,k,m);
-                }
+//                for (Size m = 0; m < lspec.lambda.get_size(p,k); m++)
+//                {
+//                    const Size I = lspec.index(lspec.lambda.get_nr(p,k,m), lspec.linedata.irad[k]);
+//
+//                    diff += lspec.lambda.get_Ls(p,k,m) * lspec.population[I];
+//                }
 
                 lspec.Jeff[p][k] = lspec.Jlin[p][k] - HH_OVER_FOUR_PI * diff;
                 lspec.Jdif[p][k] = HH_OVER_FOUR_PI * diff;
@@ -312,4 +313,104 @@ int Model :: compute_Jeff ()
     }
 
     return (0);
+}
+
+
+///  Compute level populations self-consistenly with the radiation field
+///  assuming statistical equilibrium (detailed balance for the levels)
+///  @param[in] io                  : io object (for writing level populations)
+///  @param[in] use_Ng_acceleration : true if Ng acceleration has to be used
+///  @param[in] max_niterations     : maximum number of iterations
+///  @return number of iteration done
+///////////////////////////////////////////////////////////////////////////////
+int Model :: compute_level_populations (
+        // const Io   &io,
+        const bool  use_Ng_acceleration,
+        const long  max_niterations     )
+{
+    // Check spectral discretisation setting
+    if (spectralDiscretisation != SD_Lines)
+    {
+        throw std::runtime_error ("Spectral discretisation was not set for Lines!");
+    }
+
+    // Write out initial level populations
+    //for (int l = 0; l < parameters.nlspecs(); l++)
+    //{
+    //    const string tag = "_rank_" + str_MPI_comm_rank() + "_iteration_0";
+
+    //    lines.lineProducingSpecies[l].write_populations (io, l, tag);
+    //}
+
+    // Initialize the number of iterations
+    int iteration        = 0;
+    int iteration_normal = 0;
+
+    // Initialize errors
+    error_mean.clear ();
+    error_max .clear ();
+
+    // Initialize some_not_converged
+    bool some_not_converged = true;
+
+    // Iterate as long as some levels are not converged
+    while (some_not_converged && (iteration < max_niterations))
+    {
+        iteration++;
+
+        // logger.write ("Starting iteration ", iteration);
+        cout << "Starting iteration " << iteration << endl;
+
+        // Start assuming convergence
+        some_not_converged = false;
+
+        //if (use_Ng_acceleration && (iteration_normal == 4))
+        //{
+        //    lines.iteration_using_Ng_acceleration (
+        //        parameters.pop_prec()             );
+        //
+        //    iteration_normal = 0;
+        //}
+        // else
+        {
+            // logger.write ("Computing the radiation field...");
+            cout << "Computing the radiation field..." << endl;
+
+            compute_radiation_field ();
+            compute_Jeff            ();
+
+            lines.iteration_using_statistical_equilibrium (
+                chemistry.species.abundance,
+                thermodynamics.temperature.gas,
+                parameters.pop_prec()                     );
+
+            iteration_normal++;
+        }
+
+
+        for (int l = 0; l < parameters.nlspecs(); l++)
+        {
+            error_mean.push_back (lines.lineProducingSpecies[l].relative_change_mean);
+            error_max .push_back (lines.lineProducingSpecies[l].relative_change_max);
+
+            if (lines.lineProducingSpecies[l].fraction_not_converged > 0.005)
+            {
+                some_not_converged = true;
+            }
+
+            const double fnc = lines.lineProducingSpecies[l].fraction_not_converged;
+
+            // logger.write ("Already ", 100 * (1.0 - fnc), " % converged!");
+            cout << "Already " << 100 * (1.0 - fnc) << " % converged!" << endl;
+
+            // const string tag = "_rank_" + str_MPI_comm_rank() + "_iteration_" + to_string (iteration);
+
+            // lines.lineProducingSpecies[l].write_populations (io, l, tag);
+        }
+    } // end of while loop of iterations
+
+    // Print convergence stats
+    cout << "Converged after " << iteration << " iterations" << endl;
+
+    return iteration;
 }

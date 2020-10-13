@@ -19,6 +19,9 @@ struct Boundary
     Vector<BoundaryCondition> boundary_condition;
     Vector<Real>              boundary_temperature;
 
+    BoundaryCondition set_boundary_condition (const Size b, const BoundaryCondition cd);
+    BoundaryCondition get_boundary_condition (const Size b) const;
+
     void read  (const Io& io);
     void write (const Io& io) const;
 };

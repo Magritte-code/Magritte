@@ -49,12 +49,15 @@ int main (int argc, char **argv)
     model.read (io);
 
     model.compute_spectral_discretisation ();
+    model.compute_LTE_level_populations   ();
     model.compute_inverse_line_widths     ();
 
+    model.compute_radiation_field         ();
     // solver.trace (model);
 
-    Solver solver (100000, 10000);
-    solver.solve (model);
+    // Solver solver (model.parameters.npoints(),
+                   // model.parameters.nfreqs () );
+    // solver.solve  (model);
 
 //
 //    for (Size i = 0; i < 10; i++)
@@ -65,9 +68,18 @@ int main (int argc, char **argv)
     // Size1 lengths = model.geometry.get_ray_lengths ();
 //    Size1 lengths = model.geometry.get_ray_lengths_gpu (512, 512);
 
-    for (Size i = 0; i < 100; i++)
+    cout << "r = 0" << endl;
+
+    for (Size p = 0; p < model.parameters.npoints(); p++)
     {
-       cout << model.radiation.I[0](i,0) << endl;
+        model.radiation.print(0, p);
+    }
+
+    cout << "r = 1" << endl;
+
+    for (Size p = 0; p < model.parameters.npoints(); p++)
+    {
+        model.radiation.print(1, p);
     }
 
     cout << "Done." << endl;

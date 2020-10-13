@@ -1,3 +1,5 @@
+#include <iterator>
+
 #include "../configure.hpp"   // ../ is required!
 #include "tools/types.hpp"
 #include "model/parameters/parameters.hpp"
@@ -8,6 +10,7 @@
 
 #include "pybind11/pybind11.h"
 #include "pybind11/stl_bind.h"
+#include "pybind11/numpy.h"
 #include "pybind11/eigen.h"
 #include "pybind11/stl.h"
 namespace py = pybind11;
@@ -15,6 +18,7 @@ namespace py = pybind11;
 
 PYBIND11_MAKE_OPAQUE (vector<LineProducingSpecies>);
 PYBIND11_MAKE_OPAQUE (vector<CollisionPartner>);
+// PYBIND11_MAKE_OPAQUE (vector<Matrix<Real>>);
 
 
 PYBIND11_MODULE (core, module)
@@ -73,6 +77,8 @@ PYBIND11_MODULE (core, module)
         .def_readwrite ("lines",          &Model::lines)
         .def_readwrite ("thermodynamics", &Model::thermodynamics)
         .def_readwrite ("radiation",      &Model::radiation)
+        .def_readonly  ("error_mean",     &Model::error_mean)
+        .def_readonly  ("error_max",      &Model::error_max)
         // io (void (Pet::*)(int))
         .def ("read",  (void (Model::*)(void))            &Model::read )
         .def ("write", (void (Model::*)(void) const)      &Model::write)
@@ -84,6 +90,7 @@ PYBIND11_MODULE (core, module)
         .def ("compute_LTE_level_populations",                                      &Model::compute_LTE_level_populations)
         .def ("compute_radiation_field",                                            &Model::compute_radiation_field)
         .def ("compute_Jeff",                                                       &Model::compute_Jeff)
+        .def ("compute_level_populations",                                          &Model::compute_level_populations)
         // constructor
         .def (py::init<const string>())
         .def (py::init<>());
@@ -103,7 +110,6 @@ PYBIND11_MODULE (core, module)
         .def ("set_order_max",                &Parameters::set_order_max           )
         .def ("set_nboundary",                &Parameters::set_nboundary           )
         .def ("set_nfreqs",                   &Parameters::set_nfreqs              )
-        .def ("set_nfreqs_red",               &Parameters::set_nfreqs_red          )
         .def ("set_nspecs",                   &Parameters::set_nspecs              )
         .def ("set_nlspecs",                  &Parameters::set_nlspecs             )
         .def ("set_nlines",                   &Parameters::set_nlines              )
@@ -121,7 +127,6 @@ PYBIND11_MODULE (core, module)
         .def ("order_max",                    &Parameters::order_max           )
         .def ("nboundary",                    &Parameters::nboundary           )
         .def ("nfreqs",                       &Parameters::nfreqs              )
-        .def ("nfreqs_red",                   &Parameters::nfreqs_red          )
         .def ("nspecs",                       &Parameters::nspecs              )
         .def ("nlspecs",                      &Parameters::nlspecs             )
         .def ("nlines",                       &Parameters::nlines              )
@@ -151,7 +156,7 @@ PYBIND11_MODULE (core, module)
         .def ("get_ray_lengths",     &Geometry::get_ray_lengths)
         .def ("get_ray_lengths_gpu", &Geometry::get_ray_lengths_gpu)
         // constructor
-        .def (py::init<Parameters&>());
+        .def (py::init<>());
 
 
     // Points
@@ -161,12 +166,13 @@ PYBIND11_MODULE (core, module)
         .def_readwrite ("velocity",    &Points::velocity)
         .def_readwrite ("n_neighbors", &Points::n_neighbors)
         .def_readwrite ("neighbors",   &Points::neighbors)
-        .def_readwrite ("nbs",         &Points::nbs)
+        // .def_readwrite ("nbs",         &Points::nbs)
+        .def ("print",                 &Points::print)
         // io
         .def ("read",                  &Points::read)
         .def ("write",                 &Points::write)
         // constructor
-        .def (py::init<Parameters&>());
+        .def (py::init<>());
 
 
     // Rays
@@ -175,11 +181,12 @@ PYBIND11_MODULE (core, module)
         .def_readwrite ("direction", &Rays::direction)
         .def_readwrite ("antipod",   &Rays::antipod)
         .def_readwrite ("weight",    &Rays::weight)
+        .def ("print",    &Rays::print)
         // io
         .def ("read",                &Rays::read)
         .def ("write",               &Rays::write)
         // constructor
-        .def (py::init<Parameters&>());
+        .def (py::init<>());
 
 
     // Boundary Condition
@@ -195,13 +202,15 @@ PYBIND11_MODULE (core, module)
         // attributes
         .def_readwrite ("boundary2point",       &Boundary::boundary2point)
         .def_readwrite ("point2boundary",       &Boundary::point2boundary)
-        .def_readwrite ("boundary_condition",   &Boundary::boundary_condition)
         .def_readwrite ("boundary_temperature", &Boundary::boundary_temperature)
+        // functions
+        .def ("set_boundary_condition",         &Boundary::set_boundary_condition)
+        .def ("get_boundary_condition",         &Boundary::get_boundary_condition)
         // io
         .def ("read",                           &Boundary::read)
         .def ("write",                          &Boundary::write)
         // constructor
-        .def (py::init<Parameters&>());
+        .def (py::init<>());
 
 
     // Thermodynamics
@@ -209,7 +218,7 @@ PYBIND11_MODULE (core, module)
         // attributes
         .def_readwrite ("temperature", &Thermodynamics::temperature)
         .def_readwrite ("turbulence",  &Thermodynamics::turbulence)
-        // functions
+        // io
         .def ("read",                  &Thermodynamics::read)
         .def ("write",                 &Thermodynamics::write)
         // constructor
@@ -220,6 +229,7 @@ PYBIND11_MODULE (core, module)
     py::class_<Temperature> (module, "Temperature")
         // attributes
         .def_readwrite ("gas", &Temperature::gas)
+        .def ("print",         &Temperature::print)
         // functions
         .def ("read",          &Temperature::read)
         .def ("write",         &Temperature::write)
@@ -383,6 +393,7 @@ PYBIND11_MODULE (core, module)
         .def_readwrite ("I_bdy",       &Radiation::I_bdy)
         .def_readwrite ("I",           &Radiation::I)
         .def_readwrite ("J",           &Radiation::J)
+        .def ("print",                 &Radiation::print)
         // functions
         .def ("read",                  &Radiation::read)
         .def ("write",                 &Radiation::write)
@@ -401,37 +412,14 @@ PYBIND11_MODULE (core, module)
         .def (py::init());
 
 
-    // Vector3D <Real>
-    py::class_<Vector3D> (module, "Vector3D", py::buffer_protocol())
-        // buffer
-        .def_buffer(
-            [](Vector3D &v) -> py::buffer_info
-            {
-                return py::buffer_info(
-                    &(v.data[0]),                            // Pointer to buffer
-                    3,                                       // Size of one element
-                    py::format_descriptor<Real>::format(),   // Python struct-style format descriptor
-                    1,                                       // Number of dimensions
-                    {3},                                     // Buffer dimensions
-                    {sizeof(Real)}                           // Strides (in bytes) for each index
-                );
-            }
-        )
-        // functions
-        // attributes
-        // .def_readwrite ("data", &Vector3D::data)
-        // constructor
-        .def (py::init());
-
-
     // Vector <Size>
-    py::class_<Vector<Size>> (module, "Vector_Size", py::buffer_protocol())
+    py::class_<Vector<Size>> (module, "VSize", py::buffer_protocol())
         // buffer
         .def_buffer(
             [](Vector<Size> &v) -> py::buffer_info
             {
                 return py::buffer_info(
-                    v.dat,                                 // Pointer to buffer
+                    v.vec.data(),                          // Pointer to buffer
                     sizeof(Size),                          // Size of one element
                     py::format_descriptor<Size>::format(), // Python struct-style format descriptor
                     1,                                     // Number of dimensions
@@ -441,21 +429,19 @@ PYBIND11_MODULE (core, module)
             }
         )
         // functions
-        .def ("resize",        &Vector<Size>::resize)
-        // attributes
-        .def_readwrite ("vec", &Vector<Size>::vec)
+        .def ("set", &Vector<Size>::set_1D_array)
         // constructor
         .def (py::init());
 
 
     // Vector <Real>
-    py::class_<Vector<Real>> (module, "Vector_Real", py::buffer_protocol())
+    py::class_<Vector<Real>> (module, "VReal", py::buffer_protocol())
         // buffer
         .def_buffer(
             [](Vector<Real> &v) -> py::buffer_info
             {
                 return py::buffer_info(
-                    v.dat,                                 // Pointer to buffer
+                    v.vec.data(),                          // Pointer to buffer
                     sizeof(Real),                          // Size of one element
                     py::format_descriptor<Real>::format(), // Python struct-style format descriptor
                     1,                                     // Number of dimensions
@@ -465,306 +451,349 @@ PYBIND11_MODULE (core, module)
             }
         )
         // functions
-        .def ("resize",        &Vector<Real>::resize)
-        // attributes
-        .def_readwrite ("vec", &Vector<Real>::vec)
+        .def ("set", &Vector<Real>::set_1D_array)
+        // constructor
+        .def (py::init());
+
+
+    // Matrix <Real>
+    py::class_<Matrix<Real>, Vector<Real>> (module, "MReal", py::buffer_protocol())
+        // buffer
+        .def_buffer(
+            [](Matrix<Real> &m) -> py::buffer_info
+            {
+                return py::buffer_info(
+                    m.vec.data(),                                                 // Pointer to buffer
+                    sizeof(Real),                                                 // Size of one element
+                    py::format_descriptor<Real>::format(),                        // Python struct-style format descriptor
+                    2,                                                            // Number of dimensions
+                    py::detail::any_container<ssize_t>({m.nrows,
+                                                        m.ncols}),                // Buffer dimensions
+                    py::detail::any_container<ssize_t>({sizeof(Real)*m.ncols,
+                                                        sizeof(Real)         })   // Strides (in bytes) for each index
+                );
+            }
+        )
+        .def_readwrite ("vec",   &Vector<Real>::vec)
+        .def_readwrite ("nrows", &Matrix<Real>::nrows)
+        .def_readwrite ("ncols", &Matrix<Real>::ncols)
+        // functions
+        .def ("set", &Matrix<Real>::set_2D_array)
+        // constructor
+        .def (py::init());
+
+
+    // Tensor <Real>
+    py::class_<Tensor<Real>, Vector<Real>> (module, "TReal", py::buffer_protocol())
+        // buffer
+        .def_buffer(
+            [](Tensor<Real> &t) -> py::buffer_info
+            {
+                return py::buffer_info(
+                    t.vec.data(),                                                        // Pointer to buffer
+                    sizeof(Real),                                                        // Size of one element
+                    py::format_descriptor<Real>::format(),                               // Python struct-style format descriptor
+                    3,                                                                   // Number of dimensions
+                    py::detail::any_container<ssize_t>({t.nrows,
+                                                        t.ncols,
+                                                        t.depth }),                      // Buffer dimensions
+                    py::detail::any_container<ssize_t>({sizeof(Real)*t.ncols*t.depth,
+                                                        sizeof(Real)*t.depth,
+                                                        sizeof(Real)                 })   // Strides (in bytes) for each index
+                );
+            }
+        )
+        .def_readwrite ("vec",   &Vector<Real>::vec)
+        .def_readwrite ("nrows", &Tensor<Real>::nrows)
+        .def_readwrite ("ncols", &Tensor<Real>::ncols)
+        .def_readwrite ("depth", &Tensor<Real>::depth)
+        // functions
+        .def ("set", &Tensor<Real>::set_3D_array)
         // constructor
         .def (py::init());
 
 
     // Vector <Vector3D>
-    py::class_<Vector<Vector3D>> (module, "Vector_Vector3D", py::buffer_protocol())
+    py::class_<Vector<Vector3D>> (module, "VVector3D", py::buffer_protocol())
         // buffer
         .def_buffer(
             [](Vector<Vector3D> &v) -> py::buffer_info
             {
                 return py::buffer_info(
-                    v.dat,                                                               // Pointer to buffer
-                    sizeof(Real),                                                        // Size of one element
-                    py::format_descriptor<Real>::format(),                               // Python struct-style format descriptor
-                    2,                                                                   // Number of dimensions
-                    py::detail::any_container<ssize_t>({v.vec.size(), 3}),               // Buffer dimensions
-                    py::detail::any_container<ssize_t>({sizeof(Real)*3, sizeof(Real)})   // Strides (in bytes) for each index
+                    v.vec.data(),                                             // Pointer to buffer
+                    sizeof(double),                                           // Size of one element
+                    py::format_descriptor<double>::format(),                  // Python struct-style format descriptor
+                    2,                                                        // Number of dimensions
+                    py::detail::any_container<ssize_t>({v.vec.size(),
+                                                        3            }),      // Buffer dimensions
+                    py::detail::any_container<ssize_t>({sizeof(double)*3,
+                                                        sizeof(double)   })   // Strides (in bytes) for each index
                 );
             }
         )
         // functions
-        .def ("resize",        &Vector<Vector3D>::resize)
-        // attributes
-        .def_readwrite ("vec", &Vector<Vector3D>::vec)
-
-        //.def("__init__",
-        //    [](Vector<Vector3D> &v, py::buffer b)
-        //    {
-        //        // typedef Eigen::Stride<Eigen::Dynamic, Eigen::Dynamic> Strides;
-
-        //        /* Request a buffer descriptor from Python */
-        //        py::buffer_info info = b.request();
-
-        //        /* Some sanity checks ... */
-        //        // if (info.format != py::format_descriptor<Real>::format())
-        //            // throw std::runtime_error("Incompatible format: expected a double array!");
-
-        //        // if (info.ndim != 2)
-        //            // throw std::runtime_error("Incompatible buffer dimension!");
-
-        //        // auto strides = Strides(
-        //            // info.strides[rowMajor ? 0 : 1] / (py::ssize_t)sizeof(Scalar),
-        //            // info.strides[rowMajor ? 1 : 0] / (py::ssize_t)sizeof(Scalar));
-
-        //        // auto map = Eigen::Map<Matrix, 0, Strides>(
-        //            // static_cast<Scalar *>(info.ptr), info.shape[0], info.shape[1], strides);
-
-        //        // new (&v) Matrix(map);
-
-
-        //        v.resize(info.shape[0]);
-
-        //        memcpy(v.vec.data(), info.ptr, info.shape[0]*sizeof(Vector3D));
-
-        //    }
-        //);
+        .def ("set", (void (Vector<Vector3D>::*)(py::array_t<double, py::array::c_style | py::array::forcecast>)) &Vector<Vector3D>::set_2D_array)
         // constructor
         .def (py::init());
 }
 
 
-namespace pybind11
-{
-    namespace detail
-    {
-        template<> struct type_caster<Vector3D>
-        {
-            PYBIND11_TYPE_CASTER(Vector3D, _("Vector3D"));
-
-            // Conversion part 1 (Python -> C++)
-            bool load(py::handle src, bool convert)
-            {
-                // if ( !convert and !py::array_t<T>::check_(src) )
-                    // return false;
-
-                // auto buf = py::array_t<Real, py::array::c_style | py::array::forcecast>::ensure(src);
-                auto buf = array::ensure(src);
-
-                if ( !buf )
-                    return false;
-
-                auto dims = buf.ndim();
-                if ( dims != 1  )
-                    return false;
-
-                // std::vector<size_t> shape(1);
-                // shape[0] = buf.shape()[0];
-                Real* data = (Real*) buf.data();
-
-                value = Vector3D (data[0], data[1], data[2]);
-
-                // auto ref = reinterpret_steal<array>(eigen_ref_array<props>(value));
-
-                // memcpy(value.vec.data(), buf.data(), shape[0]*sizeof(Vector3D));
-
-                // int result = detail::npy_api::get().PyArray_CopyInto_(ref.ptr(), buf.ptr());
-
-                // if (result < 0)   // Copy failed!
-                // {
-                   // PyErr_Clear();
-                   // return false;
-                // }
-
-                return true;
-            }
-
-            //Conversion part 2 (C++ -> Python)
-            static py::handle cast(const Vector3D& src, py::return_value_policy policy, py::handle parent)
-            {
-                std::vector<size_t> shape(1);
-                shape[0] = 3;
-
-                std::vector<size_t> strides(1);
-                strides[0] = sizeof(Real);
-
-                py::array arr (std::move(shape), std::move(strides), &(src.data[0]));
-
-                return arr.release();
-            }
-        };
-
-
-        template<> struct type_caster<Vector<Vector3D>>
-        {
-            PYBIND11_TYPE_CASTER(Vector<Vector3D>, _("Vector<Vector3D>"));
-
-            // Conversion part 1 (Python -> C++)
-            bool load(py::handle src, bool convert)
-            {
-                // if ( !convert and !py::array_t<T>::check_(src) )
-                    // return false;
-
-                // auto buf = py::array_t<Real, py::array::c_style | py::array::forcecast>::ensure(src);
-                auto buf = array::ensure(src);
-
-                if ( !buf )
-                    return false;
-
-                auto dims = buf.ndim();
-                if ( dims != 2  )
-                    return false;
-
-                std::vector<size_t> shape(2);
-                shape[0] = buf.shape()[0];
-                shape[1] = buf.shape()[1];
-
-                value = Vector<Vector3D> (shape[0]);
-
-                Vector<Vector3D>* data = (Vector<Vector3D>*) buf.data();
-
-                // auto ref = reinterpret_steal<array>(eigen_ref_array<props>(value));
-
-                memcpy(value.vec.data(), buf.data(), shape[0]*sizeof(Vector3D));
-
-                // int result = detail::npy_api::get().PyArray_CopyInto_(ref.ptr(), buf.ptr());
-
-                // if (result < 0)   // Copy failed!
-                // {
-                   // PyErr_Clear();
-                   // return false;
-                // }
-
-                return true;
-            }
-
-            //Conversion part 2 (C++ -> Python)
-            static py::handle cast(const Vector<Vector3D>& src, py::return_value_policy policy, py::handle parent)
-            {
-                std::vector<size_t> shape(2);
-                shape[0] = src.vec.size();
-                shape[1] = 3;
-
-                std::vector<size_t> strides(2);
-                strides[0] = sizeof(Real)*shape[1];
-                strides[1] = sizeof(Real);
-
-                py::array arr (std::move(shape), std::move(strides), &(src.vec[0].data[0]));
-
-                return arr.release();
-            }
-        };
-
-
-        template<typename type>
-        struct type_caster<Vector<type>>
-        {
-            PYBIND11_TYPE_CASTER(Vector<type>, _("Vector<type>"));
-
-            // Conversion part 1 (Python -> C++)
-            bool load(py::handle src, bool convert)
-            {
-                // if ( !convert and !py::array_t<T>::check_(src) )
-                    // return false;
-
-                // auto buf = py::array_t<Real, py::array::c_style | py::array::forcecast>::ensure(src);
-                auto buf = array::ensure(src);
-
-                if ( !buf )
-                    return false;
-
-                auto dims = buf.ndim();
-                if ( dims != 1  )
-                    return false;
-
-                std::vector<size_t> shape(1);
-                shape[0] = buf.shape()[0];
-
-                value = Vector<type> (shape[0]);
-
-                // auto ref = reinterpret_steal<array>(eigen_ref_array<props>(value));
-
-                memcpy(value.vec.data(), buf.data(), shape[0]*sizeof(type));
-
-                // int result = detail::npy_api::get().PyArray_CopyInto_(ref.ptr(), buf.ptr());
-
-                // if (result < 0)   // Copy failed!
-                // {
-                   // PyErr_Clear();
-                   // return false;
-                // }
-
-                return true;
-            }
-
-            //Conversion part 2 (C++ -> Python)
-            static py::handle cast(const Vector<type>& src, py::return_value_policy policy, py::handle parent)
-            {
-                std::vector<size_t> shape(1);
-                shape[0] = src.vec.size();
-
-                std::vector<size_t> strides(1);
-                strides[0] = sizeof(Real);
-
-                py::array arr (std::move(shape), std::move(strides), src.vec.data());
-
-                return arr.release();
-            }
-        };
-
-
-        template<typename type>
-        struct type_caster<Matrix<type>>
-        {
-            PYBIND11_TYPE_CASTER(Matrix<type>, _("Matrix<type>"));
-
-            // Conversion part 1 (Python -> C++)
-            bool load(py::handle src, bool convert)
-            {
-                // if ( !convert and !py::array_t<T>::check_(src) )
-                    // return false;
-
-                // auto buf = py::array_t<Real, py::array::c_style | py::array::forcecast>::ensure(src);
-                auto buf = array::ensure(src);
-
-                if ( !buf )
-                    return false;
-
-                auto dims = buf.ndim();
-                if ( dims != 2  )
-                    return false;
-
-                std::vector<size_t> shape(2);
-                shape[0] = buf.shape()[0];
-                shape[1] = buf.shape()[1];
-
-                value = Matrix<type> (shape[0], shape[1]);
-
-                // auto ref = reinterpret_steal<array>(eigen_ref_array<props>(value));
-
-                memcpy(value.vec.data(), buf.data(), shape[0]*shape[1]*sizeof(type));
-
-                // int result = detail::npy_api::get().PyArray_CopyInto_(ref.ptr(), buf.ptr());
-
-                // if (result < 0)   // Copy failed!
-                // {
-                   // PyErr_Clear();
-                   // return false;
-                // }
-
-                return true;
-            }
-
-            //Conversion part 2 (C++ -> Python)
-            static py::handle cast(const Matrix<type>& src, py::return_value_policy policy, py::handle parent)
-            {
-                std::vector<size_t> shape(2);
-                shape[0] = src.nrows;
-                shape[1] = src.ncols;
-
-                std::vector<size_t> strides(2);
-                strides[0] = sizeof(Real)*shape[1];
-                strides[1] = sizeof(Real);
-
-                py::array arr (std::move(shape), std::move(strides), src.vec.data());
-
-                return arr.release();
-            }
-        };
-    }
-}
+//namespace pybind11
+//{
+//    namespace detail
+//    {
+//        template<> struct type_caster<Vector3D>
+//        {
+//            PYBIND11_TYPE_CASTER(Vector3D, _("Vector3D"));
+//
+//            // Conversion part 1 (Python -> C++)
+//            bool load(py::handle src, bool convert)
+//            {
+//                // if ( !convert and !py::array_t<T>::check_(src) )
+//                    // return false;
+//
+//                // auto buf = py::array_t<Real, py::array::c_style | py::array::forcecast>::ensure(src);
+//                auto buf = array::ensure(src);
+//
+//                if ( !buf )
+//                    return false;
+//
+//                auto dims = buf.ndim();
+//                if ( dims != 1  )
+//                    return false;
+//
+//                // std::vector<size_t> shape(1);
+//                // shape[0] = buf.shape()[0];
+//                Real* data = (Real*) buf.data();
+//
+//                value = Vector3D (data[0], data[1], data[2]);
+//
+//                // auto ref = reinterpret_steal<array>(eigen_ref_array<props>(value));
+//
+//                // memcpy(value.vec.data(), buf.data(), shape[0]*sizeof(Vector3D));
+//
+//                // int result = detail::npy_api::get().PyArray_CopyInto_(ref.ptr(), buf.ptr());
+//
+//                // if (result < 0)   // Copy failed!
+//                // {
+//                   // PyErr_Clear();
+//                   // return false;
+//                // }
+//
+//                return true;
+//            }
+//
+//            //Conversion part 2 (C++ -> Python)
+//            static py::handle cast(const Vector3D& src, py::return_value_policy policy, py::handle parent)
+//            {
+//                std::vector<size_t> shape(1);
+//                shape[0] = 3;
+//
+//                std::vector<size_t> strides(1);
+//                strides[0] = sizeof(Real);
+//
+//                py::array arr (std::move(shape), std::move(strides), &(src.data[0]));
+//
+//                return arr.release();
+//            }
+//        };
+//
+//
+//        template<> struct type_caster<Vector<Vector3D>>
+//        {
+//            PYBIND11_TYPE_CASTER(Vector<Vector3D>, _("Vector<Vector3D>"));
+//
+//            // Conversion part 1 (Python -> C++)
+//            bool load(py::handle src, bool convert)
+//            {
+//                auto buf = array::ensure(src);
+//                if (!buf) return false;
+//
+//                auto dims = buf.ndim();
+//                if (dims != 2) return false;
+//
+//                std::vector<size_t> shape(2);
+//                shape[0] = buf.shape()[0];
+//                shape[1] = buf.shape()[1];
+//
+//                if (shape[1] != 3) return false;
+//
+//                // value = Vector<Vector3D> (shape[0]);
+//                value.resize(shape[0]);
+//
+//                // Vector3D>* data = (Vector<Vector3D>*) buf.data();
+//
+//                // for (size_t i = 0; i < shape[0]; i++)
+//                // {
+//                    // value[i] = Vector3D()
+//                // }
+//
+//                // Vector<Vector3D>* data = (Vector<Vector3D>*) buf.data();
+//
+//                // auto ref = py::reinterpret_steal<array>(eigen_ref_array<props>(value));
+//
+//                memcpy(&(value.vec[0].data[0]), buf.data(), shape[0]*shape[1]*sizeof(Real));
+//
+//                // int result = detail::npy_api::get().PyArray_CopyInto_(ref.ptr(), buf.ptr());
+//
+//                // if (result < 0)   // Copy failed!
+//                // {
+//                   // PyErr_Clear();
+//                   // return false;
+//                // }
+//
+//                return true;
+//            }
+//
+//            //Conversion part 2 (C++ -> Python)
+//            static py::handle cast(const Vector<Vector3D>& src, py::return_value_policy policy, py::handle parent)
+//            {
+//                std::vector<size_t> shape(2);
+//                shape[0] = src.vec.size();
+//                shape[1] = 3;
+//
+//                std::vector<size_t> strides(2);
+//                strides[0] = sizeof(Real)*shape[1];
+//                strides[1] = sizeof(Real);
+//
+//                py::array arr (std::move(shape), std::move(strides), &(src.vec[0].data[0]));
+//
+//                return arr.release();
+//            }
+//        };
+//
+//
+//        template<typename type>
+//        struct type_caster<Vector<type>>
+//        {
+//            PYBIND11_TYPE_CASTER(Vector<type>, _("Vector<type>"));
+//
+//            // Conversion part 1 (Python -> C++)
+//            bool load(py::handle src, bool convert)
+//            {
+//                // if ( !convert and !py::array_t<T>::check_(src) )
+//                    // return false;
+//
+//                // auto buf = py::array_t<Real, py::array::c_style | py::array::forcecast>::ensure(src);
+//                auto buf = py::array_t<type, py::array::c_style | py::array::forcecast>::ensure(src);
+//
+//                if ( !buf )
+//                    return false;
+//
+//                auto dims = buf.ndim();
+//                if ( dims != 1  )
+//                    return false;
+//
+//                std::vector<size_t> shape(1);
+//                shape[0] = buf.shape()[0];
+//
+//                cout << "----------- value.data() IN  " << value.vec.data() << endl;
+//                cout << "----------- value.dat    IN  " << value.dat        << endl;
+//
+//                value = Vector<type> (shape[0]);
+//
+//                // std::copy (buf.data(), buf.data()+buf.size(), value.vec.data());
+//                cout << "buf.size() = " << buf.size() << endl;
+//                cout << "shape[0]   = " << shape[0]   << endl;
+//                cout << "----------- value.data() IN  " << value.vec.data() << endl;
+//                cout << "----------- value.dat    IN  " << value.dat        << endl;
+//                value.set_dat();
+//                cout << "----------- value.data() IN  " << value.vec.data() << endl;
+//                cout << "----------- value.dat    IN  " << value.dat        << endl;
+//                std::copy (buf.data(), buf.data()+buf.size(), value.dat);
+//                cout << "----------- value.data() OUT " << value.vec.data() << endl;
+//                cout << "----------- value.dat    OUT " << value.dat        << endl;
+//
+//                // auto ref = reinterpret_steal<array>(eigen_ref_array<props>(value));
+//
+//
+//
+//                // memcpy(value.vec.data(), buf.data(), shape[0]*sizeof(type));
+//
+//                // int result = detail::npy_api::get().PyArray_CopyInto_(ref.ptr(), buf.ptr());
+//
+//                // if (result < 0)   // Copy failed!
+//                // {
+//                   // PyErr_Clear();
+//                   // return false;
+//                // }
+//
+//                return true;
+//            }
+//
+//            //Conversion part 2 (C++ -> Python)
+//            static py::handle cast(const Vector<type>& src, py::return_value_policy policy, py::handle parent)
+//            {
+//                std::vector<size_t> shape(1);
+//                shape[0] = src.vec.size();
+//
+//                std::vector<size_t> strides(1);
+//                strides[0] = sizeof(Real);
+//
+//                py::array arr (std::move(shape), std::move(strides), src.dat);
+//
+//                return arr.release();
+//            }
+//        };
+//
+//
+//        template<typename type>
+//        struct type_caster<Matrix<type>>
+//        {
+//            PYBIND11_TYPE_CASTER(Matrix<type>, _("Matrix<type>"));
+//
+//            // Conversion part 1 (Python -> C++)
+//            bool load(py::handle src, bool convert)
+//            {
+//                // if ( !convert and !py::array_t<T>::check_(src) )
+//                    // return false;
+//
+//                // auto buf = py::array_t<Real, py::array::c_style | py::array::forcecast>::ensure(src);
+//                auto buf = array::ensure(src);
+//
+//                if ( !buf )
+//                    return false;
+//
+//                auto dims = buf.ndim();
+//                if ( dims != 2  )
+//                    return false;
+//
+//                std::vector<size_t> shape(2);
+//                shape[0] = buf.shape()[0];
+//                shape[1] = buf.shape()[1];
+//
+//                value = Matrix<type> (shape[0], shape[1]);
+//
+//                // auto ref = reinterpret_steal<array>(eigen_ref_array<props>(value));
+//
+//                memcpy(value.vec.data(), buf.data(), shape[0]*shape[1]*sizeof(type));
+//
+//                // int result = detail::npy_api::get().PyArray_CopyInto_(ref.ptr(), buf.ptr());
+//
+//                // if (result < 0)   // Copy failed!
+//                // {
+//                   // PyErr_Clear();
+//                   // return false;
+//                // }
+//
+//                return true;
+//            }
+//
+//            //Conversion part 2 (C++ -> Python)
+//            static py::handle cast(const Matrix<type>& src, py::return_value_policy policy, py::handle parent)
+//            {
+//                std::vector<size_t> shape(2);
+//                shape[0] = src.nrows;
+//                shape[1] = src.ncols;
+//
+//                std::vector<size_t> strides(2);
+//                strides[0] = sizeof(Real)*shape[1];
+//                strides[1] = sizeof(Real);
+//
+//                py::array arr (std::move(shape), std::move(strides), src.vec.data());
+//
+//                return arr.release();
+//            }
+//        };
+//    }
+//}

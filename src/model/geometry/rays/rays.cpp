@@ -52,6 +52,10 @@ void Rays :: write (const Io& io) const
 {
     Double2 direction_buffer (parameters.nrays(), Double1(3));
 
+    cout << "##########################" << endl;
+    cout << "nrays = " << parameters.nrays() << endl;
+
+
     for (Size r = 0; r < parameters.nrays(); r++)
     {
         direction_buffer[r] = {direction[r].x(),

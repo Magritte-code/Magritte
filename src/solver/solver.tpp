@@ -50,12 +50,15 @@ inline void Solver :: trace (Model& model)
 
 inline void Solver :: solve (Model& model)
 {
+    model.radiation.initialize_J();
+
     for (Size rr = 0; rr < model.parameters.hnrays(); rr++)
     {
         const Size ar = model.geometry.rays.antipod[rr];
 
-        cout << "rr = " << rr << endl;
+        cout << "--- rr = " << rr << endl;
 
+        // for (Size o = 0; o < model.parameters.npoints(); o++)
         accelerated_for (o, model.parameters.npoints(), nblocks, nthreads,
         {
             const Real dshift_max = 1.0e+99;
@@ -67,7 +70,8 @@ inline void Solver :: solve (Model& model)
         pc::accelerator::synchronize();
     }
 
-    model.geometry.lengths.copy_ptr_to_vec ();
+    model.radiation.I.copy_ptr_to_vec();
+    model.radiation.J.copy_ptr_to_vec();
 }
 
 
@@ -76,20 +80,20 @@ accel inline Size Solver :: trace_ray (
     const Geometry& geometry,
     const Size      o,
     const Size      r,
-    const Real      dshift_max,
+    const double    dshift_max,
     const int       increment )
 {
-    Size id = centre;   // index distance from origin
-    Real  Z = 0.0;      // distance from origin (o)
-    Real dZ = 0.0;      // last increment in Z
+    Size   id = centre;   // index distance from origin
+    double  Z = 0.0;      // distance from origin (o)
+    double dZ = 0.0;      // last increment in Z
 
     Size nxt = geometry.get_next (o, r, o, Z, dZ);
 
     if (nxt != geometry.parameters.npoints()) // if we are not going out of mesh
     {
-        Size       crt = o;
-        Real shift_crt = geometry.get_shift <frame> (o, r, crt);
-        Real shift_nxt = geometry.get_shift <frame> (o, r, nxt);
+        Size         crt = o;
+        double shift_crt = geometry.get_shift <frame> (o, r, crt);
+        double shift_nxt = geometry.get_shift <frame> (o, r, nxt);
 
         set_data (crt, nxt, shift_crt, shift_nxt, dZ, dshift_max, increment, id);
 
@@ -110,25 +114,25 @@ accel inline Size Solver :: trace_ray (
 
 
 accel inline void Solver :: set_data (
-    const Size  crt,
-    const Size  nxt,
-    const Real  shift_crt,
-    const Real  shift_nxt,
-    const Real  dZ_loc,
-    const Real  dshift_max,
-    const int   increment,
-          Size& id )
+    const Size   crt,
+    const Size   nxt,
+    const double shift_crt,
+    const double shift_nxt,
+    const double dZ_loc,
+    const double dshift_max,
+    const int    increment,
+          Size&  id )
 {
-    const Real dshift     = shift_nxt - shift_crt;
-    const Real dshift_abs = fabs (dshift);
+    const double dshift     = shift_nxt - shift_crt;
+    const double dshift_abs = fabs (dshift);
 
     if (dshift_abs > dshift_max) // If velocity gradient is not well-sampled enough
     {
         // Interpolate velocity gradient field
-        const Size      n_interpl = dshift_abs / dshift_max + Real (1);
-        const Size half_n_interpl = Real (0.5) * n_interpl;
-        const Real     dZ_interpl =     dZ_loc / n_interpl;
-        const Real dshift_interpl =     dshift / n_interpl;
+        const Size        n_interpl = dshift_abs / dshift_max + 1;
+        const Size   half_n_interpl = 0.5 * n_interpl;
+        const double     dZ_interpl =     dZ_loc / n_interpl;
+        const double dshift_interpl =     dshift / n_interpl;
 
         if (n_interpl > 10000)
         {
@@ -411,8 +415,16 @@ accel inline Real Solver :: planck (const Real temp, const Real freq) const
 }
 
 
-accel inline Real Solver :: boundary_intensity (const Model& model, const Size bdy_id, const Real freq) const
+///  Getter for the boundary conditions
+///    @param[in] model  : reference to model object
+///    @param[in] p      : point index of the boundary point
+///    @param[in] freq   : frequency at which to evaluate boundary condition
+///    @returns incoming radiation intensity at the boundary
+////////////////////////////////////////////////////////////////////////////
+accel inline Real Solver :: boundary_intensity (const Model& model, const Size p, const Real freq) const
 {
+    const Size bdy_id = model.geometry.boundary.point2boundary[p];
+
     switch (model.geometry.boundary.boundary_condition[bdy_id])
     {
         case Zero    : return 0.0;
@@ -438,7 +450,7 @@ accel inline void Solver :: get_eta_and_chi (
 {
     // Initialize
     eta = 0.0;
-    chi = 0.0;
+    chi = 1.0e-30;
 
     // Set line emissivity and opacity
     for (Size l = 0; l < model.parameters.nlines(); l++)
@@ -448,7 +460,13 @@ accel inline void Solver :: get_eta_and_chi (
 
         eta += prof * model.lines.emissivity(p, l);
         chi += prof * model.lines.opacity   (p, l);
+
+        // cout << "prof = " << prof << "     diff = " << diff  << "     width = " << width << endl;
+        // printf("prof = %le,   diff = %le,   freq = %le,   line = %le\n", prof, diff, freq, model.lines.line[l]);
     }
+
+
+    // cout << "eta, chi = " << eta << "  " << chi << endl;
 }
 
 
@@ -458,7 +476,7 @@ accel inline void Solver :: get_eta_and_chi (
 ///    @param[in] dZ    : distance inscrement along ray
 ///    @returns integral x over dZ
 ///////////////////////////////////////////////////////
-accel inline Real trap (const Real x_crt, const Real x_nxt, const Real dZ)
+accel inline Real trap (const Real x_crt, const Real x_nxt, const double dZ)
 {
     return (Real) 0.5 * (x_crt + x_nxt) * dZ;
 }
@@ -470,61 +488,71 @@ accel inline void Solver :: solve_0th_order_short_charateristics (
           Model& model,
     const Size   o,
     const Size   r,
-    const Real   dshift_max)
+    const double dshift_max)
 {
-    Matrix<Real>& I = model.radiation.I[r];
-
-    Real  Z = 0.0;   // distance along ray
-    Real dZ = 0.0;   // last distance increment
+    double  Z = 0.0;   // distance along ray
+    double dZ = 0.0;   // last distance increment
 
     Size crt = o;
     Size nxt = model.geometry.get_next (o, r, o, Z, dZ);
 
+    // printf("---------- Start: r = %ld,  o = %ld,   nxt = %ld\n", r, o, nxt);
+
     if (model.geometry.valid_point (nxt))
     {
-        Real shift_crt = 1.0;
-        Real shift_nxt = model.geometry.get_shift <CoMoving> (o, r, nxt);
+        double shift_crt = 1.0;
+        double shift_nxt = model.geometry.get_shift <CoMoving> (o, r, nxt);
+        // printf("o = %ld,   nxt = %ld,   shift_nxt = %le\n",o, nxt, shift_nxt);
 
         for (Size f = 0; f < model.parameters.nfreqs(); f++)
         {
             const Real freq = model.radiation.frequencies.nu(o, f);
 
-            get_eta_and_chi (model, crt, freq,           eta_crt[f], chi_crt[f]);
-            get_eta_and_chi (model, nxt, freq*shift_nxt, eta_nxt[f], chi_nxt[f]);
+            get_eta_and_chi (model, crt, freq,           eta_crt()[f], chi_crt()[f]);
+            get_eta_and_chi (model, nxt, freq*shift_nxt, eta_nxt()[f], chi_nxt()[f]);
 
-            drho[f] = trap (eta_crt[f], eta_nxt[f], dZ);
-            dtau[f] = trap (chi_crt[f], chi_nxt[f], dZ);
-             tau[f] = dtau[f];
-             I(o,f) = drho[f] * expf(-tau[f]);
+            const Real drho = trap (eta_crt()[f], eta_nxt()[f], dZ);
+            const Real dtau = trap (chi_crt()[f], chi_nxt()[f], dZ);
+
+            tau()[f]                   = dtau;
+            model.radiation.I(r,o,f) = drho * expf(-tau()[f]);
+            // printf("I(o=%ld, c=%ld, n=%ld) = %le\n", o, crt, nxt, model.radiation.I(r,o,f));
         }
 
         while (model.geometry.not_on_boundary (nxt))
         {
-                  crt =       nxt;
-            shift_crt = shift_nxt;
-              eta_crt =   eta_nxt;
-              chi_crt =   chi_nxt;
+                  crt   =       nxt;
+            shift_crt   = shift_nxt;
+              eta_crt() =   eta_nxt();
+              chi_crt() =   chi_nxt();
 
             model.geometry.get_next (o, r, crt, nxt, Z, dZ, shift_nxt);
+            // printf("shift_nxt = %le\n", shift_nxt);
 
             for (Size f = 0; f < model.parameters.nfreqs(); f++)
             {
                 const Real freq = model.radiation.frequencies.nu(o, f);
 
-                get_eta_and_chi (model, nxt, freq*shift_nxt, eta_nxt[f], chi_nxt[f]);
+                get_eta_and_chi (model, nxt, freq*shift_nxt, eta_nxt()[f], chi_nxt()[f]);
 
-                drho[f]  = trap (eta_crt[f], eta_nxt[f], dZ);
-                dtau[f]  = trap (chi_crt[f], chi_nxt[f], dZ);
-                 tau[f] += dtau[f];
-                 I(o,f) += drho[f] * expf(-tau[f]);
+                const Real drho = trap (eta_crt()[f], eta_nxt()[f], dZ);
+                const Real dtau = trap (chi_crt()[f], chi_nxt()[f], dZ);
+
+                tau()[f]                 += dtau;
+                model.radiation.I(r,o,f) += drho * expf(-tau()[f]);
+                // printf("I(o=%ld, c=%ld, n=%ld) = %le\n", o, crt, nxt, model.radiation.I(r,o,f));
             }
         }
+        // printf("shift_nxt = %le\n", shift_nxt);
 
         for (Size f = 0; f < model.parameters.nfreqs(); f++)
         {
             const Real freq = model.radiation.frequencies.nu(o, f);
 
-            I(o,f) += boundary_intensity(model, nxt, freq*shift_nxt) * expf(-tau[f]);
+            model.radiation.I(r,o,f) += boundary_intensity(model, nxt, freq*shift_nxt) * expf(-tau()[f]);
+            model.radiation.J(  o,f) += model.geometry.rays.weight[r] * model.radiation.I(r,o,f);
+            // printf("I(o=%ld, c=%ld, n=%ld) = %le\n", o, crt, nxt, model.radiation.I(r,o,f));
+            // printf("-------- bc(%ld, %le) = %le\n", nxt, freq*shift_nxt, boundary_intensity(model, nxt, freq*shift_nxt));
         }
     }
 
@@ -534,7 +562,10 @@ accel inline void Solver :: solve_0th_order_short_charateristics (
         {
             const Real freq = model.radiation.frequencies.nu(o, f);
 
-            I(o,f) = boundary_intensity(model, crt, freq);
+            model.radiation.I(r,o,f)  = boundary_intensity(model, crt, freq);
+            model.radiation.J(  o,f) += model.geometry.rays.weight[r] * model.radiation.I(r,o,f);
+            // printf("I(o=%ld, c=%ld, n=%ld) = %le\n", o, crt, nxt, model.radiation.I(r,o,f));
+            // printf("-------- bc(%ld, %le) = %le\n", crt, freq, boundary_intensity(model, crt, freq));
         }
     }
 }

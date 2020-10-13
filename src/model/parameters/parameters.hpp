@@ -147,7 +147,6 @@ struct Parameters
     CREATE_PARAMETER (Size, order_max );
     CREATE_PARAMETER (Size, nboundary );
     CREATE_PARAMETER (Size, nfreqs    );
-    CREATE_PARAMETER (Size, nfreqs_red);
     CREATE_PARAMETER (Size, nspecs    );
     CREATE_PARAMETER (Size, nlspecs   );
     CREATE_PARAMETER (Size, nlines    );
@@ -174,7 +173,6 @@ struct Parameters
         CONSTRUCT_PARAMETER (Size, order_max );
         CONSTRUCT_PARAMETER (Size, nboundary );
         CONSTRUCT_PARAMETER (Size, nfreqs    );
-        CONSTRUCT_PARAMETER (Size, nfreqs_red);
         CONSTRUCT_PARAMETER (Size, nspecs    );
         CONSTRUCT_PARAMETER (Size, nlspecs   );
         CONSTRUCT_PARAMETER (Size, nlines    );
@@ -202,7 +200,6 @@ struct Parameters
         COPY_PARAMETER (order_max );
         COPY_PARAMETER (nboundary );
         COPY_PARAMETER (nfreqs    );
-        COPY_PARAMETER (nfreqs_red);
         COPY_PARAMETER (nspecs    );
         COPY_PARAMETER (nlspecs   );
         COPY_PARAMETER (nlines    );

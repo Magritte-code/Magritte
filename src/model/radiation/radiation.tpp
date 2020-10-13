@@ -29,18 +29,18 @@ inline Real Radiation :: get_I_bdy (const Size R, const Size b, const Size f) co
 // {
 //     return u[r][index (p, f)];
 // }
-// 
-// 
+//
+//
 // inline Real Radiation :: get_v (const Size r, const Size p, const Size f) const
 // {
 //     return v[r][index (p, f)];
 // }
 
 
-inline Real Radiation :: get_J (const Size p, const Size f) const
-{
-    return J[index (p, f)];
-}
+// inline Real Radiation :: get_J (const Size p, const Size f) const
+// {
+    // return J[index (p, f)];
+// }
 
 
 //inline void Radiation :: rescale_U_and_V (

@@ -1,0 +1,11 @@
+${BOUNDARY}
+
+Mesh.CharacteristicLengthFactor = 1.0;
+
+Mesh.CharacteristicLengthMin = ${SCALE_MIN};
+Mesh.CharacteristicLengthMax = ${SCALE_MAX};
+
+Mesh.CharacteristicLengthExtendFromBoundary = 0;
+
+Merge "${BACKGROUND}";
+Background Mesh View[0];
