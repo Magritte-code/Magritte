@@ -1,0 +1,85 @@
+# Configuration file for Travis-CI
+##################################
+
+language:
+  - cpp
+  - python
+  - bash
+
+addons:
+    packages:
+      - cmake
+      - python3-dev
+      - python3-numpy
+      - python3-pytest
+      - libgomp1
+      # - clang
+      - g++-6
+
+matrix:
+  include:
+    # - os: osx
+    #   python: 3
+    #   env: CC=clang CXX=clang
+    - os: osx
+      python: 3
+      env: CC=gcc-6 CXX=g++-6
+    - os: linux
+      python: 3
+      env: CC=gcc-6 CXX=g++-6
+
+before_install:
+  # - |
+  #       if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+  #       brew update
+  #       # seems to be needed on Travis due to conflicts with gcc otherwise
+  #       # see https://github.com/travis-ci/travis-ci/issues/8826
+  #       brew cask uninstall oclint
+  #       brew install ccache
+  #       export PATH="/usr/local/opt/ccache/libexec:$PATH"
+  #       # needed for OPENMP support on Travis
+  #       # see https://github.com/travis-ci/travis-ci/issues/8613N
+  #       export LD_LIBRARY_PATH=/usr/local/clang/lib:$LD_LIBRARY_PATH
+  #       fi
+  - |
+        if [ -f mpich/lib/libmpich.so ]; then
+            echo "libmpich.so found -- nothing to build."
+        else
+            echo "Downloading mpich source."
+            wget http://www.mpich.org/static/downloads/3.2/mpich-3.2.tar.gz
+            tar xfz mpich-3.2.tar.gz
+            rm mpich-3.2.tar.gz
+            echo "configuring and building mpich."
+            cd mpich-3.2
+            ./configure                     \
+                  --prefix=`pwd`/../mpich   \
+                  --enable-static=false     \
+                  --enable-alloca=true      \
+                  --disable-long-double     \
+                  --enable-threads=single   \
+                  --enable-fortran=no       \
+                  --enable-fast=all         \
+                  --enable-g=none           \
+                  --enable-timing=none
+            make -j4
+            make install
+            cd -
+            rm -rf mpich-3.2
+        fi
+  - PYTHON_EXECUTABLE=$(which python)
+  - BUILD_FLAGS="-DPYTHON_EXECUTABLE:FILEPATH=$PYTHON_EXECUTABLE -DOMP_PARALLEL=ON"
+
+install:
+  - mkdir build
+  - cd build
+  - COMPILER_CC=$(which gcc)
+  - $COMPILER_CC --version
+  - COMPILER_CXX=$(which g++)
+  - $COMPILER_CXX --version
+  - CC=$COMPILER_CC CXX=$COMPILER_CXX cmake $BUILD_FLAGS ../tests
+  - make -j4
+  - cd -
+
+script:
+  - cd tests
+  - echo "Kind of done..."
