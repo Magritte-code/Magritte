@@ -69,6 +69,13 @@ struct Model
     int compute_LTE_level_populations   ();
     int compute_radiation_field         ();
     int compute_Jeff                    ();
+    int compute_level_populations       (
+        // const Io   &io,
+        const bool  use_Ng_acceleration,
+        const long  max_niterations     );
+        
+    Double1 error_max;
+    Double1 error_mean;
 };
 
 #include "model.tpp"

@@ -1,0 +1,42 @@
+// Definition of a cuboid
+/////////////////////////
+
+Point(${I}01) = {${X_MIN}, ${Y_MIN}, ${Z_MIN}};
+Point(${I}02) = {${X_MAX}, ${Y_MIN}, ${Z_MIN}};
+Point(${I}03) = {${X_MAX}, ${Y_MAX}, ${Z_MIN}};
+Point(${I}04) = {${X_MIN}, ${Y_MAX}, ${Z_MIN}};
+Point(${I}05) = {${X_MIN}, ${Y_MIN}, ${Z_MAX}};
+Point(${I}06) = {${X_MAX}, ${Y_MIN}, ${Z_MAX}};
+Point(${I}07) = {${X_MAX}, ${Y_MAX}, ${Z_MAX}};
+Point(${I}08) = {${X_MIN}, ${Y_MAX}, ${Z_MAX}};
+
+Line(${I}01) = {${I}08, ${I}07};
+Line(${I}02) = {${I}07, ${I}06};
+Line(${I}03) = {${I}06, ${I}05};
+Line(${I}04) = {${I}05, ${I}08};
+Line(${I}05) = {${I}03, ${I}02};
+Line(${I}06) = {${I}02, ${I}01};
+Line(${I}07) = {${I}01, ${I}04};
+Line(${I}08) = {${I}04, ${I}03};
+Line(${I}09) = {${I}03, ${I}07};
+Line(${I}10) = {${I}02, ${I}06};
+Line(${I}11) = {${I}08, ${I}04};
+Line(${I}12) = {${I}05, ${I}01};
+
+Line Loop(${I}13) = { ${I}09,  ${I}02, -${I}10, -${I}05};
+Line Loop(${I}15) = { ${I}01, -${I}09, -${I}08, -${I}11};
+Line Loop(${I}17) = { ${I}08,  ${I}05,  ${I}06,  ${I}07};
+Line Loop(${I}19) = { ${I}03,  ${I}12, -${I}06,  ${I}10};
+Line Loop(${I}21) = { ${I}12,  ${I}07, -${I}11, -${I}04};
+Line Loop(${I}23) = { ${I}02,  ${I}03,  ${I}04,  ${I}01};
+
+Plane Surface(${I}14) = { ${I}13};
+Plane Surface(${I}16) = { ${I}15};
+Plane Surface(${I}18) = { ${I}17};
+Plane Surface(${I}20) = { ${I}19};
+Plane Surface(${I}22) = { ${I}21};
+Plane Surface(${I}24) = {-${I}23};
+
+Surface Loop(${I}25) = {${I}24, ${I}14, ${I}16, ${I}18, ${I}20, ${I}22};
+
+Volume(${I}26) = {${I}25};

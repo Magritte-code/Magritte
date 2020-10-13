@@ -34,7 +34,6 @@ void Parameters :: read (const Io &io)
     READ_NUMBER (Size, order_max );
     READ_NUMBER (Size, nboundary );
     READ_NUMBER (Size, nfreqs    );
-    READ_NUMBER (Size, nfreqs_red);
     READ_NUMBER (Size, nspecs    );
     READ_NUMBER (Size, nlspecs   );
     READ_NUMBER (Size, nlines    );
@@ -150,7 +149,6 @@ void Parameters :: write (const Io &io) const
     WRITE_NUMBER (Size, order_max );
     WRITE_NUMBER (Size, nboundary );
     WRITE_NUMBER (Size, nfreqs    );
-    WRITE_NUMBER (Size, nfreqs_red);
     WRITE_NUMBER (Size, nspecs    );
     WRITE_NUMBER (Size, nlspecs   );
     WRITE_NUMBER (Size, nlines    );

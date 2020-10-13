@@ -16,7 +16,18 @@ struct Radiation
     Frequencies frequencies;
     Scattering  scattering;
 
-    vector<Matrix<Real>> I;         ///< u intensity             (r, index(p,f))
+    Tensor<Real> I;         ///< intensity (r, p, f)
+    Matrix<Real> J;         ///< (angular) mean intensity (p, f)
+
+    Real1 print(Size r, Size o)
+    {
+        for (Size f = 0; f < parameters.nfreqs(); f++)
+        {
+            printf("I(f=%ld) = %le\n", f, I(r,o,f));
+
+            return I.vec;
+        }
+    }
 
     // vector<Matrix<Real>> u;         ///< u intensity             (r, index(p,f))
     // vector<Matrix<Real>> v;         ///< v intensity             (r, index(p,f))
@@ -24,7 +35,7 @@ struct Radiation
     // vector<Matrix<Real>> U;         ///< U scattered intensity   (r, index(p,f))
     // vector<Matrix<Real>> V;         ///< V scattered intensity   (r, index(p,f))
 
-    Real1 J;         ///< (angular) mean intensity (index(p,f))
+    // Real1 J;         ///< (angular) mean intensity (index(p,f))
     Real3 I_bdy;     ///< intensity at the boundary (r,b,f)
 
     void read  (const Io& io);

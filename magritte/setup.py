@@ -3,9 +3,9 @@ import scipy as sp
 import healpy
 import re
 
-from magritte.tools import dtypeSize, dtypeReal
-from magritte.core  import LineProducingSpecies, vLineProducingSpecies, \
-                           CollisionPartner, vCollisionPartner, CC, HH, KB
+from magritte.core  import LineProducingSpecies, vLineProducingSpecies,            \
+                           CollisionPartner, vCollisionPartner, CC, HH, KB, T_CMB, \
+                           BoundaryCondition
 
 
 def check_if_1D(model):
@@ -13,7 +13,7 @@ def check_if_1D(model):
     Check if the point positions are 1D for Magritte,
     i.e only has a non-zero x-coordinate.
     """
-    for (x,y,z) in model.geometry.points.position:
+    for (x,y,z) in np.array(model.geometry.points.position):
         if (y != 0.0) or (z != 0.0):
             raise ValueError('Not 1D (only x-coordinate can be non-zero).')
     return
@@ -34,7 +34,7 @@ def set_Delaunay_neighbor_lists (model):
     """
     if (model.parameters.dimension() == 1):
         check_if_1D     (model)
-        check_if_ordered(model.geometry.points.position[:,0])
+        check_if_ordered(np.array(model.geometry.points.position)[:,0])
         # For the first point
         nbs   = [1]
         n_nbs = [1]
@@ -57,7 +57,7 @@ def set_Delaunay_neighbor_lists (model):
         #cells.n_neighbors = Long1 ([len (nList) for nList in cells.neighbors])
     elif (model.parameters.dimension() == 3):
         # Make a Delaulay triangulation
-        delaunay = sp.spatial.Delaunay(model.geometry.points.position)
+        delaunay = sp.spatial.Delaunay(np.array(model.geometry.points.position))
         # Extract Delaunay vertices (= Voronoi neighbors)
         # (indptr, indices) = delaunay.vertex_neighbor_vertices
         # nbs = [indices[indptr[k]:indptr[k+1]] for k in range(model.parameters.npoints())]
@@ -68,8 +68,8 @@ def set_Delaunay_neighbor_lists (model):
     else:
         raise ValueError ('Dimension should be 1 or 3.')
     # Cast to numpy arrays of appropriate type
-    model.geometry.points.  neighbors = np.array(nbs,   dtypeSize)
-    model.geometry.points.n_neighbors = np.array(n_nbs, dtypeSize)
+    model.geometry.points.  neighbors.set(  nbs)
+    model.geometry.points.n_neighbors.set(n_nbs)
     # Done
     return model
 
@@ -81,21 +81,90 @@ def set_uniform_rays(model, randomize=False):
     # Define nrays for convenience
     nrays = model.parameters.nrays()
     if (model.parameters.dimension() == 1):
-        if (nrays != 2):
-            raise ValueError ('In 1D, nrays should always be 2.')
-        direction = np.array([[-1,0,0], [1,0,0]], dtypeReal)
+        if (model.parameters.spherical_symmetry()):
+            set_rays_spherical_symmetry (model, uniform=True)
+        else:
+            if (nrays != 2):
+                raise ValueError ('In 1D without spherical symmetry, nrays should be 2.')
+            direction = [[-1, 0, 0], [1, 0, 0]]
     elif (model.parameters.dimension() == 2):
         raise ValueError ('Dimension = 2 is not supported.')
     elif (model.parameters.dimension() == 3):
         direction  = healpy.pixelfunc.pix2vec(healpy.npix2nside(nrays), range(nrays))
-        direction  = np.array(direction, dtypeReal).transpose()
+        direction  = np.array(direction).transpose()
         if randomize:
             direction = sp.spatial.transform.Rotation.random().apply(rays)
     else:
         raise ValueError ('Dimension should be 1 or 3.')
     # Cast to numpy arrays of appropriate type and shape
-    model.geometry.rays.direction = direction
-    model.geometry.rays.weight    = (1.0/nrays) * np.ones(nrays, dtypeReal)
+    model.geometry.rays.direction.set(direction)
+    model.geometry.rays.weight   .set((1.0/nrays) * np.ones(nrays))
+    # Done
+    return model
+
+
+def set_rays_spherical_symmetry(model, nextra=0, uniform=True):
+
+    if uniform:
+        nrays  = model.parameters.nrays()
+        nextra = nrays//2-1
+        rs     = []
+    else:
+        nrays = 2*(1 + model.parameters.npoints() + nextra)
+        rs    = np.array(model.geometry.points.position)[:,0]
+
+    # for i, ri in enumerate(points):
+
+    Rx = [1.0]
+    Ry = [0.0]
+    Rz = [0.0]
+
+    for j, rj in enumerate(rs):
+       Rx.append(ri / np.sqrt(ri**2 + rj**2))
+       Ry.append(rj / np.sqrt(ri**2 + rj**2))
+       Rz.append(0.0)
+
+    angle_max   = np.arctan(Ry[-1] / Rx[-1])
+    angle_extra = (0.5*np.pi - angle_max) / nextra
+
+    for k in range(1, nextra):
+        Rx.append(np.cos(angle_max + k*angle_extra))
+        Ry.append(np.sin(angle_max + k*angle_extra))
+        Rz.append(0.0)
+
+    Rx.append(0.0)
+    Ry.append(1.0)
+    Rz.append(0.0)
+
+    Wt = []
+    for n in range(nrays//2):
+        if   (n == 0):
+            upper_x, upper_y = 0.5*(Rx[n]+Rx[n+1]), 0.5*(Ry[n]+Ry[n+1])
+            lower_x, lower_y = Rx[ 0], Ry[ 0]
+        elif (n == nrays/2-1):
+            upper_x, upper_y = Rx[-1], Ry[-1]
+            lower_x, lower_y = 0.5*(Rx[n]+Rx[n-1]), 0.5*(Ry[n]+Ry[n-1])
+        else:
+            upper_x, upper_y = 0.5*(Rx[n]+Rx[n+1]), 0.5*(Ry[n]+Ry[n+1])
+            lower_x, lower_y = 0.5*(Rx[n]+Rx[n-1]), 0.5*(Ry[n]+Ry[n-1])
+
+        Wt.append(  lower_x / np.sqrt(lower_x**2 + lower_y**2)
+                  - upper_x / np.sqrt(upper_x**2 + upper_y**2) )
+
+    inverse_double_total = 1.0 / (2.0 * sum(Wt))
+
+    for n in range(nrays//2):
+        Wt[n] = Wt[n] * inverse_double_total
+
+    # Append the antipodal rays
+    for n in range(nrays//2):
+        Rx.append(-Rx[n])
+        Ry.append(-Ry[n])
+        Rz.append(-Rz[n])
+        Wt.append( Wt[n])
+
+    model.geometry.rays.direction.set(np.array((Rx,Ry,Rz)).transpose())
+    model.geometry.rays.weight   .set(np.array(Wt))
     # Done
     return model
 
@@ -107,14 +176,26 @@ def set_Delaunay_boundary (model):
     """
     if (model.parameters.dimension() == 1):
         check_if_1D     (model)
-        check_if_ordered(model.geometry.points.position[:,0])
-        model.geometry.boundary.boundary2point = np.array([0, model.parameters.npoints()-1], dtypeSize)
+        check_if_ordered(np.array(model.geometry.points.position)[:,0])
+        model.parameters.set_nboundary(2)
+        model.geometry.boundary.boundary2point.set([0, model.parameters.npoints()-1])
     elif (model.parameters.dimension() == 2):
         raise ValueError ('Dimension = 2 is not supported.')
     elif (model.parameters.dimension() == 3):
         raise ValueError ('Dimension = 3 is not supported.')
     else:
-        raise ValueError ('Dimension should be 1 or 3.')
+        raise ValueError ('Dimension should be 1.')
+    # Done
+    return model
+
+
+def set_boundary_condition_CMB (model):
+    """
+    Setter for incoming CMB boundary condition at each boundary point.
+    """
+    for b in range(model.parameters.nboundary()):
+        model.geometry.boundary.set_boundary_condition (b, BoundaryCondition.CMB)
+    model.geometry.boundary.boundary_temperature.set([T_CMB for _ in range(model.parameters.nboundary())])
     # Done
     return model
 
@@ -125,8 +206,7 @@ def Gauss_Hermite_roots(n):
     """
     coeffs  = [0.0 for _ in range(n)]
     coeffs += [1.0]
-    roots = np.polynomial.hermite.hermroots(coeffs)
-    return np.array(roots, dtypeReal)
+    return np.polynomial.hermite.hermroots(coeffs)
 
 
 def Gauss_Hermite_weights(n):
@@ -136,8 +216,7 @@ def Gauss_Hermite_weights(n):
     coeffs  = [0.0 for _ in range(n-1)]
     coeffs += [1.0]
     H = np.polynomial.hermite.hermval(Gauss_Hermite_roots(n), coeffs)
-    weights = 2**(n-1) * np.math.factorial(n) / (n*H)**2
-    return np.array(weights, dtypeReal)
+    return 2**(n-1) * np.math.factorial(n) / (n*H)**2
 
 
 def set_quadrature(model):
@@ -146,12 +225,12 @@ def set_quadrature(model):
     quadrature, used for integrating over (Gaussian) line profiles.
     """
     for l in range(model.parameters.nlspecs()):
-        model.lines.lineProducingSpecies[l].quadrature.roots   = Gauss_Hermite_roots   (model.parameters.nquads())
-        model.lines.lineProducingSpecies[l].quadrature.weights = Gauss_Hermite_weights (model.parameters.nquads())
+        model.lines.lineProducingSpecies[l].quadrature.roots  .set(Gauss_Hermite_roots   (model.parameters.nquads()))
+        model.lines.lineProducingSpecies[l].quadrature.weights.set(Gauss_Hermite_weights (model.parameters.nquads()))
     return model
 
 
-def get_proper_name(name):
+def getProperName(name):
     '''
     Return the standard name for the species
     '''
@@ -268,6 +347,7 @@ def set_linedata_from_LAMDA_file (model, fileName, config={}):
         # Energy from [cm^-1] to [J]
         energy[i] *= 1.0E+2*HH*CC
     # Set data
+    model.lines.lineProducingSpecies[0].linedata.sym          = sym
     model.lines.lineProducingSpecies[0].linedata.num          = num
     model.lines.lineProducingSpecies[0].linedata.inverse_mass = inverse_mass
     model.lines.lineProducingSpecies[0].linedata.nlev         = nlev

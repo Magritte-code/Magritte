@@ -28,37 +28,51 @@ struct Geometry
     void write (const Io& io) const;
 
     accel inline void get_next (
-        const Size  o,
-        const Size  r,
-        const Size  crt,
-              Size& nxt,
-              Real& Z,
-              Real& dZ,
-              Real& shift ) const;
+        const Size    o,
+        const Size    r,
+        const Size    crt,
+              Size&   nxt,
+              double& Z,
+              double& dZ,
+              double& shift ) const;
 
     accel inline Size get_next (
-        const Size  o,
-        const Size  r,
-        const Size  crt,
-              Real& Z,
-              Real& dZ ) const;
+        const Size    o,
+        const Size    r,
+        const Size    crt,
+              double& Z,
+              double& dZ  ) const;
+
+    accel inline Size get_next_general_geometry (
+        const Size    o,
+        const Size    r,
+        const Size    crt,
+              double& Z,
+              double& dZ  ) const;
+
+    accel inline Size get_next_spherical_symmetry (
+        const Size    o,
+        const Size    r,
+        const Size    crt,
+              double& Z,
+              double& dZ  ) const;
 
     template <Frame frame>
-    accel inline Real get_shift (
-        const Size  o,
-        const Size  r,
-        const Size  crt ) const;
+    accel inline double get_shift (
+        const Size o,
+        const Size r,
+        const Size crt ) const;
 
     accel inline Size get_n_interpl (
-        const Real shift_crt,
-        const Real shift_nxt,
-        const Real dshift_max ) const;
+        const double shift_crt,
+        const double shift_nxt,
+        const double dshift_max ) const;
 
     template <Frame frame>
     accel inline Size get_ray_length (
-        const Size o,
-        const Size r,
-        const Real dshift_max ) const;
+        const Size   o,
+        const Size   r,
+        const double dshift_max ) const;
 
     inline Size1 get_ray_lengths     ();
     inline Size1 get_ray_lengths_gpu (const Size nblocks, const Size nthreads);

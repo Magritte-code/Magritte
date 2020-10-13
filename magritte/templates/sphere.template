@@ -1,0 +1,45 @@
+// Definition of a sphere
+/////////////////////////
+
+Point(${I}01) = {${CX}            , ${CY}            , ${CZ}            };
+Point(${I}02) = {${CX} + ${RADIUS}, ${CY}            , ${CZ}            };
+Point(${I}03) = {${CX}            , ${CY} + ${RADIUS}, ${CZ}            };
+Point(${I}04) = {${CX} - ${RADIUS}, ${CY}            , ${CZ}            };
+Point(${I}05) = {${CX}            , ${CY} - ${RADIUS}, ${CZ}            };
+Point(${I}06) = {${CX}            , ${CY}            , ${CZ} - ${RADIUS}};
+Point(${I}07) = {${CX}            , ${CY}            , ${CZ} + ${RADIUS}};
+
+Circle(${I}01) = {${I}02,${I}01,${I}03};
+Circle(${I}02) = {${I}03,${I}01,${I}04};
+Circle(${I}03) = {${I}04,${I}01,${I}05};
+Circle(${I}04) = {${I}05,${I}01,${I}02};
+Circle(${I}05) = {${I}03,${I}01,${I}06};
+Circle(${I}06) = {${I}06,${I}01,${I}05};
+Circle(${I}07) = {${I}05,${I}01,${I}07};
+Circle(${I}08) = {${I}07,${I}01,${I}03};
+Circle(${I}09) = {${I}02,${I}01,${I}07};
+Circle(${I}10) = {${I}07,${I}01,${I}04};
+Circle(${I}11) = {${I}04,${I}01,${I}06};
+Circle(${I}12) = {${I}06,${I}01,${I}02};
+
+Line Loop(${I}13) = {  ${I}02,  ${I}08, -${I}10};
+Line Loop(${I}15) = {  ${I}10,  ${I}03,  ${I}07};
+Line Loop(${I}17) = { -${I}08, -${I}09,  ${I}01};
+Line Loop(${I}19) = { -${I}11, -${I}02,  ${I}05};
+Line Loop(${I}21) = { -${I}05, -${I}12, -${I}01};
+Line Loop(${I}23) = { -${I}03,  ${I}11,  ${I}06};
+Line Loop(${I}25) = { -${I}07,  ${I}04,  ${I}09};
+Line Loop(${I}27) = { -${I}04,  ${I}12, -${I}06};
+
+Surface(${I}14) = {${I}13};
+Surface(${I}16) = {${I}15};
+Surface(${I}18) = {${I}17};
+Surface(${I}20) = {${I}19};
+Surface(${I}22) = {${I}21};
+Surface(${I}24) = {${I}23};
+Surface(${I}26) = {${I}25};
+Surface(${I}28) = {${I}27};
+
+Surface Loop(${I}29) = {${I}28,${I}26,${I}16,${I}14,${I}20,${I}24,${I}22,${I}18};
+
+Volume(${I}30) = {${I}29};

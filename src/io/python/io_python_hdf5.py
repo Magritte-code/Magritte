@@ -109,6 +109,13 @@ def write_number (io_file, file_name, data):
     write_attribute (io_file, file_name, data)
 
 
+def get_element_type (l):
+    if isinstance(l, list):
+        return get_element_type(l[0])
+    else:
+        return type(l)
+
+
 def read_array (io_file, file_name):
     """
     Return the contents of the data array.
@@ -116,7 +123,6 @@ def read_array (io_file, file_name):
     with hp.File (io_file, 'r') as file:
         if (file_name in file):
             return np.array (file.get (file_name))
-
 
 
 def write_array (io_file, file_name, data):
@@ -143,6 +149,9 @@ def write_array (io_file, file_name, data):
         # Write dataset
         try:
             # print('Creating dataset...')
-            file.create_dataset (name=file_name, data=data)
+            if (get_element_type(data) == str):
+                file.create_dataset (name=file_name, data=np.array(data, dtype='S'))
+            else:
+                file.create_dataset (name=file_name, data=data)
         except:
             print ("failed to write ", file_name)

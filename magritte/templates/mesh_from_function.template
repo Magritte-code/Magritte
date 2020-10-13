@@ -1,0 +1,16 @@
+${BOUNDARY}
+
+Field[1]   = MathEval;
+Field[1].F = "${SCALE_FUNCTION}";
+
+Field[2] = Max;
+Field[2].FieldsList = {1};
+Background Field = 2;
+
+Mesh.CharacteristicLengthFactor = 1.0;
+
+Mesh.CharacteristicLengthMin = ${SCALE_MIN};
+Mesh.CharacteristicLengthMax = ${SCALE_MAX};
+
+Mesh.CharacteristicLengthExtendFromBoundary = 2;
+

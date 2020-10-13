@@ -16,4 +16,12 @@ struct Rays
 
     void read  (const Io& io);
     void write (const Io& io) const;
+
+    void print()
+    {
+        for (Size r = 0; r < parameters.nrays(); r++)
+        {
+            direction[r].print();
+        }
+    }
 };
