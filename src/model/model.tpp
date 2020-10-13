@@ -243,6 +243,7 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
       mask_list[1]=std::vector<bool>(parameters.npoints(),true);
       for (Size i=0; i<parameters.npoints(); i++)//calc 1-abs(d-d_other)/(d+d_other) for all points
         {
+          //ADDHERE: check if point is boundary point. If so, ignore it
           double curr_diff=calc_diff_abundance_with_neighbours(i,1);
           density_diff_map.insert(std::pair<Size,double>(i,curr_diff));
           rev_density_diff_map.insert(std::pair<double,Size>(curr_diff,i));
@@ -335,7 +336,7 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
           vector<Size> triangle=(*rev_ears_map.begin()).second;//triangle which we are currently adding to the mesh
           vector<vector<Size>> triangles_to_work_with;//vector of triangles from which we will generate new triangles
           triangles_to_work_with.push_back(triangle);
-          neighbors_lists[curr_coarsening_lvl].add_single_neighbor(triangle[0], triangle[1]);
+          neighbors_lists[curr_coarsening_lvl].add_neighbor(triangle[0], triangle[1]);
           //neighbors_lists[curr_coarsening_lvl].add_single_neighbor(triangle[1], triangle[0]); Changed the function, now also adds the point as neighbor of the neighbor
           neighbor_map[triangle[0]].insert(triangle[1]);
           neighbor_map[triangle[1]].insert(triangle[0]);
@@ -378,6 +379,7 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
         //recalc density diff of neighbors (due to new mesh (and ofc deletion of point))
         for (Size neighbor :neighbors_of_point)
         {
+          //ADDHERE: add check whether the point is a boundary point (if so, ignore it)
           delete_int_from_both_maps(density_diff_map,rev_density_diff_map,neighbor);
 
           double calc_diff=calc_diff_abundance_with_neighbours(neighbor,curr_coarsening_lvl);
@@ -436,7 +438,7 @@ inline std::set<vector<Size>> Model :: calc_all_tetra_with_point(Size point, Siz
       {
         for (Size j=0; j<i; j++)
         {
-          //TODO: check if these two points are neighbors of eachother
+          //ADDHERE: check if these two points are neighbors of eachother
           vector<Size> to_add({point, neighbor, temp_intersection[i], temp_intersection[j]});
           std::sort(to_add.begin(),to_add.end());
           to_return.insert(to_add);

@@ -41,7 +41,7 @@ inline void Neighbors :: delete_all_neighbors(int point)
 ///   @param[in]  point: the point to which to add the neighbor
 ///   @param[in]  neighbor: the neighbor to add
 ////////////////////
-inline void Neighbors :: add_single_neighbor(int point, int neighbor)
+inline void Neighbors :: add_neighbor(int point, int neighbor)
 {
   if (neighbor<parameters.npoints()&&point<parameters.npoints())
   {

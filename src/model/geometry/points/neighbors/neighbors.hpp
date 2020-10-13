@@ -15,7 +15,7 @@ struct Neighbors
 
     inline void delete_single_neighbor(int point, int neighbor);
     inline void delete_all_neighbors(int point);
-    inline void add_single_neighbor(int point, int neighbor);
+    inline void add_neighbor(int point, int neighbor);
 
 //TODO set to private (probably), not intended for direct use
     inline void set_all_neighbors(vector <Size>& new_n_neighbors,
