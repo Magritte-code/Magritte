@@ -336,7 +336,7 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
           vector<vector<Size>> triangles_to_work_with;//vector of triangles from which we will generate new triangles
           triangles_to_work_with.push_back(triangle);
           neighbors_lists[curr_coarsening_lvl].add_single_neighbor(triangle[0], triangle[1]);
-          neighbors_lists[curr_coarsening_lvl].add_single_neighbor(triangle[1], triangle[0]);
+          //neighbors_lists[curr_coarsening_lvl].add_single_neighbor(triangle[1], triangle[0]); Changed the function, now also adds the point as neighbor of the neighbor
           neighbor_map[triangle[0]].insert(triangle[1]);
           neighbor_map[triangle[1]].insert(triangle[0]);
           //invariant: the first two element of the vector should correspond to the neighbors we want to add

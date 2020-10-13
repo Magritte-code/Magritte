@@ -37,7 +37,7 @@ inline void Neighbors :: delete_all_neighbors(int point)
 }
 
 
-/// Adds a single neighbor to a point
+/// Adds a neighbor to a point and vice versa
 ///   @param[in]  point: the point to which to add the neighbor
 ///   @param[in]  neighbor: the neighbor to add
 ////////////////////
@@ -47,6 +47,8 @@ inline void Neighbors :: add_single_neighbor(int point, int neighbor)
   {
     neighbors[point].push_back(neighbor);
     n_neighbors[point]++;
+    neighbors[neighbor].push_back(point);
+    n_neighbors[neighbor]++;
   }
   else
   {
