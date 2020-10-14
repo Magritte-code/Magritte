@@ -22,7 +22,7 @@ vector<Size> neighbors {1,2,4,8, 3,5,
                         3,5,6,8, 2,4,
                         0,1,2,3,4,5,6,7};
 
-vector<Vector3D> positions;
+Vector<Vector3D> positions= Vector<Vector3D>(9);
 positions.resize(9);
 positions[0] = Vector3D(0,1,1);
 positions[1] = Vector3D(1,1,1);

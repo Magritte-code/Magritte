@@ -232,7 +232,7 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
 {
   if (curr_coarsening_lvl==max_reached_coarsening_lvl)//if we truly need to refine the grid
   {
-    if (max_reached_coarsening_lvl==0)//first time refining grid
+    if (max_reached_coarsening_lvl==0)//first time refining grid; thus setting heaps of values
       {
       current_nb_points=parameters.npoints();
       neighbors_lists.resize(2);
@@ -241,13 +241,16 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
       mask_list.resize(2);
       mask_list[0]=std::vector<bool>(parameters.npoints(),true);
       mask_list[1]=std::vector<bool>(parameters.npoints(),true);
+      nb_points_at_lvl.push_back(parameters.npoints());
       for (Size i=0; i<parameters.npoints(); i++)//calc 1-abs(d-d_other)/(d+d_other) for all points
-        {
-          //ADDHERE: check if point is boundary point. If so, ignore it
+        {//we will NEVER delete boundary points, so we do not add them to the queue
+          if(geometry.not_on_boundary(i))
+          {
           double curr_diff=calc_diff_abundance_with_neighbours(i,1);
           density_diff_map.insert(std::pair<Size,double>(i,curr_diff));
           rev_density_diff_map.insert(std::pair<double,Size>(curr_diff,i));
           //std::cout << "point: " << i << " density diff: " << curr_diff<< std::endl;
+          }
         }
       }
       else
@@ -378,13 +381,15 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
 
         //recalc density diff of neighbors (due to new mesh (and ofc deletion of point))
         for (Size neighbor :neighbors_of_point)
-        {
-          //ADDHERE: add check whether the point is a boundary point (if so, ignore it)
+        {//again, we will never try to delete points on the boundary
+          if (geometry.not_on_boundary(neighbor))
+          {
           delete_int_from_both_maps(density_diff_map,rev_density_diff_map,neighbor);
 
           double calc_diff=calc_diff_abundance_with_neighbours(neighbor,curr_coarsening_lvl);
           density_diff_map.insert(std::pair<Size,double>(neighbor,calc_diff));
           rev_density_diff_map.insert(std::pair<double,Size>(calc_diff,neighbor));
+          }
         }
 
       //finally, delete the neighbors of this point
@@ -393,6 +398,7 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
       delete_int_from_both_maps(density_diff_map, rev_density_diff_map, curr_point);
     }
     current_nb_points-=nb_points_to_remove;//decrement the number of points remaining
+    nb_points_at_lvl.push_back(current_nb_points);
   }
   else
   {//TODO check whether deep copy!!!!!!
@@ -431,17 +437,19 @@ inline std::set<vector<Size>> Model :: calc_all_tetra_with_point(Size point, Siz
     std::set_intersection(curr_neighbors.begin(),curr_neighbors.end(),
                           neighbors_of_neighbor.begin(),neighbors_of_neighbor.end(),
                           back_inserter(temp_intersection));
-    if (temp_intersection.size()>=2)//then we check if we can truly form a tetrahedon (if we would not delete elements from curr_neighbors, this would always be true)
+    if (temp_intersection.size()>=2)//then we check if we can truly form a tetrahedon (if we would not delete elements from curr_neighbors, this should always be true)
     {
       Size nb_elements=temp_intersection.size();
       for (Size i=0; i<nb_elements; i++)
       {
         for (Size j=0; j<i; j++)
-        {
-          //ADDHERE: check if these two points are neighbors of eachother
+        {//also check if these two points i and j are actually neighbors of eachother
+          if (vector_contains_element(neighbors_lists[coarser_lvl].get_neighbors(i),j))
+          {
           vector<Size> to_add({point, neighbor, temp_intersection[i], temp_intersection[j]});
           std::sort(to_add.begin(),to_add.end());
           to_return.insert(to_add);
+          }
         }
       }
     }
@@ -482,15 +490,19 @@ inline Eigen::Vector<double,4> Model :: calc_barycentric_coords(const vector<Siz
   return result;
 }
 
-///Interpolates the vector with length nb_points_in_coarser level
+/// Interpolates the vector with length nb_points_in_coarser level
+///   @Parameter [in] coarser_lvl: the coarsening level of the coarser grid
+///   @Parameter [in] finer_lvl: the coarsening level of the finer grid; should be smaller than coarser_lvl
+///   @Parameter [in] to_interpolate: the vector with value at the points of the coarser grid, has length equal to the number of elements in the coarser grid
+///   @Returns: A vector conataining the interpolated values (has length equal to the number of points of the finer grid)
 inline vector<double> Model::interpolate_vector(Size coarser_lvl, Size finer_lvl, const vector<double> &to_interpolate)
 {
   Size nb_points=parameters.npoints();
   Size count=0;
-  for (Size point=0; point<nb_points; point++)//counts number of points in finer grid
-  {if (mask_list[finer_lvl][point]){count++;}}//Maybe TODO: also save this number during coarsening, such that we do not have to recalc this every time
+  // for (Size point=0; point<nb_points; point++)//counts number of points in finer grid
+  // {if (mask_list[finer_lvl][point]){count++;}}//DONE: also save this number during coarsening, such that we do not have to recalc this every time
   vector<double> toreturn;
-  toreturn.resize(count);
+  toreturn.resize(nb_points_at_lvl[finer_lvl]);
 
   count=0;
   std::map<Size,double> value_map;//maps points of coarser grid to their values

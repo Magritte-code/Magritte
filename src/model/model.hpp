@@ -39,7 +39,8 @@ struct Model
     std::multimap<double,Size> rev_density_diff_map;//for ease of accessing data, i also store the reverse map
       //@Frederik: if you know a better data type to store this, let me know
     vector <Neighbors> neighbors_lists;
-    Size current_nb_points;
+    vector <Size> nb_points_at_lvl;//keeps the number of points at each coarsening level
+    Size current_nb_points;//is the number of points at the coarsest level
 
     vector<vector<bool>> mask_list;//stores the list of masks
     //true means point is still in grid, false means point is deleted
@@ -73,7 +74,7 @@ struct Model
         // const Io   &io,
         const bool  use_Ng_acceleration,
         const long  max_niterations     );
-        
+
     Double1 error_max;
     Double1 error_mean;
 };
