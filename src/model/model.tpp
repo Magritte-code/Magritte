@@ -444,7 +444,7 @@ inline std::set<vector<Size>> Model :: calc_all_tetra_with_point(Size point, Siz
       {
         for (Size j=0; j<i; j++)
         {//also check if these two points i and j are actually neighbors of eachother
-          if (vector_contains_element(neighbors_lists[coarser_lvl].get_neighbors(i),j))
+          if (vector_contains_element(neighbors_lists[coars_lvl].get_neighbors(i),j))
           {
           vector<Size> to_add({point, neighbor, temp_intersection[i], temp_intersection[j]});
           std::sort(to_add.begin(),to_add.end());
