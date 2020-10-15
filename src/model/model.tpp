@@ -94,13 +94,14 @@ inline double Model :: calc_power(const vector<Size> &triangle, Size point){
   Vector3D posp=geometry.points.position[point];//position of point
   //dividing insphere test with orientation test
 
+  std::cout << "Distance between point and point of triangle: " << (pos4-posp).squaredNorm() << std::endl;
+
   Eigen::Matrix<double,4,4> orient;
   orient << pos1.x(),pos2.x(),pos3.x(),pos4.x(),
             pos1.y(),pos2.y(),pos3.y(),pos4.y(),
             pos1.z(),pos2.z(),pos3.z(),pos4.z(),
             1,1,1,1;
   //result is nan or stupidly large when the tetrahedra is (almost) coplanar
-
   Eigen::Matrix<double,5,5> insphere;
   insphere << pos1.x(),pos2.x(),pos3.x(),pos4.x(),posp.x(),
               pos1.y(),pos2.y(),pos3.y(),pos4.y(),posp.y(),
@@ -109,14 +110,17 @@ inline double Model :: calc_power(const vector<Size> &triangle, Size point){
               1,1,1,1,1;
   //dividing insphere test with orientation test
   double result=insphere.determinant()/orient.determinant();
-  if (std::isnan(result)||std::abs(result)>pow(10,22))//10^22 is chosen arbitrarily, maybe TODO: get a reasonable estimate for a cutoff value
+  //TODO: change this test to something reasonable instead (eg divide the result by the average distance to point and change to pow(10,5))
+  if (std::isnan(result)||std::abs(result)>pow(10,25))//10^25 is chosen arbitrarily, maybe TODO: get a reasonable estimate for a cutoff value
   {
     std::cout << "tetradron is coplanar; power = " << result << std::endl;
+    //std::cout << "orient determinant = " << orient.determinant() << std::endl;
     return std::numeric_limits<double>::quiet_NaN();
   }
   else
   {
     std::cout << "reasonable tetrahedron; power = " << result << std::endl;
+    //std::cout << "orient determinant = " << orient.determinant() << std::endl;
     return result;
   }
 }
@@ -132,14 +136,14 @@ inline void Model::generate_new_ears(const vector<Size> &neighbors_of_point, con
   { //we want to create new triangles, therefore a point in the plane is not useful
     if (!vector_contains_element(plane,temp_point))
     {
-      //we are currently adding sometimes far too many new ears??
+      //we are currently adding sometimes far too little new ears??
       count_neighbours=0;
       for (Size point_of_plane: plane)
       {
         if (neighbor_map[temp_point].count(point_of_plane)!=0)//if temp_point is neighbor of point_of_plane
         {count_neighbours++;}
       }
-      //std::cout << "number neighbors: " << count_neighbours << std::endl;
+      std::cout << "number neighbors: " << count_neighbours << std::endl;
       //if the candidate point is good for creating an ear with plane1
       if (count_neighbours==2)
       {
@@ -263,12 +267,11 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
       curr_coarsening_lvl++;
       //repeat n times:
       Size nb_points_to_remove=Size(perc_points_deleted*current_nb_points);
-      //Maybe TODO(this shouldnt happen, but inevitably will): if all non-boundary points are deleted, just break (and write a log)
       for (Size i=0; i<nb_points_to_remove; i++)
       {
         if (rev_density_diff_map.empty())
         {
-          std::cout << "You are trying to delete more points than possible" << std::endl;
+          std::cout << "You are trying to delete more points than possible; stuff will break" << std::endl;
           break;
         }
         Size curr_point=(*rev_density_diff_map.begin()).second;//the current point to remove
@@ -303,7 +306,7 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
         std::multimap<vector<Size>,double> ears_map;
         std::multimap<double,vector<Size>> rev_ears_map;
 
-        //TODO:
+
         for (Size i=0; i<neighbors_of_point.size(); i++)
         {
           for (Size j=0; j<i; j++)
@@ -403,9 +406,11 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
 
 
           //std::cout << "nb triangles to work with: " << triangles_to_work_with.size() << std::endl;
+          //NOTE: you can easily prove by induction that the size of this should always be 2 (or 0)
           vector<vector<Size>> relevant_planes=return_all_relevant_planes(triangles_to_work_with);
           //std::cout << "number of planes: " << relevant_planes.size() << std::endl;
           //TODO FIXME: check if the same ear can be generated twice and check if it would actually matter...
+          std::cout << "relevant planes size: "<<relevant_planes.size() << std::endl;
           for (vector<Size> plane: relevant_planes)
           {
             generate_new_ears(neighbors_of_point, plane, neighbor_map,
