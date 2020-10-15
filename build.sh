@@ -24,4 +24,5 @@ cmake                                               \
   $DIR
 
 # Run make
-make -j4
+# note: this is just such that i have 1 thread left on my pc
+make -j3

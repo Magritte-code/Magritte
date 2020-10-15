@@ -92,7 +92,6 @@ inline double Model :: calc_power(const vector<Size> &triangle, Size point){
   Vector3D pos3=geometry.points.position[triangle[2]];
   Vector3D pos4=geometry.points.position[triangle[3]];
   Vector3D posp=geometry.points.position[point];//position of point
-
   //dividing insphere test with orientation test
 
   Eigen::Matrix<double,4,4> orient;
@@ -112,12 +111,12 @@ inline double Model :: calc_power(const vector<Size> &triangle, Size point){
   double result=insphere.determinant()/orient.determinant();
   if (std::isnan(result)||std::abs(result)>pow(10,22))//10^22 is chosen arbitrarily, maybe TODO: get a reasonable estimate for a cutoff value
   {
-    //std::cout << "tetradron is coplanar; power = " << result << std::endl;
+    std::cout << "tetradron is coplanar; power = " << result << std::endl;
     return std::numeric_limits<double>::quiet_NaN();
   }
   else
   {
-    //std::cout << "reasonable tetrahedron; power = " << result << std::endl;
+    std::cout << "reasonable tetrahedron; power = " << result << std::endl;
     return result;
   }
 }
@@ -264,13 +263,20 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
       curr_coarsening_lvl++;
       //repeat n times:
       Size nb_points_to_remove=Size(perc_points_deleted*current_nb_points);
+      //Maybe TODO(this shouldnt happen, but inevitably will): if all non-boundary points are deleted, just break (and write a log)
       for (Size i=0; i<nb_points_to_remove; i++)
       {
+        if (rev_density_diff_map.empty())
+        {
+          std::cout << "You are trying to delete more points than possible" << std::endl;
+          break;
+        }
         Size curr_point=(*rev_density_diff_map.begin()).second;//the current point to remove
         mask_list[curr_coarsening_lvl][curr_point]=false;
         //std::cout << "current density diff: " << (*rev_density_diff_map.begin()).first << std::endl;
         std::cout << "current point: " << curr_point << std::endl;
         vector<Size> neighbors_of_point=neighbors_lists[curr_coarsening_lvl].get_neighbors(curr_point);
+
         for (Size neighbor :neighbors_of_point)
         {//deleting the point from its neighbors, the point itself still has its neighbors (for now)
           neighbors_lists[curr_coarsening_lvl].delete_single_neighbor(neighbor,curr_point);
@@ -280,6 +286,7 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
         std::map<Size, std::set<Size>> neighbor_map;//stores the relevant neighbors;
         vector<Size> cpy_of_neighbors=vector<Size>(neighbors_of_point);
         std::sort(cpy_of_neighbors.begin(),cpy_of_neighbors.end());
+
 
         for (Size neighbor: neighbors_of_point)
         {//intersecting the neighbors of the neighbor with the neighbors
@@ -296,6 +303,7 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
         std::multimap<vector<Size>,double> ears_map;
         std::multimap<double,vector<Size>> rev_ears_map;
 
+        //TODO:
         for (Size i=0; i<neighbors_of_point.size(); i++)
         {
           for (Size j=0; j<i; j++)
@@ -329,17 +337,20 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
             }
           }
         }
+
         //std::cout << "number of neigbors: " << neighbors_of_point.size() << std::endl;
         //std::cout << "ears_map size: " << ears_map.size() << std::endl;
         //now that we have all initial 'triangles', we can finally start to add them
         //while(ears_map.size()>7)//in the last iteration, you should have an octohedron left: -> 8 possible ears
         while(!ears_map.empty())
         {
-          //std::cout << "Looping: current size of ears map: " << ears_map.size() << std::endl;
+          std::cout << "Looping: current size of ears map: " << ears_map.size() << std::endl;
           vector<Size> triangle=(*rev_ears_map.begin()).second;//triangle which we are currently adding to the mesh
+          std::cout << "Currently adding line: (" << triangle[0] << "," << triangle[1] << ")" << std::endl;
           vector<vector<Size>> triangles_to_work_with;//vector of triangles from which we will generate new triangles
           triangles_to_work_with.push_back(triangle);
           neighbors_lists[curr_coarsening_lvl].add_neighbor(triangle[0], triangle[1]);
+          
           //neighbors_lists[curr_coarsening_lvl].add_single_neighbor(triangle[1], triangle[0]); Changed the function, now also adds the point as neighbor of the neighbor
           neighbor_map[triangle[0]].insert(triangle[1]);
           neighbor_map[triangle[1]].insert(triangle[0]);
@@ -378,6 +389,7 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
                 ears_map, rev_ears_map, curr_point);
           }
         }
+
 
         //recalc density diff of neighbors (due to new mesh (and ofc deletion of point))
         for (Size neighbor :neighbors_of_point)
@@ -498,13 +510,13 @@ inline Eigen::Vector<double,4> Model :: calc_barycentric_coords(const vector<Siz
 inline vector<double> Model::interpolate_vector(Size coarser_lvl, Size finer_lvl, const vector<double> &to_interpolate)
 {
   Size nb_points=parameters.npoints();
-  Size count=0;
+  //Size count=0;
   // for (Size point=0; point<nb_points; point++)//counts number of points in finer grid
   // {if (mask_list[finer_lvl][point]){count++;}}//DONE: also save this number during coarsening, such that we do not have to recalc this every time
   vector<double> toreturn;
   toreturn.resize(nb_points_at_lvl[finer_lvl]);
 
-  count=0;
+  Size count=0;
   std::map<Size,double> value_map;//maps points of coarser grid to their values
   for (Size point=0; point<nb_points; point++)
   {
@@ -603,4 +615,5 @@ inline vector<double> Model::interpolate_vector(Size coarser_lvl, Size finer_lvl
     curr_count++;
     }
   }
+  return toreturn;
 }
