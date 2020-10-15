@@ -350,7 +350,7 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
           vector<vector<Size>> triangles_to_work_with;//vector of triangles from which we will generate new triangles
           triangles_to_work_with.push_back(triangle);
           neighbors_lists[curr_coarsening_lvl].add_neighbor(triangle[0], triangle[1]);
-          
+
           //neighbors_lists[curr_coarsening_lvl].add_single_neighbor(triangle[1], triangle[0]); Changed the function, now also adds the point as neighbor of the neighbor
           neighbor_map[triangle[0]].insert(triangle[1]);
           neighbor_map[triangle[1]].insert(triangle[0]);
@@ -367,18 +367,41 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
               triangles_to_work_with.push_back(curr_triangle);
               it=delete_vector_from_both_maps(ears_map,rev_ears_map,curr_triangle);
             }
-            else
+            // else
+            // {//TODO: also delete all ears that share a plane with the other deleted ears in triangles_to_work_with
+            //   if (triangle_shares_plane_with(triangle, curr_triangle))
+            //   {
+            //     it = delete_vector_from_both_maps(ears_map, rev_ears_map, curr_triangle);
+            //     std::cout << "Deleted ear: " << curr_triangle[0] << curr_triangle[1] << curr_triangle[2] << curr_triangle[3] << std::endl;
+            //   }
+            else//we do nothing with the current entry for now
+            {
+              ++it;
+            }
+          }
+          //Now we are deleting all ears that share a plane with a triangle in triangles_to_work_with
+          //TODO: maybe check if this here can be made faster
+          for (auto it = ears_map.cbegin(); it != ears_map.cend();)
+          {
+            vector<Size> curr_triangle=(*it).first;
+            bool deleted=false;
+            for (vector<Size> triangle: triangles_to_work_with)
             {
               if (triangle_shares_plane_with(triangle, curr_triangle))
               {
                 it = delete_vector_from_both_maps(ears_map, rev_ears_map, curr_triangle);
-              }
-              else//we do nothing with the current entry
-              {
-                ++it;
+                std::cout << "Deleted ear: " << curr_triangle[0] << curr_triangle[1] << curr_triangle[2] << curr_triangle[3] << std::endl;
+                deleted=true;
+                break;
               }
             }
+            if(!deleted)
+            {
+              ++it;
+            }
           }
+
+
           //std::cout << "nb triangles to work with: " << triangles_to_work_with.size() << std::endl;
           vector<vector<Size>> relevant_planes=return_all_relevant_planes(triangles_to_work_with);
           //std::cout << "number of planes: " << relevant_planes.size() << std::endl;
