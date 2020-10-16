@@ -94,7 +94,8 @@ inline double Model :: calc_power(const vector<Size> &triangle, Size point){
   Vector3D posp=geometry.points.position[point];//position of point
   //dividing insphere test with orientation test
 
-  std::cout << "Distance between point and point of triangle: " << (pos4-posp).squaredNorm() << std::endl;
+  double average_dist_sq=((pos1-posp).squaredNorm()+(pos2-posp).squaredNorm()+(pos3-posp).squaredNorm()+(pos4-posp).squaredNorm())/4;
+  std::cout << "Average distance squared: " << average_dist_sq << std::endl;
 
   Eigen::Matrix<double,4,4> orient;
   orient << pos1.x(),pos2.x(),pos3.x(),pos4.x(),
@@ -110,8 +111,8 @@ inline double Model :: calc_power(const vector<Size> &triangle, Size point){
               1,1,1,1,1;
   //dividing insphere test with orientation test
   double result=insphere.determinant()/orient.determinant();
-  //TODO: change this test to something reasonable instead (eg divide the result by the average distance to point and change to pow(10,5))
-  if (std::isnan(result)||std::abs(result)>pow(10,25))//10^25 is chosen arbitrarily, maybe TODO: get a reasonable estimate for a cutoff value
+  //TODO: change this test to something reasonable instead (eg divide the result by the average distance squared to point and change to pow(10,5))
+  if (std::isnan(result)||std::abs(result)/average_dist_sq>pow(10,5))//10^5 is chosen arbitrarily
   {
     std::cout << "tetradron is coplanar; power = " << result << std::endl;
     //std::cout << "orient determinant = " << orient.determinant() << std::endl;
@@ -127,7 +128,7 @@ inline double Model :: calc_power(const vector<Size> &triangle, Size point){
 
 
 //generates the new ears and inserts them into the ears maps
-//TODO add description
+//TODO: fix this, possibly wrong logic!!!!!!!!!
 inline void Model::generate_new_ears(const vector<Size> &neighbors_of_point, const vector<Size> &plane, std::map<Size, std::set<Size>> &neighbor_map,
   std::multimap<vector<Size>,double> &ears_map, std::multimap<double,vector<Size>> &rev_ears_map, Size &curr_point)
 {
@@ -144,6 +145,12 @@ inline void Model::generate_new_ears(const vector<Size> &neighbors_of_point, con
         {count_neighbours++;}
       }
       std::cout << "number neighbors: " << count_neighbours << std::endl;
+      std::cout << "plane is: " << plane[0]<< ", " << plane[1] << ", " << plane[2] << std::endl;
+      std::cout << "neighbors of temp_point are: ";
+
+      for (std::set<Size>::iterator it=neighbor_map[temp_point].begin(); it!=neighbor_map[temp_point].end(); ++it)
+        std::cout << ' ' << *it;
+      std::cout << std::endl;
       //if the candidate point is good for creating an ear with plane1
       if (count_neighbours==2)
       {
@@ -326,7 +333,7 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
                   if (point1<point2 && //just such that we do not have duplicates
                   neighbor_map[point1].count(point2)!=0)///if point1 and 2 are neighbors
                   {
-                    vector<Size> new_triangle=vector<Size>{i,j,point1,point2};
+                    vector<Size> new_triangle=vector<Size>{neighbors_of_point[i],neighbors_of_point[j],point1,point2};
                     double power=calc_power(new_triangle,curr_point);
                     if (!std::isnan(power))
                     {//otherwise we would be proposing a coplanar tetrahedron, which would be ridiculous
@@ -406,13 +413,12 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
 
 
           //std::cout << "nb triangles to work with: " << triangles_to_work_with.size() << std::endl;
-          //NOTE: you can easily prove by induction that the size of this should always be 2 (or 0)
           vector<vector<Size>> relevant_planes=return_all_relevant_planes(triangles_to_work_with);
           //std::cout << "number of planes: " << relevant_planes.size() << std::endl;
           //TODO FIXME: check if the same ear can be generated twice and check if it would actually matter...
           std::cout << "relevant planes size: "<<relevant_planes.size() << std::endl;
           for (vector<Size> plane: relevant_planes)
-          {
+          {//TODO: figure out whether new ears must be generated at all, because no new ears ever seem to be inserted...
             generate_new_ears(neighbors_of_point, plane, neighbor_map,
                 ears_map, rev_ears_map, curr_point);
           }
