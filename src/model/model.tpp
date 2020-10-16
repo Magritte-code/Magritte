@@ -95,7 +95,7 @@ inline double Model :: calc_power(const vector<Size> &triangle, Size point){
   //dividing insphere test with orientation test
 
   double average_dist_sq=((pos1-posp).squaredNorm()+(pos2-posp).squaredNorm()+(pos3-posp).squaredNorm()+(pos4-posp).squaredNorm())/4;
-  std::cout << "Average distance squared: " << average_dist_sq << std::endl;
+  //std::cout << "Average distance squared: " << average_dist_sq << std::endl;
 
   Eigen::Matrix<double,4,4> orient;
   orient << pos1.x(),pos2.x(),pos3.x(),pos4.x(),
@@ -114,13 +114,13 @@ inline double Model :: calc_power(const vector<Size> &triangle, Size point){
   //TODO: change this test to something reasonable instead (eg divide the result by the average distance squared to point and change to pow(10,5))
   if (std::isnan(result)||std::abs(result)/average_dist_sq>pow(10,5))//10^5 is chosen arbitrarily
   {
-    std::cout << "tetradron is coplanar; power = " << result << std::endl;
+    //std::cout << "tetradron is coplanar; power = " << result << std::endl;
     //std::cout << "orient determinant = " << orient.determinant() << std::endl;
     return std::numeric_limits<double>::quiet_NaN();
   }
   else
   {
-    std::cout << "reasonable tetrahedron; power = " << result << std::endl;
+    //std::cout << "reasonable tetrahedron; power = " << result << std::endl;
     //std::cout << "orient determinant = " << orient.determinant() << std::endl;
     return result;
   }
@@ -132,6 +132,7 @@ inline double Model :: calc_power(const vector<Size> &triangle, Size point){
 inline void Model::generate_new_ears(const vector<Size> &neighbors_of_point, const vector<Size> &plane, std::map<Size, std::set<Size>> &neighbor_map,
   std::multimap<vector<Size>,double> &ears_map, std::multimap<double,vector<Size>> &rev_ears_map, Size &curr_point)
 {
+  std::cout << "plane is: " << plane[0]<< ", " << plane[1] << ", " << plane[2] << std::endl;
   Size count_neighbours;
   for (Size temp_point: neighbors_of_point)
   { //we want to create new triangles, therefore a point in the plane is not useful
@@ -145,7 +146,6 @@ inline void Model::generate_new_ears(const vector<Size> &neighbors_of_point, con
         {count_neighbours++;}
       }
       std::cout << "number neighbors: " << count_neighbours << std::endl;
-      std::cout << "plane is: " << plane[0]<< ", " << plane[1] << ", " << plane[2] << std::endl;
       std::cout << "neighbors of temp_point are: ";
 
       for (std::set<Size>::iterator it=neighbor_map[temp_point].begin(); it!=neighbor_map[temp_point].end(); ++it)
@@ -285,7 +285,14 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
         mask_list[curr_coarsening_lvl][curr_point]=false;
         //std::cout << "current density diff: " << (*rev_density_diff_map.begin()).first << std::endl;
         std::cout << "current point: " << curr_point << std::endl;
+
         vector<Size> neighbors_of_point=neighbors_lists[curr_coarsening_lvl].get_neighbors(curr_point);
+        std::cout << "neighbors of current point: ";
+        for (auto it = neighbors_of_point.begin(); it!=neighbors_of_point.end(); it++)
+        {
+          std::cout << *it << " ";
+        }
+        std::cout << std::endl;
 
         for (Size neighbor :neighbors_of_point)
         {//deleting the point from its neighbors, the point itself still has its neighbors (for now)
@@ -326,6 +333,7 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
                             std::inserter(temp_intersection,temp_intersection.begin()));
               //then for every pair in the intersection of the neighbors of both points, check if they are neighbors
               //a better implementation is probably possible
+
               for (Size point1: temp_intersection)
               {
                 for (Size point2: temp_intersection)
@@ -339,6 +347,7 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
                     {//otherwise we would be proposing a coplanar tetrahedron, which would be ridiculous
                     ears_map.insert(std::make_pair(new_triangle,power));
                     rev_ears_map.insert(std::make_pair(power,new_triangle));
+                    std::cout << "Creating ear: "<< new_triangle[0] << ", " << new_triangle[1] << ", " << new_triangle[2] << ", " << new_triangle[3] << std::endl;
                     //invariant: the first two element of the vector should correspond to the neighbors we want to add
                     }
                   }
@@ -399,8 +408,8 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
             {
               if (triangle_shares_plane_with(triangle, curr_triangle))
               {
+                std::cout << "Deleted ear: " << curr_triangle[0] << ", " << curr_triangle[1] << ", " << curr_triangle[2] << ", " << curr_triangle[3] << std::endl;
                 it = delete_vector_from_both_maps(ears_map, rev_ears_map, curr_triangle);
-                std::cout << "Deleted ear: " << curr_triangle[0] << curr_triangle[1] << curr_triangle[2] << curr_triangle[3] << std::endl;
                 deleted=true;
                 break;
               }
