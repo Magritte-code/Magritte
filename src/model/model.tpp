@@ -127,57 +127,6 @@ inline double Model :: calc_power(const vector<Size> &triangle, Size point){
 }
 
 
-//generates the new ears and inserts them into the ears maps
-//TODO: fix this, possibly wrong logic!!!!!!!!!
-inline void Model::generate_new_ears(const vector<Size> &neighbors_of_point, const vector<Size> &plane, std::map<Size, std::set<Size>> &neighbor_map,
-  std::multimap<vector<Size>,double> &ears_map, std::multimap<double,vector<Size>> &rev_ears_map, Size &curr_point)
-{
-  std::cout << "plane is: " << plane[0]<< ", " << plane[1] << ", " << plane[2] << std::endl;
-  Size count_neighbours;
-  for (Size temp_point: neighbors_of_point)
-  { //we want to create new triangles, therefore a point in the plane is not useful
-    if (!vector_contains_element(plane,temp_point))
-    {
-      //we are currently adding sometimes far too little new ears??
-      count_neighbours=0;
-      for (Size point_of_plane: plane)
-      {
-        if (neighbor_map[temp_point].count(point_of_plane)!=0)//if temp_point is neighbor of point_of_plane
-        {count_neighbours++;}
-      }
-      std::cout << "number neighbors: " << count_neighbours << std::endl;
-      std::cout << "neighbors of temp_point are: ";
-
-      for (std::set<Size>::iterator it=neighbor_map[temp_point].begin(); it!=neighbor_map[temp_point].end(); ++it)
-        std::cout << ' ' << *it;
-      std::cout << std::endl;
-      //if the candidate point is good for creating an ear with plane1
-      if (count_neighbours==2)
-      {
-        Size point_not_neighbor_of_plane;//the point of the plane which is not a neighbor
-        vector<Size> points_neighbor_of_plane;
-        for (Size point_of_plane: plane)
-        {
-          if (neighbor_map[temp_point].count(point_of_plane)==0)
-          {point_not_neighbor_of_plane=point_of_plane;}
-          else
-          {points_neighbor_of_plane.push_back(point_of_plane);}
-        }
-        //insert newly generated ear in maps
-        vector<Size> new_possible_ear{temp_point,point_not_neighbor_of_plane,
-            points_neighbor_of_plane[0],points_neighbor_of_plane[1]};
-        double power=calc_power(new_possible_ear,curr_point);
-        if (!std::isnan(power))
-        {//otherwise we would be proposing a coplanar tetrahedron, which would be ridiculous
-        //std::cout << "Inserting new ear; power is: " << power << std::endl;
-        ears_map.insert(std::make_pair(new_possible_ear,power));
-        rev_ears_map.insert(std::make_pair(power,new_possible_ear));
-        }
-      }
-    }
-  }
-}
-
 /// Returns the total number of different points of two vectors
 inline Size calculate_total_points(vector<Size> &v1, vector<Size> &v2)
 {
@@ -188,6 +137,118 @@ inline Size calculate_total_points(vector<Size> &v1, vector<Size> &v2)
   {union_of_points.insert(temp_point);}
   return union_of_points.size();
 }
+
+/// Checks whether a tetrahedron can be formed given 2 lines, by drawing exactly one extra line
+///   TODO!!!
+///   @Returns: tetrahedron if a tetrahedron can be formed, else returns empty vector.
+inline vector<Size> lines_form_tetrahedron(vector<Size> &v1, vector<Size> &v2, std::map<Size, std::set<Size>> &neighbor_map)
+{//if we have 4 distinct points
+  if (calculate_total_points(v1,v2)==4)
+  {//check if the total number of neighbors between the two lines is equal to 3
+    Size nb_count=0;
+    Size idx_v1_not_neighbor;//keeps track of which index of v1 has no neighbor with a index in v2
+    Size idx_v2_not_neighbor;//same, but vice versa
+    Size idx_count=0;
+    for (Size point2: v2)
+    {
+      if (neighbor_map[v1[0]].count(point2)!=0)
+      {nb_count++;idx_count++;}
+      else{
+      idx_v1_not_neighbor=0;
+      idx_v2_not_neighbor=idx_count;
+      }
+    }
+    idx_count=0;
+    for (Size point2: v2)
+    {
+      if (neighbor_map[v1[1]].count(point2)!=0)
+      {nb_count++;idx_count++;}
+      else{
+        idx_v1_not_neighbor=1;
+        idx_v2_not_neighbor=idx_count;
+      }
+    }
+    if (nb_count==3)
+    {
+      return vector<Size>{v1[idx_v1_not_neighbor],v2[idx_v2_not_neighbor],
+        v1[1-idx_v1_not_neighbor],v2[1-idx_v2_not_neighbor]};
+    }
+  }
+  return vector<Size>();
+}
+
+//generates the new ears and inserts them into the ears maps
+//TODO: fix this, possibly wrong logic!!!!!!!!!
+inline void Model::generate_new_ears(const std::set<vector<Size>> &neighbor_lines, vector<Size> &new_line, std::map<Size, std::set<Size>> &neighbor_map,
+ std::multimap<vector<Size>,double> &ears_map, std::multimap<double,vector<Size>> &rev_ears_map, Size &curr_point)
+//inline void Model::generate_new_ears(const vector<Size> &neighbors_of_point, const vector<Size> &plane, std::map<Size, std::set<Size>> &neighbor_map,
+//  std::multimap<vector<Size>,double> &ears_map, std::multimap<double,vector<Size>> &rev_ears_map, Size &curr_point)
+{
+  //std::cout << "plane is: " << plane[0]<< ", " << plane[1] << ", " << plane[2] << std::endl;
+  std::cout << "line is: " << new_line[0]<< ", " << new_line[1] << std::endl;
+  Size count_neighbours;
+  for (vector<Size> old_line: neighbor_lines)
+  {
+
+    vector<Size> new_possible_ear=lines_form_tetrahedron(old_line, new_line, neighbor_map);
+    //if we truly can create a new ear with these lines
+    if (!new_possible_ear.empty())
+    {
+      double power=calc_power(new_possible_ear,curr_point);
+      if (!std::isnan(power))
+      {//otherwise we would be proposing a coplanar tetrahedron, which would be ridiculous
+            //std::cout << "Inserting new ear; power is: " << power << std::endl;
+        ears_map.insert(std::make_pair(new_possible_ear,power));
+        rev_ears_map.insert(std::make_pair(power,new_possible_ear));
+      }
+    }
+
+  }
+}
+  // for (Size temp_point: neighbors_of_point)
+  // { //we want to create new triangles, therefore a point in the plane is not useful
+  //   if (!vector_contains_element(plane,temp_point))
+  //   {
+  //     //we are currently adding sometimes far too little new ears??
+  //     count_neighbours=0;
+  //     for (Size point_of_plane: plane)
+  //     {
+  //       if (neighbor_map[temp_point].count(point_of_plane)!=0)//if temp_point is neighbor of point_of_plane
+  //       {count_neighbours++;}
+  //     }
+  //     std::cout << "number neighbors: " << count_neighbours << std::endl;
+  //     std::cout << "neighbors of temp_point are: ";
+  //
+  //     for (std::set<Size>::iterator it=neighbor_map[temp_point].begin(); it!=neighbor_map[temp_point].end(); ++it)
+  //       std::cout << ' ' << *it;
+  //     std::cout << std::endl;
+  //     //if the candidate point is good for creating an ear with plane1
+  //     if (count_neighbours==2)
+  //     {
+  //       Size point_not_neighbor_of_plane;//the point of the plane which is not a neighbor
+  //       vector<Size> points_neighbor_of_plane;
+  //       for (Size point_of_plane: plane)
+  //       {
+  //         if (neighbor_map[temp_point].count(point_of_plane)==0)
+  //         {point_not_neighbor_of_plane=point_of_plane;}
+  //         else
+  //         {points_neighbor_of_plane.push_back(point_of_plane);}
+  //       }
+  //       //insert newly generated ear in maps
+  //       vector<Size> new_possible_ear{temp_point,point_not_neighbor_of_plane,
+  //           points_neighbor_of_plane[0],points_neighbor_of_plane[1]};
+  //       double power=calc_power(new_possible_ear,curr_point);
+  //       if (!std::isnan(power))
+  //       {//otherwise we would be proposing a coplanar tetrahedron, which would be ridiculous
+  //       //std::cout << "Inserting new ear; power is: " << power << std::endl;
+  //       ears_map.insert(std::make_pair(new_possible_ear,power));
+  //       rev_ears_map.insert(std::make_pair(power,new_possible_ear));
+  //       }
+  //     }
+  //   }
+  // }
+// }
+
 
 ///checks whether two triangles share a plane
 inline bool triangle_shares_plane_with(vector<Size> &triangle1, vector<Size> &triangle2)
@@ -231,6 +292,48 @@ inline vector<vector<Size>> return_all_relevant_planes(vector<vector<Size>> &tri
     {toreturn.push_back(newplane2);}
   }
   return toreturn;
+}
+
+/// Deletes all useless lines between two newly added ears
+inline void delete_all_useless_lines(vector<vector<Size>> &triangles_to_work_with, std::set<vector<Size>> &neighbor_lines)
+{
+  vector<vector<Size>> toreturn;//just keeps track of all relevant planes
+  for (vector<Size> triangle: triangles_to_work_with)
+  {
+    vector<Size> newplane1{triangle[0],triangle[1],triangle[2]};
+    bool newpl1_already_in=false;//for keeping track whether newplane1 has already been encountered (and therefor NOT needs to be returned)
+    vector<Size> newplane2{triangle[0],triangle[1],triangle[3]};
+    bool newpl2_already_in=false;
+    for (Size i=0; i<toreturn.size();)//check if planes are already in the vector
+    {
+      vector<Size> curr_plane=toreturn[i];
+      if (planes_are_equal(newplane1,curr_plane))
+      {
+        newpl1_already_in=true;
+        toreturn.erase(toreturn.begin()+i);
+        vector<Size>line_to_delete1{newplane1[0],newplane1[2]};
+        vector<Size>line_to_delete2{newplane1[1],newplane1[2]};
+        std::sort(line_to_delete1.begin(),line_to_delete1.end());
+        std::sort(line_to_delete2.begin(),line_to_delete2.end());
+        neighbor_lines.erase(line_to_delete1);
+        neighbor_lines.erase(line_to_delete2);
+      }else if (planes_are_equal(newplane2,curr_plane))
+      {
+        newpl2_already_in=true;
+        toreturn.erase(toreturn.begin()+i);
+        vector<Size>line_to_delete1{newplane2[0],newplane2[2]};
+        vector<Size>line_to_delete2{newplane2[1],newplane2[2]};
+        std::sort(line_to_delete1.begin(),line_to_delete1.end());
+        std::sort(line_to_delete2.begin(),line_to_delete2.end());
+        neighbor_lines.erase(line_to_delete1);
+        neighbor_lines.erase(line_to_delete2);
+      }else{++i;}
+    }
+    if (!newpl1_already_in)//if we truly have a new plane, also put it in for comparison
+    {toreturn.push_back(newplane1);}
+    if (!newpl2_already_in)
+    {toreturn.push_back(newplane2);}
+  }
 }
 
 
@@ -319,8 +422,8 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
         //iterating over all lines neighbors_of_point[i],neighbors_of_point[j]
         std::multimap<vector<Size>,double> ears_map;
         std::multimap<double,vector<Size>> rev_ears_map;
-
-
+        std::set<vector<Size>> neighbor_lines;//this set contains all valid possible lines; will be used to construct new tetrahedra
+        // invariant: lines..[0]<lines..[1]
         for (Size i=0; i<neighbors_of_point.size(); i++)
         {
           for (Size j=0; j<i; j++)
@@ -356,6 +459,16 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
             }
           }
         }
+        for (Size point1: cpy_of_neighbors)
+        {
+          for (Size point2: neighbor_map[point1])
+          {
+            if (point1<point2)
+            {
+              neighbor_lines.insert(vector<Size>{point1,point2});
+            }
+          }
+        }
 
         //std::cout << "number of neigbors: " << neighbors_of_point.size() << std::endl;
         //std::cout << "ears_map size: " << ears_map.size() << std::endl;
@@ -375,6 +488,10 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
           neighbor_map[triangle[1]].insert(triangle[0]);
           //invariant: the first two element of the vector should correspond to the neighbors we want to add
           delete_vector_from_both_maps(ears_map,rev_ears_map,triangle);
+          //Delete corresponding line, which may no longer be used
+          vector<Size> line_to_delete{triangle[2],triangle[3]};
+          std::sort(line_to_delete.begin(),line_to_delete.end());
+          neighbor_lines.erase(line_to_delete);
           //check which possible ears need to be deleted and which need to be added to the list from which to generate new ears
           for (auto it = ears_map.cbegin(); it != ears_map.cend();)
           {
@@ -385,14 +502,11 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
             {
               triangles_to_work_with.push_back(curr_triangle);
               it=delete_vector_from_both_maps(ears_map,rev_ears_map,curr_triangle);
+              //Delete corresponding line, which may no longer be used
+              vector<Size> line_to_delete{curr_triangle[2],curr_triangle[3]};
+              std::sort(line_to_delete.begin(),line_to_delete.end());
+              neighbor_lines.erase(line_to_delete);
             }
-            // else
-            // {//TODO: also delete all ears that share a plane with the other deleted ears in triangles_to_work_with
-            //   if (triangle_shares_plane_with(triangle, curr_triangle))
-            //   {
-            //     it = delete_vector_from_both_maps(ears_map, rev_ears_map, curr_triangle);
-            //     std::cout << "Deleted ear: " << curr_triangle[0] << curr_triangle[1] << curr_triangle[2] << curr_triangle[3] << std::endl;
-            //   }
             else//we do nothing with the current entry for now
             {
               ++it;
@@ -419,18 +533,26 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
               ++it;
             }
           }
+          vector<Size>new_line{triangle[0],triangle[1]};
+          std::sort(new_line.begin(),new_line.end());
 
+          delete_all_useless_lines(triangles_to_work_with,neighbor_lines);
 
           //std::cout << "nb triangles to work with: " << triangles_to_work_with.size() << std::endl;
-          vector<vector<Size>> relevant_planes=return_all_relevant_planes(triangles_to_work_with);
+          //vector<vector<Size>> relevant_planes=return_all_relevant_planes(triangles_to_work_with);
           //std::cout << "number of planes: " << relevant_planes.size() << std::endl;
           //TODO FIXME: check if the same ear can be generated twice and check if it would actually matter...
-          std::cout << "relevant planes size: "<<relevant_planes.size() << std::endl;
-          for (vector<Size> plane: relevant_planes)
-          {//TODO: figure out whether new ears must be generated at all, because no new ears ever seem to be inserted...
-            generate_new_ears(neighbors_of_point, plane, neighbor_map,
+          //std::cout << "relevant planes size: "<<relevant_planes.size() << std::endl;
+          // for (vector<Size> plane: relevant_planes)
+          // {//TODO: figure out whether new ears must be generated at all, because no new ears ever seem to be inserted...
+          // generate_new_ears(neighbors_of_point, plane, neighbor_map,
+          //       ears_map, rev_ears_map, curr_point);
+          // }
+          generate_new_ears(neighbor_lines, new_line, neighbor_map,
                 ears_map, rev_ears_map, curr_point);
-          }
+
+          //and finally add the new line to neighbor_lines
+          neighbor_lines.insert(new_line);
         }
 
 
