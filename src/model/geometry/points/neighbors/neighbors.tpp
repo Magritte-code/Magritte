@@ -61,6 +61,7 @@ inline void Neighbors :: add_neighbor(int point, int neighbor)
 ///   @param[in]  new_neigbours: A 1D array which contains all neighbors of all points (in order)
 /// assumed length = sum of new_n_neighbors
 /////////////////////////////////
+//currently has a workaround for points having multiple times the same neighbor
 inline void Neighbors :: set_all_neighbors(vector <Size> &new_n_neighbors, vector <Size> &new_neighbors)
 {
 // Ignoring checking whether the lengths match for now: The paracabs vector does not support begin nor end
@@ -68,18 +69,19 @@ inline void Neighbors :: set_all_neighbors(vector <Size> &new_n_neighbors, vecto
 //  if (length_of_list==std::size(new_neigbours))
 //  {
     n_neighbors=new_n_neighbors;
-    // cout << "flag6" << endl;
     neighbors.resize(parameters.npoints());
-    // cout << "flag7" << endl;
     int curr_index=0;
     for (Size i=0; i<parameters.npoints(); i++)
     {
-      neighbors[i].resize(n_neighbors[i]);
+      //neighbors[i].resize(n_neighbors[i]);
       for (Size j=0; j<n_neighbors[i]; j++)
-      {
-        neighbors[i][j]=new_neighbors[curr_index];
+      {//workaround
+        if(std::find(neighbors[i].begin(), neighbors[i].end(), new_neighbors[curr_index]) == neighbors[i].end()) {
+          neighbors[i].push_back(new_neighbors[curr_index]);//neighbors[i][j]=...
+        }
         curr_index++;
       }
+      n_neighbors[i]=neighbors[i].size();
     }
 //  }
 //  else
