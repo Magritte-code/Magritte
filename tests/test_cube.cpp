@@ -10,17 +10,17 @@ using std::endl;
 int main (int argc, char **argv)
 {
 
-vector<Size> n_neighbors{6,4,6,6,6,6,4,6,8};
+vector<Size> n_neighbors{6,3,6,6,6,6,3,6,6};
 //note: the last two are due to splitting the sides of the cube
 vector<Size> neighbors {1,2,4,8, 3,5,
-                        0,3,5,8,
+                        0,3,5,
                         0,3,6,8, 4,7,
                         1,2,7,8, 0,5,
                         0,5,6,8, 2,7,
                         1,4,7,8, 0,3,
-                        2,4,7,8,
+                        2,4,7,
                         3,5,6,8, 2,4,
-                        0,1,2,3,4,5,6,7};
+                        0,2,3,4,5,7};
 
 // Vector<Vector3D> positions= Vector<Vector3D>(9);
 // positions.resize(9);

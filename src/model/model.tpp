@@ -189,7 +189,6 @@ inline void Model::generate_new_ears(const std::set<vector<Size>> &neighbor_line
   Size count_neighbours;
   for (vector<Size> old_line: neighbor_lines)
   {
-
     vector<Size> new_possible_ear=lines_form_tetrahedron(old_line, new_line, neighbor_map);
     //if we truly can create a new ear with these lines
     if (!new_possible_ear.empty())
@@ -469,7 +468,8 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
             }
           }
         }
-
+        //or just print all lines out...
+        std::cout << "Initial lines size: " << neighbor_lines.size();
         //std::cout << "number of neigbors: " << neighbors_of_point.size() << std::endl;
         //std::cout << "ears_map size: " << ears_map.size() << std::endl;
         //now that we have all initial 'triangles', we can finally start to add them
@@ -477,6 +477,7 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
         while(!ears_map.empty())
         {
           std::cout << "Looping: current size of ears map: " << ears_map.size() << std::endl;
+          std::cout << "Looping: current size of lines: " << neighbor_lines.size() << std::endl;
           vector<Size> triangle=(*rev_ears_map.begin()).second;//triangle which we are currently adding to the mesh
           std::cout << "Currently adding line: (" << triangle[0] << "," << triangle[1] << ")" << std::endl;
           vector<vector<Size>> triangles_to_work_with;//vector of triangles from which we will generate new triangles
@@ -537,6 +538,14 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
           std::sort(new_line.begin(),new_line.end());
 
           delete_all_useless_lines(triangles_to_work_with,neighbor_lines);
+
+          std::cout << "Lines size after deletion: " << neighbor_lines.size() << std::endl;
+          std::cout << "Lines left: ";
+          for (auto line: neighbor_lines){
+            for(Size j = 0; j<2; ++j){
+              std::cout << line[j] << " ";}
+              std::cout << ',';}
+          std::cout << std::endl;
 
           //std::cout << "nb triangles to work with: " << triangles_to_work_with.size() << std::endl;
           //vector<vector<Size>> relevant_planes=return_all_relevant_planes(triangles_to_work_with);
