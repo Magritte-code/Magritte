@@ -80,7 +80,6 @@ inline bool vector_contains_element(const vector<Size> vect, Size element)
 }
 
 
-
 /// Given a tetrahedron, this calculates the power of the point with respect to the circumsphere
 /// @Parameter [in] triangle: the tetrahedron from which we use the circumsphere
 /// @Parameter [in] point: the point the calculate the power with
@@ -124,6 +123,20 @@ inline double Model :: calc_power(const vector<Size> &triangle, Size point){
     //std::cout << "orient determinant = " << orient.determinant() << std::endl;
     return result;
   }
+}
+
+inline double Model::orientation(const vector<Size> &plane, Size point){
+  Vector3D pos1=geometry.points.position[plane[0]];
+  Vector3D pos2=geometry.points.position[plane[1]];
+  Vector3D pos3=geometry.points.position[plane[2]];
+  Vector3D posp=geometry.points.position[point];//position of point
+
+  Eigen::Matrix<double,4,4> orient;
+  orient << pos1.x(),pos2.x(),pos3.x(),posp.x(),
+            pos1.y(),pos2.y(),pos3.y(),posp.y(),
+            pos1.z(),pos2.z(),pos3.z(),posp.z(),
+            1,1,1,1;
+  return orient.determinant();
 }
 
 
@@ -226,24 +239,28 @@ inline void Model::generate_new_ears(const vector<Size> &neighbors_of_point, con
       //if the candidate point is good for creating an ear with plane1
       if (count_neighbours==2)
       {
-        Size point_not_neighbor_of_plane;//the point of the plane which is not a neighbor
-        vector<Size> points_neighbor_of_plane;
-        for (Size point_of_plane: plane)
+        double prod_of_orient=orientation(plane,temp_point)*orientation(plane,curr_point);//should be positive if temp_point lies on the same side of the plane as the 'deleted point'
+        if (prod_of_orient>0)
         {
-          if (neighbor_map[temp_point].count(point_of_plane)==0)
-          {point_not_neighbor_of_plane=point_of_plane;}
-          else
-          {points_neighbor_of_plane.push_back(point_of_plane);}
-        }
-        //insert newly generated ear in maps
-        vector<Size> new_possible_ear{temp_point,point_not_neighbor_of_plane,
-            points_neighbor_of_plane[0],points_neighbor_of_plane[1]};
-        double power=calc_power(new_possible_ear,curr_point);
-        if (!std::isnan(power))
-        {//otherwise we would be proposing a coplanar tetrahedron, which would be ridiculous
-        //std::cout << "Inserting new ear; power is: " << power << std::endl;
-        ears_map.insert(std::make_pair(new_possible_ear,power));
-        rev_ears_map.insert(std::make_pair(power,new_possible_ear));
+          Size point_not_neighbor_of_plane;//the point of the plane which is not a neighbor
+          vector<Size> points_neighbor_of_plane;
+          for (Size point_of_plane: plane)
+          {
+            if (neighbor_map[temp_point].count(point_of_plane)==0)
+            {point_not_neighbor_of_plane=point_of_plane;}
+            else
+            {points_neighbor_of_plane.push_back(point_of_plane);}
+          }
+          //insert newly generated ear in maps
+          vector<Size> new_possible_ear{temp_point,point_not_neighbor_of_plane,
+              points_neighbor_of_plane[0],points_neighbor_of_plane[1]};
+          double power=calc_power(new_possible_ear,curr_point);
+          if (!std::isnan(power))
+          {//otherwise we would be proposing a coplanar tetrahedron, which would be ridiculous
+            //std::cout << "Inserting new ear; power is: " << power << std::endl;
+            ears_map.insert(std::make_pair(new_possible_ear,power));
+            rev_ears_map.insert(std::make_pair(power,new_possible_ear));
+          }
         }
       }
     }
@@ -458,7 +475,8 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
                 {
                   if (point1<point2 && //just such that we do not have duplicates
                   neighbor_map[point1].count(point2)!=0)///if point1 and 2 are neighbors
-                  {
+                  {//TODO: this is not guaranteed to be a convex hull!!!
+                    //THEREFORE check if this proposed ear actually lies INSIDE the hull!!!!!
                     vector<Size> new_triangle=vector<Size>{neighbors_of_point[i],neighbors_of_point[j],point1,point2};
                     double power=calc_power(new_triangle,curr_point);
                     if (!std::isnan(power))

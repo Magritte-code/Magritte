@@ -49,6 +49,7 @@ struct Model
     void read  (const Io& io);
     void write (const Io& io) const;
 
+    inline double orientation(const vector<Size> &plane, Size point);
     inline double calc_power(const vector<Size> &triangle, Size point);
     inline double calc_diff_abundance_with_neighbours(Size point, Size next_coars_lvl);
     //inline void generate_new_ears(const std::set<vector<Size>> &neighbor_lines, vector<Size> &new_line,std::map<Size,std::set<Size>> &neighbor_map, std::multimap<vector<Size>,double> &ears_map, std::multimap<double,vector<Size>> &rev_ears_map, Size &curr_point);
