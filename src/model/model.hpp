@@ -52,9 +52,11 @@ struct Model
     inline double orientation(const vector<Size> &plane, Size point);
     inline double calc_power(const vector<Size> &triangle, Size point);
     inline double calc_diff_abundance_with_neighbours(Size point, Size next_coars_lvl);
+    inline void generate_initial_ears(const vector<Size> &neighbors_of_point, const vector<Size> &plane, std::map<Size, std::set<Size>> &neighbor_map,
+     std::multimap<vector<Size>,double> &ears_map, std::multimap<double,vector<Size>> &rev_ears_map, Size &curr_point);
     //inline void generate_new_ears(const std::set<vector<Size>> &neighbor_lines, vector<Size> &new_line,std::map<Size,std::set<Size>> &neighbor_map, std::multimap<vector<Size>,double> &ears_map, std::multimap<double,vector<Size>> &rev_ears_map, Size &curr_point);
     inline void generate_new_ears(const vector<Size> &neighbors_of_point, const vector<Size> &plane, std::map<Size, std::set<Size>> &neighbor_map,
-     std::multimap<vector<Size>,double> &ears_map, std::multimap<double,vector<Size>> &rev_ears_map, Size &curr_point);
+     std::multimap<vector<Size>,double> &ears_map, std::multimap<double,vector<Size>> &rev_ears_map, Size &curr_point, Size &orient_point);
 
     inline void coarsen_grid(float perc_points_deleted);
 

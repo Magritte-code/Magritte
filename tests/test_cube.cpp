@@ -10,17 +10,17 @@ using std::endl;
 int main (int argc, char **argv)
 {
 
-vector<Size> n_neighbors{6,3,6,6,6,6,3,6,6};
+vector<Size> n_neighbors{6,4,6,6,6,6,4,6,8};
 //note: the last two are due to splitting the sides of the cube
 vector<Size> neighbors {1,2,4,8, 3,5,
-                        0,3,5,
+                        0,3,5,8,
                         0,3,6,8, 4,7,
                         1,2,7,8, 0,5,
                         0,5,6,8, 2,7,
                         1,4,7,8, 0,3,
-                        2,4,7,
+                        2,4,7,8,
                         3,5,6,8, 2,4,
-                        0,2,3,4,5,7};
+                        0,1,2,3,4,5,6,7};
 
 // Vector<Vector3D> positions= Vector<Vector3D>(9);
 // positions.resize(9);
@@ -66,7 +66,9 @@ model.geometry.points.position[4]=Vector3D(0,1,0);
 model.geometry.points.position[5]=Vector3D(1,1,0);
 model.geometry.points.position[6]=Vector3D(0,0,0);
 model.geometry.points.position[7]=Vector3D(1,0,0);
-model.geometry.points.position[8]=Vector3D(1/2+0.01,1/2-0.01,1/2+0.01);
+model.geometry.points.position[8]=Vector3D(1./2,1./2,1./2);
+
+std::cout<<"Position of middle point: "<<model.geometry.points.position[8].x() << ","<<model.geometry.points.position[8].y() << ","<<model.geometry.points.position[8].z() << std::endl;
 
 model.geometry.points.curr_neighbors.set_all_neighbors(n_neighbors, neighbors);
 
