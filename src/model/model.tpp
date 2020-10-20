@@ -456,6 +456,7 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
         std::multimap<double,vector<Size>> rev_ears_map;
         //std::set<vector<Size>> neighbor_lines;//this set contains all valid possible lines; will be used to construct new tetrahedra
         // invariant: lines..[0]<lines..[1]
+        //TODO: replace this entire thing by first calculating all planes and then try adding a single point to it (and check orientation)
         for (Size i=0; i<neighbors_of_point.size(); i++)
         {
           for (Size j=0; j<i; j++)
@@ -478,13 +479,20 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
                   {//TODO: this is not guaranteed to be a convex hull!!!
                     //THEREFORE check if this proposed ear actually lies INSIDE the hull!!!!!
                     vector<Size> new_triangle=vector<Size>{neighbors_of_point[i],neighbors_of_point[j],point1,point2};
-                    double power=calc_power(new_triangle,curr_point);
-                    if (!std::isnan(power))
-                    {//otherwise we would be proposing a coplanar tetrahedron, which would be ridiculous
-                    ears_map.insert(std::make_pair(new_triangle,power));
-                    rev_ears_map.insert(std::make_pair(power,new_triangle));
-                    std::cout << "Creating ear: "<< new_triangle[0] << ", " << new_triangle[1] << ", " << new_triangle[2] << ", " << new_triangle[3] << std::endl;
-                    //invariant: the first two element of the vector should correspond to the neighbors we want to add
+                    if ((orientation(vector<Size>{new_triangle[1],new_triangle[2],new_triangle[3]},new_triangle[0])*
+                      orientation(vector<Size>{new_triangle[1],new_triangle[2],new_triangle[3]},curr_point)>0)||(
+                        orientation(vector<Size>{new_triangle[0],new_triangle[2],new_triangle[3]},new_triangle[1])*
+                          orientation(vector<Size>{new_triangle[0],new_triangle[2],new_triangle[3]},curr_point)
+                      ))
+                    {
+                      double power=calc_power(new_triangle,curr_point);
+                      if (!std::isnan(power))
+                      {//otherwise we would be proposing a coplanar tetrahedron, which would be ridiculous
+                        ears_map.insert(std::make_pair(new_triangle,power));
+                        rev_ears_map.insert(std::make_pair(power,new_triangle));
+                        std::cout << "Creating ear: "<< new_triangle[0] << ", " << new_triangle[1] << ", " << new_triangle[2] << ", " << new_triangle[3] << std::endl;
+                        //invariant: the first two element of the vector should correspond to the neighbors we want to add
+                      }
                     }
                   }
                 }
