@@ -30,6 +30,10 @@ template <typename type>
 using Tensor = pc::datatypes::Tensor <type>;
 
 
+const Real one  = 1.0;
+const Real two  = 2.0;
+const Real half = 0.5;
+
 
 // Vectors of Size
 typedef vector<Size>  Size1;
