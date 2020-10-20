@@ -11,18 +11,18 @@
 ///    @param[out]    dZ : reference to the distance increment to the next ray
 ///    @return number of the next cell on the ray after the current cell
 ///////////////////////////////////////////////////////////////////////////////////
-accel inline Size Geometry :: get_next (
-    const Size  o,
-    const Size  r,
-    const Size  c,
-          Real& Z,
-          Real& dZ                     ) const
+accel inline Size Geometry :: get_next_general_geometry (
+    const Size    o,
+    const Size    r,
+    const Size    c,
+          double& Z,
+          double& dZ                   ) const
 {
     const Size     n_nbs = points.    n_neighbors[c];
     const Size cum_n_nbs = points.cum_n_neighbors[c];
 
-    Real dmin = std::numeric_limits<Real>::max();   // Initialize to "infinity"
-    Size next = parameters.npoints();               // return npoints when there is no next
+    double dmin = std::numeric_limits<Real>::max();   // Initialize to "infinity"
+    Size   next = parameters.npoints();               // return npoints when there is no next
 
 //    for (Size i = 0; i < nnbs; i++)
     for (Size i = 0; i < n_nbs; i++)
@@ -30,11 +30,11 @@ accel inline Size Geometry :: get_next (
 //        const Size     n     = points.nbs[c*nnbs+i];
         const Size     n     = points.neighbors[cum_n_nbs+i];
         const Vector3D R     = points.position[n] - points.position[o];
-        const Real     Z_new = R.dot(rays.direction[r]);
+        const double   Z_new = R.dot(rays.direction[r]);
 
         if (Z_new > Z)
         {
-            const Real distance_from_ray2 = R.dot(R) - Z_new*Z_new;
+            const double distance_from_ray2 = R.dot(R) - Z_new*Z_new;
 
             if (distance_from_ray2 < dmin)
             {
@@ -52,19 +52,65 @@ accel inline Size Geometry :: get_next (
 }
 
 
-///  Getter for the doppler shift along the ray between the current cell and the origin
-///    @param[in] o   : number of cell from which the ray originates
-///    @param[in] r   : number of the ray along which we are looking
-///    @param[in] crt : number of the cell for which we want the velocity
-///    @return doppler shift along the ray between the current cell and the origin
-///////////////////////////////////////////////////////////////////////////////////////
-template <>
-inline Real Geometry :: get_shift <CoMoving> (
+///  Getter for the number of the next cell on ray and its distance along ray when
+///  assuming spherical symmetry and such that the positions are in ascending order!
+///    @param[in]      o : number of cell from which the ray originates
+///    @param[in]      r : number of the ray along which we are looking
+///    @param[in]      c : number of the cell put last on the ray
+///    @param[in/out]  Z : reference to the current distance along the ray
+///    @param[out]    dZ : reference to the distance increment to the next ray
+///    @return number of the next cell on the ray after the current cell
+///////////////////////////////////////////////////////////////////////////////////
+inline Size Geometry :: get_next_spherical_symmetry (
     const Size  o,
     const Size  r,
-    const Size  crt                          ) const
+    const Size  c,
+    double     &Z,
+    double     &dZ                                  ) const
 {
-    return Real(1.0) - (points.velocity[crt] - points.velocity[o]).dot(rays.direction[r]);
+    Size next;
+
+    const double Rsin = points.position[o].x() * rays.direction[r].y();
+    const double Rcos = points.position[o].x() * rays.direction[r].x();
+
+    const double Rsin2       = Rsin * Rsin;
+    const double Rcos_plus_Z = Rcos + Z;
+
+    if (Z < -Rcos)
+    {
+        if (c <= 0)
+        {
+            return parameters.npoints();
+        }
+
+        if (points.position[c-1].squaredNorm() >= Rsin2)
+        {
+            next = c - 1;
+            dZ   = -sqrt(points.position[next].squaredNorm() - Rsin2) - Rcos_plus_Z;
+        }
+        else
+        {
+            next = c;
+            dZ   = - 2.0 * Rcos_plus_Z;
+        }
+    }
+    else
+    {
+        if (c >= parameters.npoints()-1)
+        {
+            return parameters.npoints();
+        }
+
+        next = c + 1;
+        dZ   = +sqrt(points.position[next].squaredNorm() - Rsin2) - Rcos_plus_Z;
+    }
+
+    // Update distance along ray
+    Z += dZ;
+
+    // cout << "o = " << o << "    r = " << r << "   c = " << c << "   next = " << next << "dZ = " << dZ << endl; 
+
+    return next;
 }
 
 
@@ -75,10 +121,26 @@ inline Real Geometry :: get_shift <CoMoving> (
 ///    @return doppler shift along the ray between the current cell and the origin
 ///////////////////////////////////////////////////////////////////////////////////////
 template <>
-inline Real Geometry :: get_shift <Rest> (
+inline double Geometry :: get_shift <CoMoving> (
     const Size  o,
     const Size  r,
-    const Size  crt                      ) const
+    const Size  crt                            ) const
+{
+    return 1.0 - (points.velocity[crt] - points.velocity[o]).dot(rays.direction[r]);
+}
+
+
+///  Getter for the doppler shift along the ray between the current cell and the origin
+///    @param[in] o   : number of cell from which the ray originates
+///    @param[in] r   : number of the ray along which we are looking
+///    @param[in] crt : number of the cell for which we want the velocity
+///    @return doppler shift along the ray between the current cell and the origin
+///////////////////////////////////////////////////////////////////////////////////////
+template <>
+inline double Geometry :: get_shift <Rest> (
+    const Size  o,
+    const Size  r,
+    const Size  crt                        ) const
 {
     Size r_correct = r;
 
@@ -87,19 +149,19 @@ inline Real Geometry :: get_shift <Rest> (
         r_correct = rays.antipod[r];
     }
 
-    return Real(1.0) - points.velocity[crt].dot(rays.direction[r_correct]);
+    return 1.0 - points.velocity[crt].dot(rays.direction[r_correct]);
 }
 
 
 accel inline Size Geometry :: get_n_interpl (
-    const Real shift_crt,
-    const Real shift_nxt,
-    const Real dshift_max                   ) const
+    const double shift_crt,
+    const double shift_nxt,
+    const double dshift_max                 ) const
 {
-    const Real dshift_abs = fabs (shift_nxt - shift_crt);
+    const double dshift_abs = fabs (shift_nxt - shift_crt);
 
-    if (dshift_abs > dshift_max) {return dshift_abs/dshift_max + Real(1);}
-    else                         {return 1;                              }
+    if (dshift_abs > dshift_max) {return dshift_abs/dshift_max + 1;}
+    else                         {return 1;                        }
 }
 
 
@@ -108,19 +170,19 @@ template <Frame frame>
 accel inline Size Geometry :: get_ray_length (
     const Size o,
     const Size r,
-    const Real dshift_max                    ) const
+    const double dshift_max                  ) const
 {
-    Size  l = 0;     // ray length
-    Real  Z = 0.0;   // distance from origin (o)
-    Real dZ = 0.0;   // last increment in Z
+    Size    l = 0;     // ray length
+    double  Z = 0.0;   // distance from origin (o)
+    double dZ = 0.0;   // last increment in Z
 
     Size nxt = get_next (o, r, o, Z, dZ);
 
     if (nxt != parameters.npoints()) // if we are not going out of mesh
     {
-        Size       crt = o;
-        Real shift_crt = get_shift <frame> (o, r, crt);
-        Real shift_nxt = get_shift <frame> (o, r, nxt);
+        Size         crt = o;
+        double shift_crt = get_shift <frame> (o, r, crt);
+        double shift_nxt = get_shift <frame> (o, r, nxt);
 
         l += get_n_interpl (shift_crt, shift_nxt, dshift_max);
 
@@ -188,4 +250,75 @@ inline Size1 Geometry :: get_ray_lengths_gpu (
     lengths.copy_ptr_to_vec ();
 
     return lengths.vec;
+}
+
+
+///  Check whether a point index is valid
+///    @param[in] p : point index
+///    @returns true if p is a valid index
+//////////////////////////////////////////
+inline bool Geometry :: valid_point (const Size p) const
+{
+    return (p < parameters.npoints());
+}
+
+
+///  Check whether a point is not on the boundary
+///    @param[in] p : point index
+///    @returns true if p is not on the boundary
+/////////////////////////////////////////////////
+inline bool Geometry :: not_on_boundary (const Size p) const
+{
+    return (boundary.point2boundary[p] == parameters.npoints());
+}
+
+
+///  Getter for the number of the next cell on ray and its distance along ray in
+///  the general case without any further assumptions
+///    @param[in]      o : number of cell from which the ray originates
+///    @param[in]      r : number of the ray along which we are looking
+///    @param[in]      c : number of the cell put last on the ray
+///    @param[in/out]  Z : reference to the current distance along the ray
+///    @param[out]    dZ : reference to the distance increment to the next ray
+///    @return number of the next cell on the ray after the current cell
+///////////////////////////////////////////////////////////////////////////////////
+accel inline Size Geometry :: get_next (
+    const Size    o,
+    const Size    r,
+    const Size    crt,
+          double& Z,
+          double& dZ                   ) const
+{
+    if (parameters.spherical_symmetry())
+    {
+        return get_next_spherical_symmetry (o, r, crt, Z, dZ);
+
+    }
+    else
+    {
+        return get_next_general_geometry   (o, r, crt, Z, dZ);
+    }
+}
+
+
+///  Getter for the number of the next cell on ray and its distance along ray in
+///  the general case without any further assumptions
+///    @param[in]      o : number of cell from which the ray originates
+///    @param[in]      r : number of the ray along which we are looking
+///    @param[in]      c : number of the cell put last on the ray
+///    @param[in/out]  Z : reference to the current distance along the ray
+///    @param[out]    dZ : reference to the distance increment to the next ray
+///    @return number of the next cell on the ray after the current cell
+///////////////////////////////////////////////////////////////////////////////////
+accel inline void Geometry :: get_next (
+    const Size    o,
+    const Size    r,
+    const Size    crt,
+          Size&   nxt,
+          double& Z,
+          double& dZ,
+          double& shift ) const
+{
+    nxt   = get_next             (o, r, crt, Z, dZ);
+    shift = get_shift <CoMoving> (o, r, nxt       );
 }

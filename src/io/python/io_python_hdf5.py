@@ -8,21 +8,21 @@ def read_length (io_file, file_name):
     """
     with hp.File (io_file, 'r') as file:
 
-        print('In the file? here are the keys:')
-        print(file.keys())
+        # print('In the file? here are the keys:')
+        # print(file.keys())
 
         try:
-            print('fine')
+            # print('fine')
             # Try to open the object
             object = file [file_name]
             # Check if it is a Dataset
 
-            print ('length = ', object.len())
+            # print ('length = ', object.len())
             if isinstance (object, hp.Dataset):
                 return object.len()
         except:
 
-            print ('not supposed to be here')
+            # print ('not supposed to be here')
             # Get name of object we need to count
             object_name = file_name.split('/')[-1]
             # Get containing group
@@ -109,6 +109,13 @@ def write_number (io_file, file_name, data):
     write_attribute (io_file, file_name, data)
 
 
+def get_element_type (l):
+    if isinstance(l, list):
+        return get_element_type(l[0])
+    else:
+        return type(l)
+
+
 def read_array (io_file, file_name):
     """
     Return the contents of the data array.
@@ -116,7 +123,6 @@ def read_array (io_file, file_name):
     with hp.File (io_file, 'r') as file:
         if (file_name in file):
             return np.array (file.get (file_name))
-
 
 
 def write_array (io_file, file_name, data):
@@ -143,6 +149,10 @@ def write_array (io_file, file_name, data):
         # Write dataset
         try:
             # print('Creating dataset...')
-            file.create_dataset (name=file_name, data=data)
+            if (get_element_type(data) == str):
+                print(data)
+                file.create_dataset (name=file_name, data=np.array(data, dtype='S'))
+            else:
+                file.create_dataset (name=file_name, data=data)
         except:
             print ("failed to write ", file_name)

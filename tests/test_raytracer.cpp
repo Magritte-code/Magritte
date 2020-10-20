@@ -7,27 +7,6 @@ using std::endl;
 #include "solver/solver.hpp"
 
 
-//__global__
-//void kernel ()
-//{
-//    return;
-//}
-
-//inline void test (Geometry &geometry)
-//{
-//    geometry.points.position.vec[0].print();
-//    geometry.points.position.vec[1].print();
-//
-//    Geometry* geometry_copy = (Geometry*) pc::accelerator::malloc(sizeof(Geometry));
-//    pc::accelerator::memcpy_to_accelerator (geometry_copy, &geometry, sizeof(Geometry));
-//    kernel<<<1,1>>> (geometry_copy);
-//
-//    points.position.vec[0].print();
-//    points.position.copy_ptr_to_vec ();
-//    points.position.vec[0].print();
-//}
-
-
 int main (int argc, char **argv)
 {
     cout << "Running test_raytracing..." << endl;
@@ -53,21 +32,16 @@ int main (int argc, char **argv)
     Model model;
     model.read (io);
 
-//    Solver solver (10000, 100);
-//    solver.trace (model);
-//
-//    for (Size i = 0; i < 10; i++)
-//    {
-//        cout << model.geometry.lengths[i] << endl;
-//    }
+    Solver solver (10000, 10000, 0);
+    solver.trace  (model);
 
-    Size1 lengths = model.geometry.get_ray_lengths ();
-//    Size1 lengths = model.geometry.get_ray_lengths_gpu (512, 512);
+    // Size1 lengths = model.geometry.get_ray_lengths ();
+    // Size1 lengths = model.geometry.get_ray_lengths_gpu (512, 512);
 
     for (Size i = 0; i < 100; i++)
     {
-//        cout << model.geometry.lengths[i] << endl;
-        cout << lengths[i] << endl;
+       cout << model.geometry.lengths[i] << endl;
+        // cout << lengths[i] << endl;
     }
 
     cout << "Done." << endl;

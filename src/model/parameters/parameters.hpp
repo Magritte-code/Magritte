@@ -127,6 +127,7 @@ struct Parameters
 //        accel inline bool spherical_symmetry  () const {return spherical_symmetry_  .get();}
 //        accel inline bool adaptive_ray_tracing() const {return adaptive_ray_tracing_.get();}
 
+
     long n_off_diag = 0;
 
     double max_width_fraction = 0.5;
@@ -134,8 +135,9 @@ struct Parameters
     void read (const Io &io);
     void write(const Io &io) const;
 
-    CREATE_PARAMETER (Size, a);
+    CREATE_PARAMETER (string, model_name);
 
+    CREATE_PARAMETER (Size, dimension );
     CREATE_PARAMETER (Size, npoints   );
     CREATE_PARAMETER (Size, totnnbs   );
     CREATE_PARAMETER (Size, nrays     );
@@ -145,7 +147,6 @@ struct Parameters
     CREATE_PARAMETER (Size, order_max );
     CREATE_PARAMETER (Size, nboundary );
     CREATE_PARAMETER (Size, nfreqs    );
-    CREATE_PARAMETER (Size, nfreqs_red);
     CREATE_PARAMETER (Size, nspecs    );
     CREATE_PARAMETER (Size, nlspecs   );
     CREATE_PARAMETER (Size, nlines    );
@@ -160,8 +161,9 @@ struct Parameters
 
     Parameters ()
     {
-        CONSTRUCT_PARAMETER (Size, a);
+        CONSTRUCT_PARAMETER (string, model_name);
 
+        CONSTRUCT_PARAMETER (Size, dimension );
         CONSTRUCT_PARAMETER (Size, npoints   );
         CONSTRUCT_PARAMETER (Size, totnnbs   );
         CONSTRUCT_PARAMETER (Size, nrays     );
@@ -171,7 +173,6 @@ struct Parameters
         CONSTRUCT_PARAMETER (Size, order_max );
         CONSTRUCT_PARAMETER (Size, nboundary );
         CONSTRUCT_PARAMETER (Size, nfreqs    );
-        CONSTRUCT_PARAMETER (Size, nfreqs_red);
         CONSTRUCT_PARAMETER (Size, nspecs    );
         CONSTRUCT_PARAMETER (Size, nlspecs   );
         CONSTRUCT_PARAMETER (Size, nlines    );
@@ -187,8 +188,9 @@ struct Parameters
 
     Parameters (const Parameters& parameters)
     {
-        COPY_PARAMETER (a);
+        COPY_PARAMETER (model_name);
 
+        COPY_PARAMETER (dimension );
         COPY_PARAMETER (npoints   );
         COPY_PARAMETER (totnnbs   );
         COPY_PARAMETER (nrays     );
@@ -198,7 +200,6 @@ struct Parameters
         COPY_PARAMETER (order_max );
         COPY_PARAMETER (nboundary );
         COPY_PARAMETER (nfreqs    );
-        COPY_PARAMETER (nfreqs_red);
         COPY_PARAMETER (nspecs    );
         COPY_PARAMETER (nlspecs   );
         COPY_PARAMETER (nlines    );

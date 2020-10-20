@@ -1,0 +1,2 @@
+Merge        '${FILE_NAME}.msh';
+Save View[0] '${FILE_NAME}.pos';
