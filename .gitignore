@@ -41,6 +41,8 @@ configure.hpp
 *model_*
 !*model_*.py
 !*model_*.ipynb
+*.geo
+*.vtk
 
 # dependencies
 ##############
