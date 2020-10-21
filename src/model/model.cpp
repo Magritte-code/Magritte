@@ -258,7 +258,7 @@ int Model :: compute_LTE_level_populations ()
 
 ///  Computer for the radiation field
 /////////////////////////////////////
-int Model :: compute_radiation_field ()
+int Model :: compute_radiation_field_0th_short_characteristics ()
 {
     cout << "Computing radiation field..." << endl;
 
@@ -266,7 +266,7 @@ int Model :: compute_radiation_field ()
     const Size  width_max =   parameters.nfreqs ();
 
     Solver solver (length_max, width_max, parameters.n_off_diag);
-    solver.solve  (*this);
+    solver.solve_0th_order_short_charateristics  (*this);
 
     return (0);
 }
