@@ -31,28 +31,22 @@ using std::endl;
 
 int main (int argc, char **argv)
 {
-    cout << "Running test_0th_short..." << endl;
-
     /// Store model name
     const string modelName = argv[1];
 
-    cout << modelName << endl;
-
-    pc::accelerator::list_accelerators();
-
-    IoPython io ("hdf5", modelName);
-
+    cout << "Running test_0th_short..." << endl;
+    cout << "-------------------------" << endl;
+    cout << "Model name: " << modelName << endl;
     cout << "n threads = " << paracabs::multi_threading::n_threads_avail() << endl;
 
 
-    Model model;
-    model.read (io);
+    Model model (modelName);
 
     model.compute_spectral_discretisation ();
     model.compute_LTE_level_populations   ();
     model.compute_inverse_line_widths     ();
 
-    model.compute_radiation_field_2nd_order_Feautrier ();
+    model.compute_radiation_field_0th_short_characteristics ();
     // solver.trace (model);
 
     // Solver solver (model.parameters.npoints(),

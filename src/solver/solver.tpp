@@ -48,7 +48,7 @@ inline void Solver :: trace (Model& model)
 }
 
 
-inline void Solver :: solve (Model& model)
+inline void Solver :: solve_0th_order_short_charateristics (Model& model)
 {
     model.radiation.initialize_J();
 
