@@ -17,7 +17,7 @@ model.read(io)
 
 
 
-model.coarsen_grid(0.00002)
+model.coarsen_grid(0.00003)
 
 #print(model.geometry.points.curr_neighbors.neighbors)
 print(np.array(model.geometry.points.position));
@@ -27,9 +27,9 @@ print(np.array(model.reduced_neighbors_after));
 
 plotthing=PlotFuns(model);
 
-plotthing.plot_alllines(model.reduced_neighbors_before[0]);
+plotthing.plot_alllines(model.reduced_neighbors_before[1]);
 # TODO
-plotthing.plot_alllines(model.reduced_neighbors_after[0]);
+plotthing.plot_alllines(model.reduced_neighbors_after[1]);
 
 plt.show();
 
