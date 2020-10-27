@@ -2,6 +2,7 @@ from sys import path
 import numpy as np
 from scipy.spatial import Delaunay
 from plotneighbors import PlotFuns
+import matplotlib.pyplot as plt
 
 path.append("../")
 
@@ -26,8 +27,11 @@ print(np.array(model.reduced_neighbors_after));
 
 plotthing=PlotFuns(model);
 
-
 plotthing.plot_alllines(model.reduced_neighbors_before[0]);
+# TODO
+plotthing.plot_alllines(model.reduced_neighbors_after[0]);
+
+plt.show();
 
 #todo only use neighbors of point
 #delaunay=Delaunay(np.array(model.geometry.points.position));

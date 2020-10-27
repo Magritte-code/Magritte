@@ -26,4 +26,5 @@ class PlotFuns:
             for point2 in neighbors[point1]:
                 self.plot_line(ax,point1,point2);
 
-        plt.show();
+        plt.show(block = False);
+        # plt.show();
