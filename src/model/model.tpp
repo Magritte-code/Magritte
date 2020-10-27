@@ -125,6 +125,7 @@ inline double Model :: calc_power(const vector<Size> &triangle, Size point){
   }
 }
 
+//TODO: maybe just return the sign (because possible overflow issues if the number get much larger)
 inline double Model::orientation(const vector<Size> &plane, Size point){
   Vector3D pos1=geometry.points.position[plane[0]];
   Vector3D pos2=geometry.points.position[plane[1]];
@@ -237,10 +238,11 @@ inline void Model::generate_new_ears(const vector<Size> &neighbors_of_point, con
         double prod_of_orient=orientation(plane,temp_point)*orientation(plane,orient_point);//should be negiative if temp_point lie on the opposite side of the plane as the orientation point
         if (prod_of_orient<0)
         {
-          std::cout << "neighbors of temp_point are: ";
-          for (std::set<Size>::iterator it=neighbor_map[temp_point].begin(); it!=neighbor_map[temp_point].end(); ++it)
-            std::cout << ' ' << *it;
-          std::cout << std::endl;
+          // std::cout << "neighbors of temp_point are: ";
+          // for (std::set<Size>::iterator it=neighbor_map[temp_point].begin(); it!=neighbor_map[temp_point].end(); ++it)
+          //   std::cout << ' ' << *it;
+          // std::cout << std::endl;
+          std::cout << "temp_point is: " << temp_point << std::endl;
 
           Size point_not_neighbor_of_plane;//the point of the plane which is not a neighbor
           vector<Size> points_neighbor_of_plane;
@@ -268,60 +270,60 @@ inline void Model::generate_new_ears(const vector<Size> &neighbors_of_point, con
 }
 
 
-//generates the new ears and inserts them into the ears maps
-//TODO: fix this, possibly wrong logic!!!!!!!!!
-inline void Model::generate_initial_ears(const vector<Size> &neighbors_of_point, const vector<Size> &plane, std::map<Size, std::set<Size>> &neighbor_map,
- std::multimap<vector<Size>,double> &ears_map, std::multimap<double,vector<Size>> &rev_ears_map, Size &curr_point)
-{
-  std::cout << "plane is: " << plane[0]<< ", " << plane[1] << ", " << plane[2] << std::endl;
-  Size count_neighbours;
-  for (Size temp_point: neighbors_of_point)
-  { //we want to create new triangles, therefore a point in the plane is not useful
-    if (!vector_contains_element(plane,temp_point))
-    {
-      //we are currently adding sometimes far too little new ears??
-      count_neighbours=0;
-      for (Size point_of_plane: plane)
-      {
-        if (neighbor_map[temp_point].count(point_of_plane)!=0)//if temp_point is neighbor of point_of_plane
-        {count_neighbours++;}
-      }
-
-      //if the candidate point is good for creating an ear with plane
-      if (count_neighbours==2)
-      {
-        double prod_of_orient=orientation(plane,temp_point)*orientation(plane,curr_point);//should be negiative if temp_point lie on the opposite side of the plane as the orientation point
-        if (prod_of_orient>0)//MAIN DIFFERENCE WITH generate_new_ears: see ">0"
-        {
-          std::cout << "neighbors of temp_point are: ";
-          for (std::set<Size>::iterator it=neighbor_map[temp_point].begin(); it!=neighbor_map[temp_point].end(); ++it)
-            std::cout << ' ' << *it;
-          std::cout << std::endl;
-
-          Size point_not_neighbor_of_plane;//the point of the plane which is not a neighbor
-          vector<Size> points_neighbor_of_plane;
-          for (Size point_of_plane: plane)
-          {
-            if (neighbor_map[temp_point].count(point_of_plane)==0)
-            {point_not_neighbor_of_plane=point_of_plane;}
-            else
-            {points_neighbor_of_plane.push_back(point_of_plane);}
-          }
-          //insert newly generated ear in maps
-          vector<Size> new_possible_ear{temp_point,point_not_neighbor_of_plane,
-              points_neighbor_of_plane[0],points_neighbor_of_plane[1]};
-          double power=calc_power(new_possible_ear,curr_point);
-          if (!std::isnan(power))
-          {//otherwise we would be proposing a coplanar tetrahedron, which would be ridiculous
-            //std::cout << "Inserting new ear; power is: " << power << std::endl;
-            ears_map.insert(std::make_pair(new_possible_ear,power));
-            rev_ears_map.insert(std::make_pair(power,new_possible_ear));
-          }
-        }
-      }
-    }
-  }
-}
+// //generates the new ears and inserts them into the ears maps
+// //TODO: fix this, possibly wrong logic!!!!!!!!!
+// inline void Model::generate_initial_ears(const vector<Size> &neighbors_of_point, const vector<Size> &plane, std::map<Size, std::set<Size>> &neighbor_map,
+//  std::multimap<vector<Size>,double> &ears_map, std::multimap<double,vector<Size>> &rev_ears_map, Size &curr_point)
+// {
+//   std::cout << "plane is: " << plane[0]<< ", " << plane[1] << ", " << plane[2] << std::endl;
+//   Size count_neighbours;
+//   for (Size temp_point: neighbors_of_point)
+//   { //we want to create new triangles, therefore a point in the plane is not useful
+//     if (!vector_contains_element(plane,temp_point))
+//     {
+//       //we are currently adding sometimes far too little new ears??
+//       count_neighbours=0;
+//       for (Size point_of_plane: plane)
+//       {
+//         if (neighbor_map[temp_point].count(point_of_plane)!=0)//if temp_point is neighbor of point_of_plane
+//         {count_neighbours++;}
+//       }
+//
+//       //if the candidate point is good for creating an ear with plane
+//       if (count_neighbours==2)
+//       {
+//         double prod_of_orient=orientation(plane,temp_point)*orientation(plane,curr_point);//should be negiative if temp_point lie on the opposite side of the plane as the orientation point
+//         if (prod_of_orient>0)//MAIN DIFFERENCE WITH generate_new_ears: see ">0"
+//         {
+//           std::cout << "neighbors of temp_point are: ";
+//           for (std::set<Size>::iterator it=neighbor_map[temp_point].begin(); it!=neighbor_map[temp_point].end(); ++it)
+//             std::cout << ' ' << *it;
+//           std::cout << std::endl;
+//
+//           Size point_not_neighbor_of_plane;//the point of the plane which is not a neighbor
+//           vector<Size> points_neighbor_of_plane;
+//           for (Size point_of_plane: plane)
+//           {
+//             if (neighbor_map[temp_point].count(point_of_plane)==0)
+//             {point_not_neighbor_of_plane=point_of_plane;}
+//             else
+//             {points_neighbor_of_plane.push_back(point_of_plane);}
+//           }
+//           //insert newly generated ear in maps
+//           vector<Size> new_possible_ear{temp_point,point_not_neighbor_of_plane,
+//               points_neighbor_of_plane[0],points_neighbor_of_plane[1]};
+//           double power=calc_power(new_possible_ear,curr_point);
+//           if (!std::isnan(power))
+//           {//otherwise we would be proposing a coplanar tetrahedron, which would be ridiculous
+//             //std::cout << "Inserting new ear; power is: " << power << std::endl;
+//             ears_map.insert(std::make_pair(new_possible_ear,power));
+//             rev_ears_map.insert(std::make_pair(power,new_possible_ear));
+//           }
+//         }
+//       }
+//     }
+//   }
+// }
 
 
 
@@ -514,6 +516,56 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
         //iterating over all lines neighbors_of_point[i],neighbors_of_point[j]
         std::multimap<vector<Size>,double> ears_map;
         std::multimap<double,vector<Size>> rev_ears_map;
+
+        std::set<vector<Size>> forbidden_planes;//contains the planes that should not be used during initial generation
+
+        //TODO: figure out why there are so many duplicates...
+        //check whether there are already tetrahedra formed and add the relevant planes to forbidden_planes
+        for (Size i=0; i<neighbors_of_point.size(); i++)
+        {
+          for (Size j=0; j<i; j++)
+          {
+            if (neighbor_map[neighbors_of_point[i]].count(neighbors_of_point[j])!=0)//if those two points are neighbors
+            {
+              std::set<Size> temp_intersection;
+              std::set_intersection(neighbor_map[neighbors_of_point[i]].begin(),neighbor_map[neighbors_of_point[i]].end(),
+                            neighbor_map[neighbors_of_point[j]].begin(),neighbor_map[neighbors_of_point[j]].end(),
+                            std::inserter(temp_intersection,temp_intersection.begin()));
+              //then for every pair in the intersection of the neighbors of both points, check if they are neighbors
+              //a better implementation is probably possible
+
+              for (Size point1: temp_intersection)
+              {
+                for (Size point2: temp_intersection)
+                {
+                  if (point1<point2 && //just such that we do not have duplicates
+                  neighbor_map[point1].count(point2)!=0)///if point1 and 2 are neighbors
+                  {
+                    std::cout << "Found initial tetrahedron" << std::endl;
+                    vector<vector<Size>> tetra_planes;
+                    vector<Size> orient_points{neighbors_of_point[i],neighbors_of_point[j],point1,point2};
+                    tetra_planes.resize(4);
+                    tetra_planes[0]=vector<Size>{neighbors_of_point[j],point1,point2};
+                    tetra_planes[1]=vector<Size>{neighbors_of_point[i],point1,point2};
+                    tetra_planes[2]=vector<Size>{neighbors_of_point[i],neighbors_of_point[j],point2};
+                    tetra_planes[3]=vector<Size>{neighbors_of_point[i],neighbors_of_point[j],point1};
+                    for (Size k=0; k<4; k++)
+                    {
+                      double ref_orient=orientation(tetra_planes[k],curr_point);
+                      double comp_orient=orientation(tetra_planes[k],orient_points[k]);
+                      if (ref_orient*comp_orient>=0)//then the last point of the tetrahedron lies on the same side as the deleted point, so this plane is unusable
+                      {
+                        forbidden_planes.insert(tetra_planes[k]);
+                        std::cout << "Forbidden plane found: " << tetra_planes[k][0] << "," << tetra_planes[k][1] << "," << tetra_planes[k][2] << std::endl;
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+
         //std::set<vector<Size>> neighbor_lines;//this set contains all valid possible lines; will be used to construct new tetrahedra
         // invariant: lines..[0]<lines..[1]
         //TODO: replace this entire thing by first calculating all planes and then try adding a single point to it (and check orientation)
@@ -548,25 +600,38 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
                   {//TODO: this is not guaranteed to be a convex hull!!!
                     //THEREFORE check if this proposed ear actually lies INSIDE the hull!!!!!
                     vector<Size> new_triangle=vector<Size>{neighbors_of_point[i],neighbors_of_point[j],point1,point2};
-                    double orient_pl1=orientation(vector<Size>{new_triangle[1],new_triangle[2],new_triangle[3]},new_triangle[0]);
-                    double orient_pl1_ref=orientation(vector<Size>{new_triangle[1],new_triangle[2],new_triangle[3]},curr_point);
-
-                    double orient_pl2=orientation(vector<Size>{new_triangle[0],new_triangle[2],new_triangle[3]},new_triangle[1]);
-                    double orient_pl2_ref=orientation(vector<Size>{new_triangle[0],new_triangle[2],new_triangle[3]},curr_point);
-                    std::cout << "Current triangle: "<< new_triangle[0] << ", " << new_triangle[1] << ", " << new_triangle[2] << ", " << new_triangle[3] << std::endl;
-                    std::cout << "orientation of triangle 1: " << orient_pl1 << std::endl;
-                    std::cout << "reference orientation of triangle 1: " << orient_pl1_ref << std::endl;
-                    std::cout << "orientation of triangle 2: " << orient_pl2 << std::endl;
-                    std::cout << "reference orientation of triangle 2: " << orient_pl2_ref << std::endl;
-                    if (((orient_pl1*orient_pl1_ref)>=0)&&((orient_pl2*orient_pl2_ref)>=0))
+                    bool has_forbidden_plane=false;
+                    for (vector<Size> forbidden_plane:forbidden_planes)
+                    {//if triangle has forbidden plane
+                      if (calculate_total_points(forbidden_plane,new_triangle)==4)
+                      {
+                        has_forbidden_plane=true;
+                        std::cout << "Forbidden plane detected" << std::endl;
+                        break;
+                      }
+                    }
+                    if (!has_forbidden_plane)//if we are still allowed to add this triangle to the ears list
                     {
-                      double power=calc_power(new_triangle,curr_point);
-                      if (!std::isnan(power))
-                      {//otherwise we would be proposing a coplanar tetrahedron, which would be ridiculous
-                        ears_map.insert(std::make_pair(new_triangle,power));
-                        rev_ears_map.insert(std::make_pair(power,new_triangle));
-                        std::cout << "Creating ear: "<< new_triangle[0] << ", " << new_triangle[1] << ", " << new_triangle[2] << ", " << new_triangle[3] << std::endl;
-                        //invariant: the first two element of the vector should correspond to the neighbors we want to add
+                      double orient_pl1=orientation(vector<Size>{new_triangle[1],new_triangle[2],new_triangle[3]},new_triangle[0]);
+                      double orient_pl1_ref=orientation(vector<Size>{new_triangle[1],new_triangle[2],new_triangle[3]},curr_point);
+
+                      double orient_pl2=orientation(vector<Size>{new_triangle[0],new_triangle[2],new_triangle[3]},new_triangle[1]);
+                      double orient_pl2_ref=orientation(vector<Size>{new_triangle[0],new_triangle[2],new_triangle[3]},curr_point);
+                      std::cout << "Current triangle: "<< new_triangle[0] << ", " << new_triangle[1] << ", " << new_triangle[2] << ", " << new_triangle[3] << std::endl;
+                      std::cout << "orientation of triangle 1: " << orient_pl1 << std::endl;
+                      std::cout << "reference orientation of triangle 1: " << orient_pl1_ref << std::endl;
+                      std::cout << "orientation of triangle 2: " << orient_pl2 << std::endl;
+                      std::cout << "reference orientation of triangle 2: " << orient_pl2_ref << std::endl;
+                      if (((orient_pl1*orient_pl1_ref)>=0)&&((orient_pl2*orient_pl2_ref)>=0))
+                      {
+                        double power=calc_power(new_triangle,curr_point);
+                        if (!std::isnan(power))
+                        {//otherwise we would be proposing a coplanar tetrahedron, which would be ridiculous
+                          ears_map.insert(std::make_pair(new_triangle,power));
+                          rev_ears_map.insert(std::make_pair(power,new_triangle));
+                          std::cout << "Creating ear: "<< new_triangle[0] << ", " << new_triangle[1] << ", " << new_triangle[2] << ", " << new_triangle[3] << std::endl;
+                          //invariant: the first two element of the vector should correspond to the neighbors we want to add
+                        }
                       }
                     }
                   }
