@@ -45,6 +45,12 @@ struct Model
     vector<vector<bool>> mask_list;//stores the list of masks
     //true means point is still in grid, false means point is deleted
 
+    //debug stuff for point deletion
+    vector<std::map<Size, std::set<Size>>> reduced_neighbors_before;//without curr_point
+    vector<Size> deleted_points;
+    vector<std::map<Size, std::set<Size>>> reduced_neighbors_after;//without curr_point obviously
+
+
 
     void read  (const Io& io);
     void write (const Io& io) const;

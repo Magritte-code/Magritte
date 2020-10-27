@@ -470,7 +470,12 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
       max_reached_coarsening_lvl++;
       curr_coarsening_lvl++;
       //repeat n times:
-      Size nb_points_to_remove=Size(perc_points_deleted*current_nb_points);
+      Size nb_points_to_remove=Size(perc_points_deleted*current_nb_points);//TODO: change to curr nb - nb boundary
+      //debug vars
+      reduced_neighbors_before.resize(nb_points_to_remove);
+      reduced_neighbors_after.resize(nb_points_to_remove);
+      deleted_points.resize(nb_points_to_remove);
+
       for (Size i=0; i<nb_points_to_remove; i++)
       {
         if (rev_density_diff_map.empty())
@@ -513,6 +518,13 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
                       std::inserter(rel_neigbors_of_neighbor,rel_neigbors_of_neighbor.begin()));
           neighbor_map.insert(std::make_pair(neighbor,rel_neigbors_of_neighbor));
         }
+
+        //debug stuff
+        reduced_neighbors_before[i]=std::map<Size, std::set<Size>>(neighbor_map);
+        deleted_points[i]=curr_point;
+        //end debug stuff
+
+
         //iterating over all lines neighbors_of_point[i],neighbors_of_point[j]
         std::multimap<vector<Size>,double> ears_map;
         std::multimap<double,vector<Size>> rev_ears_map;
@@ -617,11 +629,11 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
 
                       double orient_pl2=orientation(vector<Size>{new_triangle[0],new_triangle[2],new_triangle[3]},new_triangle[1]);
                       double orient_pl2_ref=orientation(vector<Size>{new_triangle[0],new_triangle[2],new_triangle[3]},curr_point);
-                      std::cout << "Current triangle: "<< new_triangle[0] << ", " << new_triangle[1] << ", " << new_triangle[2] << ", " << new_triangle[3] << std::endl;
-                      std::cout << "orientation of triangle 1: " << orient_pl1 << std::endl;
-                      std::cout << "reference orientation of triangle 1: " << orient_pl1_ref << std::endl;
-                      std::cout << "orientation of triangle 2: " << orient_pl2 << std::endl;
-                      std::cout << "reference orientation of triangle 2: " << orient_pl2_ref << std::endl;
+                      // std::cout << "Current triangle: "<< new_triangle[0] << ", " << new_triangle[1] << ", " << new_triangle[2] << ", " << new_triangle[3] << std::endl;
+                      // std::cout << "orientation of triangle 1: " << orient_pl1 << std::endl;
+                      // std::cout << "reference orientation of triangle 1: " << orient_pl1_ref << std::endl;
+                      // std::cout << "orientation of triangle 2: " << orient_pl2 << std::endl;
+                      // std::cout << "reference orientation of triangle 2: " << orient_pl2_ref << std::endl;
                       if (((orient_pl1*orient_pl1_ref)>=0)&&((orient_pl2*orient_pl2_ref)>=0))
                       {
                         double power=calc_power(new_triangle,curr_point);
@@ -757,6 +769,8 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
           //and finally add the new line to neighbor_lines
           //neighbor_lines.insert(new_line);
         }
+
+        reduced_neighbors_after[i]=std::map<Size, std::set<Size>>(neighbor_map);
 
 
         //recalc density diff of neighbors (due to new mesh (and ofc deletion of point))
