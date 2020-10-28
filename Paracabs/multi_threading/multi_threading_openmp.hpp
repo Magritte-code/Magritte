@@ -41,5 +41,11 @@ namespace paracabs
             }
             return n;
         }
+
+        inline void set_n_threads_avail (const size_t n)
+        {
+            omp_set_dynamic    (0);
+            omp_set_num_threads(n);
+        }
     }
 }

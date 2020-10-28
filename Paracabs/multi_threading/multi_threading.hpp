@@ -25,6 +25,8 @@
             inline size_t stop  (const size_t total) {return total;}
 
             inline unsigned int n_threads_avail () {return 1;}
+
+            inline void set_n_threads_avail (const size_t n) {return;}
         }
     }
 
