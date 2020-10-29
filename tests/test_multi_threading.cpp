@@ -62,7 +62,7 @@ TEST (multi_threading, set_n_threads_avail)
 }
 
 
-TEST (multi_threading, set_n_threads_avail)
+TEST (multi_threading, threaded_for)
 {
     multi_threading::set_n_threads_avail (4);
     EXPECT_EQ (4, multi_threading::n_threads_avail());
