@@ -43,6 +43,7 @@ before_install:
   - PYTHON_EXECUTABLE=$(which python)
   - BUILD_FLAGS="-DPYTHON_EXECUTABLE:FILEPATH=$PYTHON_EXECUTABLE -DOMP_PARALLEL=ON"
   - bash dependencies/get_dependencies.sh
+  - bash dependencies/get_cmake.sh
 
 install:
   - mkdir build
@@ -51,7 +52,7 @@ install:
   - $COMPILER_CC --version
   - COMPILER_CXX=$(which g++)
   - $COMPILER_CXX --version
-  - CC=$COMPILER_CC CXX=$COMPILER_CXX cmake $BUILD_FLAGS ..
+  - CC=$COMPILER_CC CXX=$COMPILER_CXX ../dependencies/cmake/bin/cmake $BUILD_FLAGS ..
   - make -j4
   - cd -
 
