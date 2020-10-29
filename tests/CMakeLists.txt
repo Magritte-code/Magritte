@@ -4,8 +4,18 @@ cmake_minimum_required (VERSION 3.11)
 # Set project title
 project (Tests)
 
-#set (CMAKE_BUILD_TYPE Release)
-set (CMAKE_BUILD_TYPE Debug)
+#Include pybind11
+include_directories (../dependencies/pybind11)
+include_directories (../dependencies/pybind11/include)
+
+# Add Python package separately
+find_package (PythonLibs REQUIRED)
+# Add python dirs separately
+include_directories (${PYTHON_INCLUDE_DIRS})
+
+
+set (CMAKE_BUILD_TYPE Release)
+# set (CMAKE_BUILD_TYPE Debug)
 #set (CMAKE_CUDA_FLAGS " -g -G -x cu -O5") WARNING -G cfr issue:#112
 #set (CMAKE_CUDA_FLAGS " -g")
 #set (CMAKE_CUDA_FLAGS "-O5 -use_fast_math")

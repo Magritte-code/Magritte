@@ -50,15 +50,14 @@ namespace paracabs
 {
     namespace multi_threading
     {
+        ///  Thread private data structure
+        //////////////////////////////////
         template <typename type>
         struct ThreadPrivate
         {
             std::vector<type> data;
 
-            ThreadPrivate ()
-            {
-                data.resize(n_threads_avail());
-            }
+            ThreadPrivate () {data.resize(n_threads_avail());}
 
             inline size_t size() const {return data.size();}
 

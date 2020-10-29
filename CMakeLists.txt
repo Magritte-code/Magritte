@@ -82,6 +82,10 @@ get_filename_component (CURRENT_DIRECTORY ${CMAKE_CURRENT_LIST_FILE} DIRECTORY)
 configure_file (${CURRENT_DIRECTORY}/Paracabs/configure.hpp.in
                 ${CURRENT_DIRECTORY}/Paracabs/configure.hpp   )
 
+include_directories (dependencies/pybind11)
+include_directories (dependencies/pybind11/include)
+
+
 # Create Paracabs library
 #add_library (${PROJECT_NAME} INTERFACE)
 
