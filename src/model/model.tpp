@@ -113,13 +113,13 @@ inline double Model :: calc_power(const vector<Size> &triangle, Size point){
   //TODO: change this test to something reasonable instead (eg divide the result by the average distance squared to point and change to pow(10,5))
   if (std::isnan(result)||std::abs(result)/average_dist_sq>pow(10,5))//10^5 is chosen arbitrarily
   {
-    //std::cout << "tetradron is coplanar; power = " << result << std::endl;
+    std::cout << "tetradron is coplanar; result = " << result/average_dist_sq << std::endl;
     //std::cout << "orient determinant = " << orient.determinant() << std::endl;
     return std::numeric_limits<double>::quiet_NaN();
   }
   else
   {
-    //std::cout << "reasonable tetrahedron; power = " << result << std::endl;
+    std::cout << "reasonable tetrahedron; result = " << result/average_dist_sq << std::endl;
     //std::cout << "orient determinant = " << orient.determinant() << std::endl;
     return result;
   }
@@ -475,6 +475,7 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
       reduced_neighbors_before.resize(nb_points_to_remove);
       reduced_neighbors_after.resize(nb_points_to_remove);
       deleted_points.resize(nb_points_to_remove);
+      added_lines.resize(nb_points_to_remove);
 
       for (Size i=0; i<nb_points_to_remove; i++)
       {
@@ -681,6 +682,10 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
           //neighbors_lists[curr_coarsening_lvl].add_single_neighbor(triangle[1], triangle[0]); Changed the function, now also adds the point as neighbor of the neighbor
           neighbor_map[triangle[0]].insert(triangle[1]);
           neighbor_map[triangle[1]].insert(triangle[0]);
+
+          //debug stuff
+          added_lines[i].push_back(vector<Size>{triangle[0],triangle[1]});
+
           //invariant: the first two element of the vector should correspond to the neighbors we want to add
           delete_vector_from_both_maps(ears_map,rev_ears_map,triangle);
           //Delete corresponding line, which may no longer be used

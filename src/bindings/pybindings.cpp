@@ -77,12 +77,14 @@ PYBIND11_MODULE (core, module)
         .def_readwrite ("lines",          &Model::lines)
         .def_readwrite ("thermodynamics", &Model::thermodynamics)
         .def_readwrite ("radiation",      &Model::radiation)
+        .def_readwrite ("neighbors_lists",&Model::neighbors_lists)
         .def_readonly  ("error_mean",     &Model::error_mean)
         .def_readonly  ("error_max",      &Model::error_max)
         // debug attributes
         .def_readwrite ("reduced_neighbors_after",&Model::reduced_neighbors_after)
         .def_readwrite ("reduced_neighbors_before",&Model::reduced_neighbors_before)
         .def_readwrite ("deleted_points",&Model::deleted_points)
+        .def_readwrite ("added_lines",&Model::added_lines)
         // io (void (Pet::*)(int))
         .def ("read",  (void (Model::*)(void))            &Model::read )
         .def ("write", (void (Model::*)(void) const)      &Model::write)
@@ -186,6 +188,8 @@ PYBIND11_MODULE (core, module)
         // attributes
         .def_readwrite ("n_neighbors",    &Neighbors::n_neighbors)
         .def_readwrite ("neighbors",    &Neighbors::neighbors)
+        // functions
+        .def("get_neighbors", &Neighbors::get_neighbors)
             // constructor
         .def (py::init<>());
 

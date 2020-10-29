@@ -47,6 +47,7 @@ struct Model
 
     //debug stuff for point deletion
     vector<std::map<Size, std::set<Size>>> reduced_neighbors_before;//without curr_point
+    vector<vector<vector<Size>>> added_lines;//the lines in the order in which they are added
     vector<Size> deleted_points;
     vector<std::map<Size, std::set<Size>>> reduced_neighbors_after;//without curr_point obviously
 
