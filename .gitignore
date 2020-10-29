@@ -14,3 +14,4 @@ build/*
 *__pycache__*
 *ipynb_checkpoints*
 dependencies/pybind11*
+dependencies/googletest*

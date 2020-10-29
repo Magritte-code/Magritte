@@ -86,6 +86,10 @@ include_directories (dependencies/pybind11)
 include_directories (dependencies/pybind11/include)
 
 
+# enable_testing()
+# include(GoogleTest)
+# add_subdirectory(tests)
+
 # Create Paracabs library
 #add_library (${PROJECT_NAME} INTERFACE)
 

@@ -13,6 +13,32 @@ find_package (PythonLibs REQUIRED)
 # Add python dirs separately
 include_directories (${PYTHON_INCLUDE_DIRS})
 
+# Setup GoogleTest
+enable_testing()
+include(GoogleTest)
+add_subdirectory("${PROJECT_SOURCE_DIR}/../dependencies/googletest" "dependencies/googletest")
+
+# Marcro for creating tests
+macro(package_add_test TESTNAME)
+    # create an exectuable in which the tests will be stored
+    add_executable(${TESTNAME} ${ARGN})
+    # link the Google test infrastructure, mocking library, and a default main fuction to
+    # the test executable.  Remove g_test_main if writing your own main function.
+    target_link_libraries(${TESTNAME} gtest gmock gtest_main)
+    # gtest_discover_tests replaces gtest_add_tests,
+    # see https://cmake.org/cmake/help/v3.10/module/GoogleTest.html for more options to pass to it
+    gtest_discover_tests(${TESTNAME}
+        # set a working directory so your project root so that you can find test data via paths relative to the project root
+        WORKING_DIRECTORY ${PROJECT_DIR}
+        PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${PROJECT_DIR}"
+    )
+    set_target_properties(${TESTNAME} PROPERTIES FOLDER tests)
+endmacro()
+
+
+
+
+
 
 set (CMAKE_BUILD_TYPE Release)
 # set (CMAKE_BUILD_TYPE Debug)
@@ -55,6 +81,9 @@ include_directories (../Paracabs      )
 # Set directory to put executables in
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY tests)
 
+package_add_test (test_multi_threading test_multi_threading.cpp)
+# package_add_test (test_datatypes test_datatypes.cpp)
+
 # Create executables
 #      add_executable (test_message_passing test_message_passing.cpp)
 #      add_executable (test_multi_threading test_multi_threading.cpp)
@@ -63,7 +92,7 @@ set (CMAKE_RUNTIME_OUTPUT_DIRECTORY tests)
 
 #cuda_add_executable (test_accelerator test_accelerator.cu)
 #cuda_add_executable (test_allocator   test_allocator.cu  )
-add_executable (test_datatypes   test_datatypes.cpp  )
+# add_executable (test_datatypes   test_datatypes.cpp  )
 #cuda_add_executable (test             test.cu            )
 
 if    (PARACABS_USE_MPI)

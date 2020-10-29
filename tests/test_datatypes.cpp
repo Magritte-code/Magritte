@@ -1,3 +1,5 @@
+#include "gtest/gtest.h"
+
 #include <iostream>
 using std::cout;
 using std::endl;
@@ -131,54 +133,60 @@ struct Test
 // sycl::queue paracabs::accelerator::acceleratorQueue = sycl::queue (device_selector);
 
 
-int main ()
+//int main ()
+//{
+//    cout << "Paracabs test datatypes." << endl;
+//
+//    paracabs::accelerator::list_accelerators();
+//
+//
+//    paracabs::datatypes::Matrix<double> m;
+//    m.resize(3,4);
+//
+//
+//
+//
+//    Test t(3);
+//    t.test2();
+//
+//    // sycl::float4 a = { 1.0, 2.0, 3.0, 4.0 };
+//    // sycl::float4 b = { 4.0, 3.0, 2.0, 1.0 };
+//    // sycl::float4 c = { 0.0, 0.0, 0.0, 0.0 };
+//
+//    // sycl::default_selector device_selector;Y
+//
+//    // sycl::queue queue(device_selector);
+//
+//    // std::cout << "Running on "
+//             // << queue.get_device().get_info<sycl::info::device::name>()
+//             // << "\n";
+//
+//    // { // start of scope, ensures data coped back to host
+//       // sycl::buffer<sycl::float4, 1> a_sycl(&a, sycl::range<1>(1));
+//       // sycl::buffer<sycl::float4, 1> b_sycl(&b, sycl::range<1>(1));
+//       // sycl::buffer<sycl::float4, 1> c_sycl(&c, sycl::range<1>(1));
+//
+//       // queue.submit([&] (sycl::handler& cgh) {
+//           // auto a_acc = a_sycl.get_access<sycl::access::mode::read>(cgh);
+//           // auto b_acc = b_sycl.get_access<sycl::access::mode::read>(cgh);
+//           // auto c_acc = c_sycl.get_access<sycl::access::mode::discard_write>(cgh);
+//
+//           // cgh.single_task<class vector_addition>([=] () {
+//               // c_acc[0] = a_acc[0] + b_acc[0];
+//           // });
+//       // });
+//
+//    // } // end of scope, ensures data copied back to host
+//
+//
+//    cout << "Done." << endl;
+//
+//
+//    return (0);
+//}
+
+int main (int argc, char **argv)
 {
-    cout << "Paracabs test datatypes." << endl;
-
-    paracabs::accelerator::list_accelerators();
-
-
-    paracabs::datatypes::Matrix<double> m;
-    m.resize(3,4);
-
-
-
-
-    Test t(3);
-    t.test2();
-
-    //sycl::float4 a = { 1.0, 2.0, 3.0, 4.0 };
-    //sycl::float4 b = { 4.0, 3.0, 2.0, 1.0 };
-    //sycl::float4 c = { 0.0, 0.0, 0.0, 0.0 };
-
-    //sycl::default_selector device_selector;Y
-
-    //sycl::queue queue(device_selector);
-
-    //std::cout << "Running on "
-    //          << queue.get_device().get_info<sycl::info::device::name>()
-    //          << "\n";
-
-    //{ // start of scope, ensures data coped back to host
-    //    sycl::buffer<sycl::float4, 1> a_sycl(&a, sycl::range<1>(1));
-    //    sycl::buffer<sycl::float4, 1> b_sycl(&b, sycl::range<1>(1));
-    //    sycl::buffer<sycl::float4, 1> c_sycl(&c, sycl::range<1>(1));
-
-    //    queue.submit([&] (sycl::handler& cgh) {
-    //        auto a_acc = a_sycl.get_access<sycl::access::mode::read>(cgh);
-    //        auto b_acc = b_sycl.get_access<sycl::access::mode::read>(cgh);
-    //        auto c_acc = c_sycl.get_access<sycl::access::mode::discard_write>(cgh);
-
-    //        cgh.single_task<class vector_addition>([=] () {
-    //            c_acc[0] = a_acc[0] + b_acc[0];
-    //        });
-    //    });
-
-    //} // end of scope, ensures data copied back to host
-
-
-    cout << "Done." << endl;
-
-
-    return (0);
+  ::testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
 }

@@ -21,8 +21,8 @@ rm v2.2.4.tar.gz
 # Get googletest
 wget https://github.com/google/googletest/archive/release-1.10.0.tar.gz
 # Extract whole directory
-tar -zxvf v2.2.4.tar.gz
+tar -zxvf release-1.10.0.tar.gz
 # Rename the folder
-mv pybind11-2.2.4 pybind11
+mv googletest-release-1.10.0 googletest
 # Remove tar ball
-rm v2.2.4.tar.gz
+rm release-1.10.0.tar.gz
