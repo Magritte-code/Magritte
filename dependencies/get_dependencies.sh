@@ -9,6 +9,7 @@ cd $DIR
 rm -rf Eigen
 rm -rf pybind11
 rm -rf Paracabs
+rm -rf googletest
 
 # Get latest Eigen (there is no stable release yet that works with latest CUDA)
 wget https://github.com/eigenteam/eigen-git-mirror/archive/master.zip
@@ -38,3 +39,12 @@ unzip master.zip
 mv Paracabs-master Paracabs
 # Remove zip file
 rm master.zip
+
+# Get googletest
+wget https://github.com/google/googletest/archive/release-1.10.0.tar.gz
+# Extract whole directory
+tar -zxvf release-1.10.0.tar.gz
+# Rename the folder
+mv googletest-release-1.10.0 googletest
+# Remove tar ball
+rm release-1.10.0.tar.gz
