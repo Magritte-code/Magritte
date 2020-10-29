@@ -57,5 +57,6 @@ install:
   - cd -
 
 script:
-  - cd bin/tests
-  - echo "Kind of done..."
+  - cd tests
+  - bash run_all_tests.sh
+  - echo "Done."
