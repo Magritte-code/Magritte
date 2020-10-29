@@ -26,6 +26,10 @@ PYBIND11_MODULE (core, module)
     // Module docstring
     module.doc() = "Core module of Magritte: a modern software library for 3D radiative transfer.";
 
+
+    module.def(    "n_threads_avail", &paracabs::multi_threading::    n_threads_avail);
+    module.def("set_n_threads_avail", &paracabs::multi_threading::set_n_threads_avail);
+
     // Define vector types
     py::bind_vector<vector<LineProducingSpecies>> (module, "vLineProducingSpecies");
     py::bind_vector<vector<CollisionPartner>>     (module, "vCollisionPartner");
@@ -64,7 +68,6 @@ PYBIND11_MODULE (core, module)
         // attributes
         // functions
         .def ("trace", &Solver::trace)
-        .def ("solve", &Solver::solve)
         // constructor
         .def (py::init<const Size&, const Size&, const Size&>());
 
@@ -75,6 +78,11 @@ PYBIND11_MODULE (core, module)
         .def_readwrite ("geometry",       &Model::geometry)
         .def_readwrite ("chemistry",      &Model::chemistry)
         .def_readwrite ("lines",          &Model::lines)
+        .def_readwrite ("a",          &Model::a)
+        .def_readwrite ("b",          &Model::b)
+        .def_readwrite ("c",          &Model::c)
+        .def ("set",                  &Model::set)
+        .def ("add",                  &Model::add)
         .def_readwrite ("thermodynamics", &Model::thermodynamics)
         .def_readwrite ("radiation",      &Model::radiation)
         .def_readonly  ("error_mean",     &Model::error_mean)
@@ -88,7 +96,7 @@ PYBIND11_MODULE (core, module)
         .def ("compute_spectral_discretisation", (int (Model::*)(void            )) &Model::compute_spectral_discretisation)
         .def ("compute_spectral_discretisation", (int (Model::*)(const Real width)) &Model::compute_spectral_discretisation)
         .def ("compute_LTE_level_populations",                                      &Model::compute_LTE_level_populations)
-        .def ("compute_radiation_field",                                            &Model::compute_radiation_field)
+        // .def ("compute_radiation_field",                                            &Model::compute_radiation_field)
         .def ("compute_radiation_field_2nd_order_Feautrier",                        &Model::compute_radiation_field_2nd_order_Feautrier)
         .def ("compute_radiation_field_0th_short_characteristics",                  &Model::compute_radiation_field_0th_short_characteristics)
         .def ("compute_Jeff",                                                       &Model::compute_Jeff)

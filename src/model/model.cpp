@@ -360,23 +360,14 @@ int Model :: compute_level_populations_from_stateq ()
 ///  @return number of iteration done
 ///////////////////////////////////////////////////////////////////////////////
 int Model :: compute_level_populations (
-        // const Io   &io,
-        const bool  use_Ng_acceleration,
-        const long  max_niterations     )
+    const bool use_Ng_acceleration,
+    const long max_niterations     )
 {
     // Check spectral discretisation setting
     if (spectralDiscretisation != SD_Lines)
     {
         throw std::runtime_error ("Spectral discretisation was not set for Lines!");
     }
-
-    // Write out initial level populations
-    //for (int l = 0; l < parameters.nlspecs(); l++)
-    //{
-    //    const string tag = "_rank_" + str_MPI_comm_rank() + "_iteration_0";
-
-    //    lines.lineProducingSpecies[l].write_populations (io, l, tag);
-    //}
 
     // Initialize the number of iterations
     int iteration        = 0;
@@ -413,7 +404,7 @@ int Model :: compute_level_populations (
             cout << "Computing the radiation field..." << endl;
 
             compute_radiation_field_2nd_order_Feautrier ();
-            compute_Jeff            ();
+            compute_Jeff                                ();
 
             lines.iteration_using_statistical_equilibrium (
                 chemistry.species.abundance,
@@ -438,10 +429,6 @@ int Model :: compute_level_populations (
 
             // logger.write ("Already ", 100 * (1.0 - fnc), " % converged!");
             cout << "Already " << 100 * (1.0 - fnc) << " % converged!" << endl;
-
-            // const string tag = "_rank_" + str_MPI_comm_rank() + "_iteration_" + to_string (iteration);
-
-            // lines.lineProducingSpecies[l].write_populations (io, l, tag);
         }
     } // end of while loop of iterations
 

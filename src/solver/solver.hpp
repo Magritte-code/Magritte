@@ -49,7 +49,6 @@ class Solver
         Solver (const Size l, const Size w, const Size n_o_d);
 
         void trace (Model& model);
-        void solve (Model& model);
 
     // private:
         const Size length;
