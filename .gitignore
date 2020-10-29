@@ -51,6 +51,7 @@ configure.hpp
 *dependencies/pybind11*
 *dependencies/scorep*
 *dependencies/Paracabs*
+*dependencies/googletest*
 
 # perf reports
 ##############
