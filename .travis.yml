@@ -13,7 +13,7 @@ addons:
       - python3-numpy
       - python3-pytest
       - libgomp1
-      - g++-6
+      - g++-9
 
 matrix:
   include:
@@ -22,7 +22,10 @@ matrix:
       # env: CC=gcc-6 CXX=g++-6
     - os: linux
       python: 3
-      env: CC=gcc-6 CXX=g++-6
+      env: CC=gcc-9 CXX=g++-9
+    - os: linux
+      python: 3
+      env: CC=clang CXX=clang
 
 before_install:
   #  - |
@@ -44,7 +47,11 @@ before_install:
 install:
   - mkdir build
   - cd build
-  - cmake $BUILD_FLAGS ..
+  - COMPILER_CC=$(which gcc)
+  - $COMPILER_CC --version
+  - COMPILER_CXX=$(which g++)
+  - $COMPILER_CXX --version
+  - CC=$COMPILER_CC CXX=$COMPILER_CXX cmake $BUILD_FLAGS ..
   - make -j4
   - cd -
 
