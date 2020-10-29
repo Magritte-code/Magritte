@@ -14,7 +14,7 @@ addons:
       - python3-pytest
       - libgomp1
       - clang
-      - g++-6
+      - g++-9
 
 matrix:
   include:
@@ -26,7 +26,10 @@ matrix:
       # env: CC=gcc-6 CXX=g++-6
     - os: linux
       python: 3
-      env: CC=gcc-6 CXX=g++-6
+      env: CC=clang CXX=clang
+    - os: linux
+      python: 3
+      env: CC=gcc-9 CXX=g++-9
 
 before_install:
   # - |

@@ -9,46 +9,6 @@ using std::vector;
 using namespace paracabs;
 
 
-//int main ()
-//{
-//    cout << "Paracabs test multi threading." << endl;
-//
-//    const unsigned int n_threads       = multi_threading::n_threads();
-//    const unsigned int thread_id       = multi_threading::thread_id();
-//    const unsigned int n_threads_avail = multi_threading::n_threads_avail();
-//
-//    cout << "n_threads        = " << n_threads       << endl;
-//    cout << "thread_id        = " << thread_id       << endl;
-//    cout << "n_threads_avail  = " << n_threads_avail << endl;
-//
-//    const size_t total = 10;
-//
-//    const size_t start = multi_threading::start(total);
-//    const size_t stop  = multi_threading::stop (total);
-//
-//    cout << "total = " << total << endl;
-//    cout << "start = " << start << endl;
-//    cout << "stop  = " << stop  << endl;
-//
-//    vector <double> vec (total, 1.0);
-//
-//    threaded_for (i, total,{
-//        vec[i] += 1.0;
-//    })
-//
-//    PRAGMA_PARALLEL
-//    {
-//        cout << "thread_id = " << multi_threading::thread_id () << ", "
-//             <<     "start = " << multi_threading::start(total) << ", "
-//             <<      "stop = " << multi_threading::stop (total) << endl;
-//    }
-//
-//    cout << "Done." << endl;
-//
-//    return (0);
-//}
-
-
 TEST (multi_threading, set_n_threads_avail)
 {
     multi_threading::set_n_threads_avail (1);
@@ -62,10 +22,79 @@ TEST (multi_threading, set_n_threads_avail)
 }
 
 
+TEST (multi_threading, start_stop)
+{
+    const size_t n_threads =    4;
+    const size_t n         = 1234;
+
+    multi_threading::set_n_threads_avail (n_threads);
+
+    vector<size_t> starts (n_threads);
+    vector<size_t> stops  (n_threads);
+
+    PRAGMA_PARALLEL
+    {
+        starts[multi_threading::thread_id()] = multi_threading::start(n);
+        stops [multi_threading::thread_id()] = multi_threading::stop (n);
+    }
+
+    EXPECT_EQ (0, starts[          0]);
+    EXPECT_EQ (n, stops [n_threads-1]);
+
+    for (size_t t = 1; t < n_threads; t++)
+    {
+        EXPECT_EQ (starts[t], stops[t-1]);
+    }
+}
+
+
 TEST (multi_threading, threaded_for)
 {
-    multi_threading::set_n_threads_avail (4);
-    EXPECT_EQ (4, multi_threading::n_threads_avail());
+    const size_t n_threads =    4;
+    const size_t n         = 1000;
+
+    vector<double> a (n, 0.5);
+    vector<double> b (n, 1.5);
+    vector<double> c (n, 0.0);
+
+    multi_threading::set_n_threads_avail (n_threads);
+
+    threaded_for (i, n,
+    {
+        c[i] = a[i] + b[i];
+    })
+
+    double total = 0.0;
+    for (const double x : c) {total += x;}
+
+    EXPECT_EQ (total, 2.0*n);
+}
+
+
+TEST (multi_threading, ThreadPrivate)
+{
+    const size_t n_threads =    4;
+    const size_t n         = 1000;
+
+    multi_threading::ThreadPrivate<vector<double>> a = vector<double> (n);
+
+    multi_threading::set_n_threads_avail (n_threads);
+
+    PRAGMA_PARALLEL
+    {
+        for (size_t i = 0; i < n; i++)
+        {
+            a()[i] = multi_threading::thread_id();
+        }
+    }
+
+    for (size_t t = 0; t < n_threads; t++)
+    {
+        for (size_t i = 0; i < n; i++)
+        {
+            EXPECT_EQ (t, a(t)[i]);
+        }
+    }
 }
 
 

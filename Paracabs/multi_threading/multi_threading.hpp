@@ -50,6 +50,8 @@ namespace paracabs
 {
     namespace multi_threading
     {
+        /// Thread private data structure
+        /////////////////////////////////
         template <typename type>
         struct ThreadPrivate
         {
@@ -57,14 +59,25 @@ namespace paracabs
 
             ThreadPrivate ()
             {
-                data.resize(n_threads_avail());
+                data.resize (n_threads_avail());
             }
+
+            ThreadPrivate (const type& obj)
+            {
+                for (size_t t = 0; t < n_threads_avail(); t++)
+                {
+                    data.push_back (obj);
+                }
+            }
+
 
             inline size_t size() const {return data.size();}
 
-            inline type  operator() (              ) const {return data[thread_id()];}
-            inline type &operator() (              )       {return data[thread_id()];}
+            // Accessors to thread private copies
+            inline type  operator() () const {return data[thread_id()];}
+            inline type &operator() ()       {return data[thread_id()];}
 
+            // Accessors to copy i
             inline type  operator() (const size_t i) const {return data[i];}
             inline type &operator() (const size_t i)       {return data[i];}
         };
