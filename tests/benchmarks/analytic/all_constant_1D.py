@@ -2,13 +2,15 @@ import os
 import sys
 
 curdir = os.path.dirname(os.path.realpath(__file__))
+datdir = f'{curdir}/../../data/'
+moddir = f'{curdir}/../../models/'
+resdir = f'{curdir}/../../results/'
 sys.path.append(f'{curdir}/../../../')
 
 
-from tools import LTEpop, profile, lineEmissivity, lineOpacity, lineSource, I_CMB
-
-
 import numpy             as np
+import matplotlib.pyplot as plt
+import magritte.tools    as tools
 import magritte.setup    as setup
 import magritte.core     as magritte
 
@@ -27,75 +29,125 @@ turb = 0.0E+00                 # [m/s]
 dx   = 1.0E+04                 # [m]
 dv   = 0.0E+00 / magritte.CC   # [fraction of speed of light]
 
-modelFile = f'{curdir}/all_constant_1D.hdf5'
-lamdaFile = f'{curdir}/../../data/test.txt'
 
-model = magritte.Model ()
-model.parameters.set_model_name(modelFile)
-model.parameters.set_dimension (dimension)
-model.parameters.set_npoints   (npoints)
-model.parameters.set_nrays     (nrays)
-model.parameters.set_nspecs    (nspecs)
-model.parameters.set_nlspecs   (nlspecs)
-model.parameters.set_nquads    (nquads)
+def create_model ():
+    """
+    Create a model file for the all_constant benchmark in 1D.
+    """
 
-model.geometry.points.position.set([[i*dx, 0, 0] for i in range(npoints)])
-model.geometry.points.velocity.set([[i*dv, 0, 0] for i in range(npoints)])
+    modelName = f'all_constant_1D'
+    modelFile = f'{moddir}{modelName}.hdf5'
+    lamdaFile = f'{datdir}test.txt'
 
-model.chemistry.species.abundance = [[     0.0,   abun,  dens,  0.0,      1.0] for _ in range(npoints)]
-model.chemistry.species.symbol    =  ['dummy0', 'test',  'H2', 'e-', 'dummy1']
+    model = magritte.Model ()
+    model.parameters.set_model_name(modelFile)
+    model.parameters.set_dimension (dimension)
+    model.parameters.set_npoints   (npoints)
+    model.parameters.set_nrays     (nrays)
+    model.parameters.set_nspecs    (nspecs)
+    model.parameters.set_nlspecs   (nlspecs)
+    model.parameters.set_nquads    (nquads)
 
-model.thermodynamics.temperature.gas  .set( temp                 * np.ones(npoints))
-model.thermodynamics.turbulence.vturb2.set((turb/magritte.CC)**2 * np.ones(npoints))
+    model.geometry.points.position.set([[i*dx, 0, 0] for i in range(npoints)])
+    model.geometry.points.velocity.set([[i*dv, 0, 0] for i in range(npoints)])
 
-model = setup.set_Delaunay_neighbor_lists (model)
-model = setup.set_Delaunay_boundary       (model)
-model = setup.set_boundary_condition_CMB  (model)
-model = setup.set_uniform_rays            (model)
-model = setup.set_linedata_from_LAMDA_file(model, lamdaFile)
-model = setup.set_quadrature              (model)
+    model.chemistry.species.abundance = [[     0.0,   abun,  dens,  0.0,      1.0] for _ in range(npoints)]
+    model.chemistry.species.symbol    =  ['dummy0', 'test',  'H2', 'e-', 'dummy1']
 
-model.write()
-model.read ()
+    model.thermodynamics.temperature.gas  .set( temp                 * np.ones(npoints))
+    model.thermodynamics.turbulence.vturb2.set((turb/magritte.CC)**2 * np.ones(npoints))
 
-model.compute_spectral_discretisation ()
-model.compute_inverse_line_widths     ()
-model.compute_LTE_level_populations   ()
-model.compute_radiation_field         ()
+    model = setup.set_Delaunay_neighbor_lists (model)
+    model = setup.set_Delaunay_boundary       (model)
+    model = setup.set_boundary_condition_CMB  (model)
+    model = setup.set_uniform_rays            (model)
+    model = setup.set_linedata_from_LAMDA_file(model, lamdaFile)
+    model = setup.set_quadrature              (model)
 
+    model.write()
 
-x  = np.array(model.geometry.points.position)[:,0]
-nu = np.array(model.radiation.frequencies.nu)
-I  = np.array(model.radiation.I)
+    return
 
 
-ld = model.lines.lineProducingSpecies[0].linedata
+def run_model ():
 
-k = 0
+    modelName = f'all_constant_1D'
+    modelFile = f'{moddir}{modelName}.hdf5'
+    timestamp = tools.timestamp()
 
-frq = ld.frequency[k]
-pop = LTEpop         (ld, temp) * abun
-phi = profile        (ld, k, temp, (turb/magritte.CC)**2, frq)
-eta = lineEmissivity (ld, pop)[k] * phi
-chi = lineOpacity    (ld, pop)[k] * phi
-src = lineSource     (ld, pop)[k]
-bdy = I_CMB          (frq)
+    timer1 = tools.Timer('reading model')
+    timer1.start()
+    model = magritte.Model (modelFile)
+    timer1.stop()
+
+    timer2 = tools.Timer('setting model')
+    timer2.start()
+    model.compute_spectral_discretisation ()
+    model.compute_inverse_line_widths     ()
+    model.compute_LTE_level_populations   ()
+    timer2.stop()
+
+    timer3 = tools.Timer('shortchar 0  ')
+    timer3.start()
+    model.compute_radiation_field_0th_short_characteristics ()
+    timer3.stop()
+    u_0s = np.array(model.radiation.u)
+
+    timer4 = tools.Timer('feautrier 2  ')
+    timer4.start()
+    model.compute_radiation_field_2nd_order_Feautrier ()
+    timer4.stop()
+    u_2f = np.array(model.radiation.u)
+
+    x  = np.array(model.geometry.points.position)[:,0]
+    nu = np.array(model.radiation.frequencies.nu)
+
+    ld = model.lines.lineProducingSpecies[0].linedata
+
+    k = 0
+
+    frq = ld.frequency[k]
+    pop = tools.LTEpop         (ld, temp) * abun
+    phi = tools.profile        (ld, k, temp, (turb/magritte.CC)**2, frq)
+    eta = tools.lineEmissivity (ld, pop)[k] * phi
+    chi = tools.lineOpacity    (ld, pop)[k] * phi
+    src = tools.lineSource     (ld, pop)[k]
+    bdy = tools.I_CMB          (frq)
+
+    def I_0 (x):
+        return src + (bdy-src)*np.exp(-chi*x)
+
+    def I_1 (x):
+        return src + (bdy-src)*np.exp(-chi*(x[-1]-x))
+
+    def u_ (x):
+        return 0.5 * (I_0(x) + I_1(x))
+
+    error_u_0s = tools.relative_error (u_(x), u_0s[0,:,0])
+    error_u_2f = tools.relative_error (u_(x), u_2f[0,:,0])
+
+    with open(f'{resdir}{modelName}-{timestamp}.log' ,'w') as log:
+        log.write(f'--- Benchmark name ----------------------------\n')
+        log.write(f'{modelName                                    }\n')
+        log.write(f'--- Parameters --------------------------------\n')
+        log.write(f'dimension = {model.parameters.dimension()     }\n')
+        log.write(f'npoints   = {model.parameters.npoints  ()     }\n')
+        log.write(f'nrays     = {model.parameters.nrays    ()     }\n')
+        log.write(f'nquads    = {model.parameters.nquads   ()     }\n')
+        log.write(f'--- Accuracy ----------------------------------\n')
+        log.write(f'max error in shortchar 0 = {np.max(error_u_0s)}\n')
+        log.write(f'max error in feautrier 2 = {np.max(error_u_2f)}\n')
+        log.write(f'--- Timers ------------------------------------\n')
+        log.write(f'{timer1.print()                               }\n')
+        log.write(f'{timer2.print()                               }\n')
+        log.write(f'{timer3.print()                               }\n')
+        log.write(f'{timer4.print()                               }\n')
+        log.write(f'-----------------------------------------------\n')
+
+    return
 
 
-def I_0 (x):
-    return src + (bdy-src)*np.exp(-chi*x)
+if __name__ == '__main__':
 
-
-def I_1 (x):
-    return src + (bdy-src)*np.exp(-chi*(x[-1]-x))
-
-
-def relative_error (a,b):
-    return 2.0*(a-b)/(a+b)
-
-
-error_I_0 = relative_error (I_0(x), I[0,:,0])
-error_I_1 = relative_error (I_1(x), I[1,:,0])
-
-print('max error in I(0) =', np.max(error_I_0))
-print('max error in I(1) =', np.max(error_I_1))
+    create_model ()
+    run_model    ()

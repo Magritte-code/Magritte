@@ -12,8 +12,6 @@ void Points :: read (const Io& io)
     parameters.set_npoints (io.get_length (prefix+"position"));
     parameters.set_npoints (io.get_length (prefix+"velocity"));
 
-    cout << "npoints = " << parameters.npoints() << endl;
-
     position.resize (parameters.npoints());
     velocity.resize (parameters.npoints());
 
@@ -36,38 +34,20 @@ void Points :: read (const Io& io)
 
     parameters.set_totnnbs (io.get_length (prefix+"neighbors"));
 
-    cout << "tot_n_neighbors = " << parameters.totnnbs() << endl;
-
     cum_n_neighbors.resize (parameters.npoints());
         n_neighbors.resize (parameters.npoints());
           neighbors.resize (parameters.totnnbs());
 
-    cout << "memory_allocated = " << endl;
-
-    cout << "lists made = " << endl;
-
-    cout << n_neighbors.vec.data() << endl;
-
     io.read_list (prefix+"n_neighbors", n_neighbors);
     io.read_list (prefix+  "neighbors",   neighbors);
 
-    cout << "lists read = " << endl;
 
     cum_n_neighbors[0] = 0;
-
-    cout << "first put" << endl;
-
-    cout << n_neighbors.vec.data() << endl;
-    cout << &n_neighbors[0]        << endl;
-    cout << n_neighbors.dat       << endl;
-    cout << n_neighbors.ptr       << endl;
 
     for (Size p = 1; p < parameters.npoints(); p++)
     {
         cum_n_neighbors[p] = cum_n_neighbors[p-1] + n_neighbors[p-1];
     }
-
-    cout << "points put" << endl;
 
     position.copy_vec_to_ptr ();
     velocity.copy_vec_to_ptr ();
@@ -76,7 +56,6 @@ void Points :: read (const Io& io)
         n_neighbors.copy_vec_to_ptr ();
           neighbors.copy_vec_to_ptr ();
 
-    cout << "neighbors put" << endl;
 
     //nbs.resize (parameters.npoints()*nnbs);
 
@@ -112,9 +91,6 @@ void Points :: write (const Io& io) const
         velocity_buffer[p] = {velocity[p].x(),
                               velocity[p].y(),
                               velocity[p].z() };
-
-                              position[p].print();
-                              velocity[p].print();
     }
 
     io.write_array (prefix+"position", position_buffer);

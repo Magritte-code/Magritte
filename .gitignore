@@ -57,3 +57,8 @@ configure.hpp
 # perf reports
 ##############
 perf.data*
+
+# test models and results
+#########################
+tests/models/*
+tests/results/*

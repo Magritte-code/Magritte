@@ -49,7 +49,7 @@ position = xyz[1:]
 
 rs = np.linalg.norm(position, axis=1)
 
-modelFile = f'{curdir}/vanZadelhoff_1a_3D.hdf5'
+modelFile = f'{curdir}/../../vanZadelhoff_1a_3D.hdf5'
 lamdaFile = f'{curdir}/../../data/test.txt'
 
 
