@@ -18,6 +18,8 @@ class Solver
         pc::multi_threading::ThreadPrivate<Vector<Real>> chi_c_;
         pc::multi_threading::ThreadPrivate<Vector<Real>> chi_n_;
 
+        pc::multi_threading::ThreadPrivate<Vector<Real>> inverse_chi_;
+
         pc::multi_threading::ThreadPrivate<Vector<Real>> tau_;
 
         pc::multi_threading::ThreadPrivate<Size> first_;
@@ -109,6 +111,11 @@ class Solver
             const Size   o,
             const Size   rr,
             const Size   ar,
+            const Size   f  );
+
+        accel inline void update_Lambda (
+                  Model &model,
+            const Size   rr,
             const Size   f  );
 };
 

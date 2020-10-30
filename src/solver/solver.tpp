@@ -121,6 +121,11 @@ inline void Solver :: solve_2nd_order_Feautrier (Model& model)
             for (Size f = 0; f < model.parameters.nfreqs(); f++)
             {
                 solve_2nd_order_Feautrier (model, o, rr, ar, f);
+
+                model.radiation.u(rr,o,f)  = Su_()[centre];
+                model.radiation.J(   o,f) += Su_()[centre] * two * model.geometry.rays.weight[rr];
+
+                // update_Lambda (model, rr, f);
             }
         })
 
@@ -452,6 +457,186 @@ accel inline void Solver :: solve_0th_order_short_charateristics (
 }
 
 
+//inline void Solver :: add_L_diag (
+//    const Thermodynamics &thermodyn,
+//    const Real            invr_mass,
+//    const Real            freq_line,
+//    const Real            constante,
+//    const Size            rp,
+//    const Size            f,
+//    const Size            k,
+//          Lambda         &lambda       ) const
+//{
+//    Vector<double>& dZ     = dZ_    ();
+//    Vector<Size  >& nr     = nr_    ();
+//    Vector<double>& shift  = shift_ ();
+//    Vector<Real  >& L_diag = L_diag_();
+//
+//    const Size In = I(n1[rp], V(rp, f));
+//    const Size Dn = D(rp    , n1[rp] );
+//
+//    const Real fsc = frequencies[V(nrs[Dn], f)] * shift[centre];
+//    const Real phi = thermodyn.profile (invr_mass, nrs[Dn], freq_line, fsc);
+//
+//    const Real L = constante * fsc * phi * L_diag[centre] * inverse_chi[centre];
+//
+////    if(isnan(L)) {printf("!!! L d is nan %le, %le\n", L_diag[In], chi[In]);}
+//
+////    printf("eta / eta = %le", HH_OVER_FOUR_PI * constante * fsc * phi / eta[In]);
+//
+////    const Real L = eta[In] * L_diag[In] / (HH_OVER_FOUR_PI * chi[In]);
+//
+////    printf("L = %le\n", L);
+//
+//
+//    lambda.add_element(nr[centre], k, nr[centre], L);
+//}
+//
+//
+//inline void Solver :: add_L_lower (
+//    const Thermodynamics &thermodyn,
+//    const Real            invr_mass,
+//    const Real            freq_line,
+//    const Real            constante,
+//    const Size            rp,
+//    const Size            f,
+//    const Size            k,
+//    const Size            m,
+//          Lambda         &lambda        ) //const
+//{
+//    const Size In = I(n1[rp]-m-1, V(rp, f));
+//    const Size Dn = D(rp      , n1[rp]-m-1);
+//
+//    const Real fsc = frequencies[V(nrs[Dn], f)] * shifts[Dn];
+//    const Real phi = thermodyn.profile (invr_mass, nrs[Dn], freq_line, fsc);
+//
+//    const Real L = constante * fsc * phi * L_lower[M(m,In)] / chi[In];
+//
+////    if(isnan(L))
+////    {
+////        for (Size w = 0; w < width; w++) {check_L(w);}
+////
+////        printf("!!! L l is nan, M(%ld, %ld) = %ld, n_off_diag = %ld, last = %ld, n_tot = %ld\n", m, In, M(m,In), n_off_diag, last, n_tot[rp]);
+////    }
+//
+////    printf("eta / eta = %le", HH_OVER_FOUR_PI * constante * fsc * phi / eta[In]);
+//
+////    const Real L = eta[In] * L_lower[M(m,In)] / (HH_OVER_FOUR_PI * chi[In]);
+//
+//    lambda.add_element(origins[rp], k, nrs[Dn], L);
+//    lambda.add_element(nr[centre], k, nr[centre-m-1], L);
+//}
+//
+//
+//inline void Solver :: add_L_upper (
+//    const Thermodynamics &thermodyn,
+//    const Real            invr_mass,
+//    const Real            freq_line,
+//    const Real            constante,
+//    const Size            rp,
+//    const Size            f,
+//    const Size            k,
+//    const Size            m,
+//          Lambda         &lambda        ) //const
+//{
+//    const Size In = I(n1[rp]+m+1, V(rp, f));
+//    const Size Dn = D(rp      , n1[rp]+m+1);
+//
+//    const Real fsc = frequencies[V(nrs[Dn], f)] * shifts[Dn];
+//    const Real phi = thermodyn.profile (invr_mass, nrs[Dn], freq_line, fsc);
+//
+//    const Real L = constante * fsc * phi * L_upper[M(m,In)] / chi[In];
+//
+////    if(isnan(L)) {
+////
+////        for (Size w = 0; w < width; w++) {check_L(w);}
+////
+////        printf("!!! L u is nan, M(%ld, %ld) = %ld, n_off_diag = %ld, last = %ld, n_tot = %ld\n", m, In, M(m,In), n_off_diag, last, n_tot[rp]);
+////    }
+//
+////    printf("eta / eta = %le", HH_OVER_FOUR_PI * constante * fsc * phi / eta[In]);
+//
+////    const Real L = eta[In] * L_upper[M(m,In)] / (HH_OVER_FOUR_PI * chi[In]);
+//
+//    lambda.add_element(origins[rp], k, nrs[Dn], L);
+//}
+
+
+accel inline void Solver :: update_Lambda (Model &model, const Size rr, const Size f)
+{
+    const Frequencies    &freqs     = model.radiation.frequencies;
+    const Thermodynamics &thermodyn = model.thermodynamics;
+
+    if (freqs.appears_in_line_integral[f])
+    {
+        const Size first = first_();
+        const Size last  = last_ ();
+        const Size n_tot = n_tot_();
+
+        Vector<Size  >& nr          = nr_         ();
+        Vector<double>& shift       = shift_      ();
+        Vector<Real  >& L_diag      = L_diag_     ();
+        Matrix<Real  >& L_upper     = L_upper_    ();
+        Matrix<Real  >& L_lower     = L_lower_    ();
+        Vector<Real  >& inverse_chi = inverse_chi_();
+
+        const Real w_ang = two * model.geometry.rays.weight[rr];
+
+        const Size l = freqs.corresponding_l_for_spec[f];   // index of species
+        const Size k = freqs.corresponding_k_for_tran[f];   // index of transition
+        const Size z = freqs.corresponding_z_for_line[f];   // index of quadrature point
+
+        LineProducingSpecies &lspec = model.lines.lineProducingSpecies[l];
+
+        const Real freq_line = lspec.linedata.frequency[k];
+        const Real invr_mass = lspec.linedata.inverse_mass;
+        const Real constante = lspec.linedata.A[k] * lspec.quadrature.weights[z] * w_ang;
+
+//           printf("---- Adding diag\n");
+        // add_L_diag (thermodyn, invr_mass, freq_line, constante, rp, f, k, lspec.lambda);
+        Real frq, phi, L;
+
+        frq = freqs.nu(nr[centre], f) * shift[centre];
+        phi = thermodyn.profile(invr_mass, nr[centre], freq_line, frq);
+        L   = constante * frq * phi * L_diag[centre] * inverse_chi[centre];
+
+        lspec.lambda.add_element(nr[centre], k, nr[centre], L);
+
+        for (long m = 0; (m < n_off_diag) && (m+1 < n_tot); m++)
+        {
+//               printf("??? n1(%ld) >= m+1(%ld)\n", n1[rp], m+1);
+            if (centre >= first+m+1)   // centre-m-1 >= first
+            {
+//                   printf("Adding lower: m = %ld\n", m);
+                // add_L_lower (thermodyn, invr_mass, freq_line, constante, rp, f, k, m, lspec.lambda);
+
+                const long n = centre-m-1;
+
+                frq = freqs.nu(nr[n], f) * shift[n];
+                phi = thermodyn.profile (invr_mass, nr[n], freq_line, frq);
+                L   = constante * frq * phi * L_lower(m,n) * inverse_chi[n];
+
+                lspec.lambda.add_element(nr[centre], k, nr[n], L);
+            }
+
+//               printf("??? n1+m+1(%ld) < n_tot(%ld)\n", n1[rp]+m+1, n_tot[rp]);
+            if (centre+m+1 <= last)   // centre+m+1 < last
+            {
+//                   printf("Adding upper: m = %ld\n", m);
+                // add_L_upper (thermodyn, invr_mass, freq_line, constante, rp, f, k, m, lspec.lambda);
+                const long n = centre+m+1;
+
+                frq = freqs.nu(nr[n], f) * shift[n];
+                phi = thermodyn.profile (invr_mass, nr[n], freq_line, frq);
+                L   = constante * frq * phi * L_upper(m,n) * inverse_chi[n];
+
+                lspec.lambda.add_element(nr[centre], k, nr[n], L);
+            }
+        }
+    }
+}
+
+
 ///  Solver for Feautrier equation along ray pairs using the (ordinary)
 ///  2nd-order solver, without adaptive optical depth increments
 ///    @param[in] w : width index
@@ -476,6 +661,8 @@ accel inline void Solver :: solve_2nd_order_Feautrier (
     Vector<Size  >& nr    = nr_   ();
     Vector<double>& shift = shift_();
 
+    Vector<Real>& inverse_chi = inverse_chi_();
+
     Vector<Real>& Su = Su_();
     Vector<Real>& Sv = Sv_();
 
@@ -499,8 +686,11 @@ accel inline void Solver :: solve_2nd_order_Feautrier (
     get_eta_and_chi (model, nr[first  ], freq*shift[first  ], eta_c, chi_c);
     get_eta_and_chi (model, nr[first+1], freq*shift[first+1], eta_n, chi_n);
 
-    term_c = eta_c / chi_c;
-    term_n = eta_n / chi_n;
+    inverse_chi[first  ] = 1.0 / chi_c;
+    inverse_chi[first+1] = 1.0 / chi_n;
+
+    term_c = eta_c * inverse_chi[first  ];
+    term_n = eta_n * inverse_chi[first+1];
     dtau_n = half * (chi_c + chi_n) * dZ[first];
 
     // Set boundary conditions
@@ -529,9 +719,11 @@ accel inline void Solver :: solve_2nd_order_Feautrier (
          chi_c =  chi_n;
 
         // Get new radiative properties
-        get_eta_and_chi (model, nr[n], freq*shift[n], eta_n, chi_n);
+        get_eta_and_chi (model, nr[n+1], freq*shift[n+1], eta_n, chi_n);
 
-        term_n = eta_n / chi_n;
+        inverse_chi[n+1] = 1.0 / chi_n;
+
+        term_n = eta_n * inverse_chi[n+1];
         dtau_n = half * (chi_c + chi_n) * dZ[n];
 
         const Real dtau_avg = half * (dtau_c + dtau_n);
@@ -656,8 +848,6 @@ accel inline void Solver :: solve_2nd_order_Feautrier (
 
 
 
-    model.radiation.u(rr,o,f)  = Su[centre];
-    model.radiation.J(   o,f) += Su[centre] * two * model.geometry.rays.weight[rr];
 
 
 }

@@ -28,7 +28,7 @@ struct LineProducingSpecies
     Real2 Jeff;                      ///< effective mean intensity in the line (actual - ALO)
     Real2 Jdif;                      ///< effective mean intensity in the line (actual - ALO)
 
-    Long3 nr_line;                   ///< frequency number corresponing to line (p,k,z)
+    Size3 nr_line;                   ///< frequency number corresponing to line (p,k,z)
 
     double relative_change_mean;     ///< mean    relative change
     double relative_change_max;      ///< maximum relative change
