@@ -7,11 +7,11 @@ cd $DIR
 
 echo "WARNING: This installer assumes a Linux x84_64 system!"
 
-# Download CMake
-wget https://github.com/Kitware/CMake/releases/download/v3.18.4/cmake-3.18.4-Linux-x86_64.tar.gz
+# Download gmsh
+wget https://gmsh.info/bin/Linux/gmsh-4.6.0-Linux64.tgz
 # Untar the file
-tar -zxvf cmake-3.18.4-Linux-x86_64.tar.gz
+tar -zxvf gmsh-4.6.0-Linux64
 # Rename the folder
-mv cmake-3.18.4-Linux-x86_64 cmake
+mv gmsh-4.6.0-Linux64 gmsh
 # Remove the tar ball
-rm cmake-3.18.4-Linux-x86_64.tar.gz
+rm gmsh-4.6.0-Linux64

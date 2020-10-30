@@ -112,7 +112,7 @@ def run_model (a_or_b):
     abun = np.array(model.chemistry.species.abundance)[:,1]
     rs   = np.linalg.norm(np.array(model.geometry.points.position), axis=1)
 
-    (i,ra,rb,nh,tk,nm,vr,db,td,lp0,lp1) = np.loadtxt (f'{curdir}Ratran_results/vanZadelhoff_1{a_or_b}.out', skiprows=14, unpack=True)
+    (i,ra,rb,nh,tk,nm,vr,db,td,lp0,lp1) = np.loadtxt (f'{curdir}/Ratran_results/vanZadelhoff_1{a_or_b}.out', skiprows=14, unpack=True)
 
     interp_0 = interp1d(0.5*(ra+rb), lp0, fill_value='extrapolate')
     interp_1 = interp1d(0.5*(ra+rb), lp1, fill_value='extrapolate')
@@ -153,6 +153,9 @@ def run_model (a_or_b):
 
 
 if __name__ == '__main__':
+
+    create_model ('a')
+    run_model    ('a')
 
     create_model ('b')
     run_model    ('b')
