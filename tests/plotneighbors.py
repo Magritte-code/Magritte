@@ -8,9 +8,10 @@ from magritte.core import Model
 
 # needs model in order to no need to supply the position of the elements every time
 class PlotFuns:
-    def __init__(self, model):
+    def __init__(self, model, conversion):
         self.model=model;
         self.positions=np.array(self.model.geometry.points.position);
+        self.conversion=conversion;
     # auxillary fun that plots a single line
     def plot_line(self,ax,point1,point2,color):
         xs=np.array([self.positions[point1][0],self.positions[point2][0]]);
@@ -36,6 +37,7 @@ class PlotFuns:
             fig = plt.figure();
             ax = fig.add_subplot(111, projection='3d');
             for point1 in neighborsbefore:
+                ax.text(self.positions[point1][0], self.positions[point1][1], self.positions[point1][2], point1, color='black')
                 for point2 in neighborsbefore[point1]:
                     self.plot_line(ax,point1,point2,'b');
             # also plot lines
@@ -66,6 +68,7 @@ class PlotFuns:
         # brute force drawing all lines of all simplices
         for simplexid in range(len(simplices)):
             for point1 in simplices[simplexid]:
+                ax.text(coords[point1][0], coords[point1][1], coords[point1][2], self.conversion[point1], color='black')
                 for point2 in simplices[simplexid]:
                     if (point1<point2):
                         self.plot_line_delaunay(ax,coords[point1],coords[point2]);

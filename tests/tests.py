@@ -44,20 +44,16 @@ def has_same_lines(model,i,delaunay):
                     delaunay_lines.add((conversion[point2], conversion[point1]));
     # print(model_lines)
     # print(delaunay_lines)
-    return (model_lines.issubset(delaunay_lines));#model_lines.issuperset(delaunay_lines) and
+    return (model_lines.issubset(delaunay_lines))# and model_lines.issuperset(delaunay_lines));#model_lines.issuperset(delaunay_lines) and
 
+# Plots the current lines and expected lines for the i-th deletion
 def plot_error(model, i, delaunay):
-    plotthing=PlotFuns(model);
+    conversion=model.neighbors_lists[0].get_neighbors(np.array(model.deleted_points)[i]);
+    plotthing=PlotFuns(model,conversion);
     plotthing.plot_alllines(model.reduced_neighbors_before[i]);
-# TODO also plot delaunay triangle
     plotthing.plot_alllines(model.reduced_neighbors_after[i]);
-    # print(delaunay.neighbors)
-    # print(delaunay.points)
     plotthing.plot_delaunay(delaunay)
-# fig = plt.figure()
-# ax = fig.add_subplot(1, 1, 1, projection='3d')
-# ax.plot_trisurf(delaunay.points[:,0], delaunay.points[:,1], delaunay.points[:,2], triangles=delaunay.simplices)
-    plt.show(block = False);
+    # plt.show(block = False);
     plotthing.plot_iterations(model.reduced_neighbors_before[i],model.added_lines[i]);
     plt.show();
 
@@ -67,11 +63,12 @@ def plot_error(model, i, delaunay):
 n=len(model.deleted_points);
 
 for i in range(n):
-    print("hier")
-    print(np.array(np.array(model.geometry.points.position)[model.neighbors_lists[0].get_neighbors(np.array(model.deleted_points)[i])]))
+    # print("hier")
+    # print(np.array(np.array(model.geometry.points.position)[model.neighbors_lists[0].get_neighbors(np.array(model.deleted_points)[i])]))
     delaunay=Delaunay(np.array(np.array(model.geometry.points.position)[model.neighbors_lists[0].get_neighbors(np.array(model.deleted_points)[i])]));
     if (not has_same_lines(model,i,delaunay)):
         plot_error(model, i, delaunay);
+        print("Error at iteration: "+str(i));
         break;
 
 

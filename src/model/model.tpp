@@ -113,13 +113,13 @@ inline double Model :: calc_power(const vector<Size> &triangle, Size point){
   //TODO: change this test to something reasonable instead (eg divide the result by the average distance squared to point and change to pow(10,5))
   if (std::isnan(result)||std::abs(result)/average_dist_sq>pow(10,5))//10^5 is chosen arbitrarily
   {
-    std::cout << "tetradron is coplanar; result = " << result/average_dist_sq << std::endl;
+    //std::cout << "tetradron is coplanar; result = " << result/average_dist_sq << std::endl;
     //std::cout << "orient determinant = " << orient.determinant() << std::endl;
     return std::numeric_limits<double>::quiet_NaN();
   }
   else
   {
-    std::cout << "reasonable tetrahedron; result = " << result/average_dist_sq << std::endl;
+    //std::cout << "reasonable tetrahedron; result = " << result/average_dist_sq << std::endl;
     //std::cout << "orient determinant = " << orient.determinant() << std::endl;
     return result;
   }
@@ -192,13 +192,14 @@ inline vector<Size> lines_form_tetrahedron(vector<Size> &v1, vector<Size> &v2, s
 }
 
 //generates the new ears and inserts them into the ears maps
-//TODO: fix this, possibly wrong logic!!!!!!!!!
+//TODO: fix this, wrong logic!!!!!!!!!
 // inline void Model::generate_new_ears(const std::set<vector<Size>> &neighbor_lines, vector<Size> &new_line, std::map<Size, std::set<Size>> &neighbor_map,
 //  std::multimap<vector<Size>,double> &ears_map, std::multimap<double,vector<Size>> &rev_ears_map, Size &curr_point)
 inline void Model::generate_new_ears(const vector<Size> &neighbors_of_point, const vector<Size> &plane, std::map<Size, std::set<Size>> &neighbor_map,
  std::multimap<vector<Size>,double> &ears_map, std::multimap<double,vector<Size>> &rev_ears_map, Size &curr_point, Size &orient_point)
 {
   std::cout << "plane is: " << plane[0]<< ", " << plane[1] << ", " << plane[2] << std::endl;
+  std::cout << "orient point is: " << orient_point << std::endl;
 //   std::cout << "line is: " << new_line[0]<< ", " << new_line[1] << std::endl;
   Size count_neighbours;
 //   for (vector<Size> old_line: neighbor_lines)
@@ -224,7 +225,7 @@ inline void Model::generate_new_ears(const vector<Size> &neighbors_of_point, con
   { //we want to create new triangles, therefore a point in the plane is not useful
     if (!vector_contains_element(plane,temp_point))
     {
-      //we are currently adding sometimes far too little new ears??
+      //we are currently adding sometimes far too many new ears??
       count_neighbours=0;
       for (Size point_of_plane: plane)
       {
@@ -235,7 +236,7 @@ inline void Model::generate_new_ears(const vector<Size> &neighbors_of_point, con
       //if the candidate point is good for creating an ear with plane1
       if (count_neighbours==2)
       {
-        double prod_of_orient=orientation(plane,temp_point)*orientation(plane,orient_point);//should be negiative if temp_point lie on the opposite side of the plane as the orientation point
+        double prod_of_orient=orientation(plane,temp_point)*orientation(plane,orient_point);//should be negative if temp_point lies on the opposite side of the plane as the orientation point
         if (prod_of_orient<0)
         {
           // std::cout << "neighbors of temp_point are: ";
@@ -687,6 +688,7 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
           added_lines[i].push_back(vector<Size>{triangle[0],triangle[1]});
 
           //invariant: the first two element of the vector should correspond to the neighbors we want to add
+          std::cout << "Deleted ear: " << triangle[0] << ", " << triangle[1] << ", " << triangle[2] << ", " << triangle[3] << std::endl;
           delete_vector_from_both_maps(ears_map,rev_ears_map,triangle);
           //Delete corresponding line, which may no longer be used
           vector<Size> line_to_delete{triangle[2],triangle[3]};
@@ -704,6 +706,7 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
                 (curr_triangle[1]==triangle[0]&&curr_triangle[0]==triangle[1]))
             {
               triangles_to_work_with.push_back(curr_triangle);
+              std::cout << "Deleted ear: " << curr_triangle[0] << ", " << curr_triangle[1] << ", " << curr_triangle[2] << ", " << curr_triangle[3] << std::endl;
               it=delete_vector_from_both_maps(ears_map,rev_ears_map,curr_triangle);
               //Delete corresponding line, which may no longer be used
               // vector<Size> line_to_delete{curr_triangle[2],curr_triangle[3]};
