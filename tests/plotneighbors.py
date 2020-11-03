@@ -22,6 +22,7 @@ class PlotFuns:
         fig = plt.figure();
         ax = fig.add_subplot(111, projection='3d');
         for point1 in neighbors:
+            ax.text(self.positions[point1][0], self.positions[point1][1], self.positions[point1][2], point1, color='black')
             for point2 in neighbors[point1]:
                 self.plot_line(ax,point1,point2,'b');
 
