@@ -15,5 +15,5 @@ echo "Running unit tests..."
 # Integration tests
 echo "Running integration tests..."
 
-python benchmarks/analytic/all_constant_1D.py
-python benchmarks/numeric/vanZadelhoff_1_1D.py
+python3 benchmarks/analytic/all_constant_1D.py
+python3 benchmarks/numeric/vanZadelhoff_1_1D.py
