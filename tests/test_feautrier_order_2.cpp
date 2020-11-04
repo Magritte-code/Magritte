@@ -22,7 +22,7 @@ int main (int argc, char **argv)
 
     Timer timer("solver: 2nd order Feautrier");
     timer.start();
-    model.compute_radiation_field_2nd_order_Feautrier ();
+    model.compute_radiation_field_feautrier_order_2 ();
     timer.stop();
     timer.print();
 

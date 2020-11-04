@@ -48,7 +48,7 @@ inline void Solver :: trace (Model& model)
 }
 
 
-inline void Solver :: solve_0th_order_short_charateristics (Model& model)
+inline void Solver :: solve_shortchar_order_0 (Model& model)
 {
     for (auto &lspec : model.lines.lineProducingSpecies) {lspec.lambda.clear();}
 
@@ -65,8 +65,8 @@ inline void Solver :: solve_0th_order_short_charateristics (Model& model)
         {
             const Real dshift_max = 1.0e+99;
 
-            solve_0th_order_short_charateristics (model, o, rr, dshift_max);
-            solve_0th_order_short_charateristics (model, o, ar, dshift_max);
+            solve_shortchar_order_0 (model, o, rr, dshift_max);
+            solve_shortchar_order_0 (model, o, ar, dshift_max);
 
             for (Size f = 0; f < model.parameters.nfreqs(); f++)
             {
@@ -83,7 +83,7 @@ inline void Solver :: solve_0th_order_short_charateristics (Model& model)
 }
 
 
-inline void Solver :: solve_2nd_order_Feautrier (Model& model)
+inline void Solver :: solve_feautrier_order_2 (Model& model)
 {
     for (auto &lspec : model.lines.lineProducingSpecies) {lspec.lambda.clear();}
 
@@ -124,7 +124,7 @@ inline void Solver :: solve_2nd_order_Feautrier (Model& model)
 
             for (Size f = 0; f < model.parameters.nfreqs(); f++)
             {
-                solve_2nd_order_Feautrier (model, o, rr, ar, f);
+                solve_feautrier_order_2 (model, o, rr, ar, f);
 
                 model.radiation.u(rr,o,f)  = Su_()[centre];
                 model.radiation.J(   o,f) += Su_()[centre] * two * model.geometry.rays.weight[rr];
@@ -365,7 +365,7 @@ accel inline Real trap (const Real x_crt, const Real x_nxt, const double dZ)
 
 
 
-accel inline void Solver :: solve_0th_order_short_charateristics (
+accel inline void Solver :: solve_shortchar_order_0 (
           Model& model,
     const Size   o,
     const Size   r,
@@ -644,7 +644,7 @@ accel inline void Solver :: update_Lambda (Model &model, const Size rr, const Si
 ///  2nd-order solver, without adaptive optical depth increments
 ///    @param[in] w : width index
 ///////////////////////////////////////////////////////////////////////
-accel inline void Solver :: solve_2nd_order_Feautrier (
+accel inline void Solver :: solve_feautrier_order_2 (
           Model& model,
     const Size   o,
     const Size   rr,

@@ -22,10 +22,10 @@ int main (int argc, char **argv)
 
     Timer timer("solver: 0th order short characteristics");
     timer.start();
-    model.compute_radiation_field_0th_short_characteristics ();
+    model.compute_radiation_field_shortchar_order_0 ();
     timer.stop();
     timer.print();
-    
+
     cout << "Done." << endl;
 
     return (0);

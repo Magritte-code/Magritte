@@ -98,15 +98,16 @@ class Solver
                   Real&  eta,
                   Real&  chi );
 
-        accel inline void solve_0th_order_short_charateristics (Model& model);
-        accel inline void solve_0th_order_short_charateristics (
+
+        accel inline void solve_shortchar_order_0 (Model& model);
+        accel inline void solve_shortchar_order_0 (
                   Model& model,
             const Size   o,
             const Size   r,
             const double dshift_max );
 
-        accel inline void solve_2nd_order_Feautrier (Model& model);
-        accel inline void solve_2nd_order_Feautrier (
+        accel inline void solve_feautrier_order_2 (Model& model);
+        accel inline void solve_feautrier_order_2 (
                   Model& model,
             const Size   o,
             const Size   rr,

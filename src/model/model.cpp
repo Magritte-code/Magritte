@@ -258,7 +258,7 @@ int Model :: compute_LTE_level_populations ()
 
 ///  Computer for the radiation field
 /////////////////////////////////////
-int Model :: compute_radiation_field_0th_short_characteristics ()
+int Model :: compute_radiation_field_shortchar_order_0 ()
 {
     cout << "Computing radiation field..." << endl;
 
@@ -266,7 +266,7 @@ int Model :: compute_radiation_field_0th_short_characteristics ()
     const Size  width_max =   parameters.nfreqs ();
 
     Solver solver (length_max, width_max, parameters.n_off_diag);
-    solver.solve_0th_order_short_charateristics  (*this);
+    solver.solve_shortchar_order_0  (*this);
 
     return (0);
 }
@@ -274,7 +274,7 @@ int Model :: compute_radiation_field_0th_short_characteristics ()
 
 ///  Computer for the radiation field
 /////////////////////////////////////
-int Model :: compute_radiation_field_2nd_order_Feautrier ()
+int Model :: compute_radiation_field_feautrier_order_2 ()
 {
     cout << "Computing radiation field..." << endl;
 
@@ -289,7 +289,7 @@ int Model :: compute_radiation_field_2nd_order_Feautrier ()
     cout << "w_max = " <<  width_max << endl;
 
     Solver solver (length_max, width_max, parameters.n_off_diag);
-    solver.solve_2nd_order_Feautrier (*this);
+    solver.solve_feautrier_order_2 (*this);
 
     return (0);
 }
@@ -391,20 +391,19 @@ int Model :: compute_level_populations (
         // Start assuming convergence
         some_not_converged = false;
 
-        //if (use_Ng_acceleration && (iteration_normal == 4))
-        //{
-        //    lines.iteration_using_Ng_acceleration (
-        //        parameters.pop_prec()             );
-        //
-        //    iteration_normal = 0;
-        //}
-        // else
+        if (use_Ng_acceleration && (iteration_normal == 4))
+        {
+            lines.iteration_using_Ng_acceleration (parameters.pop_prec());
+
+            iteration_normal = 0;
+        }
+        else
         {
             // logger.write ("Computing the radiation field...");
             cout << "Computing the radiation field..." << endl;
 
-            compute_radiation_field_2nd_order_Feautrier ();
-            compute_Jeff                                ();
+            compute_radiation_field_feautrier_order_2 ();
+            compute_Jeff                              ();
 
             lines.iteration_using_statistical_equilibrium (
                 chemistry.species.abundance,
