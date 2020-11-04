@@ -6,9 +6,6 @@ language:
   - python
   - bash
 
-python:
-  - "3.7"
-
 addons:
     packages:
       - cmake
