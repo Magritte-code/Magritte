@@ -38,7 +38,7 @@ get_X_mol = {
 
 r_shell = np.logspace (np.log10(r_in), np.log10(r_out), nshells, endpoint=True)
 
-npoints_in_shell = [hp.nside2npix(1+s) for s in range(nshells)]
+npoints_in_shell = [hp.nside2npix(2+s) for s in range(nshells)]
 npoints          = sum(npoints_in_shell)
 
 xyz = np.array([[0, 0, 0]])

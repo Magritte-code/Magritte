@@ -53,6 +53,7 @@ configure.hpp
 *dependencies/Paracabs*
 *dependencies/googletest*
 *dependencies/cmake*
+*dependencies/miniconda3*
 
 # perf reports
 ##############

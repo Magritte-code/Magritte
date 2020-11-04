@@ -16,4 +16,5 @@ echo "Running unit tests..."
 echo "Running integration tests..."
 
 python3 benchmarks/analytic/all_constant_1D.py
+python3 benchmarks/analytic/density_distribution_1D.py
 python3 benchmarks/numeric/vanZadelhoff_1_1D.py

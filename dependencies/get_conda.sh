@@ -7,9 +7,16 @@ cd $DIR
 
 echo "WARNING: This installer assumes a Linux x84_64 system!"
 
-# Download Anaconda
-wget https://repo.anaconda.com/archive/Anaconda3-2020.07-Linux-x86_64.sh
+# Download Miniconda
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86.sh -O miniconda.sh
 # Run the install script
-bash Anaconda3-2020.07-Linux-x86_64.sh
+bash miniconda.sh -b -p $DIR/miniconda3
 # Remove the installer
-rm Anaconda3-2020.07-Linux-x86_64.sh
+rm miniconda.sh
+# Configure conda
+source "$DIR/miniconda3/etc/profile.d/conda.sh"
+hash -r
+conda config --set always_yes yes --set changeps1 no
+conda update -q conda
+# Print all conda info (for debugging)
+conda info -a

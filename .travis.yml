@@ -47,6 +47,9 @@ before_install:
   - BUILD_FLAGS="-DPYTHON_EXECUTABLE:FILEPATH=$PYTHON_EXECUTABLE -DOMP_PARALLEL=ON"
   - bash dependencies/get_dependencies.sh
   - bash dependencies/get_cmake.sh
+  - bash dependencies/get_conda.sh
+  - bash dependencies/get_conda_env.sh
+  - CMAKE_CMD="`pwd`/dependencies/cmake/bin/cmake"
 
 install:
   - mkdir build
@@ -55,7 +58,7 @@ install:
   - $COMPILER_CC --version
   - COMPILER_CXX=$(which g++)
   - $COMPILER_CXX --version
-  - CC=$COMPILER_CC CXX=$COMPILER_CXX ../dependencies/cmake/bin/cmake $BUILD_FLAGS ..
+  - CC=$COMPILER_CC CXX=$COMPILER_CXX $CMAKE_CMD $BUILD_FLAGS ..
   - make -j4
   - cd -
 
