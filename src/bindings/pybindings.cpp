@@ -305,6 +305,7 @@ PYBIND11_MODULE (core, module)
         .def_readwrite ("quadrature",       &LineProducingSpecies::quadrature)
         .def_readwrite ("Lambda",           &LineProducingSpecies::lambda) // "lambda" is invalid in Python, use "Lambda"
         .def_readwrite ("Jeff",             &LineProducingSpecies::Jeff)
+        .def_readwrite ("Jdif",             &LineProducingSpecies::Jdif)
         .def_readwrite ("Jlin",             &LineProducingSpecies::Jlin)
         .def_readwrite ("nr_line",          &LineProducingSpecies::nr_line)
         .def_readwrite ("population",       &LineProducingSpecies::population)

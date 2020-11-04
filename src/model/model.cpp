@@ -301,7 +301,7 @@ int Model :: compute_Jeff ()
 {
     for (LineProducingSpecies &lspec : lines.lineProducingSpecies)
     {
-//        Lambda = MatrixXd::Zero (lspec.population.size(), lspec.population.size());
+       // Lambda = MatrixXd::Zero (lspec.population.size(), lspec.population.size());
 
         threaded_for (p, parameters.npoints(),
         {
@@ -321,13 +321,13 @@ int Model :: compute_Jeff ()
 
                 double diff = 0.0;
 
-               // Collect the approximated part
-               // for (Size m = 0; m < lspec.lambda.get_size(p,k); m++)
-               // {
-               //     const Size I = lspec.index(lspec.lambda.get_nr(p,k,m), lspec.linedata.irad[k]);
-               //
-               //     diff += lspec.lambda.get_Ls(p,k,m) * lspec.population[I];
-               // }
+                // Collect the approximated part
+                for (Size m = 0; m < lspec.lambda.get_size(p,k); m++)
+                {
+                    const Size I = lspec.index(lspec.lambda.get_nr(p,k,m), lspec.linedata.irad[k]);
+
+                    diff += lspec.lambda.get_Ls(p,k,m) * lspec.population[I];
+                }
 
                 lspec.Jeff[p][k] = lspec.Jlin[p][k] - HH_OVER_FOUR_PI * diff;
                 lspec.Jdif[p][k] = HH_OVER_FOUR_PI * diff;

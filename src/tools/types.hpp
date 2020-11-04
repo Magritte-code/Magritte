@@ -9,9 +9,8 @@ using std::list;
 using std::string;
 using std::to_string;
 #include <Eigen/Core>
-//using Eigen::Vector3d;
 using Eigen::VectorXd;
-//using Eigen::MatrixXd;
+using Eigen::MatrixXd;
 
 #include "paracabs.hpp"
 namespace pc = paracabs;
@@ -101,8 +100,12 @@ typedef vector<VectorXr>  VectorXr1;
 typedef vector<VectorXr1> VectorXr2;
 typedef vector<VectorXr2> VectorXr3;
 
+// Vectors of Eigen::MatrixXd
+typedef vector<MatrixXd>   MatrixXd1;
+typedef vector<MatrixXd1>  MatrixXd2;
+typedef vector<MatrixXd2>  MatrixXd3;
 
-//// Vectors of Eigen::MatrixXd
-//typedef vector<MatrixXd>   MatrixXd1;
-//typedef vector<MatrixXd1>  MatrixXd2;
-//typedef vector<MatrixXd2>  MatrixXd3;
+typedef Eigen::Matrix<Real, Eigen::Dynamic, Eigen::Dynamic> MatrixXr;
+typedef vector<VectorXr>  MatrixXr1;
+typedef vector<VectorXr1> MatrixXr2;
+typedef vector<VectorXr2> MatrixXr3;

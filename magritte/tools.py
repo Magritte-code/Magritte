@@ -59,7 +59,7 @@ def LTEpop (linedata, temperature):
 
 def lineEmissivity (linedata, pop):
     '''
-    Return the line emisivvity for each radiative transition.
+    Return the line emissivity for each radiative transition.
     '''
     eta = np.zeros(linedata.nrad)
     for k in range(linedata.nrad):

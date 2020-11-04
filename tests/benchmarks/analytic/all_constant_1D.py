@@ -16,17 +16,17 @@ import magritte.core     as magritte
 
 
 dimension = 1
-npoints   = 1000
+npoints   = 5 #1000
 nrays     = 2
 nspecs    = 5
 nlspecs   = 1
 nquads    = 1
 
-dens = 1.0E+12                 # [m^-3]
-abun = 1.0E+10                 # [m^-3]
+nH2  = 1.0E+12                 # [m^-3]
+nTT  = 1.0E+10                 # [m^-3]
 temp = 4.5E+00                 # [K]
 turb = 0.0E+00                 # [m/s]
-dx   = 1.0E+04                 # [m]
+dx   = 1.0E+12                 # [m]
 dv   = 0.0E+00 / magritte.CC   # [fraction of speed of light]
 
 
@@ -40,19 +40,20 @@ def create_model ():
     lamdaFile = f'{datdir}test.txt'
 
     model = magritte.Model ()
-    model.parameters.set_model_name(modelFile)
-    model.parameters.set_dimension (dimension)
-    model.parameters.set_npoints   (npoints)
-    model.parameters.set_nrays     (nrays)
-    model.parameters.set_nspecs    (nspecs)
-    model.parameters.set_nlspecs   (nlspecs)
-    model.parameters.set_nquads    (nquads)
+    model.parameters.set_spherical_symmetry(False)
+    model.parameters.set_model_name        (modelFile)
+    model.parameters.set_dimension         (dimension)
+    model.parameters.set_npoints           (npoints)
+    model.parameters.set_nrays             (nrays)
+    model.parameters.set_nspecs            (nspecs)
+    model.parameters.set_nlspecs           (nlspecs)
+    model.parameters.set_nquads            (nquads)
 
     model.geometry.points.position.set([[i*dx, 0, 0] for i in range(npoints)])
     model.geometry.points.velocity.set([[i*dv, 0, 0] for i in range(npoints)])
 
-    model.chemistry.species.abundance = [[     0.0,   abun,  dens,  0.0,      1.0] for _ in range(npoints)]
-    model.chemistry.species.symbol    =  ['dummy0', 'test',  'H2', 'e-', 'dummy1']
+    model.chemistry.species.abundance = [[     0.0,    nTT,  nH2,  0.0,      1.0] for _ in range(npoints)]
+    model.chemistry.species.symbol    =  ['dummy0', 'test', 'H2', 'e-', 'dummy1']
 
     model.thermodynamics.temperature.gas  .set( temp                 * np.ones(npoints))
     model.thermodynamics.turbulence.vturb2.set((turb/magritte.CC)**2 * np.ones(npoints))
@@ -107,7 +108,7 @@ def run_model ():
     k = 0
 
     frq = ld.frequency[k]
-    pop = tools.LTEpop         (ld, temp) * abun
+    pop = tools.LTEpop         (ld, temp) * nTT
     phi = tools.profile        (ld, k, temp, (turb/magritte.CC)**2, frq)
     eta = tools.lineEmissivity (ld, pop)[k] * phi
     chi = tools.lineOpacity    (ld, pop)[k] * phi
@@ -126,23 +127,27 @@ def run_model ():
     error_u_0s = tools.relative_error (u_(x), u_0s[0,:,0])
     error_u_2f = tools.relative_error (u_(x), u_2f[0,:,0])
 
+    result  = f'--- Benchmark name ----------------------------\n'
+    result += f'{modelName                                    }\n'
+    result += f'--- Parameters --------------------------------\n'
+    result += f'dimension = {model.parameters.dimension()     }\n'
+    result += f'npoints   = {model.parameters.npoints  ()     }\n'
+    result += f'nrays     = {model.parameters.nrays    ()     }\n'
+    result += f'nquads    = {model.parameters.nquads   ()     }\n'
+    result += f'--- Accuracy ----------------------------------\n'
+    result += f'max error in shortchar 0 = {np.max(error_u_0s)}\n'
+    result += f'max error in feautrier 2 = {np.max(error_u_2f)}\n'
+    result += f'--- Timers ------------------------------------\n'
+    result += f'{timer1.print()                               }\n'
+    result += f'{timer2.print()                               }\n'
+    result += f'{timer3.print()                               }\n'
+    result += f'{timer4.print()                               }\n'
+    result += f'-----------------------------------------------\n'
+
+    print(result)
+
     with open(f'{resdir}{modelName}-{timestamp}.log' ,'w') as log:
-        log.write(f'--- Benchmark name ----------------------------\n')
-        log.write(f'{modelName                                    }\n')
-        log.write(f'--- Parameters --------------------------------\n')
-        log.write(f'dimension = {model.parameters.dimension()     }\n')
-        log.write(f'npoints   = {model.parameters.npoints  ()     }\n')
-        log.write(f'nrays     = {model.parameters.nrays    ()     }\n')
-        log.write(f'nquads    = {model.parameters.nquads   ()     }\n')
-        log.write(f'--- Accuracy ----------------------------------\n')
-        log.write(f'max error in shortchar 0 = {np.max(error_u_0s)}\n')
-        log.write(f'max error in feautrier 2 = {np.max(error_u_2f)}\n')
-        log.write(f'--- Timers ------------------------------------\n')
-        log.write(f'{timer1.print()                               }\n')
-        log.write(f'{timer2.print()                               }\n')
-        log.write(f'{timer3.print()                               }\n')
-        log.write(f'{timer4.print()                               }\n')
-        log.write(f'-----------------------------------------------\n')
+        log.write(result)
 
     return
 

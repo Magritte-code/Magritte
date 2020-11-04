@@ -50,6 +50,8 @@ inline void Solver :: trace (Model& model)
 
 inline void Solver :: solve_0th_order_short_charateristics (Model& model)
 {
+    for (auto &lspec : model.lines.lineProducingSpecies) {lspec.lambda.clear();}
+
     model.radiation.initialize_J();
 
     for (Size rr = 0; rr < model.parameters.hnrays(); rr++)
@@ -83,6 +85,8 @@ inline void Solver :: solve_0th_order_short_charateristics (Model& model)
 
 inline void Solver :: solve_2nd_order_Feautrier (Model& model)
 {
+    for (auto &lspec : model.lines.lineProducingSpecies) {lspec.lambda.clear();}
+
     model.radiation.initialize_J();
 
     for (Size rr = 0; rr < model.parameters.hnrays(); rr++)
@@ -125,7 +129,7 @@ inline void Solver :: solve_2nd_order_Feautrier (Model& model)
                 model.radiation.u(rr,o,f)  = Su_()[centre];
                 model.radiation.J(   o,f) += Su_()[centre] * two * model.geometry.rays.weight[rr];
 
-                // update_Lambda (model, rr, f);
+                update_Lambda (model, rr, f);
             }
         })
 
@@ -594,11 +598,10 @@ accel inline void Solver :: update_Lambda (Model &model, const Size rr, const Si
 
 //           printf("---- Adding diag\n");
         // add_L_diag (thermodyn, invr_mass, freq_line, constante, rp, f, k, lspec.lambda);
-        Real frq, phi, L;
 
-        frq = freqs.nu(nr[centre], f) * shift[centre];
-        phi = thermodyn.profile(invr_mass, nr[centre], freq_line, frq);
-        L   = constante * frq * phi * L_diag[centre] * inverse_chi[centre];
+        Real frq = freqs.nu(nr[centre], f) * shift[centre];
+        Real phi = thermodyn.profile(invr_mass, nr[centre], freq_line, frq);
+        Real L   = constante * frq * phi * L_diag[centre] * inverse_chi[centre];
 
         lspec.lambda.add_element(nr[centre], k, nr[centre], L);
 
@@ -732,6 +735,9 @@ accel inline void Solver :: solve_2nd_order_Feautrier (
 
         A[n] = one / inverse_A[n];
         C[n] = one / inverse_C[n];
+
+        // cout << "A[" << n << "] = " << A[n] << endl;
+        // cout << "C[" << n << "] = " << C[n] << endl;
 
         /// Use the previously stored value of the source function
         Su[n] = term_c;
