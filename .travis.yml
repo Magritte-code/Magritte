@@ -44,6 +44,7 @@ before_install:
   - BUILD_FLAGS="-DPYTHON_EXECUTABLE:FILEPATH=$PYTHON_EXECUTABLE -DOMP_PARALLEL=ON"
   - bash dependencies/get_dependencies.sh
   - bash dependencies/get_cmake.sh
+  - PY_CMD=python3.7
 
 install:
   - mkdir build
@@ -58,6 +59,6 @@ install:
 
 script:
   - cd tests
-  - python3 --version
+  - python --version
   - bash run_all_tests.sh
   - echo "Done."
