@@ -15,7 +15,7 @@ addons:
       - libgomp1
       - g++-9
 
-matrix:
+jobs:
   include:
     # - os: osx
     #   python: 3.7
