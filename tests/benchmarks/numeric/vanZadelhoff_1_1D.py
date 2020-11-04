@@ -40,7 +40,7 @@ rs = np.logspace (np.log10(r_in), np.log10(r_out), npoints, endpoint=True)
 
 def create_model (a_or_b):
     """
-    Create a model file for the van Zadelhoff 1a benchmark in 1D.
+    Create a model file for the van Zadelhoff 1 benchmark in 1D.
     """
 
     modelName = f'vanZadelhoff_1{a_or_b}_1D'

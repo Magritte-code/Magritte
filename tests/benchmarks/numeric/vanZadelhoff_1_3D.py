@@ -88,8 +88,11 @@ def create_model (a_or_b):
 
     model = setup.set_Delaunay_neighbor_lists (model)
 
-    model.parameters.set_nboundary(npoints_in_shell[-1])
-    model.geometry.boundary.boundary2point.set(range(npoints-npoints_in_shell[-1], npoints))
+    boundary2point  = [b for b in range(npoints_in_shell[0])]
+    boundary2point += [b for b in range(npoints-npoints_in_shell[-1], npoints)]
+
+    model.geometry.boundary.boundary2point.set(boundary2point)
+    model.parameters.set_nboundary(len(boundary2point))
 
     model = setup.set_boundary_condition_CMB  (model)
     model = setup.set_uniform_rays            (model)
