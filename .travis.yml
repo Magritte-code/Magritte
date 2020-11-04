@@ -61,6 +61,6 @@ install:
 
 script:
   - cd tests
-  - python3.7 --version
+  - python3 --version
   - bash run_all_tests.sh
   - echo "Done."
