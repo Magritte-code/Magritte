@@ -554,8 +554,7 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
 
         std::set<vector<Size>> forbidden_planes;//contains the planes that should not be used during initial generation
 
-        //TODO: figure out why there are so many duplicates...
-        //check whether there are already tetrahedra formed and add the relevant planes to forbidden_planes
+        // finding all forbidden planes
         for (Size pointi:neighbors_of_point)
         {
           for (Size pointj:neighbors_of_point)
@@ -786,12 +785,34 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
           //TODO FIXME: check if the same ear can be generated twice and check if it would actually matter...
           std::cout << "relevant planes size: "<<relevant_planes.size() << std::endl;
           Size count=0;
+
+
+          //if for some reason (namely delaunay grids being weird), we still havent added a plane squished between two completed tetrahedra
+          // we add it now
+          std::set<Size> temp_intersection;
+          std::set_intersection(neighbor_map[triangle[0]].begin(),neighbor_map[triangle[0]].end(),
+                        neighbor_map[triangle[1]].begin(),neighbor_map[triangle[1]].end(),
+                        std::inserter(temp_intersection,temp_intersection.begin()));
+          for (Size temp_point:temp_intersection)
+          {
+            std::set<Size> temp_intersection2;//intersection of neighbors of temp_point with
+            std::set_intersection(temp_intersection.begin(),temp_intersection.end(),
+                          neighbor_map[temp_point].begin(),neighbor_map[temp_point].end(),
+                          std::inserter(temp_intersection2,temp_intersection2.begin()));
+            if (temp_intersection2.size()>=2){//note that i do not know how it could be larger than 2, but i'm taking no chances
+              forbidden_planes.insert(vector<Size>{triangle[0],triangle[1],temp_point});
+            }
+          }
+          
+
           for (vector<Size> plane: relevant_planes)
           {//TODO: figure out whether new ears must be generated at all, because no new ears ever seem to be inserted...
           generate_new_ears(neighbors_of_point, plane, neighbor_map,
                 ears_map, rev_ears_map, curr_point, orient_points[count], forbidden_planes);
           count++;
           }
+
+
 
           //and finally delete those lines from neighbor_map
           //delete_all_useless_lines(triangles_to_work_with,neighbor_map);

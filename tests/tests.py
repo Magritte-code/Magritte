@@ -18,7 +18,7 @@ model.read(io)
 
 
 
-model.coarsen_grid(0.00003)
+model.coarsen_grid(0.0001)
 
 #print(model.geometry.points.curr_neighbors.neighbors)
 # print(np.array(model.geometry.points.position));
@@ -67,8 +67,8 @@ for i in range(n):
     # print(np.array(np.array(model.geometry.points.position)[model.neighbors_lists[0].get_neighbors(np.array(model.deleted_points)[i])]))
     delaunay=Delaunay(np.array(np.array(model.geometry.points.position)[model.neighbors_lists[0].get_neighbors(np.array(model.deleted_points)[i])]));
     if (not has_same_lines(model,i,delaunay)):
+        print("Error at iteration: "+str(i+1));
         plot_error(model, i, delaunay);
-        print("Error at iteration: "+str(i));
         break;
 
 
