@@ -421,9 +421,9 @@ inline void LineProducingSpecies :: update_using_statistical_equilibrium (
         cout << "Factorization failed with error message:" << endl;
         cout << solver.lastErrorMessage()                  << endl;
 
-        cout << endl << RT << endl;
+        // cout << endl << RT << endl;
 
-        assert (false);
+        throw std::runtime_error ("Eigen solver ERROR.");
     }
 
     //cout << "Try compute" << endl;

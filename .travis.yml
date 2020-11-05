@@ -48,6 +48,8 @@ before_install:
   - bash dependencies/get_dependencies.sh
   - bash dependencies/get_cmake.sh
   - bash dependencies/get_conda.sh
+  - export PATH=`pwd`/dependencies/miniconda3/bin:$PATH
+  - source activate magritte
   - which python
   - python --version
   - python3 --version
