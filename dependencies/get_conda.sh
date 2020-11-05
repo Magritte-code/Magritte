@@ -10,7 +10,7 @@ echo "WARNING: This installer assumes a Linux x84_64 system!"
 # Download Miniconda
 wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86.sh -O miniconda3.sh
 # Set permissions
-chmod -x miniconda3.sh
+chmod +x miniconda3.sh
 # Run the install script
 ./miniconda3.sh -b
 # Remove the installer
