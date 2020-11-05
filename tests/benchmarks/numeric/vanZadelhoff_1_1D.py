@@ -87,7 +87,7 @@ def create_model (a_or_b):
     return
 
 
-def run_model (a_or_b):
+def run_model (a_or_b, store_results=False):
 
     modelName = f'vanZadelhoff_1{a_or_b}_1D'
     modelFile = f'{moddir}{modelName}.hdf5'
@@ -140,19 +140,20 @@ def run_model (a_or_b):
 
     print(result)
 
-    with open(f'{resdir}{modelName}-{timestamp}.log' ,'w') as log:
-        log.write(result)
+    if store_results:
+        with open(f'{resdir}{modelName}-{timestamp}.log' ,'w') as log:
+            log.write(result)
 
-    plt.title(modelName)
-    plt.scatter(rs, pops[:,0]/abun, s=0.5, label='i=0', zorder=1)
-    plt.scatter(rs, pops[:,1]/abun, s=0.5, label='i=1', zorder=1)
-    plt.plot(ra, lp0, c='lightgray', zorder=0)
-    plt.plot(ra, lp1, c='lightgray', zorder=0)
-    plt.legend()
-    plt.xscale('log')
-    plt.xlabel('r [m]')
-    plt.ylabel('fractional level populations [.]')
-    plt.savefig(f'{resdir}{modelName}-{timestamp}.png', dpi=150)
+        plt.title(modelName)
+        plt.scatter(rs, pops[:,0]/abun, s=0.5, label='i=0', zorder=1)
+        plt.scatter(rs, pops[:,1]/abun, s=0.5, label='i=1', zorder=1)
+        plt.plot(ra, lp0, c='lightgray', zorder=0)
+        plt.plot(ra, lp1, c='lightgray', zorder=0)
+        plt.legend()
+        plt.xscale('log')
+        plt.xlabel('r [m]')
+        plt.ylabel('fractional level populations [.]')
+        plt.savefig(f'{resdir}{modelName}-{timestamp}.png', dpi=150)
 
     return
 

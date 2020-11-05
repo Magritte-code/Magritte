@@ -70,7 +70,7 @@ def create_model ():
     return
 
 
-def run_model ():
+def run_model (store_results=False):
 
     modelName = f'all_constant_1D'
     modelFile = f'{moddir}{modelName}.hdf5'
@@ -146,8 +146,19 @@ def run_model ():
 
     print(result)
 
-    with open(f'{resdir}{modelName}-{timestamp}.log' ,'w') as log:
-        log.write(result)
+    if store_results:
+        with open(f'{resdir}{modelName}-{timestamp}.log' ,'w') as log:
+            log.write(result)
+            
+        plt.title(modelName)
+        plt.scatter(x, u_0s[0,:,0], s=0.5, label='0s', zorder=1)
+        plt.scatter(x, u_2f[0,:,0], s=0.5, label='2f', zorder=1)
+        plt.plot(x, u_(x), c='lightgray', zorder=0)
+        plt.legend()
+        plt.xscale('log')
+        plt.xlabel('r [m]')
+        plt.ylabel('Mean intensity [W/m$^{2}$]')
+        plt.savefig(f'{resdir}{modelName}-{timestamp}.png', dpi=150)
 
     return
 

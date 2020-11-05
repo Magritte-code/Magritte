@@ -83,7 +83,7 @@ def create_model (a_or_b):
     return
 
 
-def run_model (a_or_b):
+def run_model (a_or_b, store_results=False):
 
     modelName = f'density_distribution_VZ{a_or_b}_1D'
     modelFile = f'{moddir}{modelName}.hdf5'
@@ -161,18 +161,19 @@ def run_model (a_or_b):
 
     print(result)
 
-    with open(f'{resdir}{modelName}-{timestamp}.log' ,'w') as log:
-        log.write(result)
+    if store_results:
+        with open(f'{resdir}{modelName}-{timestamp}.log' ,'w') as log:
+            log.write(result)
 
-    plt.title(modelName)
-    plt.scatter(x, u_0s[0,:,0], s=0.5, label='0s', zorder=1)
-    plt.scatter(x, u_2f[0,:,0], s=0.5, label='2f', zorder=1)
-    plt.plot(x, u_(x), c='lightgray', zorder=0)
-    plt.legend()
-    plt.xscale('log')
-    plt.xlabel('r [m]')
-    plt.ylabel('Mean intensity [W/m$^{2}$]')
-    plt.savefig(f'{resdir}{modelName}-{timestamp}.png', dpi=150)
+        plt.title(modelName)
+        plt.scatter(x, u_0s[0,:,0], s=0.5, label='0s', zorder=1)
+        plt.scatter(x, u_2f[0,:,0], s=0.5, label='2f', zorder=1)
+        plt.plot(x, u_(x), c='lightgray', zorder=0)
+        plt.legend()
+        plt.xscale('log')
+        plt.xlabel('r [m]')
+        plt.ylabel('Mean intensity [W/m$^{2}$]')
+        plt.savefig(f'{resdir}{modelName}-{timestamp}.png', dpi=150)
 
     return
 
