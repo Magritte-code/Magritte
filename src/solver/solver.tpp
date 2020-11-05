@@ -98,7 +98,7 @@ inline void Solver :: solve_feautrier_order_2 (Model& model)
         // for (Size o = 0; o < model.parameters.npoints(); o++)
         accelerated_for (o, model.parameters.npoints(), nblocks, nthreads,
         {
-            cout << "o = " << o endl; 
+            // cout << "o = " << o << endl; 
 
             const Real dshift_max = 1.0e+99;
 
