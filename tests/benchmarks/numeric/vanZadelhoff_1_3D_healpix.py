@@ -56,7 +56,7 @@ def create_model (a_or_b):
     Create a model file for the van Zadelhoff 1 benchmark in 1D.
     """
 
-    modelName = f'vanZadelhoff_1{a_or_b}_3D'
+    modelName = f'vanZadelhoff_1{a_or_b}_3D_healpix'
     modelFile = f'{moddir}{modelName}.hdf5'
     lamdaFile = f'{datdir}test.txt'
 
@@ -108,7 +108,7 @@ def create_model (a_or_b):
 
 def run_model (a_or_b):
 
-    modelName = f'vanZadelhoff_1{a_or_b}_3D'
+    modelName = f'vanZadelhoff_1{a_or_b}_3D_healpix'
     modelFile = f'{moddir}{modelName}.hdf5'
     timestamp = tools.timestamp()
 

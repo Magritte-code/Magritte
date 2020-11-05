@@ -15,8 +15,10 @@ chmod +x miniconda3.sh
 ./miniconda3.sh -b
 # Remove the installer
 rm miniconda3.sh
+ls
 # Configure conda
 export PATH=$DIR/miniconda/bin:$PATH
+echo $PATH
 echo "1"
 # source "$DIR/miniconda3/etc/profile.d/conda.sh"
 echo "2"
