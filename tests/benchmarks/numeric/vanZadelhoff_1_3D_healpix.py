@@ -162,7 +162,6 @@ def run_model (a_or_b):
     with open(f'{resdir}{modelName}-{timestamp}.log' ,'w') as log:
         log.write(result)
 
-    fig = plt.figure(dpi=150)
     plt.title(modelName)
     plt.scatter(rs, pops[:,0]/abun, s=0.5, label='i=0', zorder=1)
     plt.scatter(rs, pops[:,1]/abun, s=0.5, label='i=1', zorder=1)
@@ -172,7 +171,7 @@ def run_model (a_or_b):
     plt.xscale('log')
     plt.xlabel('r [m]')
     plt.ylabel('fractional level populations [.]')
-    plt.savefig(f'{resdir}{modelName}-{timestamp}.png')
+    plt.savefig(f'{resdir}{modelName}-{timestamp}.png', dpi=150)
 
     return
 

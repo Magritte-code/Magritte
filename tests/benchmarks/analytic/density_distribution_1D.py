@@ -164,7 +164,6 @@ def run_model (a_or_b):
     with open(f'{resdir}{modelName}-{timestamp}.log' ,'w') as log:
         log.write(result)
 
-    fig = plt.figure(dpi=150)
     plt.title(modelName)
     plt.scatter(x, u_0s[0,:,0], s=0.5, label='0s', zorder=1)
     plt.scatter(x, u_2f[0,:,0], s=0.5, label='2f', zorder=1)
@@ -173,7 +172,7 @@ def run_model (a_or_b):
     plt.xscale('log')
     plt.xlabel('r [m]')
     plt.ylabel('Mean intensity [W/m$^{2}$]')
-    plt.savefig(f'{resdir}{modelName}-{timestamp}.png')
+    plt.savefig(f'{resdir}{modelName}-{timestamp}.png', dpi=150)
 
     return
 

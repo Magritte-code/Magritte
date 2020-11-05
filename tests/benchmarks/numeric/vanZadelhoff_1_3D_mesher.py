@@ -20,7 +20,6 @@ from scipy.interpolate import interp1d
 
 
 dimension = 3
-nshells   = 20
 nrays     = 12*3**2
 nspecs    = 5
 nlspecs   = 1
@@ -92,6 +91,9 @@ def create_model (a_or_b):
 
     model.geometry.points.position.set(mesh.points)
     model.geometry.points.velocity.set(np.zeros((npoints, 3)))
+
+    model.geometry.points.  neighbors.set(  nbs)
+    model.geometry.points.n_neighbors.set(n_nbs)
 
     model.chemistry.species.abundance = [[     0.0, nTT(r), nH2(r),  0.0,      1.0] for r in rs]
     model.chemistry.species.symbol    =  ['dummy0', 'test',   'H2', 'e-', 'dummy1']
@@ -168,7 +170,6 @@ def run_model (a_or_b):
     with open(f'{resdir}{modelName}-{timestamp}.log' ,'w') as log:
         log.write(result)
 
-    fig = plt.figure(dpi=150)
     plt.title(modelName)
     plt.scatter(rs, pops[:,0]/abun, s=0.5, label='i=0', zorder=1)
     plt.scatter(rs, pops[:,1]/abun, s=0.5, label='i=1', zorder=1)
@@ -178,7 +179,7 @@ def run_model (a_or_b):
     plt.xscale('log')
     plt.xlabel('r [m]')
     plt.ylabel('fractional level populations [.]')
-    plt.savefig(f'{resdir}{modelName}-{timestamp}.png')
+    plt.savefig(f'{resdir}{modelName}-{timestamp}.png', dpi=150)
 
     return
 
