@@ -18,7 +18,7 @@ model.read(io)
 
 
 
-model.coarsen_grid(0.0001)
+model.coarsen_grid(0.00012)
 
 #print(model.geometry.points.curr_neighbors.neighbors)
 # print(np.array(model.geometry.points.position));
@@ -44,7 +44,11 @@ def has_same_lines(model,i,delaunay):
                     delaunay_lines.add((conversion[point2], conversion[point1]));
     # print(model_lines)
     # print(delaunay_lines)
-    return (model_lines.issubset(delaunay_lines))# and model_lines.issuperset(delaunay_lines));#model_lines.issuperset(delaunay_lines) and
+    if (not model_lines.issubset(delaunay_lines)):
+        print(model_lines.difference(delaunay_lines));
+        return False;
+    return True;
+    #return (model_lines.issubset(delaunay_lines))# and model_lines.issuperset(delaunay_lines));#model_lines.issuperset(delaunay_lines) and
 
 # Plots the current lines and expected lines for the i-th deletion
 def plot_error(model, i, delaunay):
