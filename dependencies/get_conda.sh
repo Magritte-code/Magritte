@@ -9,25 +9,18 @@ echo "WARNING: This installer assumes a Linux x84_64 system!"
 
 # Download Miniconda
 wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda3.sh
-# Set permissions
-# chmod +x miniconda3.sh
 # Run the install script
 bash miniconda3.sh -b -p $DIR/miniconda3
 # Remove the installer
 rm miniconda3.sh
-ls
-# Configure conda
-export PATH=$DIR/miniconda/bin:$PATH
-echo $PATH
-echo "1"
-source "$DIR/miniconda3/etc/profile.d/conda.sh"
-echo "2"
-# hash -r
-echo "3"
+# Export path to conda
+export PATH=$DIR/miniconda3/bin:$PATH
+# Remove old program locations
+hash -r
+# Configure and update conda
 conda config --set always_yes yes --set changeps1 no
-echo "4"
 conda update --yes conda
-echo "5"
 # Print all conda info (for debugging)
-# conda info -a
-# echo "6"
+conda info -a
+# Create the conda environment
+# bash get_conda_env.sh

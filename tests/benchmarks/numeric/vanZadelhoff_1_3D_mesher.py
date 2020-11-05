@@ -13,6 +13,7 @@ import healpy            as hp
 import matplotlib.pyplot as plt
 import magritte.tools    as tools
 import magritte.setup    as setup
+import magritte.mesher   as mesher
 import magritte.core     as magritte
 
 from scipy.interpolate import interp1d
