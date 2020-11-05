@@ -20,7 +20,9 @@ hash -r
 # Configure and update conda
 conda config --set always_yes yes --set changeps1 no
 conda update --yes conda
-# Print all conda info (for debugging)
-conda info -a
-# Create the conda environment
-# bash get_conda_env.sh
+# Create conda environment
+conda env create -f conda_env.yml
+# Activate the magritte conda environment
+conda activate magritte
+
+which python

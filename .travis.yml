@@ -48,6 +48,9 @@ before_install:
   - bash dependencies/get_dependencies.sh
   - bash dependencies/get_cmake.sh
   - bash dependencies/get_conda.sh
+  - which python
+  - python --version
+  - python3 --version
   - CMAKE_CMD="`pwd`/dependencies/cmake/bin/cmake"
 
 install:
