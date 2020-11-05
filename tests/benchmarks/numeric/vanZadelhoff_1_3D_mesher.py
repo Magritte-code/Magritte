@@ -40,9 +40,9 @@ get_X_mol = {
 scale_max = 0.05 * r_out
 scale_min = 0.05 * r_in
 scale_cte = 0.05 * r_in
-scale_fun = f"{scale_cte / r_in**2} * (x*x + y*y + z*z)"
+scale_fun = f'{scale_cte / r_in**2} * (x*x + y*y + z*z)'
 
-meshName = 'vanZadelhoff_1a.vtk'
+meshName = f'{moddir}/vanZadelhoff_1_3D_mesher.vtk'
 
 mesher.create_mesh_from_function(
     meshName       = meshName,
@@ -101,12 +101,6 @@ def create_model (a_or_b):
 
     model.parameters.set_nboundary(len(mesh.boundary))
     model.geometry.boundary.boundary2point.set(mesh.boundary)
-
-    boundary2point  = [b for b in range(npoints_in_shell[0])]
-    boundary2point += [b for b in range(npoints-npoints_in_shell[-1], npoints)]
-
-    model.geometry.boundary.boundary2point.set(boundary2point)
-    model.parameters.set_nboundary(len(boundary2point))
 
     model = setup.set_boundary_condition_CMB  (model)
     model = setup.set_uniform_rays            (model)

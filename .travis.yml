@@ -48,7 +48,6 @@ before_install:
   - bash dependencies/get_dependencies.sh
   - bash dependencies/get_cmake.sh
   - bash dependencies/get_conda.sh
-  - bash dependencies/get_conda_env.sh
   - CMAKE_CMD="`pwd`/dependencies/cmake/bin/cmake"
 
 install:
