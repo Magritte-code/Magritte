@@ -10,6 +10,7 @@
 #include "thermodynamics/thermodynamics.hpp"
 #include "lines/lines.hpp"
 #include "radiation/radiation.hpp"
+#include "image/image.hpp"
 
 
 struct Model
@@ -20,6 +21,7 @@ struct Model
     Thermodynamics thermodynamics;
     Lines          lines;
     Radiation      radiation;
+    vector<Image>  images;
 
     enum SpectralDiscretisation {None, SD_Lines, SD_Image}
          spectralDiscretisation = None;
@@ -50,6 +52,7 @@ struct Model
         // const Io   &io,
         const bool  use_Ng_acceleration,
         const long  max_niterations     );
+    int compute_image                             (const Size ray_nr);
 
     Double1 error_max;
     Double1 error_mean;
@@ -95,6 +98,4 @@ struct Model
 
         return c().vec;
     }
-
-
 };

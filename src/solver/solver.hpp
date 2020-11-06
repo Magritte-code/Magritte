@@ -98,6 +98,10 @@ class Solver
                   Real&  eta,
                   Real&  chi );
 
+        accel inline void update_Lambda (
+                  Model &model,
+            const Size   rr,
+            const Size   f  );
 
         accel inline void solve_shortchar_order_0 (Model& model);
         accel inline void solve_shortchar_order_0 (
@@ -114,9 +118,12 @@ class Solver
             const Size   ar,
             const Size   f  );
 
-        accel inline void update_Lambda (
-                  Model &model,
+        accel inline void image_feautrier_order_2 (Model& model, const Size rr);
+        accel inline void image_feautrier_order_2 (
+                  Model& model,
+            const Size   o,
             const Size   rr,
+            const Size   ar,
             const Size   f  );
 };
 

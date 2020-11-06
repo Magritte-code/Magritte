@@ -50,9 +50,6 @@ before_install:
   - bash dependencies/get_conda.sh
   - export PATH=`pwd`/dependencies/miniconda3/bin:$PATH
   - source activate magritte
-  - which python
-  - python --version
-  - python3 --version
   - CMAKE_CMD="`pwd`/dependencies/cmake/bin/cmake"
 
 install:
@@ -68,6 +65,5 @@ install:
 
 script:
   - cd tests
-  - python3 --version
   - bash run_all_tests.sh
   - echo "Done."

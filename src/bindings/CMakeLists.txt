@@ -28,6 +28,7 @@ set (SOURCE_FILES
     ../model/lines/lineProducingSpecies/quadrature/quadrature.cpp
     ../model/radiation/radiation.cpp
     ../model/radiation/frequencies/frequencies.cpp
+    ../model/image/image.cpp
     ../solver/solver.cpp
 )
 

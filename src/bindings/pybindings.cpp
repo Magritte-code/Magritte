@@ -26,7 +26,6 @@ PYBIND11_MODULE (core, module)
     // Module docstring
     module.doc() = "Core module of Magritte: a modern software library for 3D radiative transfer.";
 
-
     module.def(    "n_threads_avail", &paracabs::multi_threading::    n_threads_avail);
     module.def("set_n_threads_avail", &paracabs::multi_threading::set_n_threads_avail);
 

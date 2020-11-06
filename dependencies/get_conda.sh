@@ -24,5 +24,3 @@ conda update --yes conda
 conda env create -f conda_env.yml
 # Activate the magritte conda environment
 source activate magritte
-
-which python

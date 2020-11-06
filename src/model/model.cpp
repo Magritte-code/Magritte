@@ -281,13 +281,6 @@ int Model :: compute_radiation_field_feautrier_order_2 ()
     const Size length_max = 4*parameters.npoints() + 1;
     const Size  width_max =   parameters.nfreqs ();
 
-
-    cout << "npoints = " << parameters.npoints() << endl;
-    cout << "nfreqs  = " << parameters.nfreqs () << endl;
-
-    cout << "l_max = " << length_max << endl;
-    cout << "w_max = " <<  width_max << endl;
-
     Solver solver (length_max, width_max, parameters.n_off_diag);
     solver.solve_feautrier_order_2 (*this);
 
@@ -435,4 +428,20 @@ int Model :: compute_level_populations (
     cout << "Converged after " << iteration << " iterations" << endl;
 
     return iteration;
+}
+
+
+///  Computer for the radiation field
+/////////////////////////////////////
+int Model :: compute_image (const Size ray_nr)
+{
+    cout << "Computing image..." << endl;
+
+    const Size length_max = 4*parameters.npoints() + 1;
+    const Size  width_max =   parameters.nfreqs ();
+
+    Solver solver (length_max, width_max, parameters.n_off_diag);
+    solver.image_feautrier_order_2 (*this, ray_nr);
+
+    return (0);
 }

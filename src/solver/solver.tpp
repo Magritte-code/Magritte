@@ -60,7 +60,6 @@ inline void Solver :: solve_shortchar_order_0 (Model& model)
 
         cout << "--- rr = " << rr << endl;
 
-        // for (Size o = 0; o < model.parameters.npoints(); o++)
         accelerated_for (o, model.parameters.npoints(), nblocks, nthreads,
         {
             const Real dshift_max = 1.0e+99;
@@ -95,11 +94,8 @@ inline void Solver :: solve_feautrier_order_2 (Model& model)
 
         cout << "--- rr = " << rr << endl;
 
-        // for (Size o = 0; o < model.parameters.npoints(); o++)
         accelerated_for (o, model.parameters.npoints(), nblocks, nthreads,
         {
-            // cout << "o = " << o << endl; 
-
             const Real dshift_max = 1.0e+99;
 
             nr_   ()[centre] = o;
@@ -109,30 +105,27 @@ inline void Solver :: solve_feautrier_order_2 (Model& model)
             last_ () = trace_ray <CoMoving> (model.geometry, o, ar, dshift_max, +1, centre+1, centre  ) - 1;
             n_tot_() = (last_()+1) - first_();
 
-           // cout << "   rr = " << rr << "   o = " << o << "   first = " << first_() << "   last = " << last_() << "   n_tot = " << n_tot_() << endl;
-           // for (Size i = 0; i < length; i++)
-           // {
-               // if (i >= first_() && i <= last_())
-               // {
-                   // cout << " ---- " << i << ":  " << nr_()[i] << "  dZ = " << dZ_()[i] << "   << shift = " << shift_()[i] << endl;
-               // }
-               // else
-               // {
-                   // cout << "  " << i << ":  " << nr_()[i] << "  dZ = " << dZ_()[i] << "   << shift = " << shift_()[i] << endl;
-               // }
-           // }
-
-            //cout << "f = " << first_() << "   l = " << last_() << "   n = " << n_tot_() << endl;
-
-            for (Size f = 0; f < model.parameters.nfreqs(); f++)
+            if (n_tot_() > 1)
             {
-                solve_feautrier_order_2 (model, o, rr, ar, f);
+                for (Size f = 0; f < model.parameters.nfreqs(); f++)
+                {
+                    solve_feautrier_order_2 (model, o, rr, ar, f);
 
-                model.radiation.u(rr,o,f)  = Su_()[centre];
-                model.radiation.J(   o,f) += Su_()[centre] * two * model.geometry.rays.weight[rr];
+                    model.radiation.u(rr,o,f)  = Su_()[centre];
+                    model.radiation.J(   o,f) += Su_()[centre] * two * model.geometry.rays.weight[rr];
 
-                update_Lambda (model, rr, f);
+                    update_Lambda (model, rr, f);
+                }
             }
+            else
+            {
+                for (Size f = 0; f < model.parameters.nfreqs(); f++)
+                {
+                    model.radiation.u(rr,o,f)  = boundary_intensity(model, o, model.radiation.frequencies.nu(o, f));
+                    model.radiation.J(   o,f) += two * model.geometry.rays.weight[rr] * model.radiation.u(rr,o,f);
+                }
+            }
+
         })
 
         pc::accelerator::synchronize();
@@ -140,6 +133,33 @@ inline void Solver :: solve_feautrier_order_2 (Model& model)
 
     model.radiation.u.copy_ptr_to_vec();
     model.radiation.J.copy_ptr_to_vec();
+}
+
+
+inline void Solver :: image_feautrier_order_2 (Model& model, const Size rr)
+{
+    model.images.push_back(Image(model.geometry, rr));
+
+    const Size ar = model.geometry.rays.antipod[rr];
+
+    accelerated_for (o, model.parameters.npoints(), nblocks, nthreads,
+    {
+        const Real dshift_max = 1.0e+99;
+
+        nr_   ()[centre] = o;
+        shift_()[centre] = 1.0;
+
+        first_() = trace_ray <Rest> (model.geometry, o, rr, dshift_max, -1, centre-1, centre-1) + 1;
+        last_ () = trace_ray <Rest> (model.geometry, o, ar, dshift_max, +1, centre+1, centre  ) - 1;
+        n_tot_() = (last_()+1) - first_();
+
+        for (Size f = 0; f < model.parameters.nfreqs(); f++)
+        {
+            image_feautrier_order_2 (model, o, rr, ar, f);
+        }
+    })
+
+    pc::accelerator::synchronize();
 }
 
 
@@ -153,16 +173,10 @@ accel inline Size Solver :: trace_ray (
           Size      id1,
           Size      id2 )
 {
-    double  Z = 0.0;                  // distance from origin (o)
-    double dZ = 0.0;                  // last increment in Z
-
-
-    // cout << " ---> o = " << o << "  r = " << r << endl;
+    double  Z = 0.0;   // distance from origin (o)
+    double dZ = 0.0;   // last increment in Z
 
     Size nxt = geometry.get_next (o, r, o, Z, dZ);
-
-    // cout << "          nxt = " << nxt << endl;
-
 
     if (geometry.valid_point(nxt))
     {
@@ -172,8 +186,6 @@ accel inline Size Solver :: trace_ray (
 
         set_data (crt, nxt, shift_crt, shift_nxt, dZ, dshift_max, increment, id1, id2);
 
-        // cout << "          set data." << endl;
-
         while (geometry.not_on_boundary(nxt))
         {
                   crt =       nxt;
@@ -182,15 +194,9 @@ accel inline Size Solver :: trace_ray (
             if (nxt == geometry.parameters.npoints()) printf ("ERROR (nxt < 0): o = %ld, crt = %ld, ray = %ld", o, crt, r);
             shift_nxt = geometry.get_shift <frame> (o, r, nxt);
 
-            // cout << "          nxt = " << nxt << endl;
-
             set_data (crt, nxt, shift_crt, shift_nxt, dZ, dshift_max, increment, id1, id2);
-
-            // cout << "          set data." << endl;
         }
     }
-
-    // cout << "          id = " << id << endl;
 
     return id1;
 }
@@ -230,8 +236,6 @@ accel inline void Solver :: set_data (
         // Assign current cell to first half of interpolation points
         for (Size m = 1; m < half_n_interpl; m++)
         {
-            // cout << "id = " << id << endl;
-
             nr   [id1] = crt;
             shift[id1] = shift_crt + m*dshift_interpl;
             dZ   [id2] = dZ_interpl;
@@ -243,8 +247,6 @@ accel inline void Solver :: set_data (
         // Assign next cell to second half of interpolation points
         for (Size m = half_n_interpl; m <= n_interpl; m++)
         {
-            // cout << "id = " << id << endl;
-
             nr   [id1] = nxt;
             shift[id1] = shift_crt + m*dshift_interpl;
             dZ   [id2] = dZ_interpl;
@@ -256,9 +258,6 @@ accel inline void Solver :: set_data (
 
     else
     {
-        // cout << "id1 = " << id1 << endl;
-        // if (id1 >= length) throw "error";
-
         nr   [id1] = nxt;
         shift[id1] = shift_nxt;
         dZ   [id2] = dZ_loc;
@@ -302,10 +301,6 @@ accel inline Real Solver :: planck (const Real temp, const Real freq) const
 accel inline Real Solver :: boundary_intensity (const Model& model, const Size p, const Real freq) const
 {
     const Size bdy_id = model.geometry.boundary.point2boundary[p];
-
-    // cout << "-------------------------------------" << endl;
-    // cout << "p = " << p      << endl;
-    // cout << "b = " << bdy_id << endl;
 
     switch (model.geometry.boundary.boundary_condition[bdy_id])
     {
@@ -388,13 +383,10 @@ accel inline void Solver :: solve_shortchar_order_0 (
     Size crt = o;
     Size nxt = model.geometry.get_next (o, r, o, Z, dZ);
 
-    // printf("---------- Start: r = %ld,  o = %ld,   nxt = %ld\n", r, o, nxt);
-
     if (model.geometry.valid_point (nxt))
     {
         double shift_c = 1.0;
         double shift_n = model.geometry.get_shift <CoMoving> (o, r, nxt);
-        // printf("o = %ld,   nxt = %ld,   shift_nxt = %le\n",o, nxt, shift_nxt);
 
         for (Size f = 0; f < model.parameters.nfreqs(); f++)
         {
@@ -408,7 +400,6 @@ accel inline void Solver :: solve_shortchar_order_0 (
 
             tau[f]                   = dtau;
             model.radiation.I(r,o,f) = drho * expf(-tau[f]);
-            // printf("I(o=%ld, c=%ld, n=%ld) = %le\n", o, crt, nxt, model.radiation.I(r,o,f));
         }
 
         while (model.geometry.not_on_boundary (nxt))
@@ -419,7 +410,6 @@ accel inline void Solver :: solve_shortchar_order_0 (
               chi_c =   chi_n;
 
             model.geometry.get_next (o, r, crt, nxt, Z, dZ, shift_n);
-            // printf("shift_nxt = %le\n", shift_nxt);
 
             for (Size f = 0; f < model.parameters.nfreqs(); f++)
             {
@@ -432,10 +422,8 @@ accel inline void Solver :: solve_shortchar_order_0 (
 
                 tau[f]                   += dtau;
                 model.radiation.I(r,o,f) += drho * expf(-tau[f]);
-                // printf("I(o=%ld, c=%ld, n=%ld) = %le\n", o, crt, nxt, model.radiation.I(r,o,f));
             }
         }
-        // printf("shift_nxt = %le\n", shift_nxt);
 
         for (Size f = 0; f < model.parameters.nfreqs(); f++)
         {
@@ -443,8 +431,6 @@ accel inline void Solver :: solve_shortchar_order_0 (
 
             model.radiation.I(r,o,f) += boundary_intensity(model, nxt, freq*shift_n) * expf(-tau[f]);
             model.radiation.J(  o,f) += model.geometry.rays.weight[r] * model.radiation.I(r,o,f);
-            // printf("I(o=%ld, c=%ld, n=%ld) = %le\n", o, crt, nxt, model.radiation.I(r,o,f));
-            // printf("-------- bc(%ld, %le) = %le\n", nxt, freq*shift_nxt, boundary_intensity(model, nxt, freq*shift_nxt));
         }
     }
 
@@ -456,116 +442,9 @@ accel inline void Solver :: solve_shortchar_order_0 (
 
             model.radiation.I(r,o,f)  = boundary_intensity(model, crt, freq);
             model.radiation.J(  o,f) += model.geometry.rays.weight[r] * model.radiation.I(r,o,f);
-            // printf("I(o=%ld, c=%ld, n=%ld) = %le\n", o, crt, nxt, model.radiation.I(r,o,f));
-            // printf("-------- bc(%ld, %le) = %le\n", crt, freq, boundary_intensity(model, crt, freq));
         }
     }
 }
-
-
-//inline void Solver :: add_L_diag (
-//    const Thermodynamics &thermodyn,
-//    const Real            invr_mass,
-//    const Real            freq_line,
-//    const Real            constante,
-//    const Size            rp,
-//    const Size            f,
-//    const Size            k,
-//          Lambda         &lambda       ) const
-//{
-//    Vector<double>& dZ     = dZ_    ();
-//    Vector<Size  >& nr     = nr_    ();
-//    Vector<double>& shift  = shift_ ();
-//    Vector<Real  >& L_diag = L_diag_();
-//
-//    const Size In = I(n1[rp], V(rp, f));
-//    const Size Dn = D(rp    , n1[rp] );
-//
-//    const Real fsc = frequencies[V(nrs[Dn], f)] * shift[centre];
-//    const Real phi = thermodyn.profile (invr_mass, nrs[Dn], freq_line, fsc);
-//
-//    const Real L = constante * fsc * phi * L_diag[centre] * inverse_chi[centre];
-//
-////    if(isnan(L)) {printf("!!! L d is nan %le, %le\n", L_diag[In], chi[In]);}
-//
-////    printf("eta / eta = %le", HH_OVER_FOUR_PI * constante * fsc * phi / eta[In]);
-//
-////    const Real L = eta[In] * L_diag[In] / (HH_OVER_FOUR_PI * chi[In]);
-//
-////    printf("L = %le\n", L);
-//
-//
-//    lambda.add_element(nr[centre], k, nr[centre], L);
-//}
-//
-//
-//inline void Solver :: add_L_lower (
-//    const Thermodynamics &thermodyn,
-//    const Real            invr_mass,
-//    const Real            freq_line,
-//    const Real            constante,
-//    const Size            rp,
-//    const Size            f,
-//    const Size            k,
-//    const Size            m,
-//          Lambda         &lambda        ) //const
-//{
-//    const Size In = I(n1[rp]-m-1, V(rp, f));
-//    const Size Dn = D(rp      , n1[rp]-m-1);
-//
-//    const Real fsc = frequencies[V(nrs[Dn], f)] * shifts[Dn];
-//    const Real phi = thermodyn.profile (invr_mass, nrs[Dn], freq_line, fsc);
-//
-//    const Real L = constante * fsc * phi * L_lower[M(m,In)] / chi[In];
-//
-////    if(isnan(L))
-////    {
-////        for (Size w = 0; w < width; w++) {check_L(w);}
-////
-////        printf("!!! L l is nan, M(%ld, %ld) = %ld, n_off_diag = %ld, last = %ld, n_tot = %ld\n", m, In, M(m,In), n_off_diag, last, n_tot[rp]);
-////    }
-//
-////    printf("eta / eta = %le", HH_OVER_FOUR_PI * constante * fsc * phi / eta[In]);
-//
-////    const Real L = eta[In] * L_lower[M(m,In)] / (HH_OVER_FOUR_PI * chi[In]);
-//
-//    lambda.add_element(origins[rp], k, nrs[Dn], L);
-//    lambda.add_element(nr[centre], k, nr[centre-m-1], L);
-//}
-//
-//
-//inline void Solver :: add_L_upper (
-//    const Thermodynamics &thermodyn,
-//    const Real            invr_mass,
-//    const Real            freq_line,
-//    const Real            constante,
-//    const Size            rp,
-//    const Size            f,
-//    const Size            k,
-//    const Size            m,
-//          Lambda         &lambda        ) //const
-//{
-//    const Size In = I(n1[rp]+m+1, V(rp, f));
-//    const Size Dn = D(rp      , n1[rp]+m+1);
-//
-//    const Real fsc = frequencies[V(nrs[Dn], f)] * shifts[Dn];
-//    const Real phi = thermodyn.profile (invr_mass, nrs[Dn], freq_line, fsc);
-//
-//    const Real L = constante * fsc * phi * L_upper[M(m,In)] / chi[In];
-//
-////    if(isnan(L)) {
-////
-////        for (Size w = 0; w < width; w++) {check_L(w);}
-////
-////        printf("!!! L u is nan, M(%ld, %ld) = %ld, n_off_diag = %ld, last = %ld, n_tot = %ld\n", m, In, M(m,In), n_off_diag, last, n_tot[rp]);
-////    }
-//
-////    printf("eta / eta = %le", HH_OVER_FOUR_PI * constante * fsc * phi / eta[In]);
-//
-////    const Real L = eta[In] * L_upper[M(m,In)] / (HH_OVER_FOUR_PI * chi[In]);
-//
-//    lambda.add_element(origins[rp], k, nrs[Dn], L);
-//}
 
 
 accel inline void Solver :: update_Lambda (Model &model, const Size rr, const Size f)
@@ -598,9 +477,6 @@ accel inline void Solver :: update_Lambda (Model &model, const Size rr, const Si
         const Real invr_mass = lspec.linedata.inverse_mass;
         const Real constante = lspec.linedata.A[k] * lspec.quadrature.weights[z] * w_ang;
 
-//           printf("---- Adding diag\n");
-        // add_L_diag (thermodyn, invr_mass, freq_line, constante, rp, f, k, lspec.lambda);
-
         Real frq = freqs.nu(nr[centre], f) * shift[centre];
         Real phi = thermodyn.profile(invr_mass, nr[centre], freq_line, frq);
         Real L   = constante * frq * phi * L_diag[centre] * inverse_chi[centre];
@@ -609,12 +485,8 @@ accel inline void Solver :: update_Lambda (Model &model, const Size rr, const Si
 
         for (long m = 0; (m < n_off_diag) && (m+1 < n_tot); m++)
         {
-//               printf("??? n1(%ld) >= m+1(%ld)\n", n1[rp], m+1);
-            if (centre >= first+m+1)   // centre-m-1 >= first
+            if (centre >= first+m+1) // centre-m-1 >= first
             {
-//                   printf("Adding lower: m = %ld\n", m);
-                // add_L_lower (thermodyn, invr_mass, freq_line, constante, rp, f, k, m, lspec.lambda);
-
                 const long n = centre-m-1;
 
                 frq = freqs.nu(nr[n], f) * shift[n];
@@ -624,11 +496,8 @@ accel inline void Solver :: update_Lambda (Model &model, const Size rr, const Si
                 lspec.lambda.add_element(nr[centre], k, nr[n], L);
             }
 
-//               printf("??? n1+m+1(%ld) < n_tot(%ld)\n", n1[rp]+m+1, n_tot[rp]);
-            if (centre+m+1 <= last)   // centre+m+1 < last
+            if (centre+m+1 <= last) // centre+m+1 < last
             {
-//                   printf("Adding upper: m = %ld\n", m);
-                // add_L_upper (thermodyn, invr_mass, freq_line, constante, rp, f, k, m, lspec.lambda);
                 const long n = centre+m+1;
 
                 frq = freqs.nu(nr[n], f) * shift[n];
@@ -738,9 +607,6 @@ accel inline void Solver :: solve_feautrier_order_2 (
         A[n] = one / inverse_A[n];
         C[n] = one / inverse_C[n];
 
-        // cout << "A[" << n << "] = " << A[n] << endl;
-        // cout << "C[" << n << "] = " << C[n] << endl;
-
         /// Use the previously stored value of the source function
         Su[n] = term_c;
 
@@ -784,15 +650,10 @@ accel inline void Solver :: solve_feautrier_order_2 (
 
             Su    [centre] += Su[centre+1] * FI[centre];
             L_diag[centre]  = inverse_C[centre] / (FF[centre] + GP[centre+1]);
-
-//            printf("- Solver: first %ld, last %ld, n_tot %ld, r %ld\n", first, last, n_tot[rp], rr);
-//            printf("L(n=%ld, f=%ld) = %le\n", centre, f, L_diag[In1]);
         }
         else
         {
             L_diag[centre] = (one + FF[centre-1]) / (Bl_min_Al + Bl*FF[centre-1]);
-//            printf("- Solver: first %ld, last %ld, n_tot %ld, r %ld\n", first, last, n_tot[rp], rr);
-//            printf("L(n=%ld, f=%ld) = %le\n", centre, f, L_diag[In1]);
         }
     }
     else
@@ -813,23 +674,15 @@ accel inline void Solver :: solve_feautrier_order_2 (
             GP[n] = GG[n] * GI[n];
 
             L_diag[n] = inverse_C[n] / (FF[n] + GP[n+1]);
-//            printf("L(n=%ld, f=%ld) = %le\n", n, f, L_diag[In]);
         }
 
         Su    [first] += Su[first+1] * FI[first];
         L_diag[first]  = (one + GG[first+1]) / (Bf_min_Cf + Bf*GG[first+1]);
 
-//        printf("first G[Ifp1] = %le\n", G[Ifp1]);
-//        printf("L(n=%ld, f=%ld) = %le\n", first, f, L_diag[If]);
-
-
         for (long n = last-1; n >= first; n--) // use long in reverse loops!
         {
             L_upper(0,n+1) = L_diag[n+1] * FI[n  ];
             L_lower(0,n  ) = L_diag[n  ] * GI[n+1];
-
-//            printf("L_u(0, %ld) = %le\n", In, L_upper[M(0,In)]);
-//            printf("L_l(0, %ld) = %le\n", In, L_lower[M(0,In)]);
         }
 
         for (Size m = 1; (m < n_off_diag) && (m < n_tot-1); m++)
@@ -838,24 +691,131 @@ accel inline void Solver :: solve_feautrier_order_2 (
             {
                 L_upper(m,n+m+1) = L_upper(m-1,n+m+1) * FI[n    ];
                 L_lower(m,n    ) = L_lower(m-1,n    ) * GI[n+m+1];
-
-//                printf("L_u(%ld, %ld)[%ld] = %le\n", m, In, M(m,In), L_upper[M(m,In)]);
-//                printf("L_l(%ld, %ld)[%ld] = %le\n", m, In, M(m,In), L_lower[M(m,In)]);
             }
         }
+    }
+}
 
-//        for (long n = last-1; n >= first; n--) // use long in reverse loops!
-//        {
-//            const Size Inp1 = I(n+1, w);
-//            const Size In   = I(n,   w);
-//
-//            printf("check L_u(0, %ld)[%ld] = %le\n", In, M(0,In), L_upper[M(0,In)]);
-//            printf("check L_l(0, %ld)[%ld] = %le\n", In, M(0,In), L_lower[M(0,In)]);
-//        }
+
+///  Solver for Feautrier equation along ray pairs using the (ordinary)
+///  2nd-order solver, without adaptive optical depth increments
+///    @param[in] w : width index
+///////////////////////////////////////////////////////////////////////
+accel inline void Solver :: image_feautrier_order_2 (
+          Model& model,
+    const Size   o,
+    const Size   rr,
+    const Size   ar,
+    const Size   f  )
+{
+    const Real freq = model.radiation.frequencies.nu(o, f);
+
+    Real eta_c, chi_c, dtau_c, term_c;
+    Real eta_n, chi_n, dtau_n, term_n;
+
+    const Size first = first_();
+    const Size last  = last_ ();
+    const Size n_tot = n_tot_();
+
+    Vector<double>& dZ    = dZ_   ();
+    Vector<Size  >& nr    = nr_   ();
+    Vector<double>& shift = shift_();
+
+    Vector<Real>& inverse_chi = inverse_chi_();
+
+    Vector<Real>& Su = Su_();
+    Vector<Real>& Sv = Sv_();
+
+    Vector<Real>& A         = A_        ();
+    Vector<Real>& C         = C_        ();
+    Vector<Real>& inverse_A = inverse_A_();
+    Vector<Real>& inverse_C = inverse_C_();
+
+    Vector<Real>& FF = FF_();
+    Vector<Real>& FI = FI_();
+    Vector<Real>& GG = GG_();
+    Vector<Real>& GI = GI_();
+    Vector<Real>& GP = GP_();
+
+    Vector<Real>& L_diag  = L_diag_ ();
+    Matrix<Real>& L_upper = L_upper_();
+    Matrix<Real>& L_lower = L_lower_();
+
+
+    // Get optical properties for first two elements
+    get_eta_and_chi (model, nr[first  ], freq*shift[first  ], eta_c, chi_c);
+    get_eta_and_chi (model, nr[first+1], freq*shift[first+1], eta_n, chi_n);
+
+    inverse_chi[first  ] = 1.0 / chi_c;
+    inverse_chi[first+1] = 1.0 / chi_n;
+
+    term_c = eta_c * inverse_chi[first  ];
+    term_n = eta_n * inverse_chi[first+1];
+    dtau_n = half * (chi_c + chi_n) * dZ[first];
+
+    // Set boundary conditions
+    const Real inverse_dtau_f = one / dtau_n;
+
+    C[first] = two * inverse_dtau_f * inverse_dtau_f;
+
+    const Real Bf_min_Cf = one + two * inverse_dtau_f;
+    const Real Bf        = Bf_min_Cf + C[first];
+    const Real I_bdy_f   = boundary_intensity (model, nr[first], freq*shift[first]);
+
+    Su[first]  = term_c + two * I_bdy_f * inverse_dtau_f;
+    Su[first] /= Bf;
+
+    /// Write economically: F[first] = (B[first] - C[first]) / C[first];
+    FF[first] = half * Bf_min_Cf * dtau_n * dtau_n;
+    FI[first] = one / (one + FF[first]);
+
+
+    /// Set body of Feautrier matrix
+    for (Size n = first+1; n < last; n++)
+    {
+        term_c = term_n;
+        dtau_c = dtau_n;
+         eta_c =  eta_n;
+         chi_c =  chi_n;
+
+        // Get new radiative properties
+        get_eta_and_chi (model, nr[n+1], freq*shift[n+1], eta_n, chi_n);
+
+        inverse_chi[n+1] = 1.0 / chi_n;
+
+        term_n = eta_n * inverse_chi[n+1];
+        dtau_n = half * (chi_c + chi_n) * dZ[n];
+
+        const Real dtau_avg = half * (dtau_c + dtau_n);
+        inverse_A[n] = dtau_avg * dtau_c;
+        inverse_C[n] = dtau_avg * dtau_n;
+
+        A[n] = one / inverse_A[n];
+        C[n] = one / inverse_C[n];
+
+        /// Use the previously stored value of the source function
+        Su[n] = term_c;
+
+        FF[n] = (A[n] * FF[n-1] * FI[n-1] + one) * inverse_C[n];
+        FI[n] = one / (one + FF[n]);
+        Su[n] = (A[n] * Su[n-1] + Su[n]) * FI[n] * inverse_C[n];
     }
 
 
+    /// Set boundary conditions
+    const Real inverse_dtau_l = one / dtau_n;
 
+    A[last] = two * inverse_dtau_l * inverse_dtau_l;
 
+    const Real Bl_min_Al = one + two * inverse_dtau_l;
+    const Real Bl        = Bl_min_Al + A[last];
 
+    const Real denominator = one / (Bl * FF[last-1] + Bl_min_Al);
+
+    const Real I_bdy_l = boundary_intensity (model, nr[last], freq*shift[last]);
+
+    Su[last] = term_n + two * I_bdy_l * inverse_dtau_l;
+    Su[last] = (A[last] * Su[last-1] + Su[last]) * (one + FF[last-1]) * denominator;
+
+    model.images.back().I(o,f) = two*Su[last] - I_bdy_l;
 }
