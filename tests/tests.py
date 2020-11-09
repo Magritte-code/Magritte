@@ -18,7 +18,7 @@ model.read(io)
 
 
 
-model.coarsen_grid(0.00012)
+model.coarsen_grid(0.00019)
 
 #print(model.geometry.points.curr_neighbors.neighbors)
 # print(np.array(model.geometry.points.position));
@@ -45,6 +45,7 @@ def has_same_lines(model,i,delaunay):
     # print(model_lines)
     # print(delaunay_lines)
     if (not model_lines.issubset(delaunay_lines)):
+        print(delaunay_lines.difference(model_lines));
         print(model_lines.difference(delaunay_lines));
         return False;
     return True;

@@ -275,10 +275,11 @@ inline void Model::generate_new_ears(const vector<Size> &neighbors_of_point, con
 
           if (!has_forbidden_plane(new_possible_ear,forbidden_planes))
           {
+
             double power=calc_power(new_possible_ear,curr_point);
             if (!std::isnan(power))
             {//otherwise we would be proposing a coplanar tetrahedron, which would be ridiculous
-            //std::cout << "Inserting new ear; power is: " << power << std::endl;
+              std::cout << "Inserting new ear; power is: " << power << std::endl;
               ears_map.insert(std::make_pair(new_possible_ear,power));
               rev_ears_map.insert(std::make_pair(power,new_possible_ear));
             }
@@ -352,6 +353,12 @@ inline bool triangle_shares_plane_with(vector<Size> &triangle1, vector<Size> &tr
 {
 //if it shares a plane (and therefor size of union is (8-3)), return true
 return (calculate_total_points(triangle1,triangle2)==5);
+}
+
+///checks if two tetrahedra are equal
+inline bool triangles_are_equal(vector<Size> &triangle1, vector<Size> &triangle2)
+{
+return (calculate_total_points(triangle1,triangle2)==4);
 }
 
 ///checks whether 2 planes are equal
@@ -726,9 +733,24 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
             if ((curr_triangle[0]==triangle[0]&&curr_triangle[1]==triangle[1])||
                 (curr_triangle[1]==triangle[0]&&curr_triangle[0]==triangle[1]))
             {
-              triangles_to_work_with.push_back(curr_triangle);
-              forbidden_planes.insert(vector<Size>{curr_triangle[0],curr_triangle[2],curr_triangle[3]});
-              forbidden_planes.insert(vector<Size>{curr_triangle[1],curr_triangle[2],curr_triangle[3]});
+              bool already_in=false;
+              //checks whether triangles_to_work_with already has a permutation of  curr_triangle
+              for (vector<Size> temp_triangle:triangles_to_work_with)
+              {
+                if (triangles_are_equal(temp_triangle,curr_triangle))
+                {
+                  already_in=true;
+                  break;
+                }
+              }
+              //if we did not already put some permutation of the triangle in triangles_to_work_with, we put it in and update the forbidden planes
+              if (!already_in)
+              {
+                triangles_to_work_with.push_back(curr_triangle);
+                forbidden_planes.insert(vector<Size>{curr_triangle[0],curr_triangle[2],curr_triangle[3]});
+                forbidden_planes.insert(vector<Size>{curr_triangle[1],curr_triangle[2],curr_triangle[3]});
+              }
+
               std::cout << "Deleted ear: " << curr_triangle[0] << ", " << curr_triangle[1] << ", " << curr_triangle[2] << ", " << curr_triangle[3] << std::endl;
               it=delete_vector_from_both_maps(ears_map,rev_ears_map,curr_triangle);
               //Delete corresponding line, which may no longer be used
@@ -788,22 +810,22 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
 
 
           //if for some reason (namely delaunay grids being weird), we still havent added a plane squished between two completed tetrahedra
-          // we add it now
-          std::set<Size> temp_intersection;
-          std::set_intersection(neighbor_map[triangle[0]].begin(),neighbor_map[triangle[0]].end(),
-                        neighbor_map[triangle[1]].begin(),neighbor_map[triangle[1]].end(),
-                        std::inserter(temp_intersection,temp_intersection.begin()));
-          for (Size temp_point:temp_intersection)
-          {
-            std::set<Size> temp_intersection2;//intersection of neighbors of temp_point with
-            std::set_intersection(temp_intersection.begin(),temp_intersection.end(),
-                          neighbor_map[temp_point].begin(),neighbor_map[temp_point].end(),
-                          std::inserter(temp_intersection2,temp_intersection2.begin()));
-            if (temp_intersection2.size()>=2){//note that i do not know how it could be larger than 2, but i'm taking no chances
-              forbidden_planes.insert(vector<Size>{triangle[0],triangle[1],temp_point});
-            }
-          }
-          
+          // we add it now TODO check if this works...
+          // std::set<Size> temp_intersection;
+          // std::set_intersection(neighbor_map[triangle[0]].begin(),neighbor_map[triangle[0]].end(),
+          //               neighbor_map[triangle[1]].begin(),neighbor_map[triangle[1]].end(),
+          //               std::inserter(temp_intersection,temp_intersection.begin()));
+          // for (Size temp_point:temp_intersection)
+          // {
+          //   std::set<Size> temp_intersection2;//intersection of neighbors of temp_point with
+          //   std::set_intersection(temp_intersection.begin(),temp_intersection.end(),
+          //                 neighbor_map[temp_point].begin(),neighbor_map[temp_point].end(),
+          //                 std::inserter(temp_intersection2,temp_intersection2.begin()));
+          //   if (temp_intersection2.size()>=2){//note that i do not know how it could be larger than 2, but i'm taking no chances
+          //     forbidden_planes.insert(vector<Size>{triangle[0],triangle[1],temp_point});
+          //   }
+          // }
+
 
           for (vector<Size> plane: relevant_planes)
           {//TODO: figure out whether new ears must be generated at all, because no new ears ever seem to be inserted...
