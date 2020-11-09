@@ -217,6 +217,7 @@ inline void Model::generate_new_ears(const vector<Size> &neighbors_of_point, con
   std::cout << "orient point is: " << orient_point << std::endl;
 //   std::cout << "line is: " << new_line[0]<< ", " << new_line[1] << std::endl;
   Size count_neighbours;
+
 //   for (vector<Size> old_line: neighbor_lines)
 //   {
 //     vector<Size> new_possible_ear=lines_form_tetrahedron(old_line, new_line, neighbor_map);
@@ -400,6 +401,9 @@ inline std::pair<vector<Size>,vector<vector<Size>>> return_all_relevant_planes(v
     if (!newpl2_already_in)
     {toreturn.push_back(newplane2);orient_points.push_back(triangle[2]);}
   }
+
+
+
   return std::pair<vector<Size>,vector<vector<Size>>>(orient_points,toreturn);
 }
 
@@ -806,7 +810,28 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
           //std::cout << "number of planes: " << relevant_planes.size() << std::endl;
           //TODO FIXME: check if the same ear can be generated twice and check if it would actually matter...
           std::cout << "relevant planes size: "<<relevant_planes.size() << std::endl;
-          Size count=0;
+
+          //if we have two planes that already form a tetrahedron, we can stop adding new ears
+          if (relevant_planes.size()==2)
+          {
+            // first two elements of the planes correspond to the line added and are therefore shared
+            vector<Size> first_plane=relevant_planes[0];
+            vector<Size> second_plane=relevant_planes[1];
+            Size point_to_check=second_plane[2];
+            Size count_neighbors=0;
+            for (Size temp_point: first_plane)
+            {
+              if (neighbor_map[temp_point].count(point_to_check)!=0)//if temp_point is neighbor of point_of_plane
+              {count_neighbors++;}
+            }
+            double prod_of_orient=orientation(first_plane,point_to_check)*orientation(first_plane,orient_points[0]);//should be negative if temp_point lies on the opposite side of the plane as the orientation point
+            if ((count_neighbors==3)&&(prod_of_orient<0))
+            {
+              std::cout << "Two proposed planes already form a new tetrahedron. Therefore we will not use them." << std::endl;
+              relevant_planes.clear();
+              orient_points.clear();
+            }
+          }
 
 
           //if for some reason (namely delaunay grids being weird), we still havent added a plane squished between two completed tetrahedra
@@ -825,8 +850,7 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
           //     forbidden_planes.insert(vector<Size>{triangle[0],triangle[1],temp_point});
           //   }
           // }
-
-
+          Size count=0;
           for (vector<Size> plane: relevant_planes)
           {//TODO: figure out whether new ears must be generated at all, because no new ears ever seem to be inserted...
           generate_new_ears(neighbors_of_point, plane, neighbor_map,
