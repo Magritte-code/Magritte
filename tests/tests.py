@@ -18,7 +18,7 @@ model.read(io)
 
 
 
-model.coarsen_grid(0.00021)
+model.coarsen_grid(0.00020)
 
 #print(model.geometry.points.curr_neighbors.neighbors)
 # print(np.array(model.geometry.points.position));
