@@ -17,8 +17,10 @@ model=Model()
 model.read(io)
 
 
-
+# current error
 model.coarsen_grid(0.00042)
+# just test iteration
+# model.coarsen_grid(0.00007)
 
 #print(model.geometry.points.curr_neighbors.neighbors)
 # print(np.array(model.geometry.points.position));
@@ -61,7 +63,7 @@ def plot_error(model, i, delaunay):
     plotthing.plot_alllines(model.reduced_neighbors_after[i]);
     plotthing.plot_delaunay(delaunay)
     # plt.show(block = False);
-    plotthing.plot_iterations(model.reduced_neighbors_before[i],model.added_lines[i]);
+    plotthing.plot_iterations(model.reduced_neighbors_before[i],model.added_lines[i],model.added_tetras[i]);
     plt.show();
 
 
@@ -74,6 +76,7 @@ for i in range(n):
     # print(np.array(np.array(model.geometry.points.position)[model.neighbors_lists[0].get_neighbors(np.array(model.deleted_points)[i])]))
     # delaunay=Delaunay(np.array(np.array(model.geometry.points.position)[model.neighbors_lists[0].get_neighbors(np.array(model.deleted_points)[i])]));
     delaunay=Delaunay(np.array(model.geometry.points.position)[list(model.reduced_neighbors_before[i].keys())]);
+    # if (i==4):
     if (not has_same_lines(model,i,delaunay)):
         print("Error at iteration: "+str(i+1));
         plot_error(model, i, delaunay);
