@@ -13,19 +13,19 @@ class PlotFuns:
         self.positions=np.array(self.model.geometry.points.position);
         self.conversion=conversion;
 
-    #returns [x,y,z,r]
-    def find_circumsphere(point1,point2,point3,point4):
+    #returns [x,y,z,r]; see: https://mathworld.wolfram.com/Circumsphere.html
+    def find_circumsphere(self,point1,point2,point3,point4):
         xpos=np.array([self.positions[point1][0],self.positions[point2][0],self.positions[point3][0],self.positions[point4][0]]);
         ypos=np.array([self.positions[point1][1],self.positions[point2][1],self.positions[point3][1],self.positions[point4][1]]);
         zpos=np.array([self.positions[point1][2],self.positions[point2][2],self.positions[point3][2],self.positions[point4][2]]);
         ones=np.array([1,1,1,1]);
         squares=np.square(xpos)+np.square(ypos)+np.square(zpos);
         Dmat=np.array([squares,xpos,ypos,zpos,ones]);
-        a=np.linalg.determinant(Dmat[np.ix_([1,2,3,4],[0,1,2,3])]);
-        Dx=np.linalg.determinant(Dmat[np.ix_([0,2,3,4],[0,1,2,3])]);
-        Dy=-np.linalg.determinant(Dmat[np.ix_([0,1,3,4],[0,1,2,3])]);
-        Dz=np.linalg.determinant(Dmat[np.ix_([0,1,2,4],[0,1,2,3])]);
-        c=np.linalg.determinant(Dmat[np.ix_([0,1,2,3],[0,1,2,3])]);
+        a=np.linalg.det(Dmat[np.ix_([1,2,3,4],[0,1,2,3])]);
+        Dx=np.linalg.det(Dmat[np.ix_([0,2,3,4],[0,1,2,3])]);
+        Dy=-np.linalg.det(Dmat[np.ix_([0,1,3,4],[0,1,2,3])]);
+        Dz=np.linalg.det(Dmat[np.ix_([0,1,2,4],[0,1,2,3])]);
+        c=np.linalg.det(Dmat[np.ix_([0,1,2,3],[0,1,2,3])]);
         return np.array([Dx/(2*a),Dy/(2*a),Dz/(2*a),np.sqrt(Dx**2+Dy**2+Dz**2-4*a*c)/(2*abs(a))])
 
     # draws sphere; adapted from stackoverflow
@@ -74,7 +74,10 @@ class PlotFuns:
             #and plot spheres around tetrahedra
             for tetra in addedtetras[i]:
                 #TODO find coords of center and radius
-
+                temp=self.find_circumsphere(tetra[0],tetra[1],tetra[2],tetra[3]);
+                center=temp[0:3];
+                print(center)
+                radius=temp[3];
                 self.plot_sphere(ax,center,radius,'r');
             plt.show(block = False);
 
