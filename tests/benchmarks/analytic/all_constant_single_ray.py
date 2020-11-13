@@ -16,14 +16,14 @@ import magritte.core     as magritte
 
 
 dimension = 1
-npoints   = 5 #1000
+npoints   = 200
 nrays     = 2
 nspecs    = 5
 nlspecs   = 1
 nquads    = 1
 
 nH2  = 1.0E+12                 # [m^-3]
-nTT  = 1.0E+10                 # [m^-3]
+nTT  = 1.0E+03                 # [m^-3]
 temp = 4.5E+00                 # [K]
 turb = 0.0E+00                 # [m/s]
 dx   = 1.0E+12                 # [m]
@@ -32,10 +32,10 @@ dv   = 0.0E+00 / magritte.CC   # [fraction of speed of light]
 
 def create_model ():
     """
-    Create a model file for the all_constant benchmark in 1D.
+    Create a model file for the all_constant benchmark, single ray.
     """
 
-    modelName = f'all_constant_1D'
+    modelName = f'all_constant_single_ray'
     modelFile = f'{moddir}{modelName}.hdf5'
     lamdaFile = f'{datdir}test.txt'
 
@@ -70,9 +70,9 @@ def create_model ():
     return
 
 
-def run_model (store_results=False):
+def run_model (nosave=False):
 
-    modelName = f'all_constant_1D'
+    modelName = f'all_constant_single_ray'
     modelFile = f'{moddir}{modelName}.hdf5'
     timestamp = tools.timestamp()
 
@@ -90,13 +90,13 @@ def run_model (store_results=False):
 
     timer3 = tools.Timer('shortchar 0  ')
     timer3.start()
-    model.compute_radiation_field_0th_short_characteristics ()
+    model.compute_radiation_field_shortchar_order_0 ()
     timer3.stop()
     u_0s = np.array(model.radiation.u)
 
     timer4 = tools.Timer('feautrier 2  ')
     timer4.start()
-    model.compute_radiation_field_2nd_order_Feautrier ()
+    model.compute_radiation_field_feautrier_order_2 ()
     timer4.stop()
     u_2f = np.array(model.radiation.u)
 
@@ -146,10 +146,11 @@ def run_model (store_results=False):
 
     print(result)
 
-    if store_results:
+    if not nosave:
         with open(f'{resdir}{modelName}-{timestamp}.log' ,'w') as log:
             log.write(result)
-            
+
+        fig = plt.figure(dpi=150)
         plt.title(modelName)
         plt.scatter(x, u_0s[0,:,0], s=0.5, label='0s', zorder=1)
         plt.scatter(x, u_2f[0,:,0], s=0.5, label='2f', zorder=1)
@@ -163,7 +164,16 @@ def run_model (store_results=False):
     return
 
 
-if __name__ == '__main__':
+def run_test (nosave=False):
 
     create_model ()
-    run_model    ()
+    run_model    (nosave)
+
+    return
+
+
+if __name__ == '__main__':
+
+    nosave = (len(sys.argv) > 1) and (sys.argv[1] == 'nosave')
+
+    run_test (nosave)

@@ -48,16 +48,29 @@ class Solver
         Size nblocks  = 512;
         Size nthreads = 512;
 
-        Solver (const Size l, const Size w, const Size n_o_d);
+        // Solver () {};
+        // Solver (const Size l, const Size w, const Size n_o_d);
 
-        void trace (Model& model);
+        template <Frame frame>
+        void setup (Model& model);
+        void setup (const Size l, const Size w, const Size n_o_d);
+
+        accel inline Real get_dshift_max (
+            const Model& model,
+            const Size   o     );
+
+        template <Frame frame>
+        inline void get_ray_lengths     (Model& model);
+        template <Frame frame>
+        inline Size get_ray_lengths_max (Model& model);
+
 
     // private:
-        const Size length;
-        const Size centre;
-        const Size width;
+        Size length;
+        Size centre;
+        Size width;
 
-        const Size n_off_diag;
+        Size n_off_diag;
 
 
         // void initialize (const Size l, const Size w);
@@ -102,6 +115,7 @@ class Solver
                   Model &model,
             const Size   rr,
             const Size   f  );
+
 
         accel inline void solve_shortchar_order_0 (Model& model);
         accel inline void solve_shortchar_order_0 (

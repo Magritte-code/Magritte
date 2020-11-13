@@ -84,10 +84,10 @@ def create_model (a_or_b):
 
     model.write()
 
-    return
+    return model
 
 
-def run_model (a_or_b, store_results=False):
+def run_model (a_or_b, nosave=False):
 
     modelName = f'vanZadelhoff_1{a_or_b}_1D'
     modelFile = f'{moddir}{modelName}.hdf5'
@@ -140,10 +140,11 @@ def run_model (a_or_b, store_results=False):
 
     print(result)
 
-    if store_results:
+    if not nosave:
         with open(f'{resdir}{modelName}-{timestamp}.log' ,'w') as log:
             log.write(result)
 
+        plt.figure(dpi=150)
         plt.title(modelName)
         plt.scatter(rs, pops[:,0]/abun, s=0.5, label='i=0', zorder=1)
         plt.scatter(rs, pops[:,1]/abun, s=0.5, label='i=1', zorder=1)
@@ -160,8 +161,10 @@ def run_model (a_or_b, store_results=False):
 
 if __name__ == '__main__':
 
+    nosave = (len(sys.argv) > 1) and (sys.argv[1] == 'nosave')
+
     create_model ('a')
-    run_model    ('a')
+    run_model    ('a', nosave)
 
     create_model ('b')
-    run_model    ('b')
+    run_model    ('b', nosave)

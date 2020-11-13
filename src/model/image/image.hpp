@@ -18,8 +18,8 @@ struct Image
 
     Matrix<Real> I;      ///< intensity out along ray (index(p,f))
 
-    Image (const Size rr) : ray_nr (rr) {};
     Image (const Geometry& geometry, const Size ray_nr);
+    Image (const Image& image);
 
     // void write (const Io &io) const;
 

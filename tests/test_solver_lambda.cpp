@@ -141,7 +141,8 @@ TEST (solver_lambda, lambda)
 
     model.parameters.n_off_diag = model.parameters.npoints();
 
-    Solver solver (length_max, width_max, model.parameters.n_off_diag);
+    Solver solver;
+    solver.setup <CoMoving>        (model);
     solver.solve_feautrier_order_2 (model);
 
     MatrixXr T = setup_T (solver);

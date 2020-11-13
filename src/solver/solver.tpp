@@ -1,51 +1,145 @@
-///  Getter for the maximum allowed shift value determined by the smallest line
-///    @param[in] o : number of point under consideration
-///    @retrun maximum allowed shift value determined by the smallest line
-///////////////////////////////////////////////////////////////////////////////
-// accel inline Real Solver :: get_dshift_max (const Model& model, const Size o) const
-// {
-//
-//     Real dshift_max = std::numeric_limits<Real>::max();
-//
-//     for (const LineProducingSpecies &lspec : lines.lineProducingSpecies)
-//     {
-//         const Real inverse_mass   = lspec.linedata.inverse_mass;
-//         const Real new_dshift_max = parameters.max_width_fraction
-//                                     * thermodynamics.profile_width (inverse_mass, o);
-//
-//         if (dshift_max > new_dshift_max)
-//         {
-//             dshift_max = new_dshift_max;
-//         }
-//     }
-//
-//     return dshift_max;
-// }
+template <Frame frame>
+inline void Solver :: setup (Model& model)
+{
+    const Size length = 2 * get_ray_lengths_max <frame> (model) + 1;
+    const Size  width = model.parameters.nfreqs();
+    const Size  n_o_d = model.parameters.n_off_diag;
+
+    setup (length, width, n_o_d);
+}
 
 
-inline void Solver :: trace (Model& model)
+inline void Solver :: setup (const Size l, const Size w, const Size n_o_d)
+{
+    length     = l;
+    centre     = l/2;
+    width      = w;
+    n_off_diag = n_o_d;
+
+    for (Size i = 0; i < pc::multi_threading::n_threads_avail(); i++)
+    {
+        dZ_          (i).resize (length);
+        nr_          (i).resize (length);
+        shift_       (i).resize (length);
+
+        eta_c_       (i).resize (width);
+        eta_n_       (i).resize (width);
+
+        chi_c_       (i).resize (width);
+        chi_n_       (i).resize (width);
+
+        inverse_chi_ (i).resize (length);
+
+        tau_         (i).resize (width);
+
+        Su_          (i).resize (length);
+        Sv_          (i).resize (length);
+
+        A_           (i).resize (length);
+        C_           (i).resize (length);
+        inverse_A_   (i).resize (length);
+        inverse_C_   (i).resize (length);
+
+        FF_          (i).resize (length);
+        FI_          (i).resize (length);
+        GG_          (i).resize (length);
+        GI_          (i).resize (length);
+        GP_          (i).resize (length);
+
+        L_diag_      (i).resize (length);
+
+        L_upper_     (i).resize (n_off_diag, length);
+        L_lower_     (i).resize (n_off_diag, length);
+    }
+}
+
+
+// /  Getter for the maximum allowed shift value determined by the smallest line
+// /    @param[in] o : number of point under consideration
+// /    @retrun maximum allowed shift value determined by the smallest line
+// /////////////////////////////////////////////////////////////////////////////
+accel inline Real Solver :: get_dshift_max (
+    const Model& model,
+    const Size   o     )
+{
+    Real dshift_max = std::numeric_limits<Real>::max();
+
+    for (const LineProducingSpecies &lspec : model.lines.lineProducingSpecies)
+    {
+        const Real inverse_mass   = lspec.linedata.inverse_mass;
+        const Real new_dshift_max = model.parameters.max_width_fraction
+                                    * model.thermodynamics.profile_width (inverse_mass, o);
+
+        if (dshift_max > new_dshift_max)
+        {
+            dshift_max = new_dshift_max;
+        }
+    }
+
+    return dshift_max;
+}
+
+
+template <Frame frame>
+inline void Solver :: get_ray_lengths (Model& model)
 {
     for (Size rr = 0; rr < model.parameters.hnrays(); rr++)
     {
         const Size ar = model.geometry.rays.antipod[rr];
 
-        cout << "rr = " << rr << endl;
-
         accelerated_for (o, model.parameters.npoints(), nblocks, nthreads,
         {
-            // const Real dshift_max = get_dshift_max (o);
-            const Real dshift_max = 1.0e+99;
+            const Real dshift_max = get_dshift_max (model, o);
 
-            model.geometry.lengths[model.parameters.npoints()*rr+o] =
-                trace_ray <CoMoving> (model.geometry, o, rr, dshift_max, +1, centre+1, centre+1) + 1
-              - trace_ray <CoMoving> (model.geometry, o, ar, dshift_max, -1, centre+1, centre  );
+            model.geometry.lengths(rr,o) =
+                model.geometry.get_ray_length <frame> (o, rr, dshift_max)
+              + model.geometry.get_ray_length <frame> (o, ar, dshift_max);
         })
 
         pc::accelerator::synchronize();
     }
 
-    model.geometry.lengths.copy_ptr_to_vec ();
+    model.geometry.lengths.copy_ptr_to_vec();
 }
+
+
+template <Frame frame>
+inline Size Solver :: get_ray_lengths_max (Model& model)
+{
+    get_ray_lengths <frame> (model);
+
+    Geometry& geo = model.geometry;
+
+    geo.lengths_max = *std::max_element(geo.lengths.vec.begin(),
+                                        geo.lengths.vec.end()   );
+
+    return geo.lengths_max;
+}
+
+
+// inline void Solver :: trace (Model& model)
+// {
+//     for (Size rr = 0; rr < model.parameters.hnrays(); rr++)
+//     {
+//         const Size ar = model.geometry.rays.antipod[rr];
+//
+//         cout << "rr = " << rr << endl;
+//
+//         accelerated_for (o, model.parameters.npoints(), nblocks, nthreads,
+//         {
+//             const Real dshift_max = get_dshift_max (model, o);
+//             // const Real dshift_max = 1.0e+99;
+//
+//             model.geometry.lengths[model.parameters.npoints()*rr+o] =
+//                 trace_ray <CoMoving> (model.geometry, o, rr, dshift_max, +1, centre+1, centre+1) + 1
+//               - trace_ray <CoMoving> (model.geometry, o, ar, dshift_max, -1, centre+1, centre  );
+//         })
+//
+//         pc::accelerator::synchronize();
+//     }
+//
+//     model.geometry.lengths.copy_ptr_to_vec ();
+// }
 
 
 inline void Solver :: solve_shortchar_order_0 (Model& model)
@@ -62,6 +156,7 @@ inline void Solver :: solve_shortchar_order_0 (Model& model)
 
         accelerated_for (o, model.parameters.npoints(), nblocks, nthreads,
         {
+            // const Real dshift_max = get_dshift_max (o);
             const Real dshift_max = 1.0e+99;
 
             solve_shortchar_order_0 (model, o, rr, dshift_max);
@@ -96,7 +191,9 @@ inline void Solver :: solve_feautrier_order_2 (Model& model)
 
         accelerated_for (o, model.parameters.npoints(), nblocks, nthreads,
         {
-            const Real dshift_max = 1.0e+99;
+            const Real dshift_max = get_dshift_max (model, o);
+
+            cout << "dshift_max = " << dshift_max * CC << endl;
 
             nr_   ()[centre] = o;
             shift_()[centre] = 1.0;
@@ -138,13 +235,13 @@ inline void Solver :: solve_feautrier_order_2 (Model& model)
 
 inline void Solver :: image_feautrier_order_2 (Model& model, const Size rr)
 {
-    model.images.push_back(Image(model.geometry, rr));
+    Image image = Image(model.geometry, rr);
 
     const Size ar = model.geometry.rays.antipod[rr];
 
     accelerated_for (o, model.parameters.npoints(), nblocks, nthreads,
     {
-        const Real dshift_max = 1.0e+99;
+        const Real dshift_max = get_dshift_max (model, o);
 
         nr_   ()[centre] = o;
         shift_()[centre] = 1.0;
@@ -153,13 +250,27 @@ inline void Solver :: image_feautrier_order_2 (Model& model, const Size rr)
         last_ () = trace_ray <Rest> (model.geometry, o, ar, dshift_max, +1, centre+1, centre  ) - 1;
         n_tot_() = (last_()+1) - first_();
 
-        for (Size f = 0; f < model.parameters.nfreqs(); f++)
+        if (n_tot_() > 1)
         {
-            image_feautrier_order_2 (model, o, rr, ar, f);
+            for (Size f = 0; f < model.parameters.nfreqs(); f++)
+            {
+                image_feautrier_order_2 (model, o, rr, ar, f);
+
+                image.I(o,f) = two*Su_()[first_()] - boundary_intensity(model, o, model.radiation.frequencies.nu(o, f));
+            }
+        }
+        else
+        {
+            for (Size f = 0; f < model.parameters.nfreqs(); f++)
+            {
+                image.I(o,f) = boundary_intensity(model, o, model.radiation.frequencies.nu(o, f));
+            }
         }
     })
 
     pc::accelerator::synchronize();
+
+    model.images.push_back (image);
 }
 
 
@@ -181,8 +292,8 @@ accel inline Size Solver :: trace_ray (
     if (geometry.valid_point(nxt))
     {
         Size         crt = o;
-        double shift_crt = geometry.get_shift <frame> (o, r, crt);
-        double shift_nxt = geometry.get_shift <frame> (o, r, nxt);
+        double shift_crt = geometry.get_shift <frame> (o, r, crt, 0.0);
+        double shift_nxt = geometry.get_shift <frame> (o, r, nxt, Z  );
 
         set_data (crt, nxt, shift_crt, shift_nxt, dZ, dshift_max, increment, id1, id2);
 
@@ -190,9 +301,9 @@ accel inline Size Solver :: trace_ray (
         {
                   crt =       nxt;
             shift_crt = shift_nxt;
-                  nxt = geometry.get_next (o, r, nxt, Z, dZ);
-            if (nxt == geometry.parameters.npoints()) printf ("ERROR (nxt < 0): o = %ld, crt = %ld, ray = %ld", o, crt, r);
-            shift_nxt = geometry.get_shift <frame> (o, r, nxt);
+
+                  nxt = geometry.get_next          (o, r, nxt, Z, dZ);
+            shift_nxt = geometry.get_shift <frame> (o, r, nxt, Z    );
 
             set_data (crt, nxt, shift_crt, shift_nxt, dZ, dshift_max, increment, id1, id2);
         }
@@ -228,9 +339,11 @@ accel inline void Solver :: set_data (
         const double     dZ_interpl =     dZ_loc / n_interpl;
         const double dshift_interpl =     dshift / n_interpl;
 
+        cout << "n_interpl = " << n_interpl << endl;
+
         if (n_interpl > 10000)
         {
-            printf ("ERROR (N_intpl > 10 000) || (dshift_max < 0, probably due to overflow)\n");
+            printf ("ERROR (n_intpl > 10 000) || (dshift_max < 0, probably due to overflow)\n");
         }
 
         // Assign current cell to first half of interpolation points
@@ -386,7 +499,7 @@ accel inline void Solver :: solve_shortchar_order_0 (
     if (model.geometry.valid_point (nxt))
     {
         double shift_c = 1.0;
-        double shift_n = model.geometry.get_shift <CoMoving> (o, r, nxt);
+        double shift_n = model.geometry.get_shift <CoMoving> (o, r, nxt, Z);
 
         for (Size f = 0; f < model.parameters.nfreqs(); f++)
         {
@@ -710,6 +823,8 @@ accel inline void Solver :: image_feautrier_order_2 (
 {
     const Real freq = model.radiation.frequencies.nu(o, f);
 
+    cout << "o = " << o << "  f = " << f << "  " << CC*(freq / model.lines.line[0] - 1.0) << endl;
+
     Real eta_c, chi_c, dtau_c, term_c;
     Real eta_n, chi_n, dtau_n, term_n;
 
@@ -817,5 +932,10 @@ accel inline void Solver :: image_feautrier_order_2 (
     Su[last] = term_n + two * I_bdy_l * inverse_dtau_l;
     Su[last] = (A[last] * Su[last-1] + Su[last]) * (one + FF[last-1]) * denominator;
 
-    model.images.back().I(o,f) = two*Su[last] - I_bdy_l;
+    for (long n = last-1; n > first; n--) // use long in reverse loops!
+    {
+        Su[n] += Su[n+1] * FI[n];
+    }
+
+    Su[first] += Su[first+1] * FI[first];
 }

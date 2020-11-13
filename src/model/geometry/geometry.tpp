@@ -108,7 +108,7 @@ inline Size Geometry :: get_next_spherical_symmetry (
     // Update distance along ray
     Z += dZ;
 
-    // cout << "o = " << o << "    r = " << r << "   c = " << c << "   next = " << next << "dZ = " << dZ << endl; 
+    // cout << "o = " << o << "    r = " << r << "   c = " << c << "   next = " << next << "dZ = " << dZ << endl;
 
     return next;
 }
@@ -121,10 +121,10 @@ inline Size Geometry :: get_next_spherical_symmetry (
 ///    @return doppler shift along the ray between the current cell and the origin
 ///////////////////////////////////////////////////////////////////////////////////////
 template <>
-inline double Geometry :: get_shift <CoMoving> (
+inline double Geometry :: get_shift_general_geometry <CoMoving> (
     const Size  o,
     const Size  r,
-    const Size  crt                            ) const
+    const Size  crt ) const
 {
     return 1.0 - (points.velocity[crt] - points.velocity[o]).dot(rays.direction[r]);
 }
@@ -137,10 +137,10 @@ inline double Geometry :: get_shift <CoMoving> (
 ///    @return doppler shift along the ray between the current cell and the origin
 ///////////////////////////////////////////////////////////////////////////////////////
 template <>
-inline double Geometry :: get_shift <Rest> (
+inline double Geometry :: get_shift_general_geometry <Rest> (
     const Size  o,
     const Size  r,
-    const Size  crt                        ) const
+    const Size  crt ) const
 {
     Size r_correct = r;
 
@@ -168,8 +168,8 @@ accel inline Size Geometry :: get_n_interpl (
 
 template <Frame frame>
 accel inline Size Geometry :: get_ray_length (
-    const Size o,
-    const Size r,
+    const Size   o,
+    const Size   r,
     const double dshift_max                  ) const
 {
     Size    l = 0;     // ray length
@@ -178,21 +178,21 @@ accel inline Size Geometry :: get_ray_length (
 
     Size nxt = get_next (o, r, o, Z, dZ);
 
-    if (nxt != parameters.npoints()) // if we are not going out of mesh
+    if (valid_point(nxt))
     {
         Size         crt = o;
-        double shift_crt = get_shift <frame> (o, r, crt);
-        double shift_nxt = get_shift <frame> (o, r, nxt);
+        double shift_crt = get_shift <frame> (o, r, crt, Z);
+        double shift_nxt = get_shift <frame> (o, r, nxt, Z);
 
         l += get_n_interpl (shift_crt, shift_nxt, dshift_max);
 
-        while (boundary.point2boundary[nxt] == parameters.npoints()) // while nxt not on boundary
+        while (not_on_boundary(nxt))
         {
                   crt =       nxt;
             shift_crt = shift_nxt;
-                  nxt = get_next (o, r, nxt, Z, dZ);
-//            if (nxt == get_npoints()) {printf ("ERROR (nxt < 0): o = %ld, crt = %ld, ray = %ld\n", o, crt, r); throw "";};
-            shift_nxt = get_shift <frame> (o, r, nxt);
+
+                  nxt = get_next          (o, r, nxt, Z, dZ);
+            shift_nxt = get_shift <frame> (o, r, nxt, Z    );
 
             l += get_n_interpl (shift_crt, shift_nxt, dshift_max);
         }
@@ -202,55 +202,46 @@ accel inline Size Geometry :: get_ray_length (
 }
 
 
-inline Size1 Geometry :: get_ray_lengths ()
-{
-    for (Size rr = 0; rr < parameters.hnrays(); rr++)
-    {
-        const Size ar = rays.antipod[rr];
+// inline Size1 Geometry :: get_ray_lengths ()
+// {
+//     for (Size rr = 0; rr < parameters.hnrays(); rr++)
+//     {
+//         const Size ar = rays.antipod[rr];
+//
+//         cout << "rr = " << rr << endl;
+//
+//         threaded_for (o, parameters.npoints(),
+//         {
+//             const Real dshift_max = 1.0e+99;
+//
+//             lengths.vec[parameters.npoints()*rr+o] =
+//                 get_ray_length <CoMoving> (o, rr, dshift_max)
+//               + get_ray_length <CoMoving> (o, ar, dshift_max);
+//         })
+//     }
+//
+//     return lengths.vec;
+// }
 
-        cout << "rr = " << rr << endl;
 
-//        threaded_for (o, parameters.npoints(),
-        threaded_for (o, 10000,
-        {
-            const Real dshift_max = 1.0e+99;
-
-            lengths.vec[parameters.npoints()*rr+o] =
-                get_ray_length <CoMoving> (o, rr, dshift_max)
-              + get_ray_length <CoMoving> (o, ar, dshift_max);
-        })
-    }
-
-    return lengths.vec;
-}
-
-
-inline Size1 Geometry :: get_ray_lengths_gpu (
-    const Size nblocks,
-    const Size nthreads                      )
-{
-    for (Size rr = 0; rr < parameters.hnrays(); rr++)
-    {
-        const Size ar = rays.antipod[rr];
-
-        cout << "rr = " << rr << endl;
-
-        accelerated_for (o, 10000, nblocks, nthreads,
-        {
-            const Real dshift_max = 1.0e+99;
-
-            lengths[parameters.npoints()*rr+o] =
-                get_ray_length <CoMoving> (o, rr, dshift_max)
-              + get_ray_length <CoMoving> (o, ar, dshift_max);
-        })
-
-        pc::accelerator::synchronize();
-    }
-
-    lengths.copy_ptr_to_vec ();
-
-    return lengths.vec;
-}
+// template <Frame frame>
+// inline void Geometry :: get_ray_lengths (const Real dshift_max)
+// {
+//     for (Size rr = 0; rr < parameters.hnrays(); rr++)
+//     {
+//         const Size ar = rays.antipod[rr];
+//
+//         accelerated_for (o, parameters.npoints(), nblocks, nthreads,
+//         {
+//             lengths(rr,o) =  get_ray_length <frame> (o, rr, dshift_max)
+//                            + get_ray_length <frame> (o, ar, dshift_max);
+//         })
+//
+//         pc::accelerator::synchronize();
+//     }
+//
+//     lengths.copy_ptr_to_vec();
+// }
 
 
 ///  Check whether a point index is valid
@@ -289,15 +280,23 @@ accel inline Size Geometry :: get_next (
           double& Z,
           double& dZ                   ) const
 {
+    Size next;
+
     if (parameters.spherical_symmetry())
     {
-        return get_next_spherical_symmetry (o, r, crt, Z, dZ);
-
+        next = get_next_spherical_symmetry (o, r, crt, Z, dZ);
     }
     else
     {
-        return get_next_general_geometry   (o, r, crt, Z, dZ);
+        next = get_next_general_geometry   (o, r, crt, Z, dZ);
     }
+
+    //if (!valid_point (next))
+    //{
+    //    printf ("ERROR (next is not valid): o = %d, crt = %d, ray = %d\n", o, crt, r);
+    //}
+
+    return next;
 }
 
 
@@ -320,5 +319,92 @@ accel inline void Geometry :: get_next (
           double& shift ) const
 {
     nxt   = get_next             (o, r, crt, Z, dZ);
-    shift = get_shift <CoMoving> (o, r, nxt       );
+    shift = get_shift <CoMoving> (o, r, nxt, Z    );
+}
+
+
+///  Getter for the doppler shift along the ray between the current cell and the origin
+///    @param[in] o   : number of cell from which the ray originates
+///    @param[in] r   : number of the ray along which we are looking
+///    @param[in] crt : number of the cell for which we want the velocity
+///    @param[in] Z   : reference to the current distance along the ray
+///    @return doppler shift along the ray between the current cell and the origin
+///////////////////////////////////////////////////////////////////////////////////////
+template<>
+inline double Geometry :: get_shift_spherical_symmetry <CoMoving> (
+    const Size   o,
+    const Size   r,
+    const Size   c,
+    const double Z ) const
+{
+    if (points.position[o].x() > 0.0)
+    {
+        const double Rcos_plus_Z = points.position[o].x() * rays.direction[r].x() + Z;
+
+        const double shift = 1.0 - (  points.velocity[c].x() * Rcos_plus_Z / points.position[c].x()
+                                    - points.velocity[o].x() * rays.direction[r].x()               );
+
+        printf("x= %le  rx=%le  z = %le  ", points.position[o].x(), rays.direction[r].x(), Z);
+        printf("t1 = %le   ", points.velocity[c].x() * Rcos_plus_Z / points.position[c].x());
+        printf("t2 = %le   ", points.velocity[o].x() * rays.direction[r].x()               );
+        printf("o=%d, c=%d,  shift = %le\n", o, c, (1.0-shift)*CC);
+
+        return shift;
+    }
+    else
+    {
+        return 1.0;
+    }
+}
+
+
+///  Getter for the doppler shift along the ray between the current cell and the origin
+///    @param[in] o   : number of cell from which the ray originates
+///    @param[in] r   : number of the ray along which we are looking
+///    @param[in] crt : number of the cell for which we want the velocity
+///    @param[in] Z   : reference to the current distance along the ray
+///    @return doppler shift along the ray between the current cell and the origin
+///////////////////////////////////////////////////////////////////////////////////////
+template<>
+inline double Geometry :: get_shift_spherical_symmetry <Rest> (
+    const Size   o,
+    const Size   r,
+    const Size   c,
+    const double Z ) const
+{
+    if (points.position[o].x() > 0.0)
+    {
+        const double Rcos_plus_Z = points.position[o].x() * rays.direction[r].x() + Z;
+
+        return 1.0 - points.velocity[c].x() * Rcos_plus_Z / points.position[c].x();
+    }
+    else
+    {
+        return 1.0;
+    }
+}
+
+
+///  Getter for the doppler shift along the ray between the current cell and the origin
+///    @param[in] o   : number of cell from which the ray originates
+///    @param[in] r   : number of the ray along which we are looking
+///    @param[in] crt : number of the cell for which we want the velocity
+///    @param[in] Z   : reference to the current distance along the ray
+///    @return doppler shift along the ray between the current cell and the origin
+///////////////////////////////////////////////////////////////////////////////////////
+template<Frame frame>
+inline double Geometry :: get_shift (
+    const Size   o,
+    const Size   r,
+    const Size   c,
+    const double Z ) const
+{
+    if (parameters.spherical_symmetry())
+    {
+        return get_shift_spherical_symmetry <frame> (o, r, c, Z);
+    }
+    else
+    {
+        return get_shift_general_geometry <frame> (o, r, c);
+    }
 }

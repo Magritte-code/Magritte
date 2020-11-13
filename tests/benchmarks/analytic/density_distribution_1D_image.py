@@ -41,7 +41,7 @@ def create_model (a_or_b):
     Create a model file for the density distribution benchmark 1D.
     """
 
-    modelName = f'density_distribution_VZ{a_or_b}_1D'
+    modelName = f'density_distribution_VZ{a_or_b}_1D_image'
     modelFile = f'{moddir}{modelName}.hdf5'
     lamdaFile = f'{datdir}test.txt'
 
@@ -86,7 +86,7 @@ def create_model (a_or_b):
 
 def run_model (a_or_b, nosave=False):
 
-    modelName = f'density_distribution_VZ{a_or_b}_1D'
+    modelName = f'density_distribution_VZ{a_or_b}_1D_image'
     modelFile = f'{moddir}{modelName}.hdf5'
     timestamp = tools.timestamp()
 
@@ -97,9 +97,14 @@ def run_model (a_or_b, nosave=False):
     model = magritte.Model (modelFile)
     timer1.stop()
 
+    fcen = model.lines.lineProducingSpecies[0].linedata.frequency[0]
+    dd = 1.0e+3 / magritte.CC
+    fmin = fcen - fcen*dd
+    fmax = fcen + fcen*dd
+
     timer2 = tools.Timer('setting model')
     timer2.start()
-    model.compute_spectral_discretisation ()
+    model.compute_spectral_discretisation (fmin, fmax)
     model.compute_inverse_line_widths     ()
     model.compute_LTE_level_populations   ()
     timer2.stop()
@@ -109,20 +114,16 @@ def run_model (a_or_b, nosave=False):
     hnrays  = model.parameters.hnrays ()
     nfreqs  = model.parameters.nfreqs ()
 
-    timer3 = tools.Timer('shortchar 0  ')
+    ray_nr = hnrays - 1
+
+    timer3 = tools.Timer('image        ')
     timer3.start()
-    model.compute_radiation_field_shortchar_order_0 ()
+    model.compute_image (ray_nr)
     timer3.stop()
-    u_0s = np.array(model.radiation.u)
 
-    timer4 = tools.Timer('feautrier 2  ')
-    timer4.start()
-    model.compute_radiation_field_feautrier_order_2 ()
-    timer4.stop()
-    u_2f = np.array(model.radiation.u)
-
-    rs = np.array(model.geometry.points.position)[:,0]
     nu = np.array(model.radiation.frequencies.nu)[0]
+    rs = np.array(model.images[-1].ImX, copy=True)
+    im = np.array(model.images[-1].I,   copy=True)
 
     ld = model.lines.lineProducingSpecies[0].linedata
 
@@ -152,23 +153,15 @@ def run_model (a_or_b, nosave=False):
                 # factor = factor - np.arccos(r*np.sin(theta)/r_in)
             return pref / (r*np.sin(theta)) * factor
 
-    def I_ (nu, r, theta):
-        return src + (bdy(nu)-src)*np.exp(-tau(nu, r, theta))
+    def I_im (nu, r):
+        return src + (bdy(nu)-src)*np.exp(-2.0*tau(nu, r, 0.5*np.pi))
 
-    def u_ (nu, r, theta):
-        return 0.5 * (I_(nu, r, theta) + I_(nu, r, np.pi-theta))
+    im_a = np.array([[I_im(f,r) for f in nu] for r in rs])
 
-    rx, ry, rz = np.array(model.geometry.rays.direction).T
-    angles     = np.arctan2(ry,rx)
-    angles     = angles[:hnrays]
+    error = np.abs(tools.relative_error(im, im_a))[:-1]
 
-    us = np.array([[[u_(f,r,a) for f in nu] for r in rs] for a in angles])
-
-    error_u_0s = np.abs(tools.relative_error(us, u_0s)[:-1, :-1, :])
-    error_u_2f = np.abs(tools.relative_error(us, u_2f)[:-1, :-1, :])
-
-    log_err_min = np.log10(np.min([error_u_0s, error_u_2f]))
-    log_err_max = np.log10(np.max([error_u_0s, error_u_2f]))
+    log_err_min = np.log10(np.min([error]))
+    log_err_max = np.log10(np.max([error]))
 
     bins = np.logspace(log_err_min, log_err_max, 100)
 
@@ -180,13 +173,11 @@ def run_model (a_or_b, nosave=False):
     result += f'nrays     = {model.parameters.nrays    ()       }\n'
     result += f'nquads    = {model.parameters.nquads   ()       }\n'
     result += f'--- Accuracy ------------------------------------\n'
-    result += f'mean error in shortchar 0 = {np.mean(error_u_0s)}\n'
-    result += f'mean error in feautrier 2 = {np.mean(error_u_2f)}\n'
+    result += f'max error in imager = {np.max(error)            }\n'
     result += f'--- Timers --------------------------------------\n'
     result += f'{timer1.print()                                 }\n'
     result += f'{timer2.print()                                 }\n'
     result += f'{timer3.print()                                 }\n'
-    result += f'{timer4.print()                                 }\n'
     result += f'-------------------------------------------------\n'
 
     print(result)
@@ -197,17 +188,14 @@ def run_model (a_or_b, nosave=False):
 
         plt.figure()
         plt.title(modelName)
-        plt.hist(error_u_0s.ravel(), bins=bins, histtype='step', label='0s')
-        plt.hist(error_u_2f.ravel(), bins=bins, histtype='step', label='2f')
+        plt.hist(error.ravel(), bins=bins, histtype='step')
         plt.xscale('log')
-        plt.legend()
         plt.savefig(f'{resdir}{modelName}_hist-{timestamp}.png', dpi=150)
 
         plt.figure()
-        plt.hist(error_u_0s.ravel(), bins=bins, histtype='step', label='0s', cumulative=True)
-        plt.hist(error_u_2f.ravel(), bins=bins, histtype='step', label='2f', cumulative=True)
+        plt.hist(error.ravel(), bins=bins, histtype='step', cumulative=True)
+        plt.hist(error.ravel(), bins=bins, histtype='step', cumulative=True)
         plt.xscale('log')
-        plt.legend()
         plt.savefig(f'{resdir}{modelName}_cumu-{timestamp}.png', dpi=150)
 
     return
@@ -220,6 +208,8 @@ def run_test (nosave=False):
 
     create_model ('b')
     run_model    ('b', nosave)
+
+    return
 
 
 if __name__ == '__main__':

@@ -17,7 +17,7 @@ namespace pc = paracabs;
 
 // Default Real and Size types
 typedef long double Real;
-typedef uint32_t    Size;
+typedef uint32_t   Size;
 
 using Vector3D = pc::datatypes::Vector3D <double>;
 

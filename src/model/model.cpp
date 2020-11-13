@@ -243,6 +243,39 @@ int Model :: compute_spectral_discretisation (const Real width)
 }
 
 
+///  Computer for spectral (=frequency) discretisation
+///  Gives same frequency bins to each point
+///    @param[in] min : minimal frequency
+///    @param[in] max : maximal frequency
+///////////////////////////////////////////////////////
+int Model :: compute_spectral_discretisation (
+    const long double nu_min,
+    const long double nu_max )
+{
+    cout << "Computing spectral discretisation..." << endl;
+
+    const long double dnu = (nu_max - nu_min) / (parameters.nfreqs() - 1);
+
+    threaded_for (p, parameters.npoints(),
+    {
+        for (Size f = 0; f < parameters.nfreqs(); f++)
+        {
+            radiation.frequencies.nu(p, f) = (Real) (nu_min + f*dnu);
+
+            radiation.frequencies.appears_in_line_integral[f] = false;;
+            radiation.frequencies.corresponding_l_for_spec[f] = parameters.nfreqs();
+            radiation.frequencies.corresponding_k_for_tran[f] = parameters.nfreqs();
+            radiation.frequencies.corresponding_z_for_line[f] = parameters.nfreqs();
+        }
+    })
+
+    // Set spectral discretisation setting
+    spectralDiscretisation = SD_Image;
+
+    return (0);
+}
+
+
 /// Computer for the level populations, assuming LTE
 ////////////////////////////////////////////////////
 int Model :: compute_LTE_level_populations ()
@@ -262,11 +295,14 @@ int Model :: compute_radiation_field_shortchar_order_0 ()
 {
     cout << "Computing radiation field..." << endl;
 
-    const Size length_max = 4*parameters.npoints() + 1;
-    const Size  width_max =   parameters.nfreqs ();
+    // const Size length_max = 4*parameters.npoints() + 1;
+    // const Size  width_max =   parameters.nfreqs ();
 
-    Solver solver (length_max, width_max, parameters.n_off_diag);
-    solver.solve_shortchar_order_0  (*this);
+    // Solver solver (length_max, width_max, parameters.n_off_diag);
+
+    Solver solver;
+    solver.setup <CoMoving>        (*this);
+    solver.solve_shortchar_order_0 (*this);
 
     return (0);
 }
@@ -278,10 +314,13 @@ int Model :: compute_radiation_field_feautrier_order_2 ()
 {
     cout << "Computing radiation field..." << endl;
 
-    const Size length_max = 4*parameters.npoints() + 1;
-    const Size  width_max =   parameters.nfreqs ();
+    // const Size length_max = 4*parameters.npoints() + 1;
+    // const Size  width_max =   parameters.nfreqs ();
 
-    Solver solver (length_max, width_max, parameters.n_off_diag);
+    // Solver solver (length_max, width_max, parameters.n_off_diag);
+
+    Solver solver;
+    solver.setup <CoMoving>        (*this);
     solver.solve_feautrier_order_2 (*this);
 
     return (0);
@@ -437,10 +476,13 @@ int Model :: compute_image (const Size ray_nr)
 {
     cout << "Computing image..." << endl;
 
-    const Size length_max = 4*parameters.npoints() + 1;
-    const Size  width_max =   parameters.nfreqs ();
+    // const Size length_max = 4*parameters.npoints() + 1;
+    // const Size  width_max =   parameters.nfreqs ();
 
-    Solver solver (length_max, width_max, parameters.n_off_diag);
+    // Solver solver (length_max, width_max, parameters.n_off_diag);
+
+    Solver solver;
+    solver.setup <Rest>            (*this);
     solver.image_feautrier_order_2 (*this, ray_nr);
 
     return (0);

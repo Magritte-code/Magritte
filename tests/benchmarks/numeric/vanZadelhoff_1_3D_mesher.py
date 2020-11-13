@@ -111,10 +111,10 @@ def create_model (a_or_b):
 
     model.write()
 
-    return
+    return model
 
 
-def run_model (a_or_b, store_results=False):
+def run_model (a_or_b, nosave=False):
 
     modelName = f'vanZadelhoff_1{a_or_b}_3D_mesher'
     modelFile = f'{moddir}{modelName}.hdf5'
@@ -167,7 +167,7 @@ def run_model (a_or_b, store_results=False):
 
     print(result)
 
-    if store_results:
+    if not nosave:
         with open(f'{resdir}{modelName}-{timestamp}.log' ,'w') as log:
             log.write(result)
 
@@ -187,8 +187,10 @@ def run_model (a_or_b, store_results=False):
 
 if __name__ == '__main__':
 
-    create_model ('a')
-    run_model    ('a')
+    nosave = (len(sys.argv) > 1) and (sys.argv[1] == 'nosave')
 
-    # create_model ('b')
-    # run_model    ('b')
+    create_model ('a')
+    run_model    ('a', nosave)
+
+    create_model ('b')
+    run_model    ('b', nosave)

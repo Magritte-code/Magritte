@@ -17,10 +17,10 @@ import magritte.core     as magritte
 
 dimension = 1
 npoints   = 200
-nrays     = 50
+nrays     = 2
 nspecs    = 5
 nlspecs   = 1
-nquads    = 50
+nquads    = 1
 
 r_in   = 1.0E13   # [m]
 r_out  = 7.8E16   # [m]
@@ -38,10 +38,10 @@ rs = np.logspace (np.log10(r_in), np.log10(r_out), npoints, endpoint=True)
 
 def create_model (a_or_b):
     """
-    Create a model file for the density distribution benchmark 1D.
+    Create a model file for the density distribution benchmark, single ray.
     """
 
-    modelName = f'density_distribution_VZ{a_or_b}_1D'
+    modelName = f'density_distribution_VZ{a_or_b}_single_ray'
     modelFile = f'{moddir}{modelName}.hdf5'
     lamdaFile = f'{datdir}test.txt'
 
@@ -54,7 +54,7 @@ def create_model (a_or_b):
         return X_mol  * nH2(r)
 
     model = magritte.Model ()
-    model.parameters.set_spherical_symmetry(True)
+    model.parameters.set_spherical_symmetry(False)
     model.parameters.set_model_name        (modelFile)
     model.parameters.set_dimension         (dimension)
     model.parameters.set_npoints           (npoints)
@@ -75,18 +75,18 @@ def create_model (a_or_b):
     model = setup.set_Delaunay_neighbor_lists (model)
     model = setup.set_Delaunay_boundary       (model)
     model = setup.set_boundary_condition_CMB  (model)
-    model = setup.set_rays_spherical_symmetry (model)
+    model = setup.set_uniform_rays            (model)
     model = setup.set_linedata_from_LAMDA_file(model, lamdaFile)
     model = setup.set_quadrature              (model)
 
     model.write()
 
-    return
+    return model
 
 
 def run_model (a_or_b, nosave=False):
 
-    modelName = f'density_distribution_VZ{a_or_b}_1D'
+    modelName = f'density_distribution_VZ{a_or_b}_single_ray'
     modelFile = f'{moddir}{modelName}.hdf5'
     timestamp = tools.timestamp()
 
@@ -104,11 +104,6 @@ def run_model (a_or_b, nosave=False):
     model.compute_LTE_level_populations   ()
     timer2.stop()
 
-    npoints = model.parameters.npoints()
-    nrays   = model.parameters.nrays  ()
-    hnrays  = model.parameters.hnrays ()
-    nfreqs  = model.parameters.nfreqs ()
-
     timer3 = tools.Timer('shortchar 0  ')
     timer3.start()
     model.compute_radiation_field_shortchar_order_0 ()
@@ -121,8 +116,8 @@ def run_model (a_or_b, nosave=False):
     timer4.stop()
     u_2f = np.array(model.radiation.u)
 
-    rs = np.array(model.geometry.points.position)[:,0]
-    nu = np.array(model.radiation.frequencies.nu)[0]
+    x  = np.array(model.geometry.points.position)[:,0]
+    nu = np.array(model.radiation.frequencies.nu)
 
     ld = model.lines.lineProducingSpecies[0].linedata
 
@@ -130,64 +125,40 @@ def run_model (a_or_b, nosave=False):
 
     frq = ld.frequency[k]
     pop = tools.LTEpop         (ld, temp) * X_mol * nH2_in
-    eta = tools.lineEmissivity (ld, pop)[k]
-    chi = tools.lineOpacity    (ld, pop)[k]
+    phi = tools.profile        (ld, k, temp, (turb/magritte.CC)**2, frq)
+    eta = tools.lineEmissivity (ld, pop)[k] * phi
+    chi = tools.lineOpacity    (ld, pop)[k] * phi
     src = tools.lineSource     (ld, pop)[k]
+    bdy = tools.I_CMB          (frq)
 
-    def phi (nu):
-        return tools.profile (ld, k, temp, (turb/magritte.CC)**2, nu)
+    def I_0 (x):
+        return src + (bdy-src)*np.exp(-chi*r_in*(1.0    - r_in/x    ))
 
-    def bdy (nu):
-        return tools.I_CMB (nu)
+    def I_1 (x):
+        return src + (bdy-src)*np.exp(-chi*r_in*(r_in/x - r_in/r_out))
 
-    def tau (nu, r, theta):
-        pref = chi * phi(nu) * r_in**2
-        if (theta == 0.0):
-            return pref * (2.0/r_in - 1.0/r - 1.0/r_out)
-        if (theta == np.pi):
-            return pref * (1.0/r - 1.0/r_out)
-        else:
-            factor = np.arccos(r*np.sin(theta)/r_out) + 0.5*np.pi - theta
-            # if (theta < np.arcsin(r_in/r)):
-                # factor = factor - np.arccos(r*np.sin(theta)/r_in)
-            return pref / (r*np.sin(theta)) * factor
+    def u_ (x):
+        return 0.5 * (I_0(x) + I_1(x))
 
-    def I_ (nu, r, theta):
-        return src + (bdy(nu)-src)*np.exp(-tau(nu, r, theta))
+    error_u_0s = tools.relative_error (u_(x), u_0s[0,:,0])
+    error_u_2f = tools.relative_error (u_(x), u_2f[0,:,0])
 
-    def u_ (nu, r, theta):
-        return 0.5 * (I_(nu, r, theta) + I_(nu, r, np.pi-theta))
-
-    rx, ry, rz = np.array(model.geometry.rays.direction).T
-    angles     = np.arctan2(ry,rx)
-    angles     = angles[:hnrays]
-
-    us = np.array([[[u_(f,r,a) for f in nu] for r in rs] for a in angles])
-
-    error_u_0s = np.abs(tools.relative_error(us, u_0s)[:-1, :-1, :])
-    error_u_2f = np.abs(tools.relative_error(us, u_2f)[:-1, :-1, :])
-
-    log_err_min = np.log10(np.min([error_u_0s, error_u_2f]))
-    log_err_max = np.log10(np.max([error_u_0s, error_u_2f]))
-
-    bins = np.logspace(log_err_min, log_err_max, 100)
-
-    result  = f'--- Benchmark name ------------------------------\n'
-    result += f'{modelName                                      }\n'
-    result += f'--- Parameters ----------------------------------\n'
-    result += f'dimension = {model.parameters.dimension()       }\n'
-    result += f'npoints   = {model.parameters.npoints  ()       }\n'
-    result += f'nrays     = {model.parameters.nrays    ()       }\n'
-    result += f'nquads    = {model.parameters.nquads   ()       }\n'
-    result += f'--- Accuracy ------------------------------------\n'
-    result += f'mean error in shortchar 0 = {np.mean(error_u_0s)}\n'
-    result += f'mean error in feautrier 2 = {np.mean(error_u_2f)}\n'
-    result += f'--- Timers --------------------------------------\n'
-    result += f'{timer1.print()                                 }\n'
-    result += f'{timer2.print()                                 }\n'
-    result += f'{timer3.print()                                 }\n'
-    result += f'{timer4.print()                                 }\n'
-    result += f'-------------------------------------------------\n'
+    result  = f'--- Benchmark name ----------------------------\n'
+    result += f'{modelName                                    }\n'
+    result += f'--- Parameters --------------------------------\n'
+    result += f'dimension = {model.parameters.dimension()     }\n'
+    result += f'npoints   = {model.parameters.npoints  ()     }\n'
+    result += f'nrays     = {model.parameters.nrays    ()     }\n'
+    result += f'nquads    = {model.parameters.nquads   ()     }\n'
+    result += f'--- Accuracy ----------------------------------\n'
+    result += f'max error in shortchar 0 = {np.max(error_u_0s)}\n'
+    result += f'max error in feautrier 2 = {np.max(error_u_2f)}\n'
+    result += f'--- Timers ------------------------------------\n'
+    result += f'{timer1.print()                               }\n'
+    result += f'{timer2.print()                               }\n'
+    result += f'{timer3.print()                               }\n'
+    result += f'{timer4.print()                               }\n'
+    result += f'-----------------------------------------------\n'
 
     print(result)
 
@@ -195,20 +166,16 @@ def run_model (a_or_b, nosave=False):
         with open(f'{resdir}{modelName}-{timestamp}.log' ,'w') as log:
             log.write(result)
 
-        plt.figure()
+        plt.figure(dpi=150)
         plt.title(modelName)
-        plt.hist(error_u_0s.ravel(), bins=bins, histtype='step', label='0s')
-        plt.hist(error_u_2f.ravel(), bins=bins, histtype='step', label='2f')
-        plt.xscale('log')
+        plt.scatter(x, u_0s[0,:,0], s=0.5, label='0s', zorder=1)
+        plt.scatter(x, u_2f[0,:,0], s=0.5, label='2f', zorder=1)
+        plt.plot(x, u_(x), c='lightgray', zorder=0)
         plt.legend()
-        plt.savefig(f'{resdir}{modelName}_hist-{timestamp}.png', dpi=150)
-
-        plt.figure()
-        plt.hist(error_u_0s.ravel(), bins=bins, histtype='step', label='0s', cumulative=True)
-        plt.hist(error_u_2f.ravel(), bins=bins, histtype='step', label='2f', cumulative=True)
         plt.xscale('log')
-        plt.legend()
-        plt.savefig(f'{resdir}{modelName}_cumu-{timestamp}.png', dpi=150)
+        plt.xlabel('r [m]')
+        plt.ylabel('Mean intensity [W/m$^{2}$]')
+        plt.savefig(f'{resdir}{modelName}-{timestamp}.png', dpi=150)
 
     return
 

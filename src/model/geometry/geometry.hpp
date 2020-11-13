@@ -4,6 +4,7 @@
 #include "io/io.hpp"
 #include "model/parameters/parameters.hpp"
 #include "tools/types.hpp"
+#include "tools/constants.hpp"
 #include "points/points.hpp"
 #include "rays/rays.hpp"
 #include "boundary/boundary.hpp"
@@ -22,7 +23,8 @@ struct Geometry
     Rays       rays;
     Boundary   boundary;
 
-    Vector <Size> lengths;
+    Matrix<Size> lengths;
+    Size         lengths_max;
 
     void read  (const Io& io);
     void write (const Io& io) const;
@@ -59,9 +61,23 @@ struct Geometry
 
     template <Frame frame>
     accel inline double get_shift (
+        const Size   o,
+        const Size   r,
+        const Size   crt,
+        const double Z   ) const;
+
+    template <Frame frame>
+    accel inline double get_shift_general_geometry (
         const Size o,
         const Size r,
         const Size crt ) const;
+
+    template <Frame frame>
+    accel inline double get_shift_spherical_symmetry (
+        const Size   o,
+        const Size   r,
+        const Size   crt,
+        const double Z   ) const;
 
     accel inline Size get_n_interpl (
         const double shift_crt,
@@ -74,10 +90,8 @@ struct Geometry
         const Size   r,
         const double dshift_max ) const;
 
-    inline Size1 get_ray_lengths     ();
-    inline Size1 get_ray_lengths_gpu (const Size nblocks, const Size nthreads);
-
-    inline void test ();
+    // template <Frame frame>
+    // inline void get_ray_lengths (const double dshift_max);
 
     inline bool valid_point     (const Size p) const;
     inline bool not_on_boundary (const Size p) const;

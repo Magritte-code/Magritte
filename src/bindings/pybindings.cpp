@@ -66,9 +66,21 @@ PYBIND11_MODULE (core, module)
     py::class_<Solver> (module, "Solver")
         // attributes
         // functions
-        .def ("trace", &Solver::trace)
+        // .def ("trace", &Solver::trace)
         // constructor
-        .def (py::init<const Size&, const Size&, const Size&>());
+        // .def (py::init<const Size&, const Size&, const Size&>());
+        .def (py::init<>());
+
+    // Image
+    py::class_<Image> (module, "Image")
+        // attributes
+        // functions
+        .def_readonly  ("ray_nr", &Image::ray_nr)
+        .def_readonly  ("ImX",    &Image::ImX)
+        .def_readonly  ("ImY",    &Image::ImY)
+        .def_readonly  ("I",      &Image::I)
+        // constructor
+        .def (py::init<const Geometry&, const Size&>());
 
     // Model
     py::class_<Model> (module, "Model")
@@ -86,6 +98,7 @@ PYBIND11_MODULE (core, module)
         .def_readwrite ("radiation",      &Model::radiation)
         .def_readonly  ("error_mean",     &Model::error_mean)
         .def_readonly  ("error_max",      &Model::error_max)
+        .def_readonly  ("images",         &Model::images)
         // io (void (Pet::*)(int))
         .def ("read",  (void (Model::*)(void))            &Model::read )
         .def ("write", (void (Model::*)(void) const)      &Model::write)
@@ -94,6 +107,7 @@ PYBIND11_MODULE (core, module)
         .def ("compute_inverse_line_widths",                                        &Model::compute_inverse_line_widths)
         .def ("compute_spectral_discretisation", (int (Model::*)(void            )) &Model::compute_spectral_discretisation)
         .def ("compute_spectral_discretisation", (int (Model::*)(const Real width)) &Model::compute_spectral_discretisation)
+        .def ("compute_spectral_discretisation", (int (Model::*)(const long double nu_min, const long double nu_max)) &Model::compute_spectral_discretisation)
         .def ("compute_LTE_level_populations",                                      &Model::compute_LTE_level_populations)
         // .def ("compute_radiation_field",                                            &Model::compute_radiation_field)
         .def ("compute_radiation_field_feautrier_order_2",                          &Model::compute_radiation_field_feautrier_order_2)
@@ -101,6 +115,7 @@ PYBIND11_MODULE (core, module)
         .def ("compute_Jeff",                                                       &Model::compute_Jeff)
         .def ("compute_level_populations_from_stateq",                              &Model::compute_level_populations_from_stateq)
         .def ("compute_level_populations",                                          &Model::compute_level_populations)
+        .def ("compute_image",                                                      &Model::compute_image)
         // constructor
         .def (py::init<const string>())
         .def (py::init<>());
@@ -115,6 +130,7 @@ PYBIND11_MODULE (core, module)
         .def ("set_dimension",                &Parameters::set_dimension           )
         .def ("set_npoints",                  &Parameters::set_npoints             )
         .def ("set_nrays",                    &Parameters::set_nrays               )
+        .def ("set_hnrays",                   &Parameters::set_hnrays              )
         .def ("set_nrays_red",                &Parameters::set_nrays_red           )
         .def ("set_order_min",                &Parameters::set_order_min           )
         .def ("set_order_max",                &Parameters::set_order_max           )
@@ -132,6 +148,7 @@ PYBIND11_MODULE (core, module)
         .def ("dimension",                    &Parameters::dimension           )
         .def ("npoints",                      &Parameters::npoints             )
         .def ("nrays",                        &Parameters::nrays               )
+        .def ("hnrays",                       &Parameters::hnrays              )
         .def ("nrays_red",                    &Parameters::nrays_red           )
         .def ("order_min",                    &Parameters::order_min           )
         .def ("order_max",                    &Parameters::order_max           )
@@ -163,8 +180,8 @@ PYBIND11_MODULE (core, module)
         .def ("read",               &Geometry::read)
         .def ("write",              &Geometry::write)
         // functions
-        .def ("get_ray_lengths",     &Geometry::get_ray_lengths)
-        .def ("get_ray_lengths_gpu", &Geometry::get_ray_lengths_gpu)
+        // .def ("get_ray_lengths",     &Geometry::get_ray_lengths)
+        // .def ("get_ray_lengths_gpu", &Geometry::get_ray_lengths_gpu)
         // constructor
         .def (py::init<>());
 
@@ -407,7 +424,6 @@ PYBIND11_MODULE (core, module)
         .def_readwrite ("u",           &Radiation::u)
         .def_readwrite ("v",           &Radiation::v)
         .def_readwrite ("J",           &Radiation::J)
-        .def ("print",                 &Radiation::print)
         // functions
         .def ("read",                  &Radiation::read)
         .def ("write",                 &Radiation::write)

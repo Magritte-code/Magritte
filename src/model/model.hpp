@@ -41,7 +41,11 @@ struct Model
 
     int compute_inverse_line_widths               ();
     int compute_spectral_discretisation           ();
-    int compute_spectral_discretisation           (const Real width);
+    int compute_spectral_discretisation           (
+        const Real width );
+    int compute_spectral_discretisation           (
+        const long double nu_min,
+        const long double nu_max );
     int compute_LTE_level_populations             ();
     int compute_radiation_field                   ();
     int compute_radiation_field_feautrier_order_2 ();
