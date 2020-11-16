@@ -34,7 +34,7 @@ class PlotFuns:
         x = position[0]+radius*np.cos(u)*np.sin(v)
         y = position[1]+radius*np.sin(u)*np.sin(v)
         z = position[2]+radius*np.cos(v)
-        ax.plot_surface(x, y, z, color=color, alpha=0.2);
+        ax.plot_surface(x, y, z, color=color, alpha=0.1);
     # auxillary fun that plots a single line
     def plot_line(self,ax,point1,point2,color):
         xs=np.array([self.positions[point1][0],self.positions[point2][0]]);

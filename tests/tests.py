@@ -18,7 +18,7 @@ model.read(io)
 
 
 # current error
-model.coarsen_grid(0.00012)
+model.coarsen_grid(0.00011)
 # just test iteration
 # model.coarsen_grid(0.00007)
 
