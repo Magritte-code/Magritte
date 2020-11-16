@@ -18,7 +18,7 @@ model.read(io)
 
 
 # current error
-model.coarsen_grid(0.00015)
+model.coarsen_grid(0.00007)
 # just test iteration
 # model.coarsen_grid(0.00007)
 
@@ -47,10 +47,17 @@ def has_same_lines(model,i,delaunay):
                     delaunay_lines.add((conversion[point2], conversion[point1]));
     # print(model_lines)
     # print(delaunay_lines)
+
+    # if (not model_lines.issubset(delaunay_lines)):
+    #     print(delaunay_lines.difference(model_lines));
+    #     print(model_lines.difference(delaunay_lines));
+    #     return False;
+    print(delaunay_lines.difference(model_lines));
+    print(model_lines.difference(delaunay_lines));
     if (not model_lines.issubset(delaunay_lines)):
-        print(delaunay_lines.difference(model_lines));
-        print(model_lines.difference(delaunay_lines));
         return False;
+
+
     return True;
     #return (model_lines.issubset(delaunay_lines))# and model_lines.issuperset(delaunay_lines));#model_lines.issuperset(delaunay_lines) and
 
@@ -63,7 +70,7 @@ def plot_error(model, i, delaunay):
     plotthing.plot_alllines(model.reduced_neighbors_after[i]);
     plotthing.plot_delaunay(delaunay)
     # plt.show(block = False);
-    plotthing.plot_iterations(model.reduced_neighbors_before[i],model.added_lines[i],model.added_tetras[i]);
+    plotthing.plot_iterations(model.reduced_neighbors_before[i],model.added_lines[i],model.added_tetras[i],True);
     plt.show();
 
 
@@ -76,8 +83,9 @@ for i in range(n):
     # print(np.array(np.array(model.geometry.points.position)[model.neighbors_lists[0].get_neighbors(np.array(model.deleted_points)[i])]))
     # delaunay=Delaunay(np.array(np.array(model.geometry.points.position)[model.neighbors_lists[0].get_neighbors(np.array(model.deleted_points)[i])]));
     delaunay=Delaunay(np.array(model.geometry.points.position)[list(model.reduced_neighbors_before[i].keys())]);
-    # if (i==0):
-    if (not has_same_lines(model,i,delaunay)):
+    has_same_lines(model,i,delaunay)
+    if (i==4):
+    # if (not has_same_lines(model,i,delaunay)):
         print("Error at iteration: "+str(i+1));
         plot_error(model, i, delaunay);
         break;
