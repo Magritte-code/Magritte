@@ -53,7 +53,7 @@ class PlotFuns:
         plt.show(block = False);
         # plt.show();
 
-    def plot_iterations(self,neighborsbefore,addedlines,addedtetras):
+    def plot_iterations(self,neighborsbefore,addedlines,addedtetras,togglecircles=False):
         niter=len(addedlines); #=len(addedtetras)
         for i in range(niter):
             # usual plotting stuff
@@ -72,13 +72,14 @@ class PlotFuns:
                     self.plot_line(ax,line[0],line[1],'g');
                 j+=1;
             #and plot spheres around tetrahedra
-            for tetra in addedtetras[i]:
+            if togglecircles:
+                for tetra in addedtetras[i]:
                 #TODO find coords of center and radius
-                temp=self.find_circumsphere(tetra[0],tetra[1],tetra[2],tetra[3]);
-                center=temp[0:3];
-                print(center)
-                radius=temp[3];
-                self.plot_sphere(ax,center,radius,'r');
+                    temp=self.find_circumsphere(tetra[0],tetra[1],tetra[2],tetra[3]);
+                    center=temp[0:3];
+                # print(center)
+                    radius=temp[3];
+                    self.plot_sphere(ax,center,radius,'r');
             plt.show(block = False);
 
 #Delaunay part

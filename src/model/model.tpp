@@ -206,6 +206,34 @@ inline bool has_forbidden_plane(vector<Size> &ear,std::set<std::vector<Size>> &f
   return false;
 }
 
+// checks whether each plane around a point is part of a tetrahedron
+inline bool point_surrounded_by_tetras(Size &point, std::map<Size, std::set<Size>> &neighbor_map)
+{
+  for (Size temp_point: neighbor_map[point])
+  {
+    std::set<Size> temp_intersection;
+    std::set_intersection(neighbor_map[point].begin(),neighbor_map[point].end(),
+                  neighbor_map[temp_point].begin(),neighbor_map[temp_point].end(),
+                  std::inserter(temp_intersection,temp_intersection.begin()));
+    for (Size temp_point2:temp_intersection)
+    {
+      bool plane_has_tetra=false;
+      for (Size temp_point3:temp_intersection)
+      {
+        if (neighbor_map[temp_point2].count(temp_point3)!=0)
+        {
+          plane_has_tetra=true;
+        }
+      }
+      if (!plane_has_tetra)
+      {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
 //generates the new ears and inserts them into the ears maps
 //TODO: fix this, wrong logic!!!!!!!!!
 // inline void Model::generate_new_ears(const std::set<vector<Size>> &neighbor_lines, vector<Size> &new_line, std::map<Size, std::set<Size>> &neighbor_map,
@@ -230,7 +258,7 @@ inline void Model::generate_new_ears(const vector<Size> &neighbors_of_point, con
         {count_neighbours++;}
       }
 
-      //if the candidate point is good for creating an ear with plane1
+      //if the candidate point is good for creating an ear with plane
       if (count_neighbours==2)
       {
         double prod_of_orient=orientation(plane,temp_point)*orientation(plane,orient_point);//should be negative if temp_point lies on the opposite side of the plane as the orientation point
@@ -254,10 +282,9 @@ inline void Model::generate_new_ears(const vector<Size> &neighbors_of_point, con
           //insert newly generated ear in maps; as usual, the first two points denote the proposed line
           vector<Size> new_possible_ear{temp_point,point_not_neighbor_of_plane,
               points_neighbor_of_plane[0],points_neighbor_of_plane[1]};
-
-          if (!has_forbidden_plane(new_possible_ear,forbidden_planes))
+          //checks whether we either have a fobidden plane, or that we do not need to add the line at all
+          if (!has_forbidden_plane(new_possible_ear,forbidden_planes)&&(!point_surrounded_by_tetras(temp_point,neighbor_map))&&(!point_surrounded_by_tetras(point_not_neighbor_of_plane,neighbor_map)))
           {
-
             double power=calc_power(new_possible_ear,curr_point);
             if (!std::isnan(power))
             {//otherwise we would be proposing a coplanar tetrahedron, which would be ridiculous
@@ -308,13 +335,13 @@ inline std::pair<vector<Size>,vector<vector<Size>>> return_all_relevant_planes(v
       if (planes_are_equal(newplane1,curr_plane))
       {
         newpl1_already_in=true;
-        forbidden_planes.insert(newplane1);
+        // forbidden_planes.insert(newplane1);
         toreturn.erase(toreturn.begin()+i);
         orient_points.erase(orient_points.begin()+i);
       }else if (planes_are_equal(newplane2,curr_plane))
       {
         newpl2_already_in=true;
-        forbidden_planes.insert(newplane2);
+        // forbidden_planes.insert(newplane2);
         toreturn.erase(toreturn.begin()+i);
         orient_points.erase(orient_points.begin()+i);
       }else{++i;}
@@ -574,18 +601,18 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
           vector<Size> triangle=(*rev_ears_map.begin()).second;//triangle which we are currently adding to the mesh
           std::cout << "Currently adding ear: (" << triangle[0] << "," << triangle[1] << "," << triangle[2] << "," << triangle[3] << ")" << std::endl;
           vector<vector<Size>> triangles_to_work_with;//vector of triangles from which we will generate  new triangles
-          triangles_to_work_with.push_back(triangle);
+          // triangles_to_work_with.push_back(triangle);
           neighbors_lists[curr_coarsening_lvl].add_neighbor(triangle[0], triangle[1]);
 
           //neighbors_lists[curr_coarsening_lvl].add_single_neighbor(triangle[1], triangle[0]); Changed the function, now also adds the point as neighbor of the neighbor
           neighbor_map[triangle[0]].insert(triangle[1]);
           neighbor_map[triangle[1]].insert(triangle[0]);
-          forbidden_planes.insert(vector<Size>{triangle[0],triangle[2],triangle[3]});
-          forbidden_planes.insert(vector<Size>{triangle[1],triangle[2],triangle[3]});
+          // forbidden_planes.insert(vector<Size>{triangle[0],triangle[2],triangle[3]});
+          // forbidden_planes.insert(vector<Size>{triangle[1],triangle[2],triangle[3]});
           //debug stuff
           added_lines[i].push_back(vector<Size>{triangle[0],triangle[1]});
           vector<vector<Size>> debug_tetra_to_add;
-          debug_tetra_to_add.push_back(vector<Size>{triangle});
+          // debug_tetra_to_add.push_back(vector<Size>{triangle});
 
           //invariant: the first two element of the vector should correspond to the neighbors we want to add
           std::cout << "Deleted ear: " << triangle[0] << ", " << triangle[1] << ", " << triangle[2] << ", " << triangle[3] << std::endl;
@@ -598,47 +625,66 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
           // neighbor_map[line_to_delete[0]].erase(line_to_delete[1]);
           // neighbor_map[line_to_delete[1]].erase(line_to_delete[0]);
           //check which possible ears need to be deleted and which need to be added to the list from which to generate new ears
-          for (auto it = ears_map.cbegin(); it != ears_map.cend();)
-          {
-            vector<Size> curr_triangle=(*it).first;//candidate triangle to check whether it needs to be changed/deleted
-            //if this candidate triangle would try to add the same neighbors, we just delete it (although i'm not sure whether it can happen before the mesh is almost complete...)
-            if ((curr_triangle[0]==triangle[0]&&curr_triangle[1]==triangle[1])||
-                (curr_triangle[1]==triangle[0]&&curr_triangle[0]==triangle[1]))
-            {
-              bool already_in=false;
-              //checks whether triangles_to_work_with already has a permutation of  curr_triangle
-              for (vector<Size> temp_triangle:triangles_to_work_with)
-              {
-                if (triangles_are_equal(temp_triangle,curr_triangle))
-                {
-                  already_in=true;
-                  break;
-                }
-              }
-              //if we did not already put some permutation of the triangle in triangles_to_work_with, we put it in and update the forbidden planes
-              if (!already_in)
-              {
-                triangles_to_work_with.push_back(curr_triangle);
-                forbidden_planes.insert(vector<Size>{curr_triangle[0],curr_triangle[2],curr_triangle[3]});
-                forbidden_planes.insert(vector<Size>{curr_triangle[1],curr_triangle[2],curr_triangle[3]});
-                //debug stuff
-                debug_tetra_to_add.push_back(curr_triangle);
-              }
 
-              std::cout << "Deleted ear: " << curr_triangle[0] << ", " << curr_triangle[1] << ", " << curr_triangle[2] << ", " << curr_triangle[3] << std::endl;
-              it=delete_vector_from_both_maps(ears_map,rev_ears_map,curr_triangle);
-              //Delete corresponding line, which may no longer be used
-              // vector<Size> line_to_delete{curr_triangle[2],curr_triangle[3]};
-              // std::sort(line_to_delete.begin(),line_to_delete.end());
-              // neighbor_lines.erase(line_to_delete);
-              // neighbor_map[line_to_delete[0]].erase(line_to_delete[1]);
-              // neighbor_map[line_to_delete[1]].erase(line_to_delete[0]);
-            }
-            else//we do nothing with the current entry for now
+          //calculates exactly which tetrahedra are formed with the added line and adds them to triangles_to_work_with
+          std::set<Size> temp_intersection;
+          std::set_intersection(neighbor_map[triangle[0]].begin(),neighbor_map[triangle[0]].end(),
+                        neighbor_map[triangle[1]].begin(),neighbor_map[triangle[1]].end(),
+                        std::inserter(temp_intersection,temp_intersection.begin()));
+          for (Size temp_point:temp_intersection)
+          {
+            for (Size temp_point2:temp_intersection)
             {
-              ++it;
+              if ((temp_point<temp_point2)&&(neighbor_map[temp_point].count(temp_point2)!=0))
+              {
+                triangles_to_work_with.push_back(vector<Size>{triangle[0],triangle[1],temp_point,temp_point2});
+                debug_tetra_to_add.push_back(vector<Size>{triangle[0],triangle[1],temp_point,temp_point2});
+              }
             }
           }
+
+          //TODO remove this section and just calculate which tetrahedra are formed!
+          // for (auto it = ears_map.cbegin(); it != ears_map.cend();)
+          // {
+          //   vector<Size> curr_triangle=(*it).first;//candidate triangle to check whether it needs to be changed/deleted
+          //   //if this candidate triangle would try to add the same neighbors, we just delete it (although i'm not sure whether it can happen before the mesh is almost complete...)
+          //   if ((curr_triangle[0]==triangle[0]&&curr_triangle[1]==triangle[1])||
+          //       (curr_triangle[1]==triangle[0]&&curr_triangle[0]==triangle[1]))
+          //   {
+          //     bool already_in=false;
+          //     //checks whether triangles_to_work_with already has a permutation of  curr_triangle
+          //     for (vector<Size> temp_triangle:triangles_to_work_with)
+          //     {
+          //       if (triangles_are_equal(temp_triangle,curr_triangle))
+          //       {
+          //         already_in=true;
+          //         break;
+          //       }
+          //     }
+          //     //if we did not already put some permutation of the triangle in triangles_to_work_with, we put it in and update the forbidden planes
+          //     if (!already_in)
+          //     {
+          //       triangles_to_work_with.push_back(curr_triangle);
+          //       // forbidden_planes.insert(vector<Size>{curr_triangle[0],curr_triangle[2],curr_triangle[3]});
+          //       // forbidden_planes.insert(vector<Size>{curr_triangle[1],curr_triangle[2],curr_triangle[3]});
+          //       //debug stuff
+          //       debug_tetra_to_add.push_back(curr_triangle);
+          //     }
+          //
+          //     std::cout << "Deleted ear: " << curr_triangle[0] << ", " << curr_triangle[1] << ", " << curr_triangle[2] << ", " << curr_triangle[3] << std::endl;
+          //     it=delete_vector_from_both_maps(ears_map,rev_ears_map,curr_triangle);
+          //     //Delete corresponding line, which may no longer be used
+          //     // vector<Size> line_to_delete{curr_triangle[2],curr_triangle[3]};
+          //     // std::sort(line_to_delete.begin(),line_to_delete.end());
+          //     // neighbor_lines.erase(line_to_delete);
+          //     // neighbor_map[line_to_delete[0]].erase(line_to_delete[1]);
+          //     // neighbor_map[line_to_delete[1]].erase(line_to_delete[0]);
+          //   }
+          //   else//we do nothing with the current entry for now
+          //   {
+          //     ++it;
+          //   }
+          // }
           //debug stuff
           added_tetras[i].push_back(debug_tetra_to_add);
 
@@ -663,18 +709,6 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
               ++it;
             }
           }
-          // vector<Size>new_line{triangle[0],triangle[1]};
-          // std::sort(new_line.begin(),new_line.end());
-          //
-          // delete_all_useless_lines(triangles_to_work_with,neighbor_lines);//,neighbor_map);
-          //
-          // std::cout << "Lines size after deletion: " << neighbor_lines.size() << std::endl;
-          // std::cout << "Lines left: ";
-          // for (auto line: neighbor_lines){
-          //   for(Size j = 0; j<2; ++j){
-          //     std::cout << line[j] << " ";}
-          //     std::cout << ',';}
-          // std::cout << std::endl;
 
           //std::cout << "nb triangles to work with: " << triangles_to_work_with.size() << std::endl;
           std::pair<vector<Size>,vector<vector<Size>>> relevant_planes_pair=return_all_relevant_planes(triangles_to_work_with,forbidden_planes);
@@ -703,8 +737,14 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
               std::cout << "Two proposed planes already form a new tetrahedron. Therefore we will not use them." << std::endl;
               relevant_planes.clear();
               orient_points.clear();
+
             }
           }
+          // else if (relevant_planes.size()==0)//i think that our iterations must stop then... i consider this a hack for now
+          // {
+          //   ears_map.clear();
+          //   rev_ears_map.clear();
+          // }
 
 
           //if for some reason (namely delaunay grids being weird), we still havent added a plane squished between two completed tetrahedra
