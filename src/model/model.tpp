@@ -320,7 +320,7 @@ inline void Model::generate_new_ears(const vector<Size> &neighbors_of_point, con
               points_neighbor_of_plane[0],points_neighbor_of_plane[1]};
           //checks whether we either have a fobidden plane, or that we do not need to add the line at all
           if (!has_forbidden_plane(new_possible_ear,forbidden_planes)&&((!point_surrounded_by_tetras(temp_point,neighbor_map,forbidden_planes,edge_planes))
-          ||(!point_surrounded_by_tetras(point_not_neighbor_of_plane,neighbor_map,forbidden_planes,edge_planes))))
+          &&(!point_surrounded_by_tetras(point_not_neighbor_of_plane,neighbor_map,forbidden_planes,edge_planes))))
           {
             double power=calc_power(new_possible_ear,curr_point);
             if (!std::isnan(power))
@@ -517,6 +517,7 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
                 {
                   vector<Size> curr_plane{pointi,pointj,point1};
                   edge_planes.insert(curr_plane);//add plane to edge planes
+                  std::cout << "Edge plane found: " << curr_plane[0] << "," << curr_plane[1] << "," << curr_plane[2] << std::endl;
                   for (Size point2: temp_intersection)
                   {//adding strict order in order to remove duplicates
                     if (point1<point2 && //just such that we do not have duplicates
@@ -644,7 +645,7 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
           // std::cout << "Looping: current size of lines: " << neighbor_lines.size() << std::endl;
           vector<Size> triangle=(*rev_ears_map.begin()).second;//triangle which we are currently adding to the mesh
           //i we somehow end up with a line we no longer need to add, ignore it and repeat the loop
-          if ((point_surrounded_by_tetras(triangle[0],neighbor_map,forbidden_planes,edge_planes))&&(point_surrounded_by_tetras(triangle[1],neighbor_map,forbidden_planes,edge_planes)))
+          if ((point_surrounded_by_tetras(triangle[0],neighbor_map,forbidden_planes,edge_planes))||(point_surrounded_by_tetras(triangle[1],neighbor_map,forbidden_planes,edge_planes)))
           {
             std::cout<<"Proposed ear no longer useful"<<std::endl;
             std::cout << "Deleted ear: " << triangle[0] << ", " << triangle[1] << ", " << triangle[2] << ", " << triangle[3] << std::endl;
