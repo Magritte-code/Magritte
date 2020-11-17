@@ -82,7 +82,7 @@ class PlotFuns:
                     self.plot_sphere(ax,center,radius,'r');
                     for point in neighborsbefore:
                         if (np.sum(np.square(self.positions[point]-center))<0.999*radius**2):
-                            print("point inside circumsphere: "+str(point)+" circumsphere: "+str(tetra));
+                            print("point inside circumsphere: "+str(point)+ " inside ... times radius: "+str(np.sum(np.square(self.positions[point]-center))/(radius**2))+" circumsphere: "+str(tetra));
             plt.show(block = False);
 
 #Delaunay part

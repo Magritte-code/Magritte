@@ -51,6 +51,7 @@ struct Model
     vector<vector<vector<vector<Size>>>> added_tetras;//the tetrahedra in the order in which they are added (probably does not include all possible tetrahedra); might contain duplicates
     vector<Size> deleted_points;
     vector<std::map<Size, std::set<Size>>> reduced_neighbors_after;//without curr_point obviously
+    bool debug_mode=false;
 
 
 

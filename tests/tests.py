@@ -4,6 +4,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from scipy.spatial import Delaunay
 from plotneighbors import PlotFuns
 import matplotlib.pyplot as plt
+import healpy as hp
 
 path.append("../")
 
@@ -15,10 +16,11 @@ from magritte.core import Model, IoPython
 io=IoPython("hdf5", modelname)
 model=Model()
 model.read(io)
+# model.debug_mode=True;
 
 
 # current error
-model.coarsen_grid(0.00042)
+model.coarsen_grid(0.00034)
 # just test iteration
 # model.coarsen_grid(0.00007)
 
@@ -48,14 +50,14 @@ def has_same_lines(model,i,delaunay):
     # print(model_lines)
     # print(delaunay_lines)
 
-    if (not model_lines.issubset(delaunay_lines)):
-        print(delaunay_lines.difference(model_lines));
-        print(model_lines.difference(delaunay_lines));
-        return False;
-    # print(delaunay_lines.difference(model_lines));
-    # print(model_lines.difference(delaunay_lines));
     # if (not model_lines.issubset(delaunay_lines)):
+    #     print(delaunay_lines.difference(model_lines));
+    #     print(model_lines.difference(delaunay_lines));
     #     return False;
+    print(delaunay_lines.difference(model_lines));
+    print(model_lines.difference(delaunay_lines));
+    if (not model_lines.issubset(delaunay_lines)):
+        return False;
 
 
     return True;
@@ -84,8 +86,8 @@ for i in range(n):
     # delaunay=Delaunay(np.array(np.array(model.geometry.points.position)[model.neighbors_lists[0].get_neighbors(np.array(model.deleted_points)[i])]));
     delaunay=Delaunay(np.array(model.geometry.points.position)[list(model.reduced_neighbors_before[i].keys())]);
     # has_same_lines(model,i,delaunay)
-    # if (i==8):
-    if (not has_same_lines(model,i,delaunay)):
+    if (i==25):
+    # if (not has_same_lines(model,i,delaunay)):
         print("Error at iteration: "+str(i+1));
         plot_error(model, i, delaunay);
         break;

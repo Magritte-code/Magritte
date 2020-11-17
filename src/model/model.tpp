@@ -218,6 +218,9 @@ inline bool is_edge_plane(vector<Size> &plane,std::set<std::vector<Size>> &edge_
   }
   return false;
 }
+//checks if plane is a forbidden plane; does the same thing as is_edge_plane
+inline bool is_forbidden_plane(vector<Size> &plane,std::set<std::vector<Size>> &forbidden_planes)
+{return is_edge_plane(plane,forbidden_planes);}
 
 // checks whether each plane around a point is part of a tetrahedron
 inline bool point_surrounded_by_tetras(Size &point, std::map<Size, std::set<Size>> &neighbor_map, std::set<std::vector<Size>> &forbidden_planes, std::set<std::vector<Size>> &edge_planes)
@@ -246,24 +249,38 @@ inline bool point_surrounded_by_tetras(Size &point, std::map<Size, std::set<Size
         continue;
       }
       // std::cout<<"plane: "<<point<<", "<<temp_point<<", "<<temp_point2<<std::endl;
-      for (Size temp_point3:temp_intersection)
+      for (Size temp_point3:temp_intersection)//TODO do not use duplicates:temp_point2!=temp_point1!!!!!!
       {
         vector<Size> curr_tetra{point,temp_point,temp_point2,temp_point3};//if the tetrahedra we find has a forbidden plane, we do not count it!
-        if ((neighbor_map[temp_point2].count(temp_point3)!=0)&&(!has_forbidden_plane(curr_tetra,forbidden_planes)))
+        vector<Size> plane1{temp_point,temp_point2,temp_point3};
+        vector<Size> plane2{point,temp_point2,temp_point3};
+        vector<Size> plane3{point,temp_point,temp_point3};
+        bool has_two_forbidden_planes=false;
+        Size nb_forbidden_planes=0;
+        for (vector<Size> plane: vector<vector<Size>>{plane1,plane2,plane3})
+        {if (is_forbidden_plane(plane,forbidden_planes)){nb_forbidden_planes++;}}
+        has_two_forbidden_planes=(nb_forbidden_planes>=2);
+        std::cout<<"curr tetra: "<<point<<", "<<temp_point<<", "<<temp_point2<<", "<<temp_point3<<std::endl;
+        if ((neighbor_map[temp_point2].count(temp_point3)!=0)&&(!has_forbidden_plane(curr_tetra,forbidden_planes)
+      ||has_two_forbidden_planes))//stupid edge case when there are too much forbidden planes
         {
-          // std::cout<<"tetra: "<<point<<", "<<temp_point<<", "<<temp_point2<<", "<<temp_point3<<std::endl;
+          std::cout<<"tetra: "<<point<<", "<<temp_point<<", "<<temp_point2<<", "<<temp_point3<<std::endl;
           nb_tetra_of_plane++;
         }
       }
       if (!is_edge_plane(curr_plane,edge_planes))
       {
         if (nb_tetra_of_plane<2)//should be ==, but not sure yet
-        {return false;}
+        {
+          std::cout<<"Inner plane not fully surrounded: "<<curr_plane[0]<<", "<<curr_plane[1]<<", "<<curr_plane[2]<<std::endl;
+          return false;}
       }
       else
       {
         if (nb_tetra_of_plane<1)
-        {return false;}
+        {
+          std::cout<<"Outer plane not fully surrounded: "<<curr_plane[0]<<", "<<curr_plane[1]<<", "<<curr_plane[2]<<std::endl;
+          return false;}
       }
     }
   }
@@ -322,6 +339,42 @@ inline void Model::generate_new_ears(const vector<Size> &neighbors_of_point, con
           if (!has_forbidden_plane(new_possible_ear,forbidden_planes)&&((!point_surrounded_by_tetras(temp_point,neighbor_map,forbidden_planes,edge_planes))
           &&(!point_surrounded_by_tetras(point_not_neighbor_of_plane,neighbor_map,forbidden_planes,edge_planes))))
           {
+            // std::set<vector<Size>> constructed_ears;
+            // // find all ears having as line this new line
+            // std::set<Size> temp_intersection;
+            // std::set_intersection(neighbor_map[temp_point].begin(),neighbor_map[temp_point].end(),
+            //               neighbor_map[point_not_neighbor_of_plane].begin(),neighbor_map[point_not_neighbor_of_plane].end(),
+            //               std::inserter(temp_intersection,temp_intersection.begin()));
+            // for (Size temp_point2:temp_intersection)
+            // {
+            //   for (Size temp_point3:temp_intersection)
+            //   {
+            //     if ((temp_point2<temp_point3)&&(neighbor_map[temp_point2].count(temp_point3)!=0))
+            //     {
+            //       constructed_ears.insert(vector<Size>{temp_point,point_not_neighbor_of_plane,temp_point2,temp_point3});
+            //     }
+            //   }
+            // }
+            // bool power_is_set=false;
+            // double power=0;
+            // for (vector<Size> constructed_ear: constructed_ears)
+            // {
+            //   double temp_power=calc_power(constructed_ear,curr_point);
+            //   std::cout << "temp_power is: " << temp_power << std::endl;
+            //   if (std::isnan(temp_power))
+            //   {
+            //     power=temp_power;
+            //     break;
+            //   }
+            //   if (!power_is_set)
+            //   {
+            //     power=temp_power;
+            //   }
+            //   else if (temp_power>power)
+            //   {
+            //     power=temp_power;//always keeping the worst result for the power
+            //   }
+            // }
             double power=calc_power(new_possible_ear,curr_point);
             if (!std::isnan(power))
             {//otherwise we would be proposing a coplanar tetrahedron, which would be ridiculous
@@ -704,25 +757,25 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
           //   if ((curr_triangle[0]==triangle[0]&&curr_triangle[1]==triangle[1])||
           //       (curr_triangle[1]==triangle[0]&&curr_triangle[0]==triangle[1]))
           //   {
-          //     bool already_in=false;
-          //     //checks whether triangles_to_work_with already has a permutation of  curr_triangle
-          //     for (vector<Size> temp_triangle:triangles_to_work_with)
-          //     {
-          //       if (triangles_are_equal(temp_triangle,curr_triangle))
-          //       {
-          //         already_in=true;
-          //         break;
-          //       }
-          //     }
-          //     //if we did not already put some permutation of the triangle in triangles_to_work_with, we put it in and update the forbidden planes
-          //     if (!already_in)
-          //     {
-          //       triangles_to_work_with.push_back(curr_triangle);
-          //       // forbidden_planes.insert(vector<Size>{curr_triangle[0],curr_triangle[2],curr_triangle[3]});
-          //       // forbidden_planes.insert(vector<Size>{curr_triangle[1],curr_triangle[2],curr_triangle[3]});
-          //       //debug stuff
-          //       debug_tetra_to_add.push_back(curr_triangle);
-          //     }
+          //     // bool already_in=false;
+          //     // //checks whether triangles_to_work_with already has a permutation of  curr_triangle
+          //     // for (vector<Size> temp_triangle:triangles_to_work_with)
+          //     // {
+          //     //   if (triangles_are_equal(temp_triangle,curr_triangle))
+          //     //   {
+          //     //     already_in=true;
+          //     //     break;
+          //     //   }
+          //     // }
+          //     // //if we did not already put some permutation of the triangle in triangles_to_work_with, we put it in and update the forbidden planes
+          //     // if (!already_in)
+          //     // {
+          //     //   triangles_to_work_with.push_back(curr_triangle);
+          //     //   // forbidden_planes.insert(vector<Size>{curr_triangle[0],curr_triangle[2],curr_triangle[3]});
+          //     //   // forbidden_planes.insert(vector<Size>{curr_triangle[1],curr_triangle[2],curr_triangle[3]});
+          //     //   //debug stuff
+          //     //   debug_tetra_to_add.push_back(curr_triangle);
+          //     // }
           //
           //     std::cout << "Deleted ear: " << curr_triangle[0] << ", " << curr_triangle[1] << ", " << curr_triangle[2] << ", " << curr_triangle[3] << std::endl;
           //     it=delete_vector_from_both_maps(ears_map,rev_ears_map,curr_triangle);
@@ -834,6 +887,22 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
           //and finally add the new line to neighbor_lines
           //neighbor_lines.insert(new_line);
         }
+
+        //DEBUG STUFF
+        //Check if there is a full triangulisation
+        if (debug_mode){
+          for (Size point: neighbors_of_point)
+          {
+            if (!point_surrounded_by_tetras(point, neighbor_map, forbidden_planes, edge_planes))
+            {
+
+              std::cout<<"Iteration: "<<i<<" point: "<<point<<std::endl;
+              throw "Not a full triangulation!!!";//will probably translate to unknown exception in python
+            }
+
+          }
+        }
+
 
         reduced_neighbors_after[i]=std::map<Size, std::set<Size>>(neighbor_map);
 
