@@ -222,69 +222,116 @@ inline bool is_edge_plane(vector<Size> &plane,std::set<std::vector<Size>> &edge_
 inline bool is_forbidden_plane(vector<Size> &plane,std::set<std::vector<Size>> &forbidden_planes)
 {return is_edge_plane(plane,forbidden_planes);}
 
-// checks whether each plane around a point is part of a tetrahedron
-inline bool point_surrounded_by_tetras(Size &point, std::map<Size, std::set<Size>> &neighbor_map, std::set<std::vector<Size>> &forbidden_planes, std::set<std::vector<Size>> &edge_planes)
+// // checks whether each plane around a point is part of a tetrahedron
+// inline bool point_surrounded_by_tetras(Size &point, std::map<Size, std::set<Size>> &neighbor_map, std::set<std::vector<Size>> &forbidden_planes, std::set<std::vector<Size>> &edge_planes)
+// {
+//   for (Size temp_point: neighbor_map[point])
+//   {
+//     std::set<Size> temp_intersection;
+//     std::set_intersection(neighbor_map[point].begin(),neighbor_map[point].end(),
+//                   neighbor_map[temp_point].begin(),neighbor_map[temp_point].end(),
+//                   std::inserter(temp_intersection,temp_intersection.begin()));
+//     for (Size temp_point2:temp_intersection)
+//     {
+//       bool plane_is_forbidden=false;//whether a plane has enough tetras
+//       Size nb_tetra_of_plane=0;
+//       vector<Size> curr_plane{point,temp_point,temp_point2};
+//       Size nb_forbidden_planes=0;//number of forbidden planes with which curr_plane shares a line
+//       for (vector<Size> forbidden_plane:forbidden_planes)
+//       {
+//         if (calculate_total_points(curr_plane, forbidden_plane)==3)
+//         {
+//           plane_is_forbidden=true;//if we encounter a forbidden plane, just ignore it
+//           break;
+//         } else if ()
+//       }
+//       if (plane_is_forbidden)//just ignore the forbidden planes
+//       {
+//         continue;
+//       }
+//       // std::cout<<"plane: "<<point<<", "<<temp_point<<", "<<temp_point2<<std::endl;
+//       for (Size temp_point3:temp_intersection)//TODO do not use duplicates:temp_point2!=temp_point1!!!!!!
+//       {
+//         vector<Size> curr_tetra{point,temp_point,temp_point2,temp_point3};//if the tetrahedra we find has a forbidden plane, we do not count it!
+//         // vector<Size> plane1{temp_point,temp_point2,temp_point3};
+//         // vector<Size> plane2{point,temp_point2,temp_point3};
+//         // vector<Size> plane3{point,temp_point,temp_point3};
+//         // bool has_two_forbidden_planes=false;
+//         // Size nb_forbidden_planes=0;
+//         // for (vector<Size> plane: vector<vector<Size>>{plane1,plane2,plane3})
+//         // {if (is_forbidden_plane(plane,forbidden_planes)){nb_forbidden_planes++;}}
+//         // has_two_forbidden_planes=(nb_forbidden_planes>=2);
+//         std::cout<<"curr tetra: "<<point<<", "<<temp_point<<", "<<temp_point2<<", "<<temp_point3<<std::endl;
+//         if ((neighbor_map[temp_point2].count(temp_point3)!=0)&&(!has_forbidden_plane(curr_tetra,forbidden_planes)))//stupid edge case when there are too much forbidden planes
+//         {
+//           std::cout<<"tetra: "<<point<<", "<<temp_point<<", "<<temp_point2<<", "<<temp_point3<<std::endl;
+//           nb_tetra_of_plane++;
+//         }
+//       }
+//       if (!is_edge_plane(curr_plane,edge_planes))
+//       {
+//         if (nb_tetra_of_plane<2)//should be ==, but not sure yet
+//         {
+//           std::cout<<"Inner plane not fully surrounded: "<<curr_plane[0]<<", "<<curr_plane[1]<<", "<<curr_plane[2]<<std::endl;
+//           return false;}
+//       }
+//       else
+//       {
+//         if (nb_tetra_of_plane<1)
+//         {
+//           std::cout<<"Outer plane not fully surrounded: "<<curr_plane[0]<<", "<<curr_plane[1]<<", "<<curr_plane[2]<<std::endl;
+//           return false;}
+//       }
+//     }
+//   }
+//   return true;
+// }
+
+//note: it should be possible to cache some results
+// Checks whether a point is surrounded by tetrahedra
+inline bool point_surrounded_by_tetras(Size &point, std::map<vector<Size>,Size> &plane_counter, std::set<std::vector<Size>> &edge_planes)
 {
-  for (Size temp_point: neighbor_map[point])
+  for (auto it=plane_counter.begin(); it!=plane_counter.end(); ++it)
   {
-    std::set<Size> temp_intersection;
-    std::set_intersection(neighbor_map[point].begin(),neighbor_map[point].end(),
-                  neighbor_map[temp_point].begin(),neighbor_map[temp_point].end(),
-                  std::inserter(temp_intersection,temp_intersection.begin()));
-    for (Size temp_point2:temp_intersection)
+    vector<Size> curr_plane=(*it).first;
+    Size nb_tetra_of_plane=(*it).second;
+    if (vector_contains_element(curr_plane, point))//check if the plane we are currently looking at
     {
-      bool plane_is_forbidden=false;//whether a plane has enough tetras
-      Size nb_tetra_of_plane=0;
-      vector<Size> curr_plane{point,temp_point,temp_point2};
-      for (vector<Size> forbidden_plane:forbidden_planes)
-      {
-        if (calculate_total_points(curr_plane, forbidden_plane)==3)
-        {
-          plane_is_forbidden=true;//if we encounter a forbidden plane, just ignore it
-          break;
-        }
-      }
-      if (plane_is_forbidden)//just ignore the forbidden planes
-      {
-        continue;
-      }
-      // std::cout<<"plane: "<<point<<", "<<temp_point<<", "<<temp_point2<<std::endl;
-      for (Size temp_point3:temp_intersection)//TODO do not use duplicates:temp_point2!=temp_point1!!!!!!
-      {
-        vector<Size> curr_tetra{point,temp_point,temp_point2,temp_point3};//if the tetrahedra we find has a forbidden plane, we do not count it!
-        vector<Size> plane1{temp_point,temp_point2,temp_point3};
-        vector<Size> plane2{point,temp_point2,temp_point3};
-        vector<Size> plane3{point,temp_point,temp_point3};
-        bool has_two_forbidden_planes=false;
-        Size nb_forbidden_planes=0;
-        for (vector<Size> plane: vector<vector<Size>>{plane1,plane2,plane3})
-        {if (is_forbidden_plane(plane,forbidden_planes)){nb_forbidden_planes++;}}
-        has_two_forbidden_planes=(nb_forbidden_planes>=2);
-        std::cout<<"curr tetra: "<<point<<", "<<temp_point<<", "<<temp_point2<<", "<<temp_point3<<std::endl;
-        if ((neighbor_map[temp_point2].count(temp_point3)!=0)&&(!has_forbidden_plane(curr_tetra,forbidden_planes)
-      ||has_two_forbidden_planes))//stupid edge case when there are too much forbidden planes
-        {
-          std::cout<<"tetra: "<<point<<", "<<temp_point<<", "<<temp_point2<<", "<<temp_point3<<std::endl;
-          nb_tetra_of_plane++;
-        }
-      }
       if (!is_edge_plane(curr_plane,edge_planes))
       {
-        if (nb_tetra_of_plane<2)//should be ==, but not sure yet
-        {
-          std::cout<<"Inner plane not fully surrounded: "<<curr_plane[0]<<", "<<curr_plane[1]<<", "<<curr_plane[2]<<std::endl;
-          return false;}
-      }
-      else
-      {
+        if (nb_tetra_of_plane<2)
+        {return false;}
+      }else{
         if (nb_tetra_of_plane<1)
-        {
-          std::cout<<"Outer plane not fully surrounded: "<<curr_plane[0]<<", "<<curr_plane[1]<<", "<<curr_plane[2]<<std::endl;
-          return false;}
+        {return false;}
       }
     }
   }
   return true;
+}
+
+// Adds a single plane to plane_counter
+inline void add_plane_to_counter(vector<Size> &plane, std::map<vector<Size>,Size> &plane_counter)
+{
+  std::sort(plane.begin(),plane.end());//order of elements in plane can change!
+  if (plane_counter.find(plane)!=plane_counter.end()) {
+    plane_counter[plane]++;
+  } else {
+    plane_counter.insert(std::pair<vector<Size>,Size>(plane,1));
+  }
+}
+
+// Adds the planes of a tetrahedron to the planes counter
+inline void add_planes_of_tetra_to_counter(vector<Size> &tetra, std::map<vector<Size>,Size> &plane_counter)
+{
+  vector<Size> plane1{tetra[0],tetra[1],tetra[2]};
+  vector<Size> plane2{tetra[0],tetra[1],tetra[3]};
+  vector<Size> plane3{tetra[0],tetra[2],tetra[3]};
+  vector<Size> plane4{tetra[1],tetra[2],tetra[3]};
+  add_plane_to_counter(plane1, plane_counter);
+  add_plane_to_counter(plane2, plane_counter);
+  add_plane_to_counter(plane3, plane_counter);
+  add_plane_to_counter(plane4, plane_counter);
 }
 
 //generates the new ears and inserts them into the ears maps
@@ -292,7 +339,7 @@ inline bool point_surrounded_by_tetras(Size &point, std::map<Size, std::set<Size
 // inline void Model::generate_new_ears(const std::set<vector<Size>> &neighbor_lines, vector<Size> &new_line, std::map<Size, std::set<Size>> &neighbor_map,
 //  std::multimap<vector<Size>,double> &ears_map, std::multimap<double,vector<Size>> &rev_ears_map, Size &curr_point)
 inline void Model::generate_new_ears(const vector<Size> &neighbors_of_point, const vector<Size> &plane, std::map<Size, std::set<Size>> &neighbor_map,
- std::multimap<vector<Size>,double> &ears_map, std::multimap<double,vector<Size>> &rev_ears_map, Size &curr_point, Size &orient_point, std::set<std::vector<Size>> &forbidden_planes, std::set<std::vector<Size>> &edge_planes)
+ std::multimap<vector<Size>,double> &ears_map, std::multimap<double,vector<Size>> &rev_ears_map, Size &curr_point, Size &orient_point, std::map<vector<Size>,Size> &plane_counter, std::set<std::vector<Size>> &edge_planes, std::set<vector<Size>> forbidden_planes)
 {
   std::cout << "plane is: " << plane[0]<< ", " << plane[1] << ", " << plane[2] << std::endl;
   std::cout << "orient point is: " << orient_point << std::endl;
@@ -336,8 +383,8 @@ inline void Model::generate_new_ears(const vector<Size> &neighbors_of_point, con
           vector<Size> new_possible_ear{temp_point,point_not_neighbor_of_plane,
               points_neighbor_of_plane[0],points_neighbor_of_plane[1]};
           //checks whether we either have a fobidden plane, or that we do not need to add the line at all
-          if (!has_forbidden_plane(new_possible_ear,forbidden_planes)&&((!point_surrounded_by_tetras(temp_point,neighbor_map,forbidden_planes,edge_planes))
-          &&(!point_surrounded_by_tetras(point_not_neighbor_of_plane,neighbor_map,forbidden_planes,edge_planes))))
+          if (!has_forbidden_plane(new_possible_ear,forbidden_planes)&&((!point_surrounded_by_tetras(temp_point,plane_counter,edge_planes))
+          &&(!point_surrounded_by_tetras(point_not_neighbor_of_plane,plane_counter,edge_planes))))
           {
             // std::set<vector<Size>> constructed_ears;
             // // find all ears having as line this new line
@@ -549,7 +596,7 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
 
         std::set<vector<Size>> edge_planes;//the planes which lie on the edge of the relevant domain
         std::set<vector<Size>> forbidden_planes;//contains the planes that should not be used during initial generation
-
+        std::map<vector<Size>,Size> plane_counter;//counts the number of tetrahedra each plane has
         // finding all forbidden planes
         for (Size pointi:neighbors_of_point)
         {
@@ -599,6 +646,14 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
                 }
               }
             }
+          }
+        }
+        //finally adding edge planes to plane_counter
+        for (vector<Size> edge_plane:edge_planes)
+        {
+          if (!is_forbidden_plane(edge_plane,forbidden_planes))
+          {
+            plane_counter.insert(std::pair<vector<Size>,Size>(edge_plane,0));//Initially, the edge planes are not adjacent to any tetraherda (ignoring ofcourse those forbidden planes)
           }
         }
 
@@ -698,7 +753,7 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
           // std::cout << "Looping: current size of lines: " << neighbor_lines.size() << std::endl;
           vector<Size> triangle=(*rev_ears_map.begin()).second;//triangle which we are currently adding to the mesh
           //i we somehow end up with a line we no longer need to add, ignore it and repeat the loop
-          if ((point_surrounded_by_tetras(triangle[0],neighbor_map,forbidden_planes,edge_planes))||(point_surrounded_by_tetras(triangle[1],neighbor_map,forbidden_planes,edge_planes)))
+          if ((point_surrounded_by_tetras(triangle[0],plane_counter,edge_planes))||(point_surrounded_by_tetras(triangle[1],plane_counter,edge_planes)))
           {
             std::cout<<"Proposed ear no longer useful"<<std::endl;
             std::cout << "Deleted ear: " << triangle[0] << ", " << triangle[1] << ", " << triangle[2] << ", " << triangle[3] << std::endl;
@@ -743,8 +798,10 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
             {
               if ((temp_point<temp_point2)&&(neighbor_map[temp_point].count(temp_point2)!=0))
               {
-                triangles_to_work_with.push_back(vector<Size>{triangle[0],triangle[1],temp_point,temp_point2});
-                debug_tetra_to_add.push_back(vector<Size>{triangle[0],triangle[1],temp_point,temp_point2});
+                vector<Size> curr_tetra{triangle[0],triangle[1],temp_point,temp_point2};
+                triangles_to_work_with.push_back(curr_tetra);
+                debug_tetra_to_add.push_back(curr_tetra);
+                add_planes_of_tetra_to_counter(curr_tetra,plane_counter);
               }
             }
           }
@@ -873,7 +930,7 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
           for (vector<Size> plane: relevant_planes)
           {//TODO: figure out whether new ears must be generated at all, because no new ears ever seem to be inserted...
           generate_new_ears(neighbors_of_point, plane, neighbor_map,
-                ears_map, rev_ears_map, curr_point, orient_points[count], forbidden_planes, edge_planes);
+                ears_map, rev_ears_map, curr_point, orient_points[count], plane_counter, edge_planes, forbidden_planes);
           count++;
           }
 
@@ -893,9 +950,8 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
         if (debug_mode){
           for (Size point: neighbors_of_point)
           {
-            if (!point_surrounded_by_tetras(point, neighbor_map, forbidden_planes, edge_planes))
+            if (!point_surrounded_by_tetras(point, plane_counter, edge_planes))
             {
-
               std::cout<<"Iteration: "<<i<<" point: "<<point<<std::endl;
               throw "Not a full triangulation!!!";//will probably translate to unknown exception in python
             }
