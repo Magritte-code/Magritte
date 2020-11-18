@@ -300,10 +300,12 @@ inline bool point_surrounded_by_tetras(Size &point, std::map<vector<Size>,Size> 
       if (!is_edge_plane(curr_plane,edge_planes))
       {
         if (nb_tetra_of_plane<2)
-        {return false;}
+        { std::cout<<"Inner plane not fully surrounded: "<<curr_plane[0]<<", "<<curr_plane[1]<<", "<<curr_plane[2]<<std::endl;
+          return false;}
       }else{
         if (nb_tetra_of_plane<1)
-        {return false;}
+        { std::cout<<"Outer plane not fully surrounded: "<<curr_plane[0]<<", "<<curr_plane[1]<<", "<<curr_plane[2]<<std::endl;
+          return false;}
       }
     }
   }
