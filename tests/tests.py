@@ -22,7 +22,7 @@ model.read(io)
 
 
 # current error
-model.coarsen_grid(0.0156)
+model.coarsen_grid(0.0059)
 # model.coarsen_grid(0.0029)
 # just test iteration
 # model.coarsen_grid(0.00007)
@@ -114,11 +114,14 @@ for i in range(n):
         angle_counts[hp.vec2pix(nside,xs,ys,zs)]+=1;
         # angle_counts[hp.vec2pix(nside,-xs,-ys,-zs)]+=1;
 
-
+halfn=n//2;
+print(halfn)
 
 print(angle_counts);
 print(stats.chisquare(angle_counts))#if p>0.05, then H0 applies: angle_counts follows distribution
-print(sm.stats.acorr_ljungbox(nbneighbors-np.mean(nbneighbors), lags=[10]))#if p>0.05, then H_0 applies: iid data
+# print(sm.stats.acorr_ljungbox(nbneighbors-np.mean(nbneighbors), lags=[10]))#if p>0.05, then H_0 applies: iid data
+# print(sm.tsa.stattools.adfuller(nbneighbors, autolag='AIC'))#if p<0.05, then H_0 is rejected: time series is stationary
+print(stats.wilcoxon(nbneighbors[0:halfn-1],nbneighbors[halfn:2*halfn-1]))#if p>0.05, accept H0: the distribution of diffs between first and second half is symmetric around zero
 fig = plt.figure()
 plt.bar(range(npoints),angle_counts);
 fig=plt.figure();
