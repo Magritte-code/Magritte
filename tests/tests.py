@@ -22,7 +22,7 @@ model.read(io)
 
 
 # current error
-model.coarsen_grid(0.0059)
+model.coarsen_grid(0.0050)
 # model.coarsen_grid(0.0029)
 # just test iteration
 # model.coarsen_grid(0.00007)
@@ -99,20 +99,38 @@ n=len(model.deleted_points);
 nside=4;
 npoints=hp.nside2npix(nside);
 print(npoints)
-angle_counts=[0]*npoints;
+angle_counts=np.array([0]*npoints);
 positions=np.array(model.geometry.points.position);
 nbneighbors=[len(model.reduced_neighbors_before[i]) for i in range(n)];
+# flatlines=np.array(model.added_lines).flatten();
+# print(len(flatlines))
+# print(flatlines)
+# posdiff=np.array([positions[flatlines[2*idx]]-positions[flatlines[2*idx+1]] for idx in range(len(flatlines))])
+# flat=posdiff.flatten('F')#column mayor flatten
+# xdiff=flat[:len(flat)/3]
+# ydiff=flat[len(flat)/3:2*len(flat)/3]
+# zdiff=flat[2*len(flat)/3:]
 for i in range(n):
     added_line=model.added_lines[i]
-    for line in added_line:
-            # print(line)
-            # print(positions[line[0]])
-        xs=positions[line[0]][0]-positions[line[1]][0];
-        ys=positions[line[0]][1]-positions[line[1]][1];
-        zs=positions[line[0]][2]-positions[line[1]][2];
-            # print(hp.vec2pix(nside,xs,ys,zs))
-        angle_counts[hp.vec2pix(nside,xs,ys,zs)]+=1;
-        # angle_counts[hp.vec2pix(nside,-xs,-ys,-zs)]+=1;
+    # print(added_line)
+    posdiff=np.array([positions[line[0]]-positions[line[1]] for line in added_line])
+    # print(posdiff)
+    xs=posdiff[:,0];
+    ys=posdiff[:,1];
+    zs=posdiff[:,2];
+    # print(posdiff)
+    # print(hp.vec2pix(nside,xs,ys,zs))
+    # angle_counts[hp.vec2pix(nside,xs,ys,zs)]+=1;
+    np.add.at(angle_counts, hp.vec2pix(nside,xs,ys,zs), 1)
+    # for line in added_line:
+    #         # print(line)
+    #         # print(positions[line[0]])
+    #     xs=positions[line[0]][0]-positions[line[1]][0];
+    #     ys=positions[line[0]][1]-positions[line[1]][1];
+    #     zs=positions[line[0]][2]-positions[line[1]][2];
+    #         # print(hp.vec2pix(nside,xs,ys,zs))
+    #     angle_counts[hp.vec2pix(nside,xs,ys,zs)]+=1;
+    #     # angle_counts[hp.vec2pix(nside,-xs,-ys,-zs)]+=1;
 
 halfn=n//2;
 print(halfn)
