@@ -801,9 +801,22 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
               if ((temp_point<temp_point2)&&(neighbor_map[temp_point].count(temp_point2)!=0))
               {
                 vector<Size> curr_tetra{triangle[0],triangle[1],temp_point,temp_point2};
+                // bool may_add=true;//now we have an edge case
+                // for (auto pair: plane_counter)
+                // {
+                //   vector<Size> curr_plane=pair.first;
+                //   if (pair.second>=2&&calculate_total_points(curr_plane,curr_tetra)==4)//edge cases in which we would make a plane be used in more than two tetrahedra
+                //   {
+                //     may_add=false;
+                //     break;
+                //   }
+                // }
+                // if (may_add)
+                // {
                 triangles_to_work_with.push_back(curr_tetra);
                 debug_tetra_to_add.push_back(curr_tetra);
                 add_planes_of_tetra_to_counter(curr_tetra,plane_counter);
+                // }
               }
             }
           }
@@ -955,6 +968,12 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
             if (!point_surrounded_by_tetras(point, plane_counter, edge_planes))
             {
               std::cout<<"Iteration: "<<i<<" point: "<<point<<std::endl;
+              for (auto pair:plane_counter)
+              {
+                vector<Size> curr_plane=pair.first;
+                Size count=pair.second;
+                std::cout<<curr_plane[0]<<", "<<curr_plane[1]<<", "<<curr_plane[2]<<" counted nb times: "<<count<<std::endl;
+              }
               throw "Not a full triangulation!!!";//will probably translate to unknown exception in python
             }
 

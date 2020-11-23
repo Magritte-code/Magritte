@@ -5,6 +5,8 @@ from scipy.spatial import Delaunay
 from plotneighbors import PlotFuns
 import matplotlib.pyplot as plt
 import healpy as hp
+import scipy.stats as stats
+import statsmodels.api as sm
 
 path.append("../")
 
@@ -20,7 +22,8 @@ model.read(io)
 
 
 # current error
-model.coarsen_grid(0.0029)
+model.coarsen_grid(0.0156)
+# model.coarsen_grid(0.0029)
 # just test iteration
 # model.coarsen_grid(0.00007)
 
@@ -73,25 +76,55 @@ def plot_error(model, i, delaunay):
     plotthing.plot_delaunay(delaunay)
     # plt.show(block = False);
     plotthing.plot_iterations(model.reduced_neighbors_before[i],model.added_lines[i],model.added_tetras[i],True);
-    plt.show();
+
 
 
 
 
 n=len(model.deleted_points);
 
-for i in range(n):
-    # print("hier")
-    # print(np.array(np.array(model.geometry.points.position)[model.neighbors_lists[0].get_neighbors(np.array(model.deleted_points)[i])]))
-    # delaunay=Delaunay(np.array(np.array(model.geometry.points.position)[model.neighbors_lists[0].get_neighbors(np.array(model.deleted_points)[i])]));
-    delaunay=Delaunay(np.array(model.geometry.points.position)[list(model.reduced_neighbors_before[i].keys())]);
-    # has_same_lines(model,i,delaunay)
-    if (i==219):
-    # if (not has_same_lines(model,i,delaunay)):
-        print("Error at iteration: "+str(i+1));
-        plot_error(model, i, delaunay);
-        break;
+# for i in range(n):
+#     # print("hier")
+#     # print(np.array(np.array(model.geometry.points.position)[model.neighbors_lists[0].get_neighbors(np.array(model.deleted_points)[i])]))
+#     # delaunay=Delaunay(np.array(np.array(model.geometry.points.position)[model.neighbors_lists[0].get_neighbors(np.array(model.deleted_points)[i])]));
+#     delaunay=Delaunay(np.array(model.geometry.points.position)[list(model.reduced_neighbors_before[i].keys())]);
+#     # has_same_lines(model,i,delaunay)
+#     if (i==219):
+#     # if (not has_same_lines(model,i,delaunay)):
+#         print("Error at iteration: "+str(i+1));
+#         plot_error(model, i, delaunay);
+#         break;
 
+
+nside=4;
+npoints=hp.nside2npix(nside);
+print(npoints)
+angle_counts=[0]*npoints;
+positions=np.array(model.geometry.points.position);
+nbneighbors=[len(model.reduced_neighbors_before[i]) for i in range(n)];
+for i in range(n):
+    added_line=model.added_lines[i]
+    for line in added_line:
+            # print(line)
+            # print(positions[line[0]])
+        xs=positions[line[0]][0]-positions[line[1]][0];
+        ys=positions[line[0]][1]-positions[line[1]][1];
+        zs=positions[line[0]][2]-positions[line[1]][2];
+            # print(hp.vec2pix(nside,xs,ys,zs))
+        angle_counts[hp.vec2pix(nside,xs,ys,zs)]+=1;
+        # angle_counts[hp.vec2pix(nside,-xs,-ys,-zs)]+=1;
+
+
+
+print(angle_counts);
+print(stats.chisquare(angle_counts))#if p>0.05, then H0 applies: angle_counts follows distribution
+print(sm.stats.acorr_ljungbox(nbneighbors-np.mean(nbneighbors), lags=[10]))#if p>0.05, then H_0 applies: iid data
+fig = plt.figure()
+plt.bar(range(npoints),angle_counts);
+fig=plt.figure();
+plt.plot(range(n),nbneighbors)
+
+plt.show();
 
 #todo only use neighbors of point
 #delaunay=Delaunay(np.array(model.geometry.points.position)[model.neighbors_lists[0].get_neighbors(deleted_points[0])]);
