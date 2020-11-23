@@ -596,6 +596,7 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
         std::multimap<double,vector<Size>> rev_ears_map;
 
 
+        std::set<vector<Size>> all_added_tetras;
         std::set<vector<Size>> edge_planes;//the planes which lie on the edge of the relevant domain
         std::set<vector<Size>> forbidden_planes;//contains the planes that should not be used during initial generation
         std::map<vector<Size>,Size> plane_counter;//counts the number of tetrahedra each plane has
@@ -801,22 +802,42 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
               if ((temp_point<temp_point2)&&(neighbor_map[temp_point].count(temp_point2)!=0))
               {
                 vector<Size> curr_tetra{triangle[0],triangle[1],temp_point,temp_point2};
-                // bool may_add=true;//now we have an edge case
-                // for (auto pair: plane_counter)
-                // {
-                //   vector<Size> curr_plane=pair.first;
-                //   if (pair.second>=2&&calculate_total_points(curr_plane,curr_tetra)==4)//edge cases in which we would make a plane be used in more than two tetrahedra
-                //   {
-                //     may_add=false;
-                //     break;
-                //   }
-                // }
-                // if (may_add)
-                // {
-                triangles_to_work_with.push_back(curr_tetra);
-                debug_tetra_to_add.push_back(curr_tetra);
-                add_planes_of_tetra_to_counter(curr_tetra,plane_counter);
-                // }
+                if (!has_forbidden_plane(curr_tetra,forbidden_planes))//as usual, the forbidden planes are still not allowed
+                  {
+                  bool may_add=true;//now we have an edge case
+                  for (vector<Size> old_tetra: all_added_tetras)
+                  {
+                    //if shares plane with tetra already added,
+                    if (triangle_shares_plane_with(old_tetra, curr_tetra))
+                    {
+                      //find point of old tetra not in curr tetra and vice versa; also get shared triangle
+                      Size old_point=0;
+                      vector<Size> shared_triangle;
+                      for (Size temp_point: old_tetra)
+                      {if(!vector_contains_element(curr_tetra, temp_point)){old_point=temp_point;}else{shared_triangle.push_back(temp_point);}}
+                      Size new_point=0;
+                      for (Size temp_point: curr_tetra)
+                      {if(!vector_contains_element(old_tetra, temp_point)){new_point=temp_point;}}
+                      std::cout << "shared triangle: " << shared_triangle[0] << ", " << shared_triangle[1] << ", " << shared_triangle[2] << std::endl;
+                      std::cout << "old point: " << old_point << std::endl;
+                      std::cout << "new point: " << new_point << std::endl;
+                      //if they both lie on the same side, ignore the new triangle
+                      if (orientation(shared_triangle,old_point)*orientation(shared_triangle,new_point)>=0)
+                      {
+                        std::cout << "tetra not added" << std::endl;
+                        may_add=false;
+                        break;
+                      }
+                    }
+                  }
+                  if (may_add)
+                  {
+                    triangles_to_work_with.push_back(curr_tetra);
+                    debug_tetra_to_add.push_back(curr_tetra);
+                    add_planes_of_tetra_to_counter(curr_tetra,plane_counter);
+                    all_added_tetras.insert(curr_tetra);
+                  }
+                }
               }
             }
           }
@@ -963,6 +984,7 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
         //DEBUG STUFF
         //Check if there is a full triangulisation
         if (debug_mode){
+          std::set<vector<Size>> wrong_planes;
           for (Size point: neighbors_of_point)
           {
             if (!point_surrounded_by_tetras(point, plane_counter, edge_planes))
@@ -972,11 +994,22 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
               {
                 vector<Size> curr_plane=pair.first;
                 Size count=pair.second;
+                bool is_edgepl=is_edge_plane(curr_plane,edge_planes);
+                if ((count<2&&!is_edgepl)||(count<1&&is_edgepl))
+                {
+                wrong_planes.insert(curr_plane);
                 std::cout<<curr_plane[0]<<", "<<curr_plane[1]<<", "<<curr_plane[2]<<" counted nb times: "<<count<<std::endl;
+                }
               }
-              throw "Not a full triangulation!!!";//will probably translate to unknown exception in python
             }
-
+          }
+          if (wrong_planes.size()>0)//sigh: more stupid edge cases. This time imagine a tetrahedron with three lines from one of its points through the opposite plane; then that plane will not have two neighbors (and should not have been used in the first place)
+          {//note that you can't make a hole with only 1 'plane' that does not have enough neighbors. @Frederik: if you know some improvement to 'point_surrounded_by_tetras' that avoids this edge case, let me know
+            for (vector<Size> curr_plane:wrong_planes)
+            {
+              std::cout<<curr_plane[0]<<", "<<curr_plane[1]<<", "<<curr_plane[2]<<std::endl;
+            }
+            throw "Not a full triangulation!!!";//will probably translate to unknown exception in python
           }
         }
 

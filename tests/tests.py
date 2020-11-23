@@ -18,11 +18,11 @@ from magritte.core import Model, IoPython
 io=IoPython("hdf5", modelname)
 model=Model()
 model.read(io)
-# model.debug_mode=True;
+model.debug_mode=True;
 
 
 # current error
-model.coarsen_grid(0.0050)
+model.coarsen_grid(0.00015)
 # model.coarsen_grid(0.0029)
 # just test iteration
 # model.coarsen_grid(0.00007)
@@ -83,17 +83,19 @@ def plot_error(model, i, delaunay):
 
 n=len(model.deleted_points);
 
-# for i in range(n):
-#     # print("hier")
-#     # print(np.array(np.array(model.geometry.points.position)[model.neighbors_lists[0].get_neighbors(np.array(model.deleted_points)[i])]))
-#     # delaunay=Delaunay(np.array(np.array(model.geometry.points.position)[model.neighbors_lists[0].get_neighbors(np.array(model.deleted_points)[i])]));
-#     delaunay=Delaunay(np.array(model.geometry.points.position)[list(model.reduced_neighbors_before[i].keys())]);
-#     # has_same_lines(model,i,delaunay)
-#     if (i==219):
-#     # if (not has_same_lines(model,i,delaunay)):
-#         print("Error at iteration: "+str(i+1));
-#         plot_error(model, i, delaunay);
-#         break;
+for i in range(n):
+    # print("hier")
+    # print(np.array(np.array(model.geometry.points.position)[model.neighbors_lists[0].get_neighbors(np.array(model.deleted_points)[i])]))
+    # delaunay=Delaunay(np.array(np.array(model.geometry.points.position)[model.neighbors_lists[0].get_neighbors(np.array(model.deleted_points)[i])]));
+    # delaunay=Delaunay(np.array(model.geometry.points.position)[list(model.reduced_neighbors_before[i].keys())]);
+    # has_same_lines(model,i,delaunay)
+    if (i==10):
+    # if (not has_same_lines(model,i,delaunay)):
+        print("Error at iteration: "+str(i));
+        delaunay=Delaunay(np.array(model.geometry.points.position)[list(model.reduced_neighbors_before[i].keys())]);
+        plot_error(model, i, delaunay);
+        plt.show();
+        break;
 
 
 nside=4;
