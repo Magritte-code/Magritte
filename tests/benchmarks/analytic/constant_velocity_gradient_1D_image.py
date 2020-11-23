@@ -29,10 +29,10 @@ nTT  = 1.0E+08                 # [m^-3]
 temp = 4.5E+01                 # [K]
 turb = 0.0E+00                 # [m/s]
 dx   = 1.0E+04                 # [m]
-dv   = 2.5E+03 / magritte.CC   # [fraction of speed of light]
+dv   = 2.5E+02 / magritte.CC   # [fraction of speed of light]
 
-L    = dx*(npoints-1)
-vmax = dv*(npoints-1)
+L    = dx*npoints
+vmax = dv*npoints
 
 
 def create_model ():
@@ -54,8 +54,8 @@ def create_model ():
     model.parameters.set_nlspecs           (nlspecs)
     model.parameters.set_nquads            (nquads)
 
-    model.geometry.points.position.set([[i*dx, 0, 0] for i in range(npoints)])
-    model.geometry.points.velocity.set([[i*dv, 0, 0] for i in range(npoints)])
+    model.geometry.points.position.set([[(i+1)*dx, 0, 0] for i in range(npoints)])
+    model.geometry.points.velocity.set([[(i+1)*dv, 0, 0] for i in range(npoints)])
 
     model.chemistry.species.abundance = [[     0.0,    nTT,  nH2,  0.0,      1.0] for _ in range(npoints)]
     model.chemistry.species.symbol    =  ['dummy0', 'test', 'H2', 'e-', 'dummy1']
@@ -137,11 +137,12 @@ def run_model (nosave=False):
         else:
             return r * np.cos(theta) + np.sqrt(L   **2 - (r*np.sin(theta))**2)
 
-    def tau(nu, r, theta):
+    def tau(nu, r0, r, theta):
+        l0  = r0
         l   = float (z_max(r, theta))
         arg = float ((nu - frq) / dnu)
         fct = float (vmax * nu / dnu)
-        return chi*L / (fct*dnu) * 0.5 * (sp.special.erf(arg) + sp.special.erf(fct*l/L-arg))
+        return chi*L / (fct*dnu) * 0.5 * (sp.special.erf(arg-fct*l0/L) - sp.special.erf(arg-fct*l/L))
 
     def I_im (nu, r):
         nu = nu + vmax/magritte.CC*frq
@@ -171,8 +172,7 @@ def run_model (nosave=False):
     result += f'nrays     = {model.parameters.nrays    ()       }\n'
     result += f'nquads    = {model.parameters.nquads   ()       }\n'
     result += f'--- Accuracy ------------------------------------\n'
-    result += f'mean error in shortchar 0 = {np.mean(error_u_0s)}\n'
-    result += f'mean error in feautrier 2 = {np.mean(error_u_2f)}\n'
+    result += f'max error in imager = {np.max(error)            }\n'
     result += f'--- Timers --------------------------------------\n'
     result += f'{timer1.print()                                 }\n'
     result += f'{timer2.print()                                 }\n'

@@ -144,7 +144,7 @@ inline double Geometry :: get_shift_general_geometry <Rest> (
 {
     Size r_correct = r;
 
-    if (r >= parameters.hnrays())
+    if (r >= parameters.hnrays()) // assumes ray indices and antipodes are on opposite sites of hnrays
     {
         r_correct = rays.antipod[r];
     }
@@ -337,24 +337,20 @@ inline double Geometry :: get_shift_spherical_symmetry <CoMoving> (
     const Size   c,
     const double Z ) const
 {
-    if (points.position[o].x() > 0.0)
-    {
-        const double Rcos_plus_Z = points.position[o].x() * rays.direction[r].x() + Z;
-
-        const double shift = 1.0 - (  points.velocity[c].x() * Rcos_plus_Z / points.position[c].x()
-                                    - points.velocity[o].x() * rays.direction[r].x()               );
-
-        printf("x= %le  rx=%le  z = %le  ", points.position[o].x(), rays.direction[r].x(), Z);
-        printf("t1 = %le   ", points.velocity[c].x() * Rcos_plus_Z / points.position[c].x());
-        printf("t2 = %le   ", points.velocity[o].x() * rays.direction[r].x()               );
-        printf("o=%d, c=%d,  shift = %le\n", o, c, (1.0-shift)*CC);
-
-        return shift;
-    }
-    else
+    if (points.position[o].x() == 0.0)
     {
         return 1.0;
     }
+
+    if (points.position[c].x() == 0.0)
+    {
+        return 1.0 + points.velocity[o].x() * rays.direction[r].x();
+    }
+
+    const double Rcos_plus_Z = points.position[o].x() * rays.direction[r].x() + Z;
+
+    return 1.0 - (  points.velocity[c].x() * Rcos_plus_Z / points.position[c].x()
+                  - points.velocity[o].x() * rays.direction[r].x()               );
 }
 
 
@@ -372,16 +368,42 @@ inline double Geometry :: get_shift_spherical_symmetry <Rest> (
     const Size   c,
     const double Z ) const
 {
-    if (points.position[o].x() > 0.0)
+    if (points.position[c].x() == 0.0)
     {
-        const double Rcos_plus_Z = points.position[o].x() * rays.direction[r].x() + Z;
+        return 1.0;
+    }
 
+    const double Rcos_plus_Z = points.position[o].x() * rays.direction[r].x() + Z;
+
+    // double shift;
+
+    if (r < parameters.hnrays()) // assumes ray indices and antipodes are on opposite sites of hnrays
+    {
         return 1.0 - points.velocity[c].x() * Rcos_plus_Z / points.position[c].x();
     }
     else
     {
-        return 1.0;
+        return 1.0 + points.velocity[c].x() * Rcos_plus_Z / points.position[c].x();
     }
+
+    // cout << "r = " << r << "  o = " << o << "  c = " << c << "  " << shift << endl;
+
+    // return shift;
+
+
+    // const double shift = 1.0 - points.velocity[c].x() * Rcos_plus_Z / points.position[c].x();
+    // return shift;
+
+    //if (rays.direction[r].x() >= 0)
+    //{
+    //    const double shift = 1.0 - points.velocity[c].x() * Rcos_plus_Z / points.position[c].x();
+    //    return shift;
+    //}
+    //else
+    //{
+    //    const double shift = 1.0 + points.velocity[c].x() * Rcos_plus_Z / points.position[c].x();
+    //    return shift;
+    //}
 }
 
 

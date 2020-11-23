@@ -38,6 +38,7 @@ set (SOURCE_FILES
     test_shortchar_order_0.cpp
     test_feautrier_order_2.cpp
     test_solver_lambda.cpp
+    test_imager.cpp
 )
 
 
@@ -61,6 +62,9 @@ target_link_libraries (test_shortchar_order_0 Magritte)
 add_executable        (test_feautrier_order_2 test_feautrier_order_2.cpp)
 target_link_libraries (test_feautrier_order_2 Magritte)
 
+add_executable        (test_imager test_imager.cpp)
+target_link_libraries (test_imager Magritte)
+
 package_add_test      (test_solver_lambda test_solver_lambda.cpp)
 target_link_libraries (test_solver_lambda Magritte)
 
@@ -70,4 +74,5 @@ if (OpenMP_CXX_FOUND)
     target_link_libraries (test_shortchar_order_0 OpenMP::OpenMP_CXX)
     target_link_libraries (test_feautrier_order_2 OpenMP::OpenMP_CXX)
     target_link_libraries (test_solver_lambda     OpenMP::OpenMP_CXX)
+    target_link_libraries (test_imager            OpenMP::OpenMP_CXX)
 endif()

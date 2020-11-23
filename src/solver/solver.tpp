@@ -193,7 +193,7 @@ inline void Solver :: solve_feautrier_order_2 (Model& model)
         {
             const Real dshift_max = get_dshift_max (model, o);
 
-            cout << "dshift_max = " << dshift_max * CC << endl;
+            // cout << "dshift_max = " << dshift_max * CC << endl;
 
             nr_   ()[centre] = o;
             shift_()[centre] = 1.0;
@@ -237,6 +237,9 @@ inline void Solver :: image_feautrier_order_2 (Model& model, const Size rr)
 {
     Image image = Image(model.geometry, rr);
 
+
+    cout << "--------------------------------------" << endl;
+
     const Size ar = model.geometry.rays.antipod[rr];
 
     accelerated_for (o, model.parameters.npoints(), nblocks, nthreads,
@@ -256,7 +259,7 @@ inline void Solver :: image_feautrier_order_2 (Model& model, const Size rr)
             {
                 image_feautrier_order_2 (model, o, rr, ar, f);
 
-                image.I(o,f) = two*Su_()[first_()] - boundary_intensity(model, o, model.radiation.frequencies.nu(o, f));
+                image.I(o,f) = two*Su_()[first_()] - boundary_intensity(model, nr_()[first_()], model.radiation.frequencies.nu(o, f));
             }
         }
         else
@@ -339,7 +342,7 @@ accel inline void Solver :: set_data (
         const double     dZ_interpl =     dZ_loc / n_interpl;
         const double dshift_interpl =     dshift / n_interpl;
 
-        cout << "n_interpl = " << n_interpl << endl;
+        // cout << "n_interpl = " << n_interpl << endl;
 
         if (n_interpl > 10000)
         {
@@ -823,7 +826,7 @@ accel inline void Solver :: image_feautrier_order_2 (
 {
     const Real freq = model.radiation.frequencies.nu(o, f);
 
-    cout << "o = " << o << "  f = " << f << "  " << CC*(freq / model.lines.line[0] - 1.0) << endl;
+    // cout << "o = " << o << "  f = " << f << "  " << CC*(freq / model.lines.line[0] - 1.0) << endl;
 
     Real eta_c, chi_c, dtau_c, term_c;
     Real eta_n, chi_n, dtau_n, term_n;
@@ -900,6 +903,8 @@ accel inline void Solver :: image_feautrier_order_2 (
 
         term_n = eta_n * inverse_chi[n+1];
         dtau_n = half * (chi_c + chi_n) * dZ[n];
+
+        // cout << "dtau = " << dtau_n << endl;
 
         const Real dtau_avg = half * (dtau_c + dtau_n);
         inverse_A[n] = dtau_avg * dtau_c;

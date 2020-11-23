@@ -10,6 +10,7 @@ sys.path.append(f'{curdir}/../../../')
 
 import numpy             as np
 import matplotlib.pyplot as plt
+import ipywidgets        as widgets
 import magritte.tools    as tools
 import magritte.setup    as setup
 import magritte.core     as magritte
@@ -98,7 +99,7 @@ def run_model (a_or_b, nosave=False):
     timer1.stop()
 
     fcen = model.lines.lineProducingSpecies[0].linedata.frequency[0]
-    dd = 1.0e+3 / magritte.CC
+    dd = 3.0e+3 / magritte.CC
     fmin = fcen - fcen*dd
     fmax = fcen + fcen*dd
 
@@ -157,6 +158,15 @@ def run_model (a_or_b, nosave=False):
         return src + (bdy(nu)-src)*np.exp(-2.0*tau(nu, r, 0.5*np.pi))
 
     im_a = np.array([[I_im(f,r) for f in nu] for r in rs])
+    fs   = (nu-frq)/frq*magritte.CC
+
+    def plot (p):
+        plt.figure(dpi=150)
+        plt.plot(fs, im  [p,:]-tools.I_CMB(nu), marker='.')
+        plt.plot(fs, im_a[p,:]-tools.I_CMB(nu))
+        plt.plot(fs,           tools.I_CMB(nu))
+        plt.yscale('log')
+    widgets.interact(plot, p=(0,npoints-1,1))
 
     error = np.abs(tools.relative_error(im, im_a))[:-1]
 
@@ -206,8 +216,8 @@ def run_test (nosave=False):
     create_model ('a')
     run_model    ('a', nosave)
 
-    create_model ('b')
-    run_model    ('b', nosave)
+    # create_model ('b')
+    # run_model    ('b', nosave)
 
     return
 
