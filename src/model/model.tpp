@@ -1007,13 +1007,23 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
               }
             }
           }
-          if (wrong_planes.size()>0)//sigh: more stupid edge cases. This time imagine a tetrahedron with three lines from one of its points through the opposite plane; then that plane will not have two neighbors (and should not have been used in the first place)
-          {//note that you can't make a hole with only 1 'plane' that does not have enough neighbors. @Frederik: if you know some improvement to 'point_surrounded_by_tetras' that avoids this edge case, let me know
+          if (wrong_planes.size()>0)
+          {
+            bool trulywrong=false;//our heuristic can be wrong at times, so we sometimes need to recount things
             for (vector<Size> curr_plane:wrong_planes)
             {
+              Size recount=0;
               std::cout<<curr_plane[0]<<", "<<curr_plane[1]<<", "<<curr_plane[2]<<std::endl;
+              for (Size temp_point:neighbors_of_point)
+              { if (neighbor_map[temp_point].count(curr_plane[0])!=0&&neighbor_map[temp_point].count(curr_plane[1])!=0&&neighbor_map[temp_point].count(curr_plane[2])!=0)
+                {recount++;}
+              }
+              if ((is_edge_plane(curr_plane,edge_planes)&&(recount<1))||(!is_edge_plane(curr_plane,edge_planes)&&(recount<2)))
+              {trulywrong=true;break;}
             }
-            throw "Not a full triangulation!!!";//will probably translate to unknown exception in python
+            if (trulywrong){
+              throw "Not a full triangulation!!!";//will probably translate to unknown exception in python
+            }
           }
         }
 
