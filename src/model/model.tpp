@@ -790,6 +790,7 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
           // neighbor_map[line_to_delete[1]].erase(line_to_delete[0]);
           //check which possible ears need to be deleted and which need to be added to the list from which to generate new ears
 
+          std::set<vector<Size>> temp_collection_tetras;//temporarily keeps the tetras to finally add them to all_added_tetras
           //calculates exactly which tetrahedra are formed with the added line and adds them to triangles_to_work_with
           std::set<Size> temp_intersection;
           std::set_intersection(neighbor_map[triangle[0]].begin(),neighbor_map[triangle[0]].end(),
@@ -802,8 +803,8 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
               if ((temp_point<temp_point2)&&(neighbor_map[temp_point].count(temp_point2)!=0))
               {
                 vector<Size> curr_tetra{triangle[0],triangle[1],temp_point,temp_point2};
-                if (!has_forbidden_plane(curr_tetra,forbidden_planes))//as usual, the forbidden planes are still not allowed
-                  {
+                // if (!has_forbidden_plane(curr_tetra,forbidden_planes))//as usual, the forbidden planes are still not allowed
+                  // {
                   bool may_add=true;//now we have an edge case
                   for (vector<Size> old_tetra: all_added_tetras)
                   {
@@ -835,12 +836,15 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
                     triangles_to_work_with.push_back(curr_tetra);
                     debug_tetra_to_add.push_back(curr_tetra);
                     add_planes_of_tetra_to_counter(curr_tetra,plane_counter);
-                    all_added_tetras.insert(curr_tetra);
+                    temp_collection_tetras.insert(curr_tetra);
+                    // all_added_tetras.insert(curr_tetra);
                   }
-                }
+                // }
               }
             }
           }
+          for (vector<Size> curr_tetra:temp_collection_tetras)//and finally adding the new batch of tetras
+          {all_added_tetras.insert(curr_tetra);}
 
           //TODO remove this section and just calculate which tetrahedra are formed!
           // for (auto it = ears_map.cbegin(); it != ears_map.cend();)
