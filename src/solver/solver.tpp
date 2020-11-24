@@ -884,7 +884,7 @@ accel inline void Solver :: image_feautrier_order_2 (
     Su[first] /= Bf;
 
     /// Write economically: F[first] = (B[first] - C[first]) / C[first];
-    FF[first] = half * Bf_min_Cf * dtau_n * dtau_n;
+    // FF[first] = half * Bf_min_Cf * dtau_n * dtau_n;
     FI[first] = one / (one + FF[first]);
 
 
@@ -943,4 +943,154 @@ accel inline void Solver :: image_feautrier_order_2 (
     }
 
     Su[first] += Su[first+1] * FI[first];
+}
+
+
+const Real alpha  = 1.0;
+const Real alpha2 = alpha * alpha;
+const Real h_smt  = 1.0;
+const Real h_smt2 = h_smt * h_smt;
+const Real inverse_h_smt2 = 1.0 / h_smt2;
+const Real inverse_h_smt4 = inverse_h_smt2 * inverse_h_smt2;
+const Real minus_half_inverse_h_smt2 = -0.5 * inverse_h_smt2;
+
+
+inline Real kernel (const Vector3D x1, const Vector3D x2)
+{
+    return alpha2 * exp(minus_half_inverse_h_smt2 * (x1-x2).squaredNorm());
+}
+
+
+inline Real kernel (const Size p1, const Size p2)
+{
+    const Vector3D x1 = model.geometry.points.position[p1];
+    const Vector3D x2 = model.geometry.points.position[p2];
+
+    return kernel (x1, x2);
+}
+
+
+inline Real L1_kernel (const Size p1, const Size p2)
+{
+    const Vector3D x1 = model.geometry.points.position[p1];
+    const Vector3D x2 = model.geometry.points.position[p2];
+
+    const Real d = (x1-x2).dot(model.geometry.rays.direction[r])*inverse_h_smt2;
+
+    return (chi(p1) - d) * kernel(p1, p2);
+}
+
+
+inline Real L2_kernel (const Size p1, const Size p2)
+{
+    const Vector3D x1 = model.geometry.points.position[p1];
+    const Vector3D x2 = model.geometry.points.position[p2];
+
+    const Real d = (x1-x2).dot(model.geometry.rays.direction[r])*inverse_h_smt2;
+
+    return (chi(p2) + d) * kernel(p1, p2);
+}
+
+
+inline Real L12_kernel (const Size p1, const Size p2)
+{
+    const Vector3D x1 = model.geometry.points.position[p1];
+    const Vector3D x2 = model.geometry.points.position[p2];
+
+    const Real d = (x1-x2).dot(model.geometry.rays.direction[r])*inverse_h_smt2;
+
+    const Real chi1 = chi(p1);
+    const Real chi2 = chi(p2);
+
+    return (chi1*chi2 - (chi1-chi2)*d + inverse_h_smt2 - d*d) * kernel(p1, p2);
+}
+
+
+inline void setup_matrix ()
+{
+    // Triplets for sparse matrix sigma
+    vector<Triplet<Real, Size>> triplets;
+
+    VectorXr y = VectorXr::Zero (parameters.npoints() + parameters.nboundary())
+
+
+    for (Size b1 = 0; b1 < model.parameters.nboundary(); b1++)
+    {
+        const Size p1 = model.geometry.boundary.boundary2point[b1];
+
+        for (Size b2 = 0; b2 < model.parameters.nboundary(); b2++)
+        {
+            const Size p2 = model.geometry.boundary.boundary2point[b2];
+
+            triplets.push_back (Triplet<Real, Size> (
+                b1,
+                b2,
+                kernel(p1, p2)
+            ));
+        }
+
+        for (Size p2 = 0; p2 < model.parameters.npoints(); p2++)
+        {
+            triplets.push_back (Triplet<Real, Size> (
+                b1,
+                p2 + model.parameters.nboundary(),
+                L2_kernel (p1, p2)
+            ));
+        }
+
+        y[b1] = boundary_intensity (model, p1, freq);
+    }
+
+
+    for (Size p1 = 0; p1 < model.parameters.npoints(); p1++)
+    {
+        const Size i1 = p1 + model.parameters.nboundary();
+
+        for (Size b2 = 0; b2 < model.parameters.nboundary(); b2++)
+        {
+            const Size p2 = model.geometry.boundary.boundary2point[b2];
+
+            triplets.push_back (Triplet<Real, Size> (
+                i1,
+                b2,
+                L1_kernel (p1, p2)
+            ));
+        }
+
+        for (Size p2 = 0; p2 < model.parameters.npoints(); p2++)
+        {
+            triplets.push_back (Triplet<Real, Size> (
+                i1,
+                p2 + model.parameters.nboundary(),
+                L12_kernel (p1, p2)
+            ));
+        }
+
+        y[i1] = eta(p1);
+    }
+
+
+    SparseMatrix <Real> covar;
+    covar.setFromTriplets (triplets.begin(), triplets.end());
+
+
+
+    SparseLU <SparseMatrix<Real>, COLAMDOrdering<int>> solver;
+
+
+
+    cout << "Analyzing system of rate equations..."      << endl;
+    solver.analyzePattern (covar);
+    cout << "Factorizing system of rate equations..."    << endl;
+    solver.factorize      (covar);
+
+    if (solver.info() != Eigen::Success)
+    {
+        throw std::runtime_error (solver.lastErrorMessage());
+    }
+
+
+    cout << "Solving rate equations for the level populations..." << endl;
+
+    model.radiation.I() = solver.solve (y);
 }

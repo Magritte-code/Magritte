@@ -35,6 +35,7 @@ endmacro()
 set (SOURCE_FILES
     test_raytracer.cpp
     test_multigrid.cpp
+    test_levelpops.cpp
     test_shortchar_order_0.cpp
     test_feautrier_order_2.cpp
     test_solver_lambda.cpp
@@ -56,6 +57,9 @@ target_link_libraries (test_raytracer Magritte)
 add_executable        (test_multigrid test_multigrid.cpp)
 target_link_libraries (test_multigrid Magritte)
 
+add_executable        (test_levelpops test_levelpops.cpp)
+target_link_libraries (test_levelpops Magritte)
+
 add_executable        (test_shortchar_order_0 test_shortchar_order_0.cpp)
 target_link_libraries (test_shortchar_order_0 Magritte)
 
@@ -71,6 +75,7 @@ target_link_libraries (test_solver_lambda Magritte)
 if (OpenMP_CXX_FOUND)
     target_link_libraries (test_raytracer         OpenMP::OpenMP_CXX)
     target_link_libraries (test_multigrid         OpenMP::OpenMP_CXX)
+    target_link_libraries (test_levelpops         OpenMP::OpenMP_CXX)
     target_link_libraries (test_shortchar_order_0 OpenMP::OpenMP_CXX)
     target_link_libraries (test_feautrier_order_2 OpenMP::OpenMP_CXX)
     target_link_libraries (test_solver_lambda     OpenMP::OpenMP_CXX)

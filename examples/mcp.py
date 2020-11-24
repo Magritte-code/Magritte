@@ -1,5 +1,5 @@
 import sys
-magritteFolder = '/home/frederik/Dropbox/Astro/Magritte/'
+magritteFolder = '/home/frederik/Dropbox/GitHub/Magritte/'
 sys.path.append(magritteFolder)
 
 datdir = f'{magritteFolder}/tests/data/'
@@ -8,11 +8,12 @@ resdir = f'{magritteFolder}/tests/results/'
 
 import numpy             as np
 import scipy             as sp
-import astropy           as ap
 import matplotlib.pyplot as plt
 import magritte.tools    as tools
 import magritte.setup    as setup
 import magritte.core     as magritte
+
+from astropy import constants
 
 # Path to MCP input file
 mcp_file = '/home/frederik/IvS/Sofia/IRAS_22035-MCPinput.txt'
@@ -21,26 +22,26 @@ mcp_file = '/home/frederik/IvS/Sofia/IRAS_22035-MCPinput.txt'
 (Rs, T, nH2, X, Vr, Vt) = np.loadtxt(mcp_file, skiprows=15, unpack=True, usecols=[1,2,4,5,6,7])
 
 # Convert units to SI (where necessary)
-R   *= 1.0e-2   # convert cm   to m
+Rs  *= 1.0e-2   # convert cm   to m
 nH2 *= 1.0e+6   # convert cm-3 to m-3
 Vr  *= 1.0e+3   # convert km/s to m/s
 Vt  *= 1.0e+3   # convert km/s to m/s
 
 # Convert velocities to fractions of the speed of light
-Vr /= ap.constants.c.si.value
-Vt /= ap.constants.c.si.value
+Vr /= constants.c.si.value
+Vt /= constants.c.si.value
 
 # Define model file and line data file
 modelFile = f'{moddir}/example_mcp.hdf5'
 lamdaFile = f'{datdir}/co.txt'
 
 # Define model parameters
-dimension = 1     # effective spatial dimension (1 for spherical symmetry)
-npoints   = 250   # number of spatial points
-nrays     = 200   # number of rays to trace from each point
-nspecs    = 5     # number of chemical species (minimum 5)
-nlspecs   = 1     # number of chemical species we consider in line RT
-nquads    = 11    # number of roots/weights to use in Gauss-Hermite quadrature
+dimension = 1         # effective spatial dimension (1 for spherical symmetry)
+npoints   = len(Rs)   # number of spatial points
+nrays     = 200       # number of rays to trace from each point
+nspecs    = 5         # number of chemical species (minimum 5)
+nlspecs   = 1         # number of chemical species we consider in line RT
+nquads    = 11        # number of roots/weights to use in Gauss-Hermite quadrature
 
 
 def create_model():
@@ -73,6 +74,7 @@ def create_model():
     model = setup.set_quadrature               (model)
 
     model.write()
+
     return
 
 
