@@ -53,9 +53,9 @@ int main (int argc, char **argv)
     Model model;
     model.read (io);
 
-    //trying to delete 1 percent of the points in the grid
+    //trying to delete 0.2 percent of the points in the grid
     //cout << "no of points to delete = " << int(sizeof(Points)*0.01) << endl;
-    model.coarsen_grid(0.01);
+    model.coarsen_grid(0.002);
     cout << "done with deleting points" << endl;
 
 //    Solver solver (10000, 100);
@@ -66,16 +66,16 @@ int main (int argc, char **argv)
 //        cout << model.geometry.lengths[i] << endl;
 //    }
 
-    Size1 lengths = model.geometry.get_ray_lengths ();
-//    Size1 lengths = model.geometry.get_ray_lengths_gpu (512, 512);
-
-    for (Size i = 0; i < 100; i++)
-    {
-//        cout << model.geometry.lengths[i] << endl;
-        cout << lengths[i] << endl;
-    }
-
-    cout << "Done." << endl;
-
-    return (0);
+//     Size1 lengths = model.geometry.get_ray_lengths ();
+// //    Size1 lengths = model.geometry.get_ray_lengths_gpu (512, 512);
+//
+//     for (Size i = 0; i < 100; i++)
+//     {
+// //        cout << model.geometry.lengths[i] << endl;
+//         cout << lengths[i] << endl;
+//     }
+//
+//     cout << "Done." << endl;
+//
+//     return (0);
 }
