@@ -251,11 +251,11 @@ inline bool point_surrounded_by_tetras(Size &point, std::map<vector<Size>,Size> 
       {
       if (!is_edge_plane(curr_plane,edge_planes))
       {
-        std::cout<<"Inner plane not fully surrounded: "<<curr_plane[0]<<", "<<curr_plane[1]<<", "<<curr_plane[2]<<std::endl;
+        // std::cout<<"Inner plane not fully surrounded: "<<curr_plane[0]<<", "<<curr_plane[1]<<", "<<curr_plane[2]<<std::endl;
         return false;
       }else{
         if (nb_tetra_of_plane<1)
-        { std::cout<<"Outer plane not fully surrounded: "<<curr_plane[0]<<", "<<curr_plane[1]<<", "<<curr_plane[2]<<std::endl;
+        { //std::cout<<"Outer plane not fully surrounded: "<<curr_plane[0]<<", "<<curr_plane[1]<<", "<<curr_plane[2]<<std::endl;
           return false;}
       }
       }
@@ -305,8 +305,8 @@ inline void add_planes_of_tetra_to_counter(vector<Size> &tetra, std::map<vector<
 inline void Model::generate_new_ears(const vector<Size> &neighbors_of_point, const vector<Size> &plane, std::map<Size, std::set<Size>> &neighbor_map,
  std::multimap<vector<Size>,double> &ears_map, std::multimap<double,vector<Size>> &rev_ears_map, Size &curr_point, Size &orient_point, std::map<vector<Size>,Size> &plane_counter, std::set<std::vector<Size>> &edge_planes, std::set<vector<Size>> forbidden_planes)
 {
-  std::cout << "plane is: " << plane[0]<< ", " << plane[1] << ", " << plane[2] << std::endl;
-  std::cout << "orient point is: " << orient_point << std::endl;
+  // std::cout << "plane is: " << plane[0]<< ", " << plane[1] << ", " << plane[2] << std::endl;
+  // std::cout << "orient point is: " << orient_point << std::endl;
 //   std::cout << "line is: " << new_line[0]<< ", " << new_line[1] << std::endl;
   Size count_neighbours;
 
@@ -332,7 +332,7 @@ inline void Model::generate_new_ears(const vector<Size> &neighbors_of_point, con
           // for (std::set<Size>::iterator it=neighbor_map[temp_point].begin(); it!=neighbor_map[temp_point].end(); ++it)
           //   std::cout << ' ' << *it;
           // std::cout << std::endl;
-          std::cout << "temp_point is: " << temp_point << std::endl;
+          // std::cout << "temp_point is: " << temp_point << std::endl;
 
           Size point_not_neighbor_of_plane;//the point of the plane which is not a neighbor
           vector<Size> points_neighbor_of_plane;
@@ -353,7 +353,7 @@ inline void Model::generate_new_ears(const vector<Size> &neighbors_of_point, con
             double power=calc_power(new_possible_ear,curr_point);
             if (!std::isnan(power))
             {//otherwise we would be proposing a coplanar tetrahedron, which would be ridiculous
-              std::cout << "Inserting new ear; power is: " << power << std::endl;
+              // std::cout << "Inserting new ear; power is: " << power << std::endl;
               ears_map.insert(std::make_pair(new_possible_ear,power));
               rev_ears_map.insert(std::make_pair(power,new_possible_ear));
             }
@@ -472,21 +472,21 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
       {
         if (rev_density_diff_map.empty())
         {
-          std::cout << "You are trying to delete more points than possible; stuff will break" << std::endl;
+          // std::cout << "You are trying to delete more points than possible; stuff will break" << std::endl;
           break;
         }
         Size curr_point=(*rev_density_diff_map.begin()).second;//the current point to remove
         mask_list[curr_coarsening_lvl][curr_point]=false;
         //std::cout << "current density diff: " << (*rev_density_diff_map.begin()).first << std::endl;
-        std::cout << "current point: " << curr_point << std::endl;
+        // std::cout << "current point: " << curr_point << std::endl;
 
         vector<Size> neighbors_of_point=neighbors_lists[curr_coarsening_lvl].get_neighbors(curr_point);
-        std::cout << "neighbors of current point: ";
-        for (auto it = neighbors_of_point.begin(); it!=neighbors_of_point.end(); it++)
-        {
-          std::cout << *it << " ";
-        }
-        std::cout << std::endl;
+        // std::cout << "neighbors of current point: ";
+        // for (auto it = neighbors_of_point.begin(); it!=neighbors_of_point.end(); it++)
+        // {
+        //   std::cout << *it << " ";
+        // }
+        // std::cout << std::endl;
 
         for (Size neighbor :neighbors_of_point)
         {//deleting the point from its neighbors, the point itself still has its neighbors (for now)
@@ -546,13 +546,13 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
                 {
                   vector<Size> curr_plane{pointi,pointj,point1};
                   edge_planes.insert(curr_plane);//add plane to edge planes
-                  std::cout << "Edge plane found: " << curr_plane[0] << "," << curr_plane[1] << "," << curr_plane[2] << std::endl;
+                  // std::cout << "Edge plane found: " << curr_plane[0] << "," << curr_plane[1] << "," << curr_plane[2] << std::endl;
                   for (Size point2: temp_intersection)
                   {//adding strict order in order to remove duplicates
                     if (point1<point2 && //just such that we do not have duplicates
                     neighbor_map[point1].count(point2)!=0)///if point1 and 2 are neighbors
                     {
-                      std::cout << "Found initial tetrahedron" << std::endl;
+                      // std::cout << "Found initial tetrahedron" << std::endl;
                       vector<vector<Size>> tetra_planes;
                       vector<Size> orient_points{pointi,pointj,point1,point2};
                       tetra_planes.resize(4);
@@ -567,7 +567,7 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
                         if (ref_orient*comp_orient>=0)//then the last point of the tetrahedron lies on the same side as the deleted point, so this plane is unusable
                         {
                           forbidden_planes.insert(tetra_planes[k]);
-                          std::cout << "Forbidden plane found: " << tetra_planes[k][0] << "," << tetra_planes[k][1] << "," << tetra_planes[k][2] << std::endl;
+                          // std::cout << "Forbidden plane found: " << tetra_planes[k][0] << "," << tetra_planes[k][1] << "," << tetra_planes[k][2] << std::endl;
                         }
                       }
                     }
@@ -649,7 +649,7 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
                         {//otherwise we would be proposing a coplanar tetrahedron, which would be ridiculous
                           ears_map.insert(std::make_pair(new_triangle,power));
                           rev_ears_map.insert(std::make_pair(power,new_triangle));
-                          std::cout << "Creating ear: "<< new_triangle[0] << ", " << new_triangle[1] << ", " << new_triangle[2] << ", " << new_triangle[3] << std::endl;
+                          // std::cout << "Creating ear: "<< new_triangle[0] << ", " << new_triangle[1] << ", " << new_triangle[2] << ", " << new_triangle[3] << std::endl;
                           //invariant: the first two element of the vector should correspond to the neighbors we want to add
                         }
                       }
@@ -678,18 +678,18 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
         //while(ears_map.size()>7)//in the last iteration, you should have an octohedron left: -> 8 possible ears
         while(!ears_map.empty())
         {
-          std::cout << "Looping: current size of ears map: " << ears_map.size() << std::endl;
+          // std::cout << "Looping: current size of ears map: " << ears_map.size() << std::endl;
           // std::cout << "Looping: current size of lines: " << neighbor_lines.size() << std::endl;
           vector<Size> triangle=(*rev_ears_map.begin()).second;//triangle which we are currently adding to the mesh
           //i we somehow end up with a line we no longer need to add, ignore it and repeat the loop
           if ((point_surrounded_by_tetras(triangle[0],plane_counter,edge_planes))||(point_surrounded_by_tetras(triangle[1],plane_counter,edge_planes)))
           {
-            std::cout<<"Proposed ear no longer useful"<<std::endl;
-            std::cout << "Deleted ear: " << triangle[0] << ", " << triangle[1] << ", " << triangle[2] << ", " << triangle[3] << std::endl;
+            // std::cout<<"Proposed ear no longer useful"<<std::endl;
+            // std::cout << "Deleted ear: " << triangle[0] << ", " << triangle[1] << ", " << triangle[2] << ", " << triangle[3] << std::endl;
             delete_vector_from_both_maps(ears_map,rev_ears_map,triangle);
             continue;
           }
-          std::cout << "Currently adding ear: (" << triangle[0] << "," << triangle[1] << "," << triangle[2] << "," << triangle[3] << ")" << std::endl;
+          // std::cout << "Currently adding ear: (" << triangle[0] << "," << triangle[1] << "," << triangle[2] << "," << triangle[3] << ")" << std::endl;
           vector<vector<Size>> triangles_to_work_with;//vector of triangles from which we will generate  new triangles
           // triangles_to_work_with.push_back(triangle);
           neighbors_lists[curr_coarsening_lvl].add_neighbor(triangle[0], triangle[1]);
@@ -705,7 +705,7 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
           // debug_tetra_to_add.push_back(vector<Size>{triangle});
 
           //invariant: the first two element of the vector should correspond to the neighbors we want to add
-          std::cout << "Deleted ear: " << triangle[0] << ", " << triangle[1] << ", " << triangle[2] << ", " << triangle[3] << std::endl;
+          // std::cout << "Deleted ear: " << triangle[0] << ", " << triangle[1] << ", " << triangle[2] << ", " << triangle[3] << std::endl;
           delete_vector_from_both_maps(ears_map,rev_ears_map,triangle);
           //Delete corresponding line, which may no longer be used
           // vector<Size> line_to_delete{triangle[2],triangle[3]};
@@ -745,13 +745,13 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
                       Size new_point=0;
                       for (Size temp_point: curr_tetra)
                       {if(!vector_contains_element(old_tetra, temp_point)){new_point=temp_point;}}
-                      std::cout << "shared triangle: " << shared_triangle[0] << ", " << shared_triangle[1] << ", " << shared_triangle[2] << std::endl;
-                      std::cout << "old point: " << old_point << std::endl;
-                      std::cout << "new point: " << new_point << std::endl;
+                      // std::cout << "shared triangle: " << shared_triangle[0] << ", " << shared_triangle[1] << ", " << shared_triangle[2] << std::endl;
+                      // std::cout << "old point: " << old_point << std::endl;
+                      // std::cout << "new point: " << new_point << std::endl;
                       //if they both lie on the same side, ignore the new triangle
                       if (orientation(shared_triangle,old_point)*orientation(shared_triangle,new_point)>=0)
                       {
-                        std::cout << "tetra not added" << std::endl;
+                        // std::cout << "tetra not added" << std::endl;
                         may_add=false;
                         break;
                       }
@@ -827,7 +827,7 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
             {
               if (triangle_shares_plane_with(triangle, curr_triangle))
               {
-                std::cout << "Deleted ear: " << curr_triangle[0] << ", " << curr_triangle[1] << ", " << curr_triangle[2] << ", " << curr_triangle[3] << std::endl;
+                // std::cout << "Deleted ear: " << curr_triangle[0] << ", " << curr_triangle[1] << ", " << curr_triangle[2] << ", " << curr_triangle[3] << std::endl;
                 it = delete_vector_from_both_maps(ears_map, rev_ears_map, curr_triangle);
                 deleted=true;
                 break;
@@ -845,7 +845,7 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
           vector<vector<Size>> relevant_planes=relevant_planes_pair.second;
           //std::cout << "number of planes: " << relevant_planes.size() << std::endl;
           //TODO FIXME: check if the same ear can be generated twice and check if it would actually matter...
-          std::cout << "relevant planes size: "<<relevant_planes.size() << std::endl;
+          // std::cout << "relevant planes size: "<<relevant_planes.size() << std::endl;
 
           // //if we have two planes that already form a tetrahedron, we can stop adding new ears
           // if (relevant_planes.size()==2)
@@ -919,7 +919,7 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
           {
             if (!point_surrounded_by_tetras(point, plane_counter, edge_planes))
             {
-              std::cout<<"Iteration: "<<i<<" point: "<<point<<std::endl;
+              // std::cout<<"Iteration: "<<i<<" point: "<<point<<std::endl;
               for (auto pair:plane_counter)
               {
                 vector<Size> curr_plane=pair.first;
@@ -928,7 +928,7 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
                 if ((count<2&&!is_edgepl)||(count<1&&is_edgepl))
                 {
                 wrong_planes.insert(curr_plane);
-                std::cout<<curr_plane[0]<<", "<<curr_plane[1]<<", "<<curr_plane[2]<<" counted nb times: "<<count<<std::endl;
+                // std::cout<<curr_plane[0]<<", "<<curr_plane[1]<<", "<<curr_plane[2]<<" counted nb times: "<<count<<std::endl;
                 }
               }
             }
@@ -939,7 +939,7 @@ inline void Model :: coarsen_grid(float perc_points_deleted)
             for (vector<Size> curr_plane:wrong_planes)
             {
               Size recount=0;
-              std::cout<<curr_plane[0]<<", "<<curr_plane[1]<<", "<<curr_plane[2]<<std::endl;
+              // std::cout<<curr_plane[0]<<", "<<curr_plane[1]<<", "<<curr_plane[2]<<std::endl;
               for (Size temp_point:neighbors_of_point)
               { if (neighbor_map[temp_point].count(curr_plane[0])!=0&&neighbor_map[temp_point].count(curr_plane[1])!=0&&neighbor_map[temp_point].count(curr_plane[2])!=0)
                 {recount++;}
