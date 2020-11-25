@@ -74,7 +74,7 @@ inline std::multimap<vector<Size>,double>::iterator delete_vector_from_both_maps
 ///   @Param[in] vect: the vector to check for
 ///   @Param[in] element: the element to check for
 ///   @Returns bool: true if element in vect, false otherwise
-inline bool vector_contains_element(const vector<Size> vect, Size element)
+inline bool vector_contains_element(const vector<Size> &vect, Size element)
 {
   return (std::find(vect.begin(), vect.end(), element) != vect.end());
 }
@@ -141,15 +141,30 @@ inline double Model::orientation(const vector<Size> &plane, Size point){
 }
 
 
-/// Returns the total number of different points of two vectors
+// /// Returns the total number of different points of two vectors
+// inline Size calculate_total_points(vector<Size> &v1, vector<Size> &v2)
+// {
+//   std::set<Size> union_of_points;
+//   for (Size temp_point: v1)
+//   {union_of_points.insert(temp_point);}
+//   for (Size temp_point: v2)
+//   {union_of_points.insert(temp_point);}
+//   return union_of_points.size();
+// }
+
+
+/// Returns the total number of different points of two vectors //attempt 2: now no construction of sets needed (should be faster for small vectors)
 inline Size calculate_total_points(vector<Size> &v1, vector<Size> &v2)
 {
-  std::set<Size> union_of_points;
-  for (Size temp_point: v1)
-  {union_of_points.insert(temp_point);}
-  for (Size temp_point: v2)
-  {union_of_points.insert(temp_point);}
-  return union_of_points.size();
+  Size nb_elements_in_v2_not_in_v1=0;
+  for (Size element:v2)
+  {
+    if (!vector_contains_element(v1,element))
+    {
+      nb_elements_in_v2_not_in_v1++;
+    }
+  }
+  return v1.size()+nb_elements_in_v2_not_in_v1;
 }
 
 /// Checks whether a tetrahedron can be formed given 2 lines, by drawing exactly one extra line
