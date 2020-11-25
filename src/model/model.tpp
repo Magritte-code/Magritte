@@ -1101,38 +1101,42 @@ inline vector<double> Model::interpolate_vector(Size coarser_lvl, Size finer_lvl
     {
       if (!mask_list[coarser_lvl][point])
       {
-        std::set<Size> neighbors_in_coarse_grid;
+        vector<Size> neighbors_in_coarse_grid;
+        // std::set<Size> neighbors_in_coarse_grid;
         vector<Size> neighbors_of_point=neighbors_lists[finer_lvl].get_neighbors(point);
-        std::set<Size> neighbors_in_fine_grid;//contains neighbors in fine grid, but not in coarse
+        vector<Size> neighbors_in_fine_grid;
+        // std::set<Size> neighbors_in_fine_grid;//contains neighbors in fine grid, but not in coarse
         for (Size neighbor: neighbors_of_point)
         {
           if (mask_list[coarser_lvl][neighbor])
           {
-            neighbors_in_coarse_grid.insert(neighbor);
+            neighbors_in_coarse_grid.push_back(neighbor);
           }
           else
           {
-            neighbors_in_fine_grid.insert(neighbor);
+            neighbors_in_fine_grid.push_back(neighbor);
           }
         }
 
         while (neighbors_in_coarse_grid.empty())//please note that we would be very unlucky if we would get in this loop...
         {
-          std::set<Size> temp;//
+          // std::set<Size> temp;//
+          vector<Size> temp;
           for (Size fine_neighbor: neighbors_in_fine_grid)
           {
             vector<Size> neighbors_of_fine_neighbor=neighbors_lists[finer_lvl].get_neighbors(fine_neighbor);
             for (Size neighbor_of_neighbor: neighbors_of_fine_neighbor)
             {//if the neighbor of neighbor belongs to the coarse grid, just insert it
               if (value_map.count(neighbor_of_neighbor)>0)
-              {neighbors_in_coarse_grid.insert(neighbor_of_neighbor);}
+              {neighbors_in_coarse_grid.push_back(neighbor_of_neighbor);}
               else          //TODO: add some protection such that we do not add the same neighbors again and again
-              {temp.insert(neighbor_of_neighbor);}
+              {temp.push_back(neighbor_of_neighbor);}
             }
           }
           neighbors_in_fine_grid=temp;
         }
-        std::set<vector<Size>> tetrahedra;
+        // std::set<vector<Size>> tetrahedra;
+        vector<vector<Size>> tetrahedra;
         for (Size coarse_neighbor: neighbors_in_coarse_grid)
         {
           //For now, we just calculate all tetrahedra that have a point in neighbors_in_fine_grid
@@ -1141,10 +1145,10 @@ inline vector<double> Model::interpolate_vector(Size coarser_lvl, Size finer_lvl
           // then construct tetrahedra using those points
           //Other possibility: add new datastructure which maps the points onto the tetrahedra
           // should be calculated after refining the grid
-          std::set<vector<Size>> curr_tetrahedra=calc_all_tetra_with_point(point, coarser_lvl);
+          std::set<vector<Size>> curr_tetrahedra=calc_all_tetra_with_point(point, coarser_lvl);//if we are using qhull or anything that gives us this, use that instead
           for (vector<Size> tetra_to_check: curr_tetrahedra)
           {//try to add all non-duplicates to the tetrahedra set
-            tetrahedra.insert(tetra_to_check);
+            tetrahedra.push_back(tetra_to_check);
           }
         }
         //TODO: using the tetrahedra we have found, we could also try to interpolate the neighboring points that we have found

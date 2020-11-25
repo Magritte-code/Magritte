@@ -55,8 +55,11 @@ int main (int argc, char **argv)
 
     //trying to delete 0.2 percent of the points in the grid
     //cout << "no of points to delete = " << int(sizeof(Points)*0.01) << endl;
-    model.coarsen_grid(0.002);
+    model.coarsen_grid(0.1);
     cout << "done with deleting points" << endl;
+    std::vector<double> vector1(68994, 0.0);
+    model.interpolate_vector(1, 0, vector1);
+
 
 //    Solver solver (10000, 100);
 //    solver.trace (model);
