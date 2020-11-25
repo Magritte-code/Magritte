@@ -237,73 +237,8 @@ inline bool is_edge_plane(vector<Size> &plane,std::set<std::vector<Size>> &edge_
 inline bool is_forbidden_plane(vector<Size> &plane,std::set<std::vector<Size>> &forbidden_planes)
 {return is_edge_plane(plane,forbidden_planes);}
 
-// // checks whether each plane around a point is part of a tetrahedron
-// inline bool point_surrounded_by_tetras(Size &point, std::map<Size, std::set<Size>> &neighbor_map, std::set<std::vector<Size>> &forbidden_planes, std::set<std::vector<Size>> &edge_planes)
-// {
-//   for (Size temp_point: neighbor_map[point])
-//   {
-//     std::set<Size> temp_intersection;
-//     std::set_intersection(neighbor_map[point].begin(),neighbor_map[point].end(),
-//                   neighbor_map[temp_point].begin(),neighbor_map[temp_point].end(),
-//                   std::inserter(temp_intersection,temp_intersection.begin()));
-//     for (Size temp_point2:temp_intersection)
-//     {
-//       bool plane_is_forbidden=false;//whether a plane has enough tetras
-//       Size nb_tetra_of_plane=0;
-//       vector<Size> curr_plane{point,temp_point,temp_point2};
-//       Size nb_forbidden_planes=0;//number of forbidden planes with which curr_plane shares a line
-//       for (vector<Size> forbidden_plane:forbidden_planes)
-//       {
-//         if (calculate_total_points(curr_plane, forbidden_plane)==3)
-//         {
-//           plane_is_forbidden=true;//if we encounter a forbidden plane, just ignore it
-//           break;
-//         } else if ()
-//       }
-//       if (plane_is_forbidden)//just ignore the forbidden planes
-//       {
-//         continue;
-//       }
-//       // std::cout<<"plane: "<<point<<", "<<temp_point<<", "<<temp_point2<<std::endl;
-//       for (Size temp_point3:temp_intersection)//TODO do not use duplicates:temp_point2!=temp_point1!!!!!!
-//       {
-//         vector<Size> curr_tetra{point,temp_point,temp_point2,temp_point3};//if the tetrahedra we find has a forbidden plane, we do not count it!
-//         // vector<Size> plane1{temp_point,temp_point2,temp_point3};
-//         // vector<Size> plane2{point,temp_point2,temp_point3};
-//         // vector<Size> plane3{point,temp_point,temp_point3};
-//         // bool has_two_forbidden_planes=false;
-//         // Size nb_forbidden_planes=0;
-//         // for (vector<Size> plane: vector<vector<Size>>{plane1,plane2,plane3})
-//         // {if (is_forbidden_plane(plane,forbidden_planes)){nb_forbidden_planes++;}}
-//         // has_two_forbidden_planes=(nb_forbidden_planes>=2);
-//         std::cout<<"curr tetra: "<<point<<", "<<temp_point<<", "<<temp_point2<<", "<<temp_point3<<std::endl;
-//         if ((neighbor_map[temp_point2].count(temp_point3)!=0)&&(!has_forbidden_plane(curr_tetra,forbidden_planes)))//stupid edge case when there are too much forbidden planes
-//         {
-//           std::cout<<"tetra: "<<point<<", "<<temp_point<<", "<<temp_point2<<", "<<temp_point3<<std::endl;
-//           nb_tetra_of_plane++;
-//         }
-//       }
-//       if (!is_edge_plane(curr_plane,edge_planes))
-//       {
-//         if (nb_tetra_of_plane<2)//should be ==, but not sure yet
-//         {
-//           std::cout<<"Inner plane not fully surrounded: "<<curr_plane[0]<<", "<<curr_plane[1]<<", "<<curr_plane[2]<<std::endl;
-//           return false;}
-//       }
-//       else
-//       {
-//         if (nb_tetra_of_plane<1)
-//         {
-//           std::cout<<"Outer plane not fully surrounded: "<<curr_plane[0]<<", "<<curr_plane[1]<<", "<<curr_plane[2]<<std::endl;
-//           return false;}
-//       }
-//     }
-//   }
-//   return true;
-// }
-
 //note: it should be possible to cache some results
-// Checks whether a point is surrounded by tetrahedra
+// Checks whether a point is surrounded by tetrahedra //attempt 2: changed order of if statements to reduce computational overhead
 inline bool point_surrounded_by_tetras(Size &point, std::map<vector<Size>,Size> &plane_counter, std::set<std::vector<Size>> &edge_planes)
 {
   for (auto it=plane_counter.begin(); it!=plane_counter.end(); ++it)
@@ -312,16 +247,28 @@ inline bool point_surrounded_by_tetras(Size &point, std::map<vector<Size>,Size> 
     Size nb_tetra_of_plane=(*it).second;
     if (vector_contains_element(curr_plane, point))//check if the plane we are currently looking at
     {
+      if (nb_tetra_of_plane<2)
+      {
       if (!is_edge_plane(curr_plane,edge_planes))
       {
-        if (nb_tetra_of_plane<2)
-        { std::cout<<"Inner plane not fully surrounded: "<<curr_plane[0]<<", "<<curr_plane[1]<<", "<<curr_plane[2]<<std::endl;
-          return false;}
+        std::cout<<"Inner plane not fully surrounded: "<<curr_plane[0]<<", "<<curr_plane[1]<<", "<<curr_plane[2]<<std::endl;
+        return false;
       }else{
         if (nb_tetra_of_plane<1)
         { std::cout<<"Outer plane not fully surrounded: "<<curr_plane[0]<<", "<<curr_plane[1]<<", "<<curr_plane[2]<<std::endl;
           return false;}
       }
+      }
+      // if (!is_edge_plane(curr_plane,edge_planes))
+      // {
+      //   if (nb_tetra_of_plane<2)
+      //   { std::cout<<"Inner plane not fully surrounded: "<<curr_plane[0]<<", "<<curr_plane[1]<<", "<<curr_plane[2]<<std::endl;
+      //     return false;}
+      // }else{
+      //   if (nb_tetra_of_plane<1)
+      //   { std::cout<<"Outer plane not fully surrounded: "<<curr_plane[0]<<", "<<curr_plane[1]<<", "<<curr_plane[2]<<std::endl;
+      //     return false;}
+      // }
     }
   }
   return true;
@@ -403,42 +350,6 @@ inline void Model::generate_new_ears(const vector<Size> &neighbors_of_point, con
           if (!has_forbidden_plane(new_possible_ear,forbidden_planes)&&((!point_surrounded_by_tetras(temp_point,plane_counter,edge_planes))
           &&(!point_surrounded_by_tetras(point_not_neighbor_of_plane,plane_counter,edge_planes))))
           {
-            // std::set<vector<Size>> constructed_ears;
-            // // find all ears having as line this new line
-            // std::set<Size> temp_intersection;
-            // std::set_intersection(neighbor_map[temp_point].begin(),neighbor_map[temp_point].end(),
-            //               neighbor_map[point_not_neighbor_of_plane].begin(),neighbor_map[point_not_neighbor_of_plane].end(),
-            //               std::inserter(temp_intersection,temp_intersection.begin()));
-            // for (Size temp_point2:temp_intersection)
-            // {
-            //   for (Size temp_point3:temp_intersection)
-            //   {
-            //     if ((temp_point2<temp_point3)&&(neighbor_map[temp_point2].count(temp_point3)!=0))
-            //     {
-            //       constructed_ears.insert(vector<Size>{temp_point,point_not_neighbor_of_plane,temp_point2,temp_point3});
-            //     }
-            //   }
-            // }
-            // bool power_is_set=false;
-            // double power=0;
-            // for (vector<Size> constructed_ear: constructed_ears)
-            // {
-            //   double temp_power=calc_power(constructed_ear,curr_point);
-            //   std::cout << "temp_power is: " << temp_power << std::endl;
-            //   if (std::isnan(temp_power))
-            //   {
-            //     power=temp_power;
-            //     break;
-            //   }
-            //   if (!power_is_set)
-            //   {
-            //     power=temp_power;
-            //   }
-            //   else if (temp_power>power)
-            //   {
-            //     power=temp_power;//always keeping the worst result for the power
-            //   }
-            // }
             double power=calc_power(new_possible_ear,curr_point);
             if (!std::isnan(power))
             {//otherwise we would be proposing a coplanar tetrahedron, which would be ridiculous
