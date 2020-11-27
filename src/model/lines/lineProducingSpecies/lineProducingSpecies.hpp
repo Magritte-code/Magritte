@@ -28,7 +28,7 @@ struct LineProducingSpecies
     Real2 Jeff;                      ///< effective mean intensity in the line (actual - ALO)
     Real2 Jdif;                      ///< effective mean intensity in the line (actual - ALO)
 
-    Long3 nr_line;                   ///< frequency number corresponing to line (p,k,z)
+    Size3 nr_line;                   ///< frequency number corresponing to line (p,k,z)
 
     double relative_change_mean;     ///< mean    relative change
     double relative_change_max;      ///< maximum relative change
@@ -36,6 +36,10 @@ struct LineProducingSpecies
 
     VectorXr population;             ///< level population (most recent)
     Real1    population_tot;         ///< total level population (sum over levels)
+
+    vector<VectorXr> populations;    ///< list of populations in previous iterations
+    vector<VectorXr> residuals;      ///< list of residuals in the populations
+
 
     VectorXr population_prev1;       ///< level populations 1 iteration  back
     VectorXr population_prev2;       ///< level populations 2 iterations back
@@ -68,6 +72,7 @@ struct LineProducingSpecies
         const Vector<Real> &temperature );
 
     inline void update_using_Ng_acceleration ();
+    inline void update_using_acceleration (const Size order);
 };
 
 

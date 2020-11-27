@@ -61,14 +61,14 @@ int main (int argc, char **argv)
 //        cout << model.geometry.lengths[i] << endl;
 //    }
 
-    Size1 lengths = model.geometry.get_ray_lengths ();
+    // Size1 lengths = model.geometry.get_ray_lengths ();
 //    Size1 lengths = model.geometry.get_ray_lengths_gpu (512, 512);
 
-    for (Size i = 0; i < 100; i++)
-    {
+    // for (Size i = 0; i < 100; i++)
+    // {
 //        cout << model.geometry.lengths[i] << endl;
-        cout << lengths[i] << endl;
-    }
+        // cout << lengths[i] << endl;
+    // }
 
     cout << "Done." << endl;
 

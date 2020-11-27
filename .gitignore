@@ -41,6 +41,8 @@ configure.hpp
 *model_*
 !*model_*.py
 !*model_*.ipynb
+*.geo
+*.vtk
 
 # dependencies
 ##############
@@ -49,3 +51,15 @@ configure.hpp
 *dependencies/pybind11*
 *dependencies/scorep*
 *dependencies/Paracabs*
+*dependencies/googletest*
+*dependencies/cmake*
+*dependencies/miniconda3*
+
+# perf reports
+##############
+perf.data*
+
+# test models and results
+#########################
+tests/models/*
+tests/results/*

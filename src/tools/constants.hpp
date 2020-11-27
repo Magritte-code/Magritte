@@ -10,6 +10,9 @@
 #define _USE_MATH_DEFINES
 #include <cmath>
 
+#include "../configure.hpp"
+const string magritte_folder = MAGRITTE_FOLDER;
+
 // Numerical constants
 const double PI                         =     M_PI;         // pi
 const double FOUR_PI                    = 4.0*M_PI;         // 4*pi

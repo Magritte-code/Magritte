@@ -150,6 +150,7 @@ def write_array (io_file, file_name, data):
         try:
             # print('Creating dataset...')
             if (get_element_type(data) == str):
+                # print(data)
                 file.create_dataset (name=file_name, data=np.array(data, dtype='S'))
             else:
                 file.create_dataset (name=file_name, data=data)

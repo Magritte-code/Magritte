@@ -243,6 +243,39 @@ int Model :: compute_spectral_discretisation (const Real width)
 }
 
 
+///  Computer for spectral (=frequency) discretisation
+///  Gives same frequency bins to each point
+///    @param[in] min : minimal frequency
+///    @param[in] max : maximal frequency
+///////////////////////////////////////////////////////
+int Model :: compute_spectral_discretisation (
+    const long double nu_min,
+    const long double nu_max )
+{
+    cout << "Computing spectral discretisation..." << endl;
+
+    const long double dnu = (nu_max - nu_min) / (parameters.nfreqs() - 1);
+
+    threaded_for (p, parameters.npoints(),
+    {
+        for (Size f = 0; f < parameters.nfreqs(); f++)
+        {
+            radiation.frequencies.nu(p, f) = (Real) (nu_min + f*dnu);
+
+            radiation.frequencies.appears_in_line_integral[f] = false;;
+            radiation.frequencies.corresponding_l_for_spec[f] = parameters.nfreqs();
+            radiation.frequencies.corresponding_k_for_tran[f] = parameters.nfreqs();
+            radiation.frequencies.corresponding_z_for_line[f] = parameters.nfreqs();
+        }
+    })
+
+    // Set spectral discretisation setting
+    spectralDiscretisation = SD_Image;
+
+    return (0);
+}
+
+
 /// Computer for the level populations, assuming LTE
 ////////////////////////////////////////////////////
 int Model :: compute_LTE_level_populations ()
@@ -258,15 +291,37 @@ int Model :: compute_LTE_level_populations ()
 
 ///  Computer for the radiation field
 /////////////////////////////////////
-int Model :: compute_radiation_field ()
+int Model :: compute_radiation_field_shortchar_order_0 ()
 {
     cout << "Computing radiation field..." << endl;
 
-    const Size length_max = parameters.npoints();
-    const Size  width_max = parameters.nfreqs ();
+    // const Size length_max = 4*parameters.npoints() + 1;
+    // const Size  width_max =   parameters.nfreqs ();
 
-    Solver solver (length_max, width_max);
-    solver.solve  (*this);
+    // Solver solver (length_max, width_max, parameters.n_off_diag);
+
+    Solver solver;
+    solver.setup <CoMoving>        (*this);
+    solver.solve_shortchar_order_0 (*this);
+
+    return (0);
+}
+
+
+///  Computer for the radiation field
+/////////////////////////////////////
+int Model :: compute_radiation_field_feautrier_order_2 ()
+{
+    cout << "Computing radiation field..." << endl;
+
+    // const Size length_max = 4*parameters.npoints() + 1;
+    // const Size  width_max =   parameters.nfreqs ();
+
+    // Solver solver (length_max, width_max, parameters.n_off_diag);
+
+    Solver solver;
+    solver.setup <CoMoving>        (*this);
+    solver.solve_feautrier_order_2 (*this);
 
     return (0);
 }
@@ -278,13 +333,13 @@ int Model :: compute_Jeff ()
 {
     for (LineProducingSpecies &lspec : lines.lineProducingSpecies)
     {
-//        Lambda = MatrixXd::Zero (lspec.population.size(), lspec.population.size());
+       // Lambda = MatrixXd::Zero (lspec.population.size(), lspec.population.size());
 
         threaded_for (p, parameters.npoints(),
         {
             for (Size k = 0; k < lspec.linedata.nrad; k++)
             {
-                const Long1 freq_nrs = lspec.nr_line[p][k];
+                const Size1 freq_nrs = lspec.nr_line[p][k];
 
                 // Initialize values
                 lspec.Jlin[p][k] = 0.0;
@@ -299,18 +354,31 @@ int Model :: compute_Jeff ()
                 double diff = 0.0;
 
                 // Collect the approximated part
-//                for (Size m = 0; m < lspec.lambda.get_size(p,k); m++)
-//                {
-//                    const Size I = lspec.index(lspec.lambda.get_nr(p,k,m), lspec.linedata.irad[k]);
-//
-//                    diff += lspec.lambda.get_Ls(p,k,m) * lspec.population[I];
-//                }
+                for (Size m = 0; m < lspec.lambda.get_size(p,k); m++)
+                {
+                    const Size I = lspec.index(lspec.lambda.get_nr(p,k,m), lspec.linedata.irad[k]);
+
+                    diff += lspec.lambda.get_Ls(p,k,m) * lspec.population[I];
+                }
 
                 lspec.Jeff[p][k] = lspec.Jlin[p][k] - HH_OVER_FOUR_PI * diff;
                 lspec.Jdif[p][k] = HH_OVER_FOUR_PI * diff;
             }
         })
     }
+
+    return (0);
+}
+
+
+///  compute level populations from statistical equilibrium
+///////////////////////////////////////////////////////////
+int Model :: compute_level_populations_from_stateq ()
+{
+    lines.iteration_using_statistical_equilibrium (
+            chemistry.species.abundance,
+            thermodynamics.temperature.gas,
+            parameters.pop_prec()                 );
 
     return (0);
 }
@@ -324,23 +392,14 @@ int Model :: compute_Jeff ()
 ///  @return number of iteration done
 ///////////////////////////////////////////////////////////////////////////////
 int Model :: compute_level_populations (
-        // const Io   &io,
-        const bool  use_Ng_acceleration,
-        const long  max_niterations     )
+    const bool use_Ng_acceleration,
+    const long max_niterations     )
 {
     // Check spectral discretisation setting
     if (spectralDiscretisation != SD_Lines)
     {
         throw std::runtime_error ("Spectral discretisation was not set for Lines!");
     }
-
-    // Write out initial level populations
-    //for (int l = 0; l < parameters.nlspecs(); l++)
-    //{
-    //    const string tag = "_rank_" + str_MPI_comm_rank() + "_iteration_0";
-
-    //    lines.lineProducingSpecies[l].write_populations (io, l, tag);
-    //}
 
     // Initialize the number of iterations
     int iteration        = 0;
@@ -364,20 +423,19 @@ int Model :: compute_level_populations (
         // Start assuming convergence
         some_not_converged = false;
 
-        //if (use_Ng_acceleration && (iteration_normal == 4))
-        //{
-        //    lines.iteration_using_Ng_acceleration (
-        //        parameters.pop_prec()             );
-        //
-        //    iteration_normal = 0;
-        //}
-        // else
+        if (use_Ng_acceleration && (iteration_normal == 4))
+        {
+            lines.iteration_using_Ng_acceleration (parameters.pop_prec());
+
+            iteration_normal = 0;
+        }
+        else
         {
             // logger.write ("Computing the radiation field...");
             cout << "Computing the radiation field..." << endl;
 
-            compute_radiation_field ();
-            compute_Jeff            ();
+            compute_radiation_field_feautrier_order_2 ();
+            compute_Jeff                              ();
 
             lines.iteration_using_statistical_equilibrium (
                 chemistry.species.abundance,
@@ -402,10 +460,6 @@ int Model :: compute_level_populations (
 
             // logger.write ("Already ", 100 * (1.0 - fnc), " % converged!");
             cout << "Already " << 100 * (1.0 - fnc) << " % converged!" << endl;
-
-            // const string tag = "_rank_" + str_MPI_comm_rank() + "_iteration_" + to_string (iteration);
-
-            // lines.lineProducingSpecies[l].write_populations (io, l, tag);
         }
     } // end of while loop of iterations
 
@@ -413,4 +467,41 @@ int Model :: compute_level_populations (
     cout << "Converged after " << iteration << " iterations" << endl;
 
     return iteration;
+}
+
+
+///  Computer for the radiation field
+/////////////////////////////////////
+int Model :: compute_image (const Size ray_nr)
+{
+    cout << "Computing image..." << endl;
+
+    // const Size length_max = 4*parameters.npoints() + 1;
+    // const Size  width_max =   parameters.nfreqs ();
+
+    // Solver solver (length_max, width_max, parameters.n_off_diag);
+
+    Solver solver;
+    solver.setup <Rest>            (*this);
+    solver.image_feautrier_order_2 (*this, ray_nr);
+
+    return (0);
+}
+
+
+int Model :: set_eta_and_chi ()
+{
+    Solver solver;
+    solver.set_eta_and_chi (*this);
+
+    return (0);
+}
+
+
+int Model :: set_boundary_condition ()
+{
+    Solver solver;
+    solver.set_boundary_condition (*this);
+
+    return (0);
 }
