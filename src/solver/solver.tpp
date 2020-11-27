@@ -260,6 +260,8 @@ inline void Solver :: image_feautrier_order_2 (Model& model, const Size rr)
                 image_feautrier_order_2 (model, o, rr, ar, f);
 
                 image.I(o,f) = two*Su_()[first_()] - boundary_intensity(model, nr_()[first_()], model.radiation.frequencies.nu(o, f));
+
+                // cout << "subtracting = " << boundary_intensity(model, nr_()[first_()], model.radiation.frequencies.nu(o, f)) << endl;
             }
         }
         else
@@ -439,7 +441,7 @@ accel inline void Solver :: get_eta_and_chi (
     const Size   p,
     const Real   freq,
           Real&  eta,
-          Real&  chi )
+          Real&  chi ) const
 {
     // Initialize
     eta = 0.0;
@@ -884,7 +886,7 @@ accel inline void Solver :: image_feautrier_order_2 (
     Su[first] /= Bf;
 
     /// Write economically: F[first] = (B[first] - C[first]) / C[first];
-    // FF[first] = half * Bf_min_Cf * dtau_n * dtau_n;
+    FF[first] = half * Bf_min_Cf * dtau_n * dtau_n;
     FI[first] = one / (one + FF[first]);
 
 
@@ -955,63 +957,92 @@ const Real inverse_h_smt4 = inverse_h_smt2 * inverse_h_smt2;
 const Real minus_half_inverse_h_smt2 = -0.5 * inverse_h_smt2;
 
 
-inline Real kernel (const Vector3D x1, const Vector3D x2)
+accel inline Real Solver :: kernel (const Vector3D d) const
 {
-    return alpha2 * exp(minus_half_inverse_h_smt2 * (x1-x2).squaredNorm());
+    return alpha2 * exp(minus_half_inverse_h_smt2 * d.squaredNorm());
 }
 
 
-inline Real kernel (const Size p1, const Size p2)
+accel inline Real Solver :: kernel (
+    const Model& model,
+    const Size   r,
+    const Size   p1,
+    const Size   p2 ) const
 {
     const Vector3D x1 = model.geometry.points.position[p1];
     const Vector3D x2 = model.geometry.points.position[p2];
 
-    return kernel (x1, x2);
+    return kernel(x1-x2);
 }
 
 
-inline Real L1_kernel (const Size p1, const Size p2)
+accel inline Real Solver :: L1_kernel (
+    const Model& model,
+    const Size   r,
+    const Size   p1,
+    const Size   p2 ) const
 {
-    const Vector3D x1 = model.geometry.points.position[p1];
-    const Vector3D x2 = model.geometry.points.position[p2];
+    const Vector3D d =   model.geometry.points.position[p1]
+                       - model.geometry.points.position[p2];
 
-    const Real d = (x1-x2).dot(model.geometry.rays.direction[r])*inverse_h_smt2;
+    const Real g = d.dot(model.geometry.rays.direction[r]) * inverse_h_smt2;
 
-    return (chi(p1) - d) * kernel(p1, p2);
+    return (chi[p1] - g) * kernel(d);
 }
 
 
-inline Real L2_kernel (const Size p1, const Size p2)
+accel inline Real Solver :: L2_kernel (
+    const Model& model,
+    const Size   r,
+    const Size   p1,
+    const Size   p2 ) const
 {
-    const Vector3D x1 = model.geometry.points.position[p1];
-    const Vector3D x2 = model.geometry.points.position[p2];
+    const Vector3D d =   model.geometry.points.position[p1]
+                       - model.geometry.points.position[p2];
 
-    const Real d = (x1-x2).dot(model.geometry.rays.direction[r])*inverse_h_smt2;
+    const Real g = d.dot(model.geometry.rays.direction[r]) * inverse_h_smt2;
 
-    return (chi(p2) + d) * kernel(p1, p2);
+    return (chi[p2] + g) * kernel(d);
 }
 
 
-inline Real L12_kernel (const Size p1, const Size p2)
+accel inline Real Solver :: L12_kernel (
+    const Model& model,
+    const Size   r,
+    const Size   p1,
+    const Size   p2 ) const
 {
-    const Vector3D x1 = model.geometry.points.position[p1];
-    const Vector3D x2 = model.geometry.points.position[p2];
+    const Vector3D d =   model.geometry.points.position[p1]
+                       - model.geometry.points.position[p2];
 
-    const Real d = (x1-x2).dot(model.geometry.rays.direction[r])*inverse_h_smt2;
+    const Real g = d.dot(model.geometry.rays.direction[r]) * inverse_h_smt2;
 
-    const Real chi1 = chi(p1);
-    const Real chi2 = chi(p2);
-
-    return (chi1*chi2 - (chi1-chi2)*d + inverse_h_smt2 - d*d) * kernel(p1, p2);
+    return ((chi[p1] + g)*(chi[p2] - g) + inverse_h_smt2) * kernel(d);
 }
 
 
-inline void setup_matrix ()
+accel inline void Solver :: solve_kernel_method (
+          Model& model,
+    const Size   r,
+    const Size   f )
 {
-    // Triplets for sparse matrix sigma
+    const Real freq = model.radiation.frequencies.nu(0, f);
+
+    // Get emissivity and opacity
+    eta.resize (model.parameters.npoints());
+    chi.resize (model.parameters.npoints());
+
+    for (Size p = 0; p < model.parameters.npoints(); p++)
+    {
+        get_eta_and_chi (model, p, freq, eta[p], chi[p]);
+    }
+
+
+    // Triplets for (sparse) covariance matrix
     vector<Triplet<Real, Size>> triplets;
 
-    VectorXr y = VectorXr::Zero (parameters.npoints() + parameters.nboundary())
+    VectorXr y (model.parameters.npoints() + model.parameters.nboundary());
+    VectorXr w (model.parameters.npoints() + model.parameters.nboundary());
 
 
     for (Size b1 = 0; b1 < model.parameters.nboundary(); b1++)
@@ -1025,7 +1056,7 @@ inline void setup_matrix ()
             triplets.push_back (Triplet<Real, Size> (
                 b1,
                 b2,
-                kernel(p1, p2)
+                kernel (model, r, p1, p2)
             ));
         }
 
@@ -1034,7 +1065,7 @@ inline void setup_matrix ()
             triplets.push_back (Triplet<Real, Size> (
                 b1,
                 p2 + model.parameters.nboundary(),
-                L2_kernel (p1, p2)
+                L2_kernel (model, r, p1, p2)
             ));
         }
 
@@ -1053,7 +1084,7 @@ inline void setup_matrix ()
             triplets.push_back (Triplet<Real, Size> (
                 i1,
                 b2,
-                L1_kernel (p1, p2)
+                L1_kernel (model, r, p1, p2)
             ));
         }
 
@@ -1062,35 +1093,85 @@ inline void setup_matrix ()
             triplets.push_back (Triplet<Real, Size> (
                 i1,
                 p2 + model.parameters.nboundary(),
-                L12_kernel (p1, p2)
+                L12_kernel (model, r, p1, p2)
             ));
         }
 
-        y[i1] = eta(p1);
+        y[i1] = eta[p1];
     }
 
 
-    SparseMatrix <Real> covar;
-    covar.setFromTriplets (triplets.begin(), triplets.end());
-
-
+    SparseMatrix<Real> covariance;
+    covariance.setFromTriplets (triplets.begin(), triplets.end());
 
     SparseLU <SparseMatrix<Real>, COLAMDOrdering<int>> solver;
 
-
-
-    cout << "Analyzing system of rate equations..."      << endl;
-    solver.analyzePattern (covar);
-    cout << "Factorizing system of rate equations..."    << endl;
-    solver.factorize      (covar);
+    cout << "Analyzing covariance matrix..." << endl;
+    solver.analyzePattern (covariance);
+    cout << "Factoring covariance matrix..." << endl;
+    solver.factorize      (covariance);
 
     if (solver.info() != Eigen::Success)
     {
         throw std::runtime_error (solver.lastErrorMessage());
     }
 
+    cout << "Inverting covariance matrix..." << endl;
+    w = solver.solve (y);
 
-    cout << "Solving rate equations for the level populations..." << endl;
 
-    model.radiation.I() = solver.solve (y);
+    for (Size p1 = 0; p1 < model.parameters.npoints(); p1++)
+    {
+        model.radiation.I(r, p1, f) = 0.0;
+
+        for (Size b2 = 0; b2 < model.parameters.nboundary(); b2++)
+        {
+            const Size p2 = model.geometry.boundary.boundary2point[b2];
+
+            model.radiation.I(r, p1, f) += kernel(model, r, p1, p2) * w[b2];
+        }
+
+        for (Size p2 = 0; p2 < model.parameters.npoints(); p2++)
+        {
+            const Size i2 = p2 + model.parameters.nboundary();
+
+            model.radiation.I(r, p1, f) += L2_kernel(model, r, p1, p2) * w[i2];
+        }
+    }
+
+    return;
+}
+
+accel inline void Solver :: set_eta_and_chi (Model& model) const
+{
+    model.eta.resize (model.parameters.npoints(), model.parameters.nfreqs());
+    model.chi.resize (model.parameters.npoints(), model.parameters.nfreqs());
+
+    for (Size p = 0; p < model.parameters.npoints(); p++)
+    {
+        for (Size f = 0; f < model.parameters.nfreqs(); f++)
+        {
+            const Real freq = model.radiation.frequencies.nu(0, f);
+
+            get_eta_and_chi (model, p, freq, model.eta(p,f), model.chi(p,f));
+        }
+    }
+}
+
+
+accel inline void Solver :: set_boundary_condition (Model& model) const
+{
+    model.boundary_condition.resize (model.parameters.nboundary(), model.parameters.nfreqs());
+
+    for (Size b = 0; b < model.parameters.nboundary(); b++)
+    {
+        const Size p = model.geometry.boundary.boundary2point[b];
+
+        for (Size f = 0; f < model.parameters.nfreqs(); f++)
+        {
+            const Real freq = model.radiation.frequencies.nu(0, f);
+
+            model.boundary_condition(b,f) = boundary_intensity (model, p, freq);
+        }
+    }
 }

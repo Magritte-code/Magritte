@@ -45,6 +45,13 @@ class Solver
         pc::multi_threading::ThreadPrivate<Matrix<Real>> L_lower_;
 
 
+        // Kernel approach
+        Vector<Real> eta;
+        Vector<Real> chi;
+
+        // SparseMatrix<Real> covariance;
+        // Matrix<Real> L2_kernel_p;
+
         Size nblocks  = 512;
         Size nthreads = 512;
 
@@ -109,7 +116,7 @@ class Solver
             const Size   p,
             const Real   freq,
                   Real&  eta,
-                  Real&  chi );
+                  Real&  chi ) const;
 
         accel inline void update_Lambda (
                   Model &model,
@@ -139,6 +146,21 @@ class Solver
             const Size   rr,
             const Size   ar,
             const Size   f  );
+
+
+        accel inline Real     kernel (const Vector3D d) const;
+        accel inline Real     kernel (const Model& model, const Size r, const Size p1, const Size p2) const;
+        accel inline Real  L1_kernel (const Model& model, const Size r, const Size p1, const Size p2) const;
+        accel inline Real  L2_kernel (const Model& model, const Size r, const Size p1, const Size p2) const;
+        accel inline Real L12_kernel (const Model& model, const Size r, const Size p1, const Size p2) const;
+
+        accel inline void solve_kernel_method (
+                  Model& model,
+            const Size   r,
+            const Size   f );
+
+        accel inline void set_eta_and_chi        (Model& model) const;
+        accel inline void set_boundary_condition (Model& model) const;
 };
 
 

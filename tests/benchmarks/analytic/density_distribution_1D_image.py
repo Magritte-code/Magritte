@@ -162,10 +162,13 @@ def run_model (a_or_b, nosave=False):
 
     def plot (p):
         plt.figure(dpi=150)
-        plt.plot(fs, im  [p,:]-tools.I_CMB(nu), marker='.')
-        plt.plot(fs, im_a[p,:]-tools.I_CMB(nu))
-        plt.plot(fs,           tools.I_CMB(nu))
+        plt.plot(fs,   (    im  [p,:]-tools.I_CMB(nu)), marker='.', label='Magritte')
+        # plt.plot(fs,   (0.5*im  [p,:]-2*tools.I_CMB(nu)), marker='.', label='Magritte')
+        plt.plot(fs,   (im_a[p,:]-tools.I_CMB(nu)),             label='analytic')
+        # plt.plot(fs,   (im_a[p,:]-tools.I_CMB(nu)),             label='analytic')
+        plt.plot(fs,           tools.I_CMB(nu),                 label='CMB')
         plt.yscale('log')
+        plt.legend()
     widgets.interact(plot, p=(0,npoints-1,1))
 
     error = np.abs(tools.relative_error(im, im_a))[:-1]

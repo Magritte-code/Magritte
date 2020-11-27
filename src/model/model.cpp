@@ -487,3 +487,21 @@ int Model :: compute_image (const Size ray_nr)
 
     return (0);
 }
+
+
+int Model :: set_eta_and_chi ()
+{
+    Solver solver;
+    solver.set_eta_and_chi (*this);
+
+    return (0);
+}
+
+
+int Model :: set_boundary_condition ()
+{
+    Solver solver;
+    solver.set_boundary_condition (*this);
+
+    return (0);
+}

@@ -116,6 +116,11 @@ PYBIND11_MODULE (core, module)
         .def ("compute_level_populations_from_stateq",                              &Model::compute_level_populations_from_stateq)
         .def ("compute_level_populations",                                          &Model::compute_level_populations)
         .def ("compute_image",                                                      &Model::compute_image)
+        .def ("set_eta_and_chi",                                                    &Model::set_eta_and_chi)
+        .def ("set_boundary_condition",                                             &Model::set_boundary_condition)
+        .def_readwrite ("eta",                &Model::eta)
+        .def_readwrite ("chi",                &Model::chi)
+        .def_readwrite ("boundary_condition", &Model::boundary_condition)
         // constructor
         .def (py::init<const string>())
         .def (py::init<>());
