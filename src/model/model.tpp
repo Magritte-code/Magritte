@@ -1074,7 +1074,7 @@ inline Eigen::Vector<double,4> Model :: calc_barycentric_coords(const vector<Siz
 ///   @Parameter [in] to_interpolate: the vector with value at the points of the coarser grid, has length equal to the number of elements in the coarser grid
 ///   @Returns: A vector conataining the interpolated values (has length equal to the number of points of the finer grid)
 inline vector<double> Model::interpolate_vector(Size coarser_lvl, Size finer_lvl, const vector<double> &to_interpolate)
-{
+{//TODO: only use large vector and some masks
   Size nb_points=parameters.npoints();
   //Size count=0;
   // for (Size point=0; point<nb_points; point++)//counts number of points in finer grid

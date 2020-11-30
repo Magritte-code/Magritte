@@ -195,6 +195,12 @@ PYBIND11_MODULE (core, module)
             // constructor
         .def (py::init<>());
 
+    // Multiscale
+    py::class_<Multiscale> (module, "Multiscale")
+        // functions
+        .def("get_neighbors", &Multiscale::get_neighbors)
+        // constructor
+        .def (py::init<vector<Size>& ,vector<Size>& >());
 
 
     // Rays
