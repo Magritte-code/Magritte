@@ -7,12 +7,7 @@ void Geometry :: read (const Io& io)
     rays    .read (io);
     boundary.read (io);
 
-    cout << "Resizing lengths" << endl;
-    cout << parameters.hnrays() * parameters.npoints() << endl;
-
-    lengths.resize (parameters.hnrays()*parameters.npoints());
-
-    cout << "Done Reading!" << endl;
+    lengths.resize (parameters.hnrays(), parameters.npoints());
 }
 
 

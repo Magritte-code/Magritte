@@ -3,9 +3,9 @@ import scipy as sp
 import healpy
 import re
 
-from magritte.core  import LineProducingSpecies, vLineProducingSpecies,            \
-                           CollisionPartner, vCollisionPartner, CC, HH, KB, T_CMB, \
-                           BoundaryCondition
+from magritte.core import LineProducingSpecies, vLineProducingSpecies,            \
+                          CollisionPartner, vCollisionPartner, CC, HH, KB, T_CMB, \
+                          BoundaryCondition
 
 
 def check_if_1D(model):

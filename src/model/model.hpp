@@ -10,6 +10,7 @@
 #include "thermodynamics/thermodynamics.hpp"
 #include "lines/lines.hpp"
 #include "radiation/radiation.hpp"
+#include "image/image.hpp"
 
 
 struct Model
@@ -20,6 +21,7 @@ struct Model
     Thermodynamics thermodynamics;
     Lines          lines;
     Radiation      radiation;
+    vector<Image>  images;
 
     enum SpectralDiscretisation {None, SD_Lines, SD_Image}
          spectralDiscretisation = None;
@@ -37,19 +39,24 @@ struct Model
     void read  ()       {read  (IoPython ("hdf5", parameters.model_name()));};
     void write () const {write (IoPython ("hdf5", parameters.model_name()));};
 
-    int compute_inverse_line_widths                 ();
-    int compute_spectral_discretisation             ();
-    int compute_spectral_discretisation             (const Real width);
-    int compute_LTE_level_populations               ();
-    int compute_radiation_field                     ();
-    int compute_radiation_field_2nd_order_Feautrier ();
-    int compute_radiation_field_0th_short_characteristics ();
-    int compute_Jeff                                ();
-    int compute_level_populations_from_stateq       ();
-    int compute_level_populations                   (
+    int compute_inverse_line_widths               ();
+    int compute_spectral_discretisation           ();
+    int compute_spectral_discretisation           (
+        const Real width );
+    int compute_spectral_discretisation           (
+        const long double nu_min,
+        const long double nu_max );
+    int compute_LTE_level_populations             ();
+    int compute_radiation_field                   ();
+    int compute_radiation_field_feautrier_order_2 ();
+    int compute_radiation_field_shortchar_order_0 ();
+    int compute_Jeff                              ();
+    int compute_level_populations_from_stateq     ();
+    int compute_level_populations                 (
         // const Io   &io,
         const bool  use_Ng_acceleration,
         const long  max_niterations     );
+    int compute_image                             (const Size ray_nr);
 
     Double1 error_max;
     Double1 error_mean;
@@ -96,5 +103,12 @@ struct Model
         return c().vec;
     }
 
+    // Kernel approach
+    Matrix<Real> eta;
+    Matrix<Real> chi;
 
+    Matrix<Real> boundary_condition;
+
+    int set_eta_and_chi       ();
+    int set_boundary_condition();
 };

@@ -32,8 +32,8 @@ int main (int argc, char **argv)
     Model model;
     model.read (io);
 
-    Solver solver (10000, 10000, 0);
-    solver.trace  (model);
+    // Solver solver (10000, 10000, 0);
+    // solver.trace  (model);
 
     // Size1 lengths = model.geometry.get_ray_lengths ();
     // Size1 lengths = model.geometry.get_ray_lengths_gpu (512, 512);

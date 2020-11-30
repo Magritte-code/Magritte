@@ -99,7 +99,7 @@ Volume(130) = {229, 129};
 
 
 Field[1]   = MathEval;
-Field[1].F = "7.000000000000001e-15 * (x*x + y*y + z*z)";
+Field[1].F = "5e-15 * (x*x + y*y + z*z)";
 
 Field[2] = Max;
 Field[2].FieldsList = {1};
@@ -107,8 +107,8 @@ Background Field = 2;
 
 Mesh.CharacteristicLengthFactor = 1.0;
 
-Mesh.CharacteristicLengthMin = 700000000000.0001;
-Mesh.CharacteristicLengthMax = 5460000000000001.0;
+Mesh.CharacteristicLengthMin = 500000000000.0;
+Mesh.CharacteristicLengthMax = 3900000000000000.0;
 
 Mesh.CharacteristicLengthExtendFromBoundary = 2;
 

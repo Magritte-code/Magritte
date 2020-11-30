@@ -18,6 +18,8 @@ class Solver
         pc::multi_threading::ThreadPrivate<Vector<Real>> chi_c_;
         pc::multi_threading::ThreadPrivate<Vector<Real>> chi_n_;
 
+        pc::multi_threading::ThreadPrivate<Vector<Real>> inverse_chi_;
+
         pc::multi_threading::ThreadPrivate<Vector<Real>> tau_;
 
         pc::multi_threading::ThreadPrivate<Size> first_;
@@ -43,19 +45,39 @@ class Solver
         pc::multi_threading::ThreadPrivate<Matrix<Real>> L_lower_;
 
 
+        // Kernel approach
+        Vector<Real> eta;
+        Vector<Real> chi;
+
+        // SparseMatrix<Real> covariance;
+        // Matrix<Real> L2_kernel_p;
+
         Size nblocks  = 512;
         Size nthreads = 512;
 
-        Solver (const Size l, const Size w, const Size n_o_d);
+        // Solver () {};
+        // Solver (const Size l, const Size w, const Size n_o_d);
 
-        void trace (Model& model);
+        template <Frame frame>
+        void setup (Model& model);
+        void setup (const Size l, const Size w, const Size n_o_d);
+
+        accel inline Real get_dshift_max (
+            const Model& model,
+            const Size   o     );
+
+        template <Frame frame>
+        inline void get_ray_lengths     (Model& model);
+        template <Frame frame>
+        inline Size get_ray_lengths_max (Model& model);
+
 
     // private:
-        const Size length;
-        const Size centre;
-        const Size width;
+        Size length;
+        Size centre;
+        Size width;
 
-        const Size n_off_diag;
+        Size n_off_diag;
 
 
         // void initialize (const Size l, const Size w);
@@ -94,22 +116,51 @@ class Solver
             const Size   p,
             const Real   freq,
                   Real&  eta,
-                  Real&  chi );
+                  Real&  chi ) const;
 
-        accel inline void solve_0th_order_short_charateristics (Model& model);
-        accel inline void solve_0th_order_short_charateristics (
+        accel inline void update_Lambda (
+                  Model &model,
+            const Size   rr,
+            const Size   f  );
+
+
+        accel inline void solve_shortchar_order_0 (Model& model);
+        accel inline void solve_shortchar_order_0 (
                   Model& model,
             const Size   o,
             const Size   r,
             const double dshift_max );
 
-        accel inline void solve_2nd_order_Feautrier (Model& model);
-        accel inline void solve_2nd_order_Feautrier (
+        accel inline void solve_feautrier_order_2 (Model& model);
+        accel inline void solve_feautrier_order_2 (
                   Model& model,
             const Size   o,
             const Size   rr,
             const Size   ar,
             const Size   f  );
+
+        accel inline void image_feautrier_order_2 (Model& model, const Size rr);
+        accel inline void image_feautrier_order_2 (
+                  Model& model,
+            const Size   o,
+            const Size   rr,
+            const Size   ar,
+            const Size   f  );
+
+
+        accel inline Real     kernel (const Vector3D d) const;
+        accel inline Real     kernel (const Model& model, const Size r, const Size p1, const Size p2) const;
+        accel inline Real  L1_kernel (const Model& model, const Size r, const Size p1, const Size p2) const;
+        accel inline Real  L2_kernel (const Model& model, const Size r, const Size p1, const Size p2) const;
+        accel inline Real L12_kernel (const Model& model, const Size r, const Size p1, const Size p2) const;
+
+        accel inline void solve_kernel_method (
+                  Model& model,
+            const Size   r,
+            const Size   f );
+
+        accel inline void set_eta_and_chi        (Model& model) const;
+        accel inline void set_boundary_condition (Model& model) const;
 };
 
 

@@ -53,7 +53,13 @@ configure.hpp
 *dependencies/Paracabs*
 *dependencies/googletest*
 *dependencies/cmake*
+*dependencies/miniconda3*
 
 # perf reports
 ##############
 perf.data*
+
+# test models and results
+#########################
+tests/models/*
+tests/results/*
