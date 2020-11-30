@@ -6,13 +6,16 @@
 
 _*Preparing for first release...*_
 
-This is the repository of the Magritte main library. Magritte is a modern open-source
-software library for 3D radiative transfer simulation. Its main solver uses a
-deterministic ray-tracer with a formal solver that currently focusses on line
-radiative transfer. See the first Magritte paper ([arXiv](https://arxiv.org/pdf/1912.08445.pdf),
+This is the repository of the Magritte main library. Magritte is a modern open-
+source software library for radiation transport simulation, with an emphasis on
+3D radiative transfer simulations in astrophysics and cosmology. Its main solver
+uses a deterministic ray-tracer with a formal solver that currently focusses on
+line radiative transfer. See the first Magritte paper
+([arXiv](https://arxiv.org/pdf/1912.08445.pdf),
 [MNRAS](https://doi.org/10.1093/mnras/stz3557)) for more details.
 
 Magritte can either be used as a C++ library or as a Python package.
+
 
 ## Installation
 First, download the dependencies and configure Magritte using
@@ -31,17 +34,18 @@ Now Magritte can be build using
 ```bash
 bash build.sh
 ```
-This builds the library in the `/bin` folder. Note that if you try to build Magritte
-from outside the `magritte_env` conda environment compilation might fail or the
-generated library might not work in python due to version mismatches. Therefore as a
-general rule: **always build and use Magritte from within the magritte_env conda
-environment**. To use Magritte's python interface, you should include the package
-folder in your python path e.g. by including
+This builds the library in the `/bin` folder. Note that if you try to build
+Magritte from outside the `magritte_env` conda environment compilation might
+fail or the generated library might not work in python due to version mismatches.
+Therefore as a general rule: **always build and use Magritte from within the
+magritte_env conda environment**. To use Magritte's python interface, you should
+include the package folder in your python path e.g. by including
 ```python
 from sys import path
 path.append("path/to/Magritte")
 ```
 Please have a look at the `build.sh` script for further configuration options.
+
 
 ## Issues
 Please report any issues [here](https://github.com/UCL/Magritte/issues).
@@ -53,3 +57,17 @@ Please report any issues [here](https://github.com/UCL/Magritte/issues).
 * `Paracabs`, for parallelisation and acceleration;
 * `pybind11`, for interfacing with python;
 * `googletest`, for testing.
+
+
+## Papers
+* _Magritte II: Adaptive ray-tracing, mesh construction and reduction_
+([MNRAS](https://doi.org/10.1093/mnras/staa3199))
+* _Magritte I: Non-LTE atomic and molecular line modelling_
+([arXiv](https://arxiv.org/pdf/1912.08445.pdf),
+[MNRAS](https://doi.org/10.1093/mnras/stz3557))
+
+
+## Cite
+Please contact the authors of the papers referenced above if you want to use
+Magritte in your research. We are currently working on documentation and
+examples to facilitate its independent use. Until then, please contact us.
