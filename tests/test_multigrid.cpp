@@ -5,6 +5,7 @@ using std::endl;
 #include "io/python/io_python.hpp"
 #include "model/model.hpp"
 #include "solver/solver.hpp"
+#include <set>
 
 
 //__global__
@@ -52,6 +53,17 @@ int main (int argc, char **argv)
 
     Model model;
     model.read (io);
+    vector<Size> old_neighbors=model.geometry.points.curr_neighbors.get_neighbors(9001);
+    std::set<Size> neighbors=model.geometry.points.multiscale.get_neighbors(9001,0);
+    for (Size nb:neighbors)
+    {
+    cout << nb << endl;
+    }
+    cout << "compare with" << endl;
+    for (Size nb:old_neighbors)
+    {
+    cout << nb << endl;
+    }
 
     //trying to delete 0.2 percent of the points in the grid
     //cout << "no of points to delete = " << int(sizeof(Points)*0.01) << endl;

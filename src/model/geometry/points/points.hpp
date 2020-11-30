@@ -5,7 +5,7 @@
 #include "model/parameters/parameters.hpp"
 #include "tools/types.hpp"
 #include "model/geometry/points/neighbors/neighbors.hpp"
-
+#include "model/geometry/points/multiscale/multiscale.hpp"
 
 
 struct Points
@@ -20,6 +20,7 @@ struct Points
 //    Vector <Size>         n_neighbors;   ///< number of neighbors each point has
 //    Vector <Size>           neighbors;   ///< neighbors of each point, listed after eachother
     ///< e.g.: [neighbors of point 1, neighbors of point 2, ...]
+    Multiscale multiscale; //TODO: replace curr_neighbors
 
     // Vector <Size> nbs;
 

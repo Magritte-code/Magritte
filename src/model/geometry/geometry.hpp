@@ -7,7 +7,6 @@
 #include "points/points.hpp"
 #include "rays/rays.hpp"
 #include "boundary/boundary.hpp"
-#include "multiscale/multiscale.hpp"
 
 ///  Frame of reference used in geometry computations
 /////////////////////////////////////////////////////
