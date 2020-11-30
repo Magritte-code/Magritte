@@ -2,6 +2,7 @@
 
 ---
 [![Build Status](https://travis-ci.com/FredDeCeuster/Magritte.svg?token=j3NNTbFLxGaJNsSoKgCz&branch=master)](https://travis-ci.com/FredDeCeuster/Magritte)
+[![Documentation Status](https://readthedocs.com/projects/magritte-magritte/badge/?version=latest&token=7d7b32178f0e9cfbbf7e0967233b680ccf113dd73b8d4b567f3587445c936036)](https://magritte-magritte.readthedocs-hosted.com/en/latest/?badge=latest)
 ---
 
 _*Preparing for first release...*_
