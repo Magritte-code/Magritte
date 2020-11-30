@@ -1,4 +1,3 @@
-#include "model/parameters/parameters.hpp"
 #include "tools/types.hpp"
 #include <set>
 // Coarsen the mesh,
@@ -116,4 +115,14 @@ inline void Multiscale::set_comparison_fun(std::function<bool(Size,Size)> func)
 inline std::set<Size> Multiscale::get_neighbors(Size p, Size coars_lvl)
 {//TODO: add check for whether p is still in grid, or just set their neighbors to empty during coarsening
     return neighbors[coars_lvl][p];
+}
+
+/// Returns the current coarsening level
+inline Size Multiscale::get_curr_coars_lvl()
+{
+  if (mask.size()>0)//if already initialized
+  {
+    return mask.size()-1;
+  }
+  return 0;//TODO throw error; because not initialized
 }

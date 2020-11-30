@@ -5,6 +5,7 @@
 /// This class is meant to easily coarsen the grid stored in it.
 struct Multiscale
 {
+    Parameters parameters;
     // Mask to indicate which points are still active at
     // a certain level of coarsening. True if still
     // in mesh, i.e. for the finest mesh (l=0) this is all true.
