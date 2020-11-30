@@ -1,3 +1,5 @@
+#include "io/io.hpp"
+#include "model/parameters/parameters.hpp"
 #include <set>
 ///First implementation of the multiscale class
 /// This class is meant to easily coarsen the grid stored in it.
@@ -22,6 +24,7 @@ struct Multiscale
     // Should be a lambda function supplied by something else.
     // Maybe also add tolerance to it TODO
     // Should return true when we may coarsen the grid
+    // Should also take into account wehther there are boundary points involved
     std::function<bool(Size, Size)> points_are_similar;
 
 

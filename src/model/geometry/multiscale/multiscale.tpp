@@ -17,17 +17,17 @@ inline void Multiscale::coarsen()
 // Returns whether the mesh at a point (p) can be coarsened.
 inline bool Multiscale::can_be_coarsened (const Size p)
 {
-    if (!mask.back()[p]) return false;//if point no longer in grid, do not coarsen
+    if (!mask.back()[p]) {return false;}//if point no longer in grid, do not coarsen
 
     for (const Size n : neighbors.back()[p])
     {
         // Do not coarsen if a neighbor was already coarsend at this level,
         // this avoids creating large holes in the mesh.
-        if (!mask.back()[n]) return false;
+        if (!mask.back()[n]) {return false;}
 
         // Do not coarsen if the required coarsening criterion does not hold.
         // TODO:maybe add some kind of tolerance
-        if(!points_are_similar(p,n)) return false;
+        if(!points_are_similar(p,n)) {return false;}
     }
 
     // Otherwise coarsen.
@@ -85,18 +85,18 @@ inline void Multiscale::set_all_neighbors(vector<Size>& n_neighbors, vector<Size
 {
     neighbors.resize(1);
     mask.resize(1);
-    std::vector<bool> alltrue(parameters.npoints(), true);
+    vector<bool> alltrue(parameters.npoints(), true);
     mask[0]=alltrue;
 
     //neighbors[0].resize(parameters.npoints());
     vector<std::set<Size>> temp_neighbors;
-    temp_neighbors.resize(parameters.npoints())
+    temp_neighbors.resize(parameters.npoints());
     Size curr_index=0;
-    auto beginvect=std::begin(new_neighbors);
+    auto beginvect=std::begin(new_neighbors);//is iterator
     for (Size i=0; i<parameters.npoints(); i++)
     {
       // std::set<Size> curr_neighbors;
-      std::set<Size> curr_neighbors(beginvect+curr_index,beginvect+curr_index+n_neighbors[i])
+      std::set<Size> curr_neighbors(beginvect+curr_index,beginvect+curr_index+n_neighbors[i]);
       curr_index+=n_neighbors[i];
       // for (Size j=0; j<n_neighbors[i]; j++)
       // {
