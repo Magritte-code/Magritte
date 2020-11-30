@@ -150,10 +150,9 @@ def run_model():
         plt.xlabel('velocity [km/s]')
         plt.ylabel('flux [Jy]')
         plt.title(f'aperture = {r[p]/(1.0*units.au).si.value:.0f} au')
-        plt.show()
 
-    interact(plot, p=(0, npoints-2))
-
+    for p in range(npoints-1):
+        plot(p)
 
 
 if (__name__ == '__main__'):
