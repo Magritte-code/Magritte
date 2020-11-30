@@ -1,3 +1,6 @@
+# Example Magritte script for processing MCP input.
+###################################################
+
 import sys
 magritteFolder = '/home/frederik/Dropbox/GitHub/Magritte/'
 sys.path.append(magritteFolder)
@@ -13,7 +16,8 @@ import magritte.tools    as tools
 import magritte.setup    as setup
 import magritte.core     as magritte
 
-from astropy import constants
+from astropy    import constants, units
+from ipywidgets import interact
 
 # Path to MCP input file
 mcp_file = '/home/frederik/IvS/Sofia/IRAS_22035-MCPinput.txt'
@@ -38,7 +42,7 @@ lamdaFile = f'{datdir}/co.txt'
 # Define model parameters
 dimension = 1         # effective spatial dimension (1 for spherical symmetry)
 npoints   = len(Rs)   # number of spatial points
-nrays     = 200       # number of rays to trace from each point
+nrays     = 100       # number of rays to trace from each point
 nspecs    = 5         # number of chemical species (minimum 5)
 nlspecs   = 1         # number of chemical species we consider in line RT
 nquads    = 11        # number of roots/weights to use in Gauss-Hermite quadrature
@@ -75,8 +79,6 @@ def create_model():
 
     model.write()
 
-    return
-
 
 def run_model():
     # Load magritte model
@@ -86,7 +88,72 @@ def run_model():
     model.compute_inverse_line_widths     ()
     model.compute_LTE_level_populations   ()
 
-    model.compute_level_populations (True, 100)
+    # model.compute_level_populations (True, 100)
+
+    npoints = model.parameters.npoints()
+    nfreqs  = model.parameters.nfreqs()
+    nrays   = model.parameters.nrays()
+    hnrays  = model.parameters.hnrays()
+
+    rs      = np.array(model.geometry.points.position   )[:, 0]
+    ns      = np.array(model.chemistry.species.abundance)[:, 1]
+    fs      = np.array(model.radiation.frequencies.nu   )[0]
+
+    nlev    = model.lines.lineProducingSpecies[0].linedata.nlev
+    fcen    = model.lines.lineProducingSpecies[0].linedata.frequency[0]
+    pops    = model.lines.lineProducingSpecies[0].population.reshape((npoints,nlev))
+
+    # Plot level populations
+    plt.figure(dpi=250)
+    for i in range(7):
+        plt.plot(rs, pops[:,i]/ns, label=f'i={i}')
+    plt.xscale('log')
+    plt.yscale('log')
+    plt.ylabel('fractional level populations')
+    plt.xlabel('r [m]')
+    plt.legend()
+    plt.show()
+
+    dd = 1.8e+4 / magritte.CC
+    fmin = fcen - fcen*dd
+    fmax = fcen + fcen*dd
+
+    model.compute_spectral_discretisation (fmin, fmax)
+    model.compute_image (hnrays-1)
+
+    r = np.array(model.images[-1].ImX)
+    I = np.array(model.images[-1].I)
+
+    # Subtract background (CMB)
+    I = np.array([ii-tools.I_CMB(fs) for ii in I])
+
+    distance = (230 * units.pc).si.value
+
+    I_int = [0]
+    for p in range(1, npoints):
+        two_pi_r_dr = 2.0*np.pi * 0.5*(r[p] + r[p-1]) * (r[p] - r[p-1])
+        # Integrate over circle
+        ii = I_int[-1] + two_pi_r_dr * 0.5*(I[p] + I[p-1])
+        I_int.append(ii)
+    I_int = I_int[1:]
+    # Rescale for distance
+    I_int /= distance**2
+    # Convert to Jansky
+    I_int /= 1.0e-26
+
+    # Define velocity axis
+    velo = -(fs/fcen-1)*magritte.CC/1000
+
+    def plot(p):
+        plt.figure(dpi=150)
+        plt.plot(velo, I_int[p])
+        plt.xlabel('velocity [km/s]')
+        plt.ylabel('flux [Jy]')
+        plt.title(f'aperture = {r[p]/(1.0*units.au).si.value:.0f} au')
+        plt.show()
+
+    interact(plot, p=(0, npoints-2))
+
 
 
 if (__name__ == '__main__'):
