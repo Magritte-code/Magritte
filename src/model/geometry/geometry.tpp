@@ -1,6 +1,7 @@
 #include <limits>
 #include <cmath>
 #include <algorithm>    // std::max
+#include <set>
 
 
 ///  Getter for the number of the next cell on ray and its distance along ray in
@@ -19,7 +20,7 @@ accel inline Size Geometry :: get_next_general_geometry (
           double& Z,
           double& dZ                   ) const
 {
-    Size n_nbs = points.curr_neighbors.get_n_neighbors(c);//    n_neighbors[c];
+    Size n_nbs = points.multiscale.get_nb_neighbors(c);//    n_neighbors[c];
 //    const Size cum_n_nbs = points.cum_n_neighbors[c];
 
     double dmin = std::numeric_limits<Real>::max();   // Initialize to "infinity"
@@ -27,7 +28,9 @@ accel inline Size Geometry :: get_next_general_geometry (
 
 //    for (Size i = 0; i < nnbs; i++)
 
-    Vector<Size> temp_neighbors=points.curr_neighbors.get_neighbors(c);
+    //TODO: update to use set instead of vector
+    vector<Size> temp_vector(points.multiscale.get_neighbors(c).begin(),points.multiscale.get_neighbors(c).end());
+    Vector<Size> temp_neighbors(temp_vector);
     for (Size i = 0; i < n_nbs; i++)
     {
 //        const Size     n     = points.nbs[c*nnbs+i];

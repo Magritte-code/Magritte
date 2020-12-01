@@ -15,6 +15,7 @@ struct Points
     Vector <Vector3D> position;          ///< position vectors of each point
     Vector <Vector3D> velocity;          ///< velocity vectors of each point
 
+    //TODO deprecate this entirely
     Neighbors curr_neighbors;   ///Does everything the old data 'structure' did
 //    Vector <Size>     cum_n_neighbors;   ///< cumulative number of neighbors
 //    Vector <Size>         n_neighbors;   ///< number of neighbors each point has

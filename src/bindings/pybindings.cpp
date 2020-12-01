@@ -77,16 +77,16 @@ PYBIND11_MODULE (core, module)
         .def_readwrite ("lines",          &Model::lines)
         .def_readwrite ("thermodynamics", &Model::thermodynamics)
         .def_readwrite ("radiation",      &Model::radiation)
-        .def_readwrite ("neighbors_lists",&Model::neighbors_lists)
+        // .def_readwrite ("neighbors_lists",&Model::neighbors_lists)
         .def_readonly  ("error_mean",     &Model::error_mean)
         .def_readonly  ("error_max",      &Model::error_max)
         // debug attributes
-        .def_readwrite ("reduced_neighbors_after",&Model::reduced_neighbors_after)
-        .def_readwrite ("reduced_neighbors_before",&Model::reduced_neighbors_before)
-        .def_readwrite ("deleted_points",&Model::deleted_points)
-        .def_readwrite ("added_lines",&Model::added_lines)
-        .def_readwrite ("added_tetras", &Model::added_tetras)
-        .def_readwrite ("debug_mode", &Model::debug_mode)
+        // .def_readwrite ("reduced_neighbors_after",&Model::reduced_neighbors_after)
+        // .def_readwrite ("reduced_neighbors_before",&Model::reduced_neighbors_before)
+        // .def_readwrite ("deleted_points",&Model::deleted_points)
+        // .def_readwrite ("added_lines",&Model::added_lines)
+        // .def_readwrite ("added_tetras", &Model::added_tetras)
+        // .def_readwrite ("debug_mode", &Model::debug_mode)
         // io (void (Pet::*)(int))
         .def ("read",  (void (Model::*)(void))            &Model::read )
         .def ("write", (void (Model::*)(void) const)      &Model::write)
@@ -98,7 +98,7 @@ PYBIND11_MODULE (core, module)
         .def ("compute_LTE_level_populations",                                      &Model::compute_LTE_level_populations)
         .def ("compute_radiation_field",                                            &Model::compute_radiation_field)
         .def ("compute_Jeff",                                                       &Model::compute_Jeff)
-        .def ("coarsen_grid",         &Model::coarsen_grid)
+        // .def ("coarsen_grid",         &Model::coarsen_grid)
         // constructor
         .def (py::init<const string>())
         .def (py::init<>());
@@ -198,7 +198,7 @@ PYBIND11_MODULE (core, module)
     // Multiscale
     py::class_<Multiscale> (module, "Multiscale")
         // functions
-        .def("get_neighbors", &Multiscale::get_neighbors)
+        //.def("get_neighbors", &Multiscale::get_neighbors) TODO: figure out how to handle overloaded functions
         // constructor
         .def (py::init<>());
 

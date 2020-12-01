@@ -7,6 +7,8 @@ inline void Multiscale::coarsen()
     mask     .push_back(vector<bool>          (mask     .back()));//should be deep copy
     neighbors.push_back(vector<std::set<Size>>(neighbors.back()));//should be deep copy
     std::set<Size> points_coarsened_around;
+    curr_coarsening_lvl=get_max_coars_lvl();
+
     for (Size p = 0; p < parameters.npoints(); p++)
     {
         if (can_be_coarsened(p, points_coarsened_around))
@@ -29,7 +31,7 @@ inline bool Multiscale::can_be_coarsened (const Size p, std::set<Size>& points_c
         // Do not coarsen if a neighbor was already coarsend at this level,
         // this avoids creating large holes in the mesh.
         // TODO: replace this....
-        //if (!mask.back()[n]) {return false;}
+        // if (!mask.back()[n]) {return false;}
         if (points_coarsened_around.find(n)!=points_coarsened_around.end()) {return false;}
 
         // Do not coarsen if the required coarsening criterion does not hold.
@@ -121,17 +123,43 @@ inline void Multiscale::set_comparison_fun(std::function<bool(Size,Size)> func)
     points_are_similar=func;
 }
 
-inline std::set<Size> Multiscale::get_neighbors(Size p, Size coars_lvl)
+inline std::set<Size> Multiscale::get_neighbors(const Size p, const Size coars_lvl) const
 {//TODO: add check for whether p is still in grid, or just set their neighbors to empty during coarsening
     return neighbors[coars_lvl][p];
 }
 
+inline std::set<Size> Multiscale::get_neighbors(const Size p) const
+{
+  return neighbors[curr_coarsening_lvl][p];
+}
+
+inline Size Multiscale::get_nb_neighbors(const Size p, const Size coars_lvl) const
+{//TODO: add check for whether p is still in grid, or just set their neighbors to empty during coarsening
+    return neighbors[coars_lvl][p].size();
+}
+
+inline Size Multiscale::get_nb_neighbors(const Size p) const
+{
+  return neighbors[curr_coarsening_lvl][p].size();
+}
+
 /// Returns the current coarsening level
-inline Size Multiscale::get_curr_coars_lvl()
+inline Size Multiscale::get_max_coars_lvl()
 {
   if (mask.size()>0)//if already initialized
   {
     return mask.size()-1;
   }
   return 0;//TODO throw error; because not initialized
+}
+
+/// Returns the current coarsening level
+inline Size Multiscale::get_curr_coars_lvl()
+{return curr_coarsening_lvl;}
+
+/// Sets the current coarsening level to lvl (if lvl<=get_max_coars_lvl)
+inline void Multiscale::set_curr_coars_lvl(Size lvl)
+{
+  if (lvl<=get_max_coars_lvl())
+  {curr_coarsening_lvl=lvl;}
 }

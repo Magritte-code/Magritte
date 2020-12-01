@@ -28,6 +28,11 @@ struct Multiscale
     // Should also take into account wehther there are boundary points involved
     std::function<bool(Size, Size)> points_are_similar;
 
+    ///FIXME: also take care to NOT delete boundary points; maybe just take the same reference as geometry
+    // std::function<bool> point_is_boundary_point;
+
+    Size curr_coarsening_lvl=0;
+
 
     // Coarsen the mesh,
     // i.e. add another layer of coarsening.
@@ -39,8 +44,12 @@ struct Multiscale
     // Coarsens the neighbors of p and updates the neighbors of p and neighbors of the neighbors of neighbors
     inline void coarsen_around_point (const Size p);
 
-    //returns the current coarsening level (=size neighbors-1)
+    //returns the current max coarsening level (=size neighbors-1)
+    inline Size get_max_coars_lvl();
+    //returns the current coarsening level
     inline Size get_curr_coars_lvl();
+    //sets the current coarsening level
+    inline void set_curr_coars_lvl(Size lvl);
 
     //initializes the multiscale class using the given n_neighbors and neighbors vectors
     inline void set_all_neighbors(vector <Size>& new_n_neighbors, vector <Size>& new_neigbours);
@@ -51,7 +60,14 @@ struct Multiscale
     inline void set_comparison_fun(std::function<bool(Size, Size)>);
 
     //Returns the neighbors of point p, at coarsening level coars_lvl
-    inline std::set<Size> get_neighbors(Size p, Size coars_lvl);
+    inline std::set<Size> get_neighbors(const Size p, const Size coars_lvl) const;
+    //Returns the neighbors of point p, at current coarsening level
+    inline std::set<Size> get_neighbors(const Size p) const;
+    //Returns the number of neighbors od point p at coarsening level coars_lvl
+    inline Size get_nb_neighbors(const Size p, const Size coars_lvl) const;
+    //Returns the number of neighbors od point p at the current coarsening level
+    inline Size get_nb_neighbors(const Size p) const;
+
 };
 
 #include "multiscale.tpp"

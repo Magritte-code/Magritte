@@ -81,6 +81,8 @@ int main (int argc, char **argv)
     };
     model.geometry.points.multiscale.set_comparison_fun(alwaystrue);
     model.geometry.points.multiscale.coarsen();
+    vector<bool> curr_mask=model.geometry.points.multiscale.mask[2];
+    cout << "nb of points remaining after coarsening: " << std::count (curr_mask.begin(), curr_mask.end(), true) << endl;
     //TODO: change function name to get_MAX_...
     cout << model.geometry.points.multiscale.get_curr_coars_lvl() << endl;
     //because of the way how we coarsen, point 0 should still lie in the grid
@@ -90,6 +92,26 @@ int main (int argc, char **argv)
     {
     cout << nb << endl;
     }
+    cout << "now printing neighbors of neighbors; should all contain the original point" << endl;
+    for (Size nb:neighbors_after_del)
+    {
+      cout << "point: " << nb << endl;
+      std::set<Size> temp_neighbors=model.geometry.points.multiscale.get_neighbors(nb,2);
+      for (Size nnb: temp_neighbors)
+      {
+        cout << nnb << endl;
+      }
+    }
+    //also try to coarsen again
+    cout << "Another coarsening" << endl;
+    model.geometry.points.multiscale.coarsen();
+    neighbors_after_del=model.geometry.points.multiscale.get_neighbors(0,3);
+    for (Size nb:neighbors_after_del)
+    {
+    cout << nb << endl;
+    }
+    curr_mask=model.geometry.points.multiscale.mask[3];
+    cout << "nb of points remaining after second coarsening: " << std::count (curr_mask.begin(), curr_mask.end(), true) << endl;
 
     //trying to delete 0.2 percent of the points in the grid
     //cout << "no of points to delete = " << int(sizeof(Points)*0.01) << endl;
