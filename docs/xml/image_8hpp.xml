@@ -1,0 +1,242 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.14">
+  <compounddef id="image_8hpp" kind="file" language="C++">
+    <compoundname>image.hpp</compoundname>
+    <includes refid="io_8hpp" local="yes">io/io.hpp</includes>
+    <includes refid="types_8hpp" local="yes">tools/types.hpp</includes>
+    <includes refid="parameters_8hpp" local="yes">model/parameters/parameters.hpp</includes>
+    <includes refid="geometry_8hpp" local="yes">model/geometry/geometry.hpp</includes>
+    <includedby refid="image_8cpp" local="yes">/home/frederik/Dropbox/GitHub/Magritte/src/model/image/image.cpp</includedby>
+    <includedby refid="model_8hpp" local="yes">/home/frederik/Dropbox/GitHub/Magritte/src/model/model.hpp</includedby>
+    <incdepgraph>
+      <node id="475">
+        <label>list</label>
+      </node>
+      <node id="484">
+        <label>model/geometry/geometry.hpp</label>
+        <link refid="geometry_8hpp"/>
+        <childnode refid="472" relation="include">
+        </childnode>
+        <childnode refid="479" relation="include">
+        </childnode>
+        <childnode refid="473" relation="include">
+        </childnode>
+        <childnode refid="485" relation="include">
+        </childnode>
+        <childnode refid="488" relation="include">
+        </childnode>
+        <childnode refid="489" relation="include">
+        </childnode>
+        <childnode refid="490" relation="include">
+        </childnode>
+        <childnode refid="491" relation="include">
+        </childnode>
+      </node>
+      <node id="480">
+        <label>limits</label>
+      </node>
+      <node id="491">
+        <label>geometry.tpp</label>
+        <link refid="geometry_8tpp"/>
+        <childnode refid="480" relation="include">
+        </childnode>
+        <childnode refid="486" relation="include">
+        </childnode>
+      </node>
+      <node id="471">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/image/image.hpp</label>
+        <link refid="image_8hpp"/>
+        <childnode refid="472" relation="include">
+        </childnode>
+        <childnode refid="473" relation="include">
+        </childnode>
+        <childnode refid="479" relation="include">
+        </childnode>
+        <childnode refid="484" relation="include">
+        </childnode>
+      </node>
+      <node id="486">
+        <label>cmath</label>
+      </node>
+      <node id="477">
+        <label>Eigen/Core</label>
+      </node>
+      <node id="476">
+        <label>string</label>
+      </node>
+      <node id="482">
+        <label>exception</label>
+      </node>
+      <node id="472">
+        <label>io/io.hpp</label>
+        <link refid="io_8hpp"/>
+        <childnode refid="473" relation="include">
+        </childnode>
+      </node>
+      <node id="479">
+        <label>model/parameters/parameters.hpp</label>
+        <link refid="parameters_8hpp"/>
+        <childnode refid="480" relation="include">
+        </childnode>
+        <childnode refid="472" relation="include">
+        </childnode>
+        <childnode refid="481" relation="include">
+        </childnode>
+      </node>
+      <node id="481">
+        <label>tools/setOnce.hpp</label>
+        <link refid="setOnce_8hpp"/>
+        <childnode refid="482" relation="include">
+        </childnode>
+        <childnode refid="483" relation="include">
+        </childnode>
+        <childnode refid="478" relation="include">
+        </childnode>
+      </node>
+      <node id="490">
+        <label>boundary/boundary.hpp</label>
+        <link refid="boundary_8hpp"/>
+        <childnode refid="472" relation="include">
+        </childnode>
+        <childnode refid="479" relation="include">
+        </childnode>
+        <childnode refid="473" relation="include">
+        </childnode>
+      </node>
+      <node id="485">
+        <label>tools/constants.hpp</label>
+        <link refid="constants_8hpp"/>
+        <childnode refid="486" relation="include">
+        </childnode>
+        <childnode refid="487" relation="include">
+        </childnode>
+      </node>
+      <node id="474">
+        <label>vector</label>
+      </node>
+      <node id="488">
+        <label>points/points.hpp</label>
+        <link refid="points_8hpp"/>
+        <childnode refid="472" relation="include">
+        </childnode>
+        <childnode refid="479" relation="include">
+        </childnode>
+        <childnode refid="473" relation="include">
+        </childnode>
+      </node>
+      <node id="478">
+        <label>paracabs.hpp</label>
+      </node>
+      <node id="487">
+        <label>../configure.hpp</label>
+        <link refid="configure_8hpp"/>
+      </node>
+      <node id="473">
+        <label>tools/types.hpp</label>
+        <link refid="types_8hpp"/>
+        <childnode refid="474" relation="include">
+        </childnode>
+        <childnode refid="475" relation="include">
+        </childnode>
+        <childnode refid="476" relation="include">
+        </childnode>
+        <childnode refid="477" relation="include">
+        </childnode>
+        <childnode refid="478" relation="include">
+        </childnode>
+      </node>
+      <node id="483">
+        <label>iostream</label>
+      </node>
+      <node id="489">
+        <label>rays/rays.hpp</label>
+        <link refid="rays_8hpp"/>
+        <childnode refid="472" relation="include">
+        </childnode>
+        <childnode refid="479" relation="include">
+        </childnode>
+        <childnode refid="473" relation="include">
+        </childnode>
+      </node>
+    </incdepgraph>
+    <invincdepgraph>
+      <node id="494">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/model.hpp</label>
+        <link refid="model_8hpp"/>
+        <childnode refid="495" relation="include">
+        </childnode>
+        <childnode refid="496" relation="include">
+        </childnode>
+        <childnode refid="497" relation="include">
+        </childnode>
+      </node>
+      <node id="492">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/image/image.hpp</label>
+        <link refid="image_8hpp"/>
+        <childnode refid="493" relation="include">
+        </childnode>
+        <childnode refid="494" relation="include">
+        </childnode>
+      </node>
+      <node id="495">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/bindings/pybindings.cpp</label>
+        <link refid="pybindings_8cpp"/>
+      </node>
+      <node id="496">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/model.cpp</label>
+        <link refid="model_8cpp"/>
+      </node>
+      <node id="493">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/image/image.cpp</label>
+        <link refid="image_8cpp"/>
+      </node>
+      <node id="498">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.cpp</label>
+        <link refid="solver_8cpp"/>
+      </node>
+      <node id="497">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp</label>
+        <link refid="solver_8hpp"/>
+        <childnode refid="495" relation="include">
+        </childnode>
+        <childnode refid="496" relation="include">
+        </childnode>
+        <childnode refid="498" relation="include">
+        </childnode>
+      </node>
+    </invincdepgraph>
+    <innerclass refid="structImage" prot="public">Image</innerclass>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline lineno="1"><highlight class="preprocessor">#pragma<sp/>once</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="2"><highlight class="normal"></highlight></codeline>
+<codeline lineno="3"><highlight class="normal"></highlight></codeline>
+<codeline lineno="4"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;<ref refid="io_8hpp" kindref="compound">io/io.hpp</ref>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="5"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;<ref refid="types_8hpp" kindref="compound">tools/types.hpp</ref>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="6"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;<ref refid="parameters_8hpp" kindref="compound">model/parameters/parameters.hpp</ref>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="7"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;<ref refid="geometry_8hpp" kindref="compound">model/geometry/geometry.hpp</ref>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="8"><highlight class="normal"></highlight></codeline>
+<codeline lineno="9"><highlight class="normal"></highlight></codeline>
+<codeline lineno="12" refid="structImage" refkind="compound"><highlight class="keyword">struct<sp/></highlight><highlight class="normal"><ref refid="structImage" kindref="compound">Image</ref></highlight></codeline>
+<codeline lineno="13"><highlight class="normal">{</highlight></codeline>
+<codeline lineno="14" refid="structImage_1acc3202bc986c6940b72800459c283d59" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref><sp/><ref refid="structImage_1acc3202bc986c6940b72800459c283d59" kindref="member">ray_nr</ref>;<sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="15"><highlight class="normal"></highlight></codeline>
+<codeline lineno="16" refid="structImage_1affa6c57e43fdcde6839437377102a6e7" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="types_8hpp_1a90a65680382394cec1507779e4cdbce5" kindref="member">Double1</ref><sp/><ref refid="structImage_1affa6c57e43fdcde6839437377102a6e7" kindref="member">ImX</ref>;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="17" refid="structImage_1a99fe8443aa2bdd1e73421a1be071968c" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="types_8hpp_1a90a65680382394cec1507779e4cdbce5" kindref="member">Double1</ref><sp/><ref refid="structImage_1a99fe8443aa2bdd1e73421a1be071968c" kindref="member">ImY</ref>;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="18"><highlight class="normal"></highlight></codeline>
+<codeline lineno="19" refid="structImage_1aaa752bfbcb0ebae761fd5c40680ce690" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="types_8hpp_1ac9d1a399bc9eae71d5719b37a09745f6" kindref="member">Matrix&lt;Real&gt;</ref><sp/><ref refid="structImage_1aaa752bfbcb0ebae761fd5c40680ce690" kindref="member">I</ref>;<sp/><sp/><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="20"><highlight class="normal"></highlight></codeline>
+<codeline lineno="21"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="structImage_1a7460b0ec364ae44f6b4b3b82ed5529d4" kindref="member">Image</ref><sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="structGeometry" kindref="compound">Geometry</ref>&amp;<sp/>geometry,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref><sp/><ref refid="structImage_1acc3202bc986c6940b72800459c283d59" kindref="member">ray_nr</ref>);</highlight></codeline>
+<codeline lineno="22"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="structImage_1a7460b0ec364ae44f6b4b3b82ed5529d4" kindref="member">Image</ref><sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="structImage" kindref="compound">Image</ref>&amp;<sp/>image);</highlight></codeline>
+<codeline lineno="23"><highlight class="normal"></highlight></codeline>
+<codeline lineno="24"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>void<sp/>write<sp/>(const<sp/>Io<sp/>&amp;io)<sp/>const;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="25"><highlight class="normal"></highlight></codeline>
+<codeline lineno="26"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="structImage_1a643a8393d99a72a7934a7525cedc5b8e" kindref="member">set_coordinates</ref><sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="structGeometry" kindref="compound">Geometry</ref>&amp;<sp/>geometry);</highlight></codeline>
+<codeline lineno="27"><highlight class="normal">};</highlight></codeline>
+    </programlisting>
+    <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/image/image.hpp"/>
+  </compounddef>
+</doxygen>

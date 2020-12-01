@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.14">
+  <compounddef id="dir_ae0eeaf41204b3dddfd4af4e41abe070" kind="dir">
+    <compoundname>/home/frederik/Dropbox/GitHub/Magritte/src/model/thermodynamics/temperature</compoundname>
+    <innerfile refid="temperature_8cpp">temperature.cpp</innerfile>
+    <innerfile refid="temperature_8hpp">temperature.hpp</innerfile>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/thermodynamics/temperature/"/>
+  </compounddef>
+</doxygen>

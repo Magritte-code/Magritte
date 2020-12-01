@@ -1,0 +1,754 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.14">
+  <compounddef id="structLineProducingSpecies" kind="struct" language="C++" prot="public">
+    <compoundname>LineProducingSpecies</compoundname>
+    <includes refid="lineProducingSpecies_8hpp" local="no">lineProducingSpecies.hpp</includes>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structLineProducingSpecies_1a389bbf3d7c290f7229d0e2ef78647b37" prot="public" static="no" mutable="no">
+        <type><ref refid="structParameters" kindref="compound">Parameters</ref></type>
+        <definition>Parameters LineProducingSpecies::parameters</definition>
+        <argsstring></argsstring>
+        <name>parameters</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.hpp" line="22" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.hpp" bodystart="22" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structLineProducingSpecies_1af82c9246277856fe9a85fee5efc020a9" prot="public" static="no" mutable="no">
+        <type><ref refid="structLinedata" kindref="compound">Linedata</ref></type>
+        <definition>Linedata LineProducingSpecies::linedata</definition>
+        <argsstring></argsstring>
+        <name>linedata</name>
+        <briefdescription>
+<para>data for line producing species </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.hpp" line="23" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.hpp" bodystart="23" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structLineProducingSpecies_1a5ddef72c65be1892caa3260ff4c671fb" prot="public" static="no" mutable="no">
+        <type><ref refid="structQuadrature" kindref="compound">Quadrature</ref></type>
+        <definition>Quadrature LineProducingSpecies::quadrature</definition>
+        <argsstring></argsstring>
+        <name>quadrature</name>
+        <briefdescription>
+<para>data for integral over line </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.hpp" line="24" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.hpp" bodystart="24" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structLineProducingSpecies_1a8cce2e3e39c64f66ef45e13b07e4df95" prot="public" static="no" mutable="no">
+        <type><ref refid="structLambda" kindref="compound">Lambda</ref></type>
+        <definition>Lambda LineProducingSpecies::lambda</definition>
+        <argsstring></argsstring>
+        <name>lambda</name>
+        <briefdescription>
+<para>Approximate <ref refid="structLambda" kindref="compound">Lambda</ref> Operator (ALO) </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.hpp" line="25" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.hpp" bodystart="25" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structLineProducingSpecies_1ad4e258d22fbf987ed0ce00c513e27401" prot="public" static="no" mutable="no">
+        <type><ref refid="types_8hpp_1a71d8c3c9e08e8b53f75ecf2db5edafc5" kindref="member">Real2</ref></type>
+        <definition>Real2 LineProducingSpecies::Jlin</definition>
+        <argsstring></argsstring>
+        <name>Jlin</name>
+        <briefdescription>
+<para>actual mean intensity in the line </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.hpp" line="27" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.hpp" bodystart="27" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structLineProducingSpecies_1a6f905ae1bde6328c60d115ce05491980" prot="public" static="no" mutable="no">
+        <type><ref refid="types_8hpp_1a71d8c3c9e08e8b53f75ecf2db5edafc5" kindref="member">Real2</ref></type>
+        <definition>Real2 LineProducingSpecies::Jeff</definition>
+        <argsstring></argsstring>
+        <name>Jeff</name>
+        <briefdescription>
+<para>effective mean intensity in the line (actual - ALO) </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.hpp" line="28" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.hpp" bodystart="28" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structLineProducingSpecies_1a73354cab4a14d5596c1cbb771d3166e6" prot="public" static="no" mutable="no">
+        <type><ref refid="types_8hpp_1a71d8c3c9e08e8b53f75ecf2db5edafc5" kindref="member">Real2</ref></type>
+        <definition>Real2 LineProducingSpecies::Jdif</definition>
+        <argsstring></argsstring>
+        <name>Jdif</name>
+        <briefdescription>
+<para>effective mean intensity in the line (actual - ALO) </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.hpp" line="29" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.hpp" bodystart="29" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structLineProducingSpecies_1ac75520d36e2f1f197d4119117bf2cd41" prot="public" static="no" mutable="no">
+        <type><ref refid="types_8hpp_1a5774ff2894388787e3d3bbf2f2fe376a" kindref="member">Size3</ref></type>
+        <definition>Size3 LineProducingSpecies::nr_line</definition>
+        <argsstring></argsstring>
+        <name>nr_line</name>
+        <briefdescription>
+<para>frequency number corresponing to line (p,k,z) </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.hpp" line="31" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.hpp" bodystart="31" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structLineProducingSpecies_1a0c056f43cef52d62974c1ade2ad215b5" prot="public" static="no" mutable="no">
+        <type>double</type>
+        <definition>double LineProducingSpecies::relative_change_mean</definition>
+        <argsstring></argsstring>
+        <name>relative_change_mean</name>
+        <briefdescription>
+<para>mean relative change </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.hpp" line="33" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.hpp" bodystart="33" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structLineProducingSpecies_1a884352a22da6800b6e43638855bb4a89" prot="public" static="no" mutable="no">
+        <type>double</type>
+        <definition>double LineProducingSpecies::relative_change_max</definition>
+        <argsstring></argsstring>
+        <name>relative_change_max</name>
+        <briefdescription>
+<para>maximum relative change </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.hpp" line="34" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.hpp" bodystart="34" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structLineProducingSpecies_1a347bfc717e582bd924b5b5d64958cd79" prot="public" static="no" mutable="no">
+        <type>double</type>
+        <definition>double LineProducingSpecies::fraction_not_converged</definition>
+        <argsstring></argsstring>
+        <name>fraction_not_converged</name>
+        <briefdescription>
+<para>fraction of levels that is not converged </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.hpp" line="35" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.hpp" bodystart="35" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structLineProducingSpecies_1acb7633ca4838a28117f27ef94cf6004a" prot="public" static="no" mutable="no">
+        <type><ref refid="types_8hpp_1acc76b8f21e4f8305e11bdac1a85d9aa5" kindref="member">VectorXr</ref></type>
+        <definition>VectorXr LineProducingSpecies::population</definition>
+        <argsstring></argsstring>
+        <name>population</name>
+        <briefdescription>
+<para>level population (most recent) </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.hpp" line="37" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.hpp" bodystart="37" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structLineProducingSpecies_1a9b5d2c8a2ef70de01db944dbe234533d" prot="public" static="no" mutable="no">
+        <type><ref refid="types_8hpp_1a0015d4067a970e313605c333d49ed5c5" kindref="member">Real1</ref></type>
+        <definition>Real1 LineProducingSpecies::population_tot</definition>
+        <argsstring></argsstring>
+        <name>population_tot</name>
+        <briefdescription>
+<para>total level population (sum over levels) </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.hpp" line="38" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.hpp" bodystart="38" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structLineProducingSpecies_1a8baf088a8a6f6b9a781ab5c6ee36b9f8" prot="public" static="no" mutable="no">
+        <type>vector&lt; <ref refid="types_8hpp_1acc76b8f21e4f8305e11bdac1a85d9aa5" kindref="member">VectorXr</ref> &gt;</type>
+        <definition>vector&lt;VectorXr&gt; LineProducingSpecies::populations</definition>
+        <argsstring></argsstring>
+        <name>populations</name>
+        <briefdescription>
+<para>list of populations in previous iterations </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.hpp" line="40" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.hpp" bodystart="40" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structLineProducingSpecies_1acc5e0e8e84d3de31fd8d26908a91b90c" prot="public" static="no" mutable="no">
+        <type>vector&lt; <ref refid="types_8hpp_1acc76b8f21e4f8305e11bdac1a85d9aa5" kindref="member">VectorXr</ref> &gt;</type>
+        <definition>vector&lt;VectorXr&gt; LineProducingSpecies::residuals</definition>
+        <argsstring></argsstring>
+        <name>residuals</name>
+        <briefdescription>
+<para>list of residuals in the populations </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.hpp" line="41" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.hpp" bodystart="41" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structLineProducingSpecies_1a95966bf75a5f614bb45d04f79176c881" prot="public" static="no" mutable="no">
+        <type><ref refid="types_8hpp_1acc76b8f21e4f8305e11bdac1a85d9aa5" kindref="member">VectorXr</ref></type>
+        <definition>VectorXr LineProducingSpecies::population_prev1</definition>
+        <argsstring></argsstring>
+        <name>population_prev1</name>
+        <briefdescription>
+<para>level populations 1 iteration back </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.hpp" line="44" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.hpp" bodystart="44" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structLineProducingSpecies_1a2d7d6e6895d14c8cd01f636f180b0987" prot="public" static="no" mutable="no">
+        <type><ref refid="types_8hpp_1acc76b8f21e4f8305e11bdac1a85d9aa5" kindref="member">VectorXr</ref></type>
+        <definition>VectorXr LineProducingSpecies::population_prev2</definition>
+        <argsstring></argsstring>
+        <name>population_prev2</name>
+        <briefdescription>
+<para>level populations 2 iterations back </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.hpp" line="45" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.hpp" bodystart="45" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structLineProducingSpecies_1a9b5a55557d4fecfdbf767bf383301e33" prot="public" static="no" mutable="no">
+        <type><ref refid="types_8hpp_1acc76b8f21e4f8305e11bdac1a85d9aa5" kindref="member">VectorXr</ref></type>
+        <definition>VectorXr LineProducingSpecies::population_prev3</definition>
+        <argsstring></argsstring>
+        <name>population_prev3</name>
+        <briefdescription>
+<para>level populations 3 iterations back </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.hpp" line="46" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.hpp" bodystart="46" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structLineProducingSpecies_1a89f6fd9566c31eaefbe3c5c86d8187ff" prot="public" static="no" mutable="no">
+        <type>SparseMatrix&lt; <ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref> &gt;</type>
+        <definition>SparseMatrix&lt;Real&gt; LineProducingSpecies::RT</definition>
+        <argsstring></argsstring>
+        <name>RT</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.hpp" line="48" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.hpp" bodystart="48" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structLineProducingSpecies_1a2d72fa14880c4f58ec317467f8702462" prot="public" static="no" mutable="no">
+        <type>SparseMatrix&lt; <ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref> &gt;</type>
+        <definition>SparseMatrix&lt;Real&gt; LineProducingSpecies::LambdaTest</definition>
+        <argsstring></argsstring>
+        <name>LambdaTest</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.hpp" line="49" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.hpp" bodystart="49" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structLineProducingSpecies_1a89c5896d4facf040b57c6d092fca7cb9" prot="public" static="no" mutable="no">
+        <type>SparseMatrix&lt; <ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref> &gt;</type>
+        <definition>SparseMatrix&lt;Real&gt; LineProducingSpecies::LambdaStar</definition>
+        <argsstring></argsstring>
+        <name>LambdaStar</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.hpp" line="50" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.hpp" bodystart="50" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="structLineProducingSpecies_1adad73da8cd77b5b2397f6a00eaae703e" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void LineProducingSpecies::read</definition>
+        <argsstring>(const Io &amp;io, const Size l)</argsstring>
+        <name>read</name>
+        <param>
+          <type>const <ref refid="structIo" kindref="compound">Io</ref> &amp;</type>
+          <declname>io</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>l</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Reader for the <ref refid="structLineProducingSpecies" kindref="compound">LineProducingSpecies</ref> data from the <ref refid="structIo" kindref="compound">Io</ref> object <parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">io</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: io object </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">l</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: nr of line producing species </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.hpp" line="52" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.cpp" bodystart="11" bodyend="85"/>
+      </memberdef>
+      <memberdef kind="function" id="structLineProducingSpecies_1abfbd3f9d78728491ab3355f96b8c9885" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void LineProducingSpecies::write</definition>
+        <argsstring>(const Io &amp;io, const Size l) const</argsstring>
+        <name>write</name>
+        <param>
+          <type>const <ref refid="structIo" kindref="compound">Io</ref> &amp;</type>
+          <declname>io</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>l</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Writer for the <ref refid="structLineProducingSpecies" kindref="compound">LineProducingSpecies</ref> data to the <ref refid="structIo" kindref="compound">Io</ref> object <parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">io</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: io object </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">l</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: nr of line producing species </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.hpp" line="53" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.cpp" bodystart="92" bodyend="122"/>
+      </memberdef>
+      <memberdef kind="function" id="structLineProducingSpecies_1a28db7c722aac23e2c518e3dfaf1ffa94" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void LineProducingSpecies::read_populations</definition>
+        <argsstring>(const Io &amp;io, const Size l, const string tag)</argsstring>
+        <name>read_populations</name>
+        <param>
+          <type>const <ref refid="structIo" kindref="compound">Io</ref> &amp;</type>
+          <declname>io</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>l</declname>
+        </param>
+        <param>
+          <type>const string</type>
+          <declname>tag</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Reader for the level populations from the <ref refid="structIo" kindref="compound">Io</ref> object <parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">io</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: io object </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">l</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: number of line producing species </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">tag</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: extra info tag </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.hpp" line="55" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.cpp" bodystart="130" bodyend="151"/>
+      </memberdef>
+      <memberdef kind="function" id="structLineProducingSpecies_1a7df1d9f027672baf18a525a2d92fb73f" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void LineProducingSpecies::write_populations</definition>
+        <argsstring>(const Io &amp;io, const Size l, const string tag) const</argsstring>
+        <name>write_populations</name>
+        <param>
+          <type>const <ref refid="structIo" kindref="compound">Io</ref> &amp;</type>
+          <declname>io</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>l</declname>
+        </param>
+        <param>
+          <type>const string</type>
+          <declname>tag</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Writer for the level populations to the <ref refid="structIo" kindref="compound">Io</ref> object <parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">io</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: io object </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">l</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: number of line producing species </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">tag</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: extra info tag </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.hpp" line="56" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.cpp" bodystart="159" bodyend="189"/>
+      </memberdef>
+      <memberdef kind="function" id="structLineProducingSpecies_1a21a5da93b750899bd6b01519301ab55d" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+        <definition>Size LineProducingSpecies::index</definition>
+        <argsstring>(const Size p, const Size i) const</argsstring>
+        <name>index</name>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>p</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>i</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.hpp" line="58" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="structLineProducingSpecies_1af1456d4cf9a56a001670cecf4b093204" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref></type>
+        <definition>Real LineProducingSpecies::get_emissivity</definition>
+        <argsstring>(const Size p, const Size k) const</argsstring>
+        <name>get_emissivity</name>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>p</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>k</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.hpp" line="60" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="structLineProducingSpecies_1afc8a0bc88aa039aceff989586587c7b1" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref></type>
+        <definition>Real LineProducingSpecies::get_opacity</definition>
+        <argsstring>(const Size p, const Size k) const</argsstring>
+        <name>get_opacity</name>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>p</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>k</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.hpp" line="61" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="structLineProducingSpecies_1a753315da2178dfaa4bf4c097106b6561" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void LineProducingSpecies::check_for_convergence</definition>
+        <argsstring>(const Real pop_prec)</argsstring>
+        <name>check_for_convergence</name>
+        <param>
+          <type>const <ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref></type>
+          <declname>pop_prec</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.hpp" line="63" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="structLineProducingSpecies_1a40573614d977cebd577cbe0cce0c3b13" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void LineProducingSpecies::update_using_LTE</definition>
+        <argsstring>(const Double2 &amp;abundance, const Vector&lt; Real &gt; &amp;temperature)</argsstring>
+        <name>update_using_LTE</name>
+        <param>
+          <type>const <ref refid="types_8hpp_1ae4c3ee17bf4177a16f81df0795dee016" kindref="member">Double2</ref> &amp;</type>
+          <declname>abundance</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1a959df20affa391f0d7913ff0349bdb05" kindref="member">Vector</ref>&lt; <ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref> &gt; &amp;</type>
+          <declname>temperature</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.hpp" line="66" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="structLineProducingSpecies_1a7a7a0867c83b59ba59b45f3b026a1a75" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void LineProducingSpecies::update_using_statistical_equilibrium</definition>
+        <argsstring>(const Double2 &amp;abundance, const Vector&lt; Real &gt; &amp;temperature)</argsstring>
+        <name>update_using_statistical_equilibrium</name>
+        <param>
+          <type>const <ref refid="types_8hpp_1ae4c3ee17bf4177a16f81df0795dee016" kindref="member">Double2</ref> &amp;</type>
+          <declname>abundance</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1a959df20affa391f0d7913ff0349bdb05" kindref="member">Vector</ref>&lt; <ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref> &gt; &amp;</type>
+          <declname>temperature</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.hpp" line="70" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="structLineProducingSpecies_1aea9a3fc9d735fa6b5238c44fd38296aa" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void LineProducingSpecies::update_using_Ng_acceleration</definition>
+        <argsstring>()</argsstring>
+        <name>update_using_Ng_acceleration</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.hpp" line="74" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="structLineProducingSpecies_1a0772d6b7b2f96da50e64ffdbfc80c59a" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void LineProducingSpecies::update_using_acceleration</definition>
+        <argsstring>(const Size order)</argsstring>
+        <name>update_using_acceleration</name>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>order</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.hpp" line="75" column="1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <collaborationgraph>
+      <node id="77">
+        <label>SparseMatrix&lt; Real &gt;</label>
+      </node>
+      <node id="70">
+        <label>Lambda</label>
+        <link refid="structLambda"/>
+        <childnode refid="68" relation="usage">
+          <edgelabel>size</edgelabel>
+          <edgelabel>nrs</edgelabel>
+        </childnode>
+        <childnode refid="66" relation="usage">
+          <edgelabel>Lss</edgelabel>
+        </childnode>
+        <childnode refid="71" relation="usage">
+          <edgelabel>parameters</edgelabel>
+        </childnode>
+        <childnode refid="72" relation="usage">
+          <edgelabel>nr</edgelabel>
+        </childnode>
+        <childnode refid="73" relation="usage">
+          <edgelabel>Ls</edgelabel>
+        </childnode>
+      </node>
+      <node id="69">
+        <label>string</label>
+      </node>
+      <node id="75">
+        <label>vector&lt; Real1 &gt;</label>
+      </node>
+      <node id="74">
+        <label>vector&lt; VectorXr &gt;</label>
+      </node>
+      <node id="67">
+        <label>Linedata</label>
+        <link refid="structLinedata"/>
+        <childnode refid="68" relation="usage">
+          <edgelabel>jrad</edgelabel>
+          <edgelabel>irad</edgelabel>
+        </childnode>
+        <childnode refid="66" relation="usage">
+          <edgelabel>frequency</edgelabel>
+          <edgelabel>energy</edgelabel>
+          <edgelabel>weight</edgelabel>
+          <edgelabel>Ba</edgelabel>
+          <edgelabel>A</edgelabel>
+          <edgelabel>Bs</edgelabel>
+        </childnode>
+        <childnode refid="69" relation="usage">
+          <edgelabel>sym</edgelabel>
+        </childnode>
+      </node>
+      <node id="71">
+        <label>Parameters</label>
+        <link refid="structParameters"/>
+      </node>
+      <node id="66">
+        <label>vector&lt; Real &gt;</label>
+      </node>
+      <node id="65">
+        <label>LineProducingSpecies</label>
+        <link refid="structLineProducingSpecies"/>
+        <childnode refid="66" relation="usage">
+          <edgelabel>population_tot</edgelabel>
+        </childnode>
+        <childnode refid="67" relation="usage">
+          <edgelabel>linedata</edgelabel>
+        </childnode>
+        <childnode refid="70" relation="usage">
+          <edgelabel>lambda</edgelabel>
+        </childnode>
+        <childnode refid="74" relation="usage">
+          <edgelabel>populations</edgelabel>
+          <edgelabel>residuals</edgelabel>
+        </childnode>
+        <childnode refid="71" relation="usage">
+          <edgelabel>parameters</edgelabel>
+        </childnode>
+        <childnode refid="75" relation="usage">
+          <edgelabel>Jlin</edgelabel>
+          <edgelabel>Jdif</edgelabel>
+          <edgelabel>Jeff</edgelabel>
+        </childnode>
+        <childnode refid="76" relation="usage">
+          <edgelabel>quadrature</edgelabel>
+        </childnode>
+        <childnode refid="72" relation="usage">
+          <edgelabel>nr_line</edgelabel>
+        </childnode>
+        <childnode refid="77" relation="usage">
+          <edgelabel>RT</edgelabel>
+          <edgelabel>LambdaStar</edgelabel>
+          <edgelabel>LambdaTest</edgelabel>
+        </childnode>
+      </node>
+      <node id="76">
+        <label>Quadrature</label>
+        <link refid="structQuadrature"/>
+        <childnode refid="71" relation="usage">
+          <edgelabel>parameters</edgelabel>
+        </childnode>
+      </node>
+      <node id="73">
+        <label>vector&lt; Real2 &gt;</label>
+      </node>
+      <node id="68">
+        <label>vector&lt; Size &gt;</label>
+      </node>
+      <node id="72">
+        <label>vector&lt; Size2 &gt;</label>
+      </node>
+    </collaborationgraph>
+    <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.hpp" line="21" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.hpp" bodystart="20" bodyend="76"/>
+    <listofallmembers>
+      <member refid="structLineProducingSpecies_1a753315da2178dfaa4bf4c097106b6561" prot="public" virt="non-virtual"><scope>LineProducingSpecies</scope><name>check_for_convergence</name></member>
+      <member refid="structLineProducingSpecies_1a347bfc717e582bd924b5b5d64958cd79" prot="public" virt="non-virtual"><scope>LineProducingSpecies</scope><name>fraction_not_converged</name></member>
+      <member refid="structLineProducingSpecies_1af1456d4cf9a56a001670cecf4b093204" prot="public" virt="non-virtual"><scope>LineProducingSpecies</scope><name>get_emissivity</name></member>
+      <member refid="structLineProducingSpecies_1afc8a0bc88aa039aceff989586587c7b1" prot="public" virt="non-virtual"><scope>LineProducingSpecies</scope><name>get_opacity</name></member>
+      <member refid="structLineProducingSpecies_1a21a5da93b750899bd6b01519301ab55d" prot="public" virt="non-virtual"><scope>LineProducingSpecies</scope><name>index</name></member>
+      <member refid="structLineProducingSpecies_1a73354cab4a14d5596c1cbb771d3166e6" prot="public" virt="non-virtual"><scope>LineProducingSpecies</scope><name>Jdif</name></member>
+      <member refid="structLineProducingSpecies_1a6f905ae1bde6328c60d115ce05491980" prot="public" virt="non-virtual"><scope>LineProducingSpecies</scope><name>Jeff</name></member>
+      <member refid="structLineProducingSpecies_1ad4e258d22fbf987ed0ce00c513e27401" prot="public" virt="non-virtual"><scope>LineProducingSpecies</scope><name>Jlin</name></member>
+      <member refid="structLineProducingSpecies_1a8cce2e3e39c64f66ef45e13b07e4df95" prot="public" virt="non-virtual"><scope>LineProducingSpecies</scope><name>lambda</name></member>
+      <member refid="structLineProducingSpecies_1a89c5896d4facf040b57c6d092fca7cb9" prot="public" virt="non-virtual"><scope>LineProducingSpecies</scope><name>LambdaStar</name></member>
+      <member refid="structLineProducingSpecies_1a2d72fa14880c4f58ec317467f8702462" prot="public" virt="non-virtual"><scope>LineProducingSpecies</scope><name>LambdaTest</name></member>
+      <member refid="structLineProducingSpecies_1af82c9246277856fe9a85fee5efc020a9" prot="public" virt="non-virtual"><scope>LineProducingSpecies</scope><name>linedata</name></member>
+      <member refid="structLineProducingSpecies_1ac75520d36e2f1f197d4119117bf2cd41" prot="public" virt="non-virtual"><scope>LineProducingSpecies</scope><name>nr_line</name></member>
+      <member refid="structLineProducingSpecies_1a389bbf3d7c290f7229d0e2ef78647b37" prot="public" virt="non-virtual"><scope>LineProducingSpecies</scope><name>parameters</name></member>
+      <member refid="structLineProducingSpecies_1acb7633ca4838a28117f27ef94cf6004a" prot="public" virt="non-virtual"><scope>LineProducingSpecies</scope><name>population</name></member>
+      <member refid="structLineProducingSpecies_1a95966bf75a5f614bb45d04f79176c881" prot="public" virt="non-virtual"><scope>LineProducingSpecies</scope><name>population_prev1</name></member>
+      <member refid="structLineProducingSpecies_1a2d7d6e6895d14c8cd01f636f180b0987" prot="public" virt="non-virtual"><scope>LineProducingSpecies</scope><name>population_prev2</name></member>
+      <member refid="structLineProducingSpecies_1a9b5a55557d4fecfdbf767bf383301e33" prot="public" virt="non-virtual"><scope>LineProducingSpecies</scope><name>population_prev3</name></member>
+      <member refid="structLineProducingSpecies_1a9b5d2c8a2ef70de01db944dbe234533d" prot="public" virt="non-virtual"><scope>LineProducingSpecies</scope><name>population_tot</name></member>
+      <member refid="structLineProducingSpecies_1a8baf088a8a6f6b9a781ab5c6ee36b9f8" prot="public" virt="non-virtual"><scope>LineProducingSpecies</scope><name>populations</name></member>
+      <member refid="structLineProducingSpecies_1a5ddef72c65be1892caa3260ff4c671fb" prot="public" virt="non-virtual"><scope>LineProducingSpecies</scope><name>quadrature</name></member>
+      <member refid="structLineProducingSpecies_1adad73da8cd77b5b2397f6a00eaae703e" prot="public" virt="non-virtual"><scope>LineProducingSpecies</scope><name>read</name></member>
+      <member refid="structLineProducingSpecies_1a28db7c722aac23e2c518e3dfaf1ffa94" prot="public" virt="non-virtual"><scope>LineProducingSpecies</scope><name>read_populations</name></member>
+      <member refid="structLineProducingSpecies_1a884352a22da6800b6e43638855bb4a89" prot="public" virt="non-virtual"><scope>LineProducingSpecies</scope><name>relative_change_max</name></member>
+      <member refid="structLineProducingSpecies_1a0c056f43cef52d62974c1ade2ad215b5" prot="public" virt="non-virtual"><scope>LineProducingSpecies</scope><name>relative_change_mean</name></member>
+      <member refid="structLineProducingSpecies_1acc5e0e8e84d3de31fd8d26908a91b90c" prot="public" virt="non-virtual"><scope>LineProducingSpecies</scope><name>residuals</name></member>
+      <member refid="structLineProducingSpecies_1a89f6fd9566c31eaefbe3c5c86d8187ff" prot="public" virt="non-virtual"><scope>LineProducingSpecies</scope><name>RT</name></member>
+      <member refid="structLineProducingSpecies_1a0772d6b7b2f96da50e64ffdbfc80c59a" prot="public" virt="non-virtual"><scope>LineProducingSpecies</scope><name>update_using_acceleration</name></member>
+      <member refid="structLineProducingSpecies_1a40573614d977cebd577cbe0cce0c3b13" prot="public" virt="non-virtual"><scope>LineProducingSpecies</scope><name>update_using_LTE</name></member>
+      <member refid="structLineProducingSpecies_1aea9a3fc9d735fa6b5238c44fd38296aa" prot="public" virt="non-virtual"><scope>LineProducingSpecies</scope><name>update_using_Ng_acceleration</name></member>
+      <member refid="structLineProducingSpecies_1a7a7a0867c83b59ba59b45f3b026a1a75" prot="public" virt="non-virtual"><scope>LineProducingSpecies</scope><name>update_using_statistical_equilibrium</name></member>
+      <member refid="structLineProducingSpecies_1abfbd3f9d78728491ab3355f96b8c9885" prot="public" virt="non-virtual"><scope>LineProducingSpecies</scope><name>write</name></member>
+      <member refid="structLineProducingSpecies_1a7df1d9f027672baf18a525a2d92fb73f" prot="public" virt="non-virtual"><scope>LineProducingSpecies</scope><name>write_populations</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

@@ -1,6 +1,5 @@
 <img src="docs/images/Magritte_logo.png" alt="logo" width="360"/>
 
----
 [![Build Status](https://travis-ci.com/FredDeCeuster/Magritte.svg?token=j3NNTbFLxGaJNsSoKgCz&branch=master)](https://travis-ci.com/FredDeCeuster/Magritte)
 [![Documentation Status](https://readthedocs.com/projects/magritte-magritte/badge/?version=latest&token=7d7b32178f0e9cfbbf7e0967233b680ccf113dd73b8d4b567f3587445c936036)](https://magritte-magritte.readthedocs-hosted.com/en/latest/?badge=latest)
 ---
@@ -62,9 +61,9 @@ Please report any issues [here](https://github.com/UCL/Magritte/issues).
 
 ## Papers
 * _Magritte II: Adaptive ray-tracing, mesh construction and reduction_
-([MNRAS](https://doi.org/10.1093/mnras/staa3199))
+([arXiv](https://arxiv.org/abs/2011.14998), [MNRAS](https://doi.org/10.1093/mnras/staa3199))
 * _Magritte I: Non-LTE atomic and molecular line modelling_
-([arXiv](https://arxiv.org/pdf/1912.08445.pdf),
+([arXiv](https://arxiv.org/abs/1912.08445),
 [MNRAS](https://doi.org/10.1093/mnras/stz3557))
 
 

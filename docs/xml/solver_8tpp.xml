@@ -1,0 +1,1221 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.14">
+  <compounddef id="solver_8tpp" kind="file" language="C++">
+    <compoundname>solver.tpp</compoundname>
+    <includedby refid="solver_8hpp" local="yes">/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp</includedby>
+    <invincdepgraph>
+      <node id="1426">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/bindings/pybindings.cpp</label>
+        <link refid="pybindings_8cpp"/>
+      </node>
+      <node id="1427">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/model.cpp</label>
+        <link refid="model_8cpp"/>
+      </node>
+      <node id="1428">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.cpp</label>
+        <link refid="solver_8cpp"/>
+      </node>
+      <node id="1424">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.tpp</label>
+        <link refid="solver_8tpp"/>
+        <childnode refid="1425" relation="include">
+        </childnode>
+      </node>
+      <node id="1425">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp</label>
+        <link refid="solver_8hpp"/>
+        <childnode refid="1426" relation="include">
+        </childnode>
+        <childnode refid="1427" relation="include">
+        </childnode>
+        <childnode refid="1428" relation="include">
+        </childnode>
+      </node>
+    </invincdepgraph>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline><highlight class="normal">template<sp/>&lt;Frame<sp/>frame&gt;</highlight></codeline>
+<codeline><highlight class="normal">inline<sp/>void<sp/>Solver<sp/>::<sp/>setup<sp/>(Model&amp;<sp/>model)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Size<sp/>length<sp/>=<sp/>2<sp/>*<sp/>get_ray_lengths_max<sp/>&lt;frame&gt;<sp/>(model)<sp/>+<sp/>1;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Size<sp/><sp/>width<sp/>=<sp/>model.parameters.nfreqs();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Size<sp/><sp/>n_o_d<sp/>=<sp/>model.parameters.n_off_diag;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>setup<sp/>(length,<sp/>width,<sp/>n_o_d);</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">inline<sp/>void<sp/>Solver<sp/>::<sp/>setup<sp/>(const<sp/>Size<sp/>l,<sp/>const<sp/>Size<sp/>w,<sp/>const<sp/>Size<sp/>n_o_d)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>length<sp/><sp/><sp/><sp/><sp/>=<sp/>l;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>centre<sp/><sp/><sp/><sp/><sp/>=<sp/>l/2;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>width<sp/><sp/><sp/><sp/><sp/><sp/>=<sp/>w;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>n_off_diag<sp/>=<sp/>n_o_d;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>for<sp/>(Size<sp/>i<sp/>=<sp/>0;<sp/>i<sp/>&lt;<sp/>pc::multi_threading::n_threads_avail();<sp/>i++)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>dZ_<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>(i).resize<sp/>(length);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>nr_<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>(i).resize<sp/>(length);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>shift_<sp/><sp/><sp/><sp/><sp/><sp/><sp/>(i).resize<sp/>(length);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>eta_c_<sp/><sp/><sp/><sp/><sp/><sp/><sp/>(i).resize<sp/>(width);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>eta_n_<sp/><sp/><sp/><sp/><sp/><sp/><sp/>(i).resize<sp/>(width);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>chi_c_<sp/><sp/><sp/><sp/><sp/><sp/><sp/>(i).resize<sp/>(width);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>chi_n_<sp/><sp/><sp/><sp/><sp/><sp/><sp/>(i).resize<sp/>(width);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>inverse_chi_<sp/>(i).resize<sp/>(length);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>tau_<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>(i).resize<sp/>(width);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Su_<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>(i).resize<sp/>(length);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Sv_<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>(i).resize<sp/>(length);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>A_<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>(i).resize<sp/>(length);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>C_<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>(i).resize<sp/>(length);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>inverse_A_<sp/><sp/><sp/>(i).resize<sp/>(length);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>inverse_C_<sp/><sp/><sp/>(i).resize<sp/>(length);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>FF_<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>(i).resize<sp/>(length);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>FI_<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>(i).resize<sp/>(length);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>GG_<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>(i).resize<sp/>(length);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>GI_<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>(i).resize<sp/>(length);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>GP_<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>(i).resize<sp/>(length);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>L_diag_<sp/><sp/><sp/><sp/><sp/><sp/>(i).resize<sp/>(length);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>L_upper_<sp/><sp/><sp/><sp/><sp/>(i).resize<sp/>(n_off_diag,<sp/>length);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>L_lower_<sp/><sp/><sp/><sp/><sp/>(i).resize<sp/>(n_off_diag,<sp/>length);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">//<sp/>/<sp/><sp/>Getter<sp/>for<sp/>the<sp/>maximum<sp/>allowed<sp/>shift<sp/>value<sp/>determined<sp/>by<sp/>the<sp/>smallest<sp/>line</highlight></codeline>
+<codeline><highlight class="normal">//<sp/>/<sp/><sp/><sp/><sp/>@param[in]<sp/>o<sp/>:<sp/>number<sp/>of<sp/>point<sp/>under<sp/>consideration</highlight></codeline>
+<codeline><highlight class="normal">//<sp/>/<sp/><sp/><sp/><sp/>@retrun<sp/>maximum<sp/>allowed<sp/>shift<sp/>value<sp/>determined<sp/>by<sp/>the<sp/>smallest<sp/>line</highlight></codeline>
+<codeline><highlight class="normal">//<sp/>/////////////////////////////////////////////////////////////////////////////</highlight></codeline>
+<codeline><highlight class="normal">accel<sp/>inline<sp/>Real<sp/>Solver<sp/>::<sp/>get_dshift_max<sp/>(</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Model&amp;<sp/>model,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Size<sp/><sp/><sp/>o<sp/><sp/><sp/><sp/><sp/>)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Real<sp/>dshift_max<sp/>=<sp/>std::numeric_limits&lt;Real&gt;::max();</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>for<sp/>(const<sp/>LineProducingSpecies<sp/>&amp;lspec<sp/>:<sp/>model.lines.lineProducingSpecies)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>const<sp/>Real<sp/>inverse_mass<sp/><sp/><sp/>=<sp/>lspec.linedata.inverse_mass;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>const<sp/>Real<sp/>new_dshift_max<sp/>=<sp/>model.parameters.max_width_fraction</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>*<sp/>model.thermodynamics.profile_width<sp/>(inverse_mass,<sp/>o);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>if<sp/>(dshift_max<sp/>&gt;<sp/>new_dshift_max)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>dshift_max<sp/>=<sp/>new_dshift_max;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>return<sp/>dshift_max;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">template<sp/>&lt;Frame<sp/>frame&gt;</highlight></codeline>
+<codeline><highlight class="normal">inline<sp/>void<sp/>Solver<sp/>::<sp/>get_ray_lengths<sp/>(Model&amp;<sp/>model)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>for<sp/>(Size<sp/>rr<sp/>=<sp/>0;<sp/>rr<sp/>&lt;<sp/>model.parameters.hnrays();<sp/>rr++)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>const<sp/>Size<sp/>ar<sp/>=<sp/>model.geometry.rays.antipod[rr];</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>accelerated_for<sp/>(o,<sp/>model.parameters.npoints(),<sp/>nblocks,<sp/>nthreads,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>const<sp/>Real<sp/>dshift_max<sp/>=<sp/>get_dshift_max<sp/>(model,<sp/>o);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>model.geometry.lengths(rr,o)<sp/>=</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>model.geometry.get_ray_length<sp/>&lt;frame&gt;<sp/>(o,<sp/>rr,<sp/>dshift_max)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>+<sp/>model.geometry.get_ray_length<sp/>&lt;frame&gt;<sp/>(o,<sp/>ar,<sp/>dshift_max);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>})</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>pc::accelerator::synchronize();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>model.geometry.lengths.copy_ptr_to_vec();</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">template<sp/>&lt;Frame<sp/>frame&gt;</highlight></codeline>
+<codeline><highlight class="normal">inline<sp/>Size<sp/>Solver<sp/>::<sp/>get_ray_lengths_max<sp/>(Model&amp;<sp/>model)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>get_ray_lengths<sp/>&lt;frame&gt;<sp/>(model);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Geometry&amp;<sp/>geo<sp/>=<sp/>model.geometry;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>geo.lengths_max<sp/>=<sp/>*std::max_element(geo.lengths.vec.begin(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>geo.lengths.vec.end()<sp/><sp/><sp/>);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>return<sp/>geo.lengths_max;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">//<sp/>inline<sp/>void<sp/>Solver<sp/>::<sp/>trace<sp/>(Model&amp;<sp/>model)</highlight></codeline>
+<codeline><highlight class="normal">//<sp/>{</highlight></codeline>
+<codeline><highlight class="normal">//<sp/><sp/><sp/><sp/><sp/>for<sp/>(Size<sp/>rr<sp/>=<sp/>0;<sp/>rr<sp/>&lt;<sp/>model.parameters.hnrays();<sp/>rr++)</highlight></codeline>
+<codeline><highlight class="normal">//<sp/><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal">//<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>const<sp/>Size<sp/>ar<sp/>=<sp/>model.geometry.rays.antipod[rr];</highlight></codeline>
+<codeline><highlight class="normal">//</highlight></codeline>
+<codeline><highlight class="normal">//<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>cout<sp/>&lt;&lt;<sp/>&quot;rr<sp/>=<sp/>&quot;<sp/>&lt;&lt;<sp/>rr<sp/>&lt;&lt;<sp/>endl;</highlight></codeline>
+<codeline><highlight class="normal">//</highlight></codeline>
+<codeline><highlight class="normal">//<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>accelerated_for<sp/>(o,<sp/>model.parameters.npoints(),<sp/>nblocks,<sp/>nthreads,</highlight></codeline>
+<codeline><highlight class="normal">//<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal">//<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>const<sp/>Real<sp/>dshift_max<sp/>=<sp/>get_dshift_max<sp/>(model,<sp/>o);</highlight></codeline>
+<codeline><highlight class="normal">//<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>//<sp/>const<sp/>Real<sp/>dshift_max<sp/>=<sp/>1.0e+99;</highlight></codeline>
+<codeline><highlight class="normal">//</highlight></codeline>
+<codeline><highlight class="normal">//<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>model.geometry.lengths[model.parameters.npoints()*rr+o]<sp/>=</highlight></codeline>
+<codeline><highlight class="normal">//<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>trace_ray<sp/>&lt;CoMoving&gt;<sp/>(model.geometry,<sp/>o,<sp/>rr,<sp/>dshift_max,<sp/>+1,<sp/>centre+1,<sp/>centre+1)<sp/>+<sp/>1</highlight></codeline>
+<codeline><highlight class="normal">//<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>-<sp/>trace_ray<sp/>&lt;CoMoving&gt;<sp/>(model.geometry,<sp/>o,<sp/>ar,<sp/>dshift_max,<sp/>-1,<sp/>centre+1,<sp/>centre<sp/><sp/>);</highlight></codeline>
+<codeline><highlight class="normal">//<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>})</highlight></codeline>
+<codeline><highlight class="normal">//</highlight></codeline>
+<codeline><highlight class="normal">//<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>pc::accelerator::synchronize();</highlight></codeline>
+<codeline><highlight class="normal">//<sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal">//</highlight></codeline>
+<codeline><highlight class="normal">//<sp/><sp/><sp/><sp/><sp/>model.geometry.lengths.copy_ptr_to_vec<sp/>();</highlight></codeline>
+<codeline><highlight class="normal">//<sp/>}</highlight></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">inline<sp/>void<sp/>Solver<sp/>::<sp/>solve_shortchar_order_0<sp/>(Model&amp;<sp/>model)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>for<sp/>(auto<sp/>&amp;lspec<sp/>:<sp/>model.lines.lineProducingSpecies)<sp/>{lspec.lambda.clear();}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>model.radiation.initialize_J();</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>for<sp/>(Size<sp/>rr<sp/>=<sp/>0;<sp/>rr<sp/>&lt;<sp/>model.parameters.hnrays();<sp/>rr++)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>const<sp/>Size<sp/>ar<sp/>=<sp/>model.geometry.rays.antipod[rr];</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>cout<sp/>&lt;&lt;<sp/>&quot;---<sp/>rr<sp/>=<sp/>&quot;<sp/>&lt;&lt;<sp/>rr<sp/>&lt;&lt;<sp/>endl;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>accelerated_for<sp/>(o,<sp/>model.parameters.npoints(),<sp/>nblocks,<sp/>nthreads,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>//<sp/>const<sp/>Real<sp/>dshift_max<sp/>=<sp/>get_dshift_max<sp/>(o);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>const<sp/>Real<sp/>dshift_max<sp/>=<sp/>1.0e+99;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>solve_shortchar_order_0<sp/>(model,<sp/>o,<sp/>rr,<sp/>dshift_max);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>solve_shortchar_order_0<sp/>(model,<sp/>o,<sp/>ar,<sp/>dshift_max);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>for<sp/>(Size<sp/>f<sp/>=<sp/>0;<sp/>f<sp/>&lt;<sp/>model.parameters.nfreqs();<sp/>f++)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>model.radiation.u(rr,o,f)<sp/>=<sp/>0.5<sp/>*<sp/>(model.radiation.I(rr,o,f)<sp/>+<sp/>model.radiation.I(ar,o,f));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>model.radiation.v(rr,o,f)<sp/>=<sp/>0.5<sp/>*<sp/>(model.radiation.I(rr,o,f)<sp/>-<sp/>model.radiation.I(ar,o,f));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>})</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>pc::accelerator::synchronize();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>model.radiation.I.copy_ptr_to_vec();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>model.radiation.J.copy_ptr_to_vec();</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">inline<sp/>void<sp/>Solver<sp/>::<sp/>solve_feautrier_order_2<sp/>(Model&amp;<sp/>model)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>for<sp/>(auto<sp/>&amp;lspec<sp/>:<sp/>model.lines.lineProducingSpecies)<sp/>{lspec.lambda.clear();}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>model.radiation.initialize_J();</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>for<sp/>(Size<sp/>rr<sp/>=<sp/>0;<sp/>rr<sp/>&lt;<sp/>model.parameters.hnrays();<sp/>rr++)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>const<sp/>Size<sp/>ar<sp/>=<sp/>model.geometry.rays.antipod[rr];</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>cout<sp/>&lt;&lt;<sp/>&quot;---<sp/>rr<sp/>=<sp/>&quot;<sp/>&lt;&lt;<sp/>rr<sp/>&lt;&lt;<sp/>endl;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>accelerated_for<sp/>(o,<sp/>model.parameters.npoints(),<sp/>nblocks,<sp/>nthreads,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>const<sp/>Real<sp/>dshift_max<sp/>=<sp/>get_dshift_max<sp/>(model,<sp/>o);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>//<sp/>cout<sp/>&lt;&lt;<sp/>&quot;dshift_max<sp/>=<sp/>&quot;<sp/>&lt;&lt;<sp/>dshift_max<sp/>*<sp/>CC<sp/>&lt;&lt;<sp/>endl;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>nr_<sp/><sp/><sp/>()[centre]<sp/>=<sp/>o;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>shift_()[centre]<sp/>=<sp/>1.0;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>first_()<sp/>=<sp/>trace_ray<sp/>&lt;CoMoving&gt;<sp/>(model.geometry,<sp/>o,<sp/>rr,<sp/>dshift_max,<sp/>-1,<sp/>centre-1,<sp/>centre-1)<sp/>+<sp/>1;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>last_<sp/>()<sp/>=<sp/>trace_ray<sp/>&lt;CoMoving&gt;<sp/>(model.geometry,<sp/>o,<sp/>ar,<sp/>dshift_max,<sp/>+1,<sp/>centre+1,<sp/>centre<sp/><sp/>)<sp/>-<sp/>1;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>n_tot_()<sp/>=<sp/>(last_()+1)<sp/>-<sp/>first_();</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>if<sp/>(n_tot_()<sp/>&gt;<sp/>1)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>for<sp/>(Size<sp/>f<sp/>=<sp/>0;<sp/>f<sp/>&lt;<sp/>model.parameters.nfreqs();<sp/>f++)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>solve_feautrier_order_2<sp/>(model,<sp/>o,<sp/>rr,<sp/>ar,<sp/>f);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>model.radiation.u(rr,o,f)<sp/><sp/>=<sp/>Su_()[centre];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>model.radiation.J(<sp/><sp/><sp/>o,f)<sp/>+=<sp/>Su_()[centre]<sp/>*<sp/>two<sp/>*<sp/>model.geometry.rays.weight[rr];</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>update_Lambda<sp/>(model,<sp/>rr,<sp/>f);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>else</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>for<sp/>(Size<sp/>f<sp/>=<sp/>0;<sp/>f<sp/>&lt;<sp/>model.parameters.nfreqs();<sp/>f++)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>model.radiation.u(rr,o,f)<sp/><sp/>=<sp/>boundary_intensity(model,<sp/>o,<sp/>model.radiation.frequencies.nu(o,<sp/>f));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>model.radiation.J(<sp/><sp/><sp/>o,f)<sp/>+=<sp/>two<sp/>*<sp/>model.geometry.rays.weight[rr]<sp/>*<sp/>model.radiation.u(rr,o,f);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>})</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>pc::accelerator::synchronize();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>model.radiation.u.copy_ptr_to_vec();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>model.radiation.J.copy_ptr_to_vec();</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">inline<sp/>void<sp/>Solver<sp/>::<sp/>image_feautrier_order_2<sp/>(Model&amp;<sp/>model,<sp/>const<sp/>Size<sp/>rr)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Image<sp/>image<sp/>=<sp/>Image(model.geometry,<sp/>rr);</highlight></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>cout<sp/>&lt;&lt;<sp/>&quot;--------------------------------------&quot;<sp/>&lt;&lt;<sp/>endl;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Size<sp/>ar<sp/>=<sp/>model.geometry.rays.antipod[rr];</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>accelerated_for<sp/>(o,<sp/>model.parameters.npoints(),<sp/>nblocks,<sp/>nthreads,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>const<sp/>Real<sp/>dshift_max<sp/>=<sp/>get_dshift_max<sp/>(model,<sp/>o);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>nr_<sp/><sp/><sp/>()[centre]<sp/>=<sp/>o;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>shift_()[centre]<sp/>=<sp/>1.0;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>first_()<sp/>=<sp/>trace_ray<sp/>&lt;Rest&gt;<sp/>(model.geometry,<sp/>o,<sp/>rr,<sp/>dshift_max,<sp/>-1,<sp/>centre-1,<sp/>centre-1)<sp/>+<sp/>1;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>last_<sp/>()<sp/>=<sp/>trace_ray<sp/>&lt;Rest&gt;<sp/>(model.geometry,<sp/>o,<sp/>ar,<sp/>dshift_max,<sp/>+1,<sp/>centre+1,<sp/>centre<sp/><sp/>)<sp/>-<sp/>1;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>n_tot_()<sp/>=<sp/>(last_()+1)<sp/>-<sp/>first_();</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>if<sp/>(n_tot_()<sp/>&gt;<sp/>1)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>for<sp/>(Size<sp/>f<sp/>=<sp/>0;<sp/>f<sp/>&lt;<sp/>model.parameters.nfreqs();<sp/>f++)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>image_feautrier_order_2<sp/>(model,<sp/>o,<sp/>rr,<sp/>ar,<sp/>f);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>image.I(o,f)<sp/>=<sp/>two*Su_()[first_()]<sp/>-<sp/>boundary_intensity(model,<sp/>nr_()[first_()],<sp/>model.radiation.frequencies.nu(o,<sp/>f));</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>//<sp/>cout<sp/>&lt;&lt;<sp/>&quot;subtracting<sp/>=<sp/>&quot;<sp/>&lt;&lt;<sp/>boundary_intensity(model,<sp/>nr_()[first_()],<sp/>model.radiation.frequencies.nu(o,<sp/>f))<sp/>&lt;&lt;<sp/>endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>else</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>for<sp/>(Size<sp/>f<sp/>=<sp/>0;<sp/>f<sp/>&lt;<sp/>model.parameters.nfreqs();<sp/>f++)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>image.I(o,f)<sp/>=<sp/>boundary_intensity(model,<sp/>o,<sp/>model.radiation.frequencies.nu(o,<sp/>f));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>})</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>pc::accelerator::synchronize();</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>model.images.push_back<sp/>(image);</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">template<sp/>&lt;Frame<sp/>frame&gt;</highlight></codeline>
+<codeline><highlight class="normal">accel<sp/>inline<sp/>Size<sp/>Solver<sp/>::<sp/>trace_ray<sp/>(</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Geometry&amp;<sp/>geometry,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Size<sp/><sp/><sp/><sp/><sp/><sp/>o,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Size<sp/><sp/><sp/><sp/><sp/><sp/>r,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>double<sp/><sp/><sp/><sp/>dshift_max,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>int<sp/><sp/><sp/><sp/><sp/><sp/><sp/>increment,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Size<sp/><sp/><sp/><sp/><sp/><sp/>id1,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Size<sp/><sp/><sp/><sp/><sp/><sp/>id2<sp/>)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>double<sp/><sp/>Z<sp/>=<sp/>0.0;<sp/><sp/><sp/>//<sp/>distance<sp/>from<sp/>origin<sp/>(o)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>double<sp/>dZ<sp/>=<sp/>0.0;<sp/><sp/><sp/>//<sp/>last<sp/>increment<sp/>in<sp/>Z</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Size<sp/>nxt<sp/>=<sp/>geometry.get_next<sp/>(o,<sp/>r,<sp/>o,<sp/>Z,<sp/>dZ);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>if<sp/>(geometry.valid_point(nxt))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Size<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>crt<sp/>=<sp/>o;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>double<sp/>shift_crt<sp/>=<sp/>geometry.get_shift<sp/>&lt;frame&gt;<sp/>(o,<sp/>r,<sp/>crt,<sp/>0.0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>double<sp/>shift_nxt<sp/>=<sp/>geometry.get_shift<sp/>&lt;frame&gt;<sp/>(o,<sp/>r,<sp/>nxt,<sp/>Z<sp/><sp/>);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>set_data<sp/>(crt,<sp/>nxt,<sp/>shift_crt,<sp/>shift_nxt,<sp/>dZ,<sp/>dshift_max,<sp/>increment,<sp/>id1,<sp/>id2);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>while<sp/>(geometry.not_on_boundary(nxt))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>crt<sp/>=<sp/><sp/><sp/><sp/><sp/><sp/><sp/>nxt;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>shift_crt<sp/>=<sp/>shift_nxt;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>nxt<sp/>=<sp/>geometry.get_next<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>(o,<sp/>r,<sp/>nxt,<sp/>Z,<sp/>dZ);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>shift_nxt<sp/>=<sp/>geometry.get_shift<sp/>&lt;frame&gt;<sp/>(o,<sp/>r,<sp/>nxt,<sp/>Z<sp/><sp/><sp/><sp/>);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>set_data<sp/>(crt,<sp/>nxt,<sp/>shift_crt,<sp/>shift_nxt,<sp/>dZ,<sp/>dshift_max,<sp/>increment,<sp/>id1,<sp/>id2);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>return<sp/>id1;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">accel<sp/>inline<sp/>void<sp/>Solver<sp/>::<sp/>set_data<sp/>(</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Size<sp/><sp/><sp/>crt,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Size<sp/><sp/><sp/>nxt,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>double<sp/>shift_crt,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>double<sp/>shift_nxt,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>double<sp/>dZ_loc,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>double<sp/>dshift_max,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>int<sp/><sp/><sp/><sp/>increment,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Size&amp;<sp/><sp/>id1,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Size&amp;<sp/><sp/>id2<sp/>)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Vector&lt;double&gt;&amp;<sp/>dZ<sp/><sp/><sp/><sp/>=<sp/>dZ_<sp/><sp/><sp/>();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Vector&lt;Size<sp/><sp/>&gt;&amp;<sp/>nr<sp/><sp/><sp/><sp/>=<sp/>nr_<sp/><sp/><sp/>();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Vector&lt;double&gt;&amp;<sp/>shift<sp/>=<sp/>shift_();</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>double<sp/>dshift<sp/><sp/><sp/><sp/><sp/>=<sp/>shift_nxt<sp/>-<sp/>shift_crt;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>double<sp/>dshift_abs<sp/>=<sp/>fabs<sp/>(dshift);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>if<sp/>(dshift_abs<sp/>&gt;<sp/>dshift_max)<sp/>//<sp/>If<sp/>velocity<sp/>gradient<sp/>is<sp/>not<sp/>well-sampled<sp/>enough</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>//<sp/>Interpolate<sp/>velocity<sp/>gradient<sp/>field</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>const<sp/>Size<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>n_interpl<sp/>=<sp/>dshift_abs<sp/>/<sp/>dshift_max<sp/>+<sp/>1;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>const<sp/>Size<sp/><sp/><sp/>half_n_interpl<sp/>=<sp/>0.5<sp/>*<sp/>n_interpl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>const<sp/>double<sp/><sp/><sp/><sp/><sp/>dZ_interpl<sp/>=<sp/><sp/><sp/><sp/><sp/>dZ_loc<sp/>/<sp/>n_interpl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>const<sp/>double<sp/>dshift_interpl<sp/>=<sp/><sp/><sp/><sp/><sp/>dshift<sp/>/<sp/>n_interpl;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>//<sp/>cout<sp/>&lt;&lt;<sp/>&quot;n_interpl<sp/>=<sp/>&quot;<sp/>&lt;&lt;<sp/>n_interpl<sp/>&lt;&lt;<sp/>endl;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>if<sp/>(n_interpl<sp/>&gt;<sp/>10000)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>printf<sp/>(&quot;ERROR<sp/>(n_intpl<sp/>&gt;<sp/>10<sp/>000)<sp/>||<sp/>(dshift_max<sp/>&lt;<sp/>0,<sp/>probably<sp/>due<sp/>to<sp/>overflow)\n&quot;);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>//<sp/>Assign<sp/>current<sp/>cell<sp/>to<sp/>first<sp/>half<sp/>of<sp/>interpolation<sp/>points</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>for<sp/>(Size<sp/>m<sp/>=<sp/>1;<sp/>m<sp/>&lt;<sp/>half_n_interpl;<sp/>m++)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>nr<sp/><sp/><sp/>[id1]<sp/>=<sp/>crt;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>shift[id1]<sp/>=<sp/>shift_crt<sp/>+<sp/>m*dshift_interpl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>dZ<sp/><sp/><sp/>[id2]<sp/>=<sp/>dZ_interpl;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>id1<sp/>+=<sp/>increment;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>id2<sp/>+=<sp/>increment;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>//<sp/>Assign<sp/>next<sp/>cell<sp/>to<sp/>second<sp/>half<sp/>of<sp/>interpolation<sp/>points</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>for<sp/>(Size<sp/>m<sp/>=<sp/>half_n_interpl;<sp/>m<sp/>&lt;=<sp/>n_interpl;<sp/>m++)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>nr<sp/><sp/><sp/>[id1]<sp/>=<sp/>nxt;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>shift[id1]<sp/>=<sp/>shift_crt<sp/>+<sp/>m*dshift_interpl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>dZ<sp/><sp/><sp/>[id2]<sp/>=<sp/>dZ_interpl;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>id1<sp/>+=<sp/>increment;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>id2<sp/>+=<sp/>increment;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>else</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>nr<sp/><sp/><sp/>[id1]<sp/>=<sp/>nxt;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>shift[id1]<sp/>=<sp/>shift_nxt;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>dZ<sp/><sp/><sp/>[id2]<sp/>=<sp/>dZ_loc;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>id1<sp/>+=<sp/>increment;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>id2<sp/>+=<sp/>increment;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">///<sp/><sp/>Gaussian<sp/>line<sp/>profile<sp/>function</highlight></codeline>
+<codeline><highlight class="normal">///<sp/><sp/><sp/><sp/>@param[in]<sp/>width<sp/>:<sp/>profile<sp/>width</highlight></codeline>
+<codeline><highlight class="normal">///<sp/><sp/><sp/><sp/>@param[in]<sp/>diff<sp/><sp/>:<sp/>frequency<sp/>difference<sp/>with<sp/>line<sp/>centre</highlight></codeline>
+<codeline><highlight class="normal">///<sp/><sp/><sp/><sp/>@return<sp/>profile<sp/>function<sp/>evaluated<sp/>with<sp/>this<sp/>frequency<sp/>difference</highlight></codeline>
+<codeline><highlight class="normal">////////////////////////////////////////////////////////////////////////</highlight></codeline>
+<codeline><highlight class="normal">accel<sp/>inline<sp/>Real<sp/>Solver<sp/>::<sp/>gaussian<sp/>(const<sp/>Real<sp/>inverse_width,<sp/>const<sp/>Real<sp/>diff)<sp/>const</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Real<sp/>sqrt_exp<sp/>=<sp/>inverse_width<sp/>*<sp/>diff;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>return<sp/>inverse_width<sp/>*<sp/>INVERSE_SQRT_PI<sp/>*<sp/>exp<sp/>(-sqrt_exp*sqrt_exp);</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">///<sp/><sp/>Planck<sp/>function</highlight></codeline>
+<codeline><highlight class="normal">///<sp/><sp/><sp/><sp/>@param[in]<sp/>temp<sp/>:<sp/>temperature<sp/>of<sp/>the<sp/>corresponding<sp/>black<sp/>body</highlight></codeline>
+<codeline><highlight class="normal">///<sp/><sp/><sp/><sp/>@param[in]<sp/>freq<sp/>:<sp/>frequency<sp/>at<sp/>which<sp/>to<sp/>evaluate<sp/>the<sp/>function</highlight></codeline>
+<codeline><highlight class="normal">///<sp/><sp/><sp/><sp/>@return<sp/>Planck<sp/>function<sp/>evaluated<sp/>at<sp/>this<sp/>frequency</highlight></codeline>
+<codeline><highlight class="normal">///////////////////////////////////////////////////////////////////////////</highlight></codeline>
+<codeline><highlight class="normal">accel<sp/>inline<sp/>Real<sp/>Solver<sp/>::<sp/>planck<sp/>(const<sp/>Real<sp/>temp,<sp/>const<sp/>Real<sp/>freq)<sp/>const</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>return<sp/>TWO_HH_OVER_CC_SQUARED<sp/>*<sp/>(freq*freq*freq)<sp/>/<sp/>expm1<sp/>(HH_OVER_KB*freq/temp);</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">///<sp/><sp/>Getter<sp/>for<sp/>the<sp/>boundary<sp/>conditions</highlight></codeline>
+<codeline><highlight class="normal">///<sp/><sp/><sp/><sp/>@param[in]<sp/>model<sp/><sp/>:<sp/>reference<sp/>to<sp/>model<sp/>object</highlight></codeline>
+<codeline><highlight class="normal">///<sp/><sp/><sp/><sp/>@param[in]<sp/>p<sp/><sp/><sp/><sp/><sp/><sp/>:<sp/>point<sp/>index<sp/>of<sp/>the<sp/>boundary<sp/>point</highlight></codeline>
+<codeline><highlight class="normal">///<sp/><sp/><sp/><sp/>@param[in]<sp/>freq<sp/><sp/><sp/>:<sp/>frequency<sp/>at<sp/>which<sp/>to<sp/>evaluate<sp/>boundary<sp/>condition</highlight></codeline>
+<codeline><highlight class="normal">///<sp/><sp/><sp/><sp/>@returns<sp/>incoming<sp/>radiation<sp/>intensity<sp/>at<sp/>the<sp/>boundary</highlight></codeline>
+<codeline><highlight class="normal">////////////////////////////////////////////////////////////////////////////</highlight></codeline>
+<codeline><highlight class="normal">accel<sp/>inline<sp/>Real<sp/>Solver<sp/>::<sp/>boundary_intensity<sp/>(const<sp/>Model&amp;<sp/>model,<sp/>const<sp/>Size<sp/>p,<sp/>const<sp/>Real<sp/>freq)<sp/>const</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Size<sp/>bdy_id<sp/>=<sp/>model.geometry.boundary.point2boundary[p];</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>switch<sp/>(model.geometry.boundary.boundary_condition[bdy_id])</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>case<sp/>Zero<sp/><sp/><sp/><sp/>:<sp/>return<sp/>0.0;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>case<sp/>Thermal<sp/>:<sp/>return<sp/>planck<sp/>(model.geometry.boundary.boundary_temperature[bdy_id],<sp/>freq);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>default<sp/><sp/><sp/><sp/><sp/><sp/>:<sp/>return<sp/>planck<sp/>(T_CMB,<sp/>freq);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">///<sp/><sp/>Getter<sp/>for<sp/>the<sp/>emissivity<sp/>(eta)<sp/>and<sp/>the<sp/>opacity<sp/>(chi)</highlight></codeline>
+<codeline><highlight class="normal">///<sp/><sp/><sp/><sp/>@param[in]<sp/><sp/>model<sp/>:<sp/>reference<sp/>to<sp/>model<sp/>object</highlight></codeline>
+<codeline><highlight class="normal">///<sp/><sp/><sp/><sp/>@param[in]<sp/><sp/>p<sp/><sp/><sp/><sp/><sp/>:<sp/>in<sp/>dex<sp/>of<sp/>the<sp/>cell</highlight></codeline>
+<codeline><highlight class="normal">///<sp/><sp/><sp/><sp/>@param[in]<sp/><sp/>freq<sp/><sp/>:<sp/>frequency<sp/>(in<sp/>co-moving<sp/>frame)</highlight></codeline>
+<codeline><highlight class="normal">///<sp/><sp/><sp/><sp/>@param[out]<sp/>eta<sp/><sp/><sp/>:<sp/>emissivity</highlight></codeline>
+<codeline><highlight class="normal">///<sp/><sp/><sp/><sp/>@param[out]<sp/>chi<sp/><sp/><sp/>:<sp/>opacity</highlight></codeline>
+<codeline><highlight class="normal">//////////////////////////////////////////////////////////</highlight></codeline>
+<codeline><highlight class="normal">accel<sp/>inline<sp/>void<sp/>Solver<sp/>::<sp/>get_eta_and_chi<sp/>(</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Model&amp;<sp/>model,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Size<sp/><sp/><sp/>p,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Real<sp/><sp/><sp/>freq,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Real&amp;<sp/><sp/>eta,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Real&amp;<sp/><sp/>chi<sp/>)<sp/>const</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>//<sp/>Initialize</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>eta<sp/>=<sp/>0.0;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>chi<sp/>=<sp/>1.0e-26;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>//<sp/>Set<sp/>line<sp/>emissivity<sp/>and<sp/>opacity</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>for<sp/>(Size<sp/>l<sp/>=<sp/>0;<sp/>l<sp/>&lt;<sp/>model.parameters.nlines();<sp/>l++)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>const<sp/>Real<sp/>diff<sp/>=<sp/>freq<sp/>-<sp/>model.lines.line[l];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>const<sp/>Real<sp/>prof<sp/>=<sp/>freq<sp/>*<sp/>gaussian<sp/>(model.lines.inverse_width(p,<sp/>l),<sp/>diff);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>eta<sp/>+=<sp/>prof<sp/>*<sp/>model.lines.emissivity(p,<sp/>l);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>chi<sp/>+=<sp/>prof<sp/>*<sp/>model.lines.opacity<sp/><sp/><sp/>(p,<sp/>l);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>//<sp/>cout<sp/>&lt;&lt;<sp/>&quot;prof<sp/>=<sp/>&quot;<sp/>&lt;&lt;<sp/>prof<sp/>&lt;&lt;<sp/>&quot;<sp/><sp/><sp/><sp/><sp/>diff<sp/>=<sp/>&quot;<sp/>&lt;&lt;<sp/>diff<sp/><sp/>&lt;&lt;<sp/>&quot;<sp/><sp/><sp/><sp/><sp/>width<sp/>=<sp/>&quot;<sp/>&lt;&lt;<sp/>width<sp/>&lt;&lt;<sp/>endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>//<sp/>printf(&quot;prof<sp/>=<sp/>%le,<sp/><sp/><sp/>diff<sp/>=<sp/>%le,<sp/><sp/><sp/>freq<sp/>=<sp/>%le,<sp/><sp/><sp/>line<sp/>=<sp/>%le\n&quot;,<sp/>prof,<sp/>diff,<sp/>freq,<sp/>model.lines.line[l]);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>//<sp/>cout<sp/>&lt;&lt;<sp/>&quot;eta,<sp/>chi<sp/>=<sp/>&quot;<sp/>&lt;&lt;<sp/>eta<sp/>&lt;&lt;<sp/>&quot;<sp/><sp/>&quot;<sp/>&lt;&lt;<sp/>chi<sp/>&lt;&lt;<sp/>endl;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">///<sp/><sp/>Apply<sp/>trapezium<sp/>rule<sp/>to<sp/>x_crt<sp/>and<sp/>x_nxt</highlight></codeline>
+<codeline><highlight class="normal">///<sp/><sp/><sp/><sp/>@param[in]<sp/>x_crt<sp/>:<sp/>current<sp/>value<sp/>of<sp/>x</highlight></codeline>
+<codeline><highlight class="normal">///<sp/><sp/><sp/><sp/>@param[in]<sp/>x_nxt<sp/>:<sp/>next<sp/>value<sp/>of<sp/>x</highlight></codeline>
+<codeline><highlight class="normal">///<sp/><sp/><sp/><sp/>@param[in]<sp/>dZ<sp/><sp/><sp/><sp/>:<sp/>distance<sp/>inscrement<sp/>along<sp/>ray</highlight></codeline>
+<codeline><highlight class="normal">///<sp/><sp/><sp/><sp/>@returns<sp/>integral<sp/>x<sp/>over<sp/>dZ</highlight></codeline>
+<codeline><highlight class="normal">///////////////////////////////////////////////////////</highlight></codeline>
+<codeline><highlight class="normal">accel<sp/>inline<sp/>Real<sp/>trap<sp/>(const<sp/>Real<sp/>x_crt,<sp/>const<sp/>Real<sp/>x_nxt,<sp/>const<sp/>double<sp/>dZ)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>return<sp/>half<sp/>*<sp/>(x_crt<sp/>+<sp/>x_nxt)<sp/>*<sp/>dZ;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">accel<sp/>inline<sp/>void<sp/>Solver<sp/>::<sp/>solve_shortchar_order_0<sp/>(</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Model&amp;<sp/>model,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Size<sp/><sp/><sp/>o,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Size<sp/><sp/><sp/>r,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>double<sp/>dshift_max)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Vector&lt;Real&gt;&amp;<sp/>eta_c<sp/>=<sp/>eta_c_();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Vector&lt;Real&gt;&amp;<sp/>eta_n<sp/>=<sp/>eta_n_();</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Vector&lt;Real&gt;&amp;<sp/>chi_c<sp/>=<sp/>chi_c_();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Vector&lt;Real&gt;&amp;<sp/>chi_n<sp/>=<sp/>chi_n_();</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Vector&lt;Real&gt;&amp;<sp/>tau<sp/>=<sp/>tau_();</highlight></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>double<sp/><sp/>Z<sp/>=<sp/>0.0;<sp/><sp/><sp/>//<sp/>distance<sp/>along<sp/>ray</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>double<sp/>dZ<sp/>=<sp/>0.0;<sp/><sp/><sp/>//<sp/>last<sp/>distance<sp/>increment</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Size<sp/>crt<sp/>=<sp/>o;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Size<sp/>nxt<sp/>=<sp/>model.geometry.get_next<sp/>(o,<sp/>r,<sp/>o,<sp/>Z,<sp/>dZ);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>if<sp/>(model.geometry.valid_point<sp/>(nxt))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>double<sp/>shift_c<sp/>=<sp/>1.0;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>double<sp/>shift_n<sp/>=<sp/>model.geometry.get_shift<sp/>&lt;CoMoving&gt;<sp/>(o,<sp/>r,<sp/>nxt,<sp/>Z);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>for<sp/>(Size<sp/>f<sp/>=<sp/>0;<sp/>f<sp/>&lt;<sp/>model.parameters.nfreqs();<sp/>f++)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>const<sp/>Real<sp/>freq<sp/>=<sp/>model.radiation.frequencies.nu(o,<sp/>f);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>get_eta_and_chi<sp/>(model,<sp/>crt,<sp/>freq,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>eta_c[f],<sp/>chi_c[f]);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>get_eta_and_chi<sp/>(model,<sp/>nxt,<sp/>freq*shift_n,<sp/>eta_n[f],<sp/>chi_n[f]);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>const<sp/>Real<sp/>drho<sp/>=<sp/>trap<sp/>(eta_c[f],<sp/>eta_n[f],<sp/>dZ);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>const<sp/>Real<sp/>dtau<sp/>=<sp/>trap<sp/>(chi_c[f],<sp/>chi_n[f],<sp/>dZ);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>tau[f]<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>=<sp/>dtau;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>model.radiation.I(r,o,f)<sp/>=<sp/>drho<sp/>*<sp/>expf(-tau[f]);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>while<sp/>(model.geometry.not_on_boundary<sp/>(nxt))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>crt<sp/><sp/><sp/><sp/><sp/>=<sp/>nxt;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>shift_c<sp/>=<sp/>shift_n;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>eta_c<sp/>=<sp/><sp/><sp/>eta_n;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>chi_c<sp/>=<sp/><sp/><sp/>chi_n;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>model.geometry.get_next<sp/>(o,<sp/>r,<sp/>crt,<sp/>nxt,<sp/>Z,<sp/>dZ,<sp/>shift_n);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>for<sp/>(Size<sp/>f<sp/>=<sp/>0;<sp/>f<sp/>&lt;<sp/>model.parameters.nfreqs();<sp/>f++)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>const<sp/>Real<sp/>freq<sp/>=<sp/>model.radiation.frequencies.nu(o,<sp/>f);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>get_eta_and_chi<sp/>(model,<sp/>nxt,<sp/>freq*shift_n,<sp/>eta_n[f],<sp/>chi_n[f]);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>const<sp/>Real<sp/>drho<sp/>=<sp/>trap<sp/>(eta_c[f],<sp/>eta_n[f],<sp/>dZ);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>const<sp/>Real<sp/>dtau<sp/>=<sp/>trap<sp/>(chi_c[f],<sp/>chi_n[f],<sp/>dZ);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>tau[f]<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>+=<sp/>dtau;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>model.radiation.I(r,o,f)<sp/>+=<sp/>drho<sp/>*<sp/>expf(-tau[f]);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>for<sp/>(Size<sp/>f<sp/>=<sp/>0;<sp/>f<sp/>&lt;<sp/>model.parameters.nfreqs();<sp/>f++)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>const<sp/>Real<sp/>freq<sp/>=<sp/>model.radiation.frequencies.nu(o,<sp/>f);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>model.radiation.I(r,o,f)<sp/>+=<sp/>boundary_intensity(model,<sp/>nxt,<sp/>freq*shift_n)<sp/>*<sp/>expf(-tau[f]);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>model.radiation.J(<sp/><sp/>o,f)<sp/>+=<sp/>model.geometry.rays.weight[r]<sp/>*<sp/>model.radiation.I(r,o,f);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>else</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>for<sp/>(Size<sp/>f<sp/>=<sp/>0;<sp/>f<sp/>&lt;<sp/>model.parameters.nfreqs();<sp/>f++)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>const<sp/>Real<sp/>freq<sp/>=<sp/>model.radiation.frequencies.nu(o,<sp/>f);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>model.radiation.I(r,o,f)<sp/><sp/>=<sp/>boundary_intensity(model,<sp/>crt,<sp/>freq);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>model.radiation.J(<sp/><sp/>o,f)<sp/>+=<sp/>model.geometry.rays.weight[r]<sp/>*<sp/>model.radiation.I(r,o,f);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">accel<sp/>inline<sp/>void<sp/>Solver<sp/>::<sp/>update_Lambda<sp/>(Model<sp/>&amp;model,<sp/>const<sp/>Size<sp/>rr,<sp/>const<sp/>Size<sp/>f)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Frequencies<sp/><sp/><sp/><sp/>&amp;freqs<sp/><sp/><sp/><sp/><sp/>=<sp/>model.radiation.frequencies;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Thermodynamics<sp/>&amp;thermodyn<sp/>=<sp/>model.thermodynamics;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>if<sp/>(freqs.appears_in_line_integral[f])</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>const<sp/>Size<sp/>first<sp/>=<sp/>first_();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>const<sp/>Size<sp/>last<sp/><sp/>=<sp/>last_<sp/>();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>const<sp/>Size<sp/>n_tot<sp/>=<sp/>n_tot_();</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Vector&lt;Size<sp/><sp/>&gt;&amp;<sp/>nr<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>=<sp/>nr_<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Vector&lt;double&gt;&amp;<sp/>shift<sp/><sp/><sp/><sp/><sp/><sp/><sp/>=<sp/>shift_<sp/><sp/><sp/><sp/><sp/><sp/>();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Vector&lt;Real<sp/><sp/>&gt;&amp;<sp/>L_diag<sp/><sp/><sp/><sp/><sp/><sp/>=<sp/>L_diag_<sp/><sp/><sp/><sp/><sp/>();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Matrix&lt;Real<sp/><sp/>&gt;&amp;<sp/>L_upper<sp/><sp/><sp/><sp/><sp/>=<sp/>L_upper_<sp/><sp/><sp/><sp/>();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Matrix&lt;Real<sp/><sp/>&gt;&amp;<sp/>L_lower<sp/><sp/><sp/><sp/><sp/>=<sp/>L_lower_<sp/><sp/><sp/><sp/>();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Vector&lt;Real<sp/><sp/>&gt;&amp;<sp/>inverse_chi<sp/>=<sp/>inverse_chi_();</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>const<sp/>Real<sp/>w_ang<sp/>=<sp/>two<sp/>*<sp/>model.geometry.rays.weight[rr];</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>const<sp/>Size<sp/>l<sp/>=<sp/>freqs.corresponding_l_for_spec[f];<sp/><sp/><sp/>//<sp/>index<sp/>of<sp/>species</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>const<sp/>Size<sp/>k<sp/>=<sp/>freqs.corresponding_k_for_tran[f];<sp/><sp/><sp/>//<sp/>index<sp/>of<sp/>transition</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>const<sp/>Size<sp/>z<sp/>=<sp/>freqs.corresponding_z_for_line[f];<sp/><sp/><sp/>//<sp/>index<sp/>of<sp/>quadrature<sp/>point</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>LineProducingSpecies<sp/>&amp;lspec<sp/>=<sp/>model.lines.lineProducingSpecies[l];</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>const<sp/>Real<sp/>freq_line<sp/>=<sp/>lspec.linedata.frequency[k];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>const<sp/>Real<sp/>invr_mass<sp/>=<sp/>lspec.linedata.inverse_mass;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>const<sp/>Real<sp/>constante<sp/>=<sp/>lspec.linedata.A[k]<sp/>*<sp/>lspec.quadrature.weights[z]<sp/>*<sp/>w_ang;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Real<sp/>frq<sp/>=<sp/>freqs.nu(nr[centre],<sp/>f)<sp/>*<sp/>shift[centre];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Real<sp/>phi<sp/>=<sp/>thermodyn.profile(invr_mass,<sp/>nr[centre],<sp/>freq_line,<sp/>frq);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Real<sp/>L<sp/><sp/><sp/>=<sp/>constante<sp/>*<sp/>frq<sp/>*<sp/>phi<sp/>*<sp/>L_diag[centre]<sp/>*<sp/>inverse_chi[centre];</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>lspec.lambda.add_element(nr[centre],<sp/>k,<sp/>nr[centre],<sp/>L);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>for<sp/>(long<sp/>m<sp/>=<sp/>0;<sp/>(m<sp/>&lt;<sp/>n_off_diag)<sp/>&amp;&amp;<sp/>(m+1<sp/>&lt;<sp/>n_tot);<sp/>m++)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>if<sp/>(centre<sp/>&gt;=<sp/>first+m+1)<sp/>//<sp/>centre-m-1<sp/>&gt;=<sp/>first</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>const<sp/>long<sp/>n<sp/>=<sp/>centre-m-1;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>frq<sp/>=<sp/>freqs.nu(nr[n],<sp/>f)<sp/>*<sp/>shift[n];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>phi<sp/>=<sp/>thermodyn.profile<sp/>(invr_mass,<sp/>nr[n],<sp/>freq_line,<sp/>frq);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>L<sp/><sp/><sp/>=<sp/>constante<sp/>*<sp/>frq<sp/>*<sp/>phi<sp/>*<sp/>L_lower(m,n)<sp/>*<sp/>inverse_chi[n];</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>lspec.lambda.add_element(nr[centre],<sp/>k,<sp/>nr[n],<sp/>L);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>if<sp/>(centre+m+1<sp/>&lt;=<sp/>last)<sp/>//<sp/>centre+m+1<sp/>&lt;<sp/>last</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>const<sp/>long<sp/>n<sp/>=<sp/>centre+m+1;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>frq<sp/>=<sp/>freqs.nu(nr[n],<sp/>f)<sp/>*<sp/>shift[n];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>phi<sp/>=<sp/>thermodyn.profile<sp/>(invr_mass,<sp/>nr[n],<sp/>freq_line,<sp/>frq);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>L<sp/><sp/><sp/>=<sp/>constante<sp/>*<sp/>frq<sp/>*<sp/>phi<sp/>*<sp/>L_upper(m,n)<sp/>*<sp/>inverse_chi[n];</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>lspec.lambda.add_element(nr[centre],<sp/>k,<sp/>nr[n],<sp/>L);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">///<sp/><sp/>Solver<sp/>for<sp/>Feautrier<sp/>equation<sp/>along<sp/>ray<sp/>pairs<sp/>using<sp/>the<sp/>(ordinary)</highlight></codeline>
+<codeline><highlight class="normal">///<sp/><sp/>2nd-order<sp/>solver,<sp/>without<sp/>adaptive<sp/>optical<sp/>depth<sp/>increments</highlight></codeline>
+<codeline><highlight class="normal">///<sp/><sp/><sp/><sp/>@param[in]<sp/>w<sp/>:<sp/>width<sp/>index</highlight></codeline>
+<codeline><highlight class="normal">///////////////////////////////////////////////////////////////////////</highlight></codeline>
+<codeline><highlight class="normal">accel<sp/>inline<sp/>void<sp/>Solver<sp/>::<sp/>solve_feautrier_order_2<sp/>(</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Model&amp;<sp/>model,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Size<sp/><sp/><sp/>o,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Size<sp/><sp/><sp/>rr,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Size<sp/><sp/><sp/>ar,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Size<sp/><sp/><sp/>f<sp/><sp/>)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Real<sp/>freq<sp/>=<sp/>model.radiation.frequencies.nu(o,<sp/>f);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Real<sp/>eta_c,<sp/>chi_c,<sp/>dtau_c,<sp/>term_c;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Real<sp/>eta_n,<sp/>chi_n,<sp/>dtau_n,<sp/>term_n;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Size<sp/>first<sp/>=<sp/>first_();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Size<sp/>last<sp/><sp/>=<sp/>last_<sp/>();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Size<sp/>n_tot<sp/>=<sp/>n_tot_();</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Vector&lt;double&gt;&amp;<sp/>dZ<sp/><sp/><sp/><sp/>=<sp/>dZ_<sp/><sp/><sp/>();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Vector&lt;Size<sp/><sp/>&gt;&amp;<sp/>nr<sp/><sp/><sp/><sp/>=<sp/>nr_<sp/><sp/><sp/>();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Vector&lt;double&gt;&amp;<sp/>shift<sp/>=<sp/>shift_();</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Vector&lt;Real&gt;&amp;<sp/>inverse_chi<sp/>=<sp/>inverse_chi_();</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Vector&lt;Real&gt;&amp;<sp/>Su<sp/>=<sp/>Su_();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Vector&lt;Real&gt;&amp;<sp/>Sv<sp/>=<sp/>Sv_();</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Vector&lt;Real&gt;&amp;<sp/>A<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>=<sp/>A_<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Vector&lt;Real&gt;&amp;<sp/>C<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>=<sp/>C_<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Vector&lt;Real&gt;&amp;<sp/>inverse_A<sp/>=<sp/>inverse_A_();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Vector&lt;Real&gt;&amp;<sp/>inverse_C<sp/>=<sp/>inverse_C_();</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Vector&lt;Real&gt;&amp;<sp/>FF<sp/>=<sp/>FF_();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Vector&lt;Real&gt;&amp;<sp/>FI<sp/>=<sp/>FI_();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Vector&lt;Real&gt;&amp;<sp/>GG<sp/>=<sp/>GG_();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Vector&lt;Real&gt;&amp;<sp/>GI<sp/>=<sp/>GI_();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Vector&lt;Real&gt;&amp;<sp/>GP<sp/>=<sp/>GP_();</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Vector&lt;Real&gt;&amp;<sp/>L_diag<sp/><sp/>=<sp/>L_diag_<sp/>();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Matrix&lt;Real&gt;&amp;<sp/>L_upper<sp/>=<sp/>L_upper_();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Matrix&lt;Real&gt;&amp;<sp/>L_lower<sp/>=<sp/>L_lower_();</highlight></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>//<sp/>Get<sp/>optical<sp/>properties<sp/>for<sp/>first<sp/>two<sp/>elements</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>get_eta_and_chi<sp/>(model,<sp/>nr[first<sp/><sp/>],<sp/>freq*shift[first<sp/><sp/>],<sp/>eta_c,<sp/>chi_c);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>get_eta_and_chi<sp/>(model,<sp/>nr[first+1],<sp/>freq*shift[first+1],<sp/>eta_n,<sp/>chi_n);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>inverse_chi[first<sp/><sp/>]<sp/>=<sp/>1.0<sp/>/<sp/>chi_c;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>inverse_chi[first+1]<sp/>=<sp/>1.0<sp/>/<sp/>chi_n;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>term_c<sp/>=<sp/>eta_c<sp/>*<sp/>inverse_chi[first<sp/><sp/>];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>term_n<sp/>=<sp/>eta_n<sp/>*<sp/>inverse_chi[first+1];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>dtau_n<sp/>=<sp/>half<sp/>*<sp/>(chi_c<sp/>+<sp/>chi_n)<sp/>*<sp/>dZ[first];</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>//<sp/>Set<sp/>boundary<sp/>conditions</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Real<sp/>inverse_dtau_f<sp/>=<sp/>one<sp/>/<sp/>dtau_n;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>C[first]<sp/>=<sp/>two<sp/>*<sp/>inverse_dtau_f<sp/>*<sp/>inverse_dtau_f;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Real<sp/>Bf_min_Cf<sp/>=<sp/>one<sp/>+<sp/>two<sp/>*<sp/>inverse_dtau_f;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Real<sp/>Bf<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>=<sp/>Bf_min_Cf<sp/>+<sp/>C[first];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Real<sp/>I_bdy_f<sp/><sp/><sp/>=<sp/>boundary_intensity<sp/>(model,<sp/>nr[first],<sp/>freq*shift[first]);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Su[first]<sp/><sp/>=<sp/>term_c<sp/>+<sp/>two<sp/>*<sp/>I_bdy_f<sp/>*<sp/>inverse_dtau_f;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Su[first]<sp/>/=<sp/>Bf;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>///<sp/>Write<sp/>economically:<sp/>F[first]<sp/>=<sp/>(B[first]<sp/>-<sp/>C[first])<sp/>/<sp/>C[first];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>FF[first]<sp/>=<sp/>half<sp/>*<sp/>Bf_min_Cf<sp/>*<sp/>dtau_n<sp/>*<sp/>dtau_n;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>FI[first]<sp/>=<sp/>one<sp/>/<sp/>(one<sp/>+<sp/>FF[first]);</highlight></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>///<sp/>Set<sp/>body<sp/>of<sp/>Feautrier<sp/>matrix</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>for<sp/>(Size<sp/>n<sp/>=<sp/>first+1;<sp/>n<sp/>&lt;<sp/>last;<sp/>n++)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>term_c<sp/>=<sp/>term_n;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>dtau_c<sp/>=<sp/>dtau_n;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>eta_c<sp/>=<sp/><sp/>eta_n;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>chi_c<sp/>=<sp/><sp/>chi_n;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>//<sp/>Get<sp/>new<sp/>radiative<sp/>properties</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>get_eta_and_chi<sp/>(model,<sp/>nr[n+1],<sp/>freq*shift[n+1],<sp/>eta_n,<sp/>chi_n);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>inverse_chi[n+1]<sp/>=<sp/>1.0<sp/>/<sp/>chi_n;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>term_n<sp/>=<sp/>eta_n<sp/>*<sp/>inverse_chi[n+1];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>dtau_n<sp/>=<sp/>half<sp/>*<sp/>(chi_c<sp/>+<sp/>chi_n)<sp/>*<sp/>dZ[n];</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>const<sp/>Real<sp/>dtau_avg<sp/>=<sp/>half<sp/>*<sp/>(dtau_c<sp/>+<sp/>dtau_n);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>inverse_A[n]<sp/>=<sp/>dtau_avg<sp/>*<sp/>dtau_c;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>inverse_C[n]<sp/>=<sp/>dtau_avg<sp/>*<sp/>dtau_n;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>A[n]<sp/>=<sp/>one<sp/>/<sp/>inverse_A[n];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>C[n]<sp/>=<sp/>one<sp/>/<sp/>inverse_C[n];</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>///<sp/>Use<sp/>the<sp/>previously<sp/>stored<sp/>value<sp/>of<sp/>the<sp/>source<sp/>function</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Su[n]<sp/>=<sp/>term_c;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>FF[n]<sp/>=<sp/>(A[n]<sp/>*<sp/>FF[n-1]<sp/>*<sp/>FI[n-1]<sp/>+<sp/>one)<sp/>*<sp/>inverse_C[n];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>FI[n]<sp/>=<sp/>one<sp/>/<sp/>(one<sp/>+<sp/>FF[n]);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Su[n]<sp/>=<sp/>(A[n]<sp/>*<sp/>Su[n-1]<sp/>+<sp/>Su[n])<sp/>*<sp/>FI[n]<sp/>*<sp/>inverse_C[n];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>///<sp/>Set<sp/>boundary<sp/>conditions</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Real<sp/>inverse_dtau_l<sp/>=<sp/>one<sp/>/<sp/>dtau_n;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>A[last]<sp/>=<sp/>two<sp/>*<sp/>inverse_dtau_l<sp/>*<sp/>inverse_dtau_l;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Real<sp/>Bl_min_Al<sp/>=<sp/>one<sp/>+<sp/>two<sp/>*<sp/>inverse_dtau_l;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Real<sp/>Bl<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>=<sp/>Bl_min_Al<sp/>+<sp/>A[last];</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Real<sp/>denominator<sp/>=<sp/>one<sp/>/<sp/>(Bl<sp/>*<sp/>FF[last-1]<sp/>+<sp/>Bl_min_Al);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Real<sp/>I_bdy_l<sp/>=<sp/>boundary_intensity<sp/>(model,<sp/>nr[last],<sp/>freq*shift[last]);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Su[last]<sp/>=<sp/>term_n<sp/>+<sp/>two<sp/>*<sp/>I_bdy_l<sp/>*<sp/>inverse_dtau_l;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Su[last]<sp/>=<sp/>(A[last]<sp/>*<sp/>Su[last-1]<sp/>+<sp/>Su[last])<sp/>*<sp/>(one<sp/>+<sp/>FF[last-1])<sp/>*<sp/>denominator;</highlight></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>if<sp/>(n_off_diag<sp/>==<sp/>0)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>if<sp/>(centre<sp/>&lt;<sp/>last)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>///<sp/>Write<sp/>economically:<sp/>G[last]<sp/>=<sp/>(B[last]<sp/>-<sp/>A[last])<sp/>/<sp/>A[last];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>GG[last]<sp/>=<sp/>half<sp/>*<sp/>Bl_min_Al<sp/>*<sp/>dtau_n<sp/>*<sp/>dtau_n;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>GP[last]<sp/>=<sp/>GG[last]<sp/>/<sp/>(one<sp/>+<sp/>GG[last]);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>for<sp/>(long<sp/>n<sp/>=<sp/>last-1;<sp/>n<sp/>&gt;<sp/>centre;<sp/>n--)<sp/>//<sp/>use<sp/>long<sp/>in<sp/>reverse<sp/>loops!</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Su[n]<sp/>+=<sp/>Su[n+1]<sp/>*<sp/>FI[n];</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>GG[n]<sp/>=<sp/>(C[n]<sp/>*<sp/>GP[n+1]<sp/>+<sp/>one)<sp/>*<sp/>inverse_A[n];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>GP[n]<sp/>=<sp/>GG[n]<sp/>/<sp/>(one<sp/>+<sp/>GG[n]);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Su<sp/><sp/><sp/><sp/>[centre]<sp/>+=<sp/>Su[centre+1]<sp/>*<sp/>FI[centre];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>L_diag[centre]<sp/><sp/>=<sp/>inverse_C[centre]<sp/>/<sp/>(FF[centre]<sp/>+<sp/>GP[centre+1]);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>else</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>L_diag[centre]<sp/>=<sp/>(one<sp/>+<sp/>FF[centre-1])<sp/>/<sp/>(Bl_min_Al<sp/>+<sp/>Bl*FF[centre-1]);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>else</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>///<sp/>Write<sp/>economically:<sp/>G[last]<sp/>=<sp/>(B[last]<sp/>-<sp/>A[last])<sp/>/<sp/>A[last];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>GG[last]<sp/>=<sp/>half<sp/>*<sp/>Bl_min_Al<sp/>*<sp/>dtau_n<sp/>*<sp/>dtau_n;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>GI[last]<sp/>=<sp/>one<sp/>/<sp/>(one<sp/>+<sp/>GG[last]);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>GP[last]<sp/>=<sp/>GG[last]<sp/>*<sp/>GI[last];</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>L_diag[last]<sp/>=<sp/>(one<sp/>+<sp/>FF[last-1])<sp/>/<sp/>(Bl_min_Al<sp/>+<sp/>Bl*FF[last-1]);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>for<sp/>(long<sp/>n<sp/>=<sp/>last-1;<sp/>n<sp/>&gt;<sp/>first;<sp/>n--)<sp/>//<sp/>use<sp/>long<sp/>in<sp/>reverse<sp/>loops!</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Su[n]<sp/>+=<sp/>Su[n+1]<sp/>*<sp/>FI[n];</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>GG[n]<sp/>=<sp/>(C[n]<sp/>*<sp/>GP[n+1]<sp/>+<sp/>one)<sp/>*<sp/>inverse_A[n];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>GI[n]<sp/>=<sp/>one<sp/>/<sp/>(one<sp/>+<sp/>GG[n]);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>GP[n]<sp/>=<sp/>GG[n]<sp/>*<sp/>GI[n];</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>L_diag[n]<sp/>=<sp/>inverse_C[n]<sp/>/<sp/>(FF[n]<sp/>+<sp/>GP[n+1]);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Su<sp/><sp/><sp/><sp/>[first]<sp/>+=<sp/>Su[first+1]<sp/>*<sp/>FI[first];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>L_diag[first]<sp/><sp/>=<sp/>(one<sp/>+<sp/>GG[first+1])<sp/>/<sp/>(Bf_min_Cf<sp/>+<sp/>Bf*GG[first+1]);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>for<sp/>(long<sp/>n<sp/>=<sp/>last-1;<sp/>n<sp/>&gt;=<sp/>first;<sp/>n--)<sp/>//<sp/>use<sp/>long<sp/>in<sp/>reverse<sp/>loops!</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>L_upper(0,n+1)<sp/>=<sp/>L_diag[n+1]<sp/>*<sp/>FI[n<sp/><sp/>];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>L_lower(0,n<sp/><sp/>)<sp/>=<sp/>L_diag[n<sp/><sp/>]<sp/>*<sp/>GI[n+1];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>for<sp/>(Size<sp/>m<sp/>=<sp/>1;<sp/>(m<sp/>&lt;<sp/>n_off_diag)<sp/>&amp;&amp;<sp/>(m<sp/>&lt;<sp/>n_tot-1);<sp/>m++)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>for<sp/>(long<sp/>n<sp/>=<sp/>last-1-m;<sp/>n<sp/>&gt;=<sp/>first;<sp/>n--)<sp/>//<sp/>use<sp/>long<sp/>in<sp/>reverse<sp/>loops!</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>L_upper(m,n+m+1)<sp/>=<sp/>L_upper(m-1,n+m+1)<sp/>*<sp/>FI[n<sp/><sp/><sp/><sp/>];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>L_lower(m,n<sp/><sp/><sp/><sp/>)<sp/>=<sp/>L_lower(m-1,n<sp/><sp/><sp/><sp/>)<sp/>*<sp/>GI[n+m+1];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">///<sp/><sp/>Solver<sp/>for<sp/>Feautrier<sp/>equation<sp/>along<sp/>ray<sp/>pairs<sp/>using<sp/>the<sp/>(ordinary)</highlight></codeline>
+<codeline><highlight class="normal">///<sp/><sp/>2nd-order<sp/>solver,<sp/>without<sp/>adaptive<sp/>optical<sp/>depth<sp/>increments</highlight></codeline>
+<codeline><highlight class="normal">///<sp/><sp/><sp/><sp/>@param[in]<sp/>w<sp/>:<sp/>width<sp/>index</highlight></codeline>
+<codeline><highlight class="normal">///////////////////////////////////////////////////////////////////////</highlight></codeline>
+<codeline><highlight class="normal">accel<sp/>inline<sp/>void<sp/>Solver<sp/>::<sp/>image_feautrier_order_2<sp/>(</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Model&amp;<sp/>model,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Size<sp/><sp/><sp/>o,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Size<sp/><sp/><sp/>rr,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Size<sp/><sp/><sp/>ar,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Size<sp/><sp/><sp/>f<sp/><sp/>)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Real<sp/>freq<sp/>=<sp/>model.radiation.frequencies.nu(o,<sp/>f);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>//<sp/>cout<sp/>&lt;&lt;<sp/>&quot;o<sp/>=<sp/>&quot;<sp/>&lt;&lt;<sp/>o<sp/>&lt;&lt;<sp/>&quot;<sp/><sp/>f<sp/>=<sp/>&quot;<sp/>&lt;&lt;<sp/>f<sp/>&lt;&lt;<sp/>&quot;<sp/><sp/>&quot;<sp/>&lt;&lt;<sp/>CC*(freq<sp/>/<sp/>model.lines.line[0]<sp/>-<sp/>1.0)<sp/>&lt;&lt;<sp/>endl;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Real<sp/>eta_c,<sp/>chi_c,<sp/>dtau_c,<sp/>term_c;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Real<sp/>eta_n,<sp/>chi_n,<sp/>dtau_n,<sp/>term_n;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Size<sp/>first<sp/>=<sp/>first_();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Size<sp/>last<sp/><sp/>=<sp/>last_<sp/>();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Size<sp/>n_tot<sp/>=<sp/>n_tot_();</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Vector&lt;double&gt;&amp;<sp/>dZ<sp/><sp/><sp/><sp/>=<sp/>dZ_<sp/><sp/><sp/>();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Vector&lt;Size<sp/><sp/>&gt;&amp;<sp/>nr<sp/><sp/><sp/><sp/>=<sp/>nr_<sp/><sp/><sp/>();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Vector&lt;double&gt;&amp;<sp/>shift<sp/>=<sp/>shift_();</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Vector&lt;Real&gt;&amp;<sp/>inverse_chi<sp/>=<sp/>inverse_chi_();</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Vector&lt;Real&gt;&amp;<sp/>Su<sp/>=<sp/>Su_();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Vector&lt;Real&gt;&amp;<sp/>Sv<sp/>=<sp/>Sv_();</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Vector&lt;Real&gt;&amp;<sp/>A<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>=<sp/>A_<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Vector&lt;Real&gt;&amp;<sp/>C<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>=<sp/>C_<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Vector&lt;Real&gt;&amp;<sp/>inverse_A<sp/>=<sp/>inverse_A_();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Vector&lt;Real&gt;&amp;<sp/>inverse_C<sp/>=<sp/>inverse_C_();</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Vector&lt;Real&gt;&amp;<sp/>FF<sp/>=<sp/>FF_();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Vector&lt;Real&gt;&amp;<sp/>FI<sp/>=<sp/>FI_();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Vector&lt;Real&gt;&amp;<sp/>GG<sp/>=<sp/>GG_();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Vector&lt;Real&gt;&amp;<sp/>GI<sp/>=<sp/>GI_();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Vector&lt;Real&gt;&amp;<sp/>GP<sp/>=<sp/>GP_();</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Vector&lt;Real&gt;&amp;<sp/>L_diag<sp/><sp/>=<sp/>L_diag_<sp/>();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Matrix&lt;Real&gt;&amp;<sp/>L_upper<sp/>=<sp/>L_upper_();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Matrix&lt;Real&gt;&amp;<sp/>L_lower<sp/>=<sp/>L_lower_();</highlight></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>//<sp/>Get<sp/>optical<sp/>properties<sp/>for<sp/>first<sp/>two<sp/>elements</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>get_eta_and_chi<sp/>(model,<sp/>nr[first<sp/><sp/>],<sp/>freq*shift[first<sp/><sp/>],<sp/>eta_c,<sp/>chi_c);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>get_eta_and_chi<sp/>(model,<sp/>nr[first+1],<sp/>freq*shift[first+1],<sp/>eta_n,<sp/>chi_n);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>inverse_chi[first<sp/><sp/>]<sp/>=<sp/>1.0<sp/>/<sp/>chi_c;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>inverse_chi[first+1]<sp/>=<sp/>1.0<sp/>/<sp/>chi_n;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>term_c<sp/>=<sp/>eta_c<sp/>*<sp/>inverse_chi[first<sp/><sp/>];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>term_n<sp/>=<sp/>eta_n<sp/>*<sp/>inverse_chi[first+1];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>dtau_n<sp/>=<sp/>half<sp/>*<sp/>(chi_c<sp/>+<sp/>chi_n)<sp/>*<sp/>dZ[first];</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>//<sp/>Set<sp/>boundary<sp/>conditions</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Real<sp/>inverse_dtau_f<sp/>=<sp/>one<sp/>/<sp/>dtau_n;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>C[first]<sp/>=<sp/>two<sp/>*<sp/>inverse_dtau_f<sp/>*<sp/>inverse_dtau_f;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Real<sp/>Bf_min_Cf<sp/>=<sp/>one<sp/>+<sp/>two<sp/>*<sp/>inverse_dtau_f;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Real<sp/>Bf<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>=<sp/>Bf_min_Cf<sp/>+<sp/>C[first];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Real<sp/>I_bdy_f<sp/><sp/><sp/>=<sp/>boundary_intensity<sp/>(model,<sp/>nr[first],<sp/>freq*shift[first]);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Su[first]<sp/><sp/>=<sp/>term_c<sp/>+<sp/>two<sp/>*<sp/>I_bdy_f<sp/>*<sp/>inverse_dtau_f;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Su[first]<sp/>/=<sp/>Bf;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>///<sp/>Write<sp/>economically:<sp/>F[first]<sp/>=<sp/>(B[first]<sp/>-<sp/>C[first])<sp/>/<sp/>C[first];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>FF[first]<sp/>=<sp/>half<sp/>*<sp/>Bf_min_Cf<sp/>*<sp/>dtau_n<sp/>*<sp/>dtau_n;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>FI[first]<sp/>=<sp/>one<sp/>/<sp/>(one<sp/>+<sp/>FF[first]);</highlight></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>///<sp/>Set<sp/>body<sp/>of<sp/>Feautrier<sp/>matrix</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>for<sp/>(Size<sp/>n<sp/>=<sp/>first+1;<sp/>n<sp/>&lt;<sp/>last;<sp/>n++)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>term_c<sp/>=<sp/>term_n;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>dtau_c<sp/>=<sp/>dtau_n;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>eta_c<sp/>=<sp/><sp/>eta_n;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>chi_c<sp/>=<sp/><sp/>chi_n;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>//<sp/>Get<sp/>new<sp/>radiative<sp/>properties</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>get_eta_and_chi<sp/>(model,<sp/>nr[n+1],<sp/>freq*shift[n+1],<sp/>eta_n,<sp/>chi_n);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>inverse_chi[n+1]<sp/>=<sp/>1.0<sp/>/<sp/>chi_n;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>term_n<sp/>=<sp/>eta_n<sp/>*<sp/>inverse_chi[n+1];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>dtau_n<sp/>=<sp/>half<sp/>*<sp/>(chi_c<sp/>+<sp/>chi_n)<sp/>*<sp/>dZ[n];</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>//<sp/>cout<sp/>&lt;&lt;<sp/>&quot;dtau<sp/>=<sp/>&quot;<sp/>&lt;&lt;<sp/>dtau_n<sp/>&lt;&lt;<sp/>endl;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>const<sp/>Real<sp/>dtau_avg<sp/>=<sp/>half<sp/>*<sp/>(dtau_c<sp/>+<sp/>dtau_n);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>inverse_A[n]<sp/>=<sp/>dtau_avg<sp/>*<sp/>dtau_c;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>inverse_C[n]<sp/>=<sp/>dtau_avg<sp/>*<sp/>dtau_n;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>A[n]<sp/>=<sp/>one<sp/>/<sp/>inverse_A[n];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>C[n]<sp/>=<sp/>one<sp/>/<sp/>inverse_C[n];</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>///<sp/>Use<sp/>the<sp/>previously<sp/>stored<sp/>value<sp/>of<sp/>the<sp/>source<sp/>function</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Su[n]<sp/>=<sp/>term_c;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>FF[n]<sp/>=<sp/>(A[n]<sp/>*<sp/>FF[n-1]<sp/>*<sp/>FI[n-1]<sp/>+<sp/>one)<sp/>*<sp/>inverse_C[n];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>FI[n]<sp/>=<sp/>one<sp/>/<sp/>(one<sp/>+<sp/>FF[n]);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Su[n]<sp/>=<sp/>(A[n]<sp/>*<sp/>Su[n-1]<sp/>+<sp/>Su[n])<sp/>*<sp/>FI[n]<sp/>*<sp/>inverse_C[n];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>///<sp/>Set<sp/>boundary<sp/>conditions</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Real<sp/>inverse_dtau_l<sp/>=<sp/>one<sp/>/<sp/>dtau_n;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>A[last]<sp/>=<sp/>two<sp/>*<sp/>inverse_dtau_l<sp/>*<sp/>inverse_dtau_l;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Real<sp/>Bl_min_Al<sp/>=<sp/>one<sp/>+<sp/>two<sp/>*<sp/>inverse_dtau_l;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Real<sp/>Bl<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>=<sp/>Bl_min_Al<sp/>+<sp/>A[last];</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Real<sp/>denominator<sp/>=<sp/>one<sp/>/<sp/>(Bl<sp/>*<sp/>FF[last-1]<sp/>+<sp/>Bl_min_Al);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Real<sp/>I_bdy_l<sp/>=<sp/>boundary_intensity<sp/>(model,<sp/>nr[last],<sp/>freq*shift[last]);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Su[last]<sp/>=<sp/>term_n<sp/>+<sp/>two<sp/>*<sp/>I_bdy_l<sp/>*<sp/>inverse_dtau_l;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Su[last]<sp/>=<sp/>(A[last]<sp/>*<sp/>Su[last-1]<sp/>+<sp/>Su[last])<sp/>*<sp/>(one<sp/>+<sp/>FF[last-1])<sp/>*<sp/>denominator;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>for<sp/>(long<sp/>n<sp/>=<sp/>last-1;<sp/>n<sp/>&gt;<sp/>first;<sp/>n--)<sp/>//<sp/>use<sp/>long<sp/>in<sp/>reverse<sp/>loops!</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Su[n]<sp/>+=<sp/>Su[n+1]<sp/>*<sp/>FI[n];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Su[first]<sp/>+=<sp/>Su[first+1]<sp/>*<sp/>FI[first];</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">const<sp/>Real<sp/>alpha<sp/><sp/>=<sp/>1.0;</highlight></codeline>
+<codeline><highlight class="normal">const<sp/>Real<sp/>alpha2<sp/>=<sp/>alpha<sp/>*<sp/>alpha;</highlight></codeline>
+<codeline><highlight class="normal">const<sp/>Real<sp/>h_smt<sp/><sp/>=<sp/>1.0;</highlight></codeline>
+<codeline><highlight class="normal">const<sp/>Real<sp/>h_smt2<sp/>=<sp/>h_smt<sp/>*<sp/>h_smt;</highlight></codeline>
+<codeline><highlight class="normal">const<sp/>Real<sp/>inverse_h_smt2<sp/>=<sp/>1.0<sp/>/<sp/>h_smt2;</highlight></codeline>
+<codeline><highlight class="normal">const<sp/>Real<sp/>inverse_h_smt4<sp/>=<sp/>inverse_h_smt2<sp/>*<sp/>inverse_h_smt2;</highlight></codeline>
+<codeline><highlight class="normal">const<sp/>Real<sp/>minus_half_inverse_h_smt2<sp/>=<sp/>-0.5<sp/>*<sp/>inverse_h_smt2;</highlight></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">accel<sp/>inline<sp/>Real<sp/>Solver<sp/>::<sp/>kernel<sp/>(const<sp/>Vector3D<sp/>d)<sp/>const</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>return<sp/>alpha2<sp/>*<sp/>exp(minus_half_inverse_h_smt2<sp/>*<sp/>d.squaredNorm());</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">accel<sp/>inline<sp/>Real<sp/>Solver<sp/>::<sp/>kernel<sp/>(</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Model&amp;<sp/>model,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Size<sp/><sp/><sp/>r,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Size<sp/><sp/><sp/>p1,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Size<sp/><sp/><sp/>p2<sp/>)<sp/>const</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Vector3D<sp/>x1<sp/>=<sp/>model.geometry.points.position[p1];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Vector3D<sp/>x2<sp/>=<sp/>model.geometry.points.position[p2];</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>return<sp/>kernel(x1-x2);</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">accel<sp/>inline<sp/>Real<sp/>Solver<sp/>::<sp/>L1_kernel<sp/>(</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Model&amp;<sp/>model,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Size<sp/><sp/><sp/>r,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Size<sp/><sp/><sp/>p1,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Size<sp/><sp/><sp/>p2<sp/>)<sp/>const</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Vector3D<sp/>d<sp/>=<sp/><sp/><sp/>model.geometry.points.position[p1]</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>-<sp/>model.geometry.points.position[p2];</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Real<sp/>g<sp/>=<sp/>d.dot(model.geometry.rays.direction[r])<sp/>*<sp/>inverse_h_smt2;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>return<sp/>(chi[p1]<sp/>-<sp/>g)<sp/>*<sp/>kernel(d);</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">accel<sp/>inline<sp/>Real<sp/>Solver<sp/>::<sp/>L2_kernel<sp/>(</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Model&amp;<sp/>model,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Size<sp/><sp/><sp/>r,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Size<sp/><sp/><sp/>p1,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Size<sp/><sp/><sp/>p2<sp/>)<sp/>const</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Vector3D<sp/>d<sp/>=<sp/><sp/><sp/>model.geometry.points.position[p1]</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>-<sp/>model.geometry.points.position[p2];</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Real<sp/>g<sp/>=<sp/>d.dot(model.geometry.rays.direction[r])<sp/>*<sp/>inverse_h_smt2;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>return<sp/>(chi[p2]<sp/>+<sp/>g)<sp/>*<sp/>kernel(d);</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">accel<sp/>inline<sp/>Real<sp/>Solver<sp/>::<sp/>L12_kernel<sp/>(</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Model&amp;<sp/>model,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Size<sp/><sp/><sp/>r,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Size<sp/><sp/><sp/>p1,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Size<sp/><sp/><sp/>p2<sp/>)<sp/>const</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Vector3D<sp/>d<sp/>=<sp/><sp/><sp/>model.geometry.points.position[p1]</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>-<sp/>model.geometry.points.position[p2];</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Real<sp/>g<sp/>=<sp/>d.dot(model.geometry.rays.direction[r])<sp/>*<sp/>inverse_h_smt2;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>return<sp/>((chi[p1]<sp/>+<sp/>g)*(chi[p2]<sp/>-<sp/>g)<sp/>+<sp/>inverse_h_smt2)<sp/>*<sp/>kernel(d);</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">accel<sp/>inline<sp/>void<sp/>Solver<sp/>::<sp/>solve_kernel_method<sp/>(</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Model&amp;<sp/>model,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Size<sp/><sp/><sp/>r,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Size<sp/><sp/><sp/>f<sp/>)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>const<sp/>Real<sp/>freq<sp/>=<sp/>model.radiation.frequencies.nu(0,<sp/>f);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>//<sp/>Get<sp/>emissivity<sp/>and<sp/>opacity</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>eta.resize<sp/>(model.parameters.npoints());</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>chi.resize<sp/>(model.parameters.npoints());</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>for<sp/>(Size<sp/>p<sp/>=<sp/>0;<sp/>p<sp/>&lt;<sp/>model.parameters.npoints();<sp/>p++)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>get_eta_and_chi<sp/>(model,<sp/>p,<sp/>freq,<sp/>eta[p],<sp/>chi[p]);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>//<sp/>Triplets<sp/>for<sp/>(sparse)<sp/>covariance<sp/>matrix</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>vector&lt;Triplet&lt;Real,<sp/>Size&gt;&gt;<sp/>triplets;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>VectorXr<sp/>y<sp/>(model.parameters.npoints()<sp/>+<sp/>model.parameters.nboundary());</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>VectorXr<sp/>w<sp/>(model.parameters.npoints()<sp/>+<sp/>model.parameters.nboundary());</highlight></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>for<sp/>(Size<sp/>b1<sp/>=<sp/>0;<sp/>b1<sp/>&lt;<sp/>model.parameters.nboundary();<sp/>b1++)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>const<sp/>Size<sp/>p1<sp/>=<sp/>model.geometry.boundary.boundary2point[b1];</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>for<sp/>(Size<sp/>b2<sp/>=<sp/>0;<sp/>b2<sp/>&lt;<sp/>model.parameters.nboundary();<sp/>b2++)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>const<sp/>Size<sp/>p2<sp/>=<sp/>model.geometry.boundary.boundary2point[b2];</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>triplets.push_back<sp/>(Triplet&lt;Real,<sp/>Size&gt;<sp/>(</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>b1,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>b2,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>kernel<sp/>(model,<sp/>r,<sp/>p1,<sp/>p2)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>for<sp/>(Size<sp/>p2<sp/>=<sp/>0;<sp/>p2<sp/>&lt;<sp/>model.parameters.npoints();<sp/>p2++)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>triplets.push_back<sp/>(Triplet&lt;Real,<sp/>Size&gt;<sp/>(</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>b1,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>p2<sp/>+<sp/>model.parameters.nboundary(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>L2_kernel<sp/>(model,<sp/>r,<sp/>p1,<sp/>p2)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>y[b1]<sp/>=<sp/>boundary_intensity<sp/>(model,<sp/>p1,<sp/>freq);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>for<sp/>(Size<sp/>p1<sp/>=<sp/>0;<sp/>p1<sp/>&lt;<sp/>model.parameters.npoints();<sp/>p1++)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>const<sp/>Size<sp/>i1<sp/>=<sp/>p1<sp/>+<sp/>model.parameters.nboundary();</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>for<sp/>(Size<sp/>b2<sp/>=<sp/>0;<sp/>b2<sp/>&lt;<sp/>model.parameters.nboundary();<sp/>b2++)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>const<sp/>Size<sp/>p2<sp/>=<sp/>model.geometry.boundary.boundary2point[b2];</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>triplets.push_back<sp/>(Triplet&lt;Real,<sp/>Size&gt;<sp/>(</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>i1,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>b2,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>L1_kernel<sp/>(model,<sp/>r,<sp/>p1,<sp/>p2)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>for<sp/>(Size<sp/>p2<sp/>=<sp/>0;<sp/>p2<sp/>&lt;<sp/>model.parameters.npoints();<sp/>p2++)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>triplets.push_back<sp/>(Triplet&lt;Real,<sp/>Size&gt;<sp/>(</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>i1,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>p2<sp/>+<sp/>model.parameters.nboundary(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>L12_kernel<sp/>(model,<sp/>r,<sp/>p1,<sp/>p2)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>y[i1]<sp/>=<sp/>eta[p1];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>SparseMatrix&lt;Real&gt;<sp/>covariance;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>covariance.setFromTriplets<sp/>(triplets.begin(),<sp/>triplets.end());</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>SparseLU<sp/>&lt;SparseMatrix&lt;Real&gt;,<sp/>COLAMDOrdering&lt;int&gt;&gt;<sp/>solver;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>cout<sp/>&lt;&lt;<sp/>&quot;Analyzing<sp/>covariance<sp/>matrix...&quot;<sp/>&lt;&lt;<sp/>endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>solver.analyzePattern<sp/>(covariance);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>cout<sp/>&lt;&lt;<sp/>&quot;Factoring<sp/>covariance<sp/>matrix...&quot;<sp/>&lt;&lt;<sp/>endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>solver.factorize<sp/><sp/><sp/><sp/><sp/><sp/>(covariance);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>if<sp/>(solver.info()<sp/>!=<sp/>Eigen::Success)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>throw<sp/>std::runtime_error<sp/>(solver.lastErrorMessage());</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>cout<sp/>&lt;&lt;<sp/>&quot;Inverting<sp/>covariance<sp/>matrix...&quot;<sp/>&lt;&lt;<sp/>endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>w<sp/>=<sp/>solver.solve<sp/>(y);</highlight></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>for<sp/>(Size<sp/>p1<sp/>=<sp/>0;<sp/>p1<sp/>&lt;<sp/>model.parameters.npoints();<sp/>p1++)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>model.radiation.I(r,<sp/>p1,<sp/>f)<sp/>=<sp/>0.0;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>for<sp/>(Size<sp/>b2<sp/>=<sp/>0;<sp/>b2<sp/>&lt;<sp/>model.parameters.nboundary();<sp/>b2++)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>const<sp/>Size<sp/>p2<sp/>=<sp/>model.geometry.boundary.boundary2point[b2];</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>model.radiation.I(r,<sp/>p1,<sp/>f)<sp/>+=<sp/>kernel(model,<sp/>r,<sp/>p1,<sp/>p2)<sp/>*<sp/>w[b2];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>for<sp/>(Size<sp/>p2<sp/>=<sp/>0;<sp/>p2<sp/>&lt;<sp/>model.parameters.npoints();<sp/>p2++)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>const<sp/>Size<sp/>i2<sp/>=<sp/>p2<sp/>+<sp/>model.parameters.nboundary();</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>model.radiation.I(r,<sp/>p1,<sp/>f)<sp/>+=<sp/>L2_kernel(model,<sp/>r,<sp/>p1,<sp/>p2)<sp/>*<sp/>w[i2];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>return;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">accel<sp/>inline<sp/>void<sp/>Solver<sp/>::<sp/>set_eta_and_chi<sp/>(Model&amp;<sp/>model)<sp/>const</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>model.eta.resize<sp/>(model.parameters.npoints(),<sp/>model.parameters.nfreqs());</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>model.chi.resize<sp/>(model.parameters.npoints(),<sp/>model.parameters.nfreqs());</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>for<sp/>(Size<sp/>p<sp/>=<sp/>0;<sp/>p<sp/>&lt;<sp/>model.parameters.npoints();<sp/>p++)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>for<sp/>(Size<sp/>f<sp/>=<sp/>0;<sp/>f<sp/>&lt;<sp/>model.parameters.nfreqs();<sp/>f++)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>const<sp/>Real<sp/>freq<sp/>=<sp/>model.radiation.frequencies.nu(0,<sp/>f);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>get_eta_and_chi<sp/>(model,<sp/>p,<sp/>freq,<sp/>model.eta(p,f),<sp/>model.chi(p,f));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">accel<sp/>inline<sp/>void<sp/>Solver<sp/>::<sp/>set_boundary_condition<sp/>(Model&amp;<sp/>model)<sp/>const</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>model.boundary_condition.resize<sp/>(model.parameters.nboundary(),<sp/>model.parameters.nfreqs());</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>for<sp/>(Size<sp/>b<sp/>=<sp/>0;<sp/>b<sp/>&lt;<sp/>model.parameters.nboundary();<sp/>b++)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>const<sp/>Size<sp/>p<sp/>=<sp/>model.geometry.boundary.boundary2point[b];</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>for<sp/>(Size<sp/>f<sp/>=<sp/>0;<sp/>f<sp/>&lt;<sp/>model.parameters.nfreqs();<sp/>f++)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>const<sp/>Real<sp/>freq<sp/>=<sp/>model.radiation.frequencies.nu(0,<sp/>f);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>model.boundary_condition(b,f)<sp/>=<sp/>boundary_intensity<sp/>(model,<sp/>p,<sp/>freq);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+    </programlisting>
+    <location file="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.tpp"/>
+  </compounddef>
+</doxygen>

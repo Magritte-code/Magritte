@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.14">
+  <compounddef id="dir_6d9e079a3cd7d052f51de90c0f7a08f2" kind="dir">
+    <compoundname>/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/linedata</compoundname>
+    <innerdir refid="dir_58135f426a34d27aabe0dec8f7fad7db">/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/linedata/collisionPartner</innerdir>
+    <innerfile refid="linedata_8cpp">linedata.cpp</innerfile>
+    <innerfile refid="linedata_8hpp">linedata.hpp</innerfile>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/linedata/"/>
+  </compounddef>
+</doxygen>

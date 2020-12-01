@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.14">
+  <compounddef id="dir_97275e92bbb28791cb53299de670dfd6" kind="dir">
+    <compoundname>/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation</compoundname>
+    <innerdir refid="dir_f42a82b3487252a8d569c3d6eee91757">/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/frequencies</innerdir>
+    <innerdir refid="dir_5dbed2d6d287eb1cbd718919015d6a36">/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/scattering</innerdir>
+    <innerfile refid="radiation_8cpp">radiation.cpp</innerfile>
+    <innerfile refid="radiation_8hpp">radiation.hpp</innerfile>
+    <innerfile refid="radiation_8tpp">radiation.tpp</innerfile>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/"/>
+  </compounddef>
+</doxygen>

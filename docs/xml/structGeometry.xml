@@ -1,0 +1,527 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.14">
+  <compounddef id="structGeometry" kind="struct" language="C++" prot="public">
+    <compoundname>Geometry</compoundname>
+    <includes refid="geometry_8hpp" local="no">geometry.hpp</includes>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structGeometry_1a0e60a58fab88f53d0d918aedf1d68a9b" prot="public" static="no" mutable="no">
+        <type><ref refid="structParameters" kindref="compound">Parameters</ref></type>
+        <definition>Parameters Geometry::parameters</definition>
+        <argsstring></argsstring>
+        <name>parameters</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/geometry.hpp" line="21" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/geometry.hpp" bodystart="21" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structGeometry_1a0c20d35ab5400ec58126d3aea69628cf" prot="public" static="no" mutable="no">
+        <type><ref refid="structPoints" kindref="compound">Points</ref></type>
+        <definition>Points Geometry::points</definition>
+        <argsstring></argsstring>
+        <name>points</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/geometry.hpp" line="22" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/geometry.hpp" bodystart="22" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structGeometry_1ab40f75e6744eff6f8a04459cb5a770fa" prot="public" static="no" mutable="no">
+        <type><ref refid="structRays" kindref="compound">Rays</ref></type>
+        <definition>Rays Geometry::rays</definition>
+        <argsstring></argsstring>
+        <name>rays</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/geometry.hpp" line="23" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/geometry.hpp" bodystart="23" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structGeometry_1a9153b970abf6d0a7ac6074688c4833cc" prot="public" static="no" mutable="no">
+        <type><ref refid="structBoundary" kindref="compound">Boundary</ref></type>
+        <definition>Boundary Geometry::boundary</definition>
+        <argsstring></argsstring>
+        <name>boundary</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/geometry.hpp" line="24" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/geometry.hpp" bodystart="24" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structGeometry_1ad43927565ce60f7f25996ef75fd331c4" prot="public" static="no" mutable="no">
+        <type><ref refid="types_8hpp_1ac9d1a399bc9eae71d5719b37a09745f6" kindref="member">Matrix</ref>&lt; <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref> &gt;</type>
+        <definition>Matrix&lt;Size&gt; Geometry::lengths</definition>
+        <argsstring></argsstring>
+        <name>lengths</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/geometry.hpp" line="26" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/geometry.hpp" bodystart="26" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structGeometry_1ab100461d052b23db9f11b91df50f9267" prot="public" static="no" mutable="no">
+        <type><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+        <definition>Size Geometry::lengths_max</definition>
+        <argsstring></argsstring>
+        <name>lengths_max</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/geometry.hpp" line="27" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/geometry.hpp" bodystart="27" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="structGeometry_1a7ba519b1163c8c2b2d36061e74c35ba8" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Geometry::read</definition>
+        <argsstring>(const Io &amp;io)</argsstring>
+        <name>read</name>
+        <param>
+          <type>const <ref refid="structIo" kindref="compound">Io</ref> &amp;</type>
+          <declname>io</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/geometry.hpp" line="29" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/geometry.cpp" bodystart="4" bodyend="11"/>
+      </memberdef>
+      <memberdef kind="function" id="structGeometry_1a6c8ccb27ec1dd63fcc07dd91b6d69a0a" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Geometry::write</definition>
+        <argsstring>(const Io &amp;io) const</argsstring>
+        <name>write</name>
+        <param>
+          <type>const <ref refid="structIo" kindref="compound">Io</ref> &amp;</type>
+          <declname>io</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/geometry.hpp" line="30" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/geometry.cpp" bodystart="14" bodyend="19"/>
+      </memberdef>
+      <memberdef kind="function" id="structGeometry_1a35ae75ff3a02fb9b65b512ea66049d6c" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>accel void</type>
+        <definition>accel void Geometry::get_next</definition>
+        <argsstring>(const Size o, const Size r, const Size crt, Size &amp;nxt, double &amp;Z, double &amp;dZ, double &amp;shift) const</argsstring>
+        <name>get_next</name>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>o</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>r</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>crt</declname>
+        </param>
+        <param>
+          <type><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref> &amp;</type>
+          <declname>nxt</declname>
+        </param>
+        <param>
+          <type>double &amp;</type>
+          <declname>Z</declname>
+        </param>
+        <param>
+          <type>double &amp;</type>
+          <declname>dZ</declname>
+        </param>
+        <param>
+          <type>double &amp;</type>
+          <declname>shift</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/geometry.hpp" line="32" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="structGeometry_1a7bb974bdd4de365825aa4d5be3641235" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>accel <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+        <definition>accel Size Geometry::get_next</definition>
+        <argsstring>(const Size o, const Size r, const Size crt, double &amp;Z, double &amp;dZ) const</argsstring>
+        <name>get_next</name>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>o</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>r</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>crt</declname>
+        </param>
+        <param>
+          <type>double &amp;</type>
+          <declname>Z</declname>
+        </param>
+        <param>
+          <type>double &amp;</type>
+          <declname>dZ</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/geometry.hpp" line="41" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="structGeometry_1abfb34ad00d380ce41b37e6d6e1a839ad" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>accel <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+        <definition>accel Size Geometry::get_next_general_geometry</definition>
+        <argsstring>(const Size o, const Size r, const Size crt, double &amp;Z, double &amp;dZ) const</argsstring>
+        <name>get_next_general_geometry</name>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>o</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>r</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>crt</declname>
+        </param>
+        <param>
+          <type>double &amp;</type>
+          <declname>Z</declname>
+        </param>
+        <param>
+          <type>double &amp;</type>
+          <declname>dZ</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/geometry.hpp" line="48" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="structGeometry_1a164539f57fe08952284983526d26b930" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>accel <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+        <definition>accel Size Geometry::get_next_spherical_symmetry</definition>
+        <argsstring>(const Size o, const Size r, const Size crt, double &amp;Z, double &amp;dZ) const</argsstring>
+        <name>get_next_spherical_symmetry</name>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>o</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>r</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>crt</declname>
+        </param>
+        <param>
+          <type>double &amp;</type>
+          <declname>Z</declname>
+        </param>
+        <param>
+          <type>double &amp;</type>
+          <declname>dZ</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/geometry.hpp" line="55" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="structGeometry_1a30d67f85b67d91ce2e9ab2562575e99a" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type><ref refid="geometry_8hpp_1a1a3c9a246bb17ddd6d40809f3521a5c5" kindref="member">Frame</ref></type>
+            <declname>frame</declname>
+            <defname>frame</defname>
+          </param>
+        </templateparamlist>
+        <type>accel double</type>
+        <definition>accel double Geometry::get_shift</definition>
+        <argsstring>(const Size o, const Size r, const Size crt, const double Z) const</argsstring>
+        <name>get_shift</name>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>o</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>r</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>crt</declname>
+        </param>
+        <param>
+          <type>const double</type>
+          <declname>Z</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/geometry.hpp" line="63" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="structGeometry_1a816600b6bf5c9e7abf4d5b90942dcae8" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type><ref refid="geometry_8hpp_1a1a3c9a246bb17ddd6d40809f3521a5c5" kindref="member">Frame</ref></type>
+            <declname>frame</declname>
+            <defname>frame</defname>
+          </param>
+        </templateparamlist>
+        <type>accel double</type>
+        <definition>accel double Geometry::get_shift_general_geometry</definition>
+        <argsstring>(const Size o, const Size r, const Size crt) const</argsstring>
+        <name>get_shift_general_geometry</name>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>o</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>r</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>crt</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/geometry.hpp" line="70" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="structGeometry_1a0076379a3e59daa4815b688c0da7fdc1" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type><ref refid="geometry_8hpp_1a1a3c9a246bb17ddd6d40809f3521a5c5" kindref="member">Frame</ref></type>
+            <declname>frame</declname>
+            <defname>frame</defname>
+          </param>
+        </templateparamlist>
+        <type>accel double</type>
+        <definition>accel double Geometry::get_shift_spherical_symmetry</definition>
+        <argsstring>(const Size o, const Size r, const Size crt, const double Z) const</argsstring>
+        <name>get_shift_spherical_symmetry</name>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>o</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>r</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>crt</declname>
+        </param>
+        <param>
+          <type>const double</type>
+          <declname>Z</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/geometry.hpp" line="76" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="structGeometry_1aba89b59f4133456710ad57965c31374f" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>accel <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+        <definition>accel Size Geometry::get_n_interpl</definition>
+        <argsstring>(const double shift_crt, const double shift_nxt, const double dshift_max) const</argsstring>
+        <name>get_n_interpl</name>
+        <param>
+          <type>const double</type>
+          <declname>shift_crt</declname>
+        </param>
+        <param>
+          <type>const double</type>
+          <declname>shift_nxt</declname>
+        </param>
+        <param>
+          <type>const double</type>
+          <declname>dshift_max</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/geometry.hpp" line="82" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="structGeometry_1a4e47d38f359db4e8066a5c5908032eb2" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type><ref refid="geometry_8hpp_1a1a3c9a246bb17ddd6d40809f3521a5c5" kindref="member">Frame</ref></type>
+            <declname>frame</declname>
+            <defname>frame</defname>
+          </param>
+        </templateparamlist>
+        <type>accel <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+        <definition>accel Size Geometry::get_ray_length</definition>
+        <argsstring>(const Size o, const Size r, const double dshift_max) const</argsstring>
+        <name>get_ray_length</name>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>o</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>r</declname>
+        </param>
+        <param>
+          <type>const double</type>
+          <declname>dshift_max</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/geometry.hpp" line="88" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="structGeometry_1a65ec08cd934659acc5c47f100b2fd40e" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool Geometry::valid_point</definition>
+        <argsstring>(const Size p) const</argsstring>
+        <name>valid_point</name>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>p</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/geometry.hpp" line="96" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="structGeometry_1a52c0eddc3333dcd4c68c03a289c15570" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool Geometry::not_on_boundary</definition>
+        <argsstring>(const Size p) const</argsstring>
+        <name>not_on_boundary</name>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>p</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/geometry.hpp" line="97" column="1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+<para>Data structure for geometry. </para>    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <collaborationgraph>
+      <node id="29">
+        <label>Rays</label>
+        <link refid="structRays"/>
+        <childnode refid="27" relation="usage">
+          <edgelabel>parameters</edgelabel>
+        </childnode>
+      </node>
+      <node id="27">
+        <label>Parameters</label>
+        <link refid="structParameters"/>
+      </node>
+      <node id="28">
+        <label>Boundary</label>
+        <link refid="structBoundary"/>
+        <childnode refid="27" relation="usage">
+          <edgelabel>parameters</edgelabel>
+        </childnode>
+      </node>
+      <node id="26">
+        <label>Points</label>
+        <link refid="structPoints"/>
+        <childnode refid="27" relation="usage">
+          <edgelabel>parameters</edgelabel>
+        </childnode>
+      </node>
+      <node id="25">
+        <label>Geometry</label>
+        <link refid="structGeometry"/>
+        <childnode refid="26" relation="usage">
+          <edgelabel>points</edgelabel>
+        </childnode>
+        <childnode refid="27" relation="usage">
+          <edgelabel>parameters</edgelabel>
+        </childnode>
+        <childnode refid="28" relation="usage">
+          <edgelabel>boundary</edgelabel>
+        </childnode>
+        <childnode refid="29" relation="usage">
+          <edgelabel>rays</edgelabel>
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/geometry.hpp" line="20" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/geometry.hpp" bodystart="19" bodyend="98"/>
+    <listofallmembers>
+      <member refid="structGeometry_1a9153b970abf6d0a7ac6074688c4833cc" prot="public" virt="non-virtual"><scope>Geometry</scope><name>boundary</name></member>
+      <member refid="structGeometry_1aba89b59f4133456710ad57965c31374f" prot="public" virt="non-virtual"><scope>Geometry</scope><name>get_n_interpl</name></member>
+      <member refid="structGeometry_1a35ae75ff3a02fb9b65b512ea66049d6c" prot="public" virt="non-virtual"><scope>Geometry</scope><name>get_next</name></member>
+      <member refid="structGeometry_1a7bb974bdd4de365825aa4d5be3641235" prot="public" virt="non-virtual"><scope>Geometry</scope><name>get_next</name></member>
+      <member refid="structGeometry_1abfb34ad00d380ce41b37e6d6e1a839ad" prot="public" virt="non-virtual"><scope>Geometry</scope><name>get_next_general_geometry</name></member>
+      <member refid="structGeometry_1a164539f57fe08952284983526d26b930" prot="public" virt="non-virtual"><scope>Geometry</scope><name>get_next_spherical_symmetry</name></member>
+      <member refid="structGeometry_1a4e47d38f359db4e8066a5c5908032eb2" prot="public" virt="non-virtual"><scope>Geometry</scope><name>get_ray_length</name></member>
+      <member refid="structGeometry_1a30d67f85b67d91ce2e9ab2562575e99a" prot="public" virt="non-virtual"><scope>Geometry</scope><name>get_shift</name></member>
+      <member refid="structGeometry_1a816600b6bf5c9e7abf4d5b90942dcae8" prot="public" virt="non-virtual"><scope>Geometry</scope><name>get_shift_general_geometry</name></member>
+      <member refid="structGeometry_1a0076379a3e59daa4815b688c0da7fdc1" prot="public" virt="non-virtual"><scope>Geometry</scope><name>get_shift_spherical_symmetry</name></member>
+      <member refid="structGeometry_1ad43927565ce60f7f25996ef75fd331c4" prot="public" virt="non-virtual"><scope>Geometry</scope><name>lengths</name></member>
+      <member refid="structGeometry_1ab100461d052b23db9f11b91df50f9267" prot="public" virt="non-virtual"><scope>Geometry</scope><name>lengths_max</name></member>
+      <member refid="structGeometry_1a52c0eddc3333dcd4c68c03a289c15570" prot="public" virt="non-virtual"><scope>Geometry</scope><name>not_on_boundary</name></member>
+      <member refid="structGeometry_1a0e60a58fab88f53d0d918aedf1d68a9b" prot="public" virt="non-virtual"><scope>Geometry</scope><name>parameters</name></member>
+      <member refid="structGeometry_1a0c20d35ab5400ec58126d3aea69628cf" prot="public" virt="non-virtual"><scope>Geometry</scope><name>points</name></member>
+      <member refid="structGeometry_1ab40f75e6744eff6f8a04459cb5a770fa" prot="public" virt="non-virtual"><scope>Geometry</scope><name>rays</name></member>
+      <member refid="structGeometry_1a7ba519b1163c8c2b2d36061e74c35ba8" prot="public" virt="non-virtual"><scope>Geometry</scope><name>read</name></member>
+      <member refid="structGeometry_1a65ec08cd934659acc5c47f100b2fd40e" prot="public" virt="non-virtual"><scope>Geometry</scope><name>valid_point</name></member>
+      <member refid="structGeometry_1a6c8ccb27ec1dd63fcc07dd91b6d69a0a" prot="public" virt="non-virtual"><scope>Geometry</scope><name>write</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

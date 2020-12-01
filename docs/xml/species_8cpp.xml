@@ -1,0 +1,151 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.14">
+  <compounddef id="species_8cpp" kind="file" language="C++">
+    <compoundname>species.cpp</compoundname>
+    <includes refid="species_8hpp" local="yes">species.hpp</includes>
+    <incdepgraph>
+      <node id="234">
+        <label>list</label>
+      </node>
+      <node id="239">
+        <label>limits</label>
+      </node>
+      <node id="229">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/chemistry/species/species.cpp</label>
+        <link refid="species_8cpp"/>
+        <childnode refid="230" relation="include">
+        </childnode>
+      </node>
+      <node id="236">
+        <label>Eigen/Core</label>
+      </node>
+      <node id="235">
+        <label>string</label>
+      </node>
+      <node id="241">
+        <label>exception</label>
+      </node>
+      <node id="231">
+        <label>io/io.hpp</label>
+        <link refid="io_8hpp"/>
+        <childnode refid="232" relation="include">
+        </childnode>
+      </node>
+      <node id="238">
+        <label>model/parameters/parameters.hpp</label>
+        <link refid="parameters_8hpp"/>
+        <childnode refid="239" relation="include">
+        </childnode>
+        <childnode refid="231" relation="include">
+        </childnode>
+        <childnode refid="240" relation="include">
+        </childnode>
+      </node>
+      <node id="240">
+        <label>tools/setOnce.hpp</label>
+        <link refid="setOnce_8hpp"/>
+        <childnode refid="241" relation="include">
+        </childnode>
+        <childnode refid="242" relation="include">
+        </childnode>
+        <childnode refid="237" relation="include">
+        </childnode>
+      </node>
+      <node id="233">
+        <label>vector</label>
+      </node>
+      <node id="237">
+        <label>paracabs.hpp</label>
+      </node>
+      <node id="232">
+        <label>tools/types.hpp</label>
+        <link refid="types_8hpp"/>
+        <childnode refid="233" relation="include">
+        </childnode>
+        <childnode refid="234" relation="include">
+        </childnode>
+        <childnode refid="235" relation="include">
+        </childnode>
+        <childnode refid="236" relation="include">
+        </childnode>
+        <childnode refid="237" relation="include">
+        </childnode>
+      </node>
+      <node id="242">
+        <label>iostream</label>
+      </node>
+      <node id="230">
+        <label>species.hpp</label>
+        <link refid="species_8hpp"/>
+        <childnode refid="231" relation="include">
+        </childnode>
+        <childnode refid="238" relation="include">
+        </childnode>
+        <childnode refid="232" relation="include">
+        </childnode>
+      </node>
+    </incdepgraph>
+      <sectiondef kind="var">
+      <memberdef kind="variable" id="species_8cpp_1af1e7949a3ee58158ef099851093bf734" prot="public" static="no" mutable="no">
+        <type>const string</type>
+        <definition>const string prefix</definition>
+        <argsstring></argsstring>
+        <name>prefix</name>
+        <initializer>= &quot;chemistry/species/&quot;</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/chemistry/species/species.cpp" line="4" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/chemistry/species/species.cpp" bodystart="4" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline lineno="1"><highlight class="preprocessor">#include<sp/>&quot;<ref refid="species_8hpp" kindref="compound">species.hpp</ref>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="2"><highlight class="normal"></highlight></codeline>
+<codeline lineno="3"><highlight class="normal"></highlight></codeline>
+<codeline lineno="4"><highlight class="normal"></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">string</highlight><highlight class="normal"><sp/><ref refid="species_8cpp_1af1e7949a3ee58158ef099851093bf734" kindref="member">prefix</ref><sp/>=<sp/></highlight><highlight class="stringliteral">&quot;chemistry/species/&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="5"><highlight class="normal"></highlight></codeline>
+<codeline lineno="6"><highlight class="normal"></highlight></codeline>
+<codeline lineno="10"><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="structSpecies_1a97c64929f21a8bab9309c654988b5b86" kindref="member">Species :: read</ref><sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="structIo" kindref="compound">Io</ref>&amp;<sp/>io)</highlight></codeline>
+<codeline lineno="11"><highlight class="normal">{</highlight></codeline>
+<codeline lineno="12"><highlight class="normal"><sp/><sp/><sp/><sp/>cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Reading<sp/>species...&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>endl;</highlight></codeline>
+<codeline lineno="13"><highlight class="normal"></highlight></codeline>
+<codeline lineno="14"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="structSpecies_1a89bb2943df07f06bf5416d6aa30b6517" kindref="member">parameters</ref>.set_nspecs<sp/><sp/>(io.<ref refid="structIo_1afb72811abb76f805a35df321ffbf07dc" kindref="member">get_length</ref><sp/>(<ref refid="species_8cpp_1af1e7949a3ee58158ef099851093bf734" kindref="member">prefix</ref>+</highlight><highlight class="stringliteral">&quot;species&quot;</highlight><highlight class="normal"><sp/><sp/>));</highlight></codeline>
+<codeline lineno="15"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="structSpecies_1a89bb2943df07f06bf5416d6aa30b6517" kindref="member">parameters</ref>.set_npoints<sp/>(io.<ref refid="structIo_1afb72811abb76f805a35df321ffbf07dc" kindref="member">get_length</ref><sp/>(<ref refid="species_8cpp_1af1e7949a3ee58158ef099851093bf734" kindref="member">prefix</ref>+</highlight><highlight class="stringliteral">&quot;abundance&quot;</highlight><highlight class="normal">));</highlight></codeline>
+<codeline lineno="16"><highlight class="normal"></highlight></codeline>
+<codeline lineno="17"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="structSpecies_1a3df04d380fd2f0a1f8464562c7ad05a0" kindref="member">abundance_init</ref>.resize<sp/>(<ref refid="structSpecies_1a89bb2943df07f06bf5416d6aa30b6517" kindref="member">parameters</ref>.npoints());</highlight></codeline>
+<codeline lineno="18"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="structSpecies_1aa5af9ae841da2d671532d58cd0c84023" kindref="member">abundance</ref><sp/><sp/><sp/><sp/><sp/>.resize<sp/>(<ref refid="structSpecies_1a89bb2943df07f06bf5416d6aa30b6517" kindref="member">parameters</ref>.npoints());</highlight></codeline>
+<codeline lineno="19"><highlight class="normal"></highlight></codeline>
+<codeline lineno="20"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(<ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref><sp/>p<sp/>=<sp/>0;<sp/>p<sp/>&lt;<sp/><ref refid="structSpecies_1a89bb2943df07f06bf5416d6aa30b6517" kindref="member">parameters</ref>.npoints();<sp/>p++)</highlight></codeline>
+<codeline lineno="21"><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline lineno="22"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="structSpecies_1a3df04d380fd2f0a1f8464562c7ad05a0" kindref="member">abundance_init</ref>[p].resize<sp/>(<ref refid="structSpecies_1a89bb2943df07f06bf5416d6aa30b6517" kindref="member">parameters</ref>.nspecs());</highlight></codeline>
+<codeline lineno="23"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="structSpecies_1aa5af9ae841da2d671532d58cd0c84023" kindref="member">abundance</ref><sp/><sp/><sp/><sp/><sp/>[p].resize<sp/>(<ref refid="structSpecies_1a89bb2943df07f06bf5416d6aa30b6517" kindref="member">parameters</ref>.nspecs());</highlight></codeline>
+<codeline lineno="24"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="25"><highlight class="normal"></highlight></codeline>
+<codeline lineno="26"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>Read<sp/>the<sp/>abundaces<sp/>of<sp/>each<sp/>species<sp/>in<sp/>each<sp/>cell</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="27"><highlight class="normal"><sp/><sp/><sp/><sp/>io.<ref refid="structIo_1af6cacc007e010a226459b37ba976aa18" kindref="member">read_array</ref><sp/>(<ref refid="species_8cpp_1af1e7949a3ee58158ef099851093bf734" kindref="member">prefix</ref>+</highlight><highlight class="stringliteral">&quot;abundance&quot;</highlight><highlight class="normal">,<sp/><ref refid="structSpecies_1aa5af9ae841da2d671532d58cd0c84023" kindref="member">abundance</ref>);</highlight></codeline>
+<codeline lineno="28"><highlight class="normal"></highlight></codeline>
+<codeline lineno="29"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>Set<sp/>initial<sp/>abundances</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="30"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="structSpecies_1a3df04d380fd2f0a1f8464562c7ad05a0" kindref="member">abundance_init</ref><sp/>=<sp/><ref refid="structSpecies_1aa5af9ae841da2d671532d58cd0c84023" kindref="member">abundance</ref>;</highlight></codeline>
+<codeline lineno="31"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="32"><highlight class="normal"></highlight></codeline>
+<codeline lineno="33"><highlight class="normal"></highlight></codeline>
+<codeline lineno="37"><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="structSpecies_1a87869e45bd9f90b908796a1778d4386d" kindref="member">Species :: write</ref><sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="structIo" kindref="compound">Io</ref><sp/>&amp;io)</highlight><highlight class="keyword"><sp/>const</highlight></codeline>
+<codeline lineno="38"><highlight class="keyword"></highlight><highlight class="normal">{</highlight></codeline>
+<codeline lineno="39"><highlight class="normal"><sp/><sp/><sp/><sp/>cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Writing<sp/>species...&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>endl;</highlight></codeline>
+<codeline lineno="40"><highlight class="normal"></highlight></codeline>
+<codeline lineno="41"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="types_8hpp_1af43daf57fb95b58543a5ad410d062d21" kindref="member">Long1</ref><sp/>dummy<sp/>(<ref refid="structSpecies_1a89bb2943df07f06bf5416d6aa30b6517" kindref="member">parameters</ref>.nspecs(),<sp/>0);</highlight></codeline>
+<codeline lineno="42"><highlight class="normal"></highlight></codeline>
+<codeline lineno="43"><highlight class="normal"><sp/><sp/><sp/><sp/>io.<ref refid="structIo_1a88b9ed3d29a39626f53c5204757603d3" kindref="member">write_list</ref><sp/><sp/>(<ref refid="species_8cpp_1af1e7949a3ee58158ef099851093bf734" kindref="member">prefix</ref>+</highlight><highlight class="stringliteral">&quot;species&quot;</highlight><highlight class="normal">,<sp/><sp/><sp/>dummy<sp/><sp/><sp/><sp/>);</highlight></codeline>
+<codeline lineno="44"><highlight class="normal"><sp/><sp/><sp/><sp/>io.<ref refid="structIo_1aa73fe79d27fbaf31cbea124769e13a2e" kindref="member">write_array</ref><sp/>(<ref refid="species_8cpp_1af1e7949a3ee58158ef099851093bf734" kindref="member">prefix</ref>+</highlight><highlight class="stringliteral">&quot;abundance&quot;</highlight><highlight class="normal">,<sp/><ref refid="structSpecies_1aa5af9ae841da2d671532d58cd0c84023" kindref="member">abundance</ref>);</highlight></codeline>
+<codeline lineno="45"><highlight class="normal">}</highlight></codeline>
+    </programlisting>
+    <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/chemistry/species/species.cpp"/>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,516 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.14">
+  <compounddef id="structParameters" kind="struct" language="C++" prot="public">
+    <compoundname>Parameters</compoundname>
+    <includes refid="parameters_8hpp" local="no">parameters.hpp</includes>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structParameters_1af147c2a5b9ed14cf18c8d61cd63cc4f3" prot="public" static="no" mutable="no">
+        <type>long</type>
+        <definition>long Parameters::n_off_diag</definition>
+        <argsstring></argsstring>
+        <name>n_off_diag</name>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/parameters/parameters.hpp" line="131" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/parameters/parameters.hpp" bodystart="131" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structParameters_1af07bf93fa81400773c457787e11fe903" prot="public" static="no" mutable="no">
+        <type>double</type>
+        <definition>double Parameters::max_width_fraction</definition>
+        <argsstring></argsstring>
+        <name>max_width_fraction</name>
+        <initializer>= 0.5</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/parameters/parameters.hpp" line="133" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/parameters/parameters.hpp" bodystart="133" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="structParameters_1aa77450460832b258813f681621885deb" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Parameters::read</definition>
+        <argsstring>(const Io &amp;io)</argsstring>
+        <name>read</name>
+        <param>
+          <type>const <ref refid="structIo" kindref="compound">Io</ref> &amp;</type>
+          <declname>io</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/parameters/parameters.hpp" line="135" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/parameters/parameters.cpp" bodystart="24" bodyend="96"/>
+      </memberdef>
+      <memberdef kind="function" id="structParameters_1a7a4fc1edee4d2a10dbf220c178112ab5" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Parameters::write</definition>
+        <argsstring>(const Io &amp;io) const</argsstring>
+        <name>write</name>
+        <param>
+          <type>const <ref refid="structIo" kindref="compound">Io</ref> &amp;</type>
+          <declname>io</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/parameters/parameters.hpp" line="136" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/parameters/parameters.cpp" bodystart="101" bodyend="165"/>
+      </memberdef>
+      <memberdef kind="function" id="structParameters_1ad0cd5dc0b7eed10343613f5c31072c1b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Parameters::CREATE_PARAMETER</definition>
+        <argsstring>(string, model_name)</argsstring>
+        <name>CREATE_PARAMETER</name>
+        <param>
+          <type>string</type>
+        </param>
+        <param>
+          <type>model_name</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/parameters/parameters.hpp" line="138" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="structParameters_1ad6f047e202eefc2bce6a9df2a23d8d5f" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Parameters::CREATE_PARAMETER</definition>
+        <argsstring>(Size, dimension)</argsstring>
+        <name>CREATE_PARAMETER</name>
+        <param>
+          <type><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+        </param>
+        <param>
+          <type>dimension</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/parameters/parameters.hpp" line="140" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="structParameters_1a95f27a687ba49f096cd2256bd6f68875" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Parameters::CREATE_PARAMETER</definition>
+        <argsstring>(Size, npoints)</argsstring>
+        <name>CREATE_PARAMETER</name>
+        <param>
+          <type><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+        </param>
+        <param>
+          <type>npoints</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/parameters/parameters.hpp" line="141" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="structParameters_1ae44e2f23497611e2b5d1d2839b62ae85" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Parameters::CREATE_PARAMETER</definition>
+        <argsstring>(Size, totnnbs)</argsstring>
+        <name>CREATE_PARAMETER</name>
+        <param>
+          <type><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+        </param>
+        <param>
+          <type>totnnbs</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/parameters/parameters.hpp" line="142" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="structParameters_1a8a46b0743920aa5978eb32f6d03ce727" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Parameters::CREATE_PARAMETER</definition>
+        <argsstring>(Size, nrays)</argsstring>
+        <name>CREATE_PARAMETER</name>
+        <param>
+          <type><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+        </param>
+        <param>
+          <type>nrays</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/parameters/parameters.hpp" line="143" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="structParameters_1a6165bce4ae88b471ac911b898bda23ab" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Parameters::CREATE_PARAMETER</definition>
+        <argsstring>(Size, hnrays)</argsstring>
+        <name>CREATE_PARAMETER</name>
+        <param>
+          <type><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+        </param>
+        <param>
+          <type>hnrays</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/parameters/parameters.hpp" line="144" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="structParameters_1a2efe42ad2547db1ad9327f8aa343af02" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Parameters::CREATE_PARAMETER</definition>
+        <argsstring>(Size, nrays_red)</argsstring>
+        <name>CREATE_PARAMETER</name>
+        <param>
+          <type><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+        </param>
+        <param>
+          <type>nrays_red</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/parameters/parameters.hpp" line="145" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="structParameters_1a13382a328896bec809b2db69fedc8f7e" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Parameters::CREATE_PARAMETER</definition>
+        <argsstring>(Size, order_min)</argsstring>
+        <name>CREATE_PARAMETER</name>
+        <param>
+          <type><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+        </param>
+        <param>
+          <type>order_min</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/parameters/parameters.hpp" line="146" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="structParameters_1a29ff12b61a213d2b73b4b645fc6497bb" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Parameters::CREATE_PARAMETER</definition>
+        <argsstring>(Size, order_max)</argsstring>
+        <name>CREATE_PARAMETER</name>
+        <param>
+          <type><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+        </param>
+        <param>
+          <type>order_max</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/parameters/parameters.hpp" line="147" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="structParameters_1a285ad93feff981cf110f75c36adb7657" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Parameters::CREATE_PARAMETER</definition>
+        <argsstring>(Size, nboundary)</argsstring>
+        <name>CREATE_PARAMETER</name>
+        <param>
+          <type><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+        </param>
+        <param>
+          <type>nboundary</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/parameters/parameters.hpp" line="148" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="structParameters_1a12737dc588d64663fcec2dc264dd8ee9" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Parameters::CREATE_PARAMETER</definition>
+        <argsstring>(Size, nfreqs)</argsstring>
+        <name>CREATE_PARAMETER</name>
+        <param>
+          <type><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+        </param>
+        <param>
+          <type>nfreqs</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/parameters/parameters.hpp" line="149" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="structParameters_1a8ab89a3f93e3642045bbdafc92371d32" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Parameters::CREATE_PARAMETER</definition>
+        <argsstring>(Size, nspecs)</argsstring>
+        <name>CREATE_PARAMETER</name>
+        <param>
+          <type><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+        </param>
+        <param>
+          <type>nspecs</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/parameters/parameters.hpp" line="150" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="structParameters_1af43f38284207da07939672d5057b8c84" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Parameters::CREATE_PARAMETER</definition>
+        <argsstring>(Size, nlspecs)</argsstring>
+        <name>CREATE_PARAMETER</name>
+        <param>
+          <type><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+        </param>
+        <param>
+          <type>nlspecs</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/parameters/parameters.hpp" line="151" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="structParameters_1a60005cf7fe1685f3d642bb48e2d07773" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Parameters::CREATE_PARAMETER</definition>
+        <argsstring>(Size, nlines)</argsstring>
+        <name>CREATE_PARAMETER</name>
+        <param>
+          <type><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+        </param>
+        <param>
+          <type>nlines</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/parameters/parameters.hpp" line="152" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="structParameters_1a28c29bdbfc8f96b2bb6fd47015f4c8f5" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Parameters::CREATE_PARAMETER</definition>
+        <argsstring>(Size, nquads)</argsstring>
+        <name>CREATE_PARAMETER</name>
+        <param>
+          <type><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+        </param>
+        <param>
+          <type>nquads</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/parameters/parameters.hpp" line="153" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="structParameters_1a71161194c7f183caea510204bccdf67f" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Parameters::CREATE_PARAMETER</definition>
+        <argsstring>(Real, pop_prec)</argsstring>
+        <name>CREATE_PARAMETER</name>
+        <param>
+          <type><ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref></type>
+        </param>
+        <param>
+          <type>pop_prec</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/parameters/parameters.hpp" line="155" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="structParameters_1a12ccaf444100c5d60914cc52a2130077" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Parameters::CREATE_PARAMETER</definition>
+        <argsstring>(bool, use_scattering)</argsstring>
+        <name>CREATE_PARAMETER</name>
+        <param>
+          <type>bool</type>
+        </param>
+        <param>
+          <type>use_scattering</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/parameters/parameters.hpp" line="157" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="structParameters_1a47a6365156183fd27257f75d2322645c" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Parameters::CREATE_PARAMETER</definition>
+        <argsstring>(bool, use_Ng_acceleration)</argsstring>
+        <name>CREATE_PARAMETER</name>
+        <param>
+          <type>bool</type>
+        </param>
+        <param>
+          <type>use_Ng_acceleration</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/parameters/parameters.hpp" line="158" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="structParameters_1a9f7cbb481f143c54cda365a76b06e9d8" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Parameters::CREATE_PARAMETER</definition>
+        <argsstring>(bool, spherical_symmetry)</argsstring>
+        <name>CREATE_PARAMETER</name>
+        <param>
+          <type>bool</type>
+        </param>
+        <param>
+          <type>spherical_symmetry</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/parameters/parameters.hpp" line="159" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="structParameters_1a0ea4d1206db9de4a2432d1be1525f676" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Parameters::CREATE_PARAMETER</definition>
+        <argsstring>(bool, adaptive_ray_tracing)</argsstring>
+        <name>CREATE_PARAMETER</name>
+        <param>
+          <type>bool</type>
+        </param>
+        <param>
+          <type>adaptive_ray_tracing</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/parameters/parameters.hpp" line="160" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="structParameters_1af4d94ee360ac0157d9065f78797fe9a1" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>Parameters::Parameters</definition>
+        <argsstring>()</argsstring>
+        <name>Parameters</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/parameters/parameters.hpp" line="162" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/parameters/parameters.hpp" bodystart="162" bodyend="187"/>
+      </memberdef>
+      <memberdef kind="function" id="structParameters_1af649b4c0e0494e9e8705f8142cc075eb" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>Parameters::Parameters</definition>
+        <argsstring>(const Parameters &amp;parameters)</argsstring>
+        <name>Parameters</name>
+        <param>
+          <type>const <ref refid="structParameters" kindref="compound">Parameters</ref> &amp;</type>
+          <declname>parameters</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/parameters/parameters.hpp" line="189" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/parameters/parameters.hpp" bodystart="189" bodyend="214"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+<para><ref refid="structParameters" kindref="compound">Parameters</ref>: secure structure for the model parameters. </para>    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/parameters/parameters.hpp" line="61" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/parameters/parameters.hpp" bodystart="60" bodyend="215"/>
+    <listofallmembers>
+      <member refid="structParameters_1ad0cd5dc0b7eed10343613f5c31072c1b" prot="public" virt="non-virtual"><scope>Parameters</scope><name>CREATE_PARAMETER</name></member>
+      <member refid="structParameters_1ad6f047e202eefc2bce6a9df2a23d8d5f" prot="public" virt="non-virtual"><scope>Parameters</scope><name>CREATE_PARAMETER</name></member>
+      <member refid="structParameters_1a95f27a687ba49f096cd2256bd6f68875" prot="public" virt="non-virtual"><scope>Parameters</scope><name>CREATE_PARAMETER</name></member>
+      <member refid="structParameters_1ae44e2f23497611e2b5d1d2839b62ae85" prot="public" virt="non-virtual"><scope>Parameters</scope><name>CREATE_PARAMETER</name></member>
+      <member refid="structParameters_1a8a46b0743920aa5978eb32f6d03ce727" prot="public" virt="non-virtual"><scope>Parameters</scope><name>CREATE_PARAMETER</name></member>
+      <member refid="structParameters_1a6165bce4ae88b471ac911b898bda23ab" prot="public" virt="non-virtual"><scope>Parameters</scope><name>CREATE_PARAMETER</name></member>
+      <member refid="structParameters_1a2efe42ad2547db1ad9327f8aa343af02" prot="public" virt="non-virtual"><scope>Parameters</scope><name>CREATE_PARAMETER</name></member>
+      <member refid="structParameters_1a13382a328896bec809b2db69fedc8f7e" prot="public" virt="non-virtual"><scope>Parameters</scope><name>CREATE_PARAMETER</name></member>
+      <member refid="structParameters_1a29ff12b61a213d2b73b4b645fc6497bb" prot="public" virt="non-virtual"><scope>Parameters</scope><name>CREATE_PARAMETER</name></member>
+      <member refid="structParameters_1a285ad93feff981cf110f75c36adb7657" prot="public" virt="non-virtual"><scope>Parameters</scope><name>CREATE_PARAMETER</name></member>
+      <member refid="structParameters_1a12737dc588d64663fcec2dc264dd8ee9" prot="public" virt="non-virtual"><scope>Parameters</scope><name>CREATE_PARAMETER</name></member>
+      <member refid="structParameters_1a8ab89a3f93e3642045bbdafc92371d32" prot="public" virt="non-virtual"><scope>Parameters</scope><name>CREATE_PARAMETER</name></member>
+      <member refid="structParameters_1af43f38284207da07939672d5057b8c84" prot="public" virt="non-virtual"><scope>Parameters</scope><name>CREATE_PARAMETER</name></member>
+      <member refid="structParameters_1a60005cf7fe1685f3d642bb48e2d07773" prot="public" virt="non-virtual"><scope>Parameters</scope><name>CREATE_PARAMETER</name></member>
+      <member refid="structParameters_1a28c29bdbfc8f96b2bb6fd47015f4c8f5" prot="public" virt="non-virtual"><scope>Parameters</scope><name>CREATE_PARAMETER</name></member>
+      <member refid="structParameters_1a71161194c7f183caea510204bccdf67f" prot="public" virt="non-virtual"><scope>Parameters</scope><name>CREATE_PARAMETER</name></member>
+      <member refid="structParameters_1a12ccaf444100c5d60914cc52a2130077" prot="public" virt="non-virtual"><scope>Parameters</scope><name>CREATE_PARAMETER</name></member>
+      <member refid="structParameters_1a47a6365156183fd27257f75d2322645c" prot="public" virt="non-virtual"><scope>Parameters</scope><name>CREATE_PARAMETER</name></member>
+      <member refid="structParameters_1a9f7cbb481f143c54cda365a76b06e9d8" prot="public" virt="non-virtual"><scope>Parameters</scope><name>CREATE_PARAMETER</name></member>
+      <member refid="structParameters_1a0ea4d1206db9de4a2432d1be1525f676" prot="public" virt="non-virtual"><scope>Parameters</scope><name>CREATE_PARAMETER</name></member>
+      <member refid="structParameters_1af07bf93fa81400773c457787e11fe903" prot="public" virt="non-virtual"><scope>Parameters</scope><name>max_width_fraction</name></member>
+      <member refid="structParameters_1af147c2a5b9ed14cf18c8d61cd63cc4f3" prot="public" virt="non-virtual"><scope>Parameters</scope><name>n_off_diag</name></member>
+      <member refid="structParameters_1af4d94ee360ac0157d9065f78797fe9a1" prot="public" virt="non-virtual"><scope>Parameters</scope><name>Parameters</name></member>
+      <member refid="structParameters_1af649b4c0e0494e9e8705f8142cc075eb" prot="public" virt="non-virtual"><scope>Parameters</scope><name>Parameters</name></member>
+      <member refid="structParameters_1aa77450460832b258813f681621885deb" prot="public" virt="non-virtual"><scope>Parameters</scope><name>read</name></member>
+      <member refid="structParameters_1a7a4fc1edee4d2a10dbf220c178112ab5" prot="public" virt="non-virtual"><scope>Parameters</scope><name>write</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

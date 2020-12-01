@@ -1,0 +1,136 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.14">
+  <compounddef id="structScattering" kind="struct" language="C++" prot="public">
+    <compoundname>Scattering</compoundname>
+    <includes refid="scattering_8hpp" local="no">scattering.hpp</includes>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structScattering_1a82267ff43b885fbb074c9eda403a64b8" prot="public" static="no" mutable="no">
+        <type><ref refid="types_8hpp_1a0015d4067a970e313605c333d49ed5c5" kindref="member">Real1</ref></type>
+        <definition>Real1 Scattering::opacity_scat</definition>
+        <argsstring></argsstring>
+        <name>opacity_scat</name>
+        <briefdescription>
+<para>scattering opacity (p,f) </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/scattering/scattering.hpp" line="9" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/scattering/scattering.hpp" bodystart="9" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structScattering_1aa57017cc7a825dd1534a48567d11a77b" prot="public" static="no" mutable="no">
+        <type><ref refid="types_8hpp_1a2fbf53fed9e8fa669cc443ac55a8c48f" kindref="member">Real3</ref></type>
+        <definition>Real3 Scattering::phase</definition>
+        <argsstring></argsstring>
+        <name>phase</name>
+        <briefdescription>
+<para>scattering phase function (r1,r2,f) </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/scattering/scattering.hpp" line="11" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/scattering/scattering.hpp" bodystart="11" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structScattering_1ab7923e43f98e5256fb92f787efbb88b3" prot="public" static="no" mutable="no">
+        <type><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+        <definition>Size Scattering::nfreqs_scat</definition>
+        <argsstring></argsstring>
+        <name>nfreqs_scat</name>
+        <briefdescription>
+<para>number of frequencies in scattering data </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/scattering/scattering.hpp" line="16" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/scattering/scattering.hpp" bodystart="16" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structScattering_1a1a919858e41853709d7c37efea3c639b" prot="public" static="no" mutable="no">
+        <type><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+        <definition>Size Scattering::nfreqs_red</definition>
+        <argsstring></argsstring>
+        <name>nfreqs_red</name>
+        <briefdescription>
+<para>number of frequencies </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/scattering/scattering.hpp" line="17" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/scattering/scattering.hpp" bodystart="17" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="structScattering_1a6642565cc8057e5b5bd598b128279b15" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Scattering::read</definition>
+        <argsstring>(const Io &amp;io)</argsstring>
+        <name>read</name>
+        <param>
+          <type>const <ref refid="structIo" kindref="compound">Io</ref> &amp;</type>
+          <declname>io</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>read: read in data structure <parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">io</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>io object </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/scattering/scattering.hpp" line="13" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/scattering/scattering.cpp" bodystart="7" bodyend="41"/>
+      </memberdef>
+      <memberdef kind="function" id="structScattering_1aafbdb1d7e1a219fb894f2894a978e7b2" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Scattering::write</definition>
+        <argsstring>(const Io &amp;io) const</argsstring>
+        <name>write</name>
+        <param>
+          <type>const <ref refid="structIo" kindref="compound">Io</ref> &amp;</type>
+          <declname>io</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/scattering/scattering.hpp" line="14" column="1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <collaborationgraph>
+      <node id="128">
+        <label>Scattering</label>
+        <link refid="structScattering"/>
+        <childnode refid="129" relation="usage">
+          <edgelabel>opacity_scat</edgelabel>
+        </childnode>
+        <childnode refid="130" relation="usage">
+          <edgelabel>phase</edgelabel>
+        </childnode>
+      </node>
+      <node id="129">
+        <label>vector&lt; Real &gt;</label>
+      </node>
+      <node id="130">
+        <label>vector&lt; Real2 &gt;</label>
+      </node>
+    </collaborationgraph>
+    <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/scattering/scattering.hpp" line="8" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/scattering/scattering.hpp" bodystart="7" bodyend="18"/>
+    <listofallmembers>
+      <member refid="structScattering_1a1a919858e41853709d7c37efea3c639b" prot="public" virt="non-virtual"><scope>Scattering</scope><name>nfreqs_red</name></member>
+      <member refid="structScattering_1ab7923e43f98e5256fb92f787efbb88b3" prot="public" virt="non-virtual"><scope>Scattering</scope><name>nfreqs_scat</name></member>
+      <member refid="structScattering_1a82267ff43b885fbb074c9eda403a64b8" prot="public" virt="non-virtual"><scope>Scattering</scope><name>opacity_scat</name></member>
+      <member refid="structScattering_1aa57017cc7a825dd1534a48567d11a77b" prot="public" virt="non-virtual"><scope>Scattering</scope><name>phase</name></member>
+      <member refid="structScattering_1a6642565cc8057e5b5bd598b128279b15" prot="public" virt="non-virtual"><scope>Scattering</scope><name>read</name></member>
+      <member refid="structScattering_1aafbdb1d7e1a219fb894f2894a978e7b2" prot="public" virt="non-virtual"><scope>Scattering</scope><name>write</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

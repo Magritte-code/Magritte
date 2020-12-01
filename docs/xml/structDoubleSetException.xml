@@ -1,0 +1,54 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.14">
+  <compounddef id="structDoubleSetException" kind="struct" language="C++" prot="public">
+    <compoundname>DoubleSetException</compoundname>
+    <basecompoundref prot="public" virt="non-virtual">exception</basecompoundref>
+    <includes refid="setOnce_8hpp" local="no">setOnce.hpp</includes>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="structDoubleSetException_1a2568d6f42bcc8fb68ff83893eb4221b0" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>const char *</type>
+        <definition>const char* DoubleSetException::what</definition>
+        <argsstring>() const</argsstring>
+        <name>what</name>
+        <exceptions> throw ()</exceptions>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/tools/setOnce.hpp" line="12" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/tools/setOnce.hpp" bodystart="12" bodyend="15"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="16">
+        <label>exception</label>
+      </node>
+      <node id="15">
+        <label>DoubleSetException</label>
+        <link refid="structDoubleSetException"/>
+        <childnode refid="16" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="18">
+        <label>exception</label>
+      </node>
+      <node id="17">
+        <label>DoubleSetException</label>
+        <link refid="structDoubleSetException"/>
+        <childnode refid="18" relation="public-inheritance">
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="/home/frederik/Dropbox/GitHub/Magritte/src/tools/setOnce.hpp" line="11" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/tools/setOnce.hpp" bodystart="10" bodyend="16"/>
+    <listofallmembers>
+      <member refid="structDoubleSetException_1a2568d6f42bcc8fb68ff83893eb4221b0" prot="public" virt="non-virtual"><scope>DoubleSetException</scope><name>what</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>
