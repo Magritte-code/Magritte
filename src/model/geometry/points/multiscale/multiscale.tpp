@@ -8,7 +8,11 @@ inline void Multiscale::coarsen()
     neighbors.push_back(vector<std::set<Size>>(neighbors.back()));//should be deep copy
     for (Size p = 0; p < parameters.npoints(); p++)
     {
-        if (can_be_coarsened(p)) {coarsen_around_point(p);}
+        if (can_be_coarsened(p))
+        {
+          coarsen_around_point(p);
+          std::cout << "Deleted around point: " << p <<std::endl;
+        }
     }
 }
 
@@ -61,6 +65,7 @@ inline void Multiscale::coarsen_around_point (const Size p)
         }
       }
     }
+    std::cout << "Size neighbors_of_neighbors: " << neighbors_of_neighbors.size() << std::endl;
     for (const Size n_n:neighbors_of_neighbors)
     {
       // Replace the removed points by p

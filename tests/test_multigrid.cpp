@@ -53,15 +53,40 @@ int main (int argc, char **argv)
 
     Model model;
     model.read (io);
-    vector<Size> old_neighbors=model.geometry.points.curr_neighbors.get_neighbors(9001);
-    std::set<Size> neighbors=model.geometry.points.multiscale.get_neighbors(9001,0);
+    vector<Size> old_neighbors=model.geometry.points.curr_neighbors.get_neighbors(0);
+    std::set<Size> neighbors=model.geometry.points.multiscale.get_neighbors(0,0);
     for (Size nb:neighbors)
     {
     cout << nb << endl;
     }
     cout << "compare with" << endl;
-    
+
     for (Size nb:old_neighbors)
+    {
+    cout << nb << endl;
+    }
+    cout << "now testing coarsening" << endl;
+    cout << "no points deleted" << endl;
+    //lambda expression that always returns false, just to see whether it crashes (or not)
+    auto alwaysfalse = [](Size p1, Size p2)
+    {
+        return false;
+    };
+    model.geometry.points.multiscale.set_comparison_fun(alwaysfalse);
+    model.geometry.points.multiscale.coarsen();
+    cout << "max points deleted" << endl;
+    auto alwaystrue = [](Size p1, Size p2)
+    {
+      return true;
+    };
+    model.geometry.points.multiscale.set_comparison_fun(alwaystrue);
+    model.geometry.points.multiscale.coarsen();
+    //TODO: change function name to get_MAX_...
+    cout << model.geometry.points.multiscale.get_curr_coars_lvl() << endl;
+    //because of the way how we coarsen, point 0 should still lie in the grid
+    //TODO add output for debugging....
+    std::set<Size> neighbors_after_del=model.geometry.points.multiscale.get_neighbors(0,0);
+    for (Size nb:neighbors_after_del)
     {
     cout << nb << endl;
     }
