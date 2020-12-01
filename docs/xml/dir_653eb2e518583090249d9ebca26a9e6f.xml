@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.14">
+  <compounddef id="dir_653eb2e518583090249d9ebca26a9e6f" kind="dir">
+    <compoundname>/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/quadrature</compoundname>
+    <innerfile refid="quadrature_8cpp">quadrature.cpp</innerfile>
+    <innerfile refid="quadrature_8hpp">quadrature.hpp</innerfile>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/quadrature/"/>
+  </compounddef>
+</doxygen>

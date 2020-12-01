@@ -1,0 +1,405 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.14">
+  <compounddef id="setOnce_8hpp" kind="file" language="C++">
+    <compoundname>setOnce.hpp</compoundname>
+    <includes local="no">exception</includes>
+    <includes local="no">iostream</includes>
+    <includes local="yes">paracabs.hpp</includes>
+    <includedby refid="parameters_8hpp" local="yes">/home/frederik/Dropbox/GitHub/Magritte/src/model/parameters/parameters.hpp</includedby>
+    <incdepgraph>
+      <node id="1490">
+        <label>exception</label>
+      </node>
+      <node id="1489">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/tools/setOnce.hpp</label>
+        <link refid="setOnce_8hpp"/>
+        <childnode refid="1490" relation="include">
+        </childnode>
+        <childnode refid="1491" relation="include">
+        </childnode>
+        <childnode refid="1492" relation="include">
+        </childnode>
+      </node>
+      <node id="1492">
+        <label>paracabs.hpp</label>
+      </node>
+      <node id="1491">
+        <label>iostream</label>
+      </node>
+    </incdepgraph>
+    <invincdepgraph>
+      <node id="1498">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/model.hpp</label>
+        <link refid="model_8hpp"/>
+        <childnode refid="1495" relation="include">
+        </childnode>
+        <childnode refid="1499" relation="include">
+        </childnode>
+        <childnode refid="1500" relation="include">
+        </childnode>
+      </node>
+      <node id="1506">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/geometry.hpp</label>
+        <link refid="geometry_8hpp"/>
+        <childnode refid="1507" relation="include">
+        </childnode>
+        <childnode refid="1508" relation="include">
+        </childnode>
+        <childnode refid="1498" relation="include">
+        </childnode>
+      </node>
+      <node id="1508">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/image/image.hpp</label>
+        <link refid="image_8hpp"/>
+        <childnode refid="1509" relation="include">
+        </childnode>
+        <childnode refid="1498" relation="include">
+        </childnode>
+      </node>
+      <node id="1496">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/chemistry/chemistry.hpp</label>
+        <link refid="chemistry_8hpp"/>
+        <childnode refid="1497" relation="include">
+        </childnode>
+        <childnode refid="1498" relation="include">
+        </childnode>
+      </node>
+      <node id="1503">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/chemistry/species/species.cpp</label>
+        <link refid="species_8cpp"/>
+      </node>
+      <node id="1526">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/thermodynamics/temperature/temperature.hpp</label>
+        <link refid="temperature_8hpp"/>
+        <childnode refid="1524" relation="include">
+        </childnode>
+        <childnode refid="1527" relation="include">
+        </childnode>
+        <childnode refid="1531" relation="include">
+        </childnode>
+      </node>
+      <node id="1528">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/radiation.hpp</label>
+        <link refid="radiation_8hpp"/>
+        <childnode refid="1498" relation="include">
+        </childnode>
+        <childnode refid="1529" relation="include">
+        </childnode>
+      </node>
+      <node id="1515">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/linedata/collisionPartner/collisionPartner.cpp</label>
+        <link refid="collisionPartner_8cpp"/>
+      </node>
+      <node id="1518">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.hpp</label>
+        <link refid="lineProducingSpecies_8hpp"/>
+        <childnode refid="1519" relation="include">
+        </childnode>
+        <childnode refid="1520" relation="include">
+        </childnode>
+      </node>
+      <node id="1533">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/thermodynamics/turbulence/turbulence.cpp</label>
+        <link refid="turbulence_8cpp"/>
+      </node>
+      <node id="1495">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/bindings/pybindings.cpp</label>
+        <link refid="pybindings_8cpp"/>
+      </node>
+      <node id="1499">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/model.cpp</label>
+        <link refid="model_8cpp"/>
+      </node>
+      <node id="1497">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/chemistry/chemistry.cpp</label>
+        <link refid="chemistry_8cpp"/>
+      </node>
+      <node id="1509">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/image/image.cpp</label>
+        <link refid="image_8cpp"/>
+      </node>
+      <node id="1501">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.cpp</label>
+        <link refid="solver_8cpp"/>
+      </node>
+      <node id="1531">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/thermodynamics/temperature/temperature.cpp</label>
+        <link refid="temperature_8cpp"/>
+      </node>
+      <node id="1494">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/parameters/parameters.hpp</label>
+        <link refid="parameters_8hpp"/>
+        <childnode refid="1495" relation="include">
+        </childnode>
+        <childnode refid="1496" relation="include">
+        </childnode>
+        <childnode refid="1502" relation="include">
+        </childnode>
+        <childnode refid="1504" relation="include">
+        </childnode>
+        <childnode refid="1506" relation="include">
+        </childnode>
+        <childnode refid="1510" relation="include">
+        </childnode>
+        <childnode refid="1512" relation="include">
+        </childnode>
+        <childnode refid="1508" relation="include">
+        </childnode>
+        <childnode refid="1514" relation="include">
+        </childnode>
+        <childnode refid="1516" relation="include">
+        </childnode>
+        <childnode refid="1518" relation="include">
+        </childnode>
+        <childnode refid="1522" relation="include">
+        </childnode>
+        <childnode refid="1520" relation="include">
+        </childnode>
+        <childnode refid="1498" relation="include">
+        </childnode>
+        <childnode refid="1524" relation="include">
+        </childnode>
+        <childnode refid="1526" relation="include">
+        </childnode>
+        <childnode refid="1532" relation="include">
+        </childnode>
+        <childnode refid="1527" relation="include">
+        </childnode>
+        <childnode refid="1534" relation="include">
+        </childnode>
+      </node>
+      <node id="1493">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/tools/setOnce.hpp</label>
+        <link refid="setOnce_8hpp"/>
+        <childnode refid="1494" relation="include">
+        </childnode>
+      </node>
+      <node id="1532">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/thermodynamics/turbulence/turbulence.hpp</label>
+        <link refid="turbulence_8hpp"/>
+        <childnode refid="1524" relation="include">
+        </childnode>
+        <childnode refid="1533" relation="include">
+        </childnode>
+      </node>
+      <node id="1520">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lines.hpp</label>
+        <link refid="lines_8hpp"/>
+        <childnode refid="1521" relation="include">
+        </childnode>
+        <childnode refid="1498" relation="include">
+        </childnode>
+      </node>
+      <node id="1504">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/boundary/boundary.hpp</label>
+        <link refid="boundary_8hpp"/>
+        <childnode refid="1505" relation="include">
+        </childnode>
+        <childnode refid="1506" relation="include">
+        </childnode>
+      </node>
+      <node id="1530">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/frequencies/frequencies.cpp</label>
+        <link refid="frequencies_8cpp"/>
+      </node>
+      <node id="1510">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/points/points.hpp</label>
+        <link refid="points_8hpp"/>
+        <childnode refid="1506" relation="include">
+        </childnode>
+        <childnode refid="1511" relation="include">
+        </childnode>
+      </node>
+      <node id="1500">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp</label>
+        <link refid="solver_8hpp"/>
+        <childnode refid="1495" relation="include">
+        </childnode>
+        <childnode refid="1499" relation="include">
+        </childnode>
+        <childnode refid="1501" relation="include">
+        </childnode>
+      </node>
+      <node id="1516">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/linedata/linedata.hpp</label>
+        <link refid="linedata_8hpp"/>
+        <childnode refid="1517" relation="include">
+        </childnode>
+        <childnode refid="1518" relation="include">
+        </childnode>
+      </node>
+      <node id="1522">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/quadrature/quadrature.hpp</label>
+        <link refid="quadrature_8hpp"/>
+        <childnode refid="1518" relation="include">
+        </childnode>
+        <childnode refid="1523" relation="include">
+        </childnode>
+      </node>
+      <node id="1534">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/parameters/parameters.cpp</label>
+        <link refid="parameters_8cpp"/>
+      </node>
+      <node id="1513">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/rays/rays.cpp</label>
+        <link refid="rays_8cpp"/>
+      </node>
+      <node id="1524">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/thermodynamics/thermodynamics.hpp</label>
+        <link refid="thermodynamics_8hpp"/>
+        <childnode refid="1520" relation="include">
+        </childnode>
+        <childnode refid="1498" relation="include">
+        </childnode>
+        <childnode refid="1525" relation="include">
+        </childnode>
+      </node>
+      <node id="1507">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/geometry.cpp</label>
+        <link refid="geometry_8cpp"/>
+      </node>
+      <node id="1521">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lines.cpp</label>
+        <link refid="lines_8cpp"/>
+      </node>
+      <node id="1505">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/boundary/boundary.cpp</label>
+        <link refid="boundary_8cpp"/>
+      </node>
+      <node id="1527">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/frequencies/frequencies.hpp</label>
+        <link refid="frequencies_8hpp"/>
+        <childnode refid="1528" relation="include">
+        </childnode>
+        <childnode refid="1530" relation="include">
+        </childnode>
+      </node>
+      <node id="1502">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/chemistry/species/species.hpp</label>
+        <link refid="species_8hpp"/>
+        <childnode refid="1496" relation="include">
+        </childnode>
+        <childnode refid="1503" relation="include">
+        </childnode>
+      </node>
+      <node id="1511">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/points/points.cpp</label>
+        <link refid="points_8cpp"/>
+      </node>
+      <node id="1529">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/radiation.cpp</label>
+        <link refid="radiation_8cpp"/>
+      </node>
+      <node id="1523">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/quadrature/quadrature.cpp</label>
+        <link refid="quadrature_8cpp"/>
+      </node>
+      <node id="1514">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/linedata/collisionPartner/collisionPartner.hpp</label>
+        <link refid="collisionPartner_8hpp"/>
+        <childnode refid="1515" relation="include">
+        </childnode>
+        <childnode refid="1516" relation="include">
+        </childnode>
+      </node>
+      <node id="1517">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/linedata/linedata.cpp</label>
+        <link refid="linedata_8cpp"/>
+      </node>
+      <node id="1512">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/rays/rays.hpp</label>
+        <link refid="rays_8hpp"/>
+        <childnode refid="1506" relation="include">
+        </childnode>
+        <childnode refid="1513" relation="include">
+        </childnode>
+      </node>
+      <node id="1519">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.cpp</label>
+        <link refid="lineProducingSpecies_8cpp"/>
+      </node>
+      <node id="1525">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/thermodynamics/thermodynamics.cpp</label>
+        <link refid="thermodynamics_8cpp"/>
+      </node>
+    </invincdepgraph>
+    <innerclass refid="structDoubleSetException" prot="public">DoubleSetException</innerclass>
+    <innerclass refid="structGetBeforeSetException" prot="public">GetBeforeSetException</innerclass>
+    <innerclass refid="classSetOnce" prot="public">SetOnce</innerclass>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline lineno="1"><highlight class="preprocessor">#pragma<sp/>once</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="2"><highlight class="normal"></highlight></codeline>
+<codeline lineno="3"><highlight class="normal"></highlight></codeline>
+<codeline lineno="4"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;exception&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="5"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="6"><highlight class="normal"></highlight></codeline>
+<codeline lineno="7"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;paracabs.hpp&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="8"><highlight class="normal"></highlight></codeline>
+<codeline lineno="9"><highlight class="normal"></highlight></codeline>
+<codeline lineno="10" refid="structDoubleSetException" refkind="compound"><highlight class="normal"></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal"><ref refid="structDoubleSetException" kindref="compound">DoubleSetException</ref><sp/>:<sp/></highlight><highlight class="keyword">public</highlight><highlight class="normal"><sp/>std::exception</highlight></codeline>
+<codeline lineno="11"><highlight class="normal">{</highlight></codeline>
+<codeline lineno="12" refid="structDoubleSetException_1a2568d6f42bcc8fb68ff83893eb4221b0" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">*<sp/><ref refid="structDoubleSetException_1a2568d6f42bcc8fb68ff83893eb4221b0" kindref="member">what</ref><sp/>()<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>throw<sp/>()</highlight></codeline>
+<codeline lineno="13"><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline lineno="14"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/></highlight><highlight class="stringliteral">&quot;Tried<sp/>to<sp/>overwrite<sp/>SetOnce<sp/>object<sp/>with<sp/>another<sp/>value.&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="15"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="16"><highlight class="normal">};</highlight></codeline>
+<codeline lineno="17"><highlight class="normal"></highlight></codeline>
+<codeline lineno="18"><highlight class="normal"></highlight></codeline>
+<codeline lineno="19" refid="structGetBeforeSetException" refkind="compound"><highlight class="normal"></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal"><ref refid="structGetBeforeSetException" kindref="compound">GetBeforeSetException</ref><sp/>:<sp/></highlight><highlight class="keyword">public</highlight><highlight class="normal"><sp/>std::exception</highlight></codeline>
+<codeline lineno="20"><highlight class="normal">{</highlight></codeline>
+<codeline lineno="21" refid="structGetBeforeSetException_1aa0845c7c8351249d9a788b1b928f8ecb" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">*<sp/><ref refid="structGetBeforeSetException_1aa0845c7c8351249d9a788b1b928f8ecb" kindref="member">what</ref><sp/>()<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>throw<sp/>()</highlight></codeline>
+<codeline lineno="22"><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline lineno="23"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/></highlight><highlight class="stringliteral">&quot;Tried<sp/>to<sp/>get<sp/>SetOnce<sp/>object<sp/>before<sp/>setting<sp/>it.&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="24"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="25"><highlight class="normal">};</highlight></codeline>
+<codeline lineno="26"><highlight class="normal"></highlight></codeline>
+<codeline lineno="27"><highlight class="normal"></highlight></codeline>
+<codeline lineno="28"><highlight class="normal"></highlight><highlight class="keyword">template</highlight><highlight class="normal"><sp/>&lt;</highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>type&gt;</highlight></codeline>
+<codeline lineno="29" refid="classSetOnce" refkind="compound"><highlight class="normal"></highlight><highlight class="keyword">class<sp/></highlight><highlight class="normal"><ref refid="classSetOnce" kindref="compound">SetOnce</ref></highlight></codeline>
+<codeline lineno="30"><highlight class="normal">{</highlight></codeline>
+<codeline lineno="31"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">private</highlight><highlight class="normal">:</highlight></codeline>
+<codeline lineno="32"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>already_set<sp/>=<sp/></highlight><highlight class="keyword">false</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="33"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>type<sp/>value;</highlight></codeline>
+<codeline lineno="34"><highlight class="normal"></highlight></codeline>
+<codeline lineno="35"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">public</highlight><highlight class="normal">:</highlight></codeline>
+<codeline lineno="36" refid="classSetOnce_1a20a69fddba78720dfe2b5471ae06c39a" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/><ref refid="classSetOnce_1a20a69fddba78720dfe2b5471ae06c39a" kindref="member">SetOnce</ref><sp/>()<sp/>{}</highlight></codeline>
+<codeline lineno="37" refid="classSetOnce_1a2ada5bd867df6d986f1abb6fc1c171ac" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/><ref refid="classSetOnce_1a2ada5bd867df6d986f1abb6fc1c171ac" kindref="member">SetOnce</ref><sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>type<sp/>new_value):<sp/>value<sp/>(new_value)<sp/>{}</highlight></codeline>
+<codeline lineno="38" refid="classSetOnce_1ae8685b6c76e979e8f17ecc6c63cd30ce" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/><ref refid="classSetOnce_1ae8685b6c76e979e8f17ecc6c63cd30ce" kindref="member">SetOnce</ref><sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="classSetOnce" kindref="compound">SetOnce</ref>&amp;<sp/>s):</highlight></codeline>
+<codeline lineno="39"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>already_set<sp/>(s.already_set),</highlight></codeline>
+<codeline lineno="40"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>value<sp/><sp/><sp/><sp/><sp/><sp/><sp/>(s.value)<sp/>{};</highlight></codeline>
+<codeline lineno="41"><highlight class="normal"></highlight></codeline>
+<codeline lineno="42" refid="classSetOnce_1a6d16cfd2048dc5562783a2525da9072a" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">set</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>type<sp/>new_value)</highlight></codeline>
+<codeline lineno="43"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline lineno="44"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(already_set)</highlight></codeline>
+<codeline lineno="45"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline lineno="46"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(value<sp/>!=<sp/>new_value)</highlight></codeline>
+<codeline lineno="47"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline lineno="48"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;ERROR<sp/>value<sp/>=<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>value<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>new<sp/>value<sp/>=<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>new_value<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline lineno="49"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">throw</highlight><highlight class="normal"><sp/><ref refid="structDoubleSetException" kindref="compound">DoubleSetException</ref><sp/>();</highlight></codeline>
+<codeline lineno="50"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="51"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="52"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="53"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline lineno="54"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>already_set<sp/>=<sp/></highlight><highlight class="keyword">true</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="55"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>value<sp/><sp/><sp/><sp/><sp/><sp/><sp/>=<sp/>new_value;</highlight></codeline>
+<codeline lineno="56"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="57"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="58"><highlight class="normal"></highlight></codeline>
+<codeline lineno="59"><highlight class="normal"></highlight></codeline>
+<codeline lineno="60" refid="classSetOnce_1a9e7ff09f09c037b5a4b94d0dd81b00d2" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>accel<sp/></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/>type<sp/></highlight><highlight class="keyword">get</highlight><highlight class="normal"><sp/>()<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="61"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline lineno="62"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>value;</highlight></codeline>
+<codeline lineno="63"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>if<sp/>(already_set)<sp/>{return<sp/>value;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="64"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>else<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{throw<sp/>GetBeforeSetException<sp/>();}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="65"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="66"><highlight class="normal"></highlight></codeline>
+<codeline lineno="67"><highlight class="normal"></highlight></codeline>
+<codeline lineno="68"><highlight class="normal">};</highlight></codeline>
+    </programlisting>
+    <location file="/home/frederik/Dropbox/GitHub/Magritte/src/tools/setOnce.hpp"/>
+  </compounddef>
+</doxygen>

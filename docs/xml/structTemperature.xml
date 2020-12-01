@@ -1,0 +1,125 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.14">
+  <compounddef id="structTemperature" kind="struct" language="C++" prot="public">
+    <compoundname>Temperature</compoundname>
+    <includes refid="temperature_8hpp" local="no">temperature.hpp</includes>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structTemperature_1a871dd5d55bc11f177812616567c22d60" prot="public" static="no" mutable="no">
+        <type><ref refid="structParameters" kindref="compound">Parameters</ref></type>
+        <definition>Parameters Temperature::parameters</definition>
+        <argsstring></argsstring>
+        <name>parameters</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/thermodynamics/temperature/temperature.hpp" line="11" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/thermodynamics/temperature/temperature.hpp" bodystart="11" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structTemperature_1a2ae4fa6abfee790165ca255ae7c9412c" prot="public" static="no" mutable="no">
+        <type><ref refid="types_8hpp_1a959df20affa391f0d7913ff0349bdb05" kindref="member">Vector</ref>&lt; <ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref> &gt;</type>
+        <definition>Vector&lt;Real&gt; Temperature::gas</definition>
+        <argsstring></argsstring>
+        <name>gas</name>
+        <briefdescription>
+<para>[K] gas temperature </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/thermodynamics/temperature/temperature.hpp" line="13" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/thermodynamics/temperature/temperature.hpp" bodystart="13" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="structTemperature_1a2d5306b20108dee542772fc9574a968f" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void Temperature::print</definition>
+        <argsstring>()</argsstring>
+        <name>print</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/thermodynamics/temperature/temperature.hpp" line="15" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/thermodynamics/temperature/temperature.hpp" bodystart="15" bodyend="26"/>
+      </memberdef>
+      <memberdef kind="function" id="structTemperature_1a8c9cdb6774db6ba3331136ef09ced210" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Temperature::read</definition>
+        <argsstring>(const Io &amp;io)</argsstring>
+        <name>read</name>
+        <param>
+          <type>const <ref refid="structIo" kindref="compound">Io</ref> &amp;</type>
+          <declname>io</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>read: read in data structure <parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">io</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>io object </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/thermodynamics/temperature/temperature.hpp" line="29" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/thermodynamics/temperature/temperature.cpp" bodystart="10" bodyend="19"/>
+      </memberdef>
+      <memberdef kind="function" id="structTemperature_1a3b33f449e4944714aef04c6ec3905206" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Temperature::write</definition>
+        <argsstring>(const Io &amp;io) const</argsstring>
+        <name>write</name>
+        <param>
+          <type>const <ref refid="structIo" kindref="compound">Io</ref> &amp;</type>
+          <declname>io</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>write: write out data structure <parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">io</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>io object </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/thermodynamics/temperature/temperature.hpp" line="30" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/thermodynamics/temperature/temperature.cpp" bodystart="25" bodyend="30"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <collaborationgraph>
+      <node id="143">
+        <label>Temperature</label>
+        <link refid="structTemperature"/>
+        <childnode refid="144" relation="usage">
+          <edgelabel>parameters</edgelabel>
+        </childnode>
+      </node>
+      <node id="144">
+        <label>Parameters</label>
+        <link refid="structParameters"/>
+      </node>
+    </collaborationgraph>
+    <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/thermodynamics/temperature/temperature.hpp" line="10" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/thermodynamics/temperature/temperature.hpp" bodystart="9" bodyend="31"/>
+    <listofallmembers>
+      <member refid="structTemperature_1a2ae4fa6abfee790165ca255ae7c9412c" prot="public" virt="non-virtual"><scope>Temperature</scope><name>gas</name></member>
+      <member refid="structTemperature_1a871dd5d55bc11f177812616567c22d60" prot="public" virt="non-virtual"><scope>Temperature</scope><name>parameters</name></member>
+      <member refid="structTemperature_1a2d5306b20108dee542772fc9574a968f" prot="public" virt="non-virtual"><scope>Temperature</scope><name>print</name></member>
+      <member refid="structTemperature_1a8c9cdb6774db6ba3331136ef09ced210" prot="public" virt="non-virtual"><scope>Temperature</scope><name>read</name></member>
+      <member refid="structTemperature_1a3b33f449e4944714aef04c6ec3905206" prot="public" virt="non-virtual"><scope>Temperature</scope><name>write</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

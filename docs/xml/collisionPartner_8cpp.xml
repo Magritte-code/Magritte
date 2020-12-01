@@ -1,0 +1,193 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.14">
+  <compounddef id="collisionPartner_8cpp" kind="file" language="C++">
+    <compoundname>collisionPartner.cpp</compoundname>
+    <includes refid="collisionPartner_8hpp" local="yes">collisionPartner.hpp</includes>
+    <includes refid="types_8hpp" local="yes">tools/types.hpp</includes>
+    <incdepgraph>
+      <node id="534">
+        <label>list</label>
+      </node>
+      <node id="539">
+        <label>limits</label>
+      </node>
+      <node id="529">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/linedata/collisionPartner/collisionPartner.cpp</label>
+        <link refid="collisionPartner_8cpp"/>
+        <childnode refid="530" relation="include">
+        </childnode>
+        <childnode refid="532" relation="include">
+        </childnode>
+      </node>
+      <node id="536">
+        <label>Eigen/Core</label>
+      </node>
+      <node id="535">
+        <label>string</label>
+      </node>
+      <node id="544">
+        <label>tools/interpolation.hpp</label>
+        <link refid="interpolation_8hpp"/>
+        <childnode refid="532" relation="include">
+        </childnode>
+      </node>
+      <node id="541">
+        <label>exception</label>
+      </node>
+      <node id="531">
+        <label>io/io.hpp</label>
+        <link refid="io_8hpp"/>
+        <childnode refid="532" relation="include">
+        </childnode>
+      </node>
+      <node id="538">
+        <label>model/parameters/parameters.hpp</label>
+        <link refid="parameters_8hpp"/>
+        <childnode refid="539" relation="include">
+        </childnode>
+        <childnode refid="531" relation="include">
+        </childnode>
+        <childnode refid="540" relation="include">
+        </childnode>
+      </node>
+      <node id="540">
+        <label>tools/setOnce.hpp</label>
+        <link refid="setOnce_8hpp"/>
+        <childnode refid="541" relation="include">
+        </childnode>
+        <childnode refid="542" relation="include">
+        </childnode>
+        <childnode refid="537" relation="include">
+        </childnode>
+      </node>
+      <node id="533">
+        <label>vector</label>
+      </node>
+      <node id="537">
+        <label>paracabs.hpp</label>
+      </node>
+      <node id="532">
+        <label>tools/types.hpp</label>
+        <link refid="types_8hpp"/>
+        <childnode refid="533" relation="include">
+        </childnode>
+        <childnode refid="534" relation="include">
+        </childnode>
+        <childnode refid="535" relation="include">
+        </childnode>
+        <childnode refid="536" relation="include">
+        </childnode>
+        <childnode refid="537" relation="include">
+        </childnode>
+      </node>
+      <node id="542">
+        <label>iostream</label>
+      </node>
+      <node id="530">
+        <label>collisionPartner.hpp</label>
+        <link refid="collisionPartner_8hpp"/>
+        <childnode refid="531" relation="include">
+        </childnode>
+        <childnode refid="538" relation="include">
+        </childnode>
+        <childnode refid="532" relation="include">
+        </childnode>
+        <childnode refid="543" relation="include">
+        </childnode>
+      </node>
+      <node id="543">
+        <label>collisionPartner.tpp</label>
+        <link refid="collisionPartner_8tpp"/>
+        <childnode refid="544" relation="include">
+        </childnode>
+      </node>
+    </incdepgraph>
+      <sectiondef kind="var">
+      <memberdef kind="variable" id="collisionPartner_8cpp_1af1e7949a3ee58158ef099851093bf734" prot="public" static="no" mutable="no">
+        <type>const string</type>
+        <definition>const string prefix</definition>
+        <argsstring></argsstring>
+        <name>prefix</name>
+        <initializer>= &quot;lines/lineProducingSpecies_&quot;</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/linedata/collisionPartner/collisionPartner.cpp" line="5" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/linedata/collisionPartner/collisionPartner.cpp" bodystart="5" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline lineno="1"><highlight class="preprocessor">#include<sp/>&quot;<ref refid="collisionPartner_8hpp" kindref="compound">collisionPartner.hpp</ref>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="2"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;<ref refid="types_8hpp" kindref="compound">tools/types.hpp</ref>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="3"><highlight class="normal"></highlight></codeline>
+<codeline lineno="4"><highlight class="normal"></highlight></codeline>
+<codeline lineno="5"><highlight class="normal"></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">string</highlight><highlight class="normal"><sp/><ref refid="collisionPartner_8cpp_1af1e7949a3ee58158ef099851093bf734" kindref="member">prefix</ref><sp/>=<sp/></highlight><highlight class="stringliteral">&quot;lines/lineProducingSpecies_&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="6"><highlight class="normal"></highlight></codeline>
+<codeline lineno="7"><highlight class="normal"></highlight></codeline>
+<codeline lineno="11"><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="structCollisionPartner_1ad5c67116b13a5bdcf0d4b8606ff5db0c" kindref="member">CollisionPartner :: read</ref><sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="structIo" kindref="compound">Io</ref>&amp;<sp/>io,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref><sp/>l,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref><sp/>c)</highlight></codeline>
+<codeline lineno="12"><highlight class="normal">{</highlight></codeline>
+<codeline lineno="13"><highlight class="normal"><sp/><sp/><sp/><sp/>cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Reading<sp/>collisionPartner...&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>endl;</highlight></codeline>
+<codeline lineno="14"><highlight class="normal"></highlight></codeline>
+<codeline lineno="15"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">string</highlight><highlight class="normal"><sp/>prefix_lc<sp/>=<sp/><ref refid="collisionPartner_8cpp_1af1e7949a3ee58158ef099851093bf734" kindref="member">prefix</ref><sp/>+<sp/>std::to_string<sp/>(l)<sp/>+<sp/></highlight><highlight class="stringliteral">&quot;/linedata&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="16"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>+<sp/></highlight><highlight class="stringliteral">&quot;/collisionPartner_&quot;</highlight><highlight class="normal"><sp/>+<sp/>std::to_string<sp/>(c)<sp/>+<sp/></highlight><highlight class="stringliteral">&quot;/&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="17"><highlight class="normal"></highlight></codeline>
+<codeline lineno="18"><highlight class="normal"><sp/><sp/><sp/><sp/>io.<ref refid="structIo_1aaf24fb114744f57fb2339496f943ce93" kindref="member">read_number</ref><sp/>(prefix_lc+</highlight><highlight class="stringliteral">&quot;.num_col_partner&quot;</highlight><highlight class="normal">,<sp/><ref refid="structCollisionPartner_1a3ae1d946c4ec893341658fd873807459" kindref="member">num_col_partner</ref>);</highlight></codeline>
+<codeline lineno="19"><highlight class="normal"><sp/><sp/><sp/><sp/>io.<ref refid="structIo_1ad5a50f54b41f5076b0b4fcc03ac0f270" kindref="member">read_word</ref><sp/><sp/><sp/>(prefix_lc+</highlight><highlight class="stringliteral">&quot;.orth_or_para_H2&quot;</highlight><highlight class="normal">,<sp/><ref refid="structCollisionPartner_1ab45bc877fdf1582a038c37fba524f4d0" kindref="member">orth_or_para_H2</ref>);</highlight></codeline>
+<codeline lineno="20"><highlight class="normal"></highlight></codeline>
+<codeline lineno="21"><highlight class="normal"><sp/><sp/><sp/><sp/>io.<ref refid="structIo_1a9a229cebb88cd69dfb1af1926cde42a7" kindref="member">read_length</ref><sp/>(prefix_lc+</highlight><highlight class="stringliteral">&quot;tmp&quot;</highlight><highlight class="normal">,<sp/><sp/><ref refid="structCollisionPartner_1ae85dd0aaeb0703952c3f3a736ad6eb1b" kindref="member">ntmp</ref>);</highlight></codeline>
+<codeline lineno="22"><highlight class="normal"><sp/><sp/><sp/><sp/>io.<ref refid="structIo_1a9a229cebb88cd69dfb1af1926cde42a7" kindref="member">read_length</ref><sp/>(prefix_lc+</highlight><highlight class="stringliteral">&quot;icol&quot;</highlight><highlight class="normal">,<sp/><ref refid="structCollisionPartner_1ace00ae259c0460d3a1d0aae95b3b41d0" kindref="member">ncol</ref>);</highlight></codeline>
+<codeline lineno="23"><highlight class="normal"></highlight></codeline>
+<codeline lineno="24"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="structCollisionPartner_1a3f422646bc8a2f8f67b033588db89d0e" kindref="member">tmp</ref>.resize<sp/>(<ref refid="structCollisionPartner_1ae85dd0aaeb0703952c3f3a736ad6eb1b" kindref="member">ntmp</ref>);</highlight></codeline>
+<codeline lineno="25"><highlight class="normal"><sp/><sp/><sp/><sp/>io.<ref refid="structIo_1ad8db00e516c6686e4844c7ad6bfbd28e" kindref="member">read_list</ref><sp/>(prefix_lc+</highlight><highlight class="stringliteral">&quot;tmp&quot;</highlight><highlight class="normal">,<sp/><ref refid="structCollisionPartner_1a3f422646bc8a2f8f67b033588db89d0e" kindref="member">tmp</ref>);</highlight></codeline>
+<codeline lineno="26"><highlight class="normal"></highlight></codeline>
+<codeline lineno="27"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="structCollisionPartner_1a33be27af5e7352511dbd183048a47aac" kindref="member">icol</ref>.resize<sp/>(<ref refid="structCollisionPartner_1ace00ae259c0460d3a1d0aae95b3b41d0" kindref="member">ncol</ref>);</highlight></codeline>
+<codeline lineno="28"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="structCollisionPartner_1aa77e1448c8d71a913ed52f930f13c587" kindref="member">jcol</ref>.resize<sp/>(<ref refid="structCollisionPartner_1ace00ae259c0460d3a1d0aae95b3b41d0" kindref="member">ncol</ref>);</highlight></codeline>
+<codeline lineno="29"><highlight class="normal"><sp/><sp/><sp/><sp/>io.<ref refid="structIo_1ad8db00e516c6686e4844c7ad6bfbd28e" kindref="member">read_list</ref><sp/>(prefix_lc+</highlight><highlight class="stringliteral">&quot;icol&quot;</highlight><highlight class="normal">,<sp/><ref refid="structCollisionPartner_1a33be27af5e7352511dbd183048a47aac" kindref="member">icol</ref>);</highlight></codeline>
+<codeline lineno="30"><highlight class="normal"><sp/><sp/><sp/><sp/>io.<ref refid="structIo_1ad8db00e516c6686e4844c7ad6bfbd28e" kindref="member">read_list</ref><sp/>(prefix_lc+</highlight><highlight class="stringliteral">&quot;jcol&quot;</highlight><highlight class="normal">,<sp/><ref refid="structCollisionPartner_1aa77e1448c8d71a913ed52f930f13c587" kindref="member">jcol</ref>);</highlight></codeline>
+<codeline lineno="31"><highlight class="normal"></highlight></codeline>
+<codeline lineno="32"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="structCollisionPartner_1a4295f286508b1297ee00ffefb0c06ebd" kindref="member">Ce</ref>.resize<sp/>(<ref refid="structCollisionPartner_1ae85dd0aaeb0703952c3f3a736ad6eb1b" kindref="member">ntmp</ref>);</highlight></codeline>
+<codeline lineno="33"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="structCollisionPartner_1a8c8772abbacae30d0db5a38d21a4306d" kindref="member">Cd</ref>.resize<sp/>(<ref refid="structCollisionPartner_1ae85dd0aaeb0703952c3f3a736ad6eb1b" kindref="member">ntmp</ref>);</highlight></codeline>
+<codeline lineno="34"><highlight class="normal"></highlight></codeline>
+<codeline lineno="35"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(<ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref><sp/>t<sp/>=<sp/>0;<sp/>t<sp/>&lt;<sp/><ref refid="structCollisionPartner_1ae85dd0aaeb0703952c3f3a736ad6eb1b" kindref="member">ntmp</ref>;<sp/>t++)</highlight></codeline>
+<codeline lineno="36"><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline lineno="37"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="structCollisionPartner_1a4295f286508b1297ee00ffefb0c06ebd" kindref="member">Ce</ref>[t].resize<sp/>(<ref refid="structCollisionPartner_1ace00ae259c0460d3a1d0aae95b3b41d0" kindref="member">ncol</ref>);</highlight></codeline>
+<codeline lineno="38"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="structCollisionPartner_1a8c8772abbacae30d0db5a38d21a4306d" kindref="member">Cd</ref>[t].resize<sp/>(<ref refid="structCollisionPartner_1ace00ae259c0460d3a1d0aae95b3b41d0" kindref="member">ncol</ref>);</highlight></codeline>
+<codeline lineno="39"><highlight class="normal"></highlight></codeline>
+<codeline lineno="40"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>io.<ref refid="structIo_1af6cacc007e010a226459b37ba976aa18" kindref="member">read_array</ref><sp/>(prefix_lc+</highlight><highlight class="stringliteral">&quot;Ce&quot;</highlight><highlight class="normal">,<sp/><ref refid="structCollisionPartner_1a4295f286508b1297ee00ffefb0c06ebd" kindref="member">Ce</ref>);</highlight></codeline>
+<codeline lineno="41"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>io.<ref refid="structIo_1af6cacc007e010a226459b37ba976aa18" kindref="member">read_array</ref><sp/>(prefix_lc+</highlight><highlight class="stringliteral">&quot;Cd&quot;</highlight><highlight class="normal">,<sp/><ref refid="structCollisionPartner_1a8c8772abbacae30d0db5a38d21a4306d" kindref="member">Cd</ref>);</highlight></codeline>
+<codeline lineno="42"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="43"><highlight class="normal"></highlight></codeline>
+<codeline lineno="44"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="structCollisionPartner_1a121b67efc4dd17d235dbb385efa8cf97" kindref="member">Ce_intpld</ref>.resize<sp/>(<ref refid="structCollisionPartner_1ace00ae259c0460d3a1d0aae95b3b41d0" kindref="member">ncol</ref>);</highlight></codeline>
+<codeline lineno="45"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="structCollisionPartner_1ab96e9d8634a28757e9c0d99958a6db53" kindref="member">Cd_intpld</ref>.resize<sp/>(<ref refid="structCollisionPartner_1ace00ae259c0460d3a1d0aae95b3b41d0" kindref="member">ncol</ref>);</highlight></codeline>
+<codeline lineno="46"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="47"><highlight class="normal"></highlight></codeline>
+<codeline lineno="48"><highlight class="normal"></highlight></codeline>
+<codeline lineno="52"><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="structCollisionPartner_1ad51203bc8c2b82fe02fa25ee1ac98333" kindref="member">CollisionPartner :: write</ref><sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="structIo" kindref="compound">Io</ref>&amp;<sp/>io,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref><sp/>l,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref><sp/>c)</highlight><highlight class="keyword"><sp/>const</highlight></codeline>
+<codeline lineno="53"><highlight class="keyword"></highlight><highlight class="normal">{</highlight></codeline>
+<codeline lineno="54"><highlight class="normal"><sp/><sp/><sp/><sp/>cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Writing<sp/>collisionPartner...&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>endl;</highlight></codeline>
+<codeline lineno="55"><highlight class="normal"><sp/><sp/><sp/><sp/>cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;(l,<sp/>c)<sp/>=<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>l<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;,<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>c<sp/>&lt;&lt;<sp/>endl;</highlight></codeline>
+<codeline lineno="56"><highlight class="normal"></highlight></codeline>
+<codeline lineno="57"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">string</highlight><highlight class="normal"><sp/>prefix_lc<sp/>=<sp/><ref refid="collisionPartner_8cpp_1af1e7949a3ee58158ef099851093bf734" kindref="member">prefix</ref><sp/>+<sp/>std::to_string<sp/>(l)<sp/>+<sp/></highlight><highlight class="stringliteral">&quot;/linedata&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="58"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>+<sp/></highlight><highlight class="stringliteral">&quot;/collisionPartner_&quot;</highlight><highlight class="normal"><sp/>+<sp/>std::to_string<sp/>(c)<sp/>+<sp/></highlight><highlight class="stringliteral">&quot;/&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="59"><highlight class="normal"></highlight></codeline>
+<codeline lineno="60"><highlight class="normal"><sp/><sp/><sp/><sp/>io.<ref refid="structIo_1a163d88ee778a65ecafd62bcb35d9fc33" kindref="member">write_number</ref><sp/>(prefix_lc+</highlight><highlight class="stringliteral">&quot;.num_col_partner&quot;</highlight><highlight class="normal">,<sp/><ref refid="structCollisionPartner_1a3ae1d946c4ec893341658fd873807459" kindref="member">num_col_partner</ref>);</highlight></codeline>
+<codeline lineno="61"><highlight class="normal"><sp/><sp/><sp/><sp/>io.<ref refid="structIo_1a60ce58b270dd4beeb0263bfdd2c63daf" kindref="member">write_word</ref><sp/><sp/><sp/>(prefix_lc+</highlight><highlight class="stringliteral">&quot;.orth_or_para_H2&quot;</highlight><highlight class="normal">,<sp/><ref refid="structCollisionPartner_1ab45bc877fdf1582a038c37fba524f4d0" kindref="member">orth_or_para_H2</ref>);</highlight></codeline>
+<codeline lineno="62"><highlight class="normal"></highlight></codeline>
+<codeline lineno="63"><highlight class="normal"><sp/><sp/><sp/><sp/>io.<ref refid="structIo_1a88b9ed3d29a39626f53c5204757603d3" kindref="member">write_list</ref><sp/>(prefix_lc+</highlight><highlight class="stringliteral">&quot;icol&quot;</highlight><highlight class="normal">,<sp/><ref refid="structCollisionPartner_1a33be27af5e7352511dbd183048a47aac" kindref="member">icol</ref>);</highlight></codeline>
+<codeline lineno="64"><highlight class="normal"><sp/><sp/><sp/><sp/>io.<ref refid="structIo_1a88b9ed3d29a39626f53c5204757603d3" kindref="member">write_list</ref><sp/>(prefix_lc+</highlight><highlight class="stringliteral">&quot;jcol&quot;</highlight><highlight class="normal">,<sp/><ref refid="structCollisionPartner_1aa77e1448c8d71a913ed52f930f13c587" kindref="member">jcol</ref>);</highlight></codeline>
+<codeline lineno="65"><highlight class="normal"></highlight></codeline>
+<codeline lineno="66"><highlight class="normal"><sp/><sp/><sp/><sp/>io.<ref refid="structIo_1a88b9ed3d29a39626f53c5204757603d3" kindref="member">write_list</ref><sp/>(prefix_lc+</highlight><highlight class="stringliteral">&quot;tmp&quot;</highlight><highlight class="normal">,<sp/><ref refid="structCollisionPartner_1a3f422646bc8a2f8f67b033588db89d0e" kindref="member">tmp</ref>);</highlight></codeline>
+<codeline lineno="67"><highlight class="normal"></highlight></codeline>
+<codeline lineno="68"><highlight class="normal"><sp/><sp/><sp/><sp/>io.<ref refid="structIo_1aa73fe79d27fbaf31cbea124769e13a2e" kindref="member">write_array</ref><sp/>(prefix_lc+</highlight><highlight class="stringliteral">&quot;Ce&quot;</highlight><highlight class="normal">,<sp/><ref refid="structCollisionPartner_1a4295f286508b1297ee00ffefb0c06ebd" kindref="member">Ce</ref>);</highlight></codeline>
+<codeline lineno="69"><highlight class="normal"><sp/><sp/><sp/><sp/>io.<ref refid="structIo_1aa73fe79d27fbaf31cbea124769e13a2e" kindref="member">write_array</ref><sp/>(prefix_lc+</highlight><highlight class="stringliteral">&quot;Cd&quot;</highlight><highlight class="normal">,<sp/><ref refid="structCollisionPartner_1a8c8772abbacae30d0db5a38d21a4306d" kindref="member">Cd</ref>);</highlight></codeline>
+<codeline lineno="70"><highlight class="normal">}</highlight></codeline>
+    </programlisting>
+    <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/linedata/collisionPartner/collisionPartner.cpp"/>
+  </compounddef>
+</doxygen>

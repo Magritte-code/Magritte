@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.14">
+  <compounddef id="dir_a5a77db0ab2946492cbe6e548b99567f" kind="dir">
+    <compoundname>/home/frederik/Dropbox/GitHub/Magritte/src/model/image</compoundname>
+    <innerfile refid="image_8cpp">image.cpp</innerfile>
+    <innerfile refid="image_8hpp">image.hpp</innerfile>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/image/"/>
+  </compounddef>
+</doxygen>

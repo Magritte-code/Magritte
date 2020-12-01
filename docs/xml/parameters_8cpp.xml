@@ -1,0 +1,312 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.14">
+  <compounddef id="parameters_8cpp" kind="file" language="C++">
+    <compoundname>parameters.cpp</compoundname>
+    <includes refid="parameters_8hpp" local="yes">parameters.hpp</includes>
+    <includes refid="types_8hpp" local="yes">tools/types.hpp</includes>
+    <incdepgraph>
+      <node id="979">
+        <label>list</label>
+      </node>
+      <node id="975">
+        <label>limits</label>
+      </node>
+      <node id="981">
+        <label>Eigen/Core</label>
+      </node>
+      <node id="980">
+        <label>string</label>
+      </node>
+      <node id="984">
+        <label>exception</label>
+      </node>
+      <node id="976">
+        <label>io/io.hpp</label>
+        <link refid="io_8hpp"/>
+        <childnode refid="977" relation="include">
+        </childnode>
+      </node>
+      <node id="974">
+        <label>parameters.hpp</label>
+        <link refid="parameters_8hpp"/>
+        <childnode refid="975" relation="include">
+        </childnode>
+        <childnode refid="976" relation="include">
+        </childnode>
+        <childnode refid="983" relation="include">
+        </childnode>
+      </node>
+      <node id="983">
+        <label>tools/setOnce.hpp</label>
+        <link refid="setOnce_8hpp"/>
+        <childnode refid="984" relation="include">
+        </childnode>
+        <childnode refid="985" relation="include">
+        </childnode>
+        <childnode refid="982" relation="include">
+        </childnode>
+      </node>
+      <node id="978">
+        <label>vector</label>
+      </node>
+      <node id="982">
+        <label>paracabs.hpp</label>
+      </node>
+      <node id="977">
+        <label>tools/types.hpp</label>
+        <link refid="types_8hpp"/>
+        <childnode refid="978" relation="include">
+        </childnode>
+        <childnode refid="979" relation="include">
+        </childnode>
+        <childnode refid="980" relation="include">
+        </childnode>
+        <childnode refid="981" relation="include">
+        </childnode>
+        <childnode refid="982" relation="include">
+        </childnode>
+      </node>
+      <node id="973">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/parameters/parameters.cpp</label>
+        <link refid="parameters_8cpp"/>
+        <childnode refid="974" relation="include">
+        </childnode>
+        <childnode refid="977" relation="include">
+        </childnode>
+      </node>
+      <node id="985">
+        <label>iostream</label>
+      </node>
+    </incdepgraph>
+      <sectiondef kind="define">
+      <memberdef kind="define" id="parameters_8cpp_1ab79d2f38a3a11e2604e63c8c2960e216" prot="public" static="no">
+        <name>READ_NUMBER</name>
+        <param><defname>type</defname></param>
+        <param><defname>x</defname></param>
+        <initializer>type x##_copy;                                                                         \
+    if (io.read_number (&quot;.&quot;#x, x##_copy) == 0) {set_##x (x##_copy);}                       \
+    else                                       {cout &lt;&lt; &quot;Failed to read &quot;#x&quot;!&quot; &lt;&lt; endl;}</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/parameters/parameters.cpp" line="5" column="9" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/parameters/parameters.cpp" bodystart="5" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="parameters_8cpp_1a8733e284be643bf037b2ceb3a5ffe3ab" prot="public" static="no">
+        <name>READ_BOOL</name>
+        <param><defname>type</defname></param>
+        <param><defname>x</defname></param>
+        <initializer>type x##_copy;                                                                         \
+    if (io.read_bool (&quot;.&quot;#x, x##_copy) == 0) {set_##x (x##_copy);}                         \
+    else                                     {cout &lt;&lt; &quot;Failed to read &quot;#x&quot;!&quot; &lt;&lt; endl;}</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/parameters/parameters.cpp" line="10" column="9" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/parameters/parameters.cpp" bodystart="10" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="parameters_8cpp_1aac63c3d7e00e2981e483e5162819975d" prot="public" static="no">
+        <name>WRITE_NUMBER</name>
+        <param><defname>type</defname></param>
+        <param><defname>x</defname></param>
+        <initializer>try         {io.write_number (&quot;.&quot;#x, get_##x());}                                      \
+    catch (...) {cout &lt;&lt; &quot;Failed write &quot;#x&quot;!&quot; &lt;&lt; endl;}</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/parameters/parameters.cpp" line="15" column="9" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/parameters/parameters.cpp" bodystart="15" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="parameters_8cpp_1a8487b60e57f8117f3cc69ee16f48e69f" prot="public" static="no">
+        <name>WRITE_BOOL</name>
+        <param><defname>type</defname></param>
+        <param><defname>x</defname></param>
+        <initializer>try         {io.write_bool (&quot;.&quot;#x, get_##x());}                                        \
+    catch (...) {cout &lt;&lt; &quot;Failed write &quot;#x&quot;!&quot; &lt;&lt; endl;}</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/parameters/parameters.cpp" line="19" column="9" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/parameters/parameters.cpp" bodystart="19" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline lineno="1"><highlight class="preprocessor">#include<sp/>&quot;<ref refid="parameters_8hpp" kindref="compound">parameters.hpp</ref>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="2"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;<ref refid="types_8hpp" kindref="compound">tools/types.hpp</ref>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="3"><highlight class="normal"></highlight></codeline>
+<codeline lineno="4"><highlight class="normal"></highlight></codeline>
+<codeline lineno="5"><highlight class="normal"></highlight><highlight class="preprocessor">#define<sp/>READ_NUMBER(type,<sp/>x)<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>\</highlight></codeline>
+<codeline lineno="6"><highlight class="preprocessor"><sp/><sp/><sp/><sp/>type<sp/>x##_copy;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>\</highlight></codeline>
+<codeline lineno="7"><highlight class="preprocessor"><sp/><sp/><sp/><sp/>if<sp/>(io.read_number<sp/>(&quot;.&quot;#x,<sp/>x##_copy)<sp/>==<sp/>0)<sp/>{set_##x<sp/>(x##_copy);}<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>\</highlight></codeline>
+<codeline lineno="8"><highlight class="preprocessor"><sp/><sp/><sp/><sp/>else<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{cout<sp/>&lt;&lt;<sp/>&quot;Failed<sp/>to<sp/>read<sp/>&quot;#x&quot;!&quot;<sp/>&lt;&lt;<sp/>endl;}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="9"><highlight class="normal"></highlight></codeline>
+<codeline lineno="10"><highlight class="normal"></highlight><highlight class="preprocessor">#define<sp/>READ_BOOL(type,<sp/>x)<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>\</highlight></codeline>
+<codeline lineno="11"><highlight class="preprocessor"><sp/><sp/><sp/><sp/>type<sp/>x##_copy;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>\</highlight></codeline>
+<codeline lineno="12"><highlight class="preprocessor"><sp/><sp/><sp/><sp/>if<sp/>(io.read_bool<sp/>(&quot;.&quot;#x,<sp/>x##_copy)<sp/>==<sp/>0)<sp/>{set_##x<sp/>(x##_copy);}<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>\</highlight></codeline>
+<codeline lineno="13"><highlight class="preprocessor"><sp/><sp/><sp/><sp/>else<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{cout<sp/>&lt;&lt;<sp/>&quot;Failed<sp/>to<sp/>read<sp/>&quot;#x&quot;!&quot;<sp/>&lt;&lt;<sp/>endl;}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="14"><highlight class="normal"></highlight></codeline>
+<codeline lineno="15"><highlight class="normal"></highlight><highlight class="preprocessor">#define<sp/>WRITE_NUMBER(type,<sp/>x)<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>\</highlight></codeline>
+<codeline lineno="16"><highlight class="preprocessor"><sp/><sp/><sp/><sp/>try<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{io.write_number<sp/>(&quot;.&quot;#x,<sp/>get_##x());}<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>\</highlight></codeline>
+<codeline lineno="17"><highlight class="preprocessor"><sp/><sp/><sp/><sp/>catch<sp/>(...)<sp/>{cout<sp/>&lt;&lt;<sp/>&quot;Failed<sp/>write<sp/>&quot;#x&quot;!&quot;<sp/>&lt;&lt;<sp/>endl;}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="18"><highlight class="normal"></highlight></codeline>
+<codeline lineno="19"><highlight class="normal"></highlight><highlight class="preprocessor">#define<sp/>WRITE_BOOL(type,<sp/>x)<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>\</highlight></codeline>
+<codeline lineno="20"><highlight class="preprocessor"><sp/><sp/><sp/><sp/>try<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{io.write_bool<sp/>(&quot;.&quot;#x,<sp/>get_##x());}<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>\</highlight></codeline>
+<codeline lineno="21"><highlight class="preprocessor"><sp/><sp/><sp/><sp/>catch<sp/>(...)<sp/>{cout<sp/>&lt;&lt;<sp/>&quot;Failed<sp/>write<sp/>&quot;#x&quot;!&quot;<sp/>&lt;&lt;<sp/>endl;}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="22"><highlight class="normal"></highlight></codeline>
+<codeline lineno="23"><highlight class="normal"></highlight></codeline>
+<codeline lineno="24"><highlight class="normal"></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="structParameters_1aa77450460832b258813f681621885deb" kindref="member">Parameters :: read</ref><sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="structIo" kindref="compound">Io</ref><sp/>&amp;io)</highlight></codeline>
+<codeline lineno="25"><highlight class="normal">{</highlight></codeline>
+<codeline lineno="26"><highlight class="normal"><sp/><sp/><sp/><sp/>cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Reading<sp/>parameters...&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>endl;</highlight></codeline>
+<codeline lineno="27"><highlight class="normal"></highlight></codeline>
+<codeline lineno="28"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="parameters_8cpp_1ab79d2f38a3a11e2604e63c8c2960e216" kindref="member">READ_NUMBER</ref><sp/>(<ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref>,<sp/>dimension<sp/>);</highlight></codeline>
+<codeline lineno="29"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="parameters_8cpp_1ab79d2f38a3a11e2604e63c8c2960e216" kindref="member">READ_NUMBER</ref><sp/>(<ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref>,<sp/>npoints<sp/><sp/><sp/>);</highlight></codeline>
+<codeline lineno="30"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="parameters_8cpp_1ab79d2f38a3a11e2604e63c8c2960e216" kindref="member">READ_NUMBER</ref><sp/>(<ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref>,<sp/>totnnbs<sp/><sp/><sp/>);</highlight></codeline>
+<codeline lineno="31"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="parameters_8cpp_1ab79d2f38a3a11e2604e63c8c2960e216" kindref="member">READ_NUMBER</ref><sp/>(<ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref>,<sp/>nrays<sp/><sp/><sp/><sp/><sp/>);</highlight></codeline>
+<codeline lineno="32"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="parameters_8cpp_1ab79d2f38a3a11e2604e63c8c2960e216" kindref="member">READ_NUMBER</ref><sp/>(<ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref>,<sp/>hnrays<sp/><sp/><sp/><sp/>);</highlight></codeline>
+<codeline lineno="33"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="parameters_8cpp_1ab79d2f38a3a11e2604e63c8c2960e216" kindref="member">READ_NUMBER</ref><sp/>(<ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref>,<sp/>nrays_red<sp/>);</highlight></codeline>
+<codeline lineno="34"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="parameters_8cpp_1ab79d2f38a3a11e2604e63c8c2960e216" kindref="member">READ_NUMBER</ref><sp/>(<ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref>,<sp/>order_min<sp/>);</highlight></codeline>
+<codeline lineno="35"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="parameters_8cpp_1ab79d2f38a3a11e2604e63c8c2960e216" kindref="member">READ_NUMBER</ref><sp/>(<ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref>,<sp/>order_max<sp/>);</highlight></codeline>
+<codeline lineno="36"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="parameters_8cpp_1ab79d2f38a3a11e2604e63c8c2960e216" kindref="member">READ_NUMBER</ref><sp/>(<ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref>,<sp/>nboundary<sp/>);</highlight></codeline>
+<codeline lineno="37"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="parameters_8cpp_1ab79d2f38a3a11e2604e63c8c2960e216" kindref="member">READ_NUMBER</ref><sp/>(<ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref>,<sp/>nfreqs<sp/><sp/><sp/><sp/>);</highlight></codeline>
+<codeline lineno="38"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="parameters_8cpp_1ab79d2f38a3a11e2604e63c8c2960e216" kindref="member">READ_NUMBER</ref><sp/>(<ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref>,<sp/>nspecs<sp/><sp/><sp/><sp/>);</highlight></codeline>
+<codeline lineno="39"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="parameters_8cpp_1ab79d2f38a3a11e2604e63c8c2960e216" kindref="member">READ_NUMBER</ref><sp/>(<ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref>,<sp/>nlspecs<sp/><sp/><sp/>);</highlight></codeline>
+<codeline lineno="40"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="parameters_8cpp_1ab79d2f38a3a11e2604e63c8c2960e216" kindref="member">READ_NUMBER</ref><sp/>(<ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref>,<sp/>nlines<sp/><sp/><sp/><sp/>);</highlight></codeline>
+<codeline lineno="41"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="parameters_8cpp_1ab79d2f38a3a11e2604e63c8c2960e216" kindref="member">READ_NUMBER</ref><sp/>(<ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref>,<sp/>nquads<sp/><sp/><sp/><sp/>);</highlight></codeline>
+<codeline lineno="42"><highlight class="normal"></highlight></codeline>
+<codeline lineno="43"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="parameters_8cpp_1ab79d2f38a3a11e2604e63c8c2960e216" kindref="member">READ_NUMBER</ref><sp/>(<ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref>,<sp/>pop_prec);</highlight></codeline>
+<codeline lineno="44"><highlight class="normal"></highlight></codeline>
+<codeline lineno="45"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="parameters_8cpp_1a8733e284be643bf037b2ceb3a5ffe3ab" kindref="member">READ_BOOL</ref><sp/>(</highlight><highlight class="keywordtype">bool</highlight><highlight class="normal">,<sp/>use_scattering<sp/><sp/><sp/><sp/><sp/><sp/>);</highlight></codeline>
+<codeline lineno="46"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="parameters_8cpp_1a8733e284be643bf037b2ceb3a5ffe3ab" kindref="member">READ_BOOL</ref><sp/>(</highlight><highlight class="keywordtype">bool</highlight><highlight class="normal">,<sp/>use_Ng_acceleration<sp/>);</highlight></codeline>
+<codeline lineno="47"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="parameters_8cpp_1a8733e284be643bf037b2ceb3a5ffe3ab" kindref="member">READ_BOOL</ref><sp/>(</highlight><highlight class="keywordtype">bool</highlight><highlight class="normal">,<sp/>spherical_symmetry<sp/><sp/>);</highlight></codeline>
+<codeline lineno="48"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="parameters_8cpp_1a8733e284be643bf037b2ceb3a5ffe3ab" kindref="member">READ_BOOL</ref><sp/>(</highlight><highlight class="keywordtype">bool</highlight><highlight class="normal">,<sp/>adaptive_ray_tracing);</highlight></codeline>
+<codeline lineno="49"><highlight class="normal"></highlight></codeline>
+<codeline lineno="50"><highlight class="normal"></highlight><highlight class="comment">//</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="51"><highlight class="normal"></highlight><highlight class="comment">//</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="52"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>if<sp/><sp/><sp/>(io.read_number(&quot;.npoints&quot;,<sp/><sp/><sp/><sp/>n)<sp/>==<sp/>0)<sp/>{set_npoints<sp/><sp/><sp/>(n);}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="53"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>else<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{cout<sp/>&lt;&lt;<sp/>&quot;Failed<sp/>read<sp/>npoints!&quot;<sp/><sp/><sp/><sp/>&lt;&lt;<sp/>endl;}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="54"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>if<sp/><sp/><sp/>(io.read_number(&quot;.totnnbs&quot;,<sp/><sp/><sp/><sp/>n)<sp/>==<sp/>0)<sp/>{set_totnnbs<sp/><sp/><sp/>(n);}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="55"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>else<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{cout<sp/>&lt;&lt;<sp/>&quot;Failed<sp/>read<sp/>totnnbs!&quot;<sp/><sp/><sp/><sp/>&lt;&lt;<sp/>endl;}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="56"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>if<sp/><sp/><sp/>(io.read_number(&quot;.nrays&quot;,<sp/><sp/><sp/><sp/><sp/><sp/>n)<sp/>==<sp/>0)<sp/>{set_nrays<sp/><sp/><sp/><sp/><sp/>(n);}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="57"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>else<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{cout<sp/>&lt;&lt;<sp/>&quot;Failed<sp/>read<sp/>nrays!&quot;<sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>endl;}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="58"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>if<sp/><sp/><sp/>(io.read_number(&quot;.nrays_red&quot;,<sp/><sp/>n)<sp/>==<sp/>0)<sp/>{set_nrays_red<sp/>(n);}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="59"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>else<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{cout<sp/>&lt;&lt;<sp/>&quot;Failed<sp/>read<sp/>nrays_red!&quot;<sp/><sp/>&lt;&lt;<sp/>endl;}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="60"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>if<sp/><sp/><sp/>(io.read_number(&quot;.order_min&quot;,<sp/><sp/>n)<sp/>==<sp/>0)<sp/>{set_order_min<sp/>(n);}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="61"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>else<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{cout<sp/>&lt;&lt;<sp/>&quot;Failed<sp/>read<sp/>order_min!&quot;<sp/><sp/>&lt;&lt;<sp/>endl;}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="62"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>if<sp/><sp/><sp/>(io.read_number(&quot;.order_max&quot;,<sp/><sp/>n)<sp/>==<sp/>0)<sp/>{set_order_max<sp/>(n);}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="63"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>else<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{cout<sp/>&lt;&lt;<sp/>&quot;Failed<sp/>read<sp/>order_max!&quot;<sp/><sp/>&lt;&lt;<sp/>endl;}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="64"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>if<sp/><sp/><sp/>(io.read_number(&quot;.nboundary&quot;,<sp/><sp/>n)<sp/>==<sp/>0)<sp/>{set_nboundary<sp/>(n);}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="65"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>else<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{cout<sp/>&lt;&lt;<sp/>&quot;Failed<sp/>read<sp/>nboundary!&quot;<sp/><sp/>&lt;&lt;<sp/>endl;}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="66"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>if<sp/><sp/><sp/>(io.read_number(&quot;.nfreqs&quot;,<sp/><sp/><sp/><sp/><sp/>n)<sp/>==<sp/>0)<sp/>{set_nfreqs<sp/><sp/><sp/><sp/>(n);}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="67"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>else<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{cout<sp/>&lt;&lt;<sp/>&quot;Failed<sp/>read<sp/>nfreqs!&quot;<sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>endl;}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="68"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>if<sp/><sp/><sp/>(io.read_number(&quot;.nfreqs_red&quot;,<sp/>n)<sp/>==<sp/>0)<sp/>{set_nfreqs_red(n);}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="69"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>else<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{cout<sp/>&lt;&lt;<sp/>&quot;Failed<sp/>read<sp/>nfreqs_red!&quot;<sp/>&lt;&lt;<sp/>endl;}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="70"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>if<sp/><sp/><sp/>(io.read_number(&quot;.nspecs&quot;,<sp/><sp/><sp/><sp/><sp/>n)<sp/>==<sp/>0)<sp/>{set_nspecs<sp/><sp/><sp/><sp/>(n);}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="71"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>else<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{cout<sp/>&lt;&lt;<sp/>&quot;Failed<sp/>read<sp/>nspecs!&quot;<sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>endl;}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="72"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>if<sp/><sp/><sp/>(io.read_number(&quot;.nlspecs&quot;,<sp/><sp/><sp/><sp/>n)<sp/>==<sp/>0)<sp/>{set_nlspecs<sp/><sp/><sp/>(n);}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="73"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>else<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{cout<sp/>&lt;&lt;<sp/>&quot;Failed<sp/>read<sp/>nlspecs!&quot;<sp/><sp/><sp/><sp/>&lt;&lt;<sp/>endl;}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="74"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>if<sp/><sp/><sp/>(io.read_number(&quot;.nlines&quot;,<sp/><sp/><sp/><sp/><sp/>n)<sp/>==<sp/>0)<sp/>{set_nlines<sp/><sp/><sp/><sp/>(n);}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="75"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>else<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{cout<sp/>&lt;&lt;<sp/>&quot;Failed<sp/>read<sp/>nlines!&quot;<sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>endl;}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="76"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>if<sp/><sp/><sp/>(io.read_number(&quot;.nquads&quot;,<sp/><sp/><sp/><sp/><sp/>n)<sp/>==<sp/>0)<sp/>{set_nquads<sp/><sp/><sp/><sp/>(n);}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="77"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>else<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{cout<sp/>&lt;&lt;<sp/>&quot;Failed<sp/>read<sp/>nquads!&quot;<sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>endl;}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="78"><highlight class="normal"></highlight><highlight class="comment">//</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="79"><highlight class="normal"></highlight><highlight class="comment">//</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="80"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>double<sp/>d;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="81"><highlight class="normal"></highlight><highlight class="comment">//</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="82"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>if<sp/><sp/><sp/>(io.read_number(&quot;.pop_prec&quot;,<sp/>d)<sp/>==<sp/>0)<sp/>{set_pop_prec(d);}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="83"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>else<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{cout<sp/>&lt;&lt;<sp/>&quot;Failed<sp/>read<sp/>pop_prec!&quot;<sp/>&lt;&lt;<sp/>endl;}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="84"><highlight class="normal"></highlight><highlight class="comment">//</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="85"><highlight class="normal"></highlight><highlight class="comment">//</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="86"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>bool<sp/>b;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="87"><highlight class="normal"></highlight><highlight class="comment">//</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="88"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>if<sp/><sp/><sp/>(io.read_bool(&quot;.use_scattering&quot;,<sp/><sp/><sp/><sp/><sp/><sp/><sp/>b)<sp/>==<sp/>0)<sp/>{set_use_scattering<sp/><sp/><sp/><sp/><sp/><sp/><sp/>(b);}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="89"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>else<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{cout<sp/>&lt;&lt;<sp/>&quot;Failed<sp/>read<sp/>use_scattering!&quot;<sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>endl;}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="90"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>if<sp/><sp/><sp/>(io.read_bool(&quot;.use_Ng_acceleration&quot;,<sp/><sp/>b)<sp/>==<sp/>0)<sp/>{set_use_Ng_acceleration<sp/><sp/>(b);}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="91"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>else<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{cout<sp/>&lt;&lt;<sp/>&quot;Failed<sp/>read<sp/>use_Ng_acceleration!&quot;<sp/><sp/>&lt;&lt;<sp/>endl;}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="92"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>if<sp/><sp/><sp/>(io.read_bool(&quot;.spherical_symmetry&quot;,<sp/><sp/><sp/>b)<sp/>==<sp/>0)<sp/>{set_spherical_symmetry<sp/><sp/><sp/>(b);}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="93"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>else<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{cout<sp/>&lt;&lt;<sp/>&quot;Failed<sp/>read<sp/>spherical_symmetry!&quot;<sp/><sp/><sp/>&lt;&lt;<sp/>endl;}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="94"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>if<sp/><sp/><sp/>(io.read_bool(&quot;.adaptive_ray_tracing&quot;,<sp/>b)<sp/>==<sp/>0)<sp/>{set_adaptive_ray_tracing<sp/>(b);}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="95"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>else<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{cout<sp/>&lt;&lt;<sp/>&quot;Failed<sp/>read<sp/>adaptive_ray_tracing!&quot;<sp/>&lt;&lt;<sp/>endl;}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="96"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="97"><highlight class="normal"></highlight></codeline>
+<codeline lineno="98"><highlight class="normal"></highlight></codeline>
+<codeline lineno="99"><highlight class="normal"></highlight></codeline>
+<codeline lineno="100"><highlight class="normal"></highlight></codeline>
+<codeline lineno="101"><highlight class="normal"></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="structParameters_1a7a4fc1edee4d2a10dbf220c178112ab5" kindref="member">Parameters :: write</ref><sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="structIo" kindref="compound">Io</ref><sp/>&amp;io)</highlight><highlight class="keyword"><sp/>const</highlight></codeline>
+<codeline lineno="102"><highlight class="keyword"></highlight><highlight class="normal">{</highlight></codeline>
+<codeline lineno="103"><highlight class="normal"><sp/><sp/><sp/><sp/>cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Writing<sp/>parameters...&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>endl;</highlight></codeline>
+<codeline lineno="104"><highlight class="normal"></highlight></codeline>
+<codeline lineno="105"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>try<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{io.write_number<sp/>(&quot;.npoints&quot;,<sp/><sp/><sp/><sp/>npoints<sp/><sp/><sp/><sp/>()<sp/>);}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="106"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>catch<sp/>(...)<sp/>{cout<sp/>&lt;&lt;<sp/>&quot;Failed<sp/>write<sp/>npoints!&quot;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>endl;}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="107"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>try<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{io.write_number<sp/>(&quot;.totnnbs&quot;,<sp/><sp/><sp/><sp/>totnnbs<sp/><sp/><sp/><sp/>()<sp/>);}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="108"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>catch<sp/>(...)<sp/>{cout<sp/>&lt;&lt;<sp/>&quot;Failed<sp/>write<sp/>totnnbs!&quot;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>endl;}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="109"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>try<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{io.write_number<sp/>(&quot;.nrays&quot;,<sp/><sp/><sp/><sp/><sp/><sp/>nrays<sp/><sp/><sp/><sp/><sp/><sp/>()<sp/>);}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="110"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>catch<sp/>(...)<sp/>{cout<sp/>&lt;&lt;<sp/>&quot;Failed<sp/>write<sp/>nrays!&quot;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>endl;}</highlight></codeline>
+<codeline lineno="113"><highlight class="comment"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>try<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{io.write_number<sp/>(&quot;.order_min&quot;,<sp/><sp/>order_min<sp/><sp/>()<sp/>);}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="114"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>catch<sp/>(...)<sp/>{cout<sp/>&lt;&lt;<sp/>&quot;Failed<sp/>write<sp/>order_min!&quot;<sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>endl;}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="115"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>try<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{io.write_number<sp/>(&quot;.order_max&quot;,<sp/><sp/>order_max<sp/><sp/>()<sp/>);}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="116"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>catch<sp/>(...)<sp/>{cout<sp/>&lt;&lt;<sp/>&quot;Failed<sp/>write<sp/>order_max!&quot;<sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>endl;}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="117"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>try<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{io.write_number<sp/>(&quot;.nboundary&quot;,<sp/><sp/>nboundary<sp/><sp/>()<sp/>);}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="118"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>catch<sp/>(...)<sp/>{cout<sp/>&lt;&lt;<sp/>&quot;Failed<sp/>write<sp/>nboundary!&quot;<sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>endl;}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="119"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>try<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{io.write_number<sp/>(&quot;.nfreqs&quot;,<sp/><sp/><sp/><sp/><sp/>nfreqs<sp/><sp/><sp/><sp/>()<sp/>);}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="120"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>catch<sp/>(...)<sp/>{cout<sp/>&lt;&lt;<sp/>&quot;Failed<sp/>write<sp/>nfreqs!&quot;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>endl;}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="121"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>try<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{io.write_number<sp/>(&quot;.nfreqs_red&quot;,<sp/>nfreqs_red<sp/>()<sp/>);}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="122"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>catch<sp/>(...)<sp/>{cout<sp/>&lt;&lt;<sp/>&quot;Failed<sp/>write<sp/>nfreqs_red!&quot;<sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>endl;}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="123"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>try<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{io.write_number<sp/>(&quot;.nspecs&quot;,<sp/><sp/><sp/><sp/><sp/>nspecs<sp/><sp/><sp/><sp/><sp/>()<sp/>);}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="124"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>catch<sp/>(...)<sp/>{cout<sp/>&lt;&lt;<sp/>&quot;Failed<sp/>write<sp/>nspecs!&quot;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>endl;}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="125"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>try<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{io.write_number<sp/>(&quot;.nlspecs&quot;,<sp/><sp/><sp/><sp/>nlspecs<sp/><sp/><sp/><sp/>()<sp/>);}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="126"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>catch<sp/>(...)<sp/>{cout<sp/>&lt;&lt;<sp/>&quot;Failed<sp/>write<sp/>nlspecs!&quot;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>endl;}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="127"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>try<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{io.write_number<sp/>(&quot;.nlines&quot;,<sp/><sp/><sp/><sp/><sp/>nlines<sp/><sp/><sp/><sp/><sp/>()<sp/>);}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="128"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>catch<sp/>(...)<sp/>{cout<sp/>&lt;&lt;<sp/>&quot;Failed<sp/>write<sp/>nlines!&quot;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>endl;}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="129"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>try<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{io.write_number<sp/>(&quot;.nquads&quot;,<sp/><sp/><sp/><sp/><sp/>nquads<sp/><sp/><sp/><sp/><sp/>()<sp/>);}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="130"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>catch<sp/>(...)<sp/>{cout<sp/>&lt;&lt;<sp/>&quot;Failed<sp/>write<sp/>nquads!&quot;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>endl;}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="131"><highlight class="normal"></highlight></codeline>
+<codeline lineno="132"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>try<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{io.write_number<sp/>(&quot;.pop_prec&quot;,<sp/>pop_prec()<sp/>);}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="133"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>catch<sp/>(...)<sp/>{cout<sp/>&lt;&lt;<sp/>&quot;Failed<sp/>write<sp/>pop_prec!&quot;<sp/><sp/><sp/><sp/>&lt;&lt;<sp/>endl;}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="134"><highlight class="normal"></highlight></codeline>
+<codeline lineno="135"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>try<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{io.write_bool<sp/>(&quot;.use_scattering&quot;,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>use_scattering<sp/><sp/><sp/><sp/><sp/><sp/><sp/>()<sp/>);}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="136"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>catch<sp/>(...)<sp/>{cout<sp/>&lt;&lt;<sp/>&quot;Failed<sp/>write<sp/>use_scattering!&quot;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>endl;}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="137"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>try<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{io.write_bool<sp/>(&quot;.use_Ng_acceleration&quot;,<sp/><sp/><sp/>use_Ng_acceleration<sp/><sp/>()<sp/>);}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="138"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>catch<sp/>(...)<sp/>{cout<sp/>&lt;&lt;<sp/>&quot;Failed<sp/>write<sp/>use_Ng_acceleration!&quot;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>endl;}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="139"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>try<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{io.write_bool<sp/>(&quot;.spherical_symmetry&quot;,<sp/><sp/><sp/><sp/>spherical_symmetry<sp/><sp/><sp/>()<sp/>);}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="140"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>catch<sp/>(...)<sp/>{cout<sp/>&lt;&lt;<sp/>&quot;Failed<sp/>write<sp/>spherical_symmetry!&quot;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>endl;}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="141"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>try<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{io.write_bool<sp/>(&quot;.adaptive_ray_tracing&quot;,<sp/><sp/>adaptive_ray_tracing<sp/>()<sp/>);}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="142"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>catch<sp/>(...)<sp/>{cout<sp/>&lt;&lt;<sp/>&quot;Failed<sp/>write<sp/>adaptive_ray_tracing!&quot;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>endl;}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="143"><highlight class="normal"></highlight></codeline>
+<codeline lineno="144"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="parameters_8cpp_1aac63c3d7e00e2981e483e5162819975d" kindref="member">WRITE_NUMBER</ref><sp/>(<ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref>,<sp/>dimension<sp/>);</highlight></codeline>
+<codeline lineno="145"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="parameters_8cpp_1aac63c3d7e00e2981e483e5162819975d" kindref="member">WRITE_NUMBER</ref><sp/>(<ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref>,<sp/>npoints<sp/><sp/><sp/>);</highlight></codeline>
+<codeline lineno="146"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="parameters_8cpp_1aac63c3d7e00e2981e483e5162819975d" kindref="member">WRITE_NUMBER</ref><sp/>(<ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref>,<sp/>totnnbs<sp/><sp/><sp/>);</highlight></codeline>
+<codeline lineno="147"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="parameters_8cpp_1aac63c3d7e00e2981e483e5162819975d" kindref="member">WRITE_NUMBER</ref><sp/>(<ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref>,<sp/>nrays<sp/><sp/><sp/><sp/><sp/>);</highlight></codeline>
+<codeline lineno="148"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="parameters_8cpp_1aac63c3d7e00e2981e483e5162819975d" kindref="member">WRITE_NUMBER</ref><sp/>(<ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref>,<sp/>hnrays<sp/><sp/><sp/><sp/>);</highlight></codeline>
+<codeline lineno="149"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="parameters_8cpp_1aac63c3d7e00e2981e483e5162819975d" kindref="member">WRITE_NUMBER</ref><sp/>(<ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref>,<sp/>nrays_red<sp/>);</highlight></codeline>
+<codeline lineno="150"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="parameters_8cpp_1aac63c3d7e00e2981e483e5162819975d" kindref="member">WRITE_NUMBER</ref><sp/>(<ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref>,<sp/>order_min<sp/>);</highlight></codeline>
+<codeline lineno="151"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="parameters_8cpp_1aac63c3d7e00e2981e483e5162819975d" kindref="member">WRITE_NUMBER</ref><sp/>(<ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref>,<sp/>order_max<sp/>);</highlight></codeline>
+<codeline lineno="152"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="parameters_8cpp_1aac63c3d7e00e2981e483e5162819975d" kindref="member">WRITE_NUMBER</ref><sp/>(<ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref>,<sp/>nboundary<sp/>);</highlight></codeline>
+<codeline lineno="153"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="parameters_8cpp_1aac63c3d7e00e2981e483e5162819975d" kindref="member">WRITE_NUMBER</ref><sp/>(<ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref>,<sp/>nfreqs<sp/><sp/><sp/><sp/>);</highlight></codeline>
+<codeline lineno="154"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="parameters_8cpp_1aac63c3d7e00e2981e483e5162819975d" kindref="member">WRITE_NUMBER</ref><sp/>(<ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref>,<sp/>nspecs<sp/><sp/><sp/><sp/>);</highlight></codeline>
+<codeline lineno="155"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="parameters_8cpp_1aac63c3d7e00e2981e483e5162819975d" kindref="member">WRITE_NUMBER</ref><sp/>(<ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref>,<sp/>nlspecs<sp/><sp/><sp/>);</highlight></codeline>
+<codeline lineno="156"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="parameters_8cpp_1aac63c3d7e00e2981e483e5162819975d" kindref="member">WRITE_NUMBER</ref><sp/>(<ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref>,<sp/>nlines<sp/><sp/><sp/><sp/>);</highlight></codeline>
+<codeline lineno="157"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="parameters_8cpp_1aac63c3d7e00e2981e483e5162819975d" kindref="member">WRITE_NUMBER</ref><sp/>(<ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref>,<sp/>nquads<sp/><sp/><sp/><sp/>);</highlight></codeline>
+<codeline lineno="158"><highlight class="normal"></highlight></codeline>
+<codeline lineno="159"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="parameters_8cpp_1aac63c3d7e00e2981e483e5162819975d" kindref="member">WRITE_NUMBER</ref><sp/>(<ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref>,<sp/>pop_prec);</highlight></codeline>
+<codeline lineno="160"><highlight class="normal"></highlight></codeline>
+<codeline lineno="161"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="parameters_8cpp_1a8487b60e57f8117f3cc69ee16f48e69f" kindref="member">WRITE_BOOL</ref><sp/>(</highlight><highlight class="keywordtype">bool</highlight><highlight class="normal">,<sp/>use_scattering<sp/><sp/><sp/><sp/><sp/><sp/>);</highlight></codeline>
+<codeline lineno="162"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="parameters_8cpp_1a8487b60e57f8117f3cc69ee16f48e69f" kindref="member">WRITE_BOOL</ref><sp/>(</highlight><highlight class="keywordtype">bool</highlight><highlight class="normal">,<sp/>use_Ng_acceleration<sp/>);</highlight></codeline>
+<codeline lineno="163"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="parameters_8cpp_1a8487b60e57f8117f3cc69ee16f48e69f" kindref="member">WRITE_BOOL</ref><sp/>(</highlight><highlight class="keywordtype">bool</highlight><highlight class="normal">,<sp/>spherical_symmetry<sp/><sp/>);</highlight></codeline>
+<codeline lineno="164"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="parameters_8cpp_1a8487b60e57f8117f3cc69ee16f48e69f" kindref="member">WRITE_BOOL</ref><sp/>(</highlight><highlight class="keywordtype">bool</highlight><highlight class="normal">,<sp/>adaptive_ray_tracing);</highlight></codeline>
+<codeline lineno="165"><highlight class="normal">}</highlight></codeline>
+    </programlisting>
+    <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/parameters/parameters.cpp"/>
+  </compounddef>
+</doxygen>

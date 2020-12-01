@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.14">
+  <compounddef id="dir_b29201c3394bc48917ce104f034c4d46" kind="dir">
+    <compoundname>/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies</compoundname>
+    <innerdir refid="dir_2c6d4b36a2ff2690e83e4a5f14bae734">/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lambda</innerdir>
+    <innerdir refid="dir_6d9e079a3cd7d052f51de90c0f7a08f2">/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/linedata</innerdir>
+    <innerdir refid="dir_653eb2e518583090249d9ebca26a9e6f">/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/quadrature</innerdir>
+    <innerfile refid="lineProducingSpecies_8cpp">lineProducingSpecies.cpp</innerfile>
+    <innerfile refid="lineProducingSpecies_8hpp">lineProducingSpecies.hpp</innerfile>
+    <innerfile refid="lineProducingSpecies_8tpp">lineProducingSpecies.tpp</innerfile>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/"/>
+  </compounddef>
+</doxygen>

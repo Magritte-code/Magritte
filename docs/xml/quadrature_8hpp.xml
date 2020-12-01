@@ -1,0 +1,183 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.14">
+  <compounddef id="quadrature_8hpp" kind="file" language="C++">
+    <compoundname>quadrature.hpp</compoundname>
+    <includes refid="io_8hpp" local="yes">io/io.hpp</includes>
+    <includes refid="parameters_8hpp" local="yes">model/parameters/parameters.hpp</includes>
+    <includes refid="types_8hpp" local="yes">tools/types.hpp</includes>
+    <includedby refid="lineProducingSpecies_8hpp" local="yes">/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.hpp</includedby>
+    <includedby refid="quadrature_8cpp" local="yes">/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/quadrature/quadrature.cpp</includedby>
+    <incdepgraph>
+      <node id="752">
+        <label>list</label>
+      </node>
+      <node id="757">
+        <label>limits</label>
+      </node>
+      <node id="754">
+        <label>Eigen/Core</label>
+      </node>
+      <node id="753">
+        <label>string</label>
+      </node>
+      <node id="759">
+        <label>exception</label>
+      </node>
+      <node id="749">
+        <label>io/io.hpp</label>
+        <link refid="io_8hpp"/>
+        <childnode refid="750" relation="include">
+        </childnode>
+      </node>
+      <node id="756">
+        <label>model/parameters/parameters.hpp</label>
+        <link refid="parameters_8hpp"/>
+        <childnode refid="757" relation="include">
+        </childnode>
+        <childnode refid="749" relation="include">
+        </childnode>
+        <childnode refid="758" relation="include">
+        </childnode>
+      </node>
+      <node id="758">
+        <label>tools/setOnce.hpp</label>
+        <link refid="setOnce_8hpp"/>
+        <childnode refid="759" relation="include">
+        </childnode>
+        <childnode refid="760" relation="include">
+        </childnode>
+        <childnode refid="755" relation="include">
+        </childnode>
+      </node>
+      <node id="751">
+        <label>vector</label>
+      </node>
+      <node id="755">
+        <label>paracabs.hpp</label>
+      </node>
+      <node id="750">
+        <label>tools/types.hpp</label>
+        <link refid="types_8hpp"/>
+        <childnode refid="751" relation="include">
+        </childnode>
+        <childnode refid="752" relation="include">
+        </childnode>
+        <childnode refid="753" relation="include">
+        </childnode>
+        <childnode refid="754" relation="include">
+        </childnode>
+        <childnode refid="755" relation="include">
+        </childnode>
+      </node>
+      <node id="748">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/quadrature/quadrature.hpp</label>
+        <link refid="quadrature_8hpp"/>
+        <childnode refid="749" relation="include">
+        </childnode>
+        <childnode refid="756" relation="include">
+        </childnode>
+        <childnode refid="750" relation="include">
+        </childnode>
+      </node>
+      <node id="760">
+        <label>iostream</label>
+      </node>
+    </incdepgraph>
+    <invincdepgraph>
+      <node id="766">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/model.hpp</label>
+        <link refid="model_8hpp"/>
+        <childnode refid="767" relation="include">
+        </childnode>
+        <childnode refid="768" relation="include">
+        </childnode>
+        <childnode refid="769" relation="include">
+        </childnode>
+      </node>
+      <node id="762">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.hpp</label>
+        <link refid="lineProducingSpecies_8hpp"/>
+        <childnode refid="763" relation="include">
+        </childnode>
+        <childnode refid="764" relation="include">
+        </childnode>
+      </node>
+      <node id="767">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/bindings/pybindings.cpp</label>
+        <link refid="pybindings_8cpp"/>
+      </node>
+      <node id="768">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/model.cpp</label>
+        <link refid="model_8cpp"/>
+      </node>
+      <node id="770">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.cpp</label>
+        <link refid="solver_8cpp"/>
+      </node>
+      <node id="764">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lines.hpp</label>
+        <link refid="lines_8hpp"/>
+        <childnode refid="765" relation="include">
+        </childnode>
+        <childnode refid="766" relation="include">
+        </childnode>
+      </node>
+      <node id="769">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp</label>
+        <link refid="solver_8hpp"/>
+        <childnode refid="767" relation="include">
+        </childnode>
+        <childnode refid="768" relation="include">
+        </childnode>
+        <childnode refid="770" relation="include">
+        </childnode>
+      </node>
+      <node id="761">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/quadrature/quadrature.hpp</label>
+        <link refid="quadrature_8hpp"/>
+        <childnode refid="762" relation="include">
+        </childnode>
+        <childnode refid="771" relation="include">
+        </childnode>
+      </node>
+      <node id="765">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lines.cpp</label>
+        <link refid="lines_8cpp"/>
+      </node>
+      <node id="771">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/quadrature/quadrature.cpp</label>
+        <link refid="quadrature_8cpp"/>
+      </node>
+      <node id="763">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.cpp</label>
+        <link refid="lineProducingSpecies_8cpp"/>
+      </node>
+    </invincdepgraph>
+    <innerclass refid="structQuadrature" prot="public">Quadrature</innerclass>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline lineno="1"><highlight class="preprocessor">#pragma<sp/>once</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="2"><highlight class="normal"></highlight></codeline>
+<codeline lineno="3"><highlight class="normal"></highlight></codeline>
+<codeline lineno="4"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;<ref refid="io_8hpp" kindref="compound">io/io.hpp</ref>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="5"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;<ref refid="parameters_8hpp" kindref="compound">model/parameters/parameters.hpp</ref>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="6"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;<ref refid="types_8hpp" kindref="compound">tools/types.hpp</ref>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="7"><highlight class="normal"></highlight></codeline>
+<codeline lineno="8"><highlight class="normal"></highlight></codeline>
+<codeline lineno="9" refid="structQuadrature" refkind="compound"><highlight class="normal"></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal"><ref refid="structQuadrature" kindref="compound">Quadrature</ref></highlight></codeline>
+<codeline lineno="10"><highlight class="normal">{</highlight></codeline>
+<codeline lineno="11" refid="structQuadrature_1a6f0bc8efafaaafa013c0700fb84ec5d7" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="structParameters" kindref="compound">Parameters</ref><sp/><ref refid="structQuadrature_1a6f0bc8efafaaafa013c0700fb84ec5d7" kindref="member">parameters</ref>;</highlight></codeline>
+<codeline lineno="12"><highlight class="normal"></highlight></codeline>
+<codeline lineno="13" refid="structQuadrature_1a7ebf6dafcf1218208c9da5c1e9d7a1cc" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="types_8hpp_1a959df20affa391f0d7913ff0349bdb05" kindref="member">Vector&lt;Real&gt;</ref><sp/><ref refid="structQuadrature_1a7ebf6dafcf1218208c9da5c1e9d7a1cc" kindref="member">roots</ref>;</highlight></codeline>
+<codeline lineno="14" refid="structQuadrature_1a5c7b5aa4aa4165883cb491d481ef1535" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="types_8hpp_1a959df20affa391f0d7913ff0349bdb05" kindref="member">Vector&lt;Real&gt;</ref><sp/><ref refid="structQuadrature_1a5c7b5aa4aa4165883cb491d481ef1535" kindref="member">weights</ref>;</highlight></codeline>
+<codeline lineno="15"><highlight class="normal"></highlight></codeline>
+<codeline lineno="16"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="structQuadrature_1ac0512086ea4ee349c1fa9c9d04672c2f" kindref="member">read</ref><sp/><sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="structIo" kindref="compound">Io</ref>&amp;<sp/>io,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref><sp/>l);</highlight></codeline>
+<codeline lineno="17"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="structQuadrature_1a74190bd7de5057c155e55fb64ea60f5e" kindref="member">write</ref><sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="structIo" kindref="compound">Io</ref>&amp;<sp/>io,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref><sp/>l)<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="18"><highlight class="normal">};</highlight></codeline>
+    </programlisting>
+    <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/quadrature/quadrature.hpp"/>
+  </compounddef>
+</doxygen>

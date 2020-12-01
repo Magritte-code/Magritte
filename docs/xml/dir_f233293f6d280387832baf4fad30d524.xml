@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.14">
+  <compounddef id="dir_f233293f6d280387832baf4fad30d524" kind="dir">
+    <compoundname>/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry</compoundname>
+    <innerdir refid="dir_d53cc82adfa90605301f5a07e776e5a6">/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/boundary</innerdir>
+    <innerdir refid="dir_b79e122c67277aac2087ccc01f3e79bd">/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/points</innerdir>
+    <innerdir refid="dir_853087c1f96e379628cb1e9d76ec9cc6">/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/rays</innerdir>
+    <innerfile refid="geometry_8cpp">geometry.cpp</innerfile>
+    <innerfile refid="geometry_8hpp">geometry.hpp</innerfile>
+    <innerfile refid="geometry_8tpp">geometry.tpp</innerfile>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/"/>
+  </compounddef>
+</doxygen>

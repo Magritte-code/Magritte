@@ -1,0 +1,1431 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.14">
+  <compounddef id="structIoText" kind="struct" language="C++" prot="public">
+    <compoundname>IoText</compoundname>
+    <basecompoundref refid="structIo" prot="public" virt="non-virtual">Io</basecompoundref>
+    <includes refid="io__cpp__text_8hpp" local="no">io_cpp_text.hpp</includes>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="structIoText_1a6fc2c533cfbead5c7fe85ec2353ace03" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>IoText::IoText</definition>
+        <argsstring>(const string &amp;io_file)</argsstring>
+        <name>IoText</name>
+        <param>
+          <type>const string &amp;</type>
+          <declname>io_file</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Constructor for <ref refid="structIoText" kindref="compound">IoText</ref> <parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">io_file</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: file to read from and write to </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.hpp" line="14" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.cpp" bodystart="11" bodyend="11"/>
+      </memberdef>
+      <memberdef kind="function" id="structIoText_1a83995afb2d4457df43ca0de1b3504fa2" prot="public" static="no" const="yes" explicit="no" inline="no" virt="virtual">
+        <type>int</type>
+        <definition>int IoText::read_length</definition>
+        <argsstring>(const string fname, Size &amp;length) const override</argsstring>
+        <name>read_length</name>
+        <reimplements refid="structIo_1a9a229cebb88cd69dfb1af1926cde42a7">read_length</reimplements>
+        <param>
+          <type>const string</type>
+          <declname>fname</declname>
+          <defname>file_name</defname>
+        </param>
+        <param>
+          <type><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref> &amp;</type>
+          <declname>length</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Reader for the length of a text file <parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">file_name</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: path to file containing the data </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="out">length</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: length to be read </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.hpp" line="16" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.cpp" bodystart="28" bodyend="57"/>
+      </memberdef>
+      <memberdef kind="function" id="structIoText_1a1bb6ddbd55262e380a0ef79273ab5a92" prot="public" static="no" const="yes" explicit="no" inline="no" virt="virtual">
+        <type><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+        <definition>Size IoText::get_length</definition>
+        <argsstring>(const string fname) const override</argsstring>
+        <name>get_length</name>
+        <reimplements refid="structIo_1afb72811abb76f805a35df321ffbf07dc">get_length</reimplements>
+        <param>
+          <type>const string</type>
+          <declname>fname</declname>
+          <defname>file_name</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Getter for the length of a text file <parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">file_name</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: path to file containing the data </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>length of the file </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.hpp" line="17" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.cpp" bodystart="64" bodyend="69"/>
+      </memberdef>
+      <memberdef kind="function" id="structIoText_1a180435daf4d3e8c5a4f94f9a89efc8b2" prot="public" static="no" const="yes" explicit="no" inline="no" virt="virtual">
+        <type>int</type>
+        <definition>int IoText::read_width</definition>
+        <argsstring>(const string fname, Size &amp;width) const override</argsstring>
+        <name>read_width</name>
+        <reimplements refid="structIo_1af08f454b36b2cbcdd5595dd32df70dee">read_width</reimplements>
+        <param>
+          <type>const string</type>
+          <declname>fname</declname>
+          <defname>file_name</defname>
+        </param>
+        <param>
+          <type><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref> &amp;</type>
+          <declname>width</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Reader for the number of columns (width) of a text file or the number of files with a similar file name <parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">file_name</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: path to file containing the data </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="out">width</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: width to be read </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.hpp" line="19" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.cpp" bodystart="77" bodyend="114"/>
+      </memberdef>
+      <memberdef kind="function" id="structIoText_1a29207ccbb6899073b1e1e0a738e50ca3" prot="public" static="no" const="yes" explicit="no" inline="no" virt="virtual">
+        <type><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+        <definition>Size IoText::get_width</definition>
+        <argsstring>(const string fname) const override</argsstring>
+        <name>get_width</name>
+        <reimplements refid="structIo_1aec7ed9748cc7e17797874e5fd316ce67">get_width</reimplements>
+        <param>
+          <type>const string</type>
+          <declname>fname</declname>
+          <defname>file_name</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Getter for the number of columns (width) of a text file or the number of files with a similar file name <parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">file_name</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: path to file containing the data </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>width of the file </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.hpp" line="20" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.cpp" bodystart="122" bodyend="127"/>
+      </memberdef>
+      <memberdef kind="function" id="structIoText_1a213524a0e463c42f150328bdcc584d8f" prot="public" static="no" const="yes" explicit="no" inline="no" virt="virtual">
+        <type>int</type>
+        <definition>int IoText::read_number</definition>
+        <argsstring>(const string fname, long &amp;number) const override</argsstring>
+        <name>read_number</name>
+        <reimplements refid="structIo_1aaf24fb114744f57fb2339496f943ce93">read_number</reimplements>
+        <param>
+          <type>const string</type>
+          <declname>fname</declname>
+          <defname>file_name</defname>
+        </param>
+        <param>
+          <type>long &amp;</type>
+          <declname>number</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Reader for a single (long integer) number from a text file <parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">file_name</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: path to the file containing the number </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="out">number</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: number to be read </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.hpp" line="22" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.cpp" bodystart="177" bodyend="191"/>
+      </memberdef>
+      <memberdef kind="function" id="structIoText_1a5851f8826753f301ee6da313c63a9af4" prot="public" static="no" const="yes" explicit="no" inline="no" virt="virtual">
+        <type>int</type>
+        <definition>int IoText::write_number</definition>
+        <argsstring>(const string fname, const long &amp;number) const override</argsstring>
+        <name>write_number</name>
+        <reimplements refid="structIo_1a163d88ee778a65ecafd62bcb35d9fc33">write_number</reimplements>
+        <param>
+          <type>const string</type>
+          <declname>fname</declname>
+          <defname>file_name</defname>
+        </param>
+        <param>
+          <type>const long &amp;</type>
+          <declname>number</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Writer for a single (long integer) number to a text file <parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">file_name</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: path to the file to be written </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="out">number</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: number to be written </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.hpp" line="23" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.cpp" bodystart="198" bodyend="213"/>
+      </memberdef>
+      <memberdef kind="function" id="structIoText_1a206f40a37768ea21ad7a1d6bf7fd3bec" prot="public" static="no" const="yes" explicit="no" inline="no" virt="virtual">
+        <type>int</type>
+        <definition>int IoText::read_number</definition>
+        <argsstring>(const string fname, Size &amp;number) const override</argsstring>
+        <name>read_number</name>
+        <reimplements refid="structIo_1ac66643da6937851857e3b6e8775308b9">read_number</reimplements>
+        <param>
+          <type>const string</type>
+          <declname>fname</declname>
+          <defname>file_name</defname>
+        </param>
+        <param>
+          <type><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref> &amp;</type>
+          <declname>number</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Reader for a single (long integer) number from a text file <parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">file_name</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: path to the file containing the number </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="out">number</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: number to be read </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.hpp" line="25" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.cpp" bodystart="134" bodyend="148"/>
+      </memberdef>
+      <memberdef kind="function" id="structIoText_1aa11dc1299d8fed9e6256f09b3e4e7b49" prot="public" static="no" const="yes" explicit="no" inline="no" virt="virtual">
+        <type>int</type>
+        <definition>int IoText::write_number</definition>
+        <argsstring>(const string fname, const Size &amp;number) const override</argsstring>
+        <name>write_number</name>
+        <reimplements refid="structIo_1a33448644c24fa0bcac95a8d95bcd0ea2">write_number</reimplements>
+        <param>
+          <type>const string</type>
+          <declname>fname</declname>
+          <defname>file_name</defname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref> &amp;</type>
+          <declname>number</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Writer for a single (long integer) number to a text file <parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">file_name</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: path to the file to be written </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="out">number</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: number to be written </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.hpp" line="26" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.cpp" bodystart="155" bodyend="170"/>
+      </memberdef>
+      <memberdef kind="function" id="structIoText_1aec22b56cf73845c7bbd0f0586f33c226" prot="public" static="no" const="yes" explicit="no" inline="no" virt="virtual">
+        <type>int</type>
+        <definition>int IoText::read_number</definition>
+        <argsstring>(const string fname, Real &amp;number) const override</argsstring>
+        <name>read_number</name>
+        <reimplements refid="structIo_1adbbb34e34471166fb90824b8b4a21255">read_number</reimplements>
+        <param>
+          <type>const string</type>
+          <declname>fname</declname>
+          <defname>file_name</defname>
+        </param>
+        <param>
+          <type><ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref> &amp;</type>
+          <declname>number</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Reader for a single (double) number from a text file <parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">file_name</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: path to the file containing the number </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="out">number</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: number to be read </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.hpp" line="28" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.cpp" bodystart="220" bodyend="234"/>
+      </memberdef>
+      <memberdef kind="function" id="structIoText_1aeef28f055be01aa2a44fb0c0617ebb53" prot="public" static="no" const="yes" explicit="no" inline="no" virt="virtual">
+        <type>int</type>
+        <definition>int IoText::write_number</definition>
+        <argsstring>(const string fname, const Real &amp;number) const override</argsstring>
+        <name>write_number</name>
+        <reimplements refid="structIo_1a6a12702ab6b4ec2c040c35bd6e5a5092">write_number</reimplements>
+        <param>
+          <type>const string</type>
+          <declname>fname</declname>
+          <defname>file_name</defname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref> &amp;</type>
+          <declname>number</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Writer for a single (double) number to a text file <parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">file_name</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: path to the file to be written </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="out">number</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: number to be written </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.hpp" line="29" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.cpp" bodystart="241" bodyend="256"/>
+      </memberdef>
+      <memberdef kind="function" id="structIoText_1a25f22e32fba75177299dc8c3201e8463" prot="public" static="no" const="yes" explicit="no" inline="no" virt="virtual">
+        <type>int</type>
+        <definition>int IoText::read_word</definition>
+        <argsstring>(const string fname, string &amp;word) const override</argsstring>
+        <name>read_word</name>
+        <reimplements refid="structIo_1ad5a50f54b41f5076b0b4fcc03ac0f270">read_word</reimplements>
+        <param>
+          <type>const string</type>
+          <declname>fname</declname>
+          <defname>file_name</defname>
+        </param>
+        <param>
+          <type>string &amp;</type>
+          <declname>word</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Reader for a single string from a text file <parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">file_name</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: path to the file containing the string </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="out">word</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: string to be read </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.hpp" line="31" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.cpp" bodystart="263" bodyend="277"/>
+      </memberdef>
+      <memberdef kind="function" id="structIoText_1ab534b70b8c39a78d770e64edf0986bbd" prot="public" static="no" const="yes" explicit="no" inline="no" virt="virtual">
+        <type>int</type>
+        <definition>int IoText::write_word</definition>
+        <argsstring>(const string fname, const string &amp;word) const override</argsstring>
+        <name>write_word</name>
+        <reimplements refid="structIo_1a60ce58b270dd4beeb0263bfdd2c63daf">write_word</reimplements>
+        <param>
+          <type>const string</type>
+          <declname>fname</declname>
+          <defname>file_name</defname>
+        </param>
+        <param>
+          <type>const string &amp;</type>
+          <declname>word</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Writer for a single string to a text file <parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">file_name</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: path to the file to be written </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="out">word</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: string to be written </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.hpp" line="32" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.cpp" bodystart="284" bodyend="298"/>
+      </memberdef>
+      <memberdef kind="function" id="structIoText_1ae1c3c8c2a8fd8fbbe352bfb8e0a17904" prot="public" static="no" const="yes" explicit="no" inline="no" virt="virtual">
+        <type>int</type>
+        <definition>int IoText::read_bool</definition>
+        <argsstring>(const string fname, bool &amp;value) const override</argsstring>
+        <name>read_bool</name>
+        <reimplements refid="structIo_1a61713ddf36c2c5611d41bfc7220ff89d">read_bool</reimplements>
+        <param>
+          <type>const string</type>
+          <declname>fname</declname>
+          <defname>file_name</defname>
+        </param>
+        <param>
+          <type>bool &amp;</type>
+          <declname>value</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Reader for a single boolean from a text file <parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">file_name</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: path to the file containing the boolean </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="out">value</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: value to be read </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.hpp" line="34" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.cpp" bodystart="305" bodyend="317"/>
+      </memberdef>
+      <memberdef kind="function" id="structIoText_1a9c90a9a3e3055d60e3260cb424b4a89c" prot="public" static="no" const="yes" explicit="no" inline="no" virt="virtual">
+        <type>int</type>
+        <definition>int IoText::write_bool</definition>
+        <argsstring>(const string fname, const bool &amp;value) const override</argsstring>
+        <name>write_bool</name>
+        <reimplements refid="structIo_1abd14c6db5f8b484a298f08992ed9f511">write_bool</reimplements>
+        <param>
+          <type>const string</type>
+          <declname>fname</declname>
+          <defname>file_name</defname>
+        </param>
+        <param>
+          <type>const bool &amp;</type>
+          <declname>value</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Writer for a single boolean to a text file <parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">file_name</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: path to the file to be written </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="out">value</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: value to be written </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.hpp" line="35" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.cpp" bodystart="324" bodyend="332"/>
+      </memberdef>
+      <memberdef kind="function" id="structIoText_1a1d9d01590ca55040c8123fd4c51f65a3" prot="public" static="no" const="yes" explicit="no" inline="no" virt="virtual">
+        <type>int</type>
+        <definition>int IoText::read_list</definition>
+        <argsstring>(const string fname, Long1 &amp;list) const override</argsstring>
+        <name>read_list</name>
+        <reimplements refid="structIo_1ad8db00e516c6686e4844c7ad6bfbd28e">read_list</reimplements>
+        <param>
+          <type>const string</type>
+          <declname>fname</declname>
+          <defname>file_name</defname>
+        </param>
+        <param>
+          <type><ref refid="types_8hpp_1af43daf57fb95b58543a5ad410d062d21" kindref="member">Long1</ref> &amp;</type>
+          <declname>list</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Reader for a list of long integers from a text file <parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">file_name</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: path to file containing the list </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">list</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: list to be read </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.hpp" line="37" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.cpp" bodystart="339" bodyend="353"/>
+      </memberdef>
+      <memberdef kind="function" id="structIoText_1a43d88efbb47426b362570f56d1e7a694" prot="public" static="no" const="yes" explicit="no" inline="no" virt="virtual">
+        <type>int</type>
+        <definition>int IoText::write_list</definition>
+        <argsstring>(const string fname, const Long1 &amp;list) const override</argsstring>
+        <name>write_list</name>
+        <reimplements refid="structIo_1a88b9ed3d29a39626f53c5204757603d3">write_list</reimplements>
+        <param>
+          <type>const string</type>
+          <declname>fname</declname>
+          <defname>file_name</defname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1af43daf57fb95b58543a5ad410d062d21" kindref="member">Long1</ref> &amp;</type>
+          <declname>list</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Writer for a list of long integers to a text file <parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">file_name</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: path to file to be written </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">list</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: list to be written </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.hpp" line="38" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.cpp" bodystart="360" bodyend="374"/>
+      </memberdef>
+      <memberdef kind="function" id="structIoText_1a6855286bf7dff5b07002c26d2b5081eb" prot="public" static="no" const="yes" explicit="no" inline="no" virt="virtual">
+        <type>int</type>
+        <definition>int IoText::read_list</definition>
+        <argsstring>(const string fname, Double1 &amp;list) const override</argsstring>
+        <name>read_list</name>
+        <reimplements refid="structIo_1aa1d905d1469000f40bfa03dfeca0de73">read_list</reimplements>
+        <param>
+          <type>const string</type>
+          <declname>fname</declname>
+          <defname>file_name</defname>
+        </param>
+        <param>
+          <type><ref refid="types_8hpp_1a90a65680382394cec1507779e4cdbce5" kindref="member">Double1</ref> &amp;</type>
+          <declname>list</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Reader for a list of doubles from a text file <parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">file_name</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: path to file containing the list </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">list</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: list to be read </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.hpp" line="40" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.cpp" bodystart="381" bodyend="395"/>
+      </memberdef>
+      <memberdef kind="function" id="structIoText_1a08254595b5cb4b11aa51afce081bd143" prot="public" static="no" const="yes" explicit="no" inline="no" virt="virtual">
+        <type>int</type>
+        <definition>int IoText::write_list</definition>
+        <argsstring>(const string fname, const Double1 &amp;list) const override</argsstring>
+        <name>write_list</name>
+        <reimplements refid="structIo_1ab0789472bdbe4f0b18e8497fe5773c45">write_list</reimplements>
+        <param>
+          <type>const string</type>
+          <declname>fname</declname>
+          <defname>file_name</defname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1a90a65680382394cec1507779e4cdbce5" kindref="member">Double1</ref> &amp;</type>
+          <declname>list</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Writer for a list of strings to a text file <parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">file_name</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: path to file to be written </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">list</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: list to be written </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.hpp" line="41" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.cpp" bodystart="402" bodyend="416"/>
+      </memberdef>
+      <memberdef kind="function" id="structIoText_1a2baea1fd837358bc050d3b4722a054f4" prot="public" static="no" const="yes" explicit="no" inline="no" virt="virtual">
+        <type>int</type>
+        <definition>int IoText::read_list</definition>
+        <argsstring>(const string fname, Size_t1 &amp;list) const override</argsstring>
+        <name>read_list</name>
+        <reimplements refid="structIo_1a479f9d2e852e5f6cd404ae6787c59e33">read_list</reimplements>
+        <param>
+          <type>const string</type>
+          <declname>fname</declname>
+          <defname>file_name</defname>
+        </param>
+        <param>
+          <type><ref refid="types_8hpp_1a0ddf613068770023126a95171cdaa0df" kindref="member">Size_t1</ref> &amp;</type>
+          <declname>list</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Reader for a list of doubles from a text file <parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">file_name</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: path to file containing the list </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">list</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: list to be read </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.hpp" line="43" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.cpp" bodystart="423" bodyend="437"/>
+      </memberdef>
+      <memberdef kind="function" id="structIoText_1a2a2248c0aa01b7fa4a5c81aaaa1d3f5b" prot="public" static="no" const="yes" explicit="no" inline="no" virt="virtual">
+        <type>int</type>
+        <definition>int IoText::write_list</definition>
+        <argsstring>(const string fname, const Size_t1 &amp;list) const override</argsstring>
+        <name>write_list</name>
+        <reimplements refid="structIo_1a4d6bfdddbefb3b2c9e20debd76f97c1a">write_list</reimplements>
+        <param>
+          <type>const string</type>
+          <declname>fname</declname>
+          <defname>file_name</defname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1a0ddf613068770023126a95171cdaa0df" kindref="member">Size_t1</ref> &amp;</type>
+          <declname>list</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Writer for a list of strings to a text file <parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">file_name</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: path to file to be written </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">list</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: list to be written </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.hpp" line="44" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.cpp" bodystart="444" bodyend="458"/>
+      </memberdef>
+      <memberdef kind="function" id="structIoText_1aebfe0c0d914ce3d1104427c3304bef61" prot="public" static="no" const="yes" explicit="no" inline="no" virt="virtual">
+        <type>int</type>
+        <definition>int IoText::read_list</definition>
+        <argsstring>(const string fname, Real1 &amp;list) const override</argsstring>
+        <name>read_list</name>
+        <reimplements refid="structIo_1aeaa39e684671e1caca48d0c5c6c2e0bb">read_list</reimplements>
+        <param>
+          <type>const string</type>
+          <declname>fname</declname>
+          <defname>file_name</defname>
+        </param>
+        <param>
+          <type><ref refid="types_8hpp_1a0015d4067a970e313605c333d49ed5c5" kindref="member">Real1</ref> &amp;</type>
+          <declname>list</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Reader for a list of doubles from a text file <parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">file_name</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: path to file containing the list </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">list</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: list to be read </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.hpp" line="46" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.cpp" bodystart="507" bodyend="521"/>
+      </memberdef>
+      <memberdef kind="function" id="structIoText_1abfc8c627a3a8dabb5830b9c5f344920d" prot="public" static="no" const="yes" explicit="no" inline="no" virt="virtual">
+        <type>int</type>
+        <definition>int IoText::write_list</definition>
+        <argsstring>(const string fname, const Real1 &amp;list) const override</argsstring>
+        <name>write_list</name>
+        <reimplements refid="structIo_1af1351cbf15d4f9b9f1e3e9b9d3bd99e3">write_list</reimplements>
+        <param>
+          <type>const string</type>
+          <declname>fname</declname>
+          <defname>file_name</defname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1a0015d4067a970e313605c333d49ed5c5" kindref="member">Real1</ref> &amp;</type>
+          <declname>list</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Writer for a list of strings to a text file <parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">file_name</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: path to file to be written </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">list</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: list to be written </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.hpp" line="47" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.cpp" bodystart="528" bodyend="542"/>
+      </memberdef>
+      <memberdef kind="function" id="structIoText_1a05097d5abd2f72fc1b831c9c11674eb8" prot="public" static="no" const="yes" explicit="no" inline="no" virt="virtual">
+        <type>int</type>
+        <definition>int IoText::read_list</definition>
+        <argsstring>(const string fname, Size1 &amp;list) const override</argsstring>
+        <name>read_list</name>
+        <reimplements refid="structIo_1a26eb4d80a6d76b8f14d17fff9538d60e">read_list</reimplements>
+        <param>
+          <type>const string</type>
+          <declname>fname</declname>
+          <defname>file_name</defname>
+        </param>
+        <param>
+          <type><ref refid="types_8hpp_1acfab7a3545428ced0649db555e257353" kindref="member">Size1</ref> &amp;</type>
+          <declname>list</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Reader for a list of doubles from a text file <parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">file_name</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: path to file containing the list </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">list</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: list to be read </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.hpp" line="49" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.cpp" bodystart="465" bodyend="479"/>
+      </memberdef>
+      <memberdef kind="function" id="structIoText_1a7eba2b7133b6ab2fb9b69dcd6947fb1f" prot="public" static="no" const="yes" explicit="no" inline="no" virt="virtual">
+        <type>int</type>
+        <definition>int IoText::write_list</definition>
+        <argsstring>(const string fname, const Size1 &amp;list) const override</argsstring>
+        <name>write_list</name>
+        <reimplements refid="structIo_1ab736c288a79f815285aa5dda5e60298e">write_list</reimplements>
+        <param>
+          <type>const string</type>
+          <declname>fname</declname>
+          <defname>file_name</defname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1acfab7a3545428ced0649db555e257353" kindref="member">Size1</ref> &amp;</type>
+          <declname>list</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Writer for a list of strings to a text file <parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">file_name</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: path to file to be written </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">list</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: list to be written </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.hpp" line="50" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.cpp" bodystart="486" bodyend="500"/>
+      </memberdef>
+      <memberdef kind="function" id="structIoText_1a1dfe8eaa04fc8e718ffda2de68ee4539" prot="public" static="no" const="yes" explicit="no" inline="no" virt="virtual">
+        <type>int</type>
+        <definition>int IoText::read_list</definition>
+        <argsstring>(const string fname, String1 &amp;list) const override</argsstring>
+        <name>read_list</name>
+        <reimplements refid="structIo_1a292ce8e28c5c835354be4a5870aef70a">read_list</reimplements>
+        <param>
+          <type>const string</type>
+          <declname>fname</declname>
+          <defname>file_name</defname>
+        </param>
+        <param>
+          <type><ref refid="types_8hpp_1a6d7f9a4d0e85b9f1c3145ff9f65ab54d" kindref="member">String1</ref> &amp;</type>
+          <declname>list</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Reader for a list of strings from a text file <parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">file_name</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: path to file containing the list </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">list</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: list to be read </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.hpp" line="52" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.cpp" bodystart="549" bodyend="563"/>
+      </memberdef>
+      <memberdef kind="function" id="structIoText_1aa2adc83bb36779a4959a7c367497932e" prot="public" static="no" const="yes" explicit="no" inline="no" virt="virtual">
+        <type>int</type>
+        <definition>int IoText::write_list</definition>
+        <argsstring>(const string fname, const String1 &amp;list) const override</argsstring>
+        <name>write_list</name>
+        <reimplements refid="structIo_1a9a0f1f37f414d4f8480878aef4a7a859">write_list</reimplements>
+        <param>
+          <type>const string</type>
+          <declname>fname</declname>
+          <defname>file_name</defname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1a6d7f9a4d0e85b9f1c3145ff9f65ab54d" kindref="member">String1</ref> &amp;</type>
+          <declname>list</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Writer for a list of strings to a text file <parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">file_name</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: path to file to be written </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">list</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: list to be written </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.hpp" line="53" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.cpp" bodystart="570" bodyend="584"/>
+      </memberdef>
+      <memberdef kind="function" id="structIoText_1a9458b8c3c154fc5fd1905e4c8eb5cb4e" prot="public" static="no" const="yes" explicit="no" inline="no" virt="virtual">
+        <type>int</type>
+        <definition>int IoText::read_array</definition>
+        <argsstring>(const string fname, Long2 &amp;array) const override</argsstring>
+        <name>read_array</name>
+        <reimplements refid="structIo_1af6cacc007e010a226459b37ba976aa18">read_array</reimplements>
+        <param>
+          <type>const string</type>
+          <declname>fname</declname>
+          <defname>file_name</defname>
+        </param>
+        <param>
+          <type><ref refid="types_8hpp_1afb2873616918a9a0b14e81276ab28811" kindref="member">Long2</ref> &amp;</type>
+          <declname>array</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Reader for an array of long integers from a text file <parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">file_name</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: path to file containing the array </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">array</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: array to be read </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.hpp" line="55" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.cpp" bodystart="591" bodyend="612"/>
+      </memberdef>
+      <memberdef kind="function" id="structIoText_1a2343ad1e896a2fe783649beace860b83" prot="public" static="no" const="yes" explicit="no" inline="no" virt="virtual">
+        <type>int</type>
+        <definition>int IoText::write_array</definition>
+        <argsstring>(const string fname, const Long2 &amp;array) const override</argsstring>
+        <name>write_array</name>
+        <reimplements refid="structIo_1aa73fe79d27fbaf31cbea124769e13a2e">write_array</reimplements>
+        <param>
+          <type>const string</type>
+          <declname>fname</declname>
+          <defname>file_name</defname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1afb2873616918a9a0b14e81276ab28811" kindref="member">Long2</ref> &amp;</type>
+          <declname>array</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Writer for an array of long integers to a text file <parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">file_name</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: path to file to be written </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">array</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: array to be written </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.hpp" line="56" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.cpp" bodystart="619" bodyend="638"/>
+      </memberdef>
+      <memberdef kind="function" id="structIoText_1a596f7fd4615a3d3d1dd1de197508eeff" prot="public" static="no" const="yes" explicit="no" inline="no" virt="virtual">
+        <type>int</type>
+        <definition>int IoText::read_array</definition>
+        <argsstring>(const string fname, Double2 &amp;array) const override</argsstring>
+        <name>read_array</name>
+        <reimplements refid="structIo_1a4b1c5f54037a18b97c47c2fc35bbfb1d">read_array</reimplements>
+        <param>
+          <type>const string</type>
+          <declname>fname</declname>
+          <defname>file_name</defname>
+        </param>
+        <param>
+          <type><ref refid="types_8hpp_1ae4c3ee17bf4177a16f81df0795dee016" kindref="member">Double2</ref> &amp;</type>
+          <declname>array</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Reader for an array of doubles from a text file <parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">file_name</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: path to file containing the array </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">array</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: array to be read </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.hpp" line="58" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.cpp" bodystart="645" bodyend="666"/>
+      </memberdef>
+      <memberdef kind="function" id="structIoText_1ac09242b73cef1ea6704df9956df247e5" prot="public" static="no" const="yes" explicit="no" inline="no" virt="virtual">
+        <type>int</type>
+        <definition>int IoText::write_array</definition>
+        <argsstring>(const string fname, const Double2 &amp;array) const override</argsstring>
+        <name>write_array</name>
+        <reimplements refid="structIo_1af2f52ba6b21d23af0b3bed255e815c5b">write_array</reimplements>
+        <param>
+          <type>const string</type>
+          <declname>fname</declname>
+          <defname>file_name</defname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1ae4c3ee17bf4177a16f81df0795dee016" kindref="member">Double2</ref> &amp;</type>
+          <declname>array</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Writer for an array of doubles from a text file <parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">file_name</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: path to file to be written </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">array</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: array to be written </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.hpp" line="59" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.cpp" bodystart="673" bodyend="692"/>
+      </memberdef>
+      <memberdef kind="function" id="structIoText_1a5c8a254307ce9ad55cc4310b4133ef00" prot="public" static="no" const="yes" explicit="no" inline="no" virt="virtual">
+        <type>int</type>
+        <definition>int IoText::read_array</definition>
+        <argsstring>(const string fname, Real2 &amp;array) const override</argsstring>
+        <name>read_array</name>
+        <reimplements refid="structIo_1a877b3301aed9d7de2a6eff40a640b7d8">read_array</reimplements>
+        <param>
+          <type>const string</type>
+          <declname>fname</declname>
+          <defname>file_name</defname>
+        </param>
+        <param>
+          <type><ref refid="types_8hpp_1a71d8c3c9e08e8b53f75ecf2db5edafc5" kindref="member">Real2</ref> &amp;</type>
+          <declname>array</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Reader for an array of doubles from a text file <parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">file_name</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: path to file containing the array </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">array</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: array to be read </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.hpp" line="61" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.cpp" bodystart="699" bodyend="720"/>
+      </memberdef>
+      <memberdef kind="function" id="structIoText_1a71a806ed38ad4d9566e5f28b82058bce" prot="public" static="no" const="yes" explicit="no" inline="no" virt="virtual">
+        <type>int</type>
+        <definition>int IoText::write_array</definition>
+        <argsstring>(const string fname, const Real2 &amp;array) const override</argsstring>
+        <name>write_array</name>
+        <reimplements refid="structIo_1a78655c3496d91fbfb5bf049873cbcf03">write_array</reimplements>
+        <param>
+          <type>const string</type>
+          <declname>fname</declname>
+          <defname>file_name</defname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1a71d8c3c9e08e8b53f75ecf2db5edafc5" kindref="member">Real2</ref> &amp;</type>
+          <declname>array</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Writer for an array of doubles from a text file <parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">file_name</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: path to file to be written </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">array</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: array to be written </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.hpp" line="62" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.cpp" bodystart="727" bodyend="746"/>
+      </memberdef>
+      <memberdef kind="function" id="structIoText_1ac724b77d150f5ea727ae66e8c4f03050" prot="public" static="no" const="yes" explicit="no" inline="no" virt="virtual">
+        <type>int</type>
+        <definition>int IoText::read_3_vector</definition>
+        <argsstring>(const string fname, Double1 &amp;x, Double1 &amp;y, Double1 &amp;z) const override</argsstring>
+        <name>read_3_vector</name>
+        <reimplements refid="structIo_1aef5a70d68049574861ebbd40aea9b293">read_3_vector</reimplements>
+        <param>
+          <type>const string</type>
+          <declname>fname</declname>
+          <defname>file_name</defname>
+        </param>
+        <param>
+          <type><ref refid="types_8hpp_1a90a65680382394cec1507779e4cdbce5" kindref="member">Double1</ref> &amp;</type>
+          <declname>x</declname>
+        </param>
+        <param>
+          <type><ref refid="types_8hpp_1a90a65680382394cec1507779e4cdbce5" kindref="member">Double1</ref> &amp;</type>
+          <declname>y</declname>
+        </param>
+        <param>
+          <type><ref refid="types_8hpp_1a90a65680382394cec1507779e4cdbce5" kindref="member">Double1</ref> &amp;</type>
+          <declname>z</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Reader for a list of 3-vectors of doubles from a text file <parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">file_name</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: path to file containing the vectors </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">x</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: x component of the vector to be read </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">y</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: y component of the vector to be read </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">z</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: z component of the vector to be read </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.hpp" line="64" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.cpp" bodystart="755" bodyend="773"/>
+      </memberdef>
+      <memberdef kind="function" id="structIoText_1a077eaf1b2f3b588574e7bd3a0a679730" prot="public" static="no" const="yes" explicit="no" inline="no" virt="virtual">
+        <type>int</type>
+        <definition>int IoText::write_3_vector</definition>
+        <argsstring>(const string fname, const Double1 &amp;x, const Double1 &amp;y, const Double1 &amp;z) const override</argsstring>
+        <name>write_3_vector</name>
+        <reimplements refid="structIo_1a175931043244e44f87641ea7c5c7aeff">write_3_vector</reimplements>
+        <param>
+          <type>const string</type>
+          <declname>fname</declname>
+          <defname>file_name</defname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1a90a65680382394cec1507779e4cdbce5" kindref="member">Double1</ref> &amp;</type>
+          <declname>x</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1a90a65680382394cec1507779e4cdbce5" kindref="member">Double1</ref> &amp;</type>
+          <declname>y</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1a90a65680382394cec1507779e4cdbce5" kindref="member">Double1</ref> &amp;</type>
+          <declname>z</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Writer for a list of 3-vectors of doubles to a text file <parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">file_name</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: path to file containing the vectors </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">x</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: x component of the vector to be written </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">y</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: y component of the vector to be written </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">z</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>: z component of the vector to be written </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.hpp" line="67" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.cpp" bodystart="782" bodyend="809"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+<para><ref refid="structIoText" kindref="compound">IoText</ref>: io specified by text files. </para>    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="48">
+        <label>Io</label>
+        <link refid="structIo"/>
+      </node>
+      <node id="47">
+        <label>IoText</label>
+        <link refid="structIoText"/>
+        <childnode refid="48" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="50">
+        <label>Io</label>
+        <link refid="structIo"/>
+        <childnode refid="51" relation="usage">
+          <edgelabel>io_file</edgelabel>
+        </childnode>
+      </node>
+      <node id="51">
+        <label>string</label>
+      </node>
+      <node id="49">
+        <label>IoText</label>
+        <link refid="structIoText"/>
+        <childnode refid="50" relation="public-inheritance">
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.hpp" line="12" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.hpp" bodystart="11" bodyend="70"/>
+    <listofallmembers>
+      <member refid="structIoText_1a1bb6ddbd55262e380a0ef79273ab5a92" prot="public" virt="virtual"><scope>IoText</scope><name>get_length</name></member>
+      <member refid="structIoText_1a29207ccbb6899073b1e1e0a738e50ca3" prot="public" virt="virtual"><scope>IoText</scope><name>get_width</name></member>
+      <member refid="structIo_1a1f3aa792a9f1071acea2803d3cd6e770" prot="public" virt="non-virtual"><scope>IoText</scope><name>Io</name></member>
+      <member refid="structIo_1ad39461ed5b16c4fa74363a2a593d12e3" prot="public" virt="non-virtual"><scope>IoText</scope><name>io_file</name></member>
+      <member refid="structIoText_1a6fc2c533cfbead5c7fe85ec2353ace03" prot="public" virt="non-virtual"><scope>IoText</scope><name>IoText</name></member>
+      <member refid="structIoText_1ac724b77d150f5ea727ae66e8c4f03050" prot="public" virt="virtual"><scope>IoText</scope><name>read_3_vector</name></member>
+      <member refid="structIoText_1a9458b8c3c154fc5fd1905e4c8eb5cb4e" prot="public" virt="virtual"><scope>IoText</scope><name>read_array</name></member>
+      <member refid="structIoText_1a596f7fd4615a3d3d1dd1de197508eeff" prot="public" virt="virtual"><scope>IoText</scope><name>read_array</name></member>
+      <member refid="structIoText_1a5c8a254307ce9ad55cc4310b4133ef00" prot="public" virt="virtual"><scope>IoText</scope><name>read_array</name></member>
+      <member refid="structIo_1a10a3daf59bc4a0204f144168d9351bca" prot="public" virt="non-virtual" ambiguityscope="Io::"><scope>IoText</scope><name>read_array</name></member>
+      <member refid="structIoText_1ae1c3c8c2a8fd8fbbe352bfb8e0a17904" prot="public" virt="virtual"><scope>IoText</scope><name>read_bool</name></member>
+      <member refid="structIoText_1a83995afb2d4457df43ca0de1b3504fa2" prot="public" virt="virtual"><scope>IoText</scope><name>read_length</name></member>
+      <member refid="structIoText_1a1d9d01590ca55040c8123fd4c51f65a3" prot="public" virt="virtual"><scope>IoText</scope><name>read_list</name></member>
+      <member refid="structIoText_1a6855286bf7dff5b07002c26d2b5081eb" prot="public" virt="virtual"><scope>IoText</scope><name>read_list</name></member>
+      <member refid="structIoText_1a2baea1fd837358bc050d3b4722a054f4" prot="public" virt="virtual"><scope>IoText</scope><name>read_list</name></member>
+      <member refid="structIoText_1aebfe0c0d914ce3d1104427c3304bef61" prot="public" virt="virtual"><scope>IoText</scope><name>read_list</name></member>
+      <member refid="structIoText_1a05097d5abd2f72fc1b831c9c11674eb8" prot="public" virt="virtual"><scope>IoText</scope><name>read_list</name></member>
+      <member refid="structIoText_1a1dfe8eaa04fc8e718ffda2de68ee4539" prot="public" virt="virtual"><scope>IoText</scope><name>read_list</name></member>
+      <member refid="structIo_1acff6d4c6fe27096ef308dc44c1c9a7ef" prot="public" virt="non-virtual" ambiguityscope="Io::"><scope>IoText</scope><name>read_list</name></member>
+      <member refid="structIo_1aac27fd596c4d7b2cc15638efb7b04e59" prot="public" virt="non-virtual" ambiguityscope="Io::"><scope>IoText</scope><name>read_list</name></member>
+      <member refid="structIoText_1a213524a0e463c42f150328bdcc584d8f" prot="public" virt="virtual"><scope>IoText</scope><name>read_number</name></member>
+      <member refid="structIoText_1a206f40a37768ea21ad7a1d6bf7fd3bec" prot="public" virt="virtual"><scope>IoText</scope><name>read_number</name></member>
+      <member refid="structIoText_1aec22b56cf73845c7bbd0f0586f33c226" prot="public" virt="virtual"><scope>IoText</scope><name>read_number</name></member>
+      <member refid="structIoText_1a180435daf4d3e8c5a4f94f9a89efc8b2" prot="public" virt="virtual"><scope>IoText</scope><name>read_width</name></member>
+      <member refid="structIoText_1a25f22e32fba75177299dc8c3201e8463" prot="public" virt="virtual"><scope>IoText</scope><name>read_word</name></member>
+      <member refid="structIoText_1a077eaf1b2f3b588574e7bd3a0a679730" prot="public" virt="virtual"><scope>IoText</scope><name>write_3_vector</name></member>
+      <member refid="structIoText_1a2343ad1e896a2fe783649beace860b83" prot="public" virt="virtual"><scope>IoText</scope><name>write_array</name></member>
+      <member refid="structIoText_1ac09242b73cef1ea6704df9956df247e5" prot="public" virt="virtual"><scope>IoText</scope><name>write_array</name></member>
+      <member refid="structIoText_1a71a806ed38ad4d9566e5f28b82058bce" prot="public" virt="virtual"><scope>IoText</scope><name>write_array</name></member>
+      <member refid="structIo_1a87619feba822519d2db112e848ebd1a0" prot="public" virt="non-virtual" ambiguityscope="Io::"><scope>IoText</scope><name>write_array</name></member>
+      <member refid="structIoText_1a9c90a9a3e3055d60e3260cb424b4a89c" prot="public" virt="virtual"><scope>IoText</scope><name>write_bool</name></member>
+      <member refid="structIoText_1a43d88efbb47426b362570f56d1e7a694" prot="public" virt="virtual"><scope>IoText</scope><name>write_list</name></member>
+      <member refid="structIoText_1a08254595b5cb4b11aa51afce081bd143" prot="public" virt="virtual"><scope>IoText</scope><name>write_list</name></member>
+      <member refid="structIoText_1a2a2248c0aa01b7fa4a5c81aaaa1d3f5b" prot="public" virt="virtual"><scope>IoText</scope><name>write_list</name></member>
+      <member refid="structIoText_1abfc8c627a3a8dabb5830b9c5f344920d" prot="public" virt="virtual"><scope>IoText</scope><name>write_list</name></member>
+      <member refid="structIoText_1a7eba2b7133b6ab2fb9b69dcd6947fb1f" prot="public" virt="virtual"><scope>IoText</scope><name>write_list</name></member>
+      <member refid="structIoText_1aa2adc83bb36779a4959a7c367497932e" prot="public" virt="virtual"><scope>IoText</scope><name>write_list</name></member>
+      <member refid="structIo_1af2dd662246ce54925bf4c8a740143c9e" prot="public" virt="non-virtual" ambiguityscope="Io::"><scope>IoText</scope><name>write_list</name></member>
+      <member refid="structIo_1aaf8528d5a8f8d9f3524472db6573a69a" prot="public" virt="non-virtual" ambiguityscope="Io::"><scope>IoText</scope><name>write_list</name></member>
+      <member refid="structIoText_1a5851f8826753f301ee6da313c63a9af4" prot="public" virt="virtual"><scope>IoText</scope><name>write_number</name></member>
+      <member refid="structIoText_1aa11dc1299d8fed9e6256f09b3e4e7b49" prot="public" virt="virtual"><scope>IoText</scope><name>write_number</name></member>
+      <member refid="structIoText_1aeef28f055be01aa2a44fb0c0617ebb53" prot="public" virt="virtual"><scope>IoText</scope><name>write_number</name></member>
+      <member refid="structIoText_1ab534b70b8c39a78d770e64edf0986bbd" prot="public" virt="virtual"><scope>IoText</scope><name>write_word</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.14">
+  <compounddef id="dir_b79e122c67277aac2087ccc01f3e79bd" kind="dir">
+    <compoundname>/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/points</compoundname>
+    <innerfile refid="points_8cpp">points.cpp</innerfile>
+    <innerfile refid="points_8hpp">points.hpp</innerfile>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/points/"/>
+  </compounddef>
+</doxygen>

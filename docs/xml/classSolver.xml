@@ -1,0 +1,1204 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.14">
+  <compounddef id="classSolver" kind="class" language="C++" prot="public">
+    <compoundname>Solver</compoundname>
+    <includes refid="solver_8hpp" local="no">solver.hpp</includes>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classSolver_1aa593893603abad84c3a5f0c271d4f660" prot="public" static="no" mutable="no">
+        <type>pc::multi_threading::ThreadPrivate&lt; <ref refid="types_8hpp_1a959df20affa391f0d7913ff0349bdb05" kindref="member">Vector</ref>&lt; double &gt; &gt;</type>
+        <definition>pc::multi_threading::ThreadPrivate&lt;Vector&lt;double&gt; &gt; Solver::dZ_</definition>
+        <argsstring></argsstring>
+        <name>dZ_</name>
+        <briefdescription>
+<para>distance increments along the ray </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" line="11" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" bodystart="11" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classSolver_1a1e32b550327fd2bf429bcfeaae538dc9" prot="public" static="no" mutable="no">
+        <type>pc::multi_threading::ThreadPrivate&lt; <ref refid="types_8hpp_1a959df20affa391f0d7913ff0349bdb05" kindref="member">Vector</ref>&lt; <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref> &gt; &gt;</type>
+        <definition>pc::multi_threading::ThreadPrivate&lt;Vector&lt;Size&gt; &gt; Solver::nr_</definition>
+        <argsstring></argsstring>
+        <name>nr_</name>
+        <briefdescription>
+<para>corresponding point number on the ray </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" line="12" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" bodystart="12" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classSolver_1a8fd2d3fba8d4f6a6db372d02c51d6517" prot="public" static="no" mutable="no">
+        <type>pc::multi_threading::ThreadPrivate&lt; <ref refid="types_8hpp_1a959df20affa391f0d7913ff0349bdb05" kindref="member">Vector</ref>&lt; double &gt; &gt;</type>
+        <definition>pc::multi_threading::ThreadPrivate&lt;Vector&lt;double&gt; &gt; Solver::shift_</definition>
+        <argsstring></argsstring>
+        <name>shift_</name>
+        <briefdescription>
+<para>Doppler shift along the ray. </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" line="13" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" bodystart="13" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classSolver_1af292f625396c1a5af5d4d5b0ca2fbea6" prot="public" static="no" mutable="no">
+        <type>pc::multi_threading::ThreadPrivate&lt; <ref refid="types_8hpp_1a959df20affa391f0d7913ff0349bdb05" kindref="member">Vector</ref>&lt; <ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref> &gt; &gt;</type>
+        <definition>pc::multi_threading::ThreadPrivate&lt;Vector&lt;Real&gt; &gt; Solver::eta_c_</definition>
+        <argsstring></argsstring>
+        <name>eta_c_</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" line="15" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" bodystart="15" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classSolver_1a1c88ba001ded86f020d2d0bd59fc3e5f" prot="public" static="no" mutable="no">
+        <type>pc::multi_threading::ThreadPrivate&lt; <ref refid="types_8hpp_1a959df20affa391f0d7913ff0349bdb05" kindref="member">Vector</ref>&lt; <ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref> &gt; &gt;</type>
+        <definition>pc::multi_threading::ThreadPrivate&lt;Vector&lt;Real&gt; &gt; Solver::eta_n_</definition>
+        <argsstring></argsstring>
+        <name>eta_n_</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" line="16" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" bodystart="16" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classSolver_1a9028f766f7aa31eb723c3e52adfc5a8b" prot="public" static="no" mutable="no">
+        <type>pc::multi_threading::ThreadPrivate&lt; <ref refid="types_8hpp_1a959df20affa391f0d7913ff0349bdb05" kindref="member">Vector</ref>&lt; <ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref> &gt; &gt;</type>
+        <definition>pc::multi_threading::ThreadPrivate&lt;Vector&lt;Real&gt; &gt; Solver::chi_c_</definition>
+        <argsstring></argsstring>
+        <name>chi_c_</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" line="18" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" bodystart="18" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classSolver_1a85db0b8ad8b390cc48f84a6676cf8313" prot="public" static="no" mutable="no">
+        <type>pc::multi_threading::ThreadPrivate&lt; <ref refid="types_8hpp_1a959df20affa391f0d7913ff0349bdb05" kindref="member">Vector</ref>&lt; <ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref> &gt; &gt;</type>
+        <definition>pc::multi_threading::ThreadPrivate&lt;Vector&lt;Real&gt; &gt; Solver::chi_n_</definition>
+        <argsstring></argsstring>
+        <name>chi_n_</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" line="19" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" bodystart="19" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classSolver_1ad47b12e950f765ff0435b28d3ddd0900" prot="public" static="no" mutable="no">
+        <type>pc::multi_threading::ThreadPrivate&lt; <ref refid="types_8hpp_1a959df20affa391f0d7913ff0349bdb05" kindref="member">Vector</ref>&lt; <ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref> &gt; &gt;</type>
+        <definition>pc::multi_threading::ThreadPrivate&lt;Vector&lt;Real&gt; &gt; Solver::inverse_chi_</definition>
+        <argsstring></argsstring>
+        <name>inverse_chi_</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" line="21" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" bodystart="21" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classSolver_1a4d4d72ea33485df9e208d9a691262f5e" prot="public" static="no" mutable="no">
+        <type>pc::multi_threading::ThreadPrivate&lt; <ref refid="types_8hpp_1a959df20affa391f0d7913ff0349bdb05" kindref="member">Vector</ref>&lt; <ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref> &gt; &gt;</type>
+        <definition>pc::multi_threading::ThreadPrivate&lt;Vector&lt;Real&gt; &gt; Solver::tau_</definition>
+        <argsstring></argsstring>
+        <name>tau_</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" line="23" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" bodystart="23" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classSolver_1a82bfcc796fa2821ba8435374f1c1df21" prot="public" static="no" mutable="no">
+        <type>pc::multi_threading::ThreadPrivate&lt; <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref> &gt;</type>
+        <definition>pc::multi_threading::ThreadPrivate&lt;Size&gt; Solver::first_</definition>
+        <argsstring></argsstring>
+        <name>first_</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" line="25" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" bodystart="25" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classSolver_1ad6fdb579c9aebed9f30930d97a60c913" prot="public" static="no" mutable="no">
+        <type>pc::multi_threading::ThreadPrivate&lt; <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref> &gt;</type>
+        <definition>pc::multi_threading::ThreadPrivate&lt;Size&gt; Solver::last_</definition>
+        <argsstring></argsstring>
+        <name>last_</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" line="26" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" bodystart="26" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classSolver_1a2e4f61eaebcbf864f89e9abe8d7168bb" prot="public" static="no" mutable="no">
+        <type>pc::multi_threading::ThreadPrivate&lt; <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref> &gt;</type>
+        <definition>pc::multi_threading::ThreadPrivate&lt;Size&gt; Solver::n_tot_</definition>
+        <argsstring></argsstring>
+        <name>n_tot_</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" line="27" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" bodystart="27" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classSolver_1ae442939c747ba7125a812cc090736d99" prot="public" static="no" mutable="no">
+        <type>pc::multi_threading::ThreadPrivate&lt; <ref refid="types_8hpp_1a959df20affa391f0d7913ff0349bdb05" kindref="member">Vector</ref>&lt; <ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref> &gt; &gt;</type>
+        <definition>pc::multi_threading::ThreadPrivate&lt;Vector&lt;Real&gt; &gt; Solver::Su_</definition>
+        <argsstring></argsstring>
+        <name>Su_</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" line="29" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" bodystart="29" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classSolver_1ae790700d8d3feeffad9c32766b1d3320" prot="public" static="no" mutable="no">
+        <type>pc::multi_threading::ThreadPrivate&lt; <ref refid="types_8hpp_1a959df20affa391f0d7913ff0349bdb05" kindref="member">Vector</ref>&lt; <ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref> &gt; &gt;</type>
+        <definition>pc::multi_threading::ThreadPrivate&lt;Vector&lt;Real&gt; &gt; Solver::Sv_</definition>
+        <argsstring></argsstring>
+        <name>Sv_</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" line="30" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" bodystart="30" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classSolver_1a3584b761f4db2f63ce5d09815705e24f" prot="public" static="no" mutable="no">
+        <type>pc::multi_threading::ThreadPrivate&lt; <ref refid="types_8hpp_1a959df20affa391f0d7913ff0349bdb05" kindref="member">Vector</ref>&lt; <ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref> &gt; &gt;</type>
+        <definition>pc::multi_threading::ThreadPrivate&lt;Vector&lt;Real&gt; &gt; Solver::A_</definition>
+        <argsstring></argsstring>
+        <name>A_</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" line="32" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" bodystart="32" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classSolver_1a87dd0adf55fabd22845f70324f0e57af" prot="public" static="no" mutable="no">
+        <type>pc::multi_threading::ThreadPrivate&lt; <ref refid="types_8hpp_1a959df20affa391f0d7913ff0349bdb05" kindref="member">Vector</ref>&lt; <ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref> &gt; &gt;</type>
+        <definition>pc::multi_threading::ThreadPrivate&lt;Vector&lt;Real&gt; &gt; Solver::C_</definition>
+        <argsstring></argsstring>
+        <name>C_</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" line="33" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" bodystart="33" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classSolver_1aba52c9b0ef03d2b29bbd0255e28d27e4" prot="public" static="no" mutable="no">
+        <type>pc::multi_threading::ThreadPrivate&lt; <ref refid="types_8hpp_1a959df20affa391f0d7913ff0349bdb05" kindref="member">Vector</ref>&lt; <ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref> &gt; &gt;</type>
+        <definition>pc::multi_threading::ThreadPrivate&lt;Vector&lt;Real&gt; &gt; Solver::inverse_A_</definition>
+        <argsstring></argsstring>
+        <name>inverse_A_</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" line="34" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" bodystart="34" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classSolver_1a4fd4eb0c4e75c33f83b2b175c0481dfb" prot="public" static="no" mutable="no">
+        <type>pc::multi_threading::ThreadPrivate&lt; <ref refid="types_8hpp_1a959df20affa391f0d7913ff0349bdb05" kindref="member">Vector</ref>&lt; <ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref> &gt; &gt;</type>
+        <definition>pc::multi_threading::ThreadPrivate&lt;Vector&lt;Real&gt; &gt; Solver::inverse_C_</definition>
+        <argsstring></argsstring>
+        <name>inverse_C_</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" line="35" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" bodystart="35" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classSolver_1a4866aba15cba24af867bb2a33c51ad53" prot="public" static="no" mutable="no">
+        <type>pc::multi_threading::ThreadPrivate&lt; <ref refid="types_8hpp_1a959df20affa391f0d7913ff0349bdb05" kindref="member">Vector</ref>&lt; <ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref> &gt; &gt;</type>
+        <definition>pc::multi_threading::ThreadPrivate&lt;Vector&lt;Real&gt; &gt; Solver::FF_</definition>
+        <argsstring></argsstring>
+        <name>FF_</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" line="37" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" bodystart="37" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classSolver_1a4577a08deaab6e2b3c746760ea3aca02" prot="public" static="no" mutable="no">
+        <type>pc::multi_threading::ThreadPrivate&lt; <ref refid="types_8hpp_1a959df20affa391f0d7913ff0349bdb05" kindref="member">Vector</ref>&lt; <ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref> &gt; &gt;</type>
+        <definition>pc::multi_threading::ThreadPrivate&lt;Vector&lt;Real&gt; &gt; Solver::FI_</definition>
+        <argsstring></argsstring>
+        <name>FI_</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" line="38" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" bodystart="38" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classSolver_1ae6df9dd9e72c119c4ec54b5893881080" prot="public" static="no" mutable="no">
+        <type>pc::multi_threading::ThreadPrivate&lt; <ref refid="types_8hpp_1a959df20affa391f0d7913ff0349bdb05" kindref="member">Vector</ref>&lt; <ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref> &gt; &gt;</type>
+        <definition>pc::multi_threading::ThreadPrivate&lt;Vector&lt;Real&gt; &gt; Solver::GG_</definition>
+        <argsstring></argsstring>
+        <name>GG_</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" line="39" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" bodystart="39" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classSolver_1a3f35086d810b81bbb5de45d53ad711f0" prot="public" static="no" mutable="no">
+        <type>pc::multi_threading::ThreadPrivate&lt; <ref refid="types_8hpp_1a959df20affa391f0d7913ff0349bdb05" kindref="member">Vector</ref>&lt; <ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref> &gt; &gt;</type>
+        <definition>pc::multi_threading::ThreadPrivate&lt;Vector&lt;Real&gt; &gt; Solver::GI_</definition>
+        <argsstring></argsstring>
+        <name>GI_</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" line="40" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" bodystart="40" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classSolver_1acea2ce14fc8dfdfdf016039bd36a0891" prot="public" static="no" mutable="no">
+        <type>pc::multi_threading::ThreadPrivate&lt; <ref refid="types_8hpp_1a959df20affa391f0d7913ff0349bdb05" kindref="member">Vector</ref>&lt; <ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref> &gt; &gt;</type>
+        <definition>pc::multi_threading::ThreadPrivate&lt;Vector&lt;Real&gt; &gt; Solver::GP_</definition>
+        <argsstring></argsstring>
+        <name>GP_</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" line="41" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" bodystart="41" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classSolver_1a30734c2da85f17b312b712f31749a4d8" prot="public" static="no" mutable="no">
+        <type>pc::multi_threading::ThreadPrivate&lt; <ref refid="types_8hpp_1a959df20affa391f0d7913ff0349bdb05" kindref="member">Vector</ref>&lt; <ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref> &gt; &gt;</type>
+        <definition>pc::multi_threading::ThreadPrivate&lt;Vector&lt;Real&gt; &gt; Solver::L_diag_</definition>
+        <argsstring></argsstring>
+        <name>L_diag_</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" line="43" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" bodystart="43" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classSolver_1a64eb5571ff50f8d1c4c6f2bfddfa2e9c" prot="public" static="no" mutable="no">
+        <type>pc::multi_threading::ThreadPrivate&lt; <ref refid="types_8hpp_1ac9d1a399bc9eae71d5719b37a09745f6" kindref="member">Matrix</ref>&lt; <ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref> &gt; &gt;</type>
+        <definition>pc::multi_threading::ThreadPrivate&lt;Matrix&lt;Real&gt; &gt; Solver::L_upper_</definition>
+        <argsstring></argsstring>
+        <name>L_upper_</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" line="44" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" bodystart="44" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classSolver_1a9d831adc525ce9a20daf40b2babbeaaf" prot="public" static="no" mutable="no">
+        <type>pc::multi_threading::ThreadPrivate&lt; <ref refid="types_8hpp_1ac9d1a399bc9eae71d5719b37a09745f6" kindref="member">Matrix</ref>&lt; <ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref> &gt; &gt;</type>
+        <definition>pc::multi_threading::ThreadPrivate&lt;Matrix&lt;Real&gt; &gt; Solver::L_lower_</definition>
+        <argsstring></argsstring>
+        <name>L_lower_</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" line="45" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" bodystart="45" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classSolver_1aef7d27e0cdb6b43408d24a6166f4d220" prot="public" static="no" mutable="no">
+        <type><ref refid="types_8hpp_1a959df20affa391f0d7913ff0349bdb05" kindref="member">Vector</ref>&lt; <ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref> &gt;</type>
+        <definition>Vector&lt;Real&gt; Solver::eta</definition>
+        <argsstring></argsstring>
+        <name>eta</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" line="49" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" bodystart="49" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classSolver_1a1845694e3a98bd176e4f908de818c783" prot="public" static="no" mutable="no">
+        <type><ref refid="types_8hpp_1a959df20affa391f0d7913ff0349bdb05" kindref="member">Vector</ref>&lt; <ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref> &gt;</type>
+        <definition>Vector&lt;Real&gt; Solver::chi</definition>
+        <argsstring></argsstring>
+        <name>chi</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" line="50" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" bodystart="50" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classSolver_1a0c58203e907a5d7a0ce9702ce13a4d67" prot="public" static="no" mutable="no">
+        <type><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+        <definition>Size Solver::nblocks</definition>
+        <argsstring></argsstring>
+        <name>nblocks</name>
+        <initializer>= 512</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" line="55" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" bodystart="55" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classSolver_1ad692f5ce7744612cc9e493cbf9cb5505" prot="public" static="no" mutable="no">
+        <type><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+        <definition>Size Solver::nthreads</definition>
+        <argsstring></argsstring>
+        <name>nthreads</name>
+        <initializer>= 512</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" line="56" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" bodystart="56" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classSolver_1a06c42d4db4b803894707b44d2fc8b941" prot="public" static="no" mutable="no">
+        <type><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+        <definition>Size Solver::length</definition>
+        <argsstring></argsstring>
+        <name>length</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" line="76" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" bodystart="76" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classSolver_1ad38dfde16468aa392ef48ca0144f8fa2" prot="public" static="no" mutable="no">
+        <type><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+        <definition>Size Solver::centre</definition>
+        <argsstring></argsstring>
+        <name>centre</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" line="77" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" bodystart="77" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classSolver_1a23852599dfc7d6694e025aef3bb3b83a" prot="public" static="no" mutable="no">
+        <type><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+        <definition>Size Solver::width</definition>
+        <argsstring></argsstring>
+        <name>width</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" line="78" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" bodystart="78" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classSolver_1a9e29016472075b97791b75060ae99625" prot="public" static="no" mutable="no">
+        <type><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+        <definition>Size Solver::n_off_diag</definition>
+        <argsstring></argsstring>
+        <name>n_off_diag</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" line="80" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" bodystart="80" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classSolver_1ad5efe9fd4746f9d59288598412a03933" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type><ref refid="geometry_8hpp_1a1a3c9a246bb17ddd6d40809f3521a5c5" kindref="member">Frame</ref></type>
+            <declname>frame</declname>
+            <defname>frame</defname>
+          </param>
+        </templateparamlist>
+        <type>void</type>
+        <definition>void Solver::setup</definition>
+        <argsstring>(Model &amp;model)</argsstring>
+        <name>setup</name>
+        <param>
+          <type><ref refid="structModel" kindref="compound">Model</ref> &amp;</type>
+          <declname>model</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" line="62" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classSolver_1a5ed7513d09872c5e84e5c242672d7850" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Solver::setup</definition>
+        <argsstring>(const Size l, const Size w, const Size n_o_d)</argsstring>
+        <name>setup</name>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>l</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>w</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>n_o_d</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" line="63" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classSolver_1a921fbbb0ca0767e05c23dedb08584926" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>accel <ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref></type>
+        <definition>accel Real Solver::get_dshift_max</definition>
+        <argsstring>(const Model &amp;model, const Size o)</argsstring>
+        <name>get_dshift_max</name>
+        <param>
+          <type>const <ref refid="structModel" kindref="compound">Model</ref> &amp;</type>
+          <declname>model</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>o</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" line="65" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classSolver_1a626a85e269207e7a5a156a9fd86b2993" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type><ref refid="geometry_8hpp_1a1a3c9a246bb17ddd6d40809f3521a5c5" kindref="member">Frame</ref></type>
+            <declname>frame</declname>
+            <defname>frame</defname>
+          </param>
+        </templateparamlist>
+        <type>void</type>
+        <definition>void Solver::get_ray_lengths</definition>
+        <argsstring>(Model &amp;model)</argsstring>
+        <name>get_ray_lengths</name>
+        <param>
+          <type><ref refid="structModel" kindref="compound">Model</ref> &amp;</type>
+          <declname>model</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" line="70" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classSolver_1af229497ca4c36f8e9487fc3c23f7e29f" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type><ref refid="geometry_8hpp_1a1a3c9a246bb17ddd6d40809f3521a5c5" kindref="member">Frame</ref></type>
+            <declname>frame</declname>
+            <defname>frame</defname>
+          </param>
+        </templateparamlist>
+        <type><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+        <definition>Size Solver::get_ray_lengths_max</definition>
+        <argsstring>(Model &amp;model)</argsstring>
+        <name>get_ray_lengths_max</name>
+        <param>
+          <type><ref refid="structModel" kindref="compound">Model</ref> &amp;</type>
+          <declname>model</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" line="72" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classSolver_1a2a9e5ab2debc7428e334a3e7984bfd64" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type><ref refid="geometry_8hpp_1a1a3c9a246bb17ddd6d40809f3521a5c5" kindref="member">Frame</ref></type>
+            <declname>frame</declname>
+            <defname>frame</defname>
+          </param>
+        </templateparamlist>
+        <type>accel <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+        <definition>accel Size Solver::trace_ray</definition>
+        <argsstring>(const Geometry &amp;geometry, const Size o, const Size r, const double dshift_max, const int increment, Size id1, Size id2)</argsstring>
+        <name>trace_ray</name>
+        <param>
+          <type>const <ref refid="structGeometry" kindref="compound">Geometry</ref> &amp;</type>
+          <declname>geometry</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>o</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>r</declname>
+        </param>
+        <param>
+          <type>const double</type>
+          <declname>dshift_max</declname>
+        </param>
+        <param>
+          <type>const int</type>
+          <declname>increment</declname>
+        </param>
+        <param>
+          <type><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>id1</declname>
+        </param>
+        <param>
+          <type><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>id2</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" line="86" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classSolver_1a2181528992c307ff693ee9be118923c1" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>accel void</type>
+        <definition>accel void Solver::set_data</definition>
+        <argsstring>(const Size crt, const Size nxt, const double shift_crt, const double shift_nxt, const double dZ_loc, const double dshift_max, const int increment, Size &amp;id1, Size &amp;id2)</argsstring>
+        <name>set_data</name>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>crt</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>nxt</declname>
+        </param>
+        <param>
+          <type>const double</type>
+          <declname>shift_crt</declname>
+        </param>
+        <param>
+          <type>const double</type>
+          <declname>shift_nxt</declname>
+        </param>
+        <param>
+          <type>const double</type>
+          <declname>dZ_loc</declname>
+        </param>
+        <param>
+          <type>const double</type>
+          <declname>dshift_max</declname>
+        </param>
+        <param>
+          <type>const int</type>
+          <declname>increment</declname>
+        </param>
+        <param>
+          <type><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref> &amp;</type>
+          <declname>id1</declname>
+        </param>
+        <param>
+          <type><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref> &amp;</type>
+          <declname>id2</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" line="95" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classSolver_1abc67ab0efa71761bdb301f3997a5e680" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>accel <ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref></type>
+        <definition>accel Real Solver::gaussian</definition>
+        <argsstring>(const Real width, const Real diff) const</argsstring>
+        <name>gaussian</name>
+        <param>
+          <type>const <ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref></type>
+          <declname>width</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref></type>
+          <declname>diff</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" line="106" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classSolver_1acd4bf29af5a4b016043431bcf7a37d11" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>accel <ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref></type>
+        <definition>accel Real Solver::planck</definition>
+        <argsstring>(const Real temp, const Real freq) const</argsstring>
+        <name>planck</name>
+        <param>
+          <type>const <ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref></type>
+          <declname>temp</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref></type>
+          <declname>freq</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" line="107" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classSolver_1afbd3e1dfdb82b1b4cfe59334bf3c92bb" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>accel <ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref></type>
+        <definition>accel Real Solver::boundary_intensity</definition>
+        <argsstring>(const Model &amp;model, const Size p, const Real freq) const</argsstring>
+        <name>boundary_intensity</name>
+        <param>
+          <type>const <ref refid="structModel" kindref="compound">Model</ref> &amp;</type>
+          <declname>model</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>p</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref></type>
+          <declname>freq</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" line="109" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classSolver_1a5d7d7d302fd819b886e422f082463eef" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>accel void</type>
+        <definition>accel void Solver::get_eta_and_chi</definition>
+        <argsstring>(const Model &amp;model, const Size p, const Real freq, Real &amp;eta, Real &amp;chi) const</argsstring>
+        <name>get_eta_and_chi</name>
+        <param>
+          <type>const <ref refid="structModel" kindref="compound">Model</ref> &amp;</type>
+          <declname>model</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>p</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref></type>
+          <declname>freq</declname>
+        </param>
+        <param>
+          <type><ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref> &amp;</type>
+          <declname>eta</declname>
+        </param>
+        <param>
+          <type><ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref> &amp;</type>
+          <declname>chi</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" line="114" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classSolver_1a7c5325ba467e32f4fec6f7e1c4c49115" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>accel void</type>
+        <definition>accel void Solver::update_Lambda</definition>
+        <argsstring>(Model &amp;model, const Size rr, const Size f)</argsstring>
+        <name>update_Lambda</name>
+        <param>
+          <type><ref refid="structModel" kindref="compound">Model</ref> &amp;</type>
+          <declname>model</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>rr</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>f</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" line="121" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classSolver_1a064ddef554e1f7299c5f6fbc75996309" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>accel void</type>
+        <definition>accel void Solver::solve_shortchar_order_0</definition>
+        <argsstring>(Model &amp;model)</argsstring>
+        <name>solve_shortchar_order_0</name>
+        <param>
+          <type><ref refid="structModel" kindref="compound">Model</ref> &amp;</type>
+          <declname>model</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" line="127" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classSolver_1ada55adb0ea9e4c8172907586809c4daf" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>accel void</type>
+        <definition>accel void Solver::solve_shortchar_order_0</definition>
+        <argsstring>(Model &amp;model, const Size o, const Size r, const double dshift_max)</argsstring>
+        <name>solve_shortchar_order_0</name>
+        <param>
+          <type><ref refid="structModel" kindref="compound">Model</ref> &amp;</type>
+          <declname>model</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>o</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>r</declname>
+        </param>
+        <param>
+          <type>const double</type>
+          <declname>dshift_max</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" line="128" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classSolver_1a345cbf33820380dbb620ced28159ca1a" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>accel void</type>
+        <definition>accel void Solver::solve_feautrier_order_2</definition>
+        <argsstring>(Model &amp;model)</argsstring>
+        <name>solve_feautrier_order_2</name>
+        <param>
+          <type><ref refid="structModel" kindref="compound">Model</ref> &amp;</type>
+          <declname>model</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" line="134" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classSolver_1ad638d60556154027701ecceac9bf39d8" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>accel void</type>
+        <definition>accel void Solver::solve_feautrier_order_2</definition>
+        <argsstring>(Model &amp;model, const Size o, const Size rr, const Size ar, const Size f)</argsstring>
+        <name>solve_feautrier_order_2</name>
+        <param>
+          <type><ref refid="structModel" kindref="compound">Model</ref> &amp;</type>
+          <declname>model</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>o</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>rr</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>ar</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>f</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" line="135" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classSolver_1a1acdd3064d64532d73a1c8be0ef42e54" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>accel void</type>
+        <definition>accel void Solver::image_feautrier_order_2</definition>
+        <argsstring>(Model &amp;model, const Size rr)</argsstring>
+        <name>image_feautrier_order_2</name>
+        <param>
+          <type><ref refid="structModel" kindref="compound">Model</ref> &amp;</type>
+          <declname>model</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>rr</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" line="142" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classSolver_1a0d7a14bb7b4df453f49080b53e141747" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>accel void</type>
+        <definition>accel void Solver::image_feautrier_order_2</definition>
+        <argsstring>(Model &amp;model, const Size o, const Size rr, const Size ar, const Size f)</argsstring>
+        <name>image_feautrier_order_2</name>
+        <param>
+          <type><ref refid="structModel" kindref="compound">Model</ref> &amp;</type>
+          <declname>model</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>o</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>rr</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>ar</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>f</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" line="143" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classSolver_1a46b15c8ed3d64cce4c645408adb8b7eb" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>accel <ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref></type>
+        <definition>accel Real Solver::kernel</definition>
+        <argsstring>(const Vector3D d) const</argsstring>
+        <name>kernel</name>
+        <param>
+          <type>const <ref refid="types_8hpp_1a9ba03c9169409d1848791ddf34116c28" kindref="member">Vector3D</ref></type>
+          <declname>d</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" line="151" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classSolver_1af533813c597ea27df2e5f4782bbc8364" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>accel <ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref></type>
+        <definition>accel Real Solver::kernel</definition>
+        <argsstring>(const Model &amp;model, const Size r, const Size p1, const Size p2) const</argsstring>
+        <name>kernel</name>
+        <param>
+          <type>const <ref refid="structModel" kindref="compound">Model</ref> &amp;</type>
+          <declname>model</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>r</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>p1</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>p2</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" line="152" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classSolver_1a3f5493ccdd0c4f1a9bfa71a1685a643b" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>accel <ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref></type>
+        <definition>accel Real Solver::L1_kernel</definition>
+        <argsstring>(const Model &amp;model, const Size r, const Size p1, const Size p2) const</argsstring>
+        <name>L1_kernel</name>
+        <param>
+          <type>const <ref refid="structModel" kindref="compound">Model</ref> &amp;</type>
+          <declname>model</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>r</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>p1</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>p2</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" line="153" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classSolver_1a60d29b939a7c40cb0b575ffd422ec35a" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>accel <ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref></type>
+        <definition>accel Real Solver::L2_kernel</definition>
+        <argsstring>(const Model &amp;model, const Size r, const Size p1, const Size p2) const</argsstring>
+        <name>L2_kernel</name>
+        <param>
+          <type>const <ref refid="structModel" kindref="compound">Model</ref> &amp;</type>
+          <declname>model</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>r</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>p1</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>p2</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" line="154" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classSolver_1ad8e4dcc3763793e6976dcb096e4028dd" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>accel <ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref></type>
+        <definition>accel Real Solver::L12_kernel</definition>
+        <argsstring>(const Model &amp;model, const Size r, const Size p1, const Size p2) const</argsstring>
+        <name>L12_kernel</name>
+        <param>
+          <type>const <ref refid="structModel" kindref="compound">Model</ref> &amp;</type>
+          <declname>model</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>r</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>p1</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>p2</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" line="155" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classSolver_1aa687e0888d494a4581b637e6ffed906e" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>accel void</type>
+        <definition>accel void Solver::solve_kernel_method</definition>
+        <argsstring>(Model &amp;model, const Size r, const Size f)</argsstring>
+        <name>solve_kernel_method</name>
+        <param>
+          <type><ref refid="structModel" kindref="compound">Model</ref> &amp;</type>
+          <declname>model</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>r</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>f</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" line="157" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classSolver_1a6bf5fc73f335af88516f29eff1612844" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>accel void</type>
+        <definition>accel void Solver::set_eta_and_chi</definition>
+        <argsstring>(Model &amp;model) const</argsstring>
+        <name>set_eta_and_chi</name>
+        <param>
+          <type><ref refid="structModel" kindref="compound">Model</ref> &amp;</type>
+          <declname>model</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" line="162" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classSolver_1ac731c064c1fb68a5738ab869542b74d1" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>accel void</type>
+        <definition>accel void Solver::set_boundary_condition</definition>
+        <argsstring>(Model &amp;model) const</argsstring>
+        <name>set_boundary_condition</name>
+        <param>
+          <type><ref refid="structModel" kindref="compound">Model</ref> &amp;</type>
+          <declname>model</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" line="163" column="1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" line="9" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp" bodystart="8" bodyend="164"/>
+    <listofallmembers>
+      <member refid="classSolver_1a3584b761f4db2f63ce5d09815705e24f" prot="public" virt="non-virtual"><scope>Solver</scope><name>A_</name></member>
+      <member refid="classSolver_1afbd3e1dfdb82b1b4cfe59334bf3c92bb" prot="public" virt="non-virtual"><scope>Solver</scope><name>boundary_intensity</name></member>
+      <member refid="classSolver_1a87dd0adf55fabd22845f70324f0e57af" prot="public" virt="non-virtual"><scope>Solver</scope><name>C_</name></member>
+      <member refid="classSolver_1ad38dfde16468aa392ef48ca0144f8fa2" prot="public" virt="non-virtual"><scope>Solver</scope><name>centre</name></member>
+      <member refid="classSolver_1a1845694e3a98bd176e4f908de818c783" prot="public" virt="non-virtual"><scope>Solver</scope><name>chi</name></member>
+      <member refid="classSolver_1a9028f766f7aa31eb723c3e52adfc5a8b" prot="public" virt="non-virtual"><scope>Solver</scope><name>chi_c_</name></member>
+      <member refid="classSolver_1a85db0b8ad8b390cc48f84a6676cf8313" prot="public" virt="non-virtual"><scope>Solver</scope><name>chi_n_</name></member>
+      <member refid="classSolver_1aa593893603abad84c3a5f0c271d4f660" prot="public" virt="non-virtual"><scope>Solver</scope><name>dZ_</name></member>
+      <member refid="classSolver_1aef7d27e0cdb6b43408d24a6166f4d220" prot="public" virt="non-virtual"><scope>Solver</scope><name>eta</name></member>
+      <member refid="classSolver_1af292f625396c1a5af5d4d5b0ca2fbea6" prot="public" virt="non-virtual"><scope>Solver</scope><name>eta_c_</name></member>
+      <member refid="classSolver_1a1c88ba001ded86f020d2d0bd59fc3e5f" prot="public" virt="non-virtual"><scope>Solver</scope><name>eta_n_</name></member>
+      <member refid="classSolver_1a4866aba15cba24af867bb2a33c51ad53" prot="public" virt="non-virtual"><scope>Solver</scope><name>FF_</name></member>
+      <member refid="classSolver_1a4577a08deaab6e2b3c746760ea3aca02" prot="public" virt="non-virtual"><scope>Solver</scope><name>FI_</name></member>
+      <member refid="classSolver_1a82bfcc796fa2821ba8435374f1c1df21" prot="public" virt="non-virtual"><scope>Solver</scope><name>first_</name></member>
+      <member refid="classSolver_1abc67ab0efa71761bdb301f3997a5e680" prot="public" virt="non-virtual"><scope>Solver</scope><name>gaussian</name></member>
+      <member refid="classSolver_1a921fbbb0ca0767e05c23dedb08584926" prot="public" virt="non-virtual"><scope>Solver</scope><name>get_dshift_max</name></member>
+      <member refid="classSolver_1a5d7d7d302fd819b886e422f082463eef" prot="public" virt="non-virtual"><scope>Solver</scope><name>get_eta_and_chi</name></member>
+      <member refid="classSolver_1a626a85e269207e7a5a156a9fd86b2993" prot="public" virt="non-virtual"><scope>Solver</scope><name>get_ray_lengths</name></member>
+      <member refid="classSolver_1af229497ca4c36f8e9487fc3c23f7e29f" prot="public" virt="non-virtual"><scope>Solver</scope><name>get_ray_lengths_max</name></member>
+      <member refid="classSolver_1ae6df9dd9e72c119c4ec54b5893881080" prot="public" virt="non-virtual"><scope>Solver</scope><name>GG_</name></member>
+      <member refid="classSolver_1a3f35086d810b81bbb5de45d53ad711f0" prot="public" virt="non-virtual"><scope>Solver</scope><name>GI_</name></member>
+      <member refid="classSolver_1acea2ce14fc8dfdfdf016039bd36a0891" prot="public" virt="non-virtual"><scope>Solver</scope><name>GP_</name></member>
+      <member refid="classSolver_1a1acdd3064d64532d73a1c8be0ef42e54" prot="public" virt="non-virtual"><scope>Solver</scope><name>image_feautrier_order_2</name></member>
+      <member refid="classSolver_1a0d7a14bb7b4df453f49080b53e141747" prot="public" virt="non-virtual"><scope>Solver</scope><name>image_feautrier_order_2</name></member>
+      <member refid="classSolver_1aba52c9b0ef03d2b29bbd0255e28d27e4" prot="public" virt="non-virtual"><scope>Solver</scope><name>inverse_A_</name></member>
+      <member refid="classSolver_1a4fd4eb0c4e75c33f83b2b175c0481dfb" prot="public" virt="non-virtual"><scope>Solver</scope><name>inverse_C_</name></member>
+      <member refid="classSolver_1ad47b12e950f765ff0435b28d3ddd0900" prot="public" virt="non-virtual"><scope>Solver</scope><name>inverse_chi_</name></member>
+      <member refid="classSolver_1a46b15c8ed3d64cce4c645408adb8b7eb" prot="public" virt="non-virtual"><scope>Solver</scope><name>kernel</name></member>
+      <member refid="classSolver_1af533813c597ea27df2e5f4782bbc8364" prot="public" virt="non-virtual"><scope>Solver</scope><name>kernel</name></member>
+      <member refid="classSolver_1ad8e4dcc3763793e6976dcb096e4028dd" prot="public" virt="non-virtual"><scope>Solver</scope><name>L12_kernel</name></member>
+      <member refid="classSolver_1a3f5493ccdd0c4f1a9bfa71a1685a643b" prot="public" virt="non-virtual"><scope>Solver</scope><name>L1_kernel</name></member>
+      <member refid="classSolver_1a60d29b939a7c40cb0b575ffd422ec35a" prot="public" virt="non-virtual"><scope>Solver</scope><name>L2_kernel</name></member>
+      <member refid="classSolver_1a30734c2da85f17b312b712f31749a4d8" prot="public" virt="non-virtual"><scope>Solver</scope><name>L_diag_</name></member>
+      <member refid="classSolver_1a9d831adc525ce9a20daf40b2babbeaaf" prot="public" virt="non-virtual"><scope>Solver</scope><name>L_lower_</name></member>
+      <member refid="classSolver_1a64eb5571ff50f8d1c4c6f2bfddfa2e9c" prot="public" virt="non-virtual"><scope>Solver</scope><name>L_upper_</name></member>
+      <member refid="classSolver_1ad6fdb579c9aebed9f30930d97a60c913" prot="public" virt="non-virtual"><scope>Solver</scope><name>last_</name></member>
+      <member refid="classSolver_1a06c42d4db4b803894707b44d2fc8b941" prot="public" virt="non-virtual"><scope>Solver</scope><name>length</name></member>
+      <member refid="classSolver_1a9e29016472075b97791b75060ae99625" prot="public" virt="non-virtual"><scope>Solver</scope><name>n_off_diag</name></member>
+      <member refid="classSolver_1a2e4f61eaebcbf864f89e9abe8d7168bb" prot="public" virt="non-virtual"><scope>Solver</scope><name>n_tot_</name></member>
+      <member refid="classSolver_1a0c58203e907a5d7a0ce9702ce13a4d67" prot="public" virt="non-virtual"><scope>Solver</scope><name>nblocks</name></member>
+      <member refid="classSolver_1a1e32b550327fd2bf429bcfeaae538dc9" prot="public" virt="non-virtual"><scope>Solver</scope><name>nr_</name></member>
+      <member refid="classSolver_1ad692f5ce7744612cc9e493cbf9cb5505" prot="public" virt="non-virtual"><scope>Solver</scope><name>nthreads</name></member>
+      <member refid="classSolver_1acd4bf29af5a4b016043431bcf7a37d11" prot="public" virt="non-virtual"><scope>Solver</scope><name>planck</name></member>
+      <member refid="classSolver_1ac731c064c1fb68a5738ab869542b74d1" prot="public" virt="non-virtual"><scope>Solver</scope><name>set_boundary_condition</name></member>
+      <member refid="classSolver_1a2181528992c307ff693ee9be118923c1" prot="public" virt="non-virtual"><scope>Solver</scope><name>set_data</name></member>
+      <member refid="classSolver_1a6bf5fc73f335af88516f29eff1612844" prot="public" virt="non-virtual"><scope>Solver</scope><name>set_eta_and_chi</name></member>
+      <member refid="classSolver_1ad5efe9fd4746f9d59288598412a03933" prot="public" virt="non-virtual"><scope>Solver</scope><name>setup</name></member>
+      <member refid="classSolver_1a5ed7513d09872c5e84e5c242672d7850" prot="public" virt="non-virtual"><scope>Solver</scope><name>setup</name></member>
+      <member refid="classSolver_1a8fd2d3fba8d4f6a6db372d02c51d6517" prot="public" virt="non-virtual"><scope>Solver</scope><name>shift_</name></member>
+      <member refid="classSolver_1a345cbf33820380dbb620ced28159ca1a" prot="public" virt="non-virtual"><scope>Solver</scope><name>solve_feautrier_order_2</name></member>
+      <member refid="classSolver_1ad638d60556154027701ecceac9bf39d8" prot="public" virt="non-virtual"><scope>Solver</scope><name>solve_feautrier_order_2</name></member>
+      <member refid="classSolver_1aa687e0888d494a4581b637e6ffed906e" prot="public" virt="non-virtual"><scope>Solver</scope><name>solve_kernel_method</name></member>
+      <member refid="classSolver_1a064ddef554e1f7299c5f6fbc75996309" prot="public" virt="non-virtual"><scope>Solver</scope><name>solve_shortchar_order_0</name></member>
+      <member refid="classSolver_1ada55adb0ea9e4c8172907586809c4daf" prot="public" virt="non-virtual"><scope>Solver</scope><name>solve_shortchar_order_0</name></member>
+      <member refid="classSolver_1ae442939c747ba7125a812cc090736d99" prot="public" virt="non-virtual"><scope>Solver</scope><name>Su_</name></member>
+      <member refid="classSolver_1ae790700d8d3feeffad9c32766b1d3320" prot="public" virt="non-virtual"><scope>Solver</scope><name>Sv_</name></member>
+      <member refid="classSolver_1a4d4d72ea33485df9e208d9a691262f5e" prot="public" virt="non-virtual"><scope>Solver</scope><name>tau_</name></member>
+      <member refid="classSolver_1a2a9e5ab2debc7428e334a3e7984bfd64" prot="public" virt="non-virtual"><scope>Solver</scope><name>trace_ray</name></member>
+      <member refid="classSolver_1a7c5325ba467e32f4fec6f7e1c4c49115" prot="public" virt="non-virtual"><scope>Solver</scope><name>update_Lambda</name></member>
+      <member refid="classSolver_1a23852599dfc7d6694e025aef3bb3b83a" prot="public" virt="non-virtual"><scope>Solver</scope><name>width</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

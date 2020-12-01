@@ -1,0 +1,20 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.14">
+  <compounddef id="dir_5dd65160827af56e6353642206b80129" kind="dir">
+    <compoundname>/home/frederik/Dropbox/GitHub/Magritte/src/model</compoundname>
+    <innerdir refid="dir_e7ccaac302b149f53c623d310a2054dc">/home/frederik/Dropbox/GitHub/Magritte/src/model/chemistry</innerdir>
+    <innerdir refid="dir_f233293f6d280387832baf4fad30d524">/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry</innerdir>
+    <innerdir refid="dir_a5a77db0ab2946492cbe6e548b99567f">/home/frederik/Dropbox/GitHub/Magritte/src/model/image</innerdir>
+    <innerdir refid="dir_65206f453c687f80ef887f968cc0a6cd">/home/frederik/Dropbox/GitHub/Magritte/src/model/lines</innerdir>
+    <innerdir refid="dir_09cd34d90c4072f2873bae6675900499">/home/frederik/Dropbox/GitHub/Magritte/src/model/parameters</innerdir>
+    <innerdir refid="dir_97275e92bbb28791cb53299de670dfd6">/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation</innerdir>
+    <innerdir refid="dir_a2a129a8b50701092d21c63d7695b058">/home/frederik/Dropbox/GitHub/Magritte/src/model/thermodynamics</innerdir>
+    <innerfile refid="model_8cpp">model.cpp</innerfile>
+    <innerfile refid="model_8hpp">model.hpp</innerfile>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/"/>
+  </compounddef>
+</doxygen>

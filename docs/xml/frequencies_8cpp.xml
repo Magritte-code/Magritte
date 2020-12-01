@@ -1,0 +1,194 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.14">
+  <compounddef id="frequencies_8cpp" kind="file" language="C++">
+    <compoundname>frequencies.cpp</compoundname>
+    <includes refid="frequencies_8hpp" local="yes">frequencies.hpp</includes>
+    <includes refid="constants_8hpp" local="yes">tools/constants.hpp</includes>
+    <includes refid="types_8hpp" local="yes">tools/types.hpp</includes>
+    <incdepgraph>
+      <node id="1045">
+        <label>list</label>
+      </node>
+      <node id="1050">
+        <label>limits</label>
+      </node>
+      <node id="1054">
+        <label>model/thermodynamics/temperature/temperature.hpp</label>
+        <link refid="temperature_8hpp"/>
+        <childnode refid="1042" relation="include">
+        </childnode>
+        <childnode refid="1049" relation="include">
+        </childnode>
+        <childnode refid="1043" relation="include">
+        </childnode>
+      </node>
+      <node id="1056">
+        <label>cmath</label>
+      </node>
+      <node id="1047">
+        <label>Eigen/Core</label>
+      </node>
+      <node id="1046">
+        <label>string</label>
+      </node>
+      <node id="1052">
+        <label>exception</label>
+      </node>
+      <node id="1042">
+        <label>io/io.hpp</label>
+        <link refid="io_8hpp"/>
+        <childnode refid="1043" relation="include">
+        </childnode>
+      </node>
+      <node id="1049">
+        <label>model/parameters/parameters.hpp</label>
+        <link refid="parameters_8hpp"/>
+        <childnode refid="1050" relation="include">
+        </childnode>
+        <childnode refid="1042" relation="include">
+        </childnode>
+        <childnode refid="1051" relation="include">
+        </childnode>
+      </node>
+      <node id="1051">
+        <label>tools/setOnce.hpp</label>
+        <link refid="setOnce_8hpp"/>
+        <childnode refid="1052" relation="include">
+        </childnode>
+        <childnode refid="1053" relation="include">
+        </childnode>
+        <childnode refid="1048" relation="include">
+        </childnode>
+      </node>
+      <node id="1055">
+        <label>tools/constants.hpp</label>
+        <link refid="constants_8hpp"/>
+        <childnode refid="1056" relation="include">
+        </childnode>
+        <childnode refid="1057" relation="include">
+        </childnode>
+      </node>
+      <node id="1044">
+        <label>vector</label>
+      </node>
+      <node id="1040">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/frequencies/frequencies.cpp</label>
+        <link refid="frequencies_8cpp"/>
+        <childnode refid="1041" relation="include">
+        </childnode>
+        <childnode refid="1055" relation="include">
+        </childnode>
+        <childnode refid="1043" relation="include">
+        </childnode>
+      </node>
+      <node id="1048">
+        <label>paracabs.hpp</label>
+      </node>
+      <node id="1057">
+        <label>../configure.hpp</label>
+        <link refid="configure_8hpp"/>
+      </node>
+      <node id="1043">
+        <label>tools/types.hpp</label>
+        <link refid="types_8hpp"/>
+        <childnode refid="1044" relation="include">
+        </childnode>
+        <childnode refid="1045" relation="include">
+        </childnode>
+        <childnode refid="1046" relation="include">
+        </childnode>
+        <childnode refid="1047" relation="include">
+        </childnode>
+        <childnode refid="1048" relation="include">
+        </childnode>
+      </node>
+      <node id="1053">
+        <label>iostream</label>
+      </node>
+      <node id="1041">
+        <label>frequencies.hpp</label>
+        <link refid="frequencies_8hpp"/>
+        <childnode refid="1042" relation="include">
+        </childnode>
+        <childnode refid="1049" relation="include">
+        </childnode>
+        <childnode refid="1043" relation="include">
+        </childnode>
+        <childnode refid="1054" relation="include">
+        </childnode>
+      </node>
+    </incdepgraph>
+      <sectiondef kind="var">
+      <memberdef kind="variable" id="frequencies_8cpp_1af1e7949a3ee58158ef099851093bf734" prot="public" static="no" mutable="no">
+        <type>const string</type>
+        <definition>const string prefix</definition>
+        <argsstring></argsstring>
+        <name>prefix</name>
+        <initializer>= &quot;radiation/frequencies/&quot;</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/frequencies/frequencies.cpp" line="6" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/frequencies/frequencies.cpp" bodystart="6" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline lineno="1"><highlight class="preprocessor">#include<sp/>&quot;<ref refid="frequencies_8hpp" kindref="compound">frequencies.hpp</ref>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="2"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;<ref refid="constants_8hpp" kindref="compound">tools/constants.hpp</ref>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="3"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;<ref refid="types_8hpp" kindref="compound">tools/types.hpp</ref>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="4"><highlight class="normal"></highlight></codeline>
+<codeline lineno="5"><highlight class="normal"></highlight></codeline>
+<codeline lineno="6"><highlight class="normal"></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">string</highlight><highlight class="normal"><sp/><ref refid="frequencies_8cpp_1af1e7949a3ee58158ef099851093bf734" kindref="member">prefix</ref><sp/>=<sp/></highlight><highlight class="stringliteral">&quot;radiation/frequencies/&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="7"><highlight class="normal"></highlight></codeline>
+<codeline lineno="8"><highlight class="normal"></highlight></codeline>
+<codeline lineno="12"><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="structFrequencies_1a240e739d66549c3c2bb72aa65125620f" kindref="member">Frequencies :: read</ref><sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="structIo" kindref="compound">Io</ref>&amp;<sp/>io)</highlight></codeline>
+<codeline lineno="13"><highlight class="normal">{</highlight></codeline>
+<codeline lineno="14"><highlight class="normal"><sp/><sp/><sp/><sp/>cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Reading<sp/>frequencies...&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>endl;</highlight></codeline>
+<codeline lineno="15"><highlight class="normal"></highlight></codeline>
+<codeline lineno="16"><highlight class="normal"><sp/><sp/><sp/><sp/>cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;npoints<sp/>=<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/><ref refid="structFrequencies_1a4b44e0f6d7df2991472d33479fd68ff1" kindref="member">parameters</ref>.npoints()<sp/>&lt;&lt;<sp/>endl;</highlight></codeline>
+<codeline lineno="17"><highlight class="normal"><sp/><sp/><sp/><sp/>cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;nlines<sp/><sp/>=<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/><ref refid="structFrequencies_1a4b44e0f6d7df2991472d33479fd68ff1" kindref="member">parameters</ref>.nlines()<sp/><sp/>&lt;&lt;<sp/>endl;</highlight></codeline>
+<codeline lineno="18"><highlight class="normal"><sp/><sp/><sp/><sp/>cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;nquads<sp/><sp/>=<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/><ref refid="structFrequencies_1a4b44e0f6d7df2991472d33479fd68ff1" kindref="member">parameters</ref>.nquads()<sp/><sp/>&lt;&lt;<sp/>endl;</highlight></codeline>
+<codeline lineno="19"><highlight class="normal"></highlight></codeline>
+<codeline lineno="20"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>Count<sp/>line<sp/>frequencies</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="21"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="structFrequencies_1a4b44e0f6d7df2991472d33479fd68ff1" kindref="member">parameters</ref>.set_nfreqs<sp/>(<ref refid="structFrequencies_1a4b44e0f6d7df2991472d33479fd68ff1" kindref="member">parameters</ref>.nlines()<sp/>*<sp/><ref refid="structFrequencies_1a4b44e0f6d7df2991472d33479fd68ff1" kindref="member">parameters</ref>.nquads());</highlight></codeline>
+<codeline lineno="22"><highlight class="normal"></highlight></codeline>
+<codeline lineno="23"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>Add<sp/>extra<sp/>frequency<sp/>bins<sp/>around<sp/>lines<sp/>to<sp/>get<sp/>nicer<sp/>spectrum</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="24"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//nfreqs<sp/>+=<sp/>nlines<sp/>*<sp/>2<sp/>*<sp/>nbins;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="25"><highlight class="normal"></highlight></codeline>
+<codeline lineno="26"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>Add<sp/>ncont<sp/>bins<sp/>background</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="27"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//nfreqs<sp/>+=<sp/>ncont;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="28"><highlight class="normal"></highlight></codeline>
+<codeline lineno="29"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="structFrequencies_1a624660864653b5ff786a271d454fe195" kindref="member">nu</ref>.resize<sp/>(<ref refid="structFrequencies_1a4b44e0f6d7df2991472d33479fd68ff1" kindref="member">parameters</ref>.npoints(),<sp/><ref refid="structFrequencies_1a4b44e0f6d7df2991472d33479fd68ff1" kindref="member">parameters</ref>.nfreqs());</highlight></codeline>
+<codeline lineno="30"><highlight class="normal"></highlight></codeline>
+<codeline lineno="31"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="structFrequencies_1a643386df8be2d8edd40715fedfa4d061" kindref="member">appears_in_line_integral</ref>.resize<sp/>(<ref refid="structFrequencies_1a4b44e0f6d7df2991472d33479fd68ff1" kindref="member">parameters</ref>.nfreqs());</highlight></codeline>
+<codeline lineno="32"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="structFrequencies_1a921648101e256299a61435b07adbffde" kindref="member">corresponding_l_for_spec</ref>.resize<sp/>(<ref refid="structFrequencies_1a4b44e0f6d7df2991472d33479fd68ff1" kindref="member">parameters</ref>.nfreqs());</highlight></codeline>
+<codeline lineno="33"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="structFrequencies_1a145d5665447780604d4d29c0d7456064" kindref="member">corresponding_k_for_tran</ref>.resize<sp/>(<ref refid="structFrequencies_1a4b44e0f6d7df2991472d33479fd68ff1" kindref="member">parameters</ref>.nfreqs());</highlight></codeline>
+<codeline lineno="34"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="structFrequencies_1a2c7bcce9b75c9c4395ed8ac0b43466b5" kindref="member">corresponding_z_for_line</ref>.resize<sp/>(<ref refid="structFrequencies_1a4b44e0f6d7df2991472d33479fd68ff1" kindref="member">parameters</ref>.nfreqs());</highlight></codeline>
+<codeline lineno="35"><highlight class="normal"></highlight></codeline>
+<codeline lineno="36"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>frequencies.nu<sp/>has<sp/>to<sp/>be<sp/>initialized<sp/>(for<sp/>unused<sp/>entries)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="37"><highlight class="normal"><sp/><sp/><sp/><sp/>threaded_for<sp/>(p,<sp/><ref refid="structFrequencies_1a4b44e0f6d7df2991472d33479fd68ff1" kindref="member">parameters</ref>.npoints(),</highlight></codeline>
+<codeline lineno="38"><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline lineno="39"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(<ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref><sp/>f<sp/>=<sp/>0;<sp/>f<sp/>&lt;<sp/><ref refid="structFrequencies_1a4b44e0f6d7df2991472d33479fd68ff1" kindref="member">parameters</ref>.nfreqs();<sp/>f++)</highlight></codeline>
+<codeline lineno="40"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline lineno="41"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="structFrequencies_1a624660864653b5ff786a271d454fe195" kindref="member">nu</ref>(p,f)<sp/>=<sp/>0.0;</highlight></codeline>
+<codeline lineno="42"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="43"><highlight class="normal"><sp/><sp/><sp/><sp/>})</highlight></codeline>
+<codeline lineno="44"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="45"><highlight class="normal"></highlight></codeline>
+<codeline lineno="46"><highlight class="normal"></highlight></codeline>
+<codeline lineno="50"><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="structFrequencies_1a12f660ff4ab6cbd5249bb3ca86033b98" kindref="member">Frequencies :: write</ref><sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="structIo" kindref="compound">Io</ref><sp/>&amp;io)</highlight><highlight class="keyword"><sp/>const</highlight></codeline>
+<codeline lineno="51"><highlight class="keyword"></highlight><highlight class="normal">{</highlight></codeline>
+<codeline lineno="52"><highlight class="normal"><sp/><sp/><sp/><sp/>cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Writing<sp/>frequencies...&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>endl;</highlight></codeline>
+<codeline lineno="53"><highlight class="normal"></highlight></codeline>
+<codeline lineno="54"><highlight class="normal"><sp/><sp/><sp/><sp/>io.<ref refid="structIo_1aa73fe79d27fbaf31cbea124769e13a2e" kindref="member">write_array</ref><sp/>(<ref refid="frequencies_8cpp_1af1e7949a3ee58158ef099851093bf734" kindref="member">prefix</ref>+</highlight><highlight class="stringliteral">&quot;nu&quot;</highlight><highlight class="normal">,<sp/><ref refid="structFrequencies_1a624660864653b5ff786a271d454fe195" kindref="member">nu</ref>);</highlight></codeline>
+<codeline lineno="55"><highlight class="normal">}</highlight></codeline>
+    </programlisting>
+    <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/frequencies/frequencies.cpp"/>
+  </compounddef>
+</doxygen>

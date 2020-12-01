@@ -1,0 +1,382 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.14">
+  <compounddef id="lines_8hpp" kind="file" language="C++">
+    <compoundname>lines.hpp</compoundname>
+    <includes refid="io_8hpp" local="yes">io/io.hpp</includes>
+    <includes refid="parameters_8hpp" local="yes">model/parameters/parameters.hpp</includes>
+    <includes refid="types_8hpp" local="yes">tools/types.hpp</includes>
+    <includes refid="lineProducingSpecies_8hpp" local="yes">lineProducingSpecies/lineProducingSpecies.hpp</includes>
+    <includes refid="thermodynamics_8hpp" local="yes">model/thermodynamics/thermodynamics.hpp</includes>
+    <includes refid="lines_8tpp" local="yes">lines.tpp</includes>
+    <includedby refid="lines_8cpp" local="yes">/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lines.cpp</includedby>
+    <includedby refid="model_8hpp" local="yes">/home/frederik/Dropbox/GitHub/Magritte/src/model/model.hpp</includedby>
+    <incdepgraph>
+      <node id="824">
+        <label>Eigen/SparseLU</label>
+      </node>
+      <node id="814">
+        <label>list</label>
+      </node>
+      <node id="819">
+        <label>limits</label>
+      </node>
+      <node id="833">
+        <label>lineProducingSpecies.tpp</label>
+        <link refid="lineProducingSpecies_8tpp"/>
+        <childnode refid="834" relation="include">
+        </childnode>
+        <childnode refid="816" relation="include">
+        </childnode>
+        <childnode refid="835" relation="include">
+        </childnode>
+        <childnode refid="836" relation="include">
+        </childnode>
+        <childnode refid="812" relation="include">
+        </childnode>
+        <childnode refid="817" relation="include">
+        </childnode>
+      </node>
+      <node id="840">
+        <label>temperature/temperature.hpp</label>
+        <link refid="temperature_8hpp"/>
+        <childnode refid="811" relation="include">
+        </childnode>
+        <childnode refid="818" relation="include">
+        </childnode>
+        <childnode refid="812" relation="include">
+        </childnode>
+      </node>
+      <node id="823">
+        <label>lineProducingSpecies/lineProducingSpecies.hpp</label>
+        <link refid="lineProducingSpecies_8hpp"/>
+        <childnode refid="824" relation="include">
+        </childnode>
+        <childnode refid="825" relation="include">
+        </childnode>
+        <childnode refid="811" relation="include">
+        </childnode>
+        <childnode refid="818" relation="include">
+        </childnode>
+        <childnode refid="812" relation="include">
+        </childnode>
+        <childnode refid="826" relation="include">
+        </childnode>
+        <childnode refid="830" relation="include">
+        </childnode>
+        <childnode refid="831" relation="include">
+        </childnode>
+        <childnode refid="833" relation="include">
+        </childnode>
+      </node>
+      <node id="837">
+        <label>cmath</label>
+      </node>
+      <node id="816">
+        <label>Eigen/Core</label>
+      </node>
+      <node id="815">
+        <label>string</label>
+      </node>
+      <node id="829">
+        <label>tools/interpolation.hpp</label>
+        <link refid="interpolation_8hpp"/>
+        <childnode refid="812" relation="include">
+        </childnode>
+      </node>
+      <node id="821">
+        <label>exception</label>
+      </node>
+      <node id="831">
+        <label>lambda/lambda.hpp</label>
+        <link refid="lambda_8hpp"/>
+        <childnode refid="812" relation="include">
+        </childnode>
+        <childnode refid="832" relation="include">
+        </childnode>
+      </node>
+      <node id="811">
+        <label>io/io.hpp</label>
+        <link refid="io_8hpp"/>
+        <childnode refid="812" relation="include">
+        </childnode>
+      </node>
+      <node id="818">
+        <label>model/parameters/parameters.hpp</label>
+        <link refid="parameters_8hpp"/>
+        <childnode refid="819" relation="include">
+        </childnode>
+        <childnode refid="811" relation="include">
+        </childnode>
+        <childnode refid="820" relation="include">
+        </childnode>
+      </node>
+      <node id="832">
+        <label>lambda.tpp</label>
+        <link refid="lambda_8tpp"/>
+      </node>
+      <node id="820">
+        <label>tools/setOnce.hpp</label>
+        <link refid="setOnce_8hpp"/>
+        <childnode refid="821" relation="include">
+        </childnode>
+        <childnode refid="822" relation="include">
+        </childnode>
+        <childnode refid="817" relation="include">
+        </childnode>
+      </node>
+      <node id="841">
+        <label>turbulence/turbulence.hpp</label>
+        <link refid="turbulence_8hpp"/>
+        <childnode refid="811" relation="include">
+        </childnode>
+        <childnode refid="818" relation="include">
+        </childnode>
+        <childnode refid="812" relation="include">
+        </childnode>
+      </node>
+      <node id="810">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lines.hpp</label>
+        <link refid="lines_8hpp"/>
+        <childnode refid="811" relation="include">
+        </childnode>
+        <childnode refid="818" relation="include">
+        </childnode>
+        <childnode refid="812" relation="include">
+        </childnode>
+        <childnode refid="823" relation="include">
+        </childnode>
+        <childnode refid="839" relation="include">
+        </childnode>
+        <childnode refid="843" relation="include">
+        </childnode>
+      </node>
+      <node id="835">
+        <label>Eigen/Dense</label>
+      </node>
+      <node id="843">
+        <label>lines.tpp</label>
+        <link refid="lines_8tpp"/>
+        <childnode refid="817" relation="include">
+        </childnode>
+        <childnode refid="812" relation="include">
+        </childnode>
+      </node>
+      <node id="836">
+        <label>tools/constants.hpp</label>
+        <link refid="constants_8hpp"/>
+        <childnode refid="837" relation="include">
+        </childnode>
+        <childnode refid="838" relation="include">
+        </childnode>
+      </node>
+      <node id="813">
+        <label>vector</label>
+      </node>
+      <node id="817">
+        <label>paracabs.hpp</label>
+      </node>
+      <node id="838">
+        <label>../configure.hpp</label>
+        <link refid="configure_8hpp"/>
+      </node>
+      <node id="812">
+        <label>tools/types.hpp</label>
+        <link refid="types_8hpp"/>
+        <childnode refid="813" relation="include">
+        </childnode>
+        <childnode refid="814" relation="include">
+        </childnode>
+        <childnode refid="815" relation="include">
+        </childnode>
+        <childnode refid="816" relation="include">
+        </childnode>
+        <childnode refid="817" relation="include">
+        </childnode>
+      </node>
+      <node id="826">
+        <label>linedata/linedata.hpp</label>
+        <link refid="linedata_8hpp"/>
+        <childnode refid="816" relation="include">
+        </childnode>
+        <childnode refid="811" relation="include">
+        </childnode>
+        <childnode refid="818" relation="include">
+        </childnode>
+        <childnode refid="812" relation="include">
+        </childnode>
+        <childnode refid="827" relation="include">
+        </childnode>
+      </node>
+      <node id="830">
+        <label>quadrature/quadrature.hpp</label>
+        <link refid="quadrature_8hpp"/>
+        <childnode refid="811" relation="include">
+        </childnode>
+        <childnode refid="818" relation="include">
+        </childnode>
+        <childnode refid="812" relation="include">
+        </childnode>
+      </node>
+      <node id="834">
+        <label>math.h</label>
+      </node>
+      <node id="839">
+        <label>model/thermodynamics/thermodynamics.hpp</label>
+        <link refid="thermodynamics_8hpp"/>
+        <childnode refid="811" relation="include">
+        </childnode>
+        <childnode refid="818" relation="include">
+        </childnode>
+        <childnode refid="812" relation="include">
+        </childnode>
+        <childnode refid="840" relation="include">
+        </childnode>
+        <childnode refid="841" relation="include">
+        </childnode>
+        <childnode refid="842" relation="include">
+        </childnode>
+      </node>
+      <node id="825">
+        <label>Eigen/SparseCore</label>
+      </node>
+      <node id="822">
+        <label>iostream</label>
+      </node>
+      <node id="842">
+        <label>thermodynamics.tpp</label>
+        <link refid="thermodynamics_8tpp"/>
+        <childnode refid="836" relation="include">
+        </childnode>
+      </node>
+      <node id="827">
+        <label>collisionPartner/collisionPartner.hpp</label>
+        <link refid="collisionPartner_8hpp"/>
+        <childnode refid="811" relation="include">
+        </childnode>
+        <childnode refid="818" relation="include">
+        </childnode>
+        <childnode refid="812" relation="include">
+        </childnode>
+        <childnode refid="828" relation="include">
+        </childnode>
+      </node>
+      <node id="828">
+        <label>collisionPartner.tpp</label>
+        <link refid="collisionPartner_8tpp"/>
+        <childnode refid="829" relation="include">
+        </childnode>
+      </node>
+    </incdepgraph>
+    <invincdepgraph>
+      <node id="846">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/model.hpp</label>
+        <link refid="model_8hpp"/>
+        <childnode refid="847" relation="include">
+        </childnode>
+        <childnode refid="848" relation="include">
+        </childnode>
+        <childnode refid="849" relation="include">
+        </childnode>
+      </node>
+      <node id="847">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/bindings/pybindings.cpp</label>
+        <link refid="pybindings_8cpp"/>
+      </node>
+      <node id="848">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/model.cpp</label>
+        <link refid="model_8cpp"/>
+      </node>
+      <node id="850">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.cpp</label>
+        <link refid="solver_8cpp"/>
+      </node>
+      <node id="844">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lines.hpp</label>
+        <link refid="lines_8hpp"/>
+        <childnode refid="845" relation="include">
+        </childnode>
+        <childnode refid="846" relation="include">
+        </childnode>
+      </node>
+      <node id="849">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp</label>
+        <link refid="solver_8hpp"/>
+        <childnode refid="847" relation="include">
+        </childnode>
+        <childnode refid="848" relation="include">
+        </childnode>
+        <childnode refid="850" relation="include">
+        </childnode>
+      </node>
+      <node id="845">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lines.cpp</label>
+        <link refid="lines_8cpp"/>
+      </node>
+    </invincdepgraph>
+    <innerclass refid="structLines" prot="public">Lines</innerclass>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline lineno="1"><highlight class="preprocessor">#pragma<sp/>once</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="2"><highlight class="normal"></highlight></codeline>
+<codeline lineno="3"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;<ref refid="io_8hpp" kindref="compound">io/io.hpp</ref>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="4"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;<ref refid="parameters_8hpp" kindref="compound">model/parameters/parameters.hpp</ref>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="5"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;<ref refid="types_8hpp" kindref="compound">tools/types.hpp</ref>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="6"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;<ref refid="lineProducingSpecies_8hpp" kindref="compound">lineProducingSpecies/lineProducingSpecies.hpp</ref>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="7"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;<ref refid="thermodynamics_8hpp" kindref="compound">model/thermodynamics/thermodynamics.hpp</ref>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="8"><highlight class="normal"></highlight></codeline>
+<codeline lineno="9"><highlight class="normal"></highlight></codeline>
+<codeline lineno="10" refid="structLines" refkind="compound"><highlight class="normal"></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal"><ref refid="structLines" kindref="compound">Lines</ref></highlight></codeline>
+<codeline lineno="11"><highlight class="normal">{</highlight></codeline>
+<codeline lineno="12" refid="structLines_1aa0a534f51f3d1cd1b50147ab75332426" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="structParameters" kindref="compound">Parameters</ref><sp/><ref refid="structLines_1aa0a534f51f3d1cd1b50147ab75332426" kindref="member">parameters</ref>;</highlight></codeline>
+<codeline lineno="13"><highlight class="normal"></highlight></codeline>
+<codeline lineno="14" refid="structLines_1a13e95b832d6c0e6155d7428d3baeda50" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/>vector<sp/>&lt;LineProducingSpecies&gt;<sp/><ref refid="structLines_1a13e95b832d6c0e6155d7428d3baeda50" kindref="member">lineProducingSpecies</ref>;</highlight></codeline>
+<codeline lineno="15"><highlight class="normal"></highlight></codeline>
+<codeline lineno="16"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>Real1<sp/>line;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>///&lt;<sp/>[Hz]<sp/>line<sp/>center<sp/>frequencies<sp/>orderd</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="17" refid="structLines_1a295ed19b07cbf12d7de5df9aa8e955ff" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="types_8hpp_1a959df20affa391f0d7913ff0349bdb05" kindref="member">Vector&lt;Real&gt;</ref><sp/><ref refid="structLines_1a295ed19b07cbf12d7de5df9aa8e955ff" kindref="member">line</ref>;<sp/><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="18"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>Size1<sp/>line_index;<sp/><sp/><sp/>///&lt;<sp/>index<sp/>of<sp/>the<sp/>corresponding<sp/>frequency<sp/>in<sp/>line</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="19"><highlight class="normal"></highlight></codeline>
+<codeline lineno="20" refid="structLines_1a8b97fbc040e4b93e2d21625ff12398a0" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="types_8hpp_1a959df20affa391f0d7913ff0349bdb05" kindref="member">Vector&lt;Size&gt;</ref><sp/><ref refid="structLines_1a8b97fbc040e4b93e2d21625ff12398a0" kindref="member">nrad_cum</ref>;</highlight></codeline>
+<codeline lineno="21"><highlight class="normal"></highlight></codeline>
+<codeline lineno="22"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>Real1<sp/>emissivity;<sp/><sp/><sp/>///&lt;<sp/>line<sp/>emissivity<sp/>(p,l,k)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="23"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>Real1<sp/>opacity;<sp/><sp/><sp/><sp/><sp/><sp/>///&lt;<sp/>line<sp/>opacity<sp/><sp/><sp/><sp/>(p,l,k)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="24"><highlight class="normal"></highlight></codeline>
+<codeline lineno="25"><highlight class="normal"></highlight></codeline>
+<codeline lineno="26"><highlight class="normal"></highlight></codeline>
+<codeline lineno="27" refid="structLines_1af9cf542168fd2ee7b2e79be80b37c1b5" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="types_8hpp_1ac9d1a399bc9eae71d5719b37a09745f6" kindref="member">Matrix&lt;Real&gt;</ref><sp/><ref refid="structLines_1af9cf542168fd2ee7b2e79be80b37c1b5" kindref="member">emissivity</ref>;<sp/><sp/><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="28" refid="structLines_1a741fe96da8980462c8783e523b8a3140" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="types_8hpp_1ac9d1a399bc9eae71d5719b37a09745f6" kindref="member">Matrix&lt;Real&gt;</ref><sp/><ref refid="structLines_1a741fe96da8980462c8783e523b8a3140" kindref="member">opacity</ref>;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="29" refid="structLines_1a63038a2d974b84a89cbc8603d79acebd" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="types_8hpp_1ac9d1a399bc9eae71d5719b37a09745f6" kindref="member">Matrix&lt;Real&gt;</ref><sp/><ref refid="structLines_1a63038a2d974b84a89cbc8603d79acebd" kindref="member">inverse_width</ref>;<sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="30"><highlight class="normal"></highlight></codeline>
+<codeline lineno="31"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="structLines_1a0c7b0e1fae4a507d1933f585ae7eaa6d" kindref="member">read</ref><sp/><sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="structIo" kindref="compound">Io</ref>&amp;<sp/>io);</highlight></codeline>
+<codeline lineno="32"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="structLines_1a69c684a6b657e2da705f562d32e2cd3c" kindref="member">write</ref><sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="structIo" kindref="compound">Io</ref>&amp;<sp/>io)<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="33"><highlight class="normal"></highlight></codeline>
+<codeline lineno="34"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="structLines_1aa12df3da88e8d62e9f4a7972de122081" kindref="member">iteration_using_LTE</ref><sp/>(</highlight></codeline>
+<codeline lineno="35"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="types_8hpp_1ae4c3ee17bf4177a16f81df0795dee016" kindref="member">Double2</ref><sp/><sp/><sp/><sp/><sp/><sp/>&amp;abundance,</highlight></codeline>
+<codeline lineno="36"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="types_8hpp_1a959df20affa391f0d7913ff0349bdb05" kindref="member">Vector&lt;Real&gt;</ref><sp/>&amp;temperature);</highlight></codeline>
+<codeline lineno="37"><highlight class="normal"></highlight></codeline>
+<codeline lineno="38"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="structLines_1a3935e8fbf7b592c840a7114348e61978" kindref="member">iteration_using_statistical_equilibrium</ref><sp/>(</highlight></codeline>
+<codeline lineno="39"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="types_8hpp_1ae4c3ee17bf4177a16f81df0795dee016" kindref="member">Double2</ref><sp/><sp/><sp/><sp/><sp/><sp/>&amp;abundance,</highlight></codeline>
+<codeline lineno="40"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="types_8hpp_1a959df20affa391f0d7913ff0349bdb05" kindref="member">Vector&lt;Real&gt;</ref><sp/>&amp;temperature,</highlight></codeline>
+<codeline lineno="41"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>pop_prec<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>);</highlight></codeline>
+<codeline lineno="42"><highlight class="normal"></highlight></codeline>
+<codeline lineno="43"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="structLines_1a6a23ed2de2f5469b3f129e36e62d2d8e" kindref="member">iteration_using_Ng_acceleration</ref><sp/>(</highlight></codeline>
+<codeline lineno="44"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref><sp/>pop_prec<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>);</highlight></codeline>
+<codeline lineno="45"><highlight class="normal"></highlight></codeline>
+<codeline lineno="46"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="structLines_1ab8cbd1a642040ce8e679f617e82683a3" kindref="member">index</ref><sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref><sp/>p,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref><sp/><ref refid="structLines_1a56e2f2718080e878e9121e14ed4dc5ac" kindref="member">line_index</ref><sp/><sp/><sp/><sp/><sp/>)<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="47"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref><sp/><ref refid="structLines_1a56e2f2718080e878e9121e14ed4dc5ac" kindref="member">line_index</ref><sp/>(<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref><sp/>l,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref><sp/>k)<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="48"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="structLines_1ab8cbd1a642040ce8e679f617e82683a3" kindref="member">index</ref><sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref><sp/>p,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref><sp/>l,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref><sp/>k)<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="49"><highlight class="normal"></highlight></codeline>
+<codeline lineno="50"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="structLines_1aaa0b4d40e79b6d3729f190a7d77a36a2" kindref="member">set_emissivity_and_opacity</ref><sp/>();</highlight></codeline>
+<codeline lineno="51"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="structLines_1ab22ec73cb2ff56144e8ab803b9cae550" kindref="member">set_inverse_width</ref><sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="structThermodynamics" kindref="compound">Thermodynamics</ref>&amp;<sp/>thermodynamics);</highlight></codeline>
+<codeline lineno="52"><highlight class="normal"></highlight></codeline>
+<codeline lineno="53"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="structLines_1adf2b64375310e0fcc236dd385c3d86ab" kindref="member">gather_emissivities_and_opacities</ref><sp/>();</highlight></codeline>
+<codeline lineno="54"><highlight class="normal">};</highlight></codeline>
+<codeline lineno="55"><highlight class="normal"></highlight></codeline>
+<codeline lineno="56"><highlight class="normal"></highlight></codeline>
+<codeline lineno="57"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;<ref refid="lines_8tpp" kindref="compound">lines.tpp</ref>&quot;</highlight><highlight class="normal"></highlight></codeline>
+    </programlisting>
+    <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lines.hpp"/>
+  </compounddef>
+</doxygen>
