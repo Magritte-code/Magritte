@@ -60,6 +60,7 @@ int main (int argc, char **argv)
     cout << nb << endl;
     }
     cout << "compare with" << endl;
+    
     for (Size nb:old_neighbors)
     {
     cout << nb << endl;
