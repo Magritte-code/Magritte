@@ -3,7 +3,7 @@
 // Coarsen the mesh,
 // i.e. add another layer of coarsening.
 inline void Multiscale::coarsen()
-{
+{//FIXME: also add check whether everything is setup correctly (both functions should be defined)
     mask     .push_back(vector<bool>          (mask     .back()));//should be deep copy
     neighbors.push_back(vector<std::set<Size>>(neighbors.back()));//should be deep copy
     std::set<Size> points_coarsened_around;
@@ -24,7 +24,8 @@ inline void Multiscale::coarsen()
 // Returns whether the mesh at a point (p) can be coarsened.
 inline bool Multiscale::can_be_coarsened (const Size p, std::set<Size>& points_coarsened_around)
 {
-    if (!mask.back()[p]) {return false;}//if point no longer in grid, do not coarsen
+    if (!mask.back()[p]||!not_on_boundary(p)) {return false;}//if point no longer in grid, do not coarsen
+    //if the point lies on the boundary, do not waste time trying to coarsen around it
 
     for (const Size n : neighbors.back()[p])
     {
@@ -54,7 +55,8 @@ inline void Multiscale::coarsen_around_point (const Size p)
     // TODO: figure out whether it is ok/necessary to empty their neighbors
     for (const Size n : neighbors.back()[p])
     {
-        mask.back()[n] = false;
+      if (not_on_boundary(n))//boundary points will NEVER get removed
+        {mask.back()[n] = false;}
     }
 
     // ..., and replace the neighbors of p (which are removed)
@@ -62,12 +64,15 @@ inline void Multiscale::coarsen_around_point (const Size p)
     std::set<Size> neighbors_of_neighbors;
     for (const Size n : neighbors.back()[p])
     {
-      for (const Size n_n : neighbors.back()[n])
+      if (not_on_boundary(n))
       {
-        if (mask.back()[n_n]&&n_n!=p)//if neighbor of neighbor is still in the grid, i.e. not just a neighbor; also, do never try to add a point as its own neighbor!!!!
+        for (const Size n_n : neighbors.back()[n])
         {
-          neighbors_of_neighbors.insert(n_n);
-          neighbors.back()[n_n].erase(n);//remove n from neighbors of n_n
+          if (mask.back()[n_n]&&n_n!=p)//if neighbor of neighbor is still in the grid, i.e. not just a neighbor; also, do never try to add a point as its own neighbor!!!!
+          {
+            neighbors_of_neighbors.insert(n_n);
+            neighbors.back()[n_n].erase(n);//remove n from neighbors of n_n
+          }
         }
       }
     }
@@ -120,12 +125,18 @@ inline void Multiscale::set_all_neighbors(vector<Size>& n_neighbors, vector<Size
 
 inline void Multiscale::set_comparison_fun(std::function<bool(Size,Size)> func)
 {
-    points_are_similar=func;
+  points_are_similar=func;
+}
+
+//sets function that checks whether a point does not lie on the boundary
+inline void Multiscale::set_not_on_boundary_fun(std::function<bool(Size)> func)
+{
+  not_on_boundary=func;
 }
 
 inline std::set<Size> Multiscale::get_neighbors(const Size p, const Size coars_lvl) const
 {//TODO: add check for whether p is still in grid, or just set their neighbors to empty during coarsening
-    return neighbors[coars_lvl][p];
+  return neighbors[coars_lvl][p];
 }
 
 inline std::set<Size> Multiscale::get_neighbors(const Size p) const
@@ -135,7 +146,7 @@ inline std::set<Size> Multiscale::get_neighbors(const Size p) const
 
 inline Size Multiscale::get_nb_neighbors(const Size p, const Size coars_lvl) const
 {//TODO: add check for whether p is still in grid, or just set their neighbors to empty during coarsening
-    return neighbors[coars_lvl][p].size();
+  return neighbors[coars_lvl][p].size();
 }
 
 inline Size Multiscale::get_nb_neighbors(const Size p) const

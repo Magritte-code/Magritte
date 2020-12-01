@@ -29,8 +29,10 @@ struct Multiscale
     std::function<bool(Size, Size)> points_are_similar;
 
     ///FIXME: also take care to NOT delete boundary points; maybe just take the same reference as geometry
-    // std::function<bool> point_is_boundary_point;
 
+    std::function<bool(Size)> not_on_boundary;
+
+    //current coarsening level
     Size curr_coarsening_lvl=0;
 
 
@@ -58,6 +60,8 @@ struct Multiscale
 
     //sets the comparison function to see whether points are similar enough
     inline void set_comparison_fun(std::function<bool(Size, Size)>);
+    //sets function that checks whether a point does not lie on the boundary
+    inline void set_not_on_boundary_fun(std::function<bool(Size)>);
 
     //Returns the neighbors of point p, at coarsening level coars_lvl
     inline std::set<Size> get_neighbors(const Size p, const Size coars_lvl) const;
