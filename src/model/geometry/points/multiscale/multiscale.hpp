@@ -34,7 +34,7 @@ struct Multiscale
     inline void coarsen ();
 
     // Returns whether the mesh at a point (p) can be coarsened.
-    inline bool can_be_coarsened (const Size p);
+    inline bool can_be_coarsened (const Size p, std::set<Size>& points_coarsened_around);
 
     // Coarsens the neighbors of p and updates the neighbors of p and neighbors of the neighbors of neighbors
     inline void coarsen_around_point (const Size p);

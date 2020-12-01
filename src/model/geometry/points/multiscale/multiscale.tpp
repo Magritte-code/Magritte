@@ -6,19 +6,21 @@ inline void Multiscale::coarsen()
 {
     mask     .push_back(vector<bool>          (mask     .back()));//should be deep copy
     neighbors.push_back(vector<std::set<Size>>(neighbors.back()));//should be deep copy
+    std::set<Size> points_coarsened_around;
     for (Size p = 0; p < parameters.npoints(); p++)
     {
-        if (can_be_coarsened(p))
+        if (can_be_coarsened(p, points_coarsened_around))
         {
           coarsen_around_point(p);
           std::cout << "Deleted around point: " << p <<std::endl;
+          points_coarsened_around.insert(p);
         }
     }
 }
 
 
 // Returns whether the mesh at a point (p) can be coarsened.
-inline bool Multiscale::can_be_coarsened (const Size p)
+inline bool Multiscale::can_be_coarsened (const Size p, std::set<Size>& points_coarsened_around)
 {
     if (!mask.back()[p]) {return false;}//if point no longer in grid, do not coarsen
 
@@ -26,7 +28,9 @@ inline bool Multiscale::can_be_coarsened (const Size p)
     {
         // Do not coarsen if a neighbor was already coarsend at this level,
         // this avoids creating large holes in the mesh.
-        if (!mask.back()[n]) {return false;}
+        // TODO: replace this....
+        //if (!mask.back()[n]) {return false;}
+        if (points_coarsened_around.find(n)!=points_coarsened_around.end()) {return false;}
 
         // Do not coarsen if the required coarsening criterion does not hold.
         // TODO:maybe add some kind of tolerance

@@ -85,7 +85,7 @@ int main (int argc, char **argv)
     cout << model.geometry.points.multiscale.get_curr_coars_lvl() << endl;
     //because of the way how we coarsen, point 0 should still lie in the grid
     //TODO add output for debugging....
-    std::set<Size> neighbors_after_del=model.geometry.points.multiscale.get_neighbors(0,0);
+    std::set<Size> neighbors_after_del=model.geometry.points.multiscale.get_neighbors(0,2);
     for (Size nb:neighbors_after_del)
     {
     cout << nb << endl;
