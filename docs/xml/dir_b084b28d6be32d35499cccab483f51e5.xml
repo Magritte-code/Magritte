@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.14">
+  <compounddef id="dir_b084b28d6be32d35499cccab483f51e5" kind="dir">
+    <compoundname>/home/frederik/Dropbox/GitHub/Magritte/src/io/python</compoundname>
+    <innerfile refid="io__python_8cpp">io_python.cpp</innerfile>
+    <innerfile refid="io__python_8hpp">io_python.hpp</innerfile>
+    <innerfile refid="io__python__hdf5_8py">io_python_hdf5.py</innerfile>
+    <innerfile refid="io__python__text_8py">io_python_text.py</innerfile>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/frederik/Dropbox/GitHub/Magritte/src/io/python/"/>
+  </compounddef>
+</doxygen>

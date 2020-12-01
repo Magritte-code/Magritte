@@ -1,0 +1,137 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.14">
+  <compounddef id="structRays" kind="struct" language="C++" prot="public">
+    <compoundname>Rays</compoundname>
+    <includes refid="rays_8hpp" local="no">rays.hpp</includes>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structRays_1aca8fa7fb701be4d20f2982567d87deb3" prot="public" static="no" mutable="no">
+        <type><ref refid="structParameters" kindref="compound">Parameters</ref></type>
+        <definition>Parameters Rays::parameters</definition>
+        <argsstring></argsstring>
+        <name>parameters</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/rays/rays.hpp" line="11" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/rays/rays.hpp" bodystart="11" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structRays_1aac0ad16c52affd28be5493038d407e69" prot="public" static="no" mutable="no">
+        <type><ref refid="types_8hpp_1a959df20affa391f0d7913ff0349bdb05" kindref="member">Vector</ref>&lt; <ref refid="types_8hpp_1a9ba03c9169409d1848791ddf34116c28" kindref="member">Vector3D</ref> &gt;</type>
+        <definition>Vector&lt;Vector3D&gt; Rays::direction</definition>
+        <argsstring></argsstring>
+        <name>direction</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/rays/rays.hpp" line="13" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/rays/rays.hpp" bodystart="13" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structRays_1a85fdf4dc1d287b11a34ebdc4b0d1b8e0" prot="public" static="no" mutable="no">
+        <type><ref refid="types_8hpp_1a959df20affa391f0d7913ff0349bdb05" kindref="member">Vector</ref>&lt; <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref> &gt;</type>
+        <definition>Vector&lt;Size&gt; Rays::antipod</definition>
+        <argsstring></argsstring>
+        <name>antipod</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/rays/rays.hpp" line="14" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/rays/rays.hpp" bodystart="14" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structRays_1a178a1b558d24550d1e2e2a1b78aef7c1" prot="public" static="no" mutable="no">
+        <type><ref refid="types_8hpp_1a959df20affa391f0d7913ff0349bdb05" kindref="member">Vector</ref>&lt; <ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref> &gt;</type>
+        <definition>Vector&lt;Real&gt; Rays::weight</definition>
+        <argsstring></argsstring>
+        <name>weight</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/rays/rays.hpp" line="15" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/rays/rays.hpp" bodystart="15" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="structRays_1a06adb9cb1ac98788c075534cbbb7b3dc" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Rays::read</definition>
+        <argsstring>(const Io &amp;io)</argsstring>
+        <name>read</name>
+        <param>
+          <type>const <ref refid="structIo" kindref="compound">Io</ref> &amp;</type>
+          <declname>io</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/rays/rays.hpp" line="17" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/rays/rays.cpp" bodystart="7" bodyend="46"/>
+      </memberdef>
+      <memberdef kind="function" id="structRays_1aa606dcde2d734e357b6f2a3797bac91c" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Rays::write</definition>
+        <argsstring>(const Io &amp;io) const</argsstring>
+        <name>write</name>
+        <param>
+          <type>const <ref refid="structIo" kindref="compound">Io</ref> &amp;</type>
+          <declname>io</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/rays/rays.hpp" line="18" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/rays/rays.cpp" bodystart="49" bodyend="64"/>
+      </memberdef>
+      <memberdef kind="function" id="structRays_1aefe4a9350460dd1761289a6f7ffbdfee" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void Rays::print</definition>
+        <argsstring>()</argsstring>
+        <name>print</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/rays/rays.hpp" line="20" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/rays/rays.hpp" bodystart="20" bodyend="26"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <collaborationgraph>
+      <node id="125">
+        <label>Rays</label>
+        <link refid="structRays"/>
+        <childnode refid="126" relation="usage">
+          <edgelabel>parameters</edgelabel>
+        </childnode>
+      </node>
+      <node id="126">
+        <label>Parameters</label>
+        <link refid="structParameters"/>
+      </node>
+    </collaborationgraph>
+    <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/rays/rays.hpp" line="10" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/rays/rays.hpp" bodystart="9" bodyend="27"/>
+    <listofallmembers>
+      <member refid="structRays_1a85fdf4dc1d287b11a34ebdc4b0d1b8e0" prot="public" virt="non-virtual"><scope>Rays</scope><name>antipod</name></member>
+      <member refid="structRays_1aac0ad16c52affd28be5493038d407e69" prot="public" virt="non-virtual"><scope>Rays</scope><name>direction</name></member>
+      <member refid="structRays_1aca8fa7fb701be4d20f2982567d87deb3" prot="public" virt="non-virtual"><scope>Rays</scope><name>parameters</name></member>
+      <member refid="structRays_1aefe4a9350460dd1761289a6f7ffbdfee" prot="public" virt="non-virtual"><scope>Rays</scope><name>print</name></member>
+      <member refid="structRays_1a06adb9cb1ac98788c075534cbbb7b3dc" prot="public" virt="non-virtual"><scope>Rays</scope><name>read</name></member>
+      <member refid="structRays_1a178a1b558d24550d1e2e2a1b78aef7c1" prot="public" virt="non-virtual"><scope>Rays</scope><name>weight</name></member>
+      <member refid="structRays_1aa606dcde2d734e357b6f2a3797bac91c" prot="public" virt="non-virtual"><scope>Rays</scope><name>write</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

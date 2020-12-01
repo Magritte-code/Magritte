@@ -1,0 +1,183 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.14">
+  <compounddef id="lines_8tpp" kind="file" language="C++">
+    <compoundname>lines.tpp</compoundname>
+    <includes local="yes">paracabs.hpp</includes>
+    <includes refid="types_8hpp" local="yes">tools/types.hpp</includes>
+    <includedby refid="lines_8hpp" local="yes">/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lines.hpp</includedby>
+    <incdepgraph>
+      <node id="855">
+        <label>list</label>
+      </node>
+      <node id="857">
+        <label>Eigen/Core</label>
+      </node>
+      <node id="856">
+        <label>string</label>
+      </node>
+      <node id="851">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lines.tpp</label>
+        <link refid="lines_8tpp"/>
+        <childnode refid="852" relation="include">
+        </childnode>
+        <childnode refid="853" relation="include">
+        </childnode>
+      </node>
+      <node id="854">
+        <label>vector</label>
+      </node>
+      <node id="852">
+        <label>paracabs.hpp</label>
+      </node>
+      <node id="853">
+        <label>tools/types.hpp</label>
+        <link refid="types_8hpp"/>
+        <childnode refid="854" relation="include">
+        </childnode>
+        <childnode refid="855" relation="include">
+        </childnode>
+        <childnode refid="856" relation="include">
+        </childnode>
+        <childnode refid="857" relation="include">
+        </childnode>
+        <childnode refid="852" relation="include">
+        </childnode>
+      </node>
+    </incdepgraph>
+    <invincdepgraph>
+      <node id="861">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/model.hpp</label>
+        <link refid="model_8hpp"/>
+        <childnode refid="862" relation="include">
+        </childnode>
+        <childnode refid="863" relation="include">
+        </childnode>
+        <childnode refid="864" relation="include">
+        </childnode>
+      </node>
+      <node id="862">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/bindings/pybindings.cpp</label>
+        <link refid="pybindings_8cpp"/>
+      </node>
+      <node id="863">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/model.cpp</label>
+        <link refid="model_8cpp"/>
+      </node>
+      <node id="865">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.cpp</label>
+        <link refid="solver_8cpp"/>
+      </node>
+      <node id="859">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lines.hpp</label>
+        <link refid="lines_8hpp"/>
+        <childnode refid="860" relation="include">
+        </childnode>
+        <childnode refid="861" relation="include">
+        </childnode>
+      </node>
+      <node id="858">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lines.tpp</label>
+        <link refid="lines_8tpp"/>
+        <childnode refid="859" relation="include">
+        </childnode>
+      </node>
+      <node id="864">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp</label>
+        <link refid="solver_8hpp"/>
+        <childnode refid="862" relation="include">
+        </childnode>
+        <childnode refid="863" relation="include">
+        </childnode>
+        <childnode refid="865" relation="include">
+        </childnode>
+      </node>
+      <node id="860">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lines.cpp</label>
+        <link refid="lines_8cpp"/>
+      </node>
+    </invincdepgraph>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline><highlight class="normal">#include<sp/>&quot;paracabs.hpp&quot;</highlight></codeline>
+<codeline><highlight class="normal">#include<sp/>&quot;tools/types.hpp&quot;</highlight></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">///<sp/><sp/>Indexer<sp/>for<sp/>point<sp/>and<sp/>line<sp/>indices</highlight></codeline>
+<codeline><highlight class="normal">///<sp/><sp/><sp/><sp/>@param[in]<sp/>p<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>:<sp/>index<sp/>of<sp/>the<sp/>point</highlight></codeline>
+<codeline><highlight class="normal">///<sp/><sp/><sp/><sp/>@param[in]<sp/>line_index<sp/>:<sp/>index<sp/>of<sp/>the<sp/>line</highlight></codeline>
+<codeline><highlight class="normal">/////////////////////////////////////////////////</highlight></codeline>
+<codeline><highlight class="normal">inline<sp/>Size<sp/>Lines<sp/>::<sp/>index<sp/>(const<sp/>Size<sp/>p,<sp/>const<sp/>Size<sp/>line_index)<sp/>const</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>return<sp/>line_index<sp/>+<sp/>p*parameters.nlines();</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">///<sp/><sp/>Indexer<sp/>for<sp/>cell,<sp/>line<sp/>producing<sp/>species<sp/>and<sp/>transition<sp/>indices</highlight></codeline>
+<codeline><highlight class="normal">///<sp/><sp/><sp/><sp/>@param[in]<sp/>l<sp/>:<sp/>index<sp/>of<sp/>the<sp/>line<sp/>producing<sp/>species</highlight></codeline>
+<codeline><highlight class="normal">///<sp/><sp/><sp/><sp/>@param[in]<sp/>k<sp/>:<sp/>index<sp/>of<sp/>the<sp/>line<sp/>transition</highlight></codeline>
+<codeline><highlight class="normal">////////////////////////////////////////////////////////////////////</highlight></codeline>
+<codeline><highlight class="normal">inline<sp/>Size<sp/>Lines<sp/>::<sp/>line_index<sp/>(const<sp/>Size<sp/>l,<sp/>const<sp/>Size<sp/>k)<sp/>const</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>return<sp/>k<sp/>+<sp/>nrad_cum[l];</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">///<sp/><sp/>Indexer<sp/>for<sp/>point,<sp/>line<sp/>producing<sp/>species<sp/>and<sp/>transition<sp/>indices</highlight></codeline>
+<codeline><highlight class="normal">///<sp/><sp/><sp/><sp/>@param[in]<sp/>p<sp/>:<sp/>index<sp/>of<sp/>the<sp/>point</highlight></codeline>
+<codeline><highlight class="normal">///<sp/><sp/><sp/><sp/>@param[in]<sp/>l<sp/>:<sp/>index<sp/>of<sp/>the<sp/>line<sp/>producing<sp/>species</highlight></codeline>
+<codeline><highlight class="normal">///<sp/><sp/><sp/><sp/>@param[in]<sp/>k<sp/>:<sp/>index<sp/>of<sp/>the<sp/>line<sp/>transition</highlight></codeline>
+<codeline><highlight class="normal">///////////////////////////////////////<sp/>/////////////////////////////</highlight></codeline>
+<codeline><highlight class="normal">inline<sp/>Size<sp/>Lines<sp/>::<sp/>index<sp/>(const<sp/>Size<sp/>p,<sp/>const<sp/>Size<sp/>l,<sp/>const<sp/>Size<sp/>k)<sp/>const</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>return<sp/>index<sp/>(p,<sp/>line_index<sp/>(l,<sp/>k));</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">///<sp/><sp/>Setter<sp/>for<sp/>line<sp/>emissivity<sp/>and<sp/>opacity</highlight></codeline>
+<codeline><highlight class="normal">///////////////////////////////////////////</highlight></codeline>
+<codeline><highlight class="normal">inline<sp/>void<sp/>Lines<sp/>::<sp/>set_emissivity_and_opacity<sp/>()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>threaded_for<sp/>(p,<sp/>parameters.npoints(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>for<sp/>(Size<sp/>l<sp/>=<sp/>0;<sp/>l<sp/>&lt;<sp/>parameters.nlspecs();<sp/>l++)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>for<sp/>(Size<sp/>k<sp/>=<sp/>0;<sp/>k<sp/>&lt;<sp/>lineProducingSpecies[l].linedata.nrad;<sp/>k++)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>const<sp/>Size<sp/>lid<sp/>=<sp/>line_index<sp/>(l,<sp/>k);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>emissivity<sp/>(p,<sp/>lid)<sp/>=<sp/>lineProducingSpecies[l].get_emissivity<sp/>(p,<sp/>k);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>opacity<sp/>(p,<sp/>lid)<sp/>=<sp/>lineProducingSpecies[l].get_opacity<sp/><sp/><sp/><sp/>(p,<sp/>k);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>})</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">///<sp/><sp/>Setter<sp/>for<sp/>line<sp/>widths</highlight></codeline>
+<codeline><highlight class="normal">///<sp/><sp/><sp/><sp/>@param[in]<sp/>thermodynamics<sp/>:<sp/>reference<sp/>to<sp/>thermodynamics<sp/>module</highlight></codeline>
+<codeline><highlight class="normal">/////////////////////////////////////////////////////////////////////</highlight></codeline>
+<codeline><highlight class="normal">inline<sp/>void<sp/>Lines<sp/>::<sp/>set_inverse_width<sp/>(const<sp/>Thermodynamics&amp;<sp/>thermodynamics)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>threaded_for<sp/>(p,<sp/>parameters.npoints(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>for<sp/>(Size<sp/>l<sp/>=<sp/>0;<sp/>l<sp/>&lt;<sp/>parameters.nlspecs();<sp/>l++)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>for<sp/>(Size<sp/>k<sp/>=<sp/>0;<sp/>k<sp/>&lt;<sp/>lineProducingSpecies[l].linedata.nrad;<sp/>k++)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>const<sp/>Real<sp/>invr_mass<sp/>=<sp/>lineProducingSpecies[l].linedata.inverse_mass;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>const<sp/>Real<sp/>frequency<sp/>=<sp/>lineProducingSpecies[l].linedata.frequency[k];</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>const<sp/>Size<sp/>lid<sp/>=<sp/>line_index<sp/>(l,<sp/>k);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>inverse_width<sp/>(p,<sp/>lid)<sp/>=<sp/>(Real)<sp/>1.0<sp/>/<sp/>thermodynamics.profile_width<sp/>(invr_mass,<sp/>p,<sp/>frequency);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>})</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+    </programlisting>
+    <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lines.tpp"/>
+  </compounddef>
+</doxygen>

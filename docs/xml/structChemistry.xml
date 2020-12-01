@@ -1,0 +1,134 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.14">
+  <compounddef id="structChemistry" kind="struct" language="C++" prot="public">
+    <compoundname>Chemistry</compoundname>
+    <includes refid="chemistry_8hpp" local="no">chemistry.hpp</includes>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structChemistry_1ab49665b40f9f43589a21883411fa9bfe" prot="public" static="no" mutable="no">
+        <type><ref refid="structParameters" kindref="compound">Parameters</ref></type>
+        <definition>Parameters Chemistry::parameters</definition>
+        <argsstring></argsstring>
+        <name>parameters</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/chemistry/chemistry.hpp" line="13" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/chemistry/chemistry.hpp" bodystart="13" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structChemistry_1a40c2a3598226631f8ef665e092b361e1" prot="public" static="no" mutable="no">
+        <type><ref refid="structSpecies" kindref="compound">Species</ref></type>
+        <definition>Species Chemistry::species</definition>
+        <argsstring></argsstring>
+        <name>species</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/chemistry/chemistry.hpp" line="14" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/chemistry/chemistry.hpp" bodystart="14" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="structChemistry_1ac1d59edd4f7877af50925f4c7e577b21" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Chemistry::read</definition>
+        <argsstring>(const Io &amp;io)</argsstring>
+        <name>read</name>
+        <param>
+          <type>const <ref refid="structIo" kindref="compound">Io</ref> &amp;</type>
+          <declname>io</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Reader for model data <parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">io</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>io data object </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/chemistry/chemistry.hpp" line="16" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/chemistry/chemistry.cpp" bodystart="7" bodyend="12"/>
+      </memberdef>
+      <memberdef kind="function" id="structChemistry_1a75b7a71f41fc0d8eab89100556e0e0ae" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Chemistry::write</definition>
+        <argsstring>(const Io &amp;io) const</argsstring>
+        <name>write</name>
+        <param>
+          <type>const <ref refid="structIo" kindref="compound">Io</ref> &amp;</type>
+          <declname>io</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Writer for model data <parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">io</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>io data object </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/chemistry/chemistry.hpp" line="17" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/chemistry/chemistry.cpp" bodystart="18" bodyend="23"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+<para>Data structure for <ref refid="structChemistry" kindref="compound">Chemistry</ref>. </para>    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <collaborationgraph>
+      <node id="7">
+        <label>vector&lt; string &gt;</label>
+      </node>
+      <node id="4">
+        <label>Chemistry</label>
+        <link refid="structChemistry"/>
+        <childnode refid="5" relation="usage">
+          <edgelabel>parameters</edgelabel>
+        </childnode>
+        <childnode refid="6" relation="usage">
+          <edgelabel>species</edgelabel>
+        </childnode>
+      </node>
+      <node id="5">
+        <label>Parameters</label>
+        <link refid="structParameters"/>
+      </node>
+      <node id="6">
+        <label>Species</label>
+        <link refid="structSpecies"/>
+        <childnode refid="5" relation="usage">
+          <edgelabel>parameters</edgelabel>
+        </childnode>
+        <childnode refid="7" relation="usage">
+          <edgelabel>symbol</edgelabel>
+        </childnode>
+        <childnode refid="8" relation="usage">
+          <edgelabel>abundance</edgelabel>
+          <edgelabel>abundance_init</edgelabel>
+        </childnode>
+      </node>
+      <node id="8">
+        <label>vector&lt; Double1 &gt;</label>
+      </node>
+    </collaborationgraph>
+    <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/chemistry/chemistry.hpp" line="12" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/chemistry/chemistry.hpp" bodystart="11" bodyend="18"/>
+    <listofallmembers>
+      <member refid="structChemistry_1ab49665b40f9f43589a21883411fa9bfe" prot="public" virt="non-virtual"><scope>Chemistry</scope><name>parameters</name></member>
+      <member refid="structChemistry_1ac1d59edd4f7877af50925f4c7e577b21" prot="public" virt="non-virtual"><scope>Chemistry</scope><name>read</name></member>
+      <member refid="structChemistry_1a40c2a3598226631f8ef665e092b361e1" prot="public" virt="non-virtual"><scope>Chemistry</scope><name>species</name></member>
+      <member refid="structChemistry_1a75b7a71f41fc0d8eab89100556e0e0ae" prot="public" virt="non-virtual"><scope>Chemistry</scope><name>write</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

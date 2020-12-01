@@ -1,0 +1,133 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.14">
+  <compounddef id="structQuadrature" kind="struct" language="C++" prot="public">
+    <compoundname>Quadrature</compoundname>
+    <includes refid="quadrature_8hpp" local="no">quadrature.hpp</includes>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structQuadrature_1a6f0bc8efafaaafa013c0700fb84ec5d7" prot="public" static="no" mutable="no">
+        <type><ref refid="structParameters" kindref="compound">Parameters</ref></type>
+        <definition>Parameters Quadrature::parameters</definition>
+        <argsstring></argsstring>
+        <name>parameters</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/quadrature/quadrature.hpp" line="11" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/quadrature/quadrature.hpp" bodystart="11" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structQuadrature_1a7ebf6dafcf1218208c9da5c1e9d7a1cc" prot="public" static="no" mutable="no">
+        <type><ref refid="types_8hpp_1a959df20affa391f0d7913ff0349bdb05" kindref="member">Vector</ref>&lt; <ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref> &gt;</type>
+        <definition>Vector&lt;Real&gt; Quadrature::roots</definition>
+        <argsstring></argsstring>
+        <name>roots</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/quadrature/quadrature.hpp" line="13" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/quadrature/quadrature.hpp" bodystart="13" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structQuadrature_1a5c7b5aa4aa4165883cb491d481ef1535" prot="public" static="no" mutable="no">
+        <type><ref refid="types_8hpp_1a959df20affa391f0d7913ff0349bdb05" kindref="member">Vector</ref>&lt; <ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref> &gt;</type>
+        <definition>Vector&lt;Real&gt; Quadrature::weights</definition>
+        <argsstring></argsstring>
+        <name>weights</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/quadrature/quadrature.hpp" line="14" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/quadrature/quadrature.hpp" bodystart="14" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="structQuadrature_1ac0512086ea4ee349c1fa9c9d04672c2f" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Quadrature::read</definition>
+        <argsstring>(const Io &amp;io, const Size l)</argsstring>
+        <name>read</name>
+        <param>
+          <type>const <ref refid="structIo" kindref="compound">Io</ref> &amp;</type>
+          <declname>io</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>l</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>read: read in data structure <parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">io</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>io object </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/quadrature/quadrature.hpp" line="16" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/quadrature/quadrature.cpp" bodystart="10" bodyend="23"/>
+      </memberdef>
+      <memberdef kind="function" id="structQuadrature_1a74190bd7de5057c155e55fb64ea60f5e" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Quadrature::write</definition>
+        <argsstring>(const Io &amp;io, const Size l) const</argsstring>
+        <name>write</name>
+        <param>
+          <type>const <ref refid="structIo" kindref="compound">Io</ref> &amp;</type>
+          <declname>io</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>l</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>write: write out data structure <parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">io</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>io object </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/quadrature/quadrature.hpp" line="17" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/quadrature/quadrature.cpp" bodystart="29" bodyend="37"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <collaborationgraph>
+      <node id="114">
+        <label>Parameters</label>
+        <link refid="structParameters"/>
+      </node>
+      <node id="113">
+        <label>Quadrature</label>
+        <link refid="structQuadrature"/>
+        <childnode refid="114" relation="usage">
+          <edgelabel>parameters</edgelabel>
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/quadrature/quadrature.hpp" line="10" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/quadrature/quadrature.hpp" bodystart="9" bodyend="18"/>
+    <listofallmembers>
+      <member refid="structQuadrature_1a6f0bc8efafaaafa013c0700fb84ec5d7" prot="public" virt="non-virtual"><scope>Quadrature</scope><name>parameters</name></member>
+      <member refid="structQuadrature_1ac0512086ea4ee349c1fa9c9d04672c2f" prot="public" virt="non-virtual"><scope>Quadrature</scope><name>read</name></member>
+      <member refid="structQuadrature_1a7ebf6dafcf1218208c9da5c1e9d7a1cc" prot="public" virt="non-virtual"><scope>Quadrature</scope><name>roots</name></member>
+      <member refid="structQuadrature_1a5c7b5aa4aa4165883cb491d481ef1535" prot="public" virt="non-virtual"><scope>Quadrature</scope><name>weights</name></member>
+      <member refid="structQuadrature_1a74190bd7de5057c155e55fb64ea60f5e" prot="public" virt="non-virtual"><scope>Quadrature</scope><name>write</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

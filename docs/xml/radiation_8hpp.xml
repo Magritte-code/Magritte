@@ -1,0 +1,241 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.14">
+  <compounddef id="radiation_8hpp" kind="file" language="C++">
+    <compoundname>radiation.hpp</compoundname>
+    <includes refid="io_8hpp" local="yes">io/io.hpp</includes>
+    <includes refid="types_8hpp" local="yes">tools/types.hpp</includes>
+    <includes refid="frequencies_8hpp" local="yes">frequencies/frequencies.hpp</includes>
+    <includes refid="scattering_8hpp" local="yes">scattering/scattering.hpp</includes>
+    <includes refid="radiation_8tpp" local="yes">radiation.tpp</includes>
+    <includedby refid="model_8hpp" local="yes">/home/frederik/Dropbox/GitHub/Magritte/src/model/model.hpp</includedby>
+    <includedby refid="radiation_8cpp" local="yes">/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/radiation.cpp</includedby>
+    <incdepgraph>
+      <node id="1110">
+        <label>list</label>
+      </node>
+      <node id="1116">
+        <label>limits</label>
+      </node>
+      <node id="1120">
+        <label>model/thermodynamics/temperature/temperature.hpp</label>
+        <link refid="temperature_8hpp"/>
+        <childnode refid="1107" relation="include">
+        </childnode>
+        <childnode refid="1115" relation="include">
+        </childnode>
+        <childnode refid="1108" relation="include">
+        </childnode>
+      </node>
+      <node id="1106">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/radiation.hpp</label>
+        <link refid="radiation_8hpp"/>
+        <childnode refid="1107" relation="include">
+        </childnode>
+        <childnode refid="1108" relation="include">
+        </childnode>
+        <childnode refid="1114" relation="include">
+        </childnode>
+        <childnode refid="1121" relation="include">
+        </childnode>
+        <childnode refid="1122" relation="include">
+        </childnode>
+      </node>
+      <node id="1122">
+        <label>radiation.tpp</label>
+        <link refid="radiation_8tpp"/>
+        <childnode refid="1123" relation="include">
+        </childnode>
+      </node>
+      <node id="1112">
+        <label>Eigen/Core</label>
+      </node>
+      <node id="1111">
+        <label>string</label>
+      </node>
+      <node id="1123">
+        <label>tools/interpolation.hpp</label>
+        <link refid="interpolation_8hpp"/>
+        <childnode refid="1108" relation="include">
+        </childnode>
+      </node>
+      <node id="1118">
+        <label>exception</label>
+      </node>
+      <node id="1107">
+        <label>io/io.hpp</label>
+        <link refid="io_8hpp"/>
+        <childnode refid="1108" relation="include">
+        </childnode>
+      </node>
+      <node id="1115">
+        <label>model/parameters/parameters.hpp</label>
+        <link refid="parameters_8hpp"/>
+        <childnode refid="1116" relation="include">
+        </childnode>
+        <childnode refid="1107" relation="include">
+        </childnode>
+        <childnode refid="1117" relation="include">
+        </childnode>
+      </node>
+      <node id="1117">
+        <label>tools/setOnce.hpp</label>
+        <link refid="setOnce_8hpp"/>
+        <childnode refid="1118" relation="include">
+        </childnode>
+        <childnode refid="1119" relation="include">
+        </childnode>
+        <childnode refid="1113" relation="include">
+        </childnode>
+      </node>
+      <node id="1109">
+        <label>vector</label>
+      </node>
+      <node id="1113">
+        <label>paracabs.hpp</label>
+      </node>
+      <node id="1108">
+        <label>tools/types.hpp</label>
+        <link refid="types_8hpp"/>
+        <childnode refid="1109" relation="include">
+        </childnode>
+        <childnode refid="1110" relation="include">
+        </childnode>
+        <childnode refid="1111" relation="include">
+        </childnode>
+        <childnode refid="1112" relation="include">
+        </childnode>
+        <childnode refid="1113" relation="include">
+        </childnode>
+      </node>
+      <node id="1119">
+        <label>iostream</label>
+      </node>
+      <node id="1121">
+        <label>scattering/scattering.hpp</label>
+        <link refid="scattering_8hpp"/>
+        <childnode refid="1108" relation="include">
+        </childnode>
+      </node>
+      <node id="1114">
+        <label>frequencies/frequencies.hpp</label>
+        <link refid="frequencies_8hpp"/>
+        <childnode refid="1107" relation="include">
+        </childnode>
+        <childnode refid="1115" relation="include">
+        </childnode>
+        <childnode refid="1108" relation="include">
+        </childnode>
+        <childnode refid="1120" relation="include">
+        </childnode>
+      </node>
+    </incdepgraph>
+    <invincdepgraph>
+      <node id="1125">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/model.hpp</label>
+        <link refid="model_8hpp"/>
+        <childnode refid="1126" relation="include">
+        </childnode>
+        <childnode refid="1127" relation="include">
+        </childnode>
+        <childnode refid="1128" relation="include">
+        </childnode>
+      </node>
+      <node id="1124">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/radiation.hpp</label>
+        <link refid="radiation_8hpp"/>
+        <childnode refid="1125" relation="include">
+        </childnode>
+        <childnode refid="1130" relation="include">
+        </childnode>
+      </node>
+      <node id="1126">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/bindings/pybindings.cpp</label>
+        <link refid="pybindings_8cpp"/>
+      </node>
+      <node id="1127">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/model.cpp</label>
+        <link refid="model_8cpp"/>
+      </node>
+      <node id="1129">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.cpp</label>
+        <link refid="solver_8cpp"/>
+      </node>
+      <node id="1128">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp</label>
+        <link refid="solver_8hpp"/>
+        <childnode refid="1126" relation="include">
+        </childnode>
+        <childnode refid="1127" relation="include">
+        </childnode>
+        <childnode refid="1129" relation="include">
+        </childnode>
+      </node>
+      <node id="1130">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/radiation.cpp</label>
+        <link refid="radiation_8cpp"/>
+      </node>
+    </invincdepgraph>
+    <innerclass refid="structRadiation" prot="public">Radiation</innerclass>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline lineno="1"><highlight class="preprocessor">#pragma<sp/>once</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="2"><highlight class="normal"></highlight></codeline>
+<codeline lineno="3"><highlight class="normal"></highlight></codeline>
+<codeline lineno="4"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;<ref refid="io_8hpp" kindref="compound">io/io.hpp</ref>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="5"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;<ref refid="types_8hpp" kindref="compound">tools/types.hpp</ref>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="6"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;<ref refid="frequencies_8hpp" kindref="compound">frequencies/frequencies.hpp</ref>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="7"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;<ref refid="scattering_8hpp" kindref="compound">scattering/scattering.hpp</ref>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="8"><highlight class="normal"></highlight></codeline>
+<codeline lineno="9"><highlight class="normal"></highlight></codeline>
+<codeline lineno="12" refid="structRadiation" refkind="compound"><highlight class="keyword">struct<sp/></highlight><highlight class="normal"><ref refid="structRadiation" kindref="compound">Radiation</ref></highlight></codeline>
+<codeline lineno="13"><highlight class="normal">{</highlight></codeline>
+<codeline lineno="14" refid="structRadiation_1ae8b97484a82684269c6a2f5daaaf3b68" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="structParameters" kindref="compound">Parameters</ref><sp/><ref refid="structRadiation_1ae8b97484a82684269c6a2f5daaaf3b68" kindref="member">parameters</ref>;</highlight></codeline>
+<codeline lineno="15"><highlight class="normal"></highlight></codeline>
+<codeline lineno="16" refid="structRadiation_1a671301011aedcded797ed7380b8e62d2" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="structFrequencies" kindref="compound">Frequencies</ref><sp/><ref refid="structRadiation_1a671301011aedcded797ed7380b8e62d2" kindref="member">frequencies</ref>;</highlight></codeline>
+<codeline lineno="17" refid="structRadiation_1a2312d1d46d0091dd9e03beeeda186943" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="structScattering" kindref="compound">Scattering</ref><sp/><sp/><ref refid="structRadiation_1a2312d1d46d0091dd9e03beeeda186943" kindref="member">scattering</ref>;</highlight></codeline>
+<codeline lineno="18"><highlight class="normal"></highlight></codeline>
+<codeline lineno="19" refid="structRadiation_1a3c7d8fa4851a1eb4ea00d0a26577c25b" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="types_8hpp_1a551086c5a4fa135fb0ebe66ed468ff98" kindref="member">Tensor&lt;Real&gt;</ref><sp/><ref refid="structRadiation_1a3c7d8fa4851a1eb4ea00d0a26577c25b" kindref="member">I</ref>;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="20" refid="structRadiation_1a1a97d24b8d62ad5c4041edaf92c458b2" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="types_8hpp_1a551086c5a4fa135fb0ebe66ed468ff98" kindref="member">Tensor&lt;Real&gt;</ref><sp/><ref refid="structRadiation_1a1a97d24b8d62ad5c4041edaf92c458b2" kindref="member">u</ref>;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="21" refid="structRadiation_1abd33315045298811b19e11c79c04c22e" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="types_8hpp_1a551086c5a4fa135fb0ebe66ed468ff98" kindref="member">Tensor&lt;Real&gt;</ref><sp/><ref refid="structRadiation_1abd33315045298811b19e11c79c04c22e" kindref="member">v</ref>;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="22" refid="structRadiation_1ab815a46150db7e6b715ab5e7c0919d51" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="types_8hpp_1ac9d1a399bc9eae71d5719b37a09745f6" kindref="member">Matrix&lt;Real&gt;</ref><sp/><ref refid="structRadiation_1ab815a46150db7e6b715ab5e7c0919d51" kindref="member">J</ref>;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="23"><highlight class="normal"></highlight></codeline>
+<codeline lineno="24"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>vector&lt;Matrix&lt;Real&gt;&gt;<sp/>u;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>///&lt;<sp/>u<sp/>intensity<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>(r,<sp/>index(p,f))</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="25"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>vector&lt;Matrix&lt;Real&gt;&gt;<sp/>v;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>///&lt;<sp/>v<sp/>intensity<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>(r,<sp/>index(p,f))</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="26"><highlight class="normal"></highlight></codeline>
+<codeline lineno="27"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>vector&lt;Matrix&lt;Real&gt;&gt;<sp/>U;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>///&lt;<sp/>U<sp/>scattered<sp/>intensity<sp/><sp/><sp/>(r,<sp/>index(p,f))</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="28"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>vector&lt;Matrix&lt;Real&gt;&gt;<sp/>V;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>///&lt;<sp/>V<sp/>scattered<sp/>intensity<sp/><sp/><sp/>(r,<sp/>index(p,f))</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="29"><highlight class="normal"></highlight></codeline>
+<codeline lineno="30"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>Real1<sp/>J;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>///&lt;<sp/>(angular)<sp/>mean<sp/>intensity<sp/>(index(p,f))</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="31" refid="structRadiation_1a97e90a16dc459f2ad0672ab8fef05561" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="types_8hpp_1a2fbf53fed9e8fa669cc443ac55a8c48f" kindref="member">Real3</ref><sp/><ref refid="structRadiation_1a97e90a16dc459f2ad0672ab8fef05561" kindref="member">I_bdy</ref>;<sp/><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="32"><highlight class="normal"></highlight></codeline>
+<codeline lineno="33"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="structRadiation_1a6e3e2ebc87ce50bb815f5b29924d35b7" kindref="member">read</ref><sp/><sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="structIo" kindref="compound">Io</ref>&amp;<sp/>io);</highlight></codeline>
+<codeline lineno="34"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="structRadiation_1acf289485914b89b6b7fe8a8ff4a4e6a3" kindref="member">write</ref><sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="structIo" kindref="compound">Io</ref>&amp;<sp/>io)<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="35"><highlight class="normal"></highlight></codeline>
+<codeline lineno="36"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref><sp/><ref refid="structRadiation_1a68d358c41a2f3062f9b674e96ecff545" kindref="member">index</ref><sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref><sp/>p,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref><sp/>f)<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="37"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref><sp/><ref refid="structRadiation_1a68d358c41a2f3062f9b674e96ecff545" kindref="member">index</ref><sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref><sp/>p,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref><sp/>f,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref><sp/>m)<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="38"><highlight class="normal"></highlight></codeline>
+<codeline lineno="39"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/><ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref><sp/><ref refid="structRadiation_1ad4961878a4b2cbfa8759f4ddab218203" kindref="member">get_U</ref><sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref><sp/>R,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref><sp/>p,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref><sp/>f)<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="40"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/><ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref><sp/><ref refid="structRadiation_1a1730bbd6f4170d835dd3192f09d2eed9" kindref="member">get_V</ref><sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref><sp/>R,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref><sp/>p,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref><sp/>f)<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="41"><highlight class="normal"></highlight></codeline>
+<codeline lineno="42"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/><ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref><sp/><ref refid="structRadiation_1a3cb4bb0e2a6099185fc0175d4382a220" kindref="member">get_I_bdy</ref><sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref><sp/>R,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref><sp/>p,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref><sp/>f)<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="43"><highlight class="normal"></highlight></codeline>
+<codeline lineno="44"><highlight class="normal"></highlight></codeline>
+<codeline lineno="45"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/><ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref><sp/><ref refid="structRadiation_1a56d9298aa5fd3bf27ac1d5265fa3d3e6" kindref="member">get_u</ref><sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref><sp/>r,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref><sp/>p,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref><sp/>f)<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="46"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/><ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref><sp/><ref refid="structRadiation_1a201afa794c684a29e3d07db017e51652" kindref="member">get_v</ref><sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref><sp/>r,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref><sp/>p,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref><sp/>f)<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="47"><highlight class="normal"></highlight></codeline>
+<codeline lineno="48"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/><ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref><sp/><ref refid="structRadiation_1a73c342aabe94280f163c1c07d613044e" kindref="member">get_J</ref><sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref><sp/>p,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref><sp/>f)<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="49"><highlight class="normal"></highlight></codeline>
+<codeline lineno="50"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="structRadiation_1a0c2f72df0c1a6ebddd9cabd16b5e5dc7" kindref="member">initialize_J</ref><sp/>();</highlight></codeline>
+<codeline lineno="51"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="structRadiation_1a7606257d91634973d6950f6acdc95c14" kindref="member">MPI_reduce_J</ref><sp/>();</highlight></codeline>
+<codeline lineno="52"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="structRadiation_1a7fc1bc25afd1ffbb5876cae58c471897" kindref="member">calc_U_and_V</ref><sp/>();</highlight></codeline>
+<codeline lineno="53"><highlight class="normal">};</highlight></codeline>
+<codeline lineno="54"><highlight class="normal"></highlight></codeline>
+<codeline lineno="55"><highlight class="normal"></highlight></codeline>
+<codeline lineno="56"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;<ref refid="radiation_8tpp" kindref="compound">radiation.tpp</ref>&quot;</highlight><highlight class="normal"></highlight></codeline>
+    </programlisting>
+    <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/radiation.hpp"/>
+  </compounddef>
+</doxygen>

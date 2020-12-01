@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.14">
+  <compounddef id="dir_65206f453c687f80ef887f968cc0a6cd" kind="dir">
+    <compoundname>/home/frederik/Dropbox/GitHub/Magritte/src/model/lines</compoundname>
+    <innerdir refid="dir_b29201c3394bc48917ce104f034c4d46">/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies</innerdir>
+    <innerfile refid="lines_8cpp">lines.cpp</innerfile>
+    <innerfile refid="lines_8hpp">lines.hpp</innerfile>
+    <innerfile refid="lines_8tpp">lines.tpp</innerfile>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/"/>
+  </compounddef>
+</doxygen>

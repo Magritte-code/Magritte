@@ -1,0 +1,178 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.14">
+  <compounddef id="geometry_8cpp" kind="file" language="C++">
+    <compoundname>geometry.cpp</compoundname>
+    <includes refid="geometry_8hpp" local="yes">geometry.hpp</includes>
+    <incdepgraph>
+      <node id="310">
+        <label>list</label>
+      </node>
+      <node id="306">
+        <label>geometry.hpp</label>
+        <link refid="geometry_8hpp"/>
+        <childnode refid="307" relation="include">
+        </childnode>
+        <childnode refid="314" relation="include">
+        </childnode>
+        <childnode refid="308" relation="include">
+        </childnode>
+        <childnode refid="319" relation="include">
+        </childnode>
+        <childnode refid="322" relation="include">
+        </childnode>
+        <childnode refid="323" relation="include">
+        </childnode>
+        <childnode refid="324" relation="include">
+        </childnode>
+        <childnode refid="325" relation="include">
+        </childnode>
+      </node>
+      <node id="315">
+        <label>limits</label>
+      </node>
+      <node id="325">
+        <label>geometry.tpp</label>
+        <link refid="geometry_8tpp"/>
+        <childnode refid="315" relation="include">
+        </childnode>
+        <childnode refid="320" relation="include">
+        </childnode>
+      </node>
+      <node id="320">
+        <label>cmath</label>
+      </node>
+      <node id="312">
+        <label>Eigen/Core</label>
+      </node>
+      <node id="311">
+        <label>string</label>
+      </node>
+      <node id="317">
+        <label>exception</label>
+      </node>
+      <node id="307">
+        <label>io/io.hpp</label>
+        <link refid="io_8hpp"/>
+        <childnode refid="308" relation="include">
+        </childnode>
+      </node>
+      <node id="314">
+        <label>model/parameters/parameters.hpp</label>
+        <link refid="parameters_8hpp"/>
+        <childnode refid="315" relation="include">
+        </childnode>
+        <childnode refid="307" relation="include">
+        </childnode>
+        <childnode refid="316" relation="include">
+        </childnode>
+      </node>
+      <node id="316">
+        <label>tools/setOnce.hpp</label>
+        <link refid="setOnce_8hpp"/>
+        <childnode refid="317" relation="include">
+        </childnode>
+        <childnode refid="318" relation="include">
+        </childnode>
+        <childnode refid="313" relation="include">
+        </childnode>
+      </node>
+      <node id="324">
+        <label>boundary/boundary.hpp</label>
+        <link refid="boundary_8hpp"/>
+        <childnode refid="307" relation="include">
+        </childnode>
+        <childnode refid="314" relation="include">
+        </childnode>
+        <childnode refid="308" relation="include">
+        </childnode>
+      </node>
+      <node id="319">
+        <label>tools/constants.hpp</label>
+        <link refid="constants_8hpp"/>
+        <childnode refid="320" relation="include">
+        </childnode>
+        <childnode refid="321" relation="include">
+        </childnode>
+      </node>
+      <node id="309">
+        <label>vector</label>
+      </node>
+      <node id="322">
+        <label>points/points.hpp</label>
+        <link refid="points_8hpp"/>
+        <childnode refid="307" relation="include">
+        </childnode>
+        <childnode refid="314" relation="include">
+        </childnode>
+        <childnode refid="308" relation="include">
+        </childnode>
+      </node>
+      <node id="313">
+        <label>paracabs.hpp</label>
+      </node>
+      <node id="321">
+        <label>../configure.hpp</label>
+        <link refid="configure_8hpp"/>
+      </node>
+      <node id="308">
+        <label>tools/types.hpp</label>
+        <link refid="types_8hpp"/>
+        <childnode refid="309" relation="include">
+        </childnode>
+        <childnode refid="310" relation="include">
+        </childnode>
+        <childnode refid="311" relation="include">
+        </childnode>
+        <childnode refid="312" relation="include">
+        </childnode>
+        <childnode refid="313" relation="include">
+        </childnode>
+      </node>
+      <node id="318">
+        <label>iostream</label>
+      </node>
+      <node id="305">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/geometry.cpp</label>
+        <link refid="geometry_8cpp"/>
+        <childnode refid="306" relation="include">
+        </childnode>
+      </node>
+      <node id="323">
+        <label>rays/rays.hpp</label>
+        <link refid="rays_8hpp"/>
+        <childnode refid="307" relation="include">
+        </childnode>
+        <childnode refid="314" relation="include">
+        </childnode>
+        <childnode refid="308" relation="include">
+        </childnode>
+      </node>
+    </incdepgraph>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline lineno="1"><highlight class="preprocessor">#include<sp/>&quot;<ref refid="geometry_8hpp" kindref="compound">geometry.hpp</ref>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="2"><highlight class="normal"></highlight></codeline>
+<codeline lineno="3"><highlight class="normal"></highlight></codeline>
+<codeline lineno="4"><highlight class="normal"></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="structGeometry_1a7ba519b1163c8c2b2d36061e74c35ba8" kindref="member">Geometry :: read</ref><sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="structIo" kindref="compound">Io</ref>&amp;<sp/>io)</highlight></codeline>
+<codeline lineno="5"><highlight class="normal">{</highlight></codeline>
+<codeline lineno="6"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="structGeometry_1a0c20d35ab5400ec58126d3aea69628cf" kindref="member">points</ref><sp/><sp/>.<ref refid="structPoints_1a467f8a2b90de42d7053103bc032a2443" kindref="member">read</ref><sp/>(io);</highlight></codeline>
+<codeline lineno="7"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="structGeometry_1ab40f75e6744eff6f8a04459cb5a770fa" kindref="member">rays</ref><sp/><sp/><sp/><sp/>.<ref refid="structRays_1a06adb9cb1ac98788c075534cbbb7b3dc" kindref="member">read</ref><sp/>(io);</highlight></codeline>
+<codeline lineno="8"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="structGeometry_1a9153b970abf6d0a7ac6074688c4833cc" kindref="member">boundary</ref>.<ref refid="structBoundary_1a889cafccaa29a30585e0812fb710cc1c" kindref="member">read</ref><sp/>(io);</highlight></codeline>
+<codeline lineno="9"><highlight class="normal"></highlight></codeline>
+<codeline lineno="10"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="structGeometry_1ad43927565ce60f7f25996ef75fd331c4" kindref="member">lengths</ref>.resize<sp/>(<ref refid="structGeometry_1a0e60a58fab88f53d0d918aedf1d68a9b" kindref="member">parameters</ref>.hnrays(),<sp/><ref refid="structGeometry_1a0e60a58fab88f53d0d918aedf1d68a9b" kindref="member">parameters</ref>.npoints());</highlight></codeline>
+<codeline lineno="11"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="12"><highlight class="normal"></highlight></codeline>
+<codeline lineno="13"><highlight class="normal"></highlight></codeline>
+<codeline lineno="14"><highlight class="normal"></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="structGeometry_1a6c8ccb27ec1dd63fcc07dd91b6d69a0a" kindref="member">Geometry :: write</ref><sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="structIo" kindref="compound">Io</ref>&amp;<sp/>io)</highlight><highlight class="keyword"><sp/>const</highlight></codeline>
+<codeline lineno="15"><highlight class="keyword"></highlight><highlight class="normal">{</highlight></codeline>
+<codeline lineno="16"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="structGeometry_1a0c20d35ab5400ec58126d3aea69628cf" kindref="member">points</ref><sp/><sp/>.<ref refid="structPoints_1a59d34f7ee9bb90e848626e27e154b8b4" kindref="member">write</ref><sp/>(io);</highlight></codeline>
+<codeline lineno="17"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="structGeometry_1ab40f75e6744eff6f8a04459cb5a770fa" kindref="member">rays</ref><sp/><sp/><sp/><sp/>.<ref refid="structRays_1aa606dcde2d734e357b6f2a3797bac91c" kindref="member">write</ref><sp/>(io);</highlight></codeline>
+<codeline lineno="18"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="structGeometry_1a9153b970abf6d0a7ac6074688c4833cc" kindref="member">boundary</ref>.<ref refid="structBoundary_1a7a73cfbda5bc645488219dd442e26f55" kindref="member">write</ref><sp/>(io);</highlight></codeline>
+<codeline lineno="19"><highlight class="normal">}</highlight></codeline>
+    </programlisting>
+    <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/geometry.cpp"/>
+  </compounddef>
+</doxygen>

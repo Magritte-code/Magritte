@@ -1,0 +1,1414 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.14">
+  <compounddef id="types_8hpp" kind="file" language="C++">
+    <compoundname>types.hpp</compoundname>
+    <includes local="no">vector</includes>
+    <includes local="no">list</includes>
+    <includes local="no">string</includes>
+    <includes local="no">Eigen/Core</includes>
+    <includes local="yes">paracabs.hpp</includes>
+    <includedby refid="pybindings_8cpp" local="yes">/home/frederik/Dropbox/GitHub/Magritte/src/bindings/pybindings.cpp</includedby>
+    <includedby refid="io__cpp__text_8hpp" local="yes">/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.hpp</includedby>
+    <includedby refid="io_8hpp" local="yes">/home/frederik/Dropbox/GitHub/Magritte/src/io/io.hpp</includedby>
+    <includedby refid="io__python_8hpp" local="yes">/home/frederik/Dropbox/GitHub/Magritte/src/io/python/io_python.hpp</includedby>
+    <includedby refid="species_8hpp" local="yes">/home/frederik/Dropbox/GitHub/Magritte/src/model/chemistry/species/species.hpp</includedby>
+    <includedby refid="boundary_8hpp" local="yes">/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/boundary/boundary.hpp</includedby>
+    <includedby refid="geometry_8hpp" local="yes">/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/geometry.hpp</includedby>
+    <includedby refid="points_8hpp" local="yes">/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/points/points.hpp</includedby>
+    <includedby refid="rays_8hpp" local="yes">/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/rays/rays.hpp</includedby>
+    <includedby refid="image_8hpp" local="yes">/home/frederik/Dropbox/GitHub/Magritte/src/model/image/image.hpp</includedby>
+    <includedby refid="lambda_8hpp" local="yes">/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lambda/lambda.hpp</includedby>
+    <includedby refid="collisionPartner_8hpp" local="yes">/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/linedata/collisionPartner/collisionPartner.hpp</includedby>
+    <includedby refid="collisionPartner_8cpp" local="yes">/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/linedata/collisionPartner/collisionPartner.cpp</includedby>
+    <includedby refid="linedata_8hpp" local="yes">/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/linedata/linedata.hpp</includedby>
+    <includedby refid="linedata_8cpp" local="yes">/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/linedata/linedata.cpp</includedby>
+    <includedby refid="lineProducingSpecies_8hpp" local="yes">/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.hpp</includedby>
+    <includedby refid="quadrature_8hpp" local="yes">/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/quadrature/quadrature.hpp</includedby>
+    <includedby refid="lineProducingSpecies_8tpp" local="yes">/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.tpp</includedby>
+    <includedby refid="lines_8hpp" local="yes">/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lines.hpp</includedby>
+    <includedby refid="lines_8tpp" local="yes">/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lines.tpp</includedby>
+    <includedby refid="model_8hpp" local="yes">/home/frederik/Dropbox/GitHub/Magritte/src/model/model.hpp</includedby>
+    <includedby refid="thermodynamics_8hpp" local="yes">/home/frederik/Dropbox/GitHub/Magritte/src/model/thermodynamics/thermodynamics.hpp</includedby>
+    <includedby refid="temperature_8hpp" local="yes">/home/frederik/Dropbox/GitHub/Magritte/src/model/thermodynamics/temperature/temperature.hpp</includedby>
+    <includedby refid="turbulence_8hpp" local="yes">/home/frederik/Dropbox/GitHub/Magritte/src/model/thermodynamics/turbulence/turbulence.hpp</includedby>
+    <includedby refid="radiation_8hpp" local="yes">/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/radiation.hpp</includedby>
+    <includedby refid="frequencies_8hpp" local="yes">/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/frequencies/frequencies.hpp</includedby>
+    <includedby refid="scattering_8hpp" local="yes">/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/scattering/scattering.hpp</includedby>
+    <includedby refid="parameters_8cpp" local="yes">/home/frederik/Dropbox/GitHub/Magritte/src/model/parameters/parameters.cpp</includedby>
+    <includedby refid="frequencies_8cpp" local="yes">/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/frequencies/frequencies.cpp</includedby>
+    <includedby refid="solver_8hpp" local="yes">/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp</includedby>
+    <includedby refid="heapsort_8hpp" local="yes">/home/frederik/Dropbox/GitHub/Magritte/src/tools/heapsort.hpp</includedby>
+    <includedby refid="interpolation_8hpp" local="yes">/home/frederik/Dropbox/GitHub/Magritte/src/tools/interpolation.hpp</includedby>
+    <incdepgraph>
+      <node id="1544">
+        <label>list</label>
+      </node>
+      <node id="1546">
+        <label>Eigen/Core</label>
+      </node>
+      <node id="1545">
+        <label>string</label>
+      </node>
+      <node id="1543">
+        <label>vector</label>
+      </node>
+      <node id="1547">
+        <label>paracabs.hpp</label>
+      </node>
+      <node id="1542">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp</label>
+        <link refid="types_8hpp"/>
+        <childnode refid="1543" relation="include">
+        </childnode>
+        <childnode refid="1544" relation="include">
+        </childnode>
+        <childnode refid="1545" relation="include">
+        </childnode>
+        <childnode refid="1546" relation="include">
+        </childnode>
+        <childnode refid="1547" relation="include">
+        </childnode>
+      </node>
+    </incdepgraph>
+    <invincdepgraph>
+      <node id="1555">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/model.hpp</label>
+        <link refid="model_8hpp"/>
+        <childnode refid="1549" relation="include">
+        </childnode>
+        <childnode refid="1556" relation="include">
+        </childnode>
+        <childnode refid="1557" relation="include">
+        </childnode>
+      </node>
+      <node id="1565">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/geometry.hpp</label>
+        <link refid="geometry_8hpp"/>
+        <childnode refid="1566" relation="include">
+        </childnode>
+        <childnode refid="1567" relation="include">
+        </childnode>
+        <childnode refid="1555" relation="include">
+        </childnode>
+      </node>
+      <node id="1567">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/image/image.hpp</label>
+        <link refid="image_8hpp"/>
+        <childnode refid="1568" relation="include">
+        </childnode>
+        <childnode refid="1555" relation="include">
+        </childnode>
+      </node>
+      <node id="1559">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/chemistry/chemistry.hpp</label>
+        <link refid="chemistry_8hpp"/>
+        <childnode refid="1560" relation="include">
+        </childnode>
+        <childnode refid="1555" relation="include">
+        </childnode>
+      </node>
+      <node id="1596">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.tpp</label>
+        <link refid="lineProducingSpecies_8tpp"/>
+        <childnode refid="1577" relation="include">
+        </childnode>
+      </node>
+      <node id="1562">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/chemistry/species/species.cpp</label>
+        <link refid="species_8cpp"/>
+      </node>
+      <node id="1586">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/thermodynamics/temperature/temperature.hpp</label>
+        <link refid="temperature_8hpp"/>
+        <childnode refid="1584" relation="include">
+        </childnode>
+        <childnode refid="1587" relation="include">
+        </childnode>
+        <childnode refid="1591" relation="include">
+        </childnode>
+      </node>
+      <node id="1588">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/radiation.hpp</label>
+        <link refid="radiation_8hpp"/>
+        <childnode refid="1555" relation="include">
+        </childnode>
+        <childnode refid="1589" relation="include">
+        </childnode>
+      </node>
+      <node id="1574">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/linedata/collisionPartner/collisionPartner.cpp</label>
+        <link refid="collisionPartner_8cpp"/>
+      </node>
+      <node id="1603">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/radiation.tpp</label>
+        <link refid="radiation_8tpp"/>
+        <childnode refid="1588" relation="include">
+        </childnode>
+      </node>
+      <node id="1553">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/io/python/io_python.hpp</label>
+        <link refid="io__python_8hpp"/>
+        <childnode refid="1549" relation="include">
+        </childnode>
+        <childnode refid="1554" relation="include">
+        </childnode>
+        <childnode refid="1555" relation="include">
+        </childnode>
+      </node>
+      <node id="1577">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.hpp</label>
+        <link refid="lineProducingSpecies_8hpp"/>
+        <childnode refid="1578" relation="include">
+        </childnode>
+        <childnode refid="1579" relation="include">
+        </childnode>
+      </node>
+      <node id="1593">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/thermodynamics/turbulence/turbulence.cpp</label>
+        <link refid="turbulence_8cpp"/>
+      </node>
+      <node id="1549">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/bindings/pybindings.cpp</label>
+        <link refid="pybindings_8cpp"/>
+      </node>
+      <node id="1556">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/model.cpp</label>
+        <link refid="model_8cpp"/>
+      </node>
+      <node id="1601">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/tools/interpolation.hpp</label>
+        <link refid="interpolation_8hpp"/>
+        <childnode refid="1602" relation="include">
+        </childnode>
+        <childnode refid="1603" relation="include">
+        </childnode>
+      </node>
+      <node id="1550">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.hpp</label>
+        <link refid="io__cpp__text_8hpp"/>
+        <childnode refid="1549" relation="include">
+        </childnode>
+        <childnode refid="1551" relation="include">
+        </childnode>
+      </node>
+      <node id="1560">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/chemistry/chemistry.cpp</label>
+        <link refid="chemistry_8cpp"/>
+      </node>
+      <node id="1595">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lambda/lambda.hpp</label>
+        <link refid="lambda_8hpp"/>
+        <childnode refid="1577" relation="include">
+        </childnode>
+      </node>
+      <node id="1568">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/image/image.cpp</label>
+        <link refid="image_8cpp"/>
+      </node>
+      <node id="1558">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.cpp</label>
+        <link refid="solver_8cpp"/>
+      </node>
+      <node id="1591">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/thermodynamics/temperature/temperature.cpp</label>
+        <link refid="temperature_8cpp"/>
+      </node>
+      <node id="1552">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/io/io.hpp</label>
+        <link refid="io_8hpp"/>
+        <childnode refid="1550" relation="include">
+        </childnode>
+        <childnode refid="1553" relation="include">
+        </childnode>
+        <childnode refid="1559" relation="include">
+        </childnode>
+        <childnode refid="1561" relation="include">
+        </childnode>
+        <childnode refid="1563" relation="include">
+        </childnode>
+        <childnode refid="1565" relation="include">
+        </childnode>
+        <childnode refid="1569" relation="include">
+        </childnode>
+        <childnode refid="1571" relation="include">
+        </childnode>
+        <childnode refid="1567" relation="include">
+        </childnode>
+        <childnode refid="1573" relation="include">
+        </childnode>
+        <childnode refid="1575" relation="include">
+        </childnode>
+        <childnode refid="1577" relation="include">
+        </childnode>
+        <childnode refid="1581" relation="include">
+        </childnode>
+        <childnode refid="1579" relation="include">
+        </childnode>
+        <childnode refid="1555" relation="include">
+        </childnode>
+        <childnode refid="1583" relation="include">
+        </childnode>
+        <childnode refid="1584" relation="include">
+        </childnode>
+        <childnode refid="1586" relation="include">
+        </childnode>
+        <childnode refid="1592" relation="include">
+        </childnode>
+        <childnode refid="1588" relation="include">
+        </childnode>
+        <childnode refid="1587" relation="include">
+        </childnode>
+      </node>
+      <node id="1583">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/parameters/parameters.hpp</label>
+        <link refid="parameters_8hpp"/>
+        <childnode refid="1549" relation="include">
+        </childnode>
+        <childnode refid="1559" relation="include">
+        </childnode>
+        <childnode refid="1561" relation="include">
+        </childnode>
+        <childnode refid="1563" relation="include">
+        </childnode>
+        <childnode refid="1565" relation="include">
+        </childnode>
+        <childnode refid="1569" relation="include">
+        </childnode>
+        <childnode refid="1571" relation="include">
+        </childnode>
+        <childnode refid="1567" relation="include">
+        </childnode>
+        <childnode refid="1573" relation="include">
+        </childnode>
+        <childnode refid="1575" relation="include">
+        </childnode>
+        <childnode refid="1577" relation="include">
+        </childnode>
+        <childnode refid="1581" relation="include">
+        </childnode>
+        <childnode refid="1579" relation="include">
+        </childnode>
+        <childnode refid="1555" relation="include">
+        </childnode>
+        <childnode refid="1584" relation="include">
+        </childnode>
+        <childnode refid="1586" relation="include">
+        </childnode>
+        <childnode refid="1592" relation="include">
+        </childnode>
+        <childnode refid="1587" relation="include">
+        </childnode>
+        <childnode refid="1594" relation="include">
+        </childnode>
+      </node>
+      <node id="1592">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/thermodynamics/turbulence/turbulence.hpp</label>
+        <link refid="turbulence_8hpp"/>
+        <childnode refid="1584" relation="include">
+        </childnode>
+        <childnode refid="1593" relation="include">
+        </childnode>
+      </node>
+      <node id="1599">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/scattering/scattering.cpp</label>
+        <link refid="scattering_8cpp"/>
+      </node>
+      <node id="1579">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lines.hpp</label>
+        <link refid="lines_8hpp"/>
+        <childnode refid="1580" relation="include">
+        </childnode>
+        <childnode refid="1555" relation="include">
+        </childnode>
+      </node>
+      <node id="1597">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lines.tpp</label>
+        <link refid="lines_8tpp"/>
+        <childnode refid="1579" relation="include">
+        </childnode>
+      </node>
+      <node id="1563">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/boundary/boundary.hpp</label>
+        <link refid="boundary_8hpp"/>
+        <childnode refid="1564" relation="include">
+        </childnode>
+        <childnode refid="1565" relation="include">
+        </childnode>
+      </node>
+      <node id="1590">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/frequencies/frequencies.cpp</label>
+        <link refid="frequencies_8cpp"/>
+      </node>
+      <node id="1569">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/points/points.hpp</label>
+        <link refid="points_8hpp"/>
+        <childnode refid="1565" relation="include">
+        </childnode>
+        <childnode refid="1570" relation="include">
+        </childnode>
+      </node>
+      <node id="1551">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.cpp</label>
+        <link refid="io__cpp__text_8cpp"/>
+      </node>
+      <node id="1548">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp</label>
+        <link refid="types_8hpp"/>
+        <childnode refid="1549" relation="include">
+        </childnode>
+        <childnode refid="1550" relation="include">
+        </childnode>
+        <childnode refid="1552" relation="include">
+        </childnode>
+        <childnode refid="1553" relation="include">
+        </childnode>
+        <childnode refid="1561" relation="include">
+        </childnode>
+        <childnode refid="1563" relation="include">
+        </childnode>
+        <childnode refid="1565" relation="include">
+        </childnode>
+        <childnode refid="1569" relation="include">
+        </childnode>
+        <childnode refid="1571" relation="include">
+        </childnode>
+        <childnode refid="1567" relation="include">
+        </childnode>
+        <childnode refid="1595" relation="include">
+        </childnode>
+        <childnode refid="1573" relation="include">
+        </childnode>
+        <childnode refid="1574" relation="include">
+        </childnode>
+        <childnode refid="1575" relation="include">
+        </childnode>
+        <childnode refid="1576" relation="include">
+        </childnode>
+        <childnode refid="1577" relation="include">
+        </childnode>
+        <childnode refid="1581" relation="include">
+        </childnode>
+        <childnode refid="1596" relation="include">
+        </childnode>
+        <childnode refid="1579" relation="include">
+        </childnode>
+        <childnode refid="1597" relation="include">
+        </childnode>
+        <childnode refid="1555" relation="include">
+        </childnode>
+        <childnode refid="1584" relation="include">
+        </childnode>
+        <childnode refid="1586" relation="include">
+        </childnode>
+        <childnode refid="1592" relation="include">
+        </childnode>
+        <childnode refid="1588" relation="include">
+        </childnode>
+        <childnode refid="1587" relation="include">
+        </childnode>
+        <childnode refid="1598" relation="include">
+        </childnode>
+        <childnode refid="1594" relation="include">
+        </childnode>
+        <childnode refid="1590" relation="include">
+        </childnode>
+        <childnode refid="1557" relation="include">
+        </childnode>
+        <childnode refid="1600" relation="include">
+        </childnode>
+        <childnode refid="1601" relation="include">
+        </childnode>
+      </node>
+      <node id="1557">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp</label>
+        <link refid="solver_8hpp"/>
+        <childnode refid="1549" relation="include">
+        </childnode>
+        <childnode refid="1556" relation="include">
+        </childnode>
+        <childnode refid="1558" relation="include">
+        </childnode>
+      </node>
+      <node id="1575">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/linedata/linedata.hpp</label>
+        <link refid="linedata_8hpp"/>
+        <childnode refid="1576" relation="include">
+        </childnode>
+        <childnode refid="1577" relation="include">
+        </childnode>
+      </node>
+      <node id="1581">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/quadrature/quadrature.hpp</label>
+        <link refid="quadrature_8hpp"/>
+        <childnode refid="1577" relation="include">
+        </childnode>
+        <childnode refid="1582" relation="include">
+        </childnode>
+      </node>
+      <node id="1594">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/parameters/parameters.cpp</label>
+        <link refid="parameters_8cpp"/>
+      </node>
+      <node id="1572">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/rays/rays.cpp</label>
+        <link refid="rays_8cpp"/>
+      </node>
+      <node id="1584">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/thermodynamics/thermodynamics.hpp</label>
+        <link refid="thermodynamics_8hpp"/>
+        <childnode refid="1579" relation="include">
+        </childnode>
+        <childnode refid="1555" relation="include">
+        </childnode>
+        <childnode refid="1585" relation="include">
+        </childnode>
+      </node>
+      <node id="1566">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/geometry.cpp</label>
+        <link refid="geometry_8cpp"/>
+      </node>
+      <node id="1598">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/scattering/scattering.hpp</label>
+        <link refid="scattering_8hpp"/>
+        <childnode refid="1588" relation="include">
+        </childnode>
+        <childnode refid="1599" relation="include">
+        </childnode>
+      </node>
+      <node id="1580">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lines.cpp</label>
+        <link refid="lines_8cpp"/>
+      </node>
+      <node id="1564">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/boundary/boundary.cpp</label>
+        <link refid="boundary_8cpp"/>
+      </node>
+      <node id="1587">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/frequencies/frequencies.hpp</label>
+        <link refid="frequencies_8hpp"/>
+        <childnode refid="1588" relation="include">
+        </childnode>
+        <childnode refid="1590" relation="include">
+        </childnode>
+      </node>
+      <node id="1561">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/chemistry/species/species.hpp</label>
+        <link refid="species_8hpp"/>
+        <childnode refid="1559" relation="include">
+        </childnode>
+        <childnode refid="1562" relation="include">
+        </childnode>
+      </node>
+      <node id="1570">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/points/points.cpp</label>
+        <link refid="points_8cpp"/>
+      </node>
+      <node id="1589">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/radiation.cpp</label>
+        <link refid="radiation_8cpp"/>
+      </node>
+      <node id="1582">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/quadrature/quadrature.cpp</label>
+        <link refid="quadrature_8cpp"/>
+      </node>
+      <node id="1573">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/linedata/collisionPartner/collisionPartner.hpp</label>
+        <link refid="collisionPartner_8hpp"/>
+        <childnode refid="1574" relation="include">
+        </childnode>
+        <childnode refid="1575" relation="include">
+        </childnode>
+      </node>
+      <node id="1576">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/linedata/linedata.cpp</label>
+        <link refid="linedata_8cpp"/>
+      </node>
+      <node id="1571">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/rays/rays.hpp</label>
+        <link refid="rays_8hpp"/>
+        <childnode refid="1565" relation="include">
+        </childnode>
+        <childnode refid="1572" relation="include">
+        </childnode>
+      </node>
+      <node id="1554">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/io/python/io_python.cpp</label>
+        <link refid="io__python_8cpp"/>
+      </node>
+      <node id="1578">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.cpp</label>
+        <link refid="lineProducingSpecies_8cpp"/>
+      </node>
+      <node id="1585">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/thermodynamics/thermodynamics.cpp</label>
+        <link refid="thermodynamics_8cpp"/>
+      </node>
+      <node id="1600">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/tools/heapsort.hpp</label>
+        <link refid="heapsort_8hpp"/>
+        <childnode refid="1580" relation="include">
+        </childnode>
+        <childnode refid="1556" relation="include">
+        </childnode>
+      </node>
+      <node id="1602">
+        <label>/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/linedata/collisionPartner/collisionPartner.tpp</label>
+        <link refid="collisionPartner_8tpp"/>
+        <childnode refid="1573" relation="include">
+        </childnode>
+      </node>
+    </invincdepgraph>
+      <sectiondef kind="typedef">
+      <memberdef kind="typedef" id="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" prot="public" static="no">
+        <type>long double</type>
+        <definition>typedef long double Real</definition>
+        <argsstring></argsstring>
+        <name>Real</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" line="19" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" bodystart="19" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="types_8hpp_1abff30891abb1012c410045707ef09790" prot="public" static="no">
+        <type>uint32_t</type>
+        <definition>typedef uint32_t Size</definition>
+        <argsstring></argsstring>
+        <name>Size</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" line="20" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" bodystart="20" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="types_8hpp_1a9ba03c9169409d1848791ddf34116c28" prot="public" static="no">
+        <type>pc::datatypes::Vector3D&lt; double &gt;</type>
+        <definition>using Vector3D =  pc::datatypes::Vector3D &lt;double&gt;</definition>
+        <argsstring></argsstring>
+        <name>Vector3D</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" line="22" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" bodystart="22" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="types_8hpp_1a959df20affa391f0d7913ff0349bdb05" prot="public" static="no">
+        <type>pc::datatypes::Vector&lt; type &gt;</type>
+        <definition>using Vector =  pc::datatypes::Vector &lt;type&gt;</definition>
+        <argsstring></argsstring>
+        <name>Vector</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" line="25" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" bodystart="25" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="types_8hpp_1ac9d1a399bc9eae71d5719b37a09745f6" prot="public" static="no">
+        <type>pc::datatypes::Matrix&lt; type &gt;</type>
+        <definition>using Matrix =  pc::datatypes::Matrix &lt;type&gt;</definition>
+        <argsstring></argsstring>
+        <name>Matrix</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" line="27" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" bodystart="27" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="types_8hpp_1a551086c5a4fa135fb0ebe66ed468ff98" prot="public" static="no">
+        <type>pc::datatypes::Tensor&lt; type &gt;</type>
+        <definition>using Tensor =  pc::datatypes::Tensor &lt;type&gt;</definition>
+        <argsstring></argsstring>
+        <name>Tensor</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" line="29" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" bodystart="29" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="types_8hpp_1acfab7a3545428ced0649db555e257353" prot="public" static="no">
+        <type>vector&lt; <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref> &gt;</type>
+        <definition>typedef vector&lt;Size&gt; Size1</definition>
+        <argsstring></argsstring>
+        <name>Size1</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" line="38" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" bodystart="38" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="types_8hpp_1af5a6182e2fc6b1f25f5f9ca2873f9c89" prot="public" static="no">
+        <type>vector&lt; <ref refid="types_8hpp_1acfab7a3545428ced0649db555e257353" kindref="member">Size1</ref> &gt;</type>
+        <definition>typedef vector&lt;Size1&gt; Size2</definition>
+        <argsstring></argsstring>
+        <name>Size2</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" line="39" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" bodystart="39" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="types_8hpp_1a5774ff2894388787e3d3bbf2f2fe376a" prot="public" static="no">
+        <type>vector&lt; <ref refid="types_8hpp_1af5a6182e2fc6b1f25f5f9ca2873f9c89" kindref="member">Size2</ref> &gt;</type>
+        <definition>typedef vector&lt;Size2&gt; Size3</definition>
+        <argsstring></argsstring>
+        <name>Size3</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" line="40" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" bodystart="40" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="types_8hpp_1a1a25be9f273121fd7a2647f8d344b641" prot="public" static="no">
+        <type>vector&lt; <ref refid="types_8hpp_1a5774ff2894388787e3d3bbf2f2fe376a" kindref="member">Size3</ref> &gt;</type>
+        <definition>typedef vector&lt;Size3&gt; Size4</definition>
+        <argsstring></argsstring>
+        <name>Size4</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" line="41" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" bodystart="41" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="types_8hpp_1a0015d4067a970e313605c333d49ed5c5" prot="public" static="no">
+        <type>vector&lt; <ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref> &gt;</type>
+        <definition>typedef vector&lt;Real&gt; Real1</definition>
+        <argsstring></argsstring>
+        <name>Real1</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" line="44" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" bodystart="44" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="types_8hpp_1a71d8c3c9e08e8b53f75ecf2db5edafc5" prot="public" static="no">
+        <type>vector&lt; <ref refid="types_8hpp_1a0015d4067a970e313605c333d49ed5c5" kindref="member">Real1</ref> &gt;</type>
+        <definition>typedef vector&lt;Real1&gt; Real2</definition>
+        <argsstring></argsstring>
+        <name>Real2</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" line="45" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" bodystart="45" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="types_8hpp_1a2fbf53fed9e8fa669cc443ac55a8c48f" prot="public" static="no">
+        <type>vector&lt; <ref refid="types_8hpp_1a71d8c3c9e08e8b53f75ecf2db5edafc5" kindref="member">Real2</ref> &gt;</type>
+        <definition>typedef vector&lt;Real2&gt; Real3</definition>
+        <argsstring></argsstring>
+        <name>Real3</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" line="46" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" bodystart="46" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="types_8hpp_1aa3e5d3e205cfc891706a75b005945613" prot="public" static="no">
+        <type>vector&lt; <ref refid="types_8hpp_1a2fbf53fed9e8fa669cc443ac55a8c48f" kindref="member">Real3</ref> &gt;</type>
+        <definition>typedef vector&lt;Real3&gt; Real4</definition>
+        <argsstring></argsstring>
+        <name>Real4</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" line="47" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" bodystart="47" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="types_8hpp_1aafc430ff6520fa4d01a56a1770d7e086" prot="public" static="no">
+        <type>vector&lt; bool &gt;</type>
+        <definition>typedef vector&lt;bool&gt; Bool1</definition>
+        <argsstring></argsstring>
+        <name>Bool1</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" line="50" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" bodystart="50" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="types_8hpp_1aebb7b35bd2d9252a2224b9314f9c841d" prot="public" static="no">
+        <type>vector&lt; <ref refid="types_8hpp_1aafc430ff6520fa4d01a56a1770d7e086" kindref="member">Bool1</ref> &gt;</type>
+        <definition>typedef vector&lt;Bool1&gt; Bool2</definition>
+        <argsstring></argsstring>
+        <name>Bool2</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" line="51" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" bodystart="51" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="types_8hpp_1aceedb1e0fb27653e2dcc9b11bf1b4bf4" prot="public" static="no">
+        <type>vector&lt; <ref refid="types_8hpp_1aebb7b35bd2d9252a2224b9314f9c841d" kindref="member">Bool2</ref> &gt;</type>
+        <definition>typedef vector&lt;Bool2&gt; Bool3</definition>
+        <argsstring></argsstring>
+        <name>Bool3</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" line="52" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" bodystart="52" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="types_8hpp_1a0844cc93c815db7c3bde67a90eeffb98" prot="public" static="no">
+        <type>vector&lt; char &gt;</type>
+        <definition>typedef vector&lt;char&gt; Char1</definition>
+        <argsstring></argsstring>
+        <name>Char1</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" line="55" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" bodystart="55" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="types_8hpp_1a469f4063887fb17deec492469e6bb116" prot="public" static="no">
+        <type>vector&lt; <ref refid="types_8hpp_1a0844cc93c815db7c3bde67a90eeffb98" kindref="member">Char1</ref> &gt;</type>
+        <definition>typedef vector&lt;Char1&gt; Char2</definition>
+        <argsstring></argsstring>
+        <name>Char2</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" line="56" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" bodystart="56" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="types_8hpp_1a36995c66d57036a5aeeb0f98c7e8e16c" prot="public" static="no">
+        <type>vector&lt; <ref refid="types_8hpp_1a469f4063887fb17deec492469e6bb116" kindref="member">Char2</ref> &gt;</type>
+        <definition>typedef vector&lt;Char2&gt; Char3</definition>
+        <argsstring></argsstring>
+        <name>Char3</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" line="57" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" bodystart="57" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="types_8hpp_1a09f56c420e1590ea76bf561d41d3bb8e" prot="public" static="no">
+        <type>vector&lt; int &gt;</type>
+        <definition>typedef vector&lt;int&gt; Int1</definition>
+        <argsstring></argsstring>
+        <name>Int1</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" line="60" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" bodystart="60" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="types_8hpp_1a84c213dfc5b00233a3e23f8b947aab6b" prot="public" static="no">
+        <type>vector&lt; <ref refid="types_8hpp_1a09f56c420e1590ea76bf561d41d3bb8e" kindref="member">Int1</ref> &gt;</type>
+        <definition>typedef vector&lt;Int1&gt; Int2</definition>
+        <argsstring></argsstring>
+        <name>Int2</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" line="61" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" bodystart="61" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="types_8hpp_1a6177e6dde3ab6d190a3bdad8dc2bd867" prot="public" static="no">
+        <type>vector&lt; <ref refid="types_8hpp_1a84c213dfc5b00233a3e23f8b947aab6b" kindref="member">Int2</ref> &gt;</type>
+        <definition>typedef vector&lt;Int2&gt; Int3</definition>
+        <argsstring></argsstring>
+        <name>Int3</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" line="62" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" bodystart="62" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="types_8hpp_1a0ddf613068770023126a95171cdaa0df" prot="public" static="no">
+        <type>vector&lt; size_t &gt;</type>
+        <definition>typedef vector&lt;size_t&gt; Size_t1</definition>
+        <argsstring></argsstring>
+        <name>Size_t1</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" line="65" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" bodystart="65" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="types_8hpp_1a42582601e8e89fb11fd1ad84c9976a8b" prot="public" static="no">
+        <type>vector&lt; <ref refid="types_8hpp_1a0ddf613068770023126a95171cdaa0df" kindref="member">Size_t1</ref> &gt;</type>
+        <definition>typedef vector&lt;Size_t1&gt; Size_t2</definition>
+        <argsstring></argsstring>
+        <name>Size_t2</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" line="66" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" bodystart="66" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="types_8hpp_1a88cdd826a4c289805dddf6b307eb5874" prot="public" static="no">
+        <type>vector&lt; <ref refid="types_8hpp_1a42582601e8e89fb11fd1ad84c9976a8b" kindref="member">Size_t2</ref> &gt;</type>
+        <definition>typedef vector&lt;Size_t2&gt; Size_t3</definition>
+        <argsstring></argsstring>
+        <name>Size_t3</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" line="67" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" bodystart="67" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="types_8hpp_1a7a7837b6f3da8e13a950e48c1bbbff5a" prot="public" static="no">
+        <type>vector&lt; <ref refid="types_8hpp_1a88cdd826a4c289805dddf6b307eb5874" kindref="member">Size_t3</ref> &gt;</type>
+        <definition>typedef vector&lt;Size_t3&gt; Size_t4</definition>
+        <argsstring></argsstring>
+        <name>Size_t4</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" line="68" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" bodystart="68" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="types_8hpp_1af43daf57fb95b58543a5ad410d062d21" prot="public" static="no">
+        <type>vector&lt; long &gt;</type>
+        <definition>typedef vector&lt;long&gt; Long1</definition>
+        <argsstring></argsstring>
+        <name>Long1</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" line="71" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" bodystart="71" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="types_8hpp_1afb2873616918a9a0b14e81276ab28811" prot="public" static="no">
+        <type>vector&lt; <ref refid="types_8hpp_1af43daf57fb95b58543a5ad410d062d21" kindref="member">Long1</ref> &gt;</type>
+        <definition>typedef vector&lt;Long1&gt; Long2</definition>
+        <argsstring></argsstring>
+        <name>Long2</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" line="72" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" bodystart="72" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="types_8hpp_1a7b8799721b4414158ea7fafb18bde099" prot="public" static="no">
+        <type>vector&lt; <ref refid="types_8hpp_1afb2873616918a9a0b14e81276ab28811" kindref="member">Long2</ref> &gt;</type>
+        <definition>typedef vector&lt;Long2&gt; Long3</definition>
+        <argsstring></argsstring>
+        <name>Long3</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" line="73" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" bodystart="73" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="types_8hpp_1abf53a6058f8c47f5a21c5c54a183be85" prot="public" static="no">
+        <type>vector&lt; <ref refid="types_8hpp_1a7b8799721b4414158ea7fafb18bde099" kindref="member">Long3</ref> &gt;</type>
+        <definition>typedef vector&lt;Long3&gt; Long4</definition>
+        <argsstring></argsstring>
+        <name>Long4</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" line="74" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" bodystart="74" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="types_8hpp_1a90a65680382394cec1507779e4cdbce5" prot="public" static="no">
+        <type>vector&lt; double &gt;</type>
+        <definition>typedef vector&lt;double&gt; Double1</definition>
+        <argsstring></argsstring>
+        <name>Double1</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" line="77" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" bodystart="77" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="types_8hpp_1ae4c3ee17bf4177a16f81df0795dee016" prot="public" static="no">
+        <type>vector&lt; <ref refid="types_8hpp_1a90a65680382394cec1507779e4cdbce5" kindref="member">Double1</ref> &gt;</type>
+        <definition>typedef vector&lt;Double1&gt; Double2</definition>
+        <argsstring></argsstring>
+        <name>Double2</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" line="78" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" bodystart="78" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="types_8hpp_1a36eb18b26e7dab9841710674085667cb" prot="public" static="no">
+        <type>vector&lt; <ref refid="types_8hpp_1ae4c3ee17bf4177a16f81df0795dee016" kindref="member">Double2</ref> &gt;</type>
+        <definition>typedef vector&lt;Double2&gt; Double3</definition>
+        <argsstring></argsstring>
+        <name>Double3</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" line="79" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" bodystart="79" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="types_8hpp_1a98a37bf1b370bbdd6e7933985b0cc19e" prot="public" static="no">
+        <type>vector&lt; <ref refid="types_8hpp_1a36eb18b26e7dab9841710674085667cb" kindref="member">Double3</ref> &gt;</type>
+        <definition>typedef vector&lt;Double3&gt; Double4</definition>
+        <argsstring></argsstring>
+        <name>Double4</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" line="80" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" bodystart="80" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="types_8hpp_1a2192f21a5af18c5b653f9faa6a05e530" prot="public" static="no">
+        <type>vector&lt; <ref refid="types_8hpp_1a98a37bf1b370bbdd6e7933985b0cc19e" kindref="member">Double4</ref> &gt;</type>
+        <definition>typedef vector&lt;Double4&gt; Double5</definition>
+        <argsstring></argsstring>
+        <name>Double5</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" line="81" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" bodystart="81" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="types_8hpp_1a6d7f9a4d0e85b9f1c3145ff9f65ab54d" prot="public" static="no">
+        <type>vector&lt; string &gt;</type>
+        <definition>typedef vector&lt;string&gt; String1</definition>
+        <argsstring></argsstring>
+        <name>String1</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" line="84" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" bodystart="84" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="types_8hpp_1a9068959003e1070ecc3d72d6421871e5" prot="public" static="no">
+        <type>vector&lt; <ref refid="types_8hpp_1a6d7f9a4d0e85b9f1c3145ff9f65ab54d" kindref="member">String1</ref> &gt;</type>
+        <definition>typedef vector&lt;String1&gt; String2</definition>
+        <argsstring></argsstring>
+        <name>String2</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" line="85" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" bodystart="85" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="types_8hpp_1a4a63e7462186a4747e20c88b67186022" prot="public" static="no">
+        <type>vector&lt; <ref refid="types_8hpp_1a9068959003e1070ecc3d72d6421871e5" kindref="member">String2</ref> &gt;</type>
+        <definition>typedef vector&lt;String2&gt; String3</definition>
+        <argsstring></argsstring>
+        <name>String3</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" line="86" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" bodystart="86" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="types_8hpp_1ac1c8e247d2e641154aca246a85f66806" prot="public" static="no">
+        <type>vector&lt; VectorXd &gt;</type>
+        <definition>typedef vector&lt;VectorXd&gt; VectorXd1</definition>
+        <argsstring></argsstring>
+        <name>VectorXd1</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" line="94" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" bodystart="94" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="types_8hpp_1a0bdf566d837f5650ad25c0359fafc9c7" prot="public" static="no">
+        <type>vector&lt; <ref refid="types_8hpp_1ac1c8e247d2e641154aca246a85f66806" kindref="member">VectorXd1</ref> &gt;</type>
+        <definition>typedef vector&lt;VectorXd1&gt; VectorXd2</definition>
+        <argsstring></argsstring>
+        <name>VectorXd2</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" line="95" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" bodystart="95" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="types_8hpp_1a8d7e08d5f40df5bd62069d5e63948cc1" prot="public" static="no">
+        <type>vector&lt; <ref refid="types_8hpp_1a0bdf566d837f5650ad25c0359fafc9c7" kindref="member">VectorXd2</ref> &gt;</type>
+        <definition>typedef vector&lt;VectorXd2&gt; VectorXd3</definition>
+        <argsstring></argsstring>
+        <name>VectorXd3</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" line="96" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" bodystart="96" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="types_8hpp_1acc76b8f21e4f8305e11bdac1a85d9aa5" prot="public" static="no">
+        <type><ref refid="types_8hpp_1ac9d1a399bc9eae71d5719b37a09745f6" kindref="member">Eigen::Matrix</ref>&lt; <ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref>, Eigen::Dynamic, 1 &gt;</type>
+        <definition>typedef Eigen::Matrix&lt;Real, Eigen::Dynamic, 1&gt; VectorXr</definition>
+        <argsstring></argsstring>
+        <name>VectorXr</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" line="98" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" bodystart="98" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="types_8hpp_1ae73799774a8c140bb30988ef5c07c425" prot="public" static="no">
+        <type>vector&lt; <ref refid="types_8hpp_1acc76b8f21e4f8305e11bdac1a85d9aa5" kindref="member">VectorXr</ref> &gt;</type>
+        <definition>typedef vector&lt;VectorXr&gt; VectorXr1</definition>
+        <argsstring></argsstring>
+        <name>VectorXr1</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" line="99" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" bodystart="99" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="types_8hpp_1a35bb8fb6c9f22b9488298d2169c1c9f9" prot="public" static="no">
+        <type>vector&lt; <ref refid="types_8hpp_1ae73799774a8c140bb30988ef5c07c425" kindref="member">VectorXr1</ref> &gt;</type>
+        <definition>typedef vector&lt;VectorXr1&gt; VectorXr2</definition>
+        <argsstring></argsstring>
+        <name>VectorXr2</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" line="100" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" bodystart="100" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="types_8hpp_1a2970110b7166e1378527e5f41805cf4f" prot="public" static="no">
+        <type>vector&lt; <ref refid="types_8hpp_1a35bb8fb6c9f22b9488298d2169c1c9f9" kindref="member">VectorXr2</ref> &gt;</type>
+        <definition>typedef vector&lt;VectorXr2&gt; VectorXr3</definition>
+        <argsstring></argsstring>
+        <name>VectorXr3</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" line="101" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" bodystart="101" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="types_8hpp_1ac0e99a7f59b221f7e10cb25b29c85eda" prot="public" static="no">
+        <type>vector&lt; MatrixXd &gt;</type>
+        <definition>typedef vector&lt;MatrixXd&gt; MatrixXd1</definition>
+        <argsstring></argsstring>
+        <name>MatrixXd1</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" line="104" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" bodystart="104" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="types_8hpp_1a2157444e5a883d2fd9fc60eca1d61d24" prot="public" static="no">
+        <type>vector&lt; <ref refid="types_8hpp_1ac0e99a7f59b221f7e10cb25b29c85eda" kindref="member">MatrixXd1</ref> &gt;</type>
+        <definition>typedef vector&lt;MatrixXd1&gt; MatrixXd2</definition>
+        <argsstring></argsstring>
+        <name>MatrixXd2</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" line="105" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" bodystart="105" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="types_8hpp_1adc2c45d3811b68ac343292895560271c" prot="public" static="no">
+        <type>vector&lt; <ref refid="types_8hpp_1a2157444e5a883d2fd9fc60eca1d61d24" kindref="member">MatrixXd2</ref> &gt;</type>
+        <definition>typedef vector&lt;MatrixXd2&gt; MatrixXd3</definition>
+        <argsstring></argsstring>
+        <name>MatrixXd3</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" line="106" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" bodystart="106" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="types_8hpp_1a6b25c241e12c67845ed48ba88cec1dc5" prot="public" static="no">
+        <type><ref refid="types_8hpp_1ac9d1a399bc9eae71d5719b37a09745f6" kindref="member">Eigen::Matrix</ref>&lt; <ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref>, Eigen::Dynamic, Eigen::Dynamic &gt;</type>
+        <definition>typedef Eigen::Matrix&lt;Real, Eigen::Dynamic, Eigen::Dynamic&gt; MatrixXr</definition>
+        <argsstring></argsstring>
+        <name>MatrixXr</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" line="108" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" bodystart="108" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="types_8hpp_1ab79e28d3d934082f2b3671666c123533" prot="public" static="no">
+        <type>vector&lt; <ref refid="types_8hpp_1acc76b8f21e4f8305e11bdac1a85d9aa5" kindref="member">VectorXr</ref> &gt;</type>
+        <definition>typedef vector&lt;VectorXr&gt; MatrixXr1</definition>
+        <argsstring></argsstring>
+        <name>MatrixXr1</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" line="109" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" bodystart="109" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="types_8hpp_1a36625ebd9362602c54002a7d291fa7db" prot="public" static="no">
+        <type>vector&lt; <ref refid="types_8hpp_1ae73799774a8c140bb30988ef5c07c425" kindref="member">VectorXr1</ref> &gt;</type>
+        <definition>typedef vector&lt;VectorXr1&gt; MatrixXr2</definition>
+        <argsstring></argsstring>
+        <name>MatrixXr2</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" line="110" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" bodystart="110" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="types_8hpp_1a3d6d4e55e371d63c822b9f1cf8296e2f" prot="public" static="no">
+        <type>vector&lt; <ref refid="types_8hpp_1a35bb8fb6c9f22b9488298d2169c1c9f9" kindref="member">VectorXr2</ref> &gt;</type>
+        <definition>typedef vector&lt;VectorXr2&gt; MatrixXr3</definition>
+        <argsstring></argsstring>
+        <name>MatrixXr3</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" line="111" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" bodystart="111" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="var">
+      <memberdef kind="variable" id="types_8hpp_1a50b55da7cfa2c754296e2ddfde804c12" prot="public" static="no" mutable="no">
+        <type>const <ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref></type>
+        <definition>const Real one</definition>
+        <argsstring></argsstring>
+        <name>one</name>
+        <initializer>= 1.0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" line="32" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" bodystart="32" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="types_8hpp_1afa87c8ac26b67756ae655d8ab1064c46" prot="public" static="no" mutable="no">
+        <type>const <ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref></type>
+        <definition>const Real two</definition>
+        <argsstring></argsstring>
+        <name>two</name>
+        <initializer>= 2.0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" line="33" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" bodystart="33" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="types_8hpp_1a3e5c36b665763f7dbf433065032db4bc" prot="public" static="no" mutable="no">
+        <type>const <ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref></type>
+        <definition>const Real half</definition>
+        <argsstring></argsstring>
+        <name>half</name>
+        <initializer>= 0.5</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" line="34" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp" bodystart="34" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline lineno="1"><highlight class="preprocessor">#pragma<sp/>once</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="2"><highlight class="normal"></highlight></codeline>
+<codeline lineno="3"><highlight class="normal"></highlight></codeline>
+<codeline lineno="4"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;vector&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="5"><highlight class="normal"></highlight><highlight class="keyword">using</highlight><highlight class="normal"><sp/>std::vector;</highlight></codeline>
+<codeline lineno="6"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;list&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="7"><highlight class="normal"></highlight><highlight class="keyword">using</highlight><highlight class="normal"><sp/>std::list;</highlight></codeline>
+<codeline lineno="8"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;string&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="9"><highlight class="normal"></highlight><highlight class="keyword">using</highlight><highlight class="normal"><sp/>std::string;</highlight></codeline>
+<codeline lineno="10"><highlight class="normal"></highlight><highlight class="keyword">using</highlight><highlight class="normal"><sp/>std::to_string;</highlight></codeline>
+<codeline lineno="11"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;Eigen/Core&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="12"><highlight class="normal"></highlight><highlight class="keyword">using</highlight><highlight class="normal"><sp/>Eigen::VectorXd;</highlight></codeline>
+<codeline lineno="13"><highlight class="normal"></highlight><highlight class="keyword">using</highlight><highlight class="normal"><sp/>Eigen::MatrixXd;</highlight></codeline>
+<codeline lineno="14"><highlight class="normal"></highlight></codeline>
+<codeline lineno="15"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;paracabs.hpp&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="16"><highlight class="normal"></highlight><highlight class="keyword">namespace<sp/></highlight><highlight class="normal">pc<sp/>=<sp/>paracabs;</highlight></codeline>
+<codeline lineno="17"><highlight class="normal"></highlight></codeline>
+<codeline lineno="18"><highlight class="normal"></highlight><highlight class="comment">//<sp/>Default<sp/>Real<sp/>and<sp/>Size<sp/>types</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="19" refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">long</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/><ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref>;</highlight></codeline>
+<codeline lineno="20" refid="types_8hpp_1abff30891abb1012c410045707ef09790" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>uint32_t<sp/><sp/><sp/><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref>;</highlight></codeline>
+<codeline lineno="21"><highlight class="normal"></highlight></codeline>
+<codeline lineno="22" refid="types_8hpp_1a9ba03c9169409d1848791ddf34116c28" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">using</highlight><highlight class="normal"><sp/><ref refid="types_8hpp_1a9ba03c9169409d1848791ddf34116c28" kindref="member">Vector3D</ref><sp/>=<sp/>pc::datatypes::Vector3D<sp/>&lt;double&gt;;</highlight></codeline>
+<codeline lineno="23"><highlight class="normal"></highlight></codeline>
+<codeline lineno="24"><highlight class="normal"></highlight><highlight class="keyword">template</highlight><highlight class="normal"><sp/>&lt;</highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>type&gt;</highlight></codeline>
+<codeline lineno="25" refid="types_8hpp_1a959df20affa391f0d7913ff0349bdb05" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">using</highlight><highlight class="normal"><sp/><ref refid="types_8hpp_1a959df20affa391f0d7913ff0349bdb05" kindref="member">Vector</ref><sp/>=<sp/>pc::datatypes::Vector<sp/>&lt;type&gt;;</highlight></codeline>
+<codeline lineno="26"><highlight class="normal"></highlight><highlight class="keyword">template</highlight><highlight class="normal"><sp/>&lt;</highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>type&gt;</highlight></codeline>
+<codeline lineno="27" refid="types_8hpp_1ac9d1a399bc9eae71d5719b37a09745f6" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">using</highlight><highlight class="normal"><sp/><ref refid="types_8hpp_1ac9d1a399bc9eae71d5719b37a09745f6" kindref="member">Matrix</ref><sp/>=<sp/>pc::datatypes::Matrix<sp/>&lt;type&gt;;</highlight></codeline>
+<codeline lineno="28"><highlight class="normal"></highlight><highlight class="keyword">template</highlight><highlight class="normal"><sp/>&lt;</highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>type&gt;</highlight></codeline>
+<codeline lineno="29" refid="types_8hpp_1a551086c5a4fa135fb0ebe66ed468ff98" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">using</highlight><highlight class="normal"><sp/><ref refid="types_8hpp_1a551086c5a4fa135fb0ebe66ed468ff98" kindref="member">Tensor</ref><sp/>=<sp/>pc::datatypes::Tensor<sp/>&lt;type&gt;;</highlight></codeline>
+<codeline lineno="30"><highlight class="normal"></highlight></codeline>
+<codeline lineno="31"><highlight class="normal"></highlight></codeline>
+<codeline lineno="32" refid="types_8hpp_1a50b55da7cfa2c754296e2ddfde804c12" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref><sp/><ref refid="types_8hpp_1a50b55da7cfa2c754296e2ddfde804c12" kindref="member">one</ref><sp/><sp/>=<sp/>1.0;</highlight></codeline>
+<codeline lineno="33" refid="types_8hpp_1afa87c8ac26b67756ae655d8ab1064c46" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref><sp/><ref refid="types_8hpp_1afa87c8ac26b67756ae655d8ab1064c46" kindref="member">two</ref><sp/><sp/>=<sp/>2.0;</highlight></codeline>
+<codeline lineno="34" refid="types_8hpp_1a3e5c36b665763f7dbf433065032db4bc" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref><sp/><ref refid="types_8hpp_1a3e5c36b665763f7dbf433065032db4bc" kindref="member">half</ref><sp/>=<sp/>0.5;</highlight></codeline>
+<codeline lineno="35"><highlight class="normal"></highlight></codeline>
+<codeline lineno="36"><highlight class="normal"></highlight></codeline>
+<codeline lineno="37"><highlight class="normal"></highlight><highlight class="comment">//<sp/>Vectors<sp/>of<sp/>Size</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="38" refid="types_8hpp_1acfab7a3545428ced0649db555e257353" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>vector&lt;Size&gt;<sp/><sp/><ref refid="types_8hpp_1acfab7a3545428ced0649db555e257353" kindref="member">Size1</ref>;</highlight></codeline>
+<codeline lineno="39" refid="types_8hpp_1af5a6182e2fc6b1f25f5f9ca2873f9c89" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>vector&lt;Size1&gt;<sp/><ref refid="types_8hpp_1af5a6182e2fc6b1f25f5f9ca2873f9c89" kindref="member">Size2</ref>;</highlight></codeline>
+<codeline lineno="40" refid="types_8hpp_1a5774ff2894388787e3d3bbf2f2fe376a" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>vector&lt;Size2&gt;<sp/><ref refid="types_8hpp_1a5774ff2894388787e3d3bbf2f2fe376a" kindref="member">Size3</ref>;</highlight></codeline>
+<codeline lineno="41" refid="types_8hpp_1a1a25be9f273121fd7a2647f8d344b641" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>vector&lt;Size3&gt;<sp/><ref refid="types_8hpp_1a1a25be9f273121fd7a2647f8d344b641" kindref="member">Size4</ref>;</highlight></codeline>
+<codeline lineno="42"><highlight class="normal"></highlight></codeline>
+<codeline lineno="43"><highlight class="normal"></highlight><highlight class="comment">//<sp/>Vectors<sp/>of<sp/>Real</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="44" refid="types_8hpp_1a0015d4067a970e313605c333d49ed5c5" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>vector&lt;Real&gt;<sp/><sp/><ref refid="types_8hpp_1a0015d4067a970e313605c333d49ed5c5" kindref="member">Real1</ref>;</highlight></codeline>
+<codeline lineno="45" refid="types_8hpp_1a71d8c3c9e08e8b53f75ecf2db5edafc5" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>vector&lt;Real1&gt;<sp/><ref refid="types_8hpp_1a71d8c3c9e08e8b53f75ecf2db5edafc5" kindref="member">Real2</ref>;</highlight></codeline>
+<codeline lineno="46" refid="types_8hpp_1a2fbf53fed9e8fa669cc443ac55a8c48f" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>vector&lt;Real2&gt;<sp/><ref refid="types_8hpp_1a2fbf53fed9e8fa669cc443ac55a8c48f" kindref="member">Real3</ref>;</highlight></codeline>
+<codeline lineno="47" refid="types_8hpp_1aa3e5d3e205cfc891706a75b005945613" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>vector&lt;Real3&gt;<sp/><ref refid="types_8hpp_1aa3e5d3e205cfc891706a75b005945613" kindref="member">Real4</ref>;</highlight></codeline>
+<codeline lineno="48"><highlight class="normal"></highlight></codeline>
+<codeline lineno="49"><highlight class="normal"></highlight><highlight class="comment">//<sp/>Vectors<sp/>of<sp/>bool</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="50" refid="types_8hpp_1aafc430ff6520fa4d01a56a1770d7e086" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>vector&lt;bool&gt;<sp/><sp/><ref refid="types_8hpp_1aafc430ff6520fa4d01a56a1770d7e086" kindref="member">Bool1</ref>;</highlight></codeline>
+<codeline lineno="51" refid="types_8hpp_1aebb7b35bd2d9252a2224b9314f9c841d" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>vector&lt;Bool1&gt;<sp/><ref refid="types_8hpp_1aebb7b35bd2d9252a2224b9314f9c841d" kindref="member">Bool2</ref>;</highlight></codeline>
+<codeline lineno="52" refid="types_8hpp_1aceedb1e0fb27653e2dcc9b11bf1b4bf4" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>vector&lt;Bool2&gt;<sp/><ref refid="types_8hpp_1aceedb1e0fb27653e2dcc9b11bf1b4bf4" kindref="member">Bool3</ref>;</highlight></codeline>
+<codeline lineno="53"><highlight class="normal"></highlight></codeline>
+<codeline lineno="54"><highlight class="normal"></highlight><highlight class="comment">//<sp/>Vectors<sp/>of<sp/>char</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="55" refid="types_8hpp_1a0844cc93c815db7c3bde67a90eeffb98" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>vector&lt;char&gt;<sp/><sp/><ref refid="types_8hpp_1a0844cc93c815db7c3bde67a90eeffb98" kindref="member">Char1</ref>;</highlight></codeline>
+<codeline lineno="56" refid="types_8hpp_1a469f4063887fb17deec492469e6bb116" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>vector&lt;Char1&gt;<sp/><ref refid="types_8hpp_1a469f4063887fb17deec492469e6bb116" kindref="member">Char2</ref>;</highlight></codeline>
+<codeline lineno="57" refid="types_8hpp_1a36995c66d57036a5aeeb0f98c7e8e16c" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>vector&lt;Char2&gt;<sp/><ref refid="types_8hpp_1a36995c66d57036a5aeeb0f98c7e8e16c" kindref="member">Char3</ref>;</highlight></codeline>
+<codeline lineno="58"><highlight class="normal"></highlight></codeline>
+<codeline lineno="59"><highlight class="normal"></highlight><highlight class="comment">//<sp/>Vectors<sp/>of<sp/>int</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="60" refid="types_8hpp_1a09f56c420e1590ea76bf561d41d3bb8e" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>vector&lt;int&gt;<sp/><sp/><ref refid="types_8hpp_1a09f56c420e1590ea76bf561d41d3bb8e" kindref="member">Int1</ref>;</highlight></codeline>
+<codeline lineno="61" refid="types_8hpp_1a84c213dfc5b00233a3e23f8b947aab6b" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>vector&lt;Int1&gt;<sp/><ref refid="types_8hpp_1a84c213dfc5b00233a3e23f8b947aab6b" kindref="member">Int2</ref>;</highlight></codeline>
+<codeline lineno="62" refid="types_8hpp_1a6177e6dde3ab6d190a3bdad8dc2bd867" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>vector&lt;Int2&gt;<sp/><ref refid="types_8hpp_1a6177e6dde3ab6d190a3bdad8dc2bd867" kindref="member">Int3</ref>;</highlight></codeline>
+<codeline lineno="63"><highlight class="normal"></highlight></codeline>
+<codeline lineno="64"><highlight class="normal"></highlight><highlight class="comment">//<sp/>Vectors<sp/>of<sp/>size_t</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="65" refid="types_8hpp_1a0ddf613068770023126a95171cdaa0df" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>vector&lt;size_t&gt;<sp/><sp/><ref refid="types_8hpp_1a0ddf613068770023126a95171cdaa0df" kindref="member">Size_t1</ref>;</highlight></codeline>
+<codeline lineno="66" refid="types_8hpp_1a42582601e8e89fb11fd1ad84c9976a8b" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>vector&lt;Size_t1&gt;<sp/><ref refid="types_8hpp_1a42582601e8e89fb11fd1ad84c9976a8b" kindref="member">Size_t2</ref>;</highlight></codeline>
+<codeline lineno="67" refid="types_8hpp_1a88cdd826a4c289805dddf6b307eb5874" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>vector&lt;Size_t2&gt;<sp/><ref refid="types_8hpp_1a88cdd826a4c289805dddf6b307eb5874" kindref="member">Size_t3</ref>;</highlight></codeline>
+<codeline lineno="68" refid="types_8hpp_1a7a7837b6f3da8e13a950e48c1bbbff5a" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>vector&lt;Size_t3&gt;<sp/><ref refid="types_8hpp_1a7a7837b6f3da8e13a950e48c1bbbff5a" kindref="member">Size_t4</ref>;</highlight></codeline>
+<codeline lineno="69"><highlight class="normal"></highlight></codeline>
+<codeline lineno="70"><highlight class="normal"></highlight><highlight class="comment">//<sp/>Vectors<sp/>of<sp/>long</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="71" refid="types_8hpp_1af43daf57fb95b58543a5ad410d062d21" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>vector&lt;long&gt;<sp/><sp/><ref refid="types_8hpp_1af43daf57fb95b58543a5ad410d062d21" kindref="member">Long1</ref>;</highlight></codeline>
+<codeline lineno="72" refid="types_8hpp_1afb2873616918a9a0b14e81276ab28811" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>vector&lt;Long1&gt;<sp/><ref refid="types_8hpp_1afb2873616918a9a0b14e81276ab28811" kindref="member">Long2</ref>;</highlight></codeline>
+<codeline lineno="73" refid="types_8hpp_1a7b8799721b4414158ea7fafb18bde099" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>vector&lt;Long2&gt;<sp/><ref refid="types_8hpp_1a7b8799721b4414158ea7fafb18bde099" kindref="member">Long3</ref>;</highlight></codeline>
+<codeline lineno="74" refid="types_8hpp_1abf53a6058f8c47f5a21c5c54a183be85" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>vector&lt;Long3&gt;<sp/><ref refid="types_8hpp_1abf53a6058f8c47f5a21c5c54a183be85" kindref="member">Long4</ref>;</highlight></codeline>
+<codeline lineno="75"><highlight class="normal"></highlight></codeline>
+<codeline lineno="76"><highlight class="normal"></highlight><highlight class="comment">//<sp/>Vectors<sp/>of<sp/>double</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="77" refid="types_8hpp_1a90a65680382394cec1507779e4cdbce5" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>vector&lt;double&gt;<sp/><sp/><ref refid="types_8hpp_1a90a65680382394cec1507779e4cdbce5" kindref="member">Double1</ref>;</highlight></codeline>
+<codeline lineno="78" refid="types_8hpp_1ae4c3ee17bf4177a16f81df0795dee016" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>vector&lt;Double1&gt;<sp/><ref refid="types_8hpp_1ae4c3ee17bf4177a16f81df0795dee016" kindref="member">Double2</ref>;</highlight></codeline>
+<codeline lineno="79" refid="types_8hpp_1a36eb18b26e7dab9841710674085667cb" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>vector&lt;Double2&gt;<sp/><ref refid="types_8hpp_1a36eb18b26e7dab9841710674085667cb" kindref="member">Double3</ref>;</highlight></codeline>
+<codeline lineno="80" refid="types_8hpp_1a98a37bf1b370bbdd6e7933985b0cc19e" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>vector&lt;Double3&gt;<sp/><ref refid="types_8hpp_1a98a37bf1b370bbdd6e7933985b0cc19e" kindref="member">Double4</ref>;</highlight></codeline>
+<codeline lineno="81" refid="types_8hpp_1a2192f21a5af18c5b653f9faa6a05e530" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>vector&lt;Double4&gt;<sp/><ref refid="types_8hpp_1a2192f21a5af18c5b653f9faa6a05e530" kindref="member">Double5</ref>;</highlight></codeline>
+<codeline lineno="82"><highlight class="normal"></highlight></codeline>
+<codeline lineno="83"><highlight class="normal"></highlight><highlight class="comment">//<sp/>Vectors<sp/>of<sp/>string</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="84" refid="types_8hpp_1a6d7f9a4d0e85b9f1c3145ff9f65ab54d" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>vector&lt;string&gt;<sp/><sp/><sp/><ref refid="types_8hpp_1a6d7f9a4d0e85b9f1c3145ff9f65ab54d" kindref="member">String1</ref>;</highlight></codeline>
+<codeline lineno="85" refid="types_8hpp_1a9068959003e1070ecc3d72d6421871e5" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>vector&lt;String1&gt;<sp/><sp/><ref refid="types_8hpp_1a9068959003e1070ecc3d72d6421871e5" kindref="member">String2</ref>;</highlight></codeline>
+<codeline lineno="86" refid="types_8hpp_1a4a63e7462186a4747e20c88b67186022" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>vector&lt;String2&gt;<sp/><sp/><ref refid="types_8hpp_1a4a63e7462186a4747e20c88b67186022" kindref="member">String3</ref>;</highlight></codeline>
+<codeline lineno="87"><highlight class="normal"></highlight></codeline>
+<codeline lineno="89"><highlight class="comment">//typedef<sp/>vector&lt;Vector3d&gt;<sp/><sp/><sp/>Vector3d1;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="90"><highlight class="normal"></highlight><highlight class="comment">//typedef<sp/>vector&lt;Vector3d1&gt;<sp/><sp/>Vector3d2;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="91"><highlight class="normal"></highlight><highlight class="comment">//typedef<sp/>vector&lt;Vector3d2&gt;<sp/><sp/>Vector3d3;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="92"><highlight class="normal"></highlight><highlight class="comment">//</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="93"><highlight class="normal"></highlight><highlight class="comment">//<sp/>Vectors<sp/>of<sp/>Eigen::VectorXd</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="94" refid="types_8hpp_1ac1c8e247d2e641154aca246a85f66806" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>vector&lt;VectorXd&gt;<sp/><sp/><sp/><ref refid="types_8hpp_1ac1c8e247d2e641154aca246a85f66806" kindref="member">VectorXd1</ref>;</highlight></codeline>
+<codeline lineno="95" refid="types_8hpp_1a0bdf566d837f5650ad25c0359fafc9c7" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>vector&lt;VectorXd1&gt;<sp/><sp/><ref refid="types_8hpp_1a0bdf566d837f5650ad25c0359fafc9c7" kindref="member">VectorXd2</ref>;</highlight></codeline>
+<codeline lineno="96" refid="types_8hpp_1a8d7e08d5f40df5bd62069d5e63948cc1" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>vector&lt;VectorXd2&gt;<sp/><sp/><ref refid="types_8hpp_1a8d7e08d5f40df5bd62069d5e63948cc1" kindref="member">VectorXd3</ref>;</highlight></codeline>
+<codeline lineno="97"><highlight class="normal"></highlight></codeline>
+<codeline lineno="98" refid="types_8hpp_1acc76b8f21e4f8305e11bdac1a85d9aa5" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Eigen::Matrix&lt;Real,<sp/>Eigen::Dynamic,<sp/>1&gt;<sp/><ref refid="types_8hpp_1acc76b8f21e4f8305e11bdac1a85d9aa5" kindref="member">VectorXr</ref>;</highlight></codeline>
+<codeline lineno="99" refid="types_8hpp_1ae73799774a8c140bb30988ef5c07c425" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>vector&lt;VectorXr&gt;<sp/><sp/><ref refid="types_8hpp_1ae73799774a8c140bb30988ef5c07c425" kindref="member">VectorXr1</ref>;</highlight></codeline>
+<codeline lineno="100" refid="types_8hpp_1a35bb8fb6c9f22b9488298d2169c1c9f9" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>vector&lt;VectorXr1&gt;<sp/><ref refid="types_8hpp_1a35bb8fb6c9f22b9488298d2169c1c9f9" kindref="member">VectorXr2</ref>;</highlight></codeline>
+<codeline lineno="101" refid="types_8hpp_1a2970110b7166e1378527e5f41805cf4f" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>vector&lt;VectorXr2&gt;<sp/><ref refid="types_8hpp_1a2970110b7166e1378527e5f41805cf4f" kindref="member">VectorXr3</ref>;</highlight></codeline>
+<codeline lineno="102"><highlight class="normal"></highlight></codeline>
+<codeline lineno="103"><highlight class="normal"></highlight><highlight class="comment">//<sp/>Vectors<sp/>of<sp/>Eigen::MatrixXd</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="104" refid="types_8hpp_1ac0e99a7f59b221f7e10cb25b29c85eda" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>vector&lt;MatrixXd&gt;<sp/><sp/><sp/><ref refid="types_8hpp_1ac0e99a7f59b221f7e10cb25b29c85eda" kindref="member">MatrixXd1</ref>;</highlight></codeline>
+<codeline lineno="105" refid="types_8hpp_1a2157444e5a883d2fd9fc60eca1d61d24" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>vector&lt;MatrixXd1&gt;<sp/><sp/><ref refid="types_8hpp_1a2157444e5a883d2fd9fc60eca1d61d24" kindref="member">MatrixXd2</ref>;</highlight></codeline>
+<codeline lineno="106" refid="types_8hpp_1adc2c45d3811b68ac343292895560271c" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>vector&lt;MatrixXd2&gt;<sp/><sp/><ref refid="types_8hpp_1adc2c45d3811b68ac343292895560271c" kindref="member">MatrixXd3</ref>;</highlight></codeline>
+<codeline lineno="107"><highlight class="normal"></highlight></codeline>
+<codeline lineno="108" refid="types_8hpp_1a6b25c241e12c67845ed48ba88cec1dc5" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Eigen::Matrix&lt;Real,<sp/>Eigen::Dynamic,<sp/>Eigen::Dynamic&gt;<sp/><ref refid="types_8hpp_1a6b25c241e12c67845ed48ba88cec1dc5" kindref="member">MatrixXr</ref>;</highlight></codeline>
+<codeline lineno="109" refid="types_8hpp_1ab79e28d3d934082f2b3671666c123533" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>vector&lt;VectorXr&gt;<sp/><sp/><ref refid="types_8hpp_1ab79e28d3d934082f2b3671666c123533" kindref="member">MatrixXr1</ref>;</highlight></codeline>
+<codeline lineno="110" refid="types_8hpp_1a36625ebd9362602c54002a7d291fa7db" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>vector&lt;VectorXr1&gt;<sp/><ref refid="types_8hpp_1a36625ebd9362602c54002a7d291fa7db" kindref="member">MatrixXr2</ref>;</highlight></codeline>
+<codeline lineno="111" refid="types_8hpp_1a3d6d4e55e371d63c822b9f1cf8296e2f" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>vector&lt;VectorXr2&gt;<sp/><ref refid="types_8hpp_1a3d6d4e55e371d63c822b9f1cf8296e2f" kindref="member">MatrixXr3</ref>;</highlight></codeline>
+    </programlisting>
+    <location file="/home/frederik/Dropbox/GitHub/Magritte/src/tools/types.hpp"/>
+  </compounddef>
+</doxygen>

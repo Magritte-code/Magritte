@@ -1,0 +1,483 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.14">
+  <compounddef id="structRadiation" kind="struct" language="C++" prot="public">
+    <compoundname>Radiation</compoundname>
+    <includes refid="radiation_8hpp" local="no">radiation.hpp</includes>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structRadiation_1ae8b97484a82684269c6a2f5daaaf3b68" prot="public" static="no" mutable="no">
+        <type><ref refid="structParameters" kindref="compound">Parameters</ref></type>
+        <definition>Parameters Radiation::parameters</definition>
+        <argsstring></argsstring>
+        <name>parameters</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/radiation.hpp" line="14" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/radiation.hpp" bodystart="14" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structRadiation_1a671301011aedcded797ed7380b8e62d2" prot="public" static="no" mutable="no">
+        <type><ref refid="structFrequencies" kindref="compound">Frequencies</ref></type>
+        <definition>Frequencies Radiation::frequencies</definition>
+        <argsstring></argsstring>
+        <name>frequencies</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/radiation.hpp" line="16" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/radiation.hpp" bodystart="16" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structRadiation_1a2312d1d46d0091dd9e03beeeda186943" prot="public" static="no" mutable="no">
+        <type><ref refid="structScattering" kindref="compound">Scattering</ref></type>
+        <definition>Scattering Radiation::scattering</definition>
+        <argsstring></argsstring>
+        <name>scattering</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/radiation.hpp" line="17" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/radiation.hpp" bodystart="17" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structRadiation_1a3c7d8fa4851a1eb4ea00d0a26577c25b" prot="public" static="no" mutable="no">
+        <type><ref refid="types_8hpp_1a551086c5a4fa135fb0ebe66ed468ff98" kindref="member">Tensor</ref>&lt; <ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref> &gt;</type>
+        <definition>Tensor&lt;Real&gt; Radiation::I</definition>
+        <argsstring></argsstring>
+        <name>I</name>
+        <briefdescription>
+<para>intensity (r, p, f) </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/radiation.hpp" line="19" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/radiation.hpp" bodystart="19" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structRadiation_1a1a97d24b8d62ad5c4041edaf92c458b2" prot="public" static="no" mutable="no">
+        <type><ref refid="types_8hpp_1a551086c5a4fa135fb0ebe66ed468ff98" kindref="member">Tensor</ref>&lt; <ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref> &gt;</type>
+        <definition>Tensor&lt;Real&gt; Radiation::u</definition>
+        <argsstring></argsstring>
+        <name>u</name>
+        <briefdescription>
+<para>intensity (r, p, f) </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/radiation.hpp" line="20" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/radiation.hpp" bodystart="20" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structRadiation_1abd33315045298811b19e11c79c04c22e" prot="public" static="no" mutable="no">
+        <type><ref refid="types_8hpp_1a551086c5a4fa135fb0ebe66ed468ff98" kindref="member">Tensor</ref>&lt; <ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref> &gt;</type>
+        <definition>Tensor&lt;Real&gt; Radiation::v</definition>
+        <argsstring></argsstring>
+        <name>v</name>
+        <briefdescription>
+<para>intensity (r, p, f) </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/radiation.hpp" line="21" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/radiation.hpp" bodystart="21" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structRadiation_1ab815a46150db7e6b715ab5e7c0919d51" prot="public" static="no" mutable="no">
+        <type><ref refid="types_8hpp_1ac9d1a399bc9eae71d5719b37a09745f6" kindref="member">Matrix</ref>&lt; <ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref> &gt;</type>
+        <definition>Matrix&lt;Real&gt; Radiation::J</definition>
+        <argsstring></argsstring>
+        <name>J</name>
+        <briefdescription>
+<para>(angular) mean intensity (p, f) </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/radiation.hpp" line="22" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/radiation.hpp" bodystart="22" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structRadiation_1a97e90a16dc459f2ad0672ab8fef05561" prot="public" static="no" mutable="no">
+        <type><ref refid="types_8hpp_1a2fbf53fed9e8fa669cc443ac55a8c48f" kindref="member">Real3</ref></type>
+        <definition>Real3 Radiation::I_bdy</definition>
+        <argsstring></argsstring>
+        <name>I_bdy</name>
+        <briefdescription>
+<para>intensity at the boundary (r,b,f) </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/radiation.hpp" line="31" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/radiation.hpp" bodystart="31" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="structRadiation_1a6e3e2ebc87ce50bb815f5b29924d35b7" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Radiation::read</definition>
+        <argsstring>(const Io &amp;io)</argsstring>
+        <name>read</name>
+        <param>
+          <type>const <ref refid="structIo" kindref="compound">Io</ref> &amp;</type>
+          <declname>io</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>read: read in data structure <parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">io</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>io object </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/radiation.hpp" line="33" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/radiation.cpp" bodystart="13" bodyend="76"/>
+      </memberdef>
+      <memberdef kind="function" id="structRadiation_1acf289485914b89b6b7fe8a8ff4a4e6a3" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Radiation::write</definition>
+        <argsstring>(const Io &amp;io) const</argsstring>
+        <name>write</name>
+        <param>
+          <type>const <ref refid="structIo" kindref="compound">Io</ref> &amp;</type>
+          <declname>io</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>write: write out data structure <parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">io</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>io object </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/radiation.hpp" line="34" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/radiation.cpp" bodystart="82" bodyend="229"/>
+      </memberdef>
+      <memberdef kind="function" id="structRadiation_1a68d358c41a2f3062f9b674e96ecff545" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+        <definition>Size Radiation::index</definition>
+        <argsstring>(const Size p, const Size f) const</argsstring>
+        <name>index</name>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>p</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>f</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/radiation.hpp" line="36" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="structRadiation_1a23c6a6028c72d1097864544b2fa3fa7f" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+        <definition>Size Radiation::index</definition>
+        <argsstring>(const Size p, const Size f, const Size m) const</argsstring>
+        <name>index</name>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>p</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>f</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>m</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/radiation.hpp" line="37" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="structRadiation_1ad4961878a4b2cbfa8759f4ddab218203" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref></type>
+        <definition>Real Radiation::get_U</definition>
+        <argsstring>(const Size R, const Size p, const Size f) const</argsstring>
+        <name>get_U</name>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>R</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>p</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>f</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/radiation.hpp" line="39" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="structRadiation_1a1730bbd6f4170d835dd3192f09d2eed9" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref></type>
+        <definition>Real Radiation::get_V</definition>
+        <argsstring>(const Size R, const Size p, const Size f) const</argsstring>
+        <name>get_V</name>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>R</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>p</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>f</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/radiation.hpp" line="40" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="structRadiation_1a3cb4bb0e2a6099185fc0175d4382a220" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref></type>
+        <definition>Real Radiation::get_I_bdy</definition>
+        <argsstring>(const Size R, const Size p, const Size f) const</argsstring>
+        <name>get_I_bdy</name>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>R</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>p</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>f</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/radiation.hpp" line="42" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="structRadiation_1a56d9298aa5fd3bf27ac1d5265fa3d3e6" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref></type>
+        <definition>Real Radiation::get_u</definition>
+        <argsstring>(const Size r, const Size p, const Size f) const</argsstring>
+        <name>get_u</name>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>r</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>p</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>f</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/radiation.hpp" line="45" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="structRadiation_1a201afa794c684a29e3d07db017e51652" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref></type>
+        <definition>Real Radiation::get_v</definition>
+        <argsstring>(const Size r, const Size p, const Size f) const</argsstring>
+        <name>get_v</name>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>r</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>p</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>f</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/radiation.hpp" line="46" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="structRadiation_1a73c342aabe94280f163c1c07d613044e" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="types_8hpp_1acd9440203db8e3b36d61f62fe6567258" kindref="member">Real</ref></type>
+        <definition>Real Radiation::get_J</definition>
+        <argsstring>(const Size p, const Size f) const</argsstring>
+        <name>get_J</name>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>p</declname>
+        </param>
+        <param>
+          <type>const <ref refid="types_8hpp_1abff30891abb1012c410045707ef09790" kindref="member">Size</ref></type>
+          <declname>f</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/radiation.hpp" line="48" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="structRadiation_1a0c2f72df0c1a6ebddd9cabd16b5e5dc7" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Radiation::initialize_J</definition>
+        <argsstring>()</argsstring>
+        <name>initialize_J</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/radiation.hpp" line="50" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/radiation.cpp" bodystart="246" bodyend="255"/>
+      </memberdef>
+      <memberdef kind="function" id="structRadiation_1a7606257d91634973d6950f6acdc95c14" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Radiation::MPI_reduce_J</definition>
+        <argsstring>()</argsstring>
+        <name>MPI_reduce_J</name>
+        <briefdescription>
+<para>calc_J: integrate mean intensity and "flux over all directions </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/radiation.hpp" line="51" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/radiation.cpp" bodystart="260" bodyend="279"/>
+      </memberdef>
+      <memberdef kind="function" id="structRadiation_1a7fc1bc25afd1ffbb5876cae58c471897" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Radiation::calc_U_and_V</definition>
+        <argsstring>()</argsstring>
+        <name>calc_U_and_V</name>
+        <briefdescription>
+<para>calc_U_and_V: integrate scattering quantities over all directions </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/radiation.hpp" line="52" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/radiation.cpp" bodystart="288" bodyend="369"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+<para><ref refid="structRadiation" kindref="compound">Radiation</ref>: data structure for the radiation field. </para>    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <collaborationgraph>
+      <node id="121">
+        <label>Scattering</label>
+        <link refid="structScattering"/>
+        <childnode refid="122" relation="usage">
+          <edgelabel>opacity_scat</edgelabel>
+        </childnode>
+        <childnode refid="123" relation="usage">
+          <edgelabel>phase</edgelabel>
+        </childnode>
+      </node>
+      <node id="117">
+        <label>Frequencies</label>
+        <link refid="structFrequencies"/>
+        <childnode refid="118" relation="usage">
+          <edgelabel>corresponding_k_for_tran</edgelabel>
+          <edgelabel>corresponding_l_for_spec</edgelabel>
+          <edgelabel>corresponding_z_for_line</edgelabel>
+        </childnode>
+        <childnode refid="119" relation="usage">
+          <edgelabel>parameters</edgelabel>
+        </childnode>
+        <childnode refid="120" relation="usage">
+          <edgelabel>appears_in_line_integral</edgelabel>
+        </childnode>
+      </node>
+      <node id="119">
+        <label>Parameters</label>
+        <link refid="structParameters"/>
+      </node>
+      <node id="122">
+        <label>vector&lt; Real &gt;</label>
+      </node>
+      <node id="120">
+        <label>vector&lt; bool &gt;</label>
+      </node>
+      <node id="123">
+        <label>vector&lt; Real2 &gt;</label>
+      </node>
+      <node id="116">
+        <label>Radiation</label>
+        <link refid="structRadiation"/>
+        <childnode refid="117" relation="usage">
+          <edgelabel>frequencies</edgelabel>
+        </childnode>
+        <childnode refid="119" relation="usage">
+          <edgelabel>parameters</edgelabel>
+        </childnode>
+        <childnode refid="121" relation="usage">
+          <edgelabel>scattering</edgelabel>
+        </childnode>
+        <childnode refid="123" relation="usage">
+          <edgelabel>I_bdy</edgelabel>
+        </childnode>
+      </node>
+      <node id="118">
+        <label>vector&lt; Size &gt;</label>
+      </node>
+    </collaborationgraph>
+    <location file="/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/radiation.hpp" line="13" column="1" bodyfile="/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/radiation.hpp" bodystart="12" bodyend="53"/>
+    <listofallmembers>
+      <member refid="structRadiation_1a7fc1bc25afd1ffbb5876cae58c471897" prot="public" virt="non-virtual"><scope>Radiation</scope><name>calc_U_and_V</name></member>
+      <member refid="structRadiation_1a671301011aedcded797ed7380b8e62d2" prot="public" virt="non-virtual"><scope>Radiation</scope><name>frequencies</name></member>
+      <member refid="structRadiation_1a3cb4bb0e2a6099185fc0175d4382a220" prot="public" virt="non-virtual"><scope>Radiation</scope><name>get_I_bdy</name></member>
+      <member refid="structRadiation_1a73c342aabe94280f163c1c07d613044e" prot="public" virt="non-virtual"><scope>Radiation</scope><name>get_J</name></member>
+      <member refid="structRadiation_1ad4961878a4b2cbfa8759f4ddab218203" prot="public" virt="non-virtual"><scope>Radiation</scope><name>get_U</name></member>
+      <member refid="structRadiation_1a56d9298aa5fd3bf27ac1d5265fa3d3e6" prot="public" virt="non-virtual"><scope>Radiation</scope><name>get_u</name></member>
+      <member refid="structRadiation_1a201afa794c684a29e3d07db017e51652" prot="public" virt="non-virtual"><scope>Radiation</scope><name>get_v</name></member>
+      <member refid="structRadiation_1a1730bbd6f4170d835dd3192f09d2eed9" prot="public" virt="non-virtual"><scope>Radiation</scope><name>get_V</name></member>
+      <member refid="structRadiation_1a3c7d8fa4851a1eb4ea00d0a26577c25b" prot="public" virt="non-virtual"><scope>Radiation</scope><name>I</name></member>
+      <member refid="structRadiation_1a97e90a16dc459f2ad0672ab8fef05561" prot="public" virt="non-virtual"><scope>Radiation</scope><name>I_bdy</name></member>
+      <member refid="structRadiation_1a68d358c41a2f3062f9b674e96ecff545" prot="public" virt="non-virtual"><scope>Radiation</scope><name>index</name></member>
+      <member refid="structRadiation_1a23c6a6028c72d1097864544b2fa3fa7f" prot="public" virt="non-virtual"><scope>Radiation</scope><name>index</name></member>
+      <member refid="structRadiation_1a0c2f72df0c1a6ebddd9cabd16b5e5dc7" prot="public" virt="non-virtual"><scope>Radiation</scope><name>initialize_J</name></member>
+      <member refid="structRadiation_1ab815a46150db7e6b715ab5e7c0919d51" prot="public" virt="non-virtual"><scope>Radiation</scope><name>J</name></member>
+      <member refid="structRadiation_1a7606257d91634973d6950f6acdc95c14" prot="public" virt="non-virtual"><scope>Radiation</scope><name>MPI_reduce_J</name></member>
+      <member refid="structRadiation_1ae8b97484a82684269c6a2f5daaaf3b68" prot="public" virt="non-virtual"><scope>Radiation</scope><name>parameters</name></member>
+      <member refid="structRadiation_1a6e3e2ebc87ce50bb815f5b29924d35b7" prot="public" virt="non-virtual"><scope>Radiation</scope><name>read</name></member>
+      <member refid="structRadiation_1a2312d1d46d0091dd9e03beeeda186943" prot="public" virt="non-virtual"><scope>Radiation</scope><name>scattering</name></member>
+      <member refid="structRadiation_1a1a97d24b8d62ad5c4041edaf92c458b2" prot="public" virt="non-virtual"><scope>Radiation</scope><name>u</name></member>
+      <member refid="structRadiation_1abd33315045298811b19e11c79c04c22e" prot="public" virt="non-virtual"><scope>Radiation</scope><name>v</name></member>
+      <member refid="structRadiation_1acf289485914b89b6b7fe8a8ff4a4e6a3" prot="public" virt="non-virtual"><scope>Radiation</scope><name>write</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>
