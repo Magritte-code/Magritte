@@ -61,10 +61,10 @@ Please report any issues [here](https://github.com/UCL/Magritte/issues).
 
 ## Papers
 * _Magritte II: Adaptive ray-tracing, mesh construction and reduction_
-([arXiv](https://arxiv.org/abs/2011.14998), [MNRAS](https://doi.org/10.1093/mnras/staa3199))
+([arXiv](https://arxiv.org/abs/2011.14998), [MNRAS](https://doi.org/10.1093/mnras/staa3199));
 * _Magritte I: Non-LTE atomic and molecular line modelling_
 ([arXiv](https://arxiv.org/abs/1912.08445),
-[MNRAS](https://doi.org/10.1093/mnras/stz3557))
+[MNRAS](https://doi.org/10.1093/mnras/stz3557)).
 
 
 ## Cite
