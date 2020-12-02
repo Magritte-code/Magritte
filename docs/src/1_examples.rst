@@ -1,2 +1,4 @@
+.. _link-examples:
+
 Examples
-========
+########

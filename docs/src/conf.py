@@ -33,6 +33,8 @@ master_doc = 'index'
 extensions = [ "breathe" ]
 
 breathe_default_project = "Magritte"
+breathe_projects = {'Magritte' : 'doxygen/xml'}
+
 # breathe_projects = {"Magritte":"../../examples/specific/nutshell/xml/",
 # }
 
@@ -68,4 +70,5 @@ import subprocess, os
 read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
 
 if read_the_docs_build:
-    subprocess.call('cd ../doxygen; doxygen doxyfile', shell=True)
+
+    subprocess.call('doxygen doxyfile', shell=True)

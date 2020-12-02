@@ -9,4 +9,4 @@ cd $DIR
 doxygen doxyfile
 
 # Build html docs with sphinx
-sphinx-build src/ build/ -b html -Dbreathe_projects.Magritte=doxygen/xml/
+sphinx-build src/ build/ -b html
