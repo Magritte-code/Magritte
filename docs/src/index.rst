@@ -1,7 +1,7 @@
 Magritte documentation
 ######################
 
-Welcome to Magritte's documentation pages!
+Welcome to the Magritte documentation pages!
 
 .. Warning::
     **These pages are still very much under construction!**

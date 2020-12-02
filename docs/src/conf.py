@@ -65,10 +65,6 @@ html_static_path = ['_static']
 
 # -- Run doxygen on READTHEDOCS server ---------------------------------------
 
-import subprocess, os
-
-read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
-
-if read_the_docs_build:
-
-    subprocess.call('doxygen ../doxyfile', shell=True)
+from subprocess import call
+# read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
+call('doxygen Doxyfile', shell=True)
