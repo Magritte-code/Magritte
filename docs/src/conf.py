@@ -33,6 +33,8 @@ master_doc = 'index'
 extensions = [ "breathe" ]
 
 breathe_default_project = "Magritte"
+breathe_projects = {'Magritte' : 'doxygen/xml'}
+
 # breathe_projects = {"Magritte":"../../examples/specific/nutshell/xml/",
 # }
 

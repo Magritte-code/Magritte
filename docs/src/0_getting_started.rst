@@ -2,11 +2,11 @@ Getting started
 ###############
 
 .. Warning::
-    The instructions below are currently only tested on Linux.
+    The instructions below were only tested under Linux.
 
 
-Instalation
-***********
+Installation
+************
 
 Dependencies
 ============
@@ -38,13 +38,16 @@ located in the :literal:`magritte` directory.
 Usage
 *****
 
-The `examples <https://github.com/Magritte-code/Examples>`_ repository contains some jupyter notebooks and equivalent python
-scripts working examples
-Here we only highlight some peculiarities.
-Currently Magritte is not yet a proper python package.
+The `examples repository <https://github.com/Magritte-code/Examples>`_  contains
+jupyter notebooks (and equivalent python scripts) for research examples using
+Magritte. On the :ref:`examples page <link-examples>` we showcase some of the
+results. Here we only highlight some basics to get you started.
 
 
-Examples
-========
+Currently, Magritte is not yet a proper python package. Hence, every python script
+using Magritte should add it to the :literal:`PYTHONPATH` with:
 
-Some working examples can be found in `this`
+.. code-block:: python
+
+    import sys
+    sys.path.append('path/to/magritte/root/directory')
