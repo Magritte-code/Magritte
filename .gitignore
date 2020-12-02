@@ -9,8 +9,7 @@ CMakeCache.txt
 ##################################
 build/*
 bin/*
-docs/html/*
-docs/latex/*
+docs/build/*
 run/*
 tests/performance/build/*
 
