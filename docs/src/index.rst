@@ -1,5 +1,5 @@
 Magritte documentation
-======================
+######################
 
 Welcome to Magritte's documentation pages!
 
@@ -20,8 +20,14 @@ Magritte is an open-source software library for simulating radiation transport.
    3_code
 
 
+Heading
+*******
+
+heading
+=======
+
 Papers about Magritte
-=====================
+#####################
 
 The following list of papers might provide further insight in the inner workings of Magritte:
 
@@ -39,4 +45,3 @@ Contact
 
 Please report any issues with Magritte or its documentation `here <https://github.com/Magritte-code/Magritte/issues>`_.
 If you need any further help, please contact Frederik De Ceuster.
-file:///home/frederik/Dropbox/GitHub/Magritte/docs/sphinx/index.html
