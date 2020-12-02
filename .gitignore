@@ -9,8 +9,8 @@ CMakeCache.txt
 ##################################
 build/*
 bin/*
-docs/html/*
-docs/latex/*
+docs/build/*
+docs/src/doxygen*
 run/*
 tests/performance/build/*
 

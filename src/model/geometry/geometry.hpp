@@ -18,10 +18,10 @@ enum Frame {CoMoving, Rest};
 ////////////////////////////////
 struct Geometry
 {
-    Parameters parameters;
-    Points     points;
-    Rays       rays;
-    Boundary   boundary;
+    Parameters parameters;   ///< data structure containing model parameters
+    Points     points;       ///< data structure containing point data
+    Rays       rays;         ///< data structure containing ray (direction) data
+    Boundary   boundary;     ///< data structure containing boundary data
 
     Matrix<Size> lengths;
     Size         lengths_max;
