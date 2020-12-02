@@ -49,5 +49,5 @@ using Magritte should add it to the :literal:`PYTHONPATH` with:
 
 .. code-block:: python
 
-    import sys
-    sys.path.append('path/to/magritte/root/directory')
+    from sys import path
+    path.append('path/to/magritte/root/directory')
