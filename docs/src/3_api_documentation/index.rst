@@ -1,5 +1,5 @@
-Code
-####
+API documentation
+#################
 
 All source code for Magritte is available on `GitHub <https://github.com/Magritte-code/Magritte>`_.
 

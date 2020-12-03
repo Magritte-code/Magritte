@@ -6,11 +6,11 @@
 
 _*Preparing for first release...*_
 
-This is the repository of the Magritte main library. Magritte is a modern open-
-source software library for radiation transport simulation, with an emphasis on
-3D radiative transfer simulations in astrophysics and cosmology. Its main solver
-uses a deterministic ray-tracer with a formal solver that currently focusses on
-line radiative transfer. See the first Magritte paper
+This is the repository for Magritte: a modern open- source software library for
+radiation transport simulation. Currently, the emphasis is on 3D radiative
+transfer modelling for astrophysics and cosmology, but the techniques could also
+be applied more general. Magritte uses a deterministic ray-tracer with a
+formal solver that currently focusses on line radiative transfer. See this paper
 ([arXiv](https://arxiv.org/pdf/1912.08445.pdf),
 [MNRAS](https://doi.org/10.1093/mnras/stz3557)) for more details.
 
