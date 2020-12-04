@@ -53,8 +53,12 @@ int main (int argc, char **argv)
 
     Model model;
     model.read (io);
+    Parameters parameters=model.parameters;
+
     vector<Size> old_neighbors=model.geometry.points.curr_neighbors.get_neighbors(0);
     std::set<Size> neighbors=model.geometry.points.multiscale.get_neighbors(0,0);
+
+
     for (Size nb:neighbors)
     {
     cout << nb << endl;
@@ -116,6 +120,18 @@ int main (int argc, char **argv)
     }
     curr_mask=model.geometry.points.multiscale.mask[3];
     cout << "nb of points remaining after second coarsening: " << std::count (curr_mask.begin(), curr_mask.end(), true) << endl;
+
+
+
+    //now we try to interpolate a vector of ones
+    std::vector<double> ones(parameters.npoints(), 1);
+    cout<<"now trying to interpolate"<<endl;
+    model.interpolate_vector(2,1,ones);
+    cout<<"end interpolation"<<endl;
+    for (Size idx=0; idx<parameters.npoints(); idx++)
+    {cout<<ones[idx]<<std::endl;}
+
+
 
     //trying to delete 0.2 percent of the points in the grid
     //cout << "no of points to delete = " << int(sizeof(Points)*0.01) << endl;
