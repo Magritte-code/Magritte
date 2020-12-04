@@ -174,3 +174,8 @@ inline void Multiscale::set_curr_coars_lvl(Size lvl)
   if (lvl<=get_max_coars_lvl())
   {curr_coarsening_lvl=lvl;}
 }
+
+inline vector<bool> Multiscale::get_mask(const Size curr_lvl)
+{
+  return mask[curr_lvl];
+}

@@ -71,6 +71,8 @@ struct Multiscale
     inline Size get_nb_neighbors(const Size p, const Size coars_lvl) const;
     //Returns the number of neighbors od point p at the current coarsening level
     inline Size get_nb_neighbors(const Size p) const;
+    //Returns the mask of points still in the grid at level curr_level
+    inline vector<bool> get_mask(const Size curr_lvl);
 
 };
 
