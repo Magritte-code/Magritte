@@ -72,7 +72,10 @@ int main (int argc, char **argv)
     {
         return false;
     };
+    cout << "here" << endl;
     model.geometry.points.multiscale.set_comparison_fun(alwaysfalse);
+    model.geometry.points.multiscale.set_not_on_boundary_fun([&](Size p){return model.geometry.not_on_boundary(p);});
+    cout << "here too" << endl;
     model.geometry.points.multiscale.coarsen();
     cout << "max points deleted" << endl;
     auto alwaystrue = [](Size p1, Size p2)
@@ -80,6 +83,7 @@ int main (int argc, char **argv)
       return true;
     };
     model.geometry.points.multiscale.set_comparison_fun(alwaystrue);
+
     model.geometry.points.multiscale.coarsen();
     vector<bool> curr_mask=model.geometry.points.multiscale.mask[2];
     cout << "nb of points remaining after coarsening: " << std::count (curr_mask.begin(), curr_mask.end(), true) << endl;

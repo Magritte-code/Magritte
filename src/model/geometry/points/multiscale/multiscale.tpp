@@ -4,6 +4,12 @@
 // i.e. add another layer of coarsening.
 inline void Multiscale::coarsen()
 {//FIXME: also add check whether everything is setup correctly (both functions should be defined)
+    // some error prevention; TODO: use some non-generic error
+    if (!boundary_set)
+    {std::cout<< "You forgot to set the boundary (in multiscale)!" << std::endl; throw;}
+    if (!comparison_set)
+    {std::cout<< "You forgot to set the comparison function (in multiscale)!!!"<<std::endl;throw;}
+
     mask     .push_back(vector<bool>          (mask     .back()));//should be deep copy
     neighbors.push_back(vector<std::set<Size>>(neighbors.back()));//should be deep copy
     std::set<Size> points_coarsened_around;
@@ -14,7 +20,7 @@ inline void Multiscale::coarsen()
         if (can_be_coarsened(p, points_coarsened_around))
         {
           coarsen_around_point(p);
-          std::cout << "Deleted around point: " << p <<std::endl;
+          // std::cout << "Deleted around point: " << p <<std::endl;
           points_coarsened_around.insert(p);
         }
     }
@@ -76,7 +82,7 @@ inline void Multiscale::coarsen_around_point (const Size p)
         }
       }
     }
-    std::cout << "Size neighbors_of_neighbors: " << neighbors_of_neighbors.size() << std::endl;
+    // std::cout << "Size neighbors_of_neighbors: " << neighbors_of_neighbors.size() << std::endl;
     for (const Size n_n:neighbors_of_neighbors)
     {
       // Replace the removed points by p
@@ -126,12 +132,14 @@ inline void Multiscale::set_all_neighbors(vector<Size>& n_neighbors, vector<Size
 inline void Multiscale::set_comparison_fun(std::function<bool(Size,Size)> func)
 {
   points_are_similar=func;
+  comparison_set=true;
 }
 
 //sets function that checks whether a point does not lie on the boundary
 inline void Multiscale::set_not_on_boundary_fun(std::function<bool(Size)> func)
 {
   not_on_boundary=func;
+  boundary_set=true;
 }
 
 inline std::set<Size> Multiscale::get_neighbors(const Size p, const Size coars_lvl) const

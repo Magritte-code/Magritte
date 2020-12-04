@@ -35,6 +35,10 @@ struct Multiscale
     //current coarsening level
     Size curr_coarsening_lvl=0;
 
+    // Just some safety precations that should be true before calling coarsen
+    bool boundary_set=false;
+    bool comparison_set=false;
+
 
     // Coarsen the mesh,
     // i.e. add another layer of coarsening.
