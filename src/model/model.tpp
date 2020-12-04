@@ -1151,7 +1151,7 @@ inline void Model::interpolate_vector(Size coarser_lvl, Size finer_lvl, vector<d
   }
 
   coarse_rbf_mat=coarse_rbf_mat/maxdist;
-  coarse_rbf_mat=coarse_rbf_mat.unaryExpr(&rbf);
+  coarse_rbf_mat=coarse_rbf_mat.unaryExpr(std::ptr_fun(rbf));
 
   //now solving A*weights=to_interpolate_values
   //Note: A is symmetrical, positive definite
@@ -1180,7 +1180,7 @@ inline void Model::interpolate_vector(Size coarser_lvl, Size finer_lvl, vector<d
   }
   //normalize the distance again and applying the radial basis function
   diff_rbf_mat=diff_rbf_mat/maxdist;
-  diff_rbf_mat=diff_rbf_mat.unaryExpr(&rbf);
+  diff_rbf_mat=diff_rbf_mat.unaryExpr(std::ptr_fun(rbf));
 
   VectorXd interpolated_values=diff_rbf_mat*weights;
 
