@@ -1144,16 +1144,33 @@ inline void Model::interpolate_vector(Size coarser_lvl, Size finer_lvl, vector<d
 
   //the matrix A for A*weights=to_interpolate
   //Eigen::MatrixXd coarse_rbf_mat(nb_coarse_points, nb_coarse_points);
-  //possibly better implementation possible, but this suffices for now
+  //possibly better implementation possible, this is far too slow!!
   double maxdist=0;
   for (Size row=0; row<nb_coarse_points; row++)
   {
+    std::cout<<row<<std::endl;
+    std::set<Size> neighbors_of_row=geometry.points.multiscale.get_neighbors(row);
+    for (Size col=0; col<nb_coarse_points; col++)
+    {
+      double dist=(geometry.points.position[coarse_points[row]]-geometry.points.position[coarse_points[col]]).squaredNorm();
+      dist=sqrt(dist);
+        // also trying to calculate the maximum relevant distance between points (needed for rescale for radial basis function)
+      if (neighbors_of_row.find(col)!=neighbors_of_row.end()&&dist>maxdist)
+      {
+        maxdist=dist;
+      }
+    }
+  }
+
+  for (Size row=0; row<nb_coarse_points; row++)
+  {
+    std::cout<<row<<std::endl;
     std::set<Size> neighbors_of_row=geometry.points.multiscale.get_neighbors(row);
     for (Size col=0; col<nb_coarse_points; col++)
     {
       double dist=(geometry.points.position[coarse_points[row]]-geometry.points.position[coarse_points[col]]).squaredNorm();
       //coarse_rbf_mat(row,col)=dist;
-      if (dist>0)
+      if (dist<maxdist)
       {
         dist=sqrt(dist);
         tripletList.push_back(Eigen::Triplet<double>(row,col,dist));
@@ -1200,7 +1217,7 @@ inline void Model::interpolate_vector(Size coarser_lvl, Size finer_lvl, vector<d
     {
       double dist=(geometry.points.position[diff_points[row]]-geometry.points.position[coarse_points[col]]).squaredNorm();
       //diff_rbf_mat(row,col)=dist;
-      if (dist>0)
+      if (dist<maxdist)
       {tripletList_diff.push_back(Eigen::Triplet<double>(row,col,sqrt(dist)));}
     }
   }
