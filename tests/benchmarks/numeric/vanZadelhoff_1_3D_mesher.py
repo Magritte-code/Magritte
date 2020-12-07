@@ -43,14 +43,14 @@ scale_fun = f'{scale_cte / r_in**2} * (x*x + y*y + z*z)'
 
 meshName = f'{moddir}/vanZadelhoff_1_3D_mesher.vtk'
 
-# mesher.create_mesh_from_function(
-#     meshName       = meshName,
-#     boundary       = mesher.boundary_sphere_in_sphere(
-#                          radius_in  = r_in,
-#                          radius_out = r_out),
-#     scale_min      = scale_min,
-#     scale_max      = scale_max,
-#     scale_function = scale_fun )
+mesher.create_mesh_from_function(
+    meshName       = meshName,
+    boundary       = mesher.boundary_sphere_in_sphere(
+                         radius_in  = r_in,
+                         radius_out = r_out),
+    scale_min      = scale_min,
+    scale_max      = scale_max,
+    scale_function = scale_fun )
 
 mesh = mesher.Mesh(meshName)
 
