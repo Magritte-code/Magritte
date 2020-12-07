@@ -1236,6 +1236,109 @@ inline void Model::interpolate_vector(Size coarser_lvl, Size finer_lvl, vector<d
   }
 }
 
+
+
+inline double rbf_local(double radius)
+{
+  return std::exp(-std::pow(radius,2));
+}
+
+/// Interpolates the vector with length nb_points_in_coarser level
+///   @Parameter [in] coarser_lvl: the coarsening level of the coarser grid
+///   @Parameter [in/out] to_interpolate: the vector with values at the points of the coarser grid (and some irrelevant values inbetween), has length equal to the total number of points
+///   @Returns: A vector containing the interpolated values (has length equal to parameters.npoints())
+inline void Model::interpolate_vector_local(Size coarser_lvl, vector<double> &to_interpolate)
+{//TODO: only use large vector and some masks
+  //we cannot interpolate from lvl 0 to some level -..., so just return
+  if (coarser_lvl==0)
+  {return;}
+  Size nb_points=parameters.npoints();
+  std::vector<Size> all_points(nb_points);
+  std::iota(all_points.begin(), all_points.end(), 0); // all_points will become: [0..nb_points-1]
+  vector<bool> coarse_mask=geometry.points.multiscale.get_mask(coarser_lvl);
+  vector<bool> finer_mask=geometry.points.multiscale.get_mask(coarser_lvl-1);
+
+  //TODO calculate the difference
+  vector<Size> diff_points;
+  // vector<double> to_interpolate_values;//values of the coarse grid we need to interpolate (after applying the mask)
+  vector<Size> coarse_points;
+  for (Size point: all_points)
+  {
+    if(finer_mask[point])
+    {
+      if (coarse_mask[point])
+      {
+        coarse_points.push_back(point);
+        // to_interpolate_values.push_back(to_interpolate[point]);
+      }else{diff_points.push_back(point);}
+    }
+  }
+
+  Size nb_coarse_points=coarse_points.size();
+  Size nb_diff_points=diff_points.size();
+
+  //if we have truly nothing to do, just do nothing
+  if (nb_diff_points==0)
+  {return;}
+
+
+  //for every points in diff_points, try to find interpolating value using rbf function
+  for (Size diff_point: diff_points)
+  {
+    std::set<Size> curr_neighbors=geometry.points.multiscale.get_neighbors(diff_point,coarser_lvl-1);
+    //get neighbors in coarser grid
+    vector<Size> neighbors_coarser_grid;
+    neighbors_coarser_grid.reserve(curr_neighbors.size());//i am overallocating a bit, but this variable is temporary anyway...
+    for (Size neighbor: curr_neighbors)
+    {
+      if (coarse_mask[neighbor])
+      {
+        neighbors_coarser_grid.push_back(neighbor);
+      }
+    }
+    std::cout << "number of neighbors: " << neighbors_coarser_grid.size() << std::endl;
+    // Note: using the current multigrid creation method, the number of neighbors in the coarse grid is always at least 1
+    if (neighbors_coarser_grid.size()==1)//in the rare case that we only have a single neighbor in the coarse grid, just set the value to its value
+    {
+      to_interpolate[diff_point]=to_interpolate[neighbors_coarser_grid[0]];
+    }
+    else
+    {//use rbf estimate
+      Size nb_neighbors_coarser_grid=neighbors_coarser_grid.size();
+      Eigen::MatrixXd rbf_mat(nb_neighbors_coarser_grid, nb_neighbors_coarser_grid);
+      Eigen::VectorXd right_hand_side(nb_neighbors_coarser_grid);
+      Eigen::MatrixXd distance_with_neighbors(1,nb_neighbors_coarser_grid);
+      for (Size idx=0; idx<nb_neighbors_coarser_grid; idx++)
+      {
+        right_hand_side(idx)=to_interpolate[idx];
+        distance_with_neighbors(idx)=std::sqrt((geometry.points.position[neighbors_coarser_grid[idx]]-geometry.points.position[diff_point]).squaredNorm());
+        rbf_mat(idx,idx)=0;//distance between point and itself is zero
+        for (Size idx2=0; idx2<idx; idx2++)
+        {
+          //calculate radius
+          double radius=std::sqrt((geometry.points.position[neighbors_coarser_grid[idx]]-geometry.points.position[neighbors_coarser_grid[idx2]]).squaredNorm());
+          rbf_mat(idx,idx2)=radius;
+          rbf_mat(idx2,idx)=radius;
+        }
+      }
+      double maxdist=rbf_mat.maxCoeff();
+      rbf_mat=rbf_mat/maxdist;
+      rbf_mat=rbf_mat.unaryExpr(std::ptr_fun(rbf_local));
+      distance_with_neighbors=distance_with_neighbors/maxdist;
+      distance_with_neighbors=distance_with_neighbors.unaryExpr(std::ptr_fun(rbf_local));
+      VectorXd weights=rbf_mat.llt().solve(right_hand_side);
+      double interpolated_value=(distance_with_neighbors*weights)(0,0);
+
+      to_interpolate[diff_point]=interpolated_value;
+    }
+
+  }
+
+
+}
+
+
+
   //for every element, calculate distance with other elements
 
   //Size count=0;

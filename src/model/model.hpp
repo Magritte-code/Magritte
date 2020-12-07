@@ -78,6 +78,7 @@ struct Model
     // inline Eigen::Vector<double,4> calc_barycentric_coords(const vector<Size> &triangle, Size point);
     // //TODO:inline void rerefine_grid();
     inline void interpolate_vector(Size coarser_lvl, Size finer_lvl, vector<double> &to_interpolate);
+    inline void interpolate_vector_local(Size coarser_lvl, vector<double> &to_interpolate);
     // inline void reset_grid();
 
 

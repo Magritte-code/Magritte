@@ -126,7 +126,7 @@ int main (int argc, char **argv)
     //now we try to interpolate a vector of ones
     std::vector<double> ones(parameters.npoints(), 1);
     cout<<"now trying to interpolate"<<endl;
-    model.interpolate_vector(2,1,ones);
+    model.interpolate_vector_local(2,ones);//note: in this test, the first coarsing does nothing; this leads to throwing bad_alloc
     cout<<"end interpolation"<<endl;
     for (Size idx=0; idx<parameters.npoints(); idx++)
     {cout<<ones[idx]<<std::endl;}
