@@ -114,6 +114,8 @@ inline Size Geometry :: get_next_spherical_symmetry (
     // Update distance along ray
     Z += dZ;
 
+    // cout << "o = " << o << "    r = " << r << "   c = " << c << "   next = " << next << "dZ = " << dZ << endl; 
+
     return next;
 }
 

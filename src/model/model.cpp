@@ -262,11 +262,34 @@ int Model :: compute_radiation_field ()
 {
     cout << "Computing radiation field..." << endl;
 
-    const Size length_max = parameters.npoints();
-    const Size  width_max = parameters.nfreqs ();
+    const Size length_max = 4*parameters.npoints() + 1;
+    const Size  width_max =   parameters.nfreqs ();
 
-    Solver solver (length_max, width_max);
+    Solver solver (length_max, width_max, parameters.n_off_diag);
     solver.solve  (*this);
+
+    return (0);
+}
+
+
+///  Computer for the radiation field
+/////////////////////////////////////
+int Model :: compute_radiation_field_2nd_order_Feautrier ()
+{
+    cout << "Computing radiation field..." << endl;
+
+    const Size length_max = 4*parameters.npoints() + 1;
+    const Size  width_max =   parameters.nfreqs ();
+
+
+    cout << "npoints = " << parameters.npoints() << endl;
+    cout << "nfreqs  = " << parameters.nfreqs () << endl;
+
+    cout << "l_max = " << length_max << endl;
+    cout << "w_max = " <<  width_max << endl;
+
+    Solver solver (length_max, width_max, parameters.n_off_diag);
+    solver.solve_2nd_order_Feautrier (*this);
 
     return (0);
 }
@@ -311,6 +334,19 @@ int Model :: compute_Jeff ()
             }
         })
     }
+
+    return (0);
+}
+
+
+///  compute level populations from statistical equilibrium
+///////////////////////////////////////////////////////////
+int Model :: compute_level_populations_from_stateq ()
+{
+    lines.iteration_using_statistical_equilibrium (
+            chemistry.species.abundance,
+            thermodynamics.temperature.gas,
+            parameters.pop_prec()                 );
 
     return (0);
 }
@@ -376,7 +412,7 @@ int Model :: compute_level_populations (
             // logger.write ("Computing the radiation field...");
             cout << "Computing the radiation field..." << endl;
 
-            compute_radiation_field ();
+            compute_radiation_field_2nd_order_Feautrier ();
             compute_Jeff            ();
 
             lines.iteration_using_statistical_equilibrium (

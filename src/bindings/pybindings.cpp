@@ -66,7 +66,7 @@ PYBIND11_MODULE (core, module)
         .def ("trace", &Solver::trace)
         .def ("solve", &Solver::solve)
         // constructor
-        .def (py::init<const Size&, const Size&>());
+        .def (py::init<const Size&, const Size&, const Size&>());
 
     // Model
     py::class_<Model> (module, "Model")
@@ -97,6 +97,7 @@ PYBIND11_MODULE (core, module)
         .def ("compute_spectral_discretisation", (int (Model::*)(const Real width)) &Model::compute_spectral_discretisation)
         .def ("compute_LTE_level_populations",                                      &Model::compute_LTE_level_populations)
         .def ("compute_radiation_field",                                            &Model::compute_radiation_field)
+        .def ("compute_radiation_field_2nd_order_Feautrier",                        &Model::compute_radiation_field_2nd_order_Feautrier)
         .def ("compute_Jeff",                                                       &Model::compute_Jeff)
         // .def ("coarsen_grid",         &Model::coarsen_grid)
         // constructor
@@ -420,6 +421,8 @@ PYBIND11_MODULE (core, module)
         // .def_readwrite ("v",           &Radiation::v)
         .def_readwrite ("I_bdy",       &Radiation::I_bdy)
         .def_readwrite ("I",           &Radiation::I)
+        .def_readwrite ("u",           &Radiation::u)
+        .def_readwrite ("v",           &Radiation::v)
         .def_readwrite ("J",           &Radiation::J)
         .def ("print",                 &Radiation::print)
         // functions

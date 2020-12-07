@@ -46,6 +46,8 @@ void Radiation :: read (const Io& io)
 
 
     I.resize (parameters.nrays(), parameters.npoints(), parameters.nfreqs());
+    u.resize (parameters.nrays(), parameters.npoints(), parameters.nfreqs());
+    v.resize (parameters.nrays(), parameters.npoints(), parameters.nfreqs());
     J.resize (                    parameters.npoints(), parameters.nfreqs());
 
     // for (Size r = 0; r < parameters.nrays(); r++)

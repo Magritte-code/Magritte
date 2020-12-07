@@ -52,7 +52,7 @@ int main (int argc, char **argv)
     model.compute_LTE_level_populations   ();
     model.compute_inverse_line_widths     ();
 
-    model.compute_radiation_field         ();
+    model.compute_radiation_field_2nd_order_Feautrier ();
     // solver.trace (model);
 
     // Solver solver (model.parameters.npoints(),
@@ -68,19 +68,19 @@ int main (int argc, char **argv)
     // Size1 lengths = model.geometry.get_ray_lengths ();
 //    Size1 lengths = model.geometry.get_ray_lengths_gpu (512, 512);
 
-    cout << "r = 0" << endl;
+    // cout << "r = 0" << endl;
 
-    for (Size p = 0; p < model.parameters.npoints(); p++)
-    {
-        model.radiation.print(0, p);
-    }
+    // for (Size p = 0; p < model.parameters.npoints(); p++)
+    // {
+        // model.radiation.print(0, p);
+    // }
 
-    cout << "r = 1" << endl;
+    // cout << "r = 1" << endl;
 
-    for (Size p = 0; p < model.parameters.npoints(); p++)
-    {
-        model.radiation.print(1, p);
-    }
+    // for (Size p = 0; p < model.parameters.npoints(); p++)
+    // {
+        // model.radiation.print(1, p);
+    // }
 
     cout << "Done." << endl;
 

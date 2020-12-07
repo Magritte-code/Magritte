@@ -17,6 +17,8 @@ struct Radiation
     Scattering  scattering;
 
     Tensor<Real> I;         ///< intensity (r, p, f)
+    Tensor<Real> u;         ///< intensity (r, p, f)
+    Tensor<Real> v;         ///< intensity (r, p, f)
     Matrix<Real> J;         ///< (angular) mean intensity (p, f)
 
     Real1 print(Size r, Size o)
