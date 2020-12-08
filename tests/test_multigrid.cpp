@@ -3,9 +3,10 @@ using std::cout;
 using std::endl;
 
 #include "io/python/io_python.hpp"
-#include "model/model.hpp"
+// #include "model/model.cpp"
 #include "solver/solver.hpp"
 #include <set>
+#include "tools/timer.hpp"
 
 
 //__global__
@@ -55,81 +56,102 @@ int main (int argc, char **argv)
     model.read (io);
     Parameters parameters=model.parameters;
 
-    vector<Size> old_neighbors=model.geometry.points.curr_neighbors.get_neighbors(0);
-    std::set<Size> neighbors=model.geometry.points.multiscale.get_neighbors(0,0);
+    model.compute_spectral_discretisation();
+    model.compute_LTE_level_populations();
+    model.compute_inverse_line_widths();
+    //just testing to see how long it takes
+    Timer timer("solver: 2nd order Feautrier");
+    timer.start();
+    model.compute_radiation_field_2nd_order_Feautrier();
+    timer.stop();
 
-
-    for (Size nb:neighbors)
-    {
-    cout << nb << endl;
-    }
-    cout << "compare with" << endl;
-
-    for (Size nb:old_neighbors)
-    {
-    cout << nb << endl;
-    }
-    cout << "now testing coarsening" << endl;
-    cout << "no points deleted" << endl;
-    //lambda expression that always returns false, just to see whether it crashes (or not)
-    auto alwaysfalse = [](Size p1, Size p2)
-    {
-        return false;
-    };
-    cout << "here" << endl;
-    model.geometry.points.multiscale.set_comparison_fun(alwaysfalse);
+    //
+    auto fun_to_del=model.points_are_similar(0.1);
     model.geometry.points.multiscale.set_not_on_boundary_fun([&](Size p){return model.geometry.not_on_boundary(p);});
-    cout << "here too" << endl;
+    model.geometry.points.multiscale.set_comparison_fun(fun_to_del);
     model.geometry.points.multiscale.coarsen();
-    cout << "max points deleted" << endl;
-    auto alwaystrue = [](Size p1, Size p2)
-    {
-      return true;
-    };
-    model.geometry.points.multiscale.set_comparison_fun(alwaystrue);
 
-    model.geometry.points.multiscale.coarsen();
-    vector<bool> curr_mask=model.geometry.points.multiscale.mask[2];
-    cout << "nb of points remaining after coarsening: " << std::count (curr_mask.begin(), curr_mask.end(), true) << endl;
-    //TODO: change function name to get_MAX_...
-    cout << model.geometry.points.multiscale.get_curr_coars_lvl() << endl;
-    //because of the way how we coarsen, point 0 should still lie in the grid
-    //TODO add output for debugging....
-    std::set<Size> neighbors_after_del=model.geometry.points.multiscale.get_neighbors(0,2);
-    for (Size nb:neighbors_after_del)
-    {
-    cout << nb << endl;
-    }
-    cout << "now printing neighbors of neighbors; should all contain the original point" << endl;
-    for (Size nb:neighbors_after_del)
-    {
-      cout << "point: " << nb << endl;
-      std::set<Size> temp_neighbors=model.geometry.points.multiscale.get_neighbors(nb,2);
-      for (Size nnb: temp_neighbors)
-      {
-        cout << nnb << endl;
-      }
-    }
-    //also try to coarsen again
-    cout << "Another coarsening" << endl;
-    model.geometry.points.multiscale.coarsen();
-    neighbors_after_del=model.geometry.points.multiscale.get_neighbors(0,3);
-    for (Size nb:neighbors_after_del)
-    {
-    cout << nb << endl;
-    }
-    curr_mask=model.geometry.points.multiscale.mask[3];
-    cout << "nb of points remaining after second coarsening: " << std::count (curr_mask.begin(), curr_mask.end(), true) << endl;
+    Timer timer2("solver: multigrid implementation");
+    timer2.start();
+    model.compute_radiation_field_2nd_order_Feautrier();
+    timer2.stop();
+    //TODO also add interpolation and another hime the computation
 
-
-
-    //now we try to interpolate a vector of ones
-    std::vector<double> ones(parameters.npoints(), 1);
-    cout<<"now trying to interpolate"<<endl;
-    model.interpolate_vector_local(2,ones);//note: in this test, the first coarsing does nothing; this leads to throwing bad_alloc
-    cout<<"end interpolation"<<endl;
-    for (Size idx=0; idx<parameters.npoints(); idx++)
-    {cout<<ones[idx]<<std::endl;}
+    // vector<Size> old_neighbors=model.geometry.points.curr_neighbors.get_neighbors(0);
+    // std::set<Size> neighbors=model.geometry.points.multiscale.get_neighbors(0,0);
+    //
+    //
+    // for (Size nb:neighbors)
+    // {
+    // cout << nb << endl;
+    // }
+    // cout << "compare with" << endl;
+    //
+    // for (Size nb:old_neighbors)
+    // {
+    // cout << nb << endl;
+    // }
+    // cout << "now testing coarsening" << endl;
+    // cout << "no points deleted" << endl;
+    // //lambda expression that always returns false, just to see whether it crashes (or not)
+    // auto alwaysfalse = [](Size p1, Size p2)
+    // {
+    //     return false;
+    // };
+    // cout << "here" << endl;
+    // model.geometry.points.multiscale.set_comparison_fun(alwaysfalse);
+    // model.geometry.points.multiscale.set_not_on_boundary_fun([&](Size p){return model.geometry.not_on_boundary(p);});
+    // cout << "here too" << endl;
+    // model.geometry.points.multiscale.coarsen();
+    // cout << "max points deleted" << endl;
+    // auto alwaystrue = [](Size p1, Size p2)
+    // {
+    //   return true;
+    // };
+    // model.geometry.points.multiscale.set_comparison_fun(alwaystrue);
+    //
+    // model.geometry.points.multiscale.coarsen();
+    // vector<bool> curr_mask=model.geometry.points.multiscale.mask[2];
+    // cout << "nb of points remaining after coarsening: " << std::count (curr_mask.begin(), curr_mask.end(), true) << endl;
+    // //TODO: change function name to get_MAX_...
+    // cout << model.geometry.points.multiscale.get_curr_coars_lvl() << endl;
+    // //because of the way how we coarsen, point 0 should still lie in the grid
+    // //TODO add output for debugging....
+    // std::set<Size> neighbors_after_del=model.geometry.points.multiscale.get_neighbors(0,2);
+    // for (Size nb:neighbors_after_del)
+    // {
+    // cout << nb << endl;
+    // }
+    // cout << "now printing neighbors of neighbors; should all contain the original point" << endl;
+    // for (Size nb:neighbors_after_del)
+    // {
+    //   cout << "point: " << nb << endl;
+    //   std::set<Size> temp_neighbors=model.geometry.points.multiscale.get_neighbors(nb,2);
+    //   for (Size nnb: temp_neighbors)
+    //   {
+    //     cout << nnb << endl;
+    //   }
+    // }
+    // //also try to coarsen again
+    // cout << "Another coarsening" << endl;
+    // model.geometry.points.multiscale.coarsen();
+    // neighbors_after_del=model.geometry.points.multiscale.get_neighbors(0,3);
+    // for (Size nb:neighbors_after_del)
+    // {
+    // cout << nb << endl;
+    // }
+    // curr_mask=model.geometry.points.multiscale.mask[3];
+    // cout << "nb of points remaining after second coarsening: " << std::count (curr_mask.begin(), curr_mask.end(), true) << endl;
+    //
+    //
+    //
+    // //now we try to interpolate a vector of ones
+    // std::vector<double> ones(parameters.npoints(), 1);
+    // cout<<"now trying to interpolate"<<endl;
+    // model.interpolate_vector_local(2,ones);//note: in this test, the first coarsing does nothing; this leads to throwing bad_alloc
+    // cout<<"end interpolation"<<endl;
+    // for (Size idx=0; idx<parameters.npoints(); idx++)
+    // {cout<<ones[idx]<<std::endl;}
 
 
 

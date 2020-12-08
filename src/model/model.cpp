@@ -117,7 +117,7 @@ int Model :: compute_spectral_discretisation ()
         {
             nmbrs_inverted[nmbrs[fl]] = fl;
 
-            radiation.frequencies.appears_in_line_integral[fl] = false;;
+            radiation.frequencies.appears_in_line_integral[fl] = false;
             radiation.frequencies.corresponding_l_for_spec[fl] = parameters.nfreqs();
             radiation.frequencies.corresponding_k_for_tran[fl] = parameters.nfreqs();
             radiation.frequencies.corresponding_z_for_line[fl] = parameters.nfreqs();
