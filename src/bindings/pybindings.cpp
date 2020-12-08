@@ -99,7 +99,8 @@ PYBIND11_MODULE (core, module)
         .def ("compute_radiation_field",                                            &Model::compute_radiation_field)
         .def ("compute_radiation_field_2nd_order_Feautrier",                        &Model::compute_radiation_field_2nd_order_Feautrier)
         .def ("compute_Jeff",                                                       &Model::compute_Jeff)
-        // .def ("coarsen_grid",         &Model::coarsen_grid)
+        .def ("compute_level_populations_from_stateq",                              &Model::compute_level_populations_from_stateq)
+        .def ("compute_level_populations",                                          &Model::compute_level_populations)
         // constructor
         .def (py::init<const string>())
         .def (py::init<>());
