@@ -5,8 +5,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 # Go to this directory
 cd $DIR
 
-# Create directories to store models and results
-mkdir models
+# Create directories to store results
 mkdir results
 
 # Unit tests
