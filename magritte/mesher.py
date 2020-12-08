@@ -25,7 +25,7 @@ class Mesh:
     def __init__(self, meshFile):
         self.mesh      = mio.read(meshFile)
         self.points    = self.mesh.points
-        self.tetras    = self.mesh.cells['tetra']
+        self.tetras    = self.mesh.cells_dict['tetra']
         self.edges     = self.get_edges()
         self.neighbors = self.get_neighbors()
         self.boundary  = self.get_boundary()
@@ -103,13 +103,13 @@ class Mesh:
 
     def get_boundary(self):
         boundary = set([])
-        for elem in self.mesh.cells['triangle']:
+        for elem in self.mesh.cells_dict['triangle']:
             for p in elem:
                 boundary.add(p)
-        for elem in self.mesh.cells['line']:
+        for elem in self.mesh.cells_dict['line']:
             for p in elem:
                 boundary.add(p)
-        for elem in self.mesh.cells['vertex']:
+        for elem in self.mesh.cells_dict['vertex']:
             for p in elem:
                 boundary.add(p)
         boundary = list(boundary)

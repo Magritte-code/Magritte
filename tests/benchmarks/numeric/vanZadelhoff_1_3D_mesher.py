@@ -185,12 +185,19 @@ def run_model (a_or_b, nosave=False):
     return
 
 
-if __name__ == '__main__':
-
-    nosave = (len(sys.argv) > 1) and (sys.argv[1] == 'nosave')
+def run_test (nosave=False):
 
     create_model ('a')
     run_model    ('a', nosave)
 
     create_model ('b')
     run_model    ('b', nosave)
+
+    return
+
+
+if __name__ == '__main__':
+
+    nosave = (len(sys.argv) > 1) and (sys.argv[1] == 'nosave')
+
+    run_test (nosave)
