@@ -5,6 +5,7 @@ set (CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/magritte)
 include_directories (../)
 include_directories (../../dependencies)
 include_directories (../../dependencies/eigen)
+include_directories (../../dependencies/pybind11)
 include_directories (../../dependencies/pybind11/include)
 
 set (SOURCE_FILES
