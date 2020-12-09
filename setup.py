@@ -5,6 +5,9 @@ with open("README.md", "r") as readme_file:
     long_description = readme_file.read()
 
 
+__version__ = '0.0.1'
+
+
 import os
 import re
 import sys
@@ -40,13 +43,10 @@ class CMakeBuild(build_ext):
     def build_extension(self, ext):
         extdir = os.path.abspath(os.path.dirname(self.get_ext_fullpath(ext.name)))
         cmake_args = ['-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=' + extdir,
-                      '-DPYTHON_IO=ON'
-                      '-DPYTHON_BINDINGS=ON',
                       '-DOMP_PARALLEL=ON',
                       '-DMPI_PARALLEL=OFF',
-                      '-DGRID_SIMD=OFF'
                       '-DGPU_ACCELERATION=OFF',
-                      '-DPYTHON_EXECUTABLE=' + sys.executable]
+                      '-DPYTHON_EXECUTABLE:FILEPATH=' + sys.executable]
 
         build_type = os.environ.get("BUILD_TYPE", "Release")
         build_args = ['--config', build_type]
@@ -81,7 +81,7 @@ setup(
     version="0.0.1",
     author="Frederik De Ceuster",
     author_email="frederik.deceuster@gmail.com",
-    description="A modern software library for 3D radiative transfer.",
+    description="A modern software library for simulating radiation transport.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     ext_modules=[CMakeExtension('magritte')],
@@ -96,9 +96,11 @@ setup(
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         "Programming Language :: C++",
         "Programming Language :: Python :: 3",
+        "Natural Language :: English",
+        "Operating System :: Unix",
         "Topic :: Scientific/Engineering",
         "Topic :: Scientific/Engineering :: Astronomy",
-        "Topic :: Scientific/Engineering :: Physics",
+        "Topic :: Scientific/Engineering :: Physics"
     ],
     python_requires='>=3.6',
 )

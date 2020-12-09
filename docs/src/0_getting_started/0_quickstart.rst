@@ -8,51 +8,29 @@ Quickstart
     :ref:`comprehensive installation <link-installation>` guide.
 
 
-Get Magritte
-************
+Clone
+*****
 
-Magritte has to be compiled from its source code, which can be either cloned
-
-.. code-block:: shell
-
-    git clone https://github.com/Magritte-code/Magritte.git
-
-or downloaded
+Magritte has to be compiled from its source code, which can be cloned using:
 
 .. code-block:: shell
 
-    wget https://github.com/Magritte-code/Magritte/archive/master.zip
-    unzip master.zip
-    mv Magritte-master Magritte
+    git clone --recursive https://github.com/Magritte-code/Magritte.git
 
-from `GitHub <https://github.com/Magritte-code/Magritte>`_. The
-:literal:`Magritte` directory this gives you will be the Magritte root directory.
+from our `GitHub <https://github.com/Magritte-code/Magritte>`_ repository.
 
 
-Get dependencies
-****************
+Setup
+*****
 
-The required dependencies can be obtained with
-
-.. code-block:: shell
-
-    bash dependencies/get_dependencies.sh
-
-This will download the required dependecies and put them in the
-:literal:`dependencies` directory.
-
-
-Setup python environment
-************************
-
-The Magritte `conda <https://www.anaconda.com/products/individual>`_ environment can be created from the environment file
+The Magritte `conda <https://www.anaconda.com/products/individual>`_ environment can be created from an environment file with:
 
 .. code-block:: shell
 
     conda env create -f dependencies/conda_env.yml
 
 which installs all required packages in the :literal:`magritte` conda
-environment, and can be activated with
+environment, and can be activated with:
 
 .. code-block:: shell
 
@@ -61,10 +39,10 @@ environment, and can be activated with
 This environment has to be active whenever Magritte is compiled or used!
 
 
-Build Magritte
-**************
+Build
+*****
 
-Magritte can be build in the default configuration with
+Magritte can easily be build in its default configuration with:
 
 .. code-block:: shell
 
@@ -73,8 +51,8 @@ Magritte can be build in the default configuration with
 This will create the necessary files for the Magritte python package.
 
 
-Run Magritte
-************
+Run
+***
 
-If all the above worked, go download and experiment with the
+If all the above worked, go download and experiment with some of our
 `examples <https://github.com/Magritte-code/Examples>`_!

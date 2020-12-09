@@ -45,7 +45,6 @@ before_install:
   #    fi
   - PYTHON_EXECUTABLE=$(which python)
   - BUILD_FLAGS="-DPYTHON_EXECUTABLE:FILEPATH=$PYTHON_EXECUTABLE -DOMP_PARALLEL=ON"
-  - bash dependencies/get_dependencies.sh
   - bash dependencies/get_cmake.sh
   - bash dependencies/get_conda.sh
   - export PATH=`pwd`/dependencies/miniconda3/bin:$PATH

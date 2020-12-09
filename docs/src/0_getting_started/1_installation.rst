@@ -8,12 +8,21 @@ Installation
     This is the comprehensive installation guide. For a quick intro, see our
     :ref:`quickstart <link-quickstart>` guide.
 
-The best way to get Magritte up-and-running is to compile it from the source code,
-which can be cloned or downloaded from `GitHub <https://github.com/Magritte-code/Magritte>`_.
-There are, however, a few dependencies that have to be in place before Magritte
-can be compiled.
-Moreover, to make Magritte useful, some python packages have to be installed which
-is best done using a `conda <https://www.anaconda.com/products/individual>`_ environment.
+
+Download
+********
+
+Magritte has to be compiled from its source code, which can be cloned using:
+
+.. code-block:: shell
+
+    git clone --recursive https://github.com/Magritte-code/Magritte.git
+
+from our `GitHub <https://github.com/Magritte-code/Magritte>`_ repository. This
+creates the directory, :literal:`Magritte`, which will be refered to as the
+Magritte root directory. Please make sure to include the :literal:`--recursive`
+option to also clone the required submodules.
+
 
 Dependencies
 ************
@@ -43,28 +52,14 @@ on which paralellization and acceleration libraries are used. See
 :ref:`advanced compilation <link-advanced_compilation>` for further details.
 
 
-.. hint::
-
-    There is a shortcut script to obtain the required
-    dependencies: :literal:`get_dependencies.sh`. From within the :literal:`dependencies`
-    directory, run:
-
-    .. code-block:: shell
-
-        bash get_dependencies.sh
-
-    This will download the required dependecies, put them in the
-    :literal:`dependencies` directory, and ensure the required directory sttucture
-    is satisfied.
-
-We are aware that our current dependecy management is not ideal. Any suggestions
-to imporve it are welcome `here <https://github.com/Magritte-code/Magritte/issues/11>`_.
-
-
 Python packages & Environment
 *****************************
 
-Magritte uses several python packages for io and to create model files.
+To make Magritte useful, some python packages have to be installed which
+is best done using a `conda <https://www.anaconda.com/products/individual>`_ environment.
+
+The following python packages are used in Magritte, mainly for io and to create
+the model files.
 
 * :mod:`numpy`, to bind the Magritte data;
 * :mod:`h5py`, to read and write HDF5 data files;

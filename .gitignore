@@ -46,12 +46,6 @@ configure.hpp
 
 # dependencies
 ##############
-*dependencies/Eigen*
-*dependencies/Grid-SIMD*
-*dependencies/pybind11*
-*dependencies/scorep*
-*dependencies/Paracabs*
-*dependencies/googletest*
 *dependencies/cmake*
 *dependencies/miniconda3*
 

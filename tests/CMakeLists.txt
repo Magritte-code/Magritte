@@ -1,7 +1,8 @@
 # Include directory containing source
 include_directories (../src/)
 include_directories (../dependencies)
-include_directories (../dependencies/pybind11)
+include_directories (../dependencies/eigen)
+# include_directories (../dependencies/pybind11)
 include_directories (../dependencies/pybind11/include)
 
 # Add Python package separately
