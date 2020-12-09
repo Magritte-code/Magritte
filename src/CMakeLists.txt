@@ -1,6 +1,7 @@
 # Include directories
 include_directories (.)
 include_directories (../dependencies)
+include_directories (../dependencies/eigen)
 include_directories (../dependencies/pybind11/include)
 
 set (SOURCE_FILES
@@ -55,7 +56,7 @@ if    (MPI_PARALLEL)
 endif (MPI_PARALLEL)
 if    (PYTHON_IO)
     # Include pybind11
-    include_directories (../dependencies/pybind11/include)
+    #include_directories (../dependencies/pybind11/include)
     # Create library for python io
     add_library (PyIo io/python/io_python.cpp)
     # Link embedding and link to Magritte

@@ -5,6 +5,9 @@ with open("README.md", "r") as readme_file:
     long_description = readme_file.read()
 
 
+__version__ = '0.0.1'
+
+
 import os
 import re
 import sys
@@ -78,7 +81,7 @@ setup(
     version="0.0.1",
     author="Frederik De Ceuster",
     author_email="frederik.deceuster@gmail.com",
-    description="A modern software library for 3D radiative transfer.",
+    description="A modern software library for simulating radiation transport.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     ext_modules=[CMakeExtension('magritte')],

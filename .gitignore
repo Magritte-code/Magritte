@@ -46,9 +46,6 @@ configure.hpp
 
 # dependencies
 ##############
-*dependencies/Eigen*
-*dependencies/pybind11*
-*dependencies/googletest*
 *dependencies/cmake*
 *dependencies/miniconda3*
 
