@@ -40,13 +40,10 @@ class CMakeBuild(build_ext):
     def build_extension(self, ext):
         extdir = os.path.abspath(os.path.dirname(self.get_ext_fullpath(ext.name)))
         cmake_args = ['-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=' + extdir,
-                      '-DPYTHON_IO=ON'
-                      '-DPYTHON_BINDINGS=ON',
                       '-DOMP_PARALLEL=ON',
                       '-DMPI_PARALLEL=OFF',
-                      '-DGRID_SIMD=OFF'
                       '-DGPU_ACCELERATION=OFF',
-                      '-DPYTHON_EXECUTABLE=' + sys.executable]
+                      '-DPYTHON_EXECUTABLE:FILEPATH=' + sys.executable]
 
         build_type = os.environ.get("BUILD_TYPE", "Release")
         build_args = ['--config', build_type]
@@ -96,9 +93,11 @@ setup(
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         "Programming Language :: C++",
         "Programming Language :: Python :: 3",
+        "Natural Language :: English",
+        "Operating System :: Unix",
         "Topic :: Scientific/Engineering",
         "Topic :: Scientific/Engineering :: Astronomy",
-        "Topic :: Scientific/Engineering :: Physics",
+        "Topic :: Scientific/Engineering :: Physics"
     ],
     python_requires='>=3.6',
 )

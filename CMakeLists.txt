@@ -2,8 +2,9 @@
 project ("Magritte")
 
 # Set version numbers
-set (MAGRITTE_VERSION_MAJOR 1)
+set (MAGRITTE_VERSION_MAJOR 0)
 set (MAGRITTE_VERSION_MINOR 0)
+set (MAGRITTE_VERSION_PATCH 1)
 
 # Set build type
 # set (CMAKE_BUILD_TYPE Release)
