@@ -9,6 +9,10 @@ language:
 python:
     - "3.7"
 
+cache:
+  directories:
+  - mpich
+
 matrix:
   include:
     - os: linux
@@ -34,13 +38,12 @@ matrix:
       env:
          - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
 
-
-
 before_install:
   - eval "${MATRIX_EVAL}"
+  - bash dependencies/get_cmake.sh
+  - bash dependencies/get_mpich.sh
   - PYTHON_EXEC=$(which python)
   - BUILD_FLAGS="-DPYTHON_EXECUTABLE:FILEPATH=$PYTHON_EXEC -DOMP_PARALLEL=ON"
-  - bash dependencies/get_cmake.sh
   # - bash dependencies/get_conda.sh
   # - export PATH=`pwd`/dependencies/miniconda3/bin:$PATH
   # - source activate magritte
