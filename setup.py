@@ -38,7 +38,7 @@ setup(
     packages=find_packages(),
     install_requires=[
         'h5py',
-        'numpy'
+        'numpy',
         'scipy',
         'numba',
         'meshio',
