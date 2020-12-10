@@ -46,18 +46,16 @@ before_install:
   - PYTHON_EXECUTABLE=$(which python)
   - BUILD_FLAGS="-DPYTHON_EXECUTABLE:FILEPATH=$PYTHON_EXECUTABLE -DOMP_PARALLEL=ON"
   - bash dependencies/get_cmake.sh
-  - bash dependencies/get_conda.sh
-  - export PATH=`pwd`/dependencies/miniconda3/bin:$PATH
-  - source activate magritte
+  # - bash dependencies/get_conda.sh
+  # - export PATH=`pwd`/dependencies/miniconda3/bin:$PATH
+  # - source activate magritte
   - CMAKE_CMD="`pwd`/dependencies/cmake/bin/cmake"
 
 install:
   - mkdir build
   - cd build
-  - COMPILER_CC=$(which gcc)
-  - $COMPILER_CC --version
-  - COMPILER_CXX=$(which g++)
-  - $COMPILER_CXX --version
+  - COMPILER_CC=$(which gcc);  $COMPILER_CC  --version;
+  - COMPILER_CXX=$(which g++); $COMPILER_CXX --version;
   - CC=$COMPILER_CC CXX=$COMPILER_CXX $CMAKE_CMD $BUILD_FLAGS ..
   - make -j4
   - cd ..
@@ -67,4 +65,3 @@ install:
 script:
   - cd tests
   - bash run_all_tests.sh
-  - echo "Done."
