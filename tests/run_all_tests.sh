@@ -14,6 +14,9 @@ echo "Running unit tests..."
 # Integration tests
 echo "Running integration tests..."
 
-python3 benchmarks/analytic/all_constant_1D.py                 nosave
-python3 benchmarks/analytic/density_distribution_single_ray.py nosave
-python3 benchmarks/numeric/vanZadelhoff_1_1D.py                nosave
+cd $DIR/benchmarks/analytic
+python3 all_constant_single_ray.py         nosave
+python3 density_distribution_single_ray.py nosave
+
+cd $DIR/benchmarks/numeric
+python3 vanZadelhoff_1_1D.py               nosave
