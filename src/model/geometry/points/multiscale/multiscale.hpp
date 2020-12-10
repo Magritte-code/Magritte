@@ -81,6 +81,8 @@ struct Multiscale
     inline Size get_nb_neighbors(const Size p) const;
     //Returns the mask of points still in the grid at level curr_level
     inline vector<bool> get_mask(const Size curr_lvl);
+    //Returns the total number of points remaining at level curr_level
+    inline Size get_total_points(const Size curr_lvl);
 
 };
 

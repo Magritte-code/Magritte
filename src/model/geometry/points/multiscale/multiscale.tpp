@@ -1,5 +1,6 @@
 #include "tools/types.hpp"
 #include <set>
+#include <algorithm>
 // Coarsen the mesh,
 // i.e. add another layer of coarsening.
 inline void Multiscale::coarsen()
@@ -62,7 +63,9 @@ inline void Multiscale::coarsen_around_point (const Size p)
     for (const Size n : neighbors.back()[p])
     {
       if (not_on_boundary(n))//boundary points will NEVER get removed
-        {mask.back()[n] = false;}
+        {
+          mask.back()[n] = false;
+        }
     }
 
     // ..., and replace the neighbors of p (which are removed)
@@ -81,6 +84,7 @@ inline void Multiscale::coarsen_around_point (const Size p)
           }
         }
       }
+      neighbors.back()[n]=std::set<Size>();//and finally also delete every neighbors of the deleted point
     }
     // std::cout << "Size neighbors_of_neighbors: " << neighbors_of_neighbors.size() << std::endl;
     for (const Size n_n:neighbors_of_neighbors)
@@ -217,4 +221,9 @@ inline void Multiscale::set_curr_coars_lvl(Size lvl)
 inline vector<bool> Multiscale::get_mask(const Size curr_lvl)
 {
   return mask[curr_lvl];
+}
+//returns the total number of points remaining at curr_lvl TODO: if useful: just store this value
+inline Size Multiscale::get_total_points(const Size curr_lvl)
+{
+  return std::count(mask[curr_lvl].begin(), mask[curr_lvl].end(), true);
 }

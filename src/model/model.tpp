@@ -1238,6 +1238,36 @@ inline std::function<bool(Size,Size)> Model::points_are_similar(double tolerance
 //
 //
 
+inline int Model::compute_feautrier_order_2_multigrid(Size min_nb_points, Size max_coars_lvl, double tol)
+{
+  auto fun_to_del=points_are_similar(tol);//function that says if two points are similar enough
+  geometry.points.multiscale.set_not_on_boundary_fun([&](Size p){return geometry.not_on_boundary(p);});//function that says whether a point lies on the boundary
+  geometry.points.multiscale.set_comparison_fun(fun_to_del);
+  //first, we coarsen the grid until we either have too few points left or have too many coarsening levels
+  while((geometry.points.multiscale.get_max_coars_lvl()<max_coars_lvl)&&
+  (geometry.points.multiscale.get_total_points(geometry.points.multiscale.get_max_coars_lvl())>min_nb_points))
+  {
+    geometry.points.multiscale.coarsen();
+  }
+  //solve and interpolate J for all coarser grids
+  while(geometry.points.multiscale.get_curr_coars_lvl()>0)
+  {
+    compute_radiation_field_feautrier_order_2();
+    //for all frequencies, interpolate J
+    for (Size freqidx=0; parameters.nfreqs(); freqidx++)
+    {//TODO TODO TODO interpolate J for all frequencies
+
+    }
+    interpolate_vector_local(geometry.points.multiscale.get_curr_coars_lvl(),radiation.J);
+    geometry.points.multiscale.set_curr_coars_lvl(geometry.points.multiscale.get_curr_coars_lvl()-1);
+  }
+  //finally, solve for the final grid
+  compute_radiation_field_feautrier_order_2();
+  return (0);
+}
+
+
+
 inline double rbf_local(double radius)
 {
   return std::exp(-std::pow(radius,2));
