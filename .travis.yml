@@ -54,9 +54,9 @@ before_install:
 install:
   - mkdir build
   - cd build
-  - COMPILER_CC=$(which gcc);  $COMPILER_CC  --version;
-  - COMPILER_CXX=$(which g++); $COMPILER_CXX --version;
-  - CC=$COMPILER_CC CXX=$COMPILER_CXX $CMAKE_CMD $BUILD_FLAGS ..
+  - CC  --version
+  - CXX --version
+  - $CMAKE_CMD $BUILD_FLAGS ..
   - make -j4
   - cd ..
   - python setup.py install
