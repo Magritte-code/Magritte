@@ -50,31 +50,35 @@ int main (int argc, char **argv)
     cout << "sizeof Vector3D = " << sizeof(Vector3D) << endl;
 
     cout << "n threads = " << paracabs::multi_threading::n_threads_avail() << endl;
+    paracabs::multi_threading::set_n_threads_avail(1);
+    cout << "n threads = " << paracabs::multi_threading::n_threads_avail() << endl;
 
 
     Model model;
     model.read (io);
     Parameters parameters=model.parameters;
 
-    model.compute_spectral_discretisation();
-    model.compute_LTE_level_populations();
-    model.compute_inverse_line_widths();
-    //just testing to see how long it takes
-    Timer timer("solver: 2nd order Feautrier");
-    timer.start();
-    model.compute_radiation_field_feautrier_order_2();
-    timer.stop();
-
+    // model.compute_spectral_discretisation();
+    // model.compute_LTE_level_populations();
+    // model.compute_inverse_line_widths();
+    // //just testing to see how long it takes
+    // Timer timer("solver: 2nd order Feautrier");
+    // timer.start();
+    // model.compute_radiation_field_feautrier_order_2();
+    // timer.stop();
     //
-    auto fun_to_del=model.points_are_similar(0.1);
-    model.geometry.points.multiscale.set_not_on_boundary_fun([&](Size p){return model.geometry.not_on_boundary(p);});
-    model.geometry.points.multiscale.set_comparison_fun(fun_to_del);
-    model.geometry.points.multiscale.coarsen();
+    // //
+    // auto fun_to_del=model.points_are_similar(0.1);
+    // model.geometry.points.multiscale.set_not_on_boundary_fun([&](Size p){return model.geometry.not_on_boundary(p);});
+    // model.geometry.points.multiscale.set_comparison_fun(fun_to_del);
+    // model.geometry.points.multiscale.coarsen();
+    //
+    // Timer timer2("solver: multigrid implementation");
+    // timer2.start();
+    // model.compute_radiation_field_feautrier_order_2();
+    // timer2.stop();
 
-    Timer timer2("solver: multigrid implementation");
-    timer2.start();
-    model.compute_radiation_field_feautrier_order_2();
-    timer2.stop();
+
     //TODO also add interpolation and another hime the computation
 
     // vector<Size> old_neighbors=model.geometry.points.curr_neighbors.get_neighbors(0);
