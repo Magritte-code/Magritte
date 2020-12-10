@@ -1,6 +1,3 @@
-# Write the python library to the magritte python package
-set (CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/magritte)
-
 # Include directories
 include_directories (../)
 include_directories (../../dependencies)
