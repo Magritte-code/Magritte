@@ -60,7 +60,9 @@ install:
   - $COMPILER_CXX --version
   - CC=$COMPILER_CC CXX=$COMPILER_CXX $CMAKE_CMD $BUILD_FLAGS ..
   - make -j4
-  - cd -
+  - cd ..
+  - python setup.py install
+
 
 script:
   - cd tests
