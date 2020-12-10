@@ -18,7 +18,7 @@ CC=$COMPILER_CC                                     \
 CXX=$COMPILER_CXX                                   \
 cmake                                               \
   -DPYTHON_EXECUTABLE:FILEPATH=$PYTHON_EXECUTABLE   \
-  -DOMP_PARALLEL=OFF                                 \
+  -DOMP_PARALLEL=ON                                 \
   -DMPI_PARALLEL=OFF                                \
   -DGPU_ACCELERATION=OFF                            \
   -DCMAKE_CXX_FLAGS=-pg                             \
