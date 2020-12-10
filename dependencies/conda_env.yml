@@ -14,6 +14,5 @@ dependencies:
   - scipy
   - numba
   - mpi4py
-  - yaml
   - pyyaml
   - tqdm

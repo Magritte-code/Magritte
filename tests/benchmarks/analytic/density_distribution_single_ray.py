@@ -5,8 +5,6 @@ curdir = os.path.dirname(os.path.realpath(__file__))
 datdir = f'{curdir}/../../data/'
 moddir = f'{curdir}/../../models/'
 resdir = f'{curdir}/../../results/'
-sys.path.append(f'{curdir}/../../../')
-
 
 import numpy             as np
 import matplotlib.pyplot as plt
