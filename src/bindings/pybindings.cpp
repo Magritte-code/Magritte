@@ -26,6 +26,9 @@ PYBIND11_MODULE (core, module)
     // Module docstring
     module.doc() = "Core module of Magritte: a modern software library for 3D radiative transfer.";
 
+    module.def(    "n_threads_avail", &paracabs::multi_threading::    n_threads_avail);
+    module.def("set_n_threads_avail", &paracabs::multi_threading::set_n_threads_avail);
+
     // Define vector types
     py::bind_vector<vector<LineProducingSpecies>> (module, "vLineProducingSpecies");
     py::bind_vector<vector<CollisionPartner>>     (module, "vCollisionPartner");
@@ -63,10 +66,21 @@ PYBIND11_MODULE (core, module)
     py::class_<Solver> (module, "Solver")
         // attributes
         // functions
-        .def ("trace", &Solver::trace)
-        .def ("solve", &Solver::solve)
+        // .def ("trace", &Solver::trace)
         // constructor
-        .def (py::init<const Size&, const Size&, const Size&>());
+        // .def (py::init<const Size&, const Size&, const Size&>());
+        .def (py::init<>());
+
+    // Image
+    py::class_<Image> (module, "Image")
+        // attributes
+        // functions
+        .def_readonly  ("ray_nr", &Image::ray_nr)
+        .def_readonly  ("ImX",    &Image::ImX)
+        .def_readonly  ("ImY",    &Image::ImY)
+        .def_readonly  ("I",      &Image::I)
+        // constructor
+        .def (py::init<const Geometry&, const Size&>());
 
     // Model
     py::class_<Model> (module, "Model")
@@ -75,18 +89,17 @@ PYBIND11_MODULE (core, module)
         .def_readwrite ("geometry",       &Model::geometry)
         .def_readwrite ("chemistry",      &Model::chemistry)
         .def_readwrite ("lines",          &Model::lines)
+        .def_readwrite ("a",          &Model::a)
+        .def_readwrite ("b",          &Model::b)
+        .def_readwrite ("c",          &Model::c)
+        .def ("set",                  &Model::set)
+        .def ("add",                  &Model::add)
         .def_readwrite ("thermodynamics", &Model::thermodynamics)
         .def_readwrite ("radiation",      &Model::radiation)
         // .def_readwrite ("neighbors_lists",&Model::neighbors_lists)
         .def_readonly  ("error_mean",     &Model::error_mean)
         .def_readonly  ("error_max",      &Model::error_max)
-        // debug attributes
-        // .def_readwrite ("reduced_neighbors_after",&Model::reduced_neighbors_after)
-        // .def_readwrite ("reduced_neighbors_before",&Model::reduced_neighbors_before)
-        // .def_readwrite ("deleted_points",&Model::deleted_points)
-        // .def_readwrite ("added_lines",&Model::added_lines)
-        // .def_readwrite ("added_tetras", &Model::added_tetras)
-        // .def_readwrite ("debug_mode", &Model::debug_mode)
+        .def_readonly  ("images",         &Model::images)
         // io (void (Pet::*)(int))
         .def ("read",  (void (Model::*)(void))            &Model::read )
         .def ("write", (void (Model::*)(void) const)      &Model::write)
@@ -95,12 +108,20 @@ PYBIND11_MODULE (core, module)
         .def ("compute_inverse_line_widths",                                        &Model::compute_inverse_line_widths)
         .def ("compute_spectral_discretisation", (int (Model::*)(void            )) &Model::compute_spectral_discretisation)
         .def ("compute_spectral_discretisation", (int (Model::*)(const Real width)) &Model::compute_spectral_discretisation)
+        .def ("compute_spectral_discretisation", (int (Model::*)(const long double nu_min, const long double nu_max)) &Model::compute_spectral_discretisation)
         .def ("compute_LTE_level_populations",                                      &Model::compute_LTE_level_populations)
-        .def ("compute_radiation_field",                                            &Model::compute_radiation_field)
-        .def ("compute_radiation_field_2nd_order_Feautrier",                        &Model::compute_radiation_field_2nd_order_Feautrier)
+        // .def ("compute_radiation_field",                                            &Model::compute_radiation_field)
+        .def ("compute_radiation_field_feautrier_order_2",                          &Model::compute_radiation_field_feautrier_order_2)
+        .def ("compute_radiation_field_shortchar_order_0",                          &Model::compute_radiation_field_shortchar_order_0)
         .def ("compute_Jeff",                                                       &Model::compute_Jeff)
         .def ("compute_level_populations_from_stateq",                              &Model::compute_level_populations_from_stateq)
         .def ("compute_level_populations",                                          &Model::compute_level_populations)
+        .def ("compute_image",                                                      &Model::compute_image)
+        .def ("set_eta_and_chi",                                                    &Model::set_eta_and_chi)
+        .def ("set_boundary_condition",                                             &Model::set_boundary_condition)
+        .def_readwrite ("eta",                &Model::eta)
+        .def_readwrite ("chi",                &Model::chi)
+        .def_readwrite ("boundary_condition", &Model::boundary_condition)
         // constructor
         .def (py::init<const string>())
         .def (py::init<>());
@@ -115,6 +136,7 @@ PYBIND11_MODULE (core, module)
         .def ("set_dimension",                &Parameters::set_dimension           )
         .def ("set_npoints",                  &Parameters::set_npoints             )
         .def ("set_nrays",                    &Parameters::set_nrays               )
+        .def ("set_hnrays",                   &Parameters::set_hnrays              )
         .def ("set_nrays_red",                &Parameters::set_nrays_red           )
         .def ("set_order_min",                &Parameters::set_order_min           )
         .def ("set_order_max",                &Parameters::set_order_max           )
@@ -132,6 +154,7 @@ PYBIND11_MODULE (core, module)
         .def ("dimension",                    &Parameters::dimension           )
         .def ("npoints",                      &Parameters::npoints             )
         .def ("nrays",                        &Parameters::nrays               )
+        .def ("hnrays",                       &Parameters::hnrays              )
         .def ("nrays_red",                    &Parameters::nrays_red           )
         .def ("order_min",                    &Parameters::order_min           )
         .def ("order_max",                    &Parameters::order_max           )
@@ -163,8 +186,8 @@ PYBIND11_MODULE (core, module)
         .def ("read",               &Geometry::read)
         .def ("write",              &Geometry::write)
         // functions
-        .def ("get_ray_lengths",     &Geometry::get_ray_lengths)
-        .def ("get_ray_lengths_gpu", &Geometry::get_ray_lengths_gpu)
+        // .def ("get_ray_lengths",     &Geometry::get_ray_lengths)
+        // .def ("get_ray_lengths_gpu", &Geometry::get_ray_lengths_gpu)
         // constructor
         .def (py::init<>());
 
@@ -175,6 +198,7 @@ PYBIND11_MODULE (core, module)
         .def_readwrite ("position",    &Points::position)
         .def_readwrite ("velocity",    &Points::velocity)
         .def_readwrite ("curr_neighbors", &Points::curr_neighbors)
+        .def_readwrite ("multiscale", &Points::multiscale)
 //@Frederik: I'm commenting these out for now :
 // We should replace these with some methods from the Neighbors struct
 //        .def_readwrite ("n_neighbors", &Points::n_neighbors)
@@ -200,6 +224,7 @@ PYBIND11_MODULE (core, module)
     // Multiscale
     py::class_<Multiscale> (module, "Multiscale")
         // functions
+        .def("set_all_neighbors", &Multiscale::set_all_neighbors)
         //.def("get_neighbors", &Multiscale::get_neighbors) TODO: figure out how to handle overloaded functions
         // constructor
         .def (py::init<>());
@@ -324,6 +349,7 @@ PYBIND11_MODULE (core, module)
         .def_readwrite ("quadrature",       &LineProducingSpecies::quadrature)
         .def_readwrite ("Lambda",           &LineProducingSpecies::lambda) // "lambda" is invalid in Python, use "Lambda"
         .def_readwrite ("Jeff",             &LineProducingSpecies::Jeff)
+        .def_readwrite ("Jdif",             &LineProducingSpecies::Jdif)
         .def_readwrite ("Jlin",             &LineProducingSpecies::Jlin)
         .def_readwrite ("nr_line",          &LineProducingSpecies::nr_line)
         .def_readwrite ("population",       &LineProducingSpecies::population)
@@ -331,6 +357,7 @@ PYBIND11_MODULE (core, module)
         .def_readwrite ("population_prev1", &LineProducingSpecies::population_prev1)
         .def_readwrite ("population_prev2", &LineProducingSpecies::population_prev2)
         .def_readwrite ("population_prev3", &LineProducingSpecies::population_prev3)
+        .def_readwrite ("populations",      &LineProducingSpecies::populations)
         .def_readwrite ("RT",               &LineProducingSpecies::RT)
         .def_readwrite ("LambdaStar",       &LineProducingSpecies::LambdaStar)
         .def_readwrite ("LambdaTest",       &LineProducingSpecies::LambdaTest)
@@ -425,7 +452,6 @@ PYBIND11_MODULE (core, module)
         .def_readwrite ("u",           &Radiation::u)
         .def_readwrite ("v",           &Radiation::v)
         .def_readwrite ("J",           &Radiation::J)
-        .def ("print",                 &Radiation::print)
         // functions
         .def ("read",                  &Radiation::read)
         .def ("write",                 &Radiation::write)

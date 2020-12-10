@@ -1,17 +1,21 @@
-# Set project title
-project ("Magritte")
+# Set minimun required CMake version
+cmake_minimum_required (VERSION 3.18)
+# Set CMake version policy
+cmake_policy (SET CMP0048 NEW)
 
-# Set version numbers
-set (MAGRITTE_VERSION_MAJOR 1)
-set (MAGRITTE_VERSION_MINOR 0)
+# Set project title, version, description, and url
+project (
+    "Magritte"
+    VERSION      0.0.1
+    DESCRIPTION  "A modern software library for simulating radiation transport."
+    HOMEPAGE_URL "https://magritte.readthedocs.io"
+)
 
 # Set build type
 # set (CMAKE_BUILD_TYPE Release)
 set (CMAKE_BUILD_TYPE Debug)
 set (CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --extended-lambda --use_fast_math --expt-relaxed-constexpr")
 
-# Set minimun required CMake version
-cmake_minimum_required (VERSION 3.18)
 
 # Write all binary files to the bin directory
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)

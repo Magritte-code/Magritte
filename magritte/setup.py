@@ -3,9 +3,9 @@ import scipy as sp
 import healpy
 import re
 
-from magritte.core  import LineProducingSpecies, vLineProducingSpecies,            \
-                           CollisionPartner, vCollisionPartner, CC, HH, KB, T_CMB, \
-                           BoundaryCondition
+from magritte.core import LineProducingSpecies, vLineProducingSpecies,            \
+                          CollisionPartner, vCollisionPartner, CC, HH, KB, T_CMB, \
+                          BoundaryCondition
 
 
 def check_if_1D(model):
@@ -200,33 +200,19 @@ def set_boundary_condition_CMB (model):
     return model
 
 
-def Gauss_Hermite_roots(n):
-    """
-    Returns the roots for Gauss-Hermite quadrature.
-    """
-    coeffs  = [0.0 for _ in range(n)]
-    coeffs += [1.0]
-    return np.polynomial.hermite.hermroots(coeffs)
-
-
-def Gauss_Hermite_weights(n):
-    """
-    Returns the weights for Gauss-Hermite quadrature.
-    """
-    coeffs  = [0.0 for _ in range(n-1)]
-    coeffs += [1.0]
-    H = np.polynomial.hermite.hermval(Gauss_Hermite_roots(n), coeffs)
-    return 2**(n-1) * np.math.factorial(n) / (n*H)**2
-
-
 def set_quadrature(model):
     """
     Setter for the quadrature roots and weights for the Gauss-Hermite
     quadrature, used for integrating over (Gaussian) line profiles.
     """
+    # Get (Gauss-Hermite) quadrature roots and weights
+    (roots, weights) = np.polynomial.hermite.hermgauss(model.parameters.nquads())
+    # Normalize weights
+    weights = weights / np.sum(weights)
+    # Set roots and weights
     for l in range(model.parameters.nlspecs()):
-        model.lines.lineProducingSpecies[l].quadrature.roots  .set(Gauss_Hermite_roots   (model.parameters.nquads()))
-        model.lines.lineProducingSpecies[l].quadrature.weights.set(Gauss_Hermite_weights (model.parameters.nquads()))
+        model.lines.lineProducingSpecies[l].quadrature.roots  .set(roots)
+        model.lines.lineProducingSpecies[l].quadrature.weights.set(weights)
     return model
 
 

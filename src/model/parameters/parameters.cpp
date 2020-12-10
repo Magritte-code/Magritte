@@ -25,6 +25,7 @@ void Parameters :: read (const Io &io)
 {
     cout << "Reading parameters..." << endl;
 
+    READ_NUMBER (Size, dimension );
     READ_NUMBER (Size, npoints   );
     READ_NUMBER (Size, totnnbs   );
     READ_NUMBER (Size, nrays     );
@@ -140,6 +141,7 @@ void Parameters :: write (const Io &io) const
 //    try         {io.write_bool (".adaptive_ray_tracing",  adaptive_ray_tracing () );}
 //    catch (...) {cout << "Failed write adaptive_ray_tracing!"               << endl;}
 
+    WRITE_NUMBER (Size, dimension );
     WRITE_NUMBER (Size, npoints   );
     WRITE_NUMBER (Size, totnnbs   );
     WRITE_NUMBER (Size, nrays     );

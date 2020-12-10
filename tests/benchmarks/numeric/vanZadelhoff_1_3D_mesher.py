@@ -11,7 +11,7 @@ import numpy             as np
 import scipy             as sp
 import healpy            as hp
 import matplotlib.pyplot as plt
-# import magritte.tools    as tools
+import magritte.tools    as tools
 import magritte.setup    as setup
 import magritte.mesher   as mesher
 import magritte.core     as magritte
@@ -92,8 +92,9 @@ def create_model (a_or_b):
     model.geometry.points.position.set(mesh.points)
     model.geometry.points.velocity.set(np.zeros((npoints, 3)))
 
-    model.geometry.points.  neighbors.set(  nbs)
-    model.geometry.points.n_neighbors.set(n_nbs)
+    # model.geometry.points.  neighbors.set(  nbs)
+    # model.geometry.points.n_neighbors.set(n_nbs)
+    model.geometry.points.multiscale.set_all_neighbors(n_nbs, nbs)
 
     model.chemistry.species.abundance = [[     0.0, nTT(r), nH2(r),  0.0,      1.0] for r in rs]
     model.chemistry.species.symbol    =  ['dummy0', 'test',   'H2', 'e-', 'dummy1']
@@ -185,12 +186,19 @@ def run_model (a_or_b, nosave=False):
     return
 
 
-if __name__ == '__main__':
-
-    nosave = (len(sys.argv) > 1) and (sys.argv[1] == 'nosave')
+def run_test (nosave=False):
 
     create_model ('a')
     run_model    ('a', nosave)
 
     create_model ('b')
     run_model    ('b', nosave)
+
+    return
+
+
+if __name__ == '__main__':
+
+    nosave = (len(sys.argv) > 1) and (sys.argv[1] == 'nosave')
+
+    run_test (nosave)

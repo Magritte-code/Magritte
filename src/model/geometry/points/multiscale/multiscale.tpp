@@ -151,6 +151,37 @@ inline std::set<Size> Multiscale::get_neighbors(const Size p) const
 {
   return neighbors[curr_coarsening_lvl][p];
 }
+// Returns all neighbors at the finest level
+inline vector<Size> Multiscale::get_all_neighbors_as_vector() const
+{
+  Size nb_points=parameters.npoints();
+  Size tot_n_nbs=0;
+  for (Size point=0; point<nb_points; point++)
+  {
+    tot_n_nbs+=get_nb_neighbors(point,0);
+  }
+  vector<Size> all_neighbors;
+  all_neighbors.reserve(tot_n_nbs);
+  for (Size point=0; point<nb_points; point++)
+  {
+    std::set<Size> temp_neighbors=get_neighbors(point,0);
+    all_neighbors.insert(std::end(all_neighbors), std::begin(temp_neighbors), std::end(temp_neighbors));
+  }
+  return all_neighbors;
+}
+
+// Returns the number of neighbors of each point as vector at the finest level
+inline vector<Size> Multiscale::get_all_nb_neighbors() const
+{
+  Size nb_points=parameters.npoints();
+  vector<Size> nb_neighbors;
+  nb_neighbors.resize(nb_points);
+  for (Size point=0; point<nb_points; point++)
+  {
+    nb_neighbors[point]=get_nb_neighbors(point,0);
+  }
+  return nb_neighbors;
+}
 
 inline Size Multiscale::get_nb_neighbors(const Size p, const Size coars_lvl) const
 {//TODO: add check for whether p is still in grid, or just set their neighbors to empty during coarsening

@@ -18,8 +18,6 @@ Also assert that the lengths are the same; You can change this to any other exce
     parameters.set_npoints (io.get_length (prefix+"position"));
 //    parameters.set_npoints (io.get_length (prefix+"velocity"));
 
-    cout << "npoints = " << parameters.npoints() << endl;
-
     position.resize (parameters.npoints());
     velocity.resize (parameters.npoints());
 
@@ -84,8 +82,6 @@ Also assert that the lengths are the same; You can change this to any other exce
 //        cum_n_neighbors[p] = cum_n_neighbors[p-1] + n_neighbors[p-1];
 //    }
 
-    cout << "points put" << endl;
-
     position.copy_vec_to_ptr ();
     velocity.copy_vec_to_ptr ();
 
@@ -93,7 +89,6 @@ Also assert that the lengths are the same; You can change this to any other exce
 //        n_neighbors.copy_vec_to_ptr ();
 //          neighbors.copy_vec_to_ptr ();
 
-    cout << "neighbors put" << endl;
 
     //nbs.resize (parameters.npoints()*nnbs);
 
@@ -129,16 +124,15 @@ void Points :: write (const Io& io) const
         velocity_buffer[p] = {velocity[p].x(),
                               velocity[p].y(),
                               velocity[p].z() };
-
-                              position[p].print();
-                              velocity[p].print();
     }
 
     io.write_array (prefix+"position", position_buffer);
     io.write_array (prefix+"velocity", velocity_buffer);
 
-//@Frederik: this might write different results depending on the current level of coarsening
 //TODO take another look at this
-    io.write_list (prefix+"n_neighbors", this->curr_neighbors.n_neighbors);
-    io.write_list (prefix+  "neighbors", this->curr_neighbors.get_flattened_neigbors_list());
+    // io.write_list (prefix+"n_neighbors", this->curr_neighbors.n_neighbors);
+    // io.write_list (prefix+  "neighbors", this->curr_neighbors.get_flattened_neigbors_list());
+    io.write_list (prefix+"n_neighbors", this->multiscale.get_all_nb_neighbors());
+    io.write_list (prefix+  "neighbors", this->multiscale.get_all_neighbors_as_vector());
+
 }

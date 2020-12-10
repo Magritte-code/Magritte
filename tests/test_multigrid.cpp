@@ -62,7 +62,7 @@ int main (int argc, char **argv)
     //just testing to see how long it takes
     Timer timer("solver: 2nd order Feautrier");
     timer.start();
-    model.compute_radiation_field_2nd_order_Feautrier();
+    model.compute_radiation_field_feautrier_order_2();
     timer.stop();
 
     //
@@ -73,7 +73,7 @@ int main (int argc, char **argv)
 
     Timer timer2("solver: multigrid implementation");
     timer2.start();
-    model.compute_radiation_field_2nd_order_Feautrier();
+    model.compute_radiation_field_feautrier_order_2();
     timer2.stop();
     //TODO also add interpolation and another hime the computation
 
@@ -173,16 +173,16 @@ int main (int argc, char **argv)
 //        cout << model.geometry.lengths[i] << endl;
 //    }
 
-//     Size1 lengths = model.geometry.get_ray_lengths ();
-// //    Size1 lengths = model.geometry.get_ray_lengths_gpu (512, 512);
-//
-//     for (Size i = 0; i < 100; i++)
-//     {
-// //        cout << model.geometry.lengths[i] << endl;
-//         cout << lengths[i] << endl;
-//     }
-//
-//     cout << "Done." << endl;
-//
-//     return (0);
+    // Size1 lengths = model.geometry.get_ray_lengths ();
+//    Size1 lengths = model.geometry.get_ray_lengths_gpu (512, 512);
+
+    // for (Size i = 0; i < 100; i++)
+    // {
+//        cout << model.geometry.lengths[i] << endl;
+        // cout << lengths[i] << endl;
+    // }
+
+    cout << "Done." << endl;
+
+    return (0);
 }
