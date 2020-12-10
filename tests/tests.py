@@ -1,5 +1,6 @@
 
 import numpy   as np
-import astropy as ap
 print('numpy  ', np.__version__)
-print('astropy', ap.__version__)
+
+import magritte.core as core
+print(core.AMU)
