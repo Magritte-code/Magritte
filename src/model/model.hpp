@@ -79,8 +79,9 @@ struct Model
     // inline std::set<vector<Size>> calc_all_tetra_with_point(Size point, Size coars_lvl);
     // inline Eigen::Vector<double,4> calc_barycentric_coords(const vector<Size> &triangle, Size point);
     // //TODO:inline void rerefine_grid();
-    inline void interpolate_vector(Size coarser_lvl, Size finer_lvl, vector<double> &to_interpolate);
-    inline void interpolate_vector_local(Size coarser_lvl, vector<double> &to_interpolate);
+    // inline void interpolate_vector(Size coarser_lvl, Size finer_lvl, vector<double> &to_interpolate);
+    template <typename T>
+    inline void interpolate_vector_local(Size coarser_lvl, vector<T> &to_interpolate);
     // inline void reset_grid();
 
 

@@ -1094,149 +1094,149 @@ inline std::function<bool(Size,Size)> Model::points_are_similar(double tolerance
 //   return result;
 // }
 
-// The radial basis function we apply
-  inline double rbf(double radius) // the functor we want to apply, note
-  {//TODO: use sensible function instead; also let it depend on some predertemined radius; or just divide all elements by that number
-    // return std::exp(-x);
-    return std::max(1-radius,0.0);
-  }
-
-/// Interpolates the vector with length nb_points_in_coarser level
-///   @Parameter [in] coarser_lvl: the coarsening level of the coarser grid
-///   @Parameter [in] finer_lvl: the coarsening level of the finer grid; should be smaller than coarser_lvl
-///   @Parameter [in/out] to_interpolate: the vector with values at the points of the coarser grid (and some irrelevant values inbetween), has length equal to the total number of points
-///   @Returns: A vector containing the interpolated values (has length equal to parameters.npoints())
-inline void Model::interpolate_vector(Size coarser_lvl, Size finer_lvl, vector<double> &to_interpolate)
-{//TODO: only use large vector and some masks
-  //FIXME: in the case that we somehow have nothing in diff_points, just quit!!!
-  Size nb_points=parameters.npoints();
-  std::vector<Size> all_points(nb_points);
-  std::iota(all_points.begin(), all_points.end(), 0); // all_points will become: [0..nb_points]
-  vector<bool> coarse_mask=geometry.points.multiscale.get_mask(coarser_lvl);
-  vector<bool> finer_mask=geometry.points.multiscale.get_mask(finer_lvl);
-
-  //TODO calculate the difference
-  vector<Size> diff_points;
-  vector<double> to_interpolate_values;//values of the coarse grid we need to interpolate (after applying the mask)
-  vector<Size> coarse_points;
-  for (Size point: all_points)
-  {
-    if(finer_mask[point])
-    {
-      if (coarse_mask[point])
-      {
-        coarse_points.push_back(point);
-        to_interpolate_values.push_back(to_interpolate[point]);
-      }else{diff_points.push_back(point);}
-    }
-  }
-
-  Size nb_coarse_points=coarse_points.size();
-  Size nb_diff_points=diff_points.size();
-
-  //if we have truly nothing to do, just do nothing
-  if (nb_diff_points==0)
-  {return;}
-
-
-  std::vector<Eigen::Triplet<double>> tripletList;
-  tripletList.reserve(50*nb_coarse_points);//TODO: get better estimate
-
-  //the matrix A for A*weights=to_interpolate
-  //Eigen::MatrixXd coarse_rbf_mat(nb_coarse_points, nb_coarse_points);
-  //possibly better implementation possible, this is far too slow!!
-  double maxdist=0;
-  for (Size row=0; row<nb_coarse_points; row++)
-  {
-    std::cout<<row<<std::endl;
-    std::set<Size> neighbors_of_row=geometry.points.multiscale.get_neighbors(row);
-    for (Size col=0; col<nb_coarse_points; col++)
-    {
-      double dist=(geometry.points.position[coarse_points[row]]-geometry.points.position[coarse_points[col]]).squaredNorm();
-      dist=sqrt(dist);
-        // also trying to calculate the maximum relevant distance between points (needed for rescale for radial basis function)
-      if (neighbors_of_row.find(col)!=neighbors_of_row.end()&&dist>maxdist)
-      {
-        maxdist=dist;
-      }
-    }
-  }
-
-  for (Size row=0; row<nb_coarse_points; row++)
-  {
-    std::cout<<row<<std::endl;
-    std::set<Size> neighbors_of_row=geometry.points.multiscale.get_neighbors(row);
-    for (Size col=0; col<nb_coarse_points; col++)
-    {
-      double dist=(geometry.points.position[coarse_points[row]]-geometry.points.position[coarse_points[col]]).squaredNorm();
-      //coarse_rbf_mat(row,col)=dist;
-      if (dist<maxdist)
-      {
-        dist=sqrt(dist);
-        tripletList.push_back(Eigen::Triplet<double>(row,col,dist));
-        // also trying to calculate the maximum relevant distance between points (needed for rescale for radial basis function)
-        if (neighbors_of_row.find(col)!=neighbors_of_row.end()&&dist>maxdist)
-        {
-          maxdist=dist;
-        }
-      }
-    }
-  }
-  Eigen::SparseMatrix<double> coarse_rbf_mat(nb_coarse_points,nb_coarse_points);
-  coarse_rbf_mat.setFromTriplets(tripletList.begin(), tripletList.end());
-
-  coarse_rbf_mat=coarse_rbf_mat/maxdist;
-  coarse_rbf_mat=coarse_rbf_mat.unaryExpr(std::ptr_fun(rbf));
-
-  //now solving A*weights=to_interpolate_values
-  //Note: A is symmetrical, positive definite
-  //NOTE: if this were to be too slow, switch to LLT instead (but that would be less accurate)
-  Eigen::VectorXd right_hand_side(nb_coarse_points);
-  for (Size coarse_idx=0; coarse_idx<nb_coarse_points; coarse_idx++)
-  {
-    right_hand_side(coarse_idx)=to_interpolate_values[coarse_points[coarse_idx]];
-  }
-
-  std::cout<<"probably expensive solve operation"<<std::endl;
-  Eigen::SimplicialLDLT<Eigen::SparseMatrix<double>> decomp(coarse_rbf_mat);  // performs a Cholesky factorization of A
-  Eigen::VectorXd weights = decomp.solve(right_hand_side);
-  //Eigen::VectorXd weights=coarse_rbf_mat.ldlt().solve(right_hand_side);
-
-  std::cout<<"end expensive solve operation"<<std::endl;
-
-  //now construct the matrix to interpolate the other values
-  std::vector<Eigen::Triplet<double>> tripletList_diff;
-  tripletList_diff.reserve(200*nb_diff_points);//TODO: get better estimate
-  //the matrix A for x=A*weights
-  // Eigen::MatrixXd diff_rbf_mat(nb_diff_points, nb_coarse_points);
-  //possibly better implementation possible, but this suffices for now
-  //can probably be improved...
-  for (Size row=0; row<nb_diff_points; row++)
-  {
-    for (Size col=0; col<nb_coarse_points; col++)
-    {
-      double dist=(geometry.points.position[diff_points[row]]-geometry.points.position[coarse_points[col]]).squaredNorm();
-      //diff_rbf_mat(row,col)=dist;
-      if (dist<maxdist)
-      {tripletList_diff.push_back(Eigen::Triplet<double>(row,col,sqrt(dist)));}
-    }
-  }
-  Eigen::SparseMatrix<double> diff_rbf_mat(nb_diff_points,nb_coarse_points);
-  diff_rbf_mat.setFromTriplets(tripletList_diff.begin(), tripletList_diff.end());
-
-  //normalize the distance again and applying the radial basis function
-  diff_rbf_mat=diff_rbf_mat/maxdist;
-  diff_rbf_mat=diff_rbf_mat.unaryExpr(std::ptr_fun(rbf));
-
-  VectorXd interpolated_values=diff_rbf_mat*weights;
-
-  for (Size diff_idx=0; diff_idx<nb_diff_points; diff_idx++)
-  {
-    to_interpolate[diff_points[diff_idx]]=interpolated_values[diff_idx];
-  }
-}
-
-
+// // The radial basis function we apply
+//   inline double rbf(double radius) // the functor we want to apply, note
+//   {//TODO: use sensible function instead; also let it depend on some predertemined radius; or just divide all elements by that number
+//     // return std::exp(-x);
+//     return std::max(1-radius,0.0);
+//   }
+//
+// /// Interpolates the vector with length nb_points_in_coarser level
+// ///   @Parameter [in] coarser_lvl: the coarsening level of the coarser grid
+// ///   @Parameter [in] finer_lvl: the coarsening level of the finer grid; should be smaller than coarser_lvl
+// ///   @Parameter [in/out] to_interpolate: the vector with values at the points of the coarser grid (and some irrelevant values inbetween), has length equal to the total number of points
+// ///   @Returns: A vector containing the interpolated values (has length equal to parameters.npoints())
+// inline void Model::interpolate_vector(Size coarser_lvl, Size finer_lvl, vector<double> &to_interpolate)
+// {//TODO: only use large vector and some masks
+//   //FIXME: in the case that we somehow have nothing in diff_points, just quit!!!
+//   Size nb_points=parameters.npoints();
+//   std::vector<Size> all_points(nb_points);
+//   std::iota(all_points.begin(), all_points.end(), 0); // all_points will become: [0..nb_points]
+//   vector<bool> coarse_mask=geometry.points.multiscale.get_mask(coarser_lvl);
+//   vector<bool> finer_mask=geometry.points.multiscale.get_mask(finer_lvl);
+//
+//   //TODO calculate the difference
+//   vector<Size> diff_points;
+//   vector<double> to_interpolate_values;//values of the coarse grid we need to interpolate (after applying the mask)
+//   vector<Size> coarse_points;
+//   for (Size point: all_points)
+//   {
+//     if(finer_mask[point])
+//     {
+//       if (coarse_mask[point])
+//       {
+//         coarse_points.push_back(point);
+//         to_interpolate_values.push_back(to_interpolate[point]);
+//       }else{diff_points.push_back(point);}
+//     }
+//   }
+//
+//   Size nb_coarse_points=coarse_points.size();
+//   Size nb_diff_points=diff_points.size();
+//
+//   //if we have truly nothing to do, just do nothing
+//   if (nb_diff_points==0)
+//   {return;}
+//
+//
+//   std::vector<Eigen::Triplet<double>> tripletList;
+//   tripletList.reserve(50*nb_coarse_points);//TODO: get better estimate
+//
+//   //the matrix A for A*weights=to_interpolate
+//   //Eigen::MatrixXd coarse_rbf_mat(nb_coarse_points, nb_coarse_points);
+//   //possibly better implementation possible, this is far too slow!!
+//   double maxdist=0;
+//   for (Size row=0; row<nb_coarse_points; row++)
+//   {
+//     std::cout<<row<<std::endl;
+//     std::set<Size> neighbors_of_row=geometry.points.multiscale.get_neighbors(row);
+//     for (Size col=0; col<nb_coarse_points; col++)
+//     {
+//       double dist=(geometry.points.position[coarse_points[row]]-geometry.points.position[coarse_points[col]]).squaredNorm();
+//       dist=sqrt(dist);
+//         // also trying to calculate the maximum relevant distance between points (needed for rescale for radial basis function)
+//       if (neighbors_of_row.find(col)!=neighbors_of_row.end()&&dist>maxdist)
+//       {
+//         maxdist=dist;
+//       }
+//     }
+//   }
+//
+//   for (Size row=0; row<nb_coarse_points; row++)
+//   {
+//     std::cout<<row<<std::endl;
+//     std::set<Size> neighbors_of_row=geometry.points.multiscale.get_neighbors(row);
+//     for (Size col=0; col<nb_coarse_points; col++)
+//     {
+//       double dist=(geometry.points.position[coarse_points[row]]-geometry.points.position[coarse_points[col]]).squaredNorm();
+//       //coarse_rbf_mat(row,col)=dist;
+//       if (dist<maxdist)
+//       {
+//         dist=sqrt(dist);
+//         tripletList.push_back(Eigen::Triplet<double>(row,col,dist));
+//         // also trying to calculate the maximum relevant distance between points (needed for rescale for radial basis function)
+//         if (neighbors_of_row.find(col)!=neighbors_of_row.end()&&dist>maxdist)
+//         {
+//           maxdist=dist;
+//         }
+//       }
+//     }
+//   }
+//   Eigen::SparseMatrix<double> coarse_rbf_mat(nb_coarse_points,nb_coarse_points);
+//   coarse_rbf_mat.setFromTriplets(tripletList.begin(), tripletList.end());
+//
+//   coarse_rbf_mat=coarse_rbf_mat/maxdist;
+//   coarse_rbf_mat=coarse_rbf_mat.unaryExpr(std::ptr_fun(rbf));
+//
+//   //now solving A*weights=to_interpolate_values
+//   //Note: A is symmetrical, positive definite
+//   //NOTE: if this were to be too slow, switch to LLT instead (but that would be less accurate)
+//   Eigen::VectorXd right_hand_side(nb_coarse_points);
+//   for (Size coarse_idx=0; coarse_idx<nb_coarse_points; coarse_idx++)
+//   {
+//     right_hand_side(coarse_idx)=to_interpolate_values[coarse_points[coarse_idx]];
+//   }
+//
+//   std::cout<<"probably expensive solve operation"<<std::endl;
+//   Eigen::SimplicialLDLT<Eigen::SparseMatrix<double>> decomp(coarse_rbf_mat);  // performs a Cholesky factorization of A
+//   Eigen::VectorXd weights = decomp.solve(right_hand_side);
+//   //Eigen::VectorXd weights=coarse_rbf_mat.ldlt().solve(right_hand_side);
+//
+//   std::cout<<"end expensive solve operation"<<std::endl;
+//
+//   //now construct the matrix to interpolate the other values
+//   std::vector<Eigen::Triplet<double>> tripletList_diff;
+//   tripletList_diff.reserve(200*nb_diff_points);//TODO: get better estimate
+//   //the matrix A for x=A*weights
+//   // Eigen::MatrixXd diff_rbf_mat(nb_diff_points, nb_coarse_points);
+//   //possibly better implementation possible, but this suffices for now
+//   //can probably be improved...
+//   for (Size row=0; row<nb_diff_points; row++)
+//   {
+//     for (Size col=0; col<nb_coarse_points; col++)
+//     {
+//       double dist=(geometry.points.position[diff_points[row]]-geometry.points.position[coarse_points[col]]).squaredNorm();
+//       //diff_rbf_mat(row,col)=dist;
+//       if (dist<maxdist)
+//       {tripletList_diff.push_back(Eigen::Triplet<double>(row,col,sqrt(dist)));}
+//     }
+//   }
+//   Eigen::SparseMatrix<double> diff_rbf_mat(nb_diff_points,nb_coarse_points);
+//   diff_rbf_mat.setFromTriplets(tripletList_diff.begin(), tripletList_diff.end());
+//
+//   //normalize the distance again and applying the radial basis function
+//   diff_rbf_mat=diff_rbf_mat/maxdist;
+//   diff_rbf_mat=diff_rbf_mat.unaryExpr(std::ptr_fun(rbf));
+//
+//   VectorXd interpolated_values=diff_rbf_mat*weights;
+//
+//   for (Size diff_idx=0; diff_idx<nb_diff_points; diff_idx++)
+//   {
+//     to_interpolate[diff_points[diff_idx]]=interpolated_values[diff_idx];
+//   }
+// }
+//
+//
 
 inline double rbf_local(double radius)
 {
@@ -1247,7 +1247,8 @@ inline double rbf_local(double radius)
 ///   @Parameter [in] coarser_lvl: the coarsening level of the coarser grid
 ///   @Parameter [in/out] to_interpolate: the vector with values at the points of the coarser grid (and some irrelevant values inbetween), has length equal to the total number of points
 ///   @Returns: A vector containing the interpolated values (has length equal to parameters.npoints())
-inline void Model::interpolate_vector_local(Size coarser_lvl, vector<double> &to_interpolate)
+template <typename T>
+inline void Model::interpolate_vector_local(Size coarser_lvl, vector<T> &to_interpolate)
 {//TODO: only use large vector and some masks
   //we cannot interpolate from lvl 0 to some level -..., so just return
   if (coarser_lvl==0)
