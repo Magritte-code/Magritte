@@ -9,42 +9,37 @@ language:
 python:
     - "3.7"
 
-addons:
-    apt:
-        sources:
+matrix:
+  include:
+    - os: linux
+      addons:
+        apt:
+          sources:
             - ubuntu-toolchain-r-test
-         packages:
+          packages:
             - libgomp1
             - gcc-9
             - g++-9
-
-jobs:
-  include:
-    # - os: osx
-    #   python: 3.7
-    #   env: CC=gcc-6 CXX=g++-6
-    # - os: linux
-    #   python: 3.7
-    #   env: CC=clang CXX=clang
+      env:
+         - MATRIX_EVAL="CC=gcc-9 && CXX=g++-9"
     - os: linux
-      python: 3.7
-      env: CC=gcc-9 CXX=g++-9
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - libgomp1
+            - gcc-8
+            - g++-8
+      env:
+         - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
+
+
 
 before_install:
-  #  - |
-  #    if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-  #        brew update
-  #        # seems to be needed on Travis due to conflicts with gcc otherwise
-  #        # see https://github.com/travis-ci/travis-ci/issues/8826
-  #        brew cask uninstall oclint
-  #        brew install ccache
-  #        export PATH="/usr/local/opt/ccache/libexec:$PATH"
-  #        # needed for OPENMP support on Travis
-  #        # see https://github.com/travis-ci/travis-ci/issues/8613N
-  #        export LD_LIBRARY_PATH=/usr/local/clang/lib:$LD_LIBRARY_PATH
-  #    fi
-  - PYTHON_EXECUTABLE=$(which python)
-  - BUILD_FLAGS="-DPYTHON_EXECUTABLE:FILEPATH=$PYTHON_EXECUTABLE -DOMP_PARALLEL=ON"
+  - eval "${MATRIX_EVAL}"
+  - PYTHON_EXEC=$(which python)
+  - BUILD_FLAGS="-DPYTHON_EXECUTABLE:FILEPATH=$PYTHON_EXEC -DOMP_PARALLEL=ON"
   - bash dependencies/get_cmake.sh
   # - bash dependencies/get_conda.sh
   # - export PATH=`pwd`/dependencies/miniconda3/bin:$PATH
@@ -62,5 +57,3 @@ install:
 
 script:
   - bash tests/run_all_tests.sh
-
-  
