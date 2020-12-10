@@ -80,7 +80,7 @@ def create_model (a_or_b):
 
     model.write()
 
-    return magritte.Model (modelFile)
+    return #magritte.Model (modelFile)
 
 
 def run_model (a_or_b, nosave=False):

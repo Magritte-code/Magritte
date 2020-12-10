@@ -70,7 +70,7 @@ def create_model ():
 
     model.write()
 
-    return magritte.Model (modelFile)
+    return #magritte.Model (modelFile)
 
 
 def run_model (nosave=False):
