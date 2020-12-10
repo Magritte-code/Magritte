@@ -14,7 +14,7 @@ import magritte.core     as magritte
 
 
 dimension = 1
-npoints   = 200
+npoints   = 50
 nrays     = 2
 nspecs    = 5
 nlspecs   = 1
