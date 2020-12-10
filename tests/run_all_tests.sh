@@ -11,7 +11,7 @@ mkdir results
 # Unit tests
 echo "Running unit tests..."
 
-python tests.py
+python3 tests.py
 
 # Integration tests
 echo "Running integration tests..."
@@ -20,7 +20,7 @@ ulimit -a
 free -m
 
 cd $DIR/benchmarks/analytic
-python all_constant_single_ray.py         nosave
+python3 all_constant_single_ray.py         nosave
 
 ulimit -a
 free -m
@@ -30,10 +30,10 @@ ulimit -s 82768
 ulimit -a
 free -m
 
-python density_distribution_single_ray.py nosave
+python3 density_distribution_single_ray.py nosave
 
 ulimit -a
 free -m
 
 cd $DIR/benchmarks/numeric
-python vanZadelhoff_1_1D.py               nosave
+python3 vanZadelhoff_1_1D.py               nosave

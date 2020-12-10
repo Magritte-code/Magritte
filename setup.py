@@ -38,7 +38,7 @@ setup(
     packages=find_packages(),
     install_requires=[
         'h5py>=2.9',
-        'numpy>=1.18',
+        'numpy>=1.19',
         'scipy>=1.3',
         'astropy>=4.0',
         'numba>=0.46',
