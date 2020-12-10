@@ -14,7 +14,8 @@ with open("README.md", "r") as file:
 with open("src/configure.hpp", "r") as file:
     for line in file.readlines():
         if 'MAGRITTE_VERSION' in line:
-            __version__ = re.search('"(.+?)"', line).group(0)
+            # Get the version, which is between ""
+            __version__ = re.findall('"(.*?)"', line)[0]
 
 
 class my_build_ext(build_ext):
