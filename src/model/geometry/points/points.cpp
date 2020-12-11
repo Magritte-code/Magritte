@@ -95,7 +95,10 @@ void Points :: write (const Io& io) const
                               velocity[p].z() };
     }
 
-    io.write_array (prefix+"position", position_buffer);
+    int success = io.write_array (prefix+"position", position_buffer);
+
+    cout << "success write position = " << success << endl;
+
     io.write_array (prefix+"velocity", velocity_buffer);
 
     io.write_list (prefix+"n_neighbors", n_neighbors);
