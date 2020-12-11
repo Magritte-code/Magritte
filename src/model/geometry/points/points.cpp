@@ -15,6 +15,8 @@ void Points :: read (const Io& io)
     position.resize (parameters.npoints());
     velocity.resize (parameters.npoints());
 
+    cout << "npoints = " << parameters.npoints() << endl;
+
     Double2 position_buffer (parameters.npoints(), Double1(3));
     Double2 velocity_buffer (parameters.npoints(), Double1(3));
 

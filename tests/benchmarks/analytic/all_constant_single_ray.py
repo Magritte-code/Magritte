@@ -37,6 +37,7 @@ def create_model ():
     modelFile = f'{moddir}{modelName}.hdf5'
     lamdaFile = f'{datdir}test.txt'
 
+
     model = magritte.Model ()
     model.parameters.set_spherical_symmetry(False)
     model.parameters.set_model_name        (modelFile)
@@ -64,6 +65,8 @@ def create_model ():
     model = setup.set_quadrature              (model)
 
     model.write()
+
+    print('model file =', modelFile)
 
     return #magritte.Model (modelFile)
 
