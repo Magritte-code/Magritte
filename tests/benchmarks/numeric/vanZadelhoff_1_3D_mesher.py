@@ -5,7 +5,6 @@ curdir = os.path.dirname(os.path.realpath(__file__))
 datdir = f'{curdir}/../../data/'
 moddir = f'{curdir}/../../models/'
 resdir = f'{curdir}/../../results/'
-sys.path.append(f'{curdir}/../../../')
 
 import numpy             as np
 import scipy             as sp
@@ -111,7 +110,7 @@ def create_model (a_or_b):
 
     model.write()
 
-    return magritte.Model (modelFile)
+    return #magritte.Model (modelFile)
 
 
 def run_model (a_or_b, nosave=False):
