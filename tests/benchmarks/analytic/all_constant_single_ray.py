@@ -68,6 +68,15 @@ def create_model ():
 
     print('model file =', modelFile)
 
+    print('-----------------------')
+    import h5py
+    with h5py.File(modelFile) as file:
+        print(file.keys())
+        print(file['geometry'].keys())
+        print(file['geometry/points'].keys())
+        print(file['geometry/points/position'].shape)
+    print('-----------------------')
+
     return #magritte.Model (modelFile)
 
 
@@ -76,6 +85,15 @@ def run_model (nosave=False):
     modelName = f'all_constant_single_ray'
     modelFile = f'{moddir}{modelName}.hdf5'
     timestamp = tools.timestamp()
+
+    print('-----------------------')
+    import h5py
+    with h5py.File(modelFile) as file:
+        print(file.keys())
+        print(file['geometry'].keys())
+        print(file['geometry/points'].keys())
+        print(file['geometry/points/position'].shape)
+    print('-----------------------')
 
     timer1 = tools.Timer('reading model')
     timer1.start()
