@@ -82,8 +82,11 @@ struct Model
     // inline void interpolate_vector(Size coarser_lvl, Size finer_lvl, vector<double> &to_interpolate);
     template <typename T>
     inline void interpolate_vector_local(Size coarser_lvl, vector<T> &to_interpolate);
-
-    inline int compute_feautrier_order_2_multigrid(Size min_nb_points, Size max_coars_lvl, double tol=0.1);
+    template <typename T>
+    inline void interpolate_matrix_local(Size coarser_lvl, Matrix<T> &to_interpolate);
+    //initializes multigrid
+    inline int setup_multigrid(Size min_nb_points, Size max_coars_lvl, double tol=0.1);
+    inline int compute_feautrier_order_2_multigrid();
     // inline void reset_grid();
 
 

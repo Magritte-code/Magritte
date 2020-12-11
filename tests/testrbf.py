@@ -12,8 +12,8 @@ x=[1,0,0]
 y=[0,1,0]
 z=[0,0,1]
 
-vals=[1,1,1]
+vals=[1,2,5]
 
-rbfi=sp.interpolate.Rbf(x,y,z,vals,function='gaussian',epsilon=200);
+rbfi=sp.interpolate.Rbf(x,y,z,vals,function='gaussian',epsilon=5);
 print(rbfi(0,0,0))
 print(rbfi.function)
