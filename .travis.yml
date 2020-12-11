@@ -7,7 +7,7 @@ language:
   - bash
 
 python:
-    - "3.7"
+    - "3"
 
 cache:
   directories:
@@ -97,7 +97,7 @@ install:
   - mkdir build; cd build;
   - $CC  --version
   - $CXX --version
-  - $CMAKE_CMD $BUILD_FLAGS ..
+  - CC=$CC CXX=$CXX $CMAKE_CMD $BUILD_FLAGS ..
   - make -j4
   - cd -
   - python3 setup.py install
