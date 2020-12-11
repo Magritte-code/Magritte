@@ -15,8 +15,6 @@ void Points :: read (const Io& io)
     position.resize (parameters.npoints());
     velocity.resize (parameters.npoints());
 
-    cout << "npoints = " << parameters.npoints() << endl;
-
     Double2 position_buffer (parameters.npoints(), Double1(3));
     Double2 velocity_buffer (parameters.npoints(), Double1(3));
 
@@ -95,10 +93,7 @@ void Points :: write (const Io& io) const
                               velocity[p].z() };
     }
 
-    int success = io.write_array (prefix+"position", position_buffer);
-
-    cout << "success write position = " << success << endl;
-
+    io.write_array (prefix+"position", position_buffer);
     io.write_array (prefix+"velocity", velocity_buffer);
 
     io.write_list (prefix+"n_neighbors", n_neighbors);

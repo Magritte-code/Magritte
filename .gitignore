@@ -53,9 +53,8 @@ configure.hpp
 ##############
 perf.data*
 
-# test models and results
-#########################
-tests/models/*
+# test results
+##############
 tests/results/*
 
 magritte.egg-info/*
