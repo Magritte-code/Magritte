@@ -7,7 +7,7 @@ language:
   - bash
 
 python:
-    - "3"
+    - "3.6"
 
 cache:
   directories:
