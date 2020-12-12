@@ -24,7 +24,7 @@ esac
 tar -zxvf cmake.tar.gz
 
 # Rename directory
-mv cmake-3.19.1-Linux-x8_64 cmake
+mv cmake-3.19.1-Linux-x86_64 cmake
 
 # Remove the tar ball
 rm cmake.tar.gz

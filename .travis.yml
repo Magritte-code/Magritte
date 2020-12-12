@@ -2,9 +2,9 @@
 ##################################
 
 language:
-  - python
   - cpp
   - bash
+# - we take care of Python with miniconda (otherwise no support for macOS)
 
 cache:
   directories:
