@@ -6,9 +6,6 @@ language:
   - cpp
   - bash
 
-python:
-    - "3.6"
-
 cache:
   directories:
   - mpich
@@ -66,7 +63,7 @@ matrix:
             - ubuntu-toolchain-r-test
             - llvm-toolchain-precise-5.0
           packages:
-            - clang-3.7
+            - clang-5.0
       env:
         - MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0"
 
@@ -85,12 +82,12 @@ matrix:
 before_install:
   - eval "${MATRIX_EVAL}"
   - bash dependencies/get_cmake.sh
-  - bash dependencies/get_mpich.sh
-  - PYTHON_EXEC=$(which python)
-  - BUILD_FLAGS="-DPYTHON_EXECUTABLE:FILEPATH=$PYTHON_EXEC -DOMP_PARALLEL=ON"
   - bash dependencies/get_conda.sh
+  - bash dependencies/get_mpich.sh
   - export PATH=`pwd`/dependencies/miniconda3/bin:$PATH
   - source activate magritte
+  - PYTHON_EXEC=$(which python)
+  - BUILD_FLAGS="-DPYTHON_EXECUTABLE:FILEPATH=$PYTHON_EXEC -DOMP_PARALLEL=ON"
   - CMAKE_CMD="`pwd`/dependencies/cmake/bin/cmake"
 
 install:
