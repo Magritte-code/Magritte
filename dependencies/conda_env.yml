@@ -3,13 +3,12 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - python=3.7
+  - python=3.6
   - meshio
   - h5py
   - healpy
   - jupyterlab
   - vtk
-  - nodejs
   - yt
   - scipy
   - numba
