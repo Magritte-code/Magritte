@@ -323,6 +323,8 @@ int Model :: compute_radiation_field_feautrier_order_2 ()
     solver.setup <CoMoving>        (*this);
     solver.solve_feautrier_order_2 (*this);
 
+    cout <<"here"<<endl;
+
     return (0);
 }
 
@@ -425,8 +427,10 @@ int Model :: compute_level_populations_multigrid (
   while(geometry.points.multiscale.get_curr_coars_lvl()>0)
   {
     compute_level_populations(use_Ng_acceleration,max_niterations);
+    cout<<"trying to interpolate matrix"<<endl;
     //for all frequencies, interpolate J
     interpolate_matrix_local(geometry.points.multiscale.get_curr_coars_lvl(),radiation.J);
+    cout<<"successfully interpolated matrix"<<endl;
     geometry.points.multiscale.set_curr_coars_lvl(geometry.points.multiscale.get_curr_coars_lvl()-1);
     std::cout<<"Current coarsening level: "<< geometry.points.multiscale.get_curr_coars_lvl()<<std::endl;
     std::cout<<"Current number points:"<<geometry.points.multiscale.get_total_points(geometry.points.multiscale.get_curr_coars_lvl())<<std::endl;
@@ -488,6 +492,7 @@ int Model :: compute_level_populations (
             cout << "Computing the radiation field..." << endl;
 
             compute_radiation_field_feautrier_order_2 ();
+            cout << "Computed feautrier" << std::endl;
             compute_Jeff                              ();
 
             lines.iteration_using_statistical_equilibrium (
@@ -518,6 +523,7 @@ int Model :: compute_level_populations (
 
     // Print convergence stats
     cout << "Converged after " << iteration << " iterations" << endl;
+    cout << "Some extra output" <<endl;
 
     return iteration;
 }
