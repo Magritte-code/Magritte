@@ -22,22 +22,17 @@ esac
 
 # Run the install script
 bash miniconda3.sh -b -p $DIR/miniconda3
-
 # Remove the installer
 rm miniconda3.sh
-
 # Export path to conda
 export PATH=$DIR/miniconda3/bin:$PATH
-
 # Remove old program locations
 hash -r
-
 # Configure and update conda
 conda config --set always_yes yes --set changeps1 no
 conda update --yes conda
 
 # Create conda environment
 conda env create -f conda_env.yml
-
 # Activate the magritte conda environment
 source activate magritte
