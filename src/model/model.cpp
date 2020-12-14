@@ -406,7 +406,7 @@ int Model :: compute_level_populations_from_stateq ()
     return (0);
 }
 
-///  Compute level populations self-consistenly with the radiation field
+///  Compute level populations self-consistenly with the radiation field using multigrid
 ///  assuming statistical equilibrium (detailed balance for the levels)
 ///  @param[in] io                  : io object (for writing level populations)
 ///  @param[in] use_Ng_acceleration : true if Ng acceleration has to be used
@@ -419,7 +419,8 @@ int Model :: compute_level_populations_multigrid (
 {
   //set curr coarsening level to max
   geometry.points.multiscale.set_curr_coars_lvl(geometry.points.multiscale.get_max_coars_lvl());
-  std::cout<<"Current coarsening level: "<< geometry.points.multiscale.coars_lvl<<std::endl;
+  std::cout<<"Current coarsening level: "<< geometry.points.multiscale.get_curr_coars_lvl()<<std::endl;
+  std::cout<<"Current number points:"<<geometry.points.multiscale.get_total_points(geometry.points.multiscale.get_curr_coars_lvl())<<std::endl;
   //solve and interpolate J for all coarser grids
   while(geometry.points.multiscale.get_curr_coars_lvl()>0)
   {
@@ -427,6 +428,8 @@ int Model :: compute_level_populations_multigrid (
     //for all frequencies, interpolate J
     interpolate_matrix_local(geometry.points.multiscale.get_curr_coars_lvl(),radiation.J);
     geometry.points.multiscale.set_curr_coars_lvl(geometry.points.multiscale.get_curr_coars_lvl()-1);
+    std::cout<<"Current coarsening level: "<< geometry.points.multiscale.get_curr_coars_lvl()<<std::endl;
+    std::cout<<"Current number points:"<<geometry.points.multiscale.get_total_points(geometry.points.multiscale.get_curr_coars_lvl())<<std::endl;
   }
     //finally, solve for the final grid
     compute_level_populations(use_Ng_acceleration,max_niterations);

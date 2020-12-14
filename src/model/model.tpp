@@ -38,6 +38,7 @@ inline double Model :: calc_diff_abundance_with_point(Size point1, Size point2)
     //std::cout<< "abundance self: " << abundance_self << std::endl;
     //std::cout<< "abundance other: " << abundance_other << std::endl;
     double temp_diff=std::abs((abundance_self-abundance_other)/(abundance_self+abundance_other));
+    std::cout<<"temp_diff:"<<temp_diff<<std::endl;
     return temp_diff;
 }
 
@@ -46,6 +47,9 @@ inline std::function<bool(Size,Size)> Model::points_are_similar(double tolerance
 {
   std::function<bool(Size,Size)> fun_to_return = [&](Size p1, Size p2)
   {
+    std::cout<<"diff_abundance:"<<calc_diff_abundance_with_point(p1,p2)<<std::endl;
+    std::cout<<"tolerance: "<<tolerance<<std::endl;
+    std::cout<<"result: "<<(calc_diff_abundance_with_point(p1,p2)<tolerance)<<std::endl;
     return (calc_diff_abundance_with_point(p1,p2)<tolerance);
   };
   return fun_to_return;
@@ -1243,7 +1247,8 @@ inline std::function<bool(Size,Size)> Model::points_are_similar(double tolerance
 ///   @Parameter[in]: tol: the tolerance level for which we still consider points similar enough
 inline int Model::setup_multigrid(Size min_nb_points, Size max_coars_lvl, double tol)
 {
-  auto fun_to_del=points_are_similar(tol);//function that says if two points are similar enough
+  std::cout<<"Tolerance: "<<tol<<std::endl;
+  std::function<bool(Size,Size)> fun_to_del=points_are_similar(tol);//function that says if two points are similar enough
   geometry.points.multiscale.set_not_on_boundary_fun([&](Size p){return geometry.not_on_boundary(p);});//function that says whether a point lies on the boundary
   geometry.points.multiscale.set_comparison_fun(fun_to_del);
   //first, we coarsen the grid until we either have too few points left or have too many coarsening levels

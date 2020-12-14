@@ -21,7 +21,7 @@ inline void Multiscale::coarsen()
         if (can_be_coarsened(p, points_coarsened_around))
         {
           coarsen_around_point(p);
-          // std::cout << "Deleted around point: " << p <<std::endl;
+          std::cout << "Deleted around point: " << p <<std::endl;
           points_coarsened_around.insert(p);
         }
     }
@@ -31,7 +31,9 @@ inline void Multiscale::coarsen()
 // Returns whether the mesh at a point (p) can be coarsened.
 inline bool Multiscale::can_be_coarsened (const Size p, std::set<Size>& points_coarsened_around)
 {
-    if (!mask.back()[p]||!not_on_boundary(p)) {return false;}//if point no longer in grid, do not coarsen
+    if (!mask.back()[p]||!not_on_boundary(p)) {
+      std::cout<<"point on boundary or mask is set wrong?"<<std::endl;
+      return false;}//if point no longer in grid, do not coarsen
     //if the point lies on the boundary, do not waste time trying to coarsen around it
 
     for (const Size n : neighbors.back()[p])
@@ -40,11 +42,15 @@ inline bool Multiscale::can_be_coarsened (const Size p, std::set<Size>& points_c
         // this avoids creating large holes in the mesh.
         // TODO: replace this....
         // if (!mask.back()[n]) {return false;}
-        if (points_coarsened_around.find(n)!=points_coarsened_around.end()) {return false;}
+        if (points_coarsened_around.find(n)!=points_coarsened_around.end()) {
+          std::cout<<"neighbor was already coarsened in this level"<<std::endl;
+          return false;}
 
         // Do not coarsen if the required coarsening criterion does not hold.
         // TODO:maybe add some kind of tolerance
-        if(!points_are_similar(p,n)) {return false;}
+        if(!points_are_similar(p,n)) {
+          std::cout<<"points are too different"<<std::endl;
+          return false;}
     }
 
     // Otherwise coarsen.
