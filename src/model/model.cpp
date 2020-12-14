@@ -436,7 +436,13 @@ int Model :: compute_level_populations_multigrid (
     std::cout<<"Current number points:"<<geometry.points.multiscale.get_total_points(geometry.points.multiscale.get_curr_coars_lvl())<<std::endl;
   }
     //finally, solve for the final grid
-    compute_level_populations(use_Ng_acceleration,max_niterations);
+    //as a test, we can just not calculate the radiation field again for the finest grid
+    compute_Jeff                              ();
+    lines.iteration_using_statistical_equilibrium (
+        chemistry.species.abundance,
+        thermodynamics.temperature.gas,
+        parameters.pop_prec()                     );
+    // compute_level_populations(use_Ng_acceleration,max_niterations);
     return (0);
 }
 
