@@ -21,7 +21,7 @@ with open("src/configure.hpp", "r") as file:
 class my_build_ext(build_ext):
     def build_extension(self, ext):
         '''
-        Copy the already-compiled core.so file!
+        Copy the already-compiled core.so file.
         '''
         shutil.copyfile('bin/core.so', self.get_ext_fullpath(ext.name))
 
@@ -36,6 +36,7 @@ setup(
     long_description_content_type="text/markdown",
     ext_modules=[Extension('magritte/core', sources=[])],
     packages=find_packages(),
+    include_package_data=True,
     install_requires=[
         'h5py>=2.9',
         'numpy>=1.19',
