@@ -1,0 +1,12 @@
+README.md
+setup.py
+magritte/__init__.py
+magritte/mesher.py
+magritte/setup.py
+magritte/tools.py
+magritte.egg-info/PKG-INFO
+magritte.egg-info/SOURCES.txt
+magritte.egg-info/dependency_links.txt
+magritte.egg-info/not-zip-safe
+magritte.egg-info/requires.txt
+magritte.egg-info/top_level.txt
