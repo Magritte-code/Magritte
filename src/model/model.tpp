@@ -1425,18 +1425,13 @@ inline void Model::interpolate_matrix_local(Size coarser_lvl, Matrix<T> &to_inte
   if (nb_diff_points==0)
   {return;}
 
-  std::cout<<"Starting the rbf part of interpolation"<<std::endl;
-
   //for every points in diff_points, try to find interpolating value using rbf function
   for (Size diff_point: diff_points)
   {
-    std::cout<<"flag1"<<std::endl;
     std::set<Size> curr_neighbors=geometry.points.multiscale.get_neighbors(diff_point,coarser_lvl-1);
-    std::cout<<"flag2"<<std::endl;
     //get neighbors in coarser grid
     vector<Size> neighbors_coarser_grid;
     neighbors_coarser_grid.reserve(curr_neighbors.size());//i am overallocating a bit, but this variable is temporary anyway...
-    std::cout<<"flag3"<<std::endl;
     for (Size neighbor: curr_neighbors)
     {
       if (coarse_mask[neighbor])
@@ -1444,65 +1439,74 @@ inline void Model::interpolate_matrix_local(Size coarser_lvl, Matrix<T> &to_inte
         neighbors_coarser_grid.push_back(neighbor);
       }
     }
-    std::cout<<"flag4"<<std::endl;
     // std::cout << "number of neighbors: " << neighbors_coarser_grid.size() << std::endl;
     // //now we could also use the extremely fast method of interpolating: taking the average of the neighbors // i am not sure what actually gives the best results: rbf or just averaging
     // double interpolated_value=accumulate(neighbors_coarser_grid.begin(), neighbors_coarser_grid.end(), 0.0)/neighbors_coarser_grid.size();
     // to_interpolate[diff_point]=interpolated_value;
-    // TODO:maybe reorder these things for speed (we do not need to recalculate the radius every time)
+    //TODO: also use neighbors of neighbors as better interpolation
     // Note: using the current multigrid creation method, the number of neighbors in the coarse grid is always at least 1
-    if (neighbors_coarser_grid.size()==1)//in the rare case that we only have a single neighbor in the coarse grid, just set the value to its value
-    {
-      std::cout<<"flag5"<<std::endl;
-      for (Size freqidx=0; freqidx<parameters.nfreqs(); freqidx++)
+    // In the case we do not really have enough points for a good interpolation, just add more
+    if (neighbors_coarser_grid.size()<4)
+    {//because this estimate is just beyond terrible: also add neighbors of neighbors
+      // for (Size freqidx=0; freqidx<parameters.nfreqs(); freqidx++)
+      // {
+      std::set<Size> temp_neighbors_coarser_grid;
+      for (Size neighbor_coarse: neighbors_coarser_grid)
       {
-      std::cout<<"flag6"<<std::endl;
-      to_interpolate[diff_point,freqidx]=to_interpolate[neighbors_coarser_grid[0],freqidx];
+        for (Size neighbor_of_coarse_neighbor: geometry.points.multiscale.get_neighbors(neighbor_coarse,coarser_lvl))
+        { //just make sure that we do not accidentally insert a point we already have (in neighbors_coarser_grid)
+          if (std::find(neighbors_coarser_grid.begin(), neighbors_coarser_grid.end(), neighbor_of_coarse_neighbor) == neighbors_coarser_grid.end())
+          {
+            temp_neighbors_coarser_grid.insert(neighbor_of_coarse_neighbor);
+          }
+        }
+        // }
+      // std::cout<<"Just taking the value of the closest point"<<std::endl;
+      // std::cout<<"Interpolation values"<<to_interpolate(neighbors_coarser_grid[0],freqidx)<<std::endl;
+      // to_interpolate[diff_point,freqidx]=to_interpolate(neighbors_coarser_grid[0],freqidx);
       }
-      std::cout<<"flag7"<<std::endl;
+      //Finally add our new points to
+      std::copy(temp_neighbors_coarser_grid.begin(), temp_neighbors_coarser_grid.end(), std::back_inserter(neighbors_coarser_grid));
     }
-    else
-    {//use rbf estimate
-      std::cout<<"flag8"<<std::endl;
-      Size nb_neighbors_coarser_grid=neighbors_coarser_grid.size();
-      Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic> rbf_mat(nb_neighbors_coarser_grid, nb_neighbors_coarser_grid);
-      Eigen::Matrix<T,1,Eigen::Dynamic> distance_with_neighbors(1,nb_neighbors_coarser_grid);
-      std::cout<<"setting up rbf matrix"<<std::endl;
+    // else
+    // {//use rbf estimate
+    Size nb_neighbors_coarser_grid=neighbors_coarser_grid.size();
+    Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic> rbf_mat(nb_neighbors_coarser_grid, nb_neighbors_coarser_grid);
+    Eigen::Matrix<T,1,Eigen::Dynamic> distance_with_neighbors(1,nb_neighbors_coarser_grid);
+    for (Size idx=0; idx<nb_neighbors_coarser_grid; idx++)
+    {
+      std::cout<<"calc dist with point"<<std::endl;
+      distance_with_neighbors(idx)=std::sqrt((geometry.points.position[neighbors_coarser_grid[idx]]-geometry.points.position[diff_point]).squaredNorm());
+      rbf_mat(idx,idx)=0;//distance between point and itself is zero
+      for (Size idx2=0; idx2<idx; idx2++)
+      {
+        //calculate radius
+        T radius=std::sqrt((geometry.points.position[neighbors_coarser_grid[idx]]-geometry.points.position[neighbors_coarser_grid[idx2]]).squaredNorm());
+        rbf_mat(idx,idx2)=radius;
+        rbf_mat(idx2,idx)=radius;
+      }
+    }
+    T maxdist=rbf_mat.maxCoeff()*5.0;//arbitrary number 5 to make the max_dist larger
+    rbf_mat=rbf_mat/maxdist;
+    rbf_mat=rbf_mat.unaryExpr(std::ptr_fun(rbf_local<T>));
+    distance_with_neighbors=distance_with_neighbors/maxdist;
+    distance_with_neighbors=distance_with_neighbors.unaryExpr(std::ptr_fun(rbf_local<T>));
+    Eigen::LLT<Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic>> lltdec(rbf_mat);
+    //now that we have our llt decomposition, calculate the interpolated value
+    for (Size freqidx=0; freqidx<parameters.nfreqs(); freqidx++)
+    {
+      Eigen::Vector<T,Eigen::Dynamic> right_hand_side(nb_neighbors_coarser_grid);
       for (Size idx=0; idx<nb_neighbors_coarser_grid; idx++)
       {
-        std::cout<<"calc dist with point"<<std::endl;
-        distance_with_neighbors(idx)=std::sqrt((geometry.points.position[neighbors_coarser_grid[idx]]-geometry.points.position[diff_point]).squaredNorm());
-        rbf_mat(idx,idx)=0;//distance between point and itself is zero
-        for (Size idx2=0; idx2<idx; idx2++)
-        {
-          std::cout<<"calc radius between two neighbors"<<std::endl;
-          //calculate radius
-          T radius=std::sqrt((geometry.points.position[neighbors_coarser_grid[idx]]-geometry.points.position[neighbors_coarser_grid[idx2]]).squaredNorm());
-          rbf_mat(idx,idx2)=radius;
-          rbf_mat(idx2,idx)=radius;
-        }
+        std::cout<<"Interpolation values"<<to_interpolate(idx,freqidx)<<std::endl;
+        right_hand_side(idx)=to_interpolate(idx,freqidx);
       }
-      std::cout<<"some post processing"<<std::endl;
-      T maxdist=rbf_mat.maxCoeff()*5.0;//arbitrary number 5 to make the max_dist larger
-      rbf_mat=rbf_mat/maxdist;
-      rbf_mat=rbf_mat.unaryExpr(std::ptr_fun(rbf_local<T>));
-      distance_with_neighbors=distance_with_neighbors/maxdist;
-      distance_with_neighbors=distance_with_neighbors.unaryExpr(std::ptr_fun(rbf_local<T>));
-      Eigen::LLT<Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic>> lltdec(rbf_mat);
-      std::cout<<"first time calling for J"<<std::endl;
-      //now that we have our llt decomposition, calculate the interpolated value
-      for (Size freqidx=0; freqidx<parameters.nfreqs(); freqidx++)
-      {
-        Eigen::Vector<T,Eigen::Dynamic> right_hand_side(nb_neighbors_coarser_grid);
-        for (Size idx=0; idx<nb_neighbors_coarser_grid; idx++)
-        {
-          right_hand_side(idx)=to_interpolate[idx,freqidx];
-        }
-        Eigen::Vector<T,Eigen::Dynamic> weights=lltdec.solve(right_hand_side);
-        T interpolated_value=(distance_with_neighbors*weights)(0,0);
-        to_interpolate[diff_point,freqidx]=interpolated_value;
-      }
+      Eigen::Vector<T,Eigen::Dynamic> weights=lltdec.solve(right_hand_side);
+      T interpolated_value=(distance_with_neighbors*weights)(0,0);
+      std::cout<<"interpolated value: "<<interpolated_value<<std::endl;
+      to_interpolate(diff_point,freqidx)=interpolated_value;
     }
+    // }
 
   }
 }
