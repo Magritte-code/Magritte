@@ -362,6 +362,8 @@ int Model :: compute_Jeff ()
 
         threaded_for (p, parameters.npoints(),
         {
+          if (geometry.points.multiscale.get_mask(geometry.points.multiscale.get_curr_coars_lvl())[p])
+          {
             for (Size k = 0; k < lspec.linedata.nrad; k++)
             {
                 const Size1 freq_nrs = lspec.nr_line[p][k];
@@ -389,6 +391,7 @@ int Model :: compute_Jeff ()
                 lspec.Jeff[p][k] = lspec.Jlin[p][k] - HH_OVER_FOUR_PI * diff;
                 lspec.Jdif[p][k] = HH_OVER_FOUR_PI * diff;
             }
+          }
         })
     }
 
@@ -434,14 +437,19 @@ int Model :: compute_level_populations_multigrid (
     geometry.points.multiscale.set_curr_coars_lvl(geometry.points.multiscale.get_curr_coars_lvl()-1);
     std::cout<<"Current coarsening level: "<< geometry.points.multiscale.get_curr_coars_lvl()<<std::endl;
     std::cout<<"Current number points:"<<geometry.points.multiscale.get_total_points(geometry.points.multiscale.get_curr_coars_lvl())<<std::endl;
-  }
-    //finally, solve for the final grid
-    //as a test, we can just not calculate the radiation field again for the finest grid
     compute_Jeff                              ();
     lines.iteration_using_statistical_equilibrium (
         chemistry.species.abundance,
         thermodynamics.temperature.gas,
         parameters.pop_prec()                     );
+  }
+    //finally, solve for the final grid
+    //as a test, we can just not calculate the radiation field again for the finest grid
+    // compute_Jeff                              ();
+    // lines.iteration_using_statistical_equilibrium (
+    //     chemistry.species.abundance,
+    //     thermodynamics.temperature.gas,
+    //     parameters.pop_prec()                     );
     // compute_level_populations(use_Ng_acceleration,max_niterations);
     return (0);
 }
