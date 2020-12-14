@@ -63,7 +63,7 @@ Also assert that the lengths are the same; You can change this to any other exce
     cout << n_neighbors[0] << endl;
     cout << neighbors[0] << endl;
 
-    this->curr_neighbors.set_all_neighbors(n_neighbors,neighbors);
+    // this->curr_neighbors.set_all_neighbors(n_neighbors,neighbors);
     this->multiscale.set_all_neighbors(n_neighbors,neighbors);
 
 
