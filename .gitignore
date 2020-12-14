@@ -49,11 +49,15 @@ configure.hpp
 *dependencies/cmake*
 *dependencies/miniconda3*
 *dependencies/gmsh*
+*dependencies/mpich*
 
 # perf reports
 ##############
 perf.data*
 
-# test models and results
-#########################
+# test results
+##############
 tests/results/*
+
+magritte.egg-info/*
+dist/*

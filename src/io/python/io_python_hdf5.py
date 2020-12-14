@@ -80,7 +80,7 @@ def write_attribute (io_file, file_name, data):
     """
     Write the data to the attribute
     """
-    with hp.File (io_file) as file:
+    with hp.File (io_file, 'a') as file:
         object    = file_name.split('.')[0]
         attribute = file_name.split('.')[1]
         # Make sure all groups exists, if not create them
@@ -129,7 +129,7 @@ def write_array (io_file, file_name, data):
     """
     Write the contents to the data array.
     """
-    with hp.File (io_file) as file:
+    with hp.File (io_file, 'a') as file:
         # print ('Writing array to HDF5 file...')
         # print (io_file, file_name)
         # Delete if dataset already exists

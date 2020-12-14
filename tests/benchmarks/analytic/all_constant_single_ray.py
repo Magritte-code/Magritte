@@ -5,8 +5,6 @@ curdir = os.path.dirname(os.path.realpath(__file__))
 datdir = f'{curdir}/../../data/'
 moddir = f'{curdir}/../../models/'
 resdir = f'{curdir}/../../results/'
-sys.path.append(f'{curdir}/../../../')
-
 
 import numpy             as np
 import matplotlib.pyplot as plt
@@ -16,7 +14,7 @@ import magritte.core     as magritte
 
 
 dimension = 1
-npoints   = 200
+npoints   = 50
 nrays     = 2
 nspecs    = 5
 nlspecs   = 1
@@ -38,6 +36,7 @@ def create_model ():
     modelName = f'all_constant_single_ray'
     modelFile = f'{moddir}{modelName}.hdf5'
     lamdaFile = f'{datdir}test.txt'
+
 
     model = magritte.Model ()
     model.parameters.set_spherical_symmetry(False)
@@ -67,7 +66,7 @@ def create_model ():
 
     model.write()
 
-    return magritte.Model (modelFile)
+    return #magritte.Model (modelFile)
 
 
 def run_model (nosave=False):

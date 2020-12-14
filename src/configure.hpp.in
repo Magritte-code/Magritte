@@ -2,8 +2,7 @@
 #define MAGRITTE_FOLDER        "@CMAKE_SOURCE_DIR@"
 
 // Magritte's version numbers
-#define MAGRITTE_VERSION_MAJOR "@MAGRITTE_VERSION_MAJOR@"
-#define MAGRITTE_VERSION_MINOR "@MAGRITTE_VERSION_MINOR@"
+#define MAGRITTE_VERSION       "@CMAKE_PROJECT_VERSION@"
 
 // Python bindings
 #define PYTHON_IO               @MAGRITTE_PYTHON_IO@

@@ -13,8 +13,6 @@ int main (int argc, char **argv)
     cout << "Running test_2nd_Feautrier..."                          << endl;
     cout << "-----------------------------"                          << endl;
     cout << "Model name: " << modelName                              << endl;
-
-    paracabs::multi_threading::set_n_threads_avail(1);
     cout << "n threads = " << pc::multi_threading::n_threads_avail() << endl;
 
     Model model (modelName);

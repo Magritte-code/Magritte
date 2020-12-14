@@ -27,5 +27,13 @@ cmake                                               \
   $DIR
 
 # Run make
-# note: this is just such that i have 1 thread left on my pc
-make -j3
+make -j4
+
+# Go to Magritte root directory
+cd $DIR
+
+echo "Trying to uninstall magritte (to avoid duplication)..."
+pip uninstall magritte
+
+echo "Installing magritte python package..."
+python setup.py install

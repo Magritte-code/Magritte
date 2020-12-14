@@ -1,3 +1,3 @@
-# Test models
+# Models
 
-A directory for test models.
+A directory to store test models.

@@ -73,9 +73,6 @@ target_link_libraries (test_imager Magritte)
 package_add_test      (test_solver_lambda test_solver_lambda.cpp)
 target_link_libraries (test_solver_lambda Magritte)
 
-add_executable        (test_cube test_cube.cpp)
-target_link_libraries (test_cube Magritte)
-
 if (OpenMP_CXX_FOUND)
     target_link_libraries (test_raytracer         OpenMP::OpenMP_CXX)
     target_link_libraries (test_multigrid         OpenMP::OpenMP_CXX)

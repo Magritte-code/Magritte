@@ -1254,7 +1254,7 @@ inline int Model::setup_multigrid(Size min_nb_points, Size max_coars_lvl, double
   }
 }
 
-/// Computes second order feautrier using multigrid
+/// Computes second order feautrier using multigrid //never mind, this is useless
 inline int Model::compute_feautrier_order_2_multigrid()
 {
   //set curr coarsening level to max

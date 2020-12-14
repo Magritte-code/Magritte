@@ -109,7 +109,11 @@ struct Model
     int compute_level_populations                 (
         // const Io   &io,
         const bool  use_Ng_acceleration,
-        const long  max_niterations     );
+        const long  max_niterations);
+    int compute_level_populations_multigrid       (
+        // const Io   &io,
+        const bool  use_Ng_acceleration,
+        const long  max_niterations);
     int compute_image                             (const Size ray_nr);
 
     Double1 error_max;
