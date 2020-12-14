@@ -45,7 +45,7 @@ inline double Model :: calc_diff_abundance_with_point(Size point1, Size point2)
 /// Returns function that determines whether two points are similar enough, according to the tolerance
 inline std::function<bool(Size,Size)> Model::points_are_similar(double tolerance)
 {
-  std::function<bool(Size,Size)> fun_to_return = [&](Size p1, Size p2)
+  std::function<bool(Size,Size)> fun_to_return = [this,tolerance](Size p1, Size p2)
   {
     std::cout<<"diff_abundance:"<<calc_diff_abundance_with_point(p1,p2)<<std::endl;
     std::cout<<"tolerance: "<<tolerance<<std::endl;
@@ -1249,6 +1249,7 @@ inline int Model::setup_multigrid(Size min_nb_points, Size max_coars_lvl, double
 {
   std::cout<<"Tolerance: "<<tol<<std::endl;
   std::function<bool(Size,Size)> fun_to_del=points_are_similar(tol);//function that says if two points are similar enough
+  std::cout<<"point 0 similar to 0: "<<fun_to_del(0,0)<<std::endl;
   geometry.points.multiscale.set_not_on_boundary_fun([&](Size p){return geometry.not_on_boundary(p);});//function that says whether a point lies on the boundary
   geometry.points.multiscale.set_comparison_fun(fun_to_del);
   //first, we coarsen the grid until we either have too few points left or have too many coarsening levels

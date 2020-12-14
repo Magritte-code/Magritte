@@ -13,6 +13,7 @@
 #include "pybind11/numpy.h"
 #include "pybind11/eigen.h"
 #include "pybind11/stl.h"
+#include "pybind11/functional.h"
 namespace py = pybind11;
 
 
@@ -84,6 +85,7 @@ PYBIND11_MODULE (core, module)
 
     // Model
     py::class_<Model> (module, "Model")
+        // .def_property_readonly_static("model", [](const py::object&) { return Model(); });
         // attributes
         .def_readwrite ("parameters",     &Model::parameters)
         .def_readwrite ("geometry",       &Model::geometry)
@@ -122,6 +124,7 @@ PYBIND11_MODULE (core, module)
         .def ("set_boundary_condition",                                             &Model::set_boundary_condition)
         .def ("setup_multigrid",                                                    &Model::setup_multigrid)
         .def ("compute_feautrier_order_2_multigrid",                                &Model::compute_feautrier_order_2_multigrid)
+        .def ("points_are_similar",                                                 &Model::points_are_similar)
         .def_readwrite ("eta",                &Model::eta)
         .def_readwrite ("chi",                &Model::chi)
         .def_readwrite ("boundary_condition", &Model::boundary_condition)
@@ -226,6 +229,8 @@ PYBIND11_MODULE (core, module)
 
     // Multiscale
     py::class_<Multiscale> (module, "Multiscale")
+        // attributes
+        .def_readonly("points_are_similar", &Multiscale::points_are_similar)
         // functions
         .def("set_all_neighbors", &Multiscale::set_all_neighbors)
         //.def("get_neighbors", &Multiscale::get_neighbors) TODO: figure out how to handle overloaded functions
