@@ -17,7 +17,7 @@ from scipy.interpolate import interp1d
 
 
 dimension = 1
-npoints   = 250
+npoints   = 85 #250
 nrays     = 200
 nspecs    = 5
 nlspecs   = 1
