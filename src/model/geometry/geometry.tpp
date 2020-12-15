@@ -29,12 +29,14 @@ accel inline Size Geometry :: get_next_general_geometry (
 //    for (Size i = 0; i < nnbs; i++)
 
     //TODO: update to use set instead of vector
-    vector<Size> temp_vector(points.multiscale.get_neighbors(c).begin(),points.multiscale.get_neighbors(c).end());
-    Vector<Size> temp_neighbors(temp_vector);
-    for (Size i = 0; i < n_nbs; i++)
+    std::set<Size> temp_neighbors=points.multiscale.get_neighbors(c);
+    // temp_neighbors.insert(std::end(temp_neighbors), std::begin(points.multiscale.get_neighbors(c).begin()), std::end(points.multiscale.get_neighbors(c).end()));
+    // Vector<Size> temp_neighbors(temp_vector);
+    for (Size n:temp_neighbors)
+    // for (Size i = 0; i < n_nbs; i++)
     {
 //        const Size     n     = points.nbs[c*nnbs+i];
-        const Size     n     = temp_neighbors[i];//points.neighbors[cum_n_nbs+i];
+        // const Size     n     = temp_neighbors[i];//points.neighbors[cum_n_nbs+i];
         const Vector3D R     = points.position[n] - points.position[o];
         const double   Z_new = R.dot(rays.direction[r]);
 

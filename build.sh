@@ -13,6 +13,9 @@ PYTHON_EXECUTABLE=$(which python)
 COMPILER_CC=$(which gcc)
 COMPILER_CXX=$(which g++)
 
+#limit nb threads
+#export OMP_NUM_THREADS=6;
+
 # Run cmake
 CC=$COMPILER_CC                                     \
 CXX=$COMPILER_CXX                                   \
@@ -21,9 +24,6 @@ cmake                                               \
   -DOMP_PARALLEL=ON                                 \
   -DMPI_PARALLEL=OFF                                \
   -DGPU_ACCELERATION=OFF                            \
-  # -DCMAKE_CXX_FLAGS=-pg                             \
-  # -DCMAKE_EXE_LINKER_FLAGS=-pg                      \
-  # -DCMAKE_SHARED_LINKER_FLAGS=-pg                   \
   $DIR
 
 # Run make
