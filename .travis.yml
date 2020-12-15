@@ -79,6 +79,12 @@ matrix:
       env:
         - MATRIX_EVAL="CC=clang && CXX=clang++"
 
+    # macOS: Xcode 10.1, GNU compiler 9
+    - os: osx
+      osx_image: xcode10.1
+      env:
+        - MATRIX_EVAL="brew install gcc9 && CC=gcc-9 && CXX=g++-9"
+
 before_install:
   - eval "${MATRIX_EVAL}"
   - bash dependencies/get_cmake.sh

@@ -33,19 +33,48 @@ macro(package_add_test TESTNAME)
 endmacro()
 
 
-set (SOURCE_FILES
-    test_raytracer.cpp
-    test_multigrid.cpp
-    test_levelpops.cpp
-    test_shortchar_order_0.cpp
-    test_feautrier_order_2.cpp
-    test_solver_lambda.cpp
-    test_imager.cpp
-)
+# set (SOURCE_FILES
+#     test_raytracer.cpp
+#     test_multigrid.cpp
+#     test_levelpops.cpp
+#     test_shortchar_order_0.cpp
+#     test_feautrier_order_2.cpp
+#     test_solver_lambda.cpp
+#     test_imager.cpp
+# )
+
+set (SOURCE_FILES test_*.cpp)
 
 
-if    (OMP_PARALLEL)
-    find_package (OpenMP)
+if (OMP_PARALLEL)
+    if (CMAKE_C_COMPILER_ID MATCHES "Clang")
+        set(OpenMP_C                "${CMAKE_C_COMPILER}")
+        set(OpenMP_C_FLAGS          "-fopenmp=libomp -Wno-unused-command-line-argument")
+        set(OpenMP_C_LIB_NAMES      "libomp" "libgomp" "libiomp5")
+        set(OpenMP_libomp_LIBRARY   ${OpenMP_C_LIB_NAMES})
+        set(OpenMP_libgomp_LIBRARY  ${OpenMP_C_LIB_NAMES})
+        set(OpenMP_libiomp5_LIBRARY ${OpenMP_C_LIB_NAMES})
+        set(CMAKE_C_FLAGS          "${CMAKE_C_FLAGS} -fopenmp")
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lpthread -latomic")
+    else ()
+        find_package (OpenMP REQUIRED)
+        set (CMAKE_C_FLAGS          "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+        set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+    endif ()
+    if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        set(OpenMP_CXX             "${CMAKE_CXX_COMPILER}")
+        set(OpenMP_CXX_FLAGS       "-fopenmp=libomp -Wno-unused-command-line-argument")
+        set(OpenMP_CXX_LIB_NAMES   "libomp" "libgomp" "libiomp5")
+        set(OpenMP_libomp_LIBRARY   ${OpenMP_CXX_LIB_NAMES})
+        set(OpenMP_libgomp_LIBRARY  ${OpenMP_CXX_LIB_NAMES})
+        set(OpenMP_libiomp5_LIBRARY ${OpenMP_CXX_LIB_NAMES})
+        set(CMAKE_CXX_FLAGS        "${CMAKE_CXX_FLAGS} -fopenmp")
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lpthread -latomic")
+    else ()
+        find_package (OpenMP REQUIRED)
+        set (CMAKE_CXX_FLAGS        "${CMAKE_CXX_FLAGS}        ${OpenMP_CXX_FLAGS}")
+        set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+    endif ()
 endif (OMP_PARALLEL)
 
 if    (GPU_ACCELERATION)

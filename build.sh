@@ -10,8 +10,10 @@ mkdir build; cd build
 PYTHON_EXECUTABLE=$(which python)
 
 # Get compilers
-COMPILER_CC=$(which gcc)
-COMPILER_CXX=$(which g++)
+# COMPILER_CC=$(which gcc)
+# COMPILER_CXX=$(which g++)
+COMPILER_CC=$(which clang)
+COMPILER_CXX=$(which clang++)
 
 # Run cmake
 CC=$COMPILER_CC                                     \
