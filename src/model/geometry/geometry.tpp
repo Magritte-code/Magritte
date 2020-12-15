@@ -92,6 +92,12 @@ inline Size Geometry :: get_next_spherical_symmetry (
         if (points.position[c-1].squaredNorm() >= Rsin2)
         {
             next = c - 1;
+            Size curr_coars_lvl=points.multiscale.get_curr_coars_lvl();
+            while(!(points.multiscale.get_mask(curr_coars_lvl))[next])
+            {
+              // std::cout<<"next: "<<next<<std::endl;
+              next=next-1;
+            }
             dZ   = -sqrt(points.position[next].squaredNorm() - Rsin2) - Rcos_plus_Z;
         }
         else
@@ -108,6 +114,12 @@ inline Size Geometry :: get_next_spherical_symmetry (
         }
 
         next = c + 1;
+        Size curr_coars_lvl=points.multiscale.get_curr_coars_lvl();
+        while(!(points.multiscale.get_mask(curr_coars_lvl))[next])
+        {
+          // std::cout<<"next: "<<next<<std::endl;
+          next=next+1;
+        }
         dZ   = +sqrt(points.position[next].squaredNorm() - Rsin2) - Rcos_plus_Z;
     }
 

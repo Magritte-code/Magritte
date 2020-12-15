@@ -53,7 +53,7 @@ struct Multiscale
     //returns the current max coarsening level (=size neighbors-1)
     inline Size get_max_coars_lvl();
     //returns the current coarsening level
-    inline Size get_curr_coars_lvl();
+    inline Size get_curr_coars_lvl() const;
     //sets the current coarsening level
     inline void set_curr_coars_lvl(Size lvl);
 
@@ -80,7 +80,7 @@ struct Multiscale
     //Returns the number of neighbors od point p at the current coarsening level
     inline Size get_nb_neighbors(const Size p) const;
     //Returns the mask of points still in the grid at level curr_level
-    inline vector<bool> get_mask(const Size curr_lvl);
+    inline vector<bool> get_mask(const Size curr_lvl) const;
     //Returns the total number of points remaining at level curr_level
     inline Size get_total_points(const Size curr_lvl);
 

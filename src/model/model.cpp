@@ -450,7 +450,7 @@ int Model :: compute_level_populations_multigrid (
     //     chemistry.species.abundance,
     //     thermodynamics.temperature.gas,
     //     parameters.pop_prec()                     );
-    // compute_level_populations(use_Ng_acceleration,max_niterations);
+    compute_level_populations(use_Ng_acceleration,max_niterations);
     return (0);
 }
 

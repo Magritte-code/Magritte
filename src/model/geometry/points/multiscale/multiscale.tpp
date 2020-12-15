@@ -214,7 +214,7 @@ inline Size Multiscale::get_max_coars_lvl()
 }
 
 /// Returns the current coarsening level
-inline Size Multiscale::get_curr_coars_lvl()
+inline Size Multiscale::get_curr_coars_lvl() const
 {return curr_coarsening_lvl;}
 
 /// Sets the current coarsening level to lvl (if lvl<=get_max_coars_lvl)
@@ -224,7 +224,7 @@ inline void Multiscale::set_curr_coars_lvl(Size lvl)
   {curr_coarsening_lvl=lvl;}
 }
 
-inline vector<bool> Multiscale::get_mask(const Size curr_lvl)
+inline vector<bool> Multiscale::get_mask(const Size curr_lvl) const
 {
   return mask[curr_lvl];
 }

@@ -16,3 +16,4 @@ dependencies:
   - mpi4py
   - pyyaml
   - tqdm
+  - ipywidgets
