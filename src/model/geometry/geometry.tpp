@@ -30,6 +30,7 @@ accel inline Size Geometry :: get_next_general_geometry (
 
     //TODO: update to use set instead of vector
     std::set<Size> temp_neighbors=points.multiscale.get_neighbors(c);
+    // std::cout<<"number of neighbors"<<temp_neighbors.size()<<std::endl;
     // temp_neighbors.insert(std::end(temp_neighbors), std::begin(points.multiscale.get_neighbors(c).begin()), std::end(points.multiscale.get_neighbors(c).end()));
     // Vector<Size> temp_neighbors(temp_vector);
     for (Size n:temp_neighbors)

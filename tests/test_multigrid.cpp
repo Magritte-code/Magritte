@@ -61,8 +61,16 @@ int main (int argc, char **argv)
     model.compute_LTE_level_populations();
     model.compute_inverse_line_widths();
     cout << "model read"<<endl;
-    model.setup_multigrid(10, 2, 0.1);
+    model.setup_multigrid(10, 1, 0.1);
     cout << "setup multigrid" << endl;
+    for (Size point=0;point<parameters.npoints();point++)
+    {
+      cout<<model.geometry.points.multiscale.get_nb_neighbors(point)<<std::endl;
+      std::set<Size>neighbors=model.geometry.points.multiscale.get_neighbors(point);
+      for (Size n:neighbors){
+        cout<<n<<endl;
+      }
+    }
 
     model.compute_level_populations_multigrid(true, 100);
 

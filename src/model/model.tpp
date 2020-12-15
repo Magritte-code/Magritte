@@ -1468,7 +1468,7 @@ inline void Model::interpolate_matrix_local(Size coarser_lvl, Matrix<T> &to_inte
       // std::cout<<"Interpolation values"<<to_interpolate(neighbors_coarser_grid[0],freqidx)<<std::endl;
       // to_interpolate[diff_point,freqidx]=to_interpolate(neighbors_coarser_grid[0],freqidx);
       }
-      //Finally add our new points to
+      //Finally add our new points too
       std::copy(temp_neighbors_coarser_grid.begin(), temp_neighbors_coarser_grid.end(), std::back_inserter(neighbors_coarser_grid));
     }
     // else
