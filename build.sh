@@ -7,8 +7,11 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 mkdir build; cd build
 
 # Get compilers
-COMPILER_CC=$(which gcc)
-COMPILER_CXX=$(which g++)
+# COMPILER_CC=$(which gcc)
+# COMPILER_CXX=$(which g++)
+
+COMPILER_CC=$(which clang)
+COMPILER_CXX=$(which clang++)
 
 # Run cmake
 CC=$COMPILER_CC   \

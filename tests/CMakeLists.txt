@@ -86,7 +86,7 @@ package_add_test (test_multi_threading test_multi_threading.cpp)
 
 # Create executables
 #      add_executable (test_message_passing test_message_passing.cpp)
-#      add_executable (test_multi_threading test_multi_threading.cpp)
+     # add_executable (test_multi_threading test_multi_threading.cpp
 #      add_executable (test_datatypes       test_datatypes.cpp      )
 #cuda_add_executable(test test.cpp)
 
