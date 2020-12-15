@@ -362,8 +362,6 @@ int Model :: compute_Jeff ()
 
         threaded_for (p, parameters.npoints(),
         {
-          if (geometry.points.multiscale.get_mask(geometry.points.multiscale.get_curr_coars_lvl())[p])
-          {
             for (Size k = 0; k < lspec.linedata.nrad; k++)
             {
                 const Size1 freq_nrs = lspec.nr_line[p][k];
@@ -391,7 +389,6 @@ int Model :: compute_Jeff ()
                 lspec.Jeff[p][k] = lspec.Jlin[p][k] - HH_OVER_FOUR_PI * diff;
                 lspec.Jdif[p][k] = HH_OVER_FOUR_PI * diff;
             }
-          }
         })
     }
 
@@ -422,37 +419,145 @@ int Model :: compute_level_populations_multigrid (
     const bool use_Ng_acceleration,
     const long max_niterations     )
 {
-  //set curr coarsening level to max
-  geometry.points.multiscale.set_curr_coars_lvl(geometry.points.multiscale.get_max_coars_lvl());
-  std::cout<<"Current coarsening level: "<< geometry.points.multiscale.get_curr_coars_lvl()<<std::endl;
-  std::cout<<"Current number points:"<<geometry.points.multiscale.get_total_points(geometry.points.multiscale.get_curr_coars_lvl())<<std::endl;
-  //solve and interpolate J for all coarser grids
-  while(geometry.points.multiscale.get_curr_coars_lvl()>0)
-  {
-    compute_level_populations(use_Ng_acceleration,max_niterations);
-    cout<<"trying to interpolate matrix"<<endl;
-    //for all frequencies, interpolate J
-    interpolate_matrix_local(geometry.points.multiscale.get_curr_coars_lvl(),radiation.J);
-    cout<<"successfully interpolated matrix"<<endl;
-    geometry.points.multiscale.set_curr_coars_lvl(geometry.points.multiscale.get_curr_coars_lvl()-1);
-    std::cout<<"Current coarsening level: "<< geometry.points.multiscale.get_curr_coars_lvl()<<std::endl;
-    std::cout<<"Current number points:"<<geometry.points.multiscale.get_total_points(geometry.points.multiscale.get_curr_coars_lvl())<<std::endl;
-    compute_Jeff                              ();
-    lines.iteration_using_statistical_equilibrium (
-        chemistry.species.abundance,
-        thermodynamics.temperature.gas,
-        parameters.pop_prec()                     );
-  }
-    //finally, solve for the final grid
-    //as a test, we can just not calculate the radiation field again for the finest grid
-    // compute_Jeff                              ();
-    // lines.iteration_using_statistical_equilibrium (
-    //     chemistry.species.abundance,
-    //     thermodynamics.temperature.gas,
-    //     parameters.pop_prec()                     );
-    compute_level_populations(use_Ng_acceleration,max_niterations);
-    return (0);
+    // Check spectral discretisation setting
+    if (spectralDiscretisation != SD_Lines)
+    {
+        throw std::runtime_error ("Spectral discretisation was not set for Lines!");
+    }
+
+    //set curr coarsening level to max
+    Size max_coars_lvl=geometry.points.multiscale.get_max_coars_lvl();
+    // geometry.points.multiscale.set_curr_coars_lvl(geometry.points.multiscale.get_max_coars_lvl());
+    int iteration_sum    = 0;
+
+    for(Size subtract=0; subtract<=max_coars_lvl; subtract++)
+    {
+      Size curr_max_coars_lvl=max_coars_lvl-subtract;
+      std::cout<<"Current coarsening level: "<< curr_max_coars_lvl<<std::endl;
+      std::cout<<"Current number points:"<<geometry.points.multiscale.get_total_points(curr_max_coars_lvl)<<std::endl;
+
+      // Initialize the number of iterations
+      int iteration        = 0;
+      int iteration_normal = 0;
+
+      // Initialize errors
+      error_mean.clear ();
+      error_max .clear ();
+      // Initialize some_not_converged
+      bool some_not_converged = true;
+      // Iterate as long as some levels are not converged
+      while (some_not_converged && (iteration < max_niterations))
+      {
+        iteration++;
+
+        // logger.write ("Starting iteration ", iteration);
+        cout << "Starting iteration " << iteration << endl;
+
+        // Start assuming convergence
+        some_not_converged = false;
+
+        if (use_Ng_acceleration && (iteration_normal == 4))
+        {
+            lines.iteration_using_Ng_acceleration (parameters.pop_prec());
+
+            iteration_normal = 0;
+        }
+        else
+        {
+            // logger.write ("Computing the radiation field...");
+            cout << "Computing the radiation field..." << endl;
+            //calculate radiation field on coarser level
+            geometry.points.multiscale.set_curr_coars_lvl(curr_max_coars_lvl);
+            compute_radiation_field_feautrier_order_2 ();
+            //and interpolate it
+            while(geometry.points.multiscale.get_curr_coars_lvl()>0)
+            {//maybe TODO: add support for interpolating skipping levels
+              cout<<"trying to interpolate matrix"<<endl;
+              for (Size test=0;test<parameters.npoints();test++)
+              {
+                std::cout<<radiation.J(test,0)<<std::endl;
+              }
+              //for all frequencies, interpolate J
+              interpolate_matrix_local(geometry.points.multiscale.get_curr_coars_lvl(),radiation.J);
+              cout<<"successfully interpolated matrix"<<endl;
+              geometry.points.multiscale.set_curr_coars_lvl(geometry.points.multiscale.get_curr_coars_lvl()-1);
+              for (Size test=0;test<parameters.npoints();test++)
+              {
+                std::cout<<radiation.J(test,0)<<std::endl;
+              }
+            }
+            cout << "Computed feautrier" << std::endl;
+            compute_Jeff                              ();
+
+            lines.iteration_using_statistical_equilibrium (
+                chemistry.species.abundance,
+                thermodynamics.temperature.gas,
+                parameters.pop_prec()                     );
+
+            iteration_normal++;
+        }
+
+
+        for (int l = 0; l < parameters.nlspecs(); l++)
+        {
+            error_mean.push_back (lines.lineProducingSpecies[l].relative_change_mean);
+            error_max .push_back (lines.lineProducingSpecies[l].relative_change_max);
+
+            if (lines.lineProducingSpecies[l].fraction_not_converged > 0.005)
+            {
+                some_not_converged = true;
+            }
+
+            const double fnc = lines.lineProducingSpecies[l].fraction_not_converged;
+
+            // logger.write ("Already ", 100 * (1.0 - fnc), " % converged!");
+            cout << "Already " << 100 * (1.0 - fnc) << " % converged!" << endl;
+        }
+      } // end of while loop of iterations
+      // Print convergence stats
+      cout << "Converged after " << iteration << " iterations" << endl;
+      curr_max_coars_lvl-=1;
+      iteration_sum+=iteration;
+    }
+
+    return iteration_sum;
 }
+
+// int Model :: compute_level_populations_multigrid (
+//     const bool use_Ng_acceleration,
+//     const long max_niterations     )
+// {
+//   //set curr coarsening level to max
+//   geometry.points.multiscale.set_curr_coars_lvl(geometry.points.multiscale.get_max_coars_lvl());
+//   std::cout<<"Current coarsening level: "<< geometry.points.multiscale.get_curr_coars_lvl()<<std::endl;
+//   std::cout<<"Current number points:"<<geometry.points.multiscale.get_total_points(geometry.points.multiscale.get_curr_coars_lvl())<<std::endl;
+//   //solve and interpolate J for all coarser grids
+//   while(geometry.points.multiscale.get_curr_coars_lvl()>0)
+//   {
+//     compute_level_populations(use_Ng_acceleration,max_niterations);
+//     cout<<"trying to interpolate matrix"<<endl;
+//     //for all frequencies, interpolate J
+//     interpolate_matrix_local(geometry.points.multiscale.get_curr_coars_lvl(),radiation.J);
+//     cout<<"successfully interpolated matrix"<<endl;
+//     geometry.points.multiscale.set_curr_coars_lvl(geometry.points.multiscale.get_curr_coars_lvl()-1);
+//     std::cout<<"Current coarsening level: "<< geometry.points.multiscale.get_curr_coars_lvl()<<std::endl;
+//     std::cout<<"Current number points:"<<geometry.points.multiscale.get_total_points(geometry.points.multiscale.get_curr_coars_lvl())<<std::endl;
+//     compute_Jeff                              ();
+//     lines.iteration_using_statistical_equilibrium (
+//         chemistry.species.abundance,
+//         thermodynamics.temperature.gas,
+//         parameters.pop_prec()                     );
+//   }
+//     //finally, solve for the final grid
+//     //as a test, we can just not calculate the radiation field again for the finest grid
+//     // compute_Jeff                              ();
+//     // lines.iteration_using_statistical_equilibrium (
+//     //     chemistry.species.abundance,
+//     //     thermodynamics.temperature.gas,
+//     //     parameters.pop_prec()                     );
+//     compute_level_populations(use_Ng_acceleration,max_niterations);
+//     return (0);
+// }
 
 
 ///  Compute level populations self-consistenly with the radiation field

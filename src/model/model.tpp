@@ -38,7 +38,7 @@ inline double Model :: calc_diff_abundance_with_point(Size point1, Size point2)
     //std::cout<< "abundance self: " << abundance_self << std::endl;
     //std::cout<< "abundance other: " << abundance_other << std::endl;
     double temp_diff=std::abs((abundance_self-abundance_other)/(abundance_self+abundance_other));
-    std::cout<<"temp_diff:"<<temp_diff<<std::endl;
+    // std::cout<<"temp_diff:"<<temp_diff<<std::endl;
     return temp_diff;
 }
 
@@ -47,9 +47,9 @@ inline std::function<bool(Size,Size)> Model::points_are_similar(double tolerance
 {
   std::function<bool(Size,Size)> fun_to_return = [this,tolerance](Size p1, Size p2)
   {
-    std::cout<<"diff_abundance:"<<calc_diff_abundance_with_point(p1,p2)<<std::endl;
-    std::cout<<"tolerance: "<<tolerance<<std::endl;
-    std::cout<<"result: "<<(calc_diff_abundance_with_point(p1,p2)<tolerance)<<std::endl;
+    // std::cout<<"diff_abundance:"<<calc_diff_abundance_with_point(p1,p2)<<std::endl;
+    // std::cout<<"tolerance: "<<tolerance<<std::endl;
+    // std::cout<<"result: "<<(calc_diff_abundance_with_point(p1,p2)<tolerance)<<std::endl;
     return (calc_diff_abundance_with_point(p1,p2)<tolerance);
   };
   return fun_to_return;
@@ -1255,9 +1255,12 @@ inline int Model::setup_multigrid(Size min_nb_points, Size max_coars_lvl, double
   //first, we coarsen the grid until we either have too few points left or have too many coarsening levels
   while((geometry.points.multiscale.get_max_coars_lvl()<max_coars_lvl)&&
   (geometry.points.multiscale.get_total_points(geometry.points.multiscale.get_max_coars_lvl())>min_nb_points))
-  {
+  {std::cout<<"coursening layer"<<std::endl;
     geometry.points.multiscale.coarsen();
+    std::cout<<"coarsened_layer"<<std::endl;
   }
+  std::cout<<"finished coarsening"<<std::endl;
+  return (0);
 }
 
 /// Computes second order feautrier using multigrid //never mind, this is useless
@@ -1475,7 +1478,7 @@ inline void Model::interpolate_matrix_local(Size coarser_lvl, Matrix<T> &to_inte
     Eigen::Matrix<T,1,Eigen::Dynamic> distance_with_neighbors(1,nb_neighbors_coarser_grid);
     for (Size idx=0; idx<nb_neighbors_coarser_grid; idx++)
     {
-      std::cout<<"calc dist with point"<<std::endl;
+      // std::cout<<"calc dist with point"<<std::endl;
       distance_with_neighbors(idx)=std::sqrt((geometry.points.position[neighbors_coarser_grid[idx]]-geometry.points.position[diff_point]).squaredNorm());
       rbf_mat(idx,idx)=0;//distance between point and itself is zero
       for (Size idx2=0; idx2<idx; idx2++)
@@ -1498,12 +1501,12 @@ inline void Model::interpolate_matrix_local(Size coarser_lvl, Matrix<T> &to_inte
       Eigen::Vector<T,Eigen::Dynamic> right_hand_side(nb_neighbors_coarser_grid);
       for (Size idx=0; idx<nb_neighbors_coarser_grid; idx++)
       {
-        std::cout<<"Interpolation values"<<to_interpolate(idx,freqidx)<<std::endl;
+        // std::cout<<"Interpolation values"<<to_interpolate(idx,freqidx)<<std::endl;
         right_hand_side(idx)=to_interpolate(idx,freqidx);
       }
       Eigen::Vector<T,Eigen::Dynamic> weights=lltdec.solve(right_hand_side);
       T interpolated_value=(distance_with_neighbors*weights)(0,0);
-      std::cout<<"interpolated value: "<<interpolated_value<<std::endl;
+      // std::cout<<"interpolated value: "<<interpolated_value<<std::endl;
       to_interpolate(diff_point,freqidx)=interpolated_value;
     }
     // }
