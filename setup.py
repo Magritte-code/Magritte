@@ -21,7 +21,7 @@ with open("src/configure.hpp", "r") as file:
 class my_build_ext(build_ext):
     def build_extension(self, ext):
         '''
-        Copy the already-compiled core.so file!
+        Copy the already-compiled core.so file.
         '''
         shutil.copyfile('bin/core.so', self.get_ext_fullpath(ext.name))
 
@@ -36,19 +36,31 @@ setup(
     long_description_content_type="text/markdown",
     ext_modules=[Extension('magritte/core', sources=[])],
     packages=find_packages(),
+    include_package_data=True,
     install_requires=[
-        'h5py>=2.9',
-        'numpy>=1.19',
-        'scipy>=1.3',
-        'astropy>=4.0',
-        'numba>=0.46',
-        'meshio>=4.3',
-        'healpy>=1.13',
-        'jupyterlab>=2.2',
-        'yt>=3.4',
-        'mpi4py>=3',
-        'tqdm>=4.42',
+        'h5py',
+        'numpy',
+        'scipy',
+        'astropy',
+        'numba',
+        'meshio',
+        'healpy',
+        'yt',
+        'mpi4py',
+        'tqdm',
     ],
+    # install_requires=[
+    #     'h5py>=2.9',
+    #     'numpy>=1.19',
+    #     'scipy>=1.3',
+    #     'astropy>=4.0',
+    #     'numba>=0.46',
+    #     'meshio>=4.3',
+    #     'healpy>=1.13',
+    #     'yt>=3.4',
+    #     'mpi4py>=3',
+    #     'tqdm>=4.42',
+    # ],
     cmdclass={'build_ext': my_build_ext},
     url="https://github.com/Magritte-code/Magritte",
     zip_safe=False,

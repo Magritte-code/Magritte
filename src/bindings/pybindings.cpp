@@ -559,8 +559,8 @@ PYBIND11_MODULE (core, module)
                     sizeof(double),                                           // Size of one element
                     py::format_descriptor<double>::format(),                  // Python struct-style format descriptor
                     2,                                                        // Number of dimensions
-                    py::detail::any_container<ssize_t>({v.vec.size(),
-                                                        3            }),      // Buffer dimensions
+                    py::detail::any_container<ssize_t>({(ssize_t) v.vec.size(),
+                                                        (ssize_t) 3            }),      // Buffer dimensions
                     py::detail::any_container<ssize_t>({sizeof(double)*3,
                                                         sizeof(double)   })   // Strides (in bytes) for each index
                 );

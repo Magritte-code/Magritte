@@ -2,12 +2,9 @@
 ##################################
 
 language:
-  - python
   - cpp
   - bash
-
-python:
-    - "3.7"
+# - we take care of Python with miniconda (otherwise no support for macOS)
 
 cache:
   directories:
@@ -15,6 +12,8 @@ cache:
 
 matrix:
   include:
+
+    # Linux: GNU compiler: 9
     - os: linux
       addons:
         apt:
@@ -27,38 +26,88 @@ matrix:
             - g++-9
       env:
          - MATRIX_EVAL="CC=gcc-9 && CXX=g++-9"
+
+    # Linux: GNU compiler: 8
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - libgomp1
+            - libopenmpi-dev
+            - gcc-8
+            - g++-8
+      env:
+         - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
+
+    # Linux: GNU compiler: 7
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - libgomp1
+            - libopenmpi-dev
+            - gcc-7
+            - g++-7
+      env:
+         - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+
+    # Linux: Clang compiler: 5.0
     # - os: linux
     #   addons:
     #     apt:
     #       sources:
     #         - ubuntu-toolchain-r-test
+    #         - llvm-toolchain-precise-5.0
     #       packages:
-    #         - libgomp1
-    #         - libopenmpi-dev
-    #         - gcc-8
-    #         - g++-8
+    #         - clang-5.0
     #   env:
-    #      - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
+    #     - MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0"
+
+    # macOS: Xcode 10.1 (clang: Apple LLVM version 10.0.0 (clang-1000.11.45.5))
+    # - os: osx
+    #   osx_image: xcode10.1
+    #   env:
+    #     - MATRIX_EVAL="CC=clang && CXX=clang++"
+
+    # macOS: Xcode 9.4 (clang: Apple LLVM version 9.1.0 (clang-902.0.39.2))
+    # - os: osx
+    #   osx_image: xcode9.4
+    #   env:
+    #     - MATRIX_EVAL="CC=clang && CXX=clang++"
+
+    # macOS: Xcode 10.1, GNU compiler 9
+    - os: osx
+      osx_image: xcode10.1
+      addons:
+        homebrew:
+          packages:
+            - gcc
+      env:
+        - MATRIX_EVAL="CC=gcc-9 && CXX=g++-9"
 
 before_install:
   - eval "${MATRIX_EVAL}"
   - bash dependencies/get_cmake.sh
-  - bash dependencies/get_mpich.sh
-  - PYTHON_EXEC=$(which python)
-  - BUILD_FLAGS="-DPYTHON_EXECUTABLE:FILEPATH=$PYTHON_EXEC -DOMP_PARALLEL=ON"
   - bash dependencies/get_conda.sh
+  - bash dependencies/get_mpich.sh
   - export PATH=`pwd`/dependencies/miniconda3/bin:$PATH
   - source activate magritte
+  - PYTHON_EXEC=$(which python)
+  - BUILD_FLAGS="-DPYTHON_EXECUTABLE:FILEPATH=$PYTHON_EXEC -DOMP_PARALLEL=ON"
   - CMAKE_CMD="`pwd`/dependencies/cmake/bin/cmake"
 
 install:
   - mkdir build; cd build;
   - $CC  --version
   - $CXX --version
-  - $CMAKE_CMD $BUILD_FLAGS ..
+  - CC=$CC CXX=$CXX $CMAKE_CMD $BUILD_FLAGS ..
   - make -j4
   - cd -
-  - python3 setup.py install
+  - python setup.py install
 
 script:
   - bash tests/run_all_tests.sh

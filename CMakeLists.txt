@@ -1,5 +1,6 @@
 # Set minimun required CMake version
 cmake_minimum_required (VERSION 3.18)
+
 # Set CMake version policy
 cmake_policy (SET CMP0048 NEW)
 
@@ -8,14 +9,12 @@ project (
     "Magritte"
     VERSION      0.0.1
     DESCRIPTION  "A modern software library for simulating radiation transport."
-    HOMEPAGE_URL "https://magritte.readthedocs.io"
+    HOMEPAGE_URL "https://github.com/Magritte-code/Magritte"
 )
 
 # Set build type
-# set (CMAKE_BUILD_TYPE Release)
-set (CMAKE_BUILD_TYPE Debug)
-set (CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --extended-lambda --use_fast_math --expt-relaxed-constexpr")
-
+set (CMAKE_BUILD_TYPE Release)
+# set (CMAKE_BUILD_TYPE Debug)
 
 # Write all binary files to the bin directory
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
@@ -82,20 +81,21 @@ set (PARACABS_USE_SYCL            ${MAGRITTE_GPU_SYCL})
 set (PARACABS_USE_SIMD            false)
 
 # Enable CUDA if required
-if    (GPU_ACCELERATION)
+if (GPU_ACCELERATION)
     enable_language (CUDA)
     # Specify the accelerator architecture (currently we don't)
     set (CMAKE_CUDA_ARCHITECTURES OFF)
-endif (GPU_ACCELERATION)
+    set (CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --extended-lambda --use_fast_math --expt-relaxed-constexpr")
+endif ()
 
 # Include Paracabs directory
 include             (dependencies/Paracabs/CMakeLists.txt)
 include_directories (dependencies/Paracabs/Paracabs      )
 
 # Link to pybind11 directory if required
-if    (PYTHON_BINDINGS OR PYTHON_IO)
+if (PYTHON_BINDINGS OR PYTHON_IO)
     add_subdirectory (dependencies/pybind11 pybind11)
-endif (PYTHON_BINDINGS OR PYTHON_IO)
+endif ()
 
 # Add source directory
 add_subdirectory (src)
