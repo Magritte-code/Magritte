@@ -82,8 +82,12 @@ matrix:
     # macOS: Xcode 10.1, GNU compiler 9
     - os: osx
       osx_image: xcode10.1
+      addons:
+        homebrew:
+          packages:
+            - gcc
       env:
-        - MATRIX_EVAL="brew install gcc && CC=gcc-9 && CXX=g++-9"
+        - MATRIX_EVAL="CC=gcc-9 && CXX=g++-9"
 
 before_install:
   - eval "${MATRIX_EVAL}"
