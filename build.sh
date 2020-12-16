@@ -31,8 +31,8 @@ make -j4
 # Go to Magritte root directory
 cd $DIR
 
-echo "Trying to uninstall magritte (to avoid duplication)..."
-pip uninstall magritte
+# echo "Trying to uninstall magritte (to avoid duplication)..."
+# pip uninstall magritte
 
-echo "Installing magritte python package..."
-python setup.py install
+# echo "Installing magritte python package..."
+# python setup.py install

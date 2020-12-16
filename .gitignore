@@ -48,6 +48,7 @@ configure.hpp
 ##############
 *dependencies/cmake*
 *dependencies/gmsh*
+*dependencies/mpich*
 *dependencies/miniconda3*
 
 # perf reports
