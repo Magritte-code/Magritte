@@ -103,7 +103,7 @@ install:
   - CC=$CC CXX=$CXX $CMAKE_CMD $BUILD_FLAGS ..
   - make -j4
   - cd -
-  - python3 setup.py install
+  - python setup.py install
 
 script:
   - bash tests/run_all_tests.sh
