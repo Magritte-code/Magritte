@@ -23,7 +23,8 @@ from our `GitHub <https://github.com/Magritte-code/Magritte>`_ repository.
 Setup
 *****
 
-The Magritte `conda <https://www.anaconda.com/products/individual>`_ environment can be created from an environment file with:
+The Magritte `conda <https://www.anaconda.com/products/individual>`_ environment
+can be created from an environment file with:
 
 .. code-block:: shell
 
