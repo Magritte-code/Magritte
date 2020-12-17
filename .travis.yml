@@ -85,7 +85,7 @@ matrix:
       addons:
         homebrew:
           packages:
-            - gcc
+            - gcc@9
       env:
         - MATRIX_EVAL="CC=gcc-9 && CXX=g++-9"
 
@@ -95,8 +95,7 @@ matrix:
       addons:
         homebrew:
           packages:
-            - gcc-8
-            - g++-8
+            - gcc@8
       env:
         - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
 
@@ -106,8 +105,7 @@ matrix:
       addons:
         homebrew:
           packages:
-            - gcc-7
-            - g++-7
+            - gcc@7
       env:
         - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
 
