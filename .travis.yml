@@ -55,7 +55,7 @@ matrix:
       env:
          - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
 
-    # Linux: Clang compiler: 5.0
+    # # Linux: Clang compiler: 5.0
     # - os: linux
     #   addons:
     #     apt:
@@ -67,13 +67,13 @@ matrix:
     #   env:
     #     - MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0"
 
-    # macOS: Xcode 10.1 (clang: Apple LLVM version 10.0.0 (clang-1000.11.45.5))
+    # # macOS: Xcode 10.1 (clang: Apple LLVM version 10.0.0 (clang-1000.11.45.5))
     # - os: osx
     #   osx_image: xcode10.1
     #   env:
     #     - MATRIX_EVAL="CC=clang && CXX=clang++"
 
-    # macOS: Xcode 9.4 (clang: Apple LLVM version 9.1.0 (clang-902.0.39.2))
+    # # macOS: Xcode 9.4 (clang: Apple LLVM version 9.1.0 (clang-902.0.39.2))
     # - os: osx
     #   osx_image: xcode9.4
     #   env:
@@ -88,6 +88,31 @@ matrix:
             - gcc
       env:
         - MATRIX_EVAL="CC=gcc-9 && CXX=g++-9"
+
+    # # macOS: Xcode 10.1, GNU compiler 8
+    # - os: osx
+    #   osx_image: xcode10.1
+    #   # addons:
+    #     # homebrew:
+    #       # packages:
+    #         # - gcc@8
+    #   install: brew install gcc@8
+    #   install:
+    #     - brew install gcc@8
+    #   env:
+    #     - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
+
+    # # macOS: Xcode 10.1, GNU compiler 7
+    # - os: osx
+    #   osx_image: xcode10.1
+    #   # addons:
+    #     # homebrew:
+    #       # packages:
+    #         # - gcc@7
+    #   install:
+    #     - brew install gcc@7
+    #   env:
+    #     - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
 
 before_install:
   - eval "${MATRIX_EVAL}"

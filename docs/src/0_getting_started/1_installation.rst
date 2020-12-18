@@ -46,7 +46,6 @@ Magritte has several dependencies, some of which are optional.
 * `Gmsh <https://gmsh.info/>`_, version :literal:`4.6.0` or later, for meshing model geometries.
 
 
-
 Please note that :literal:`Paracabs` might have further dependencies depending
 on which paralellization and acceleration libraries are used. See
 :ref:`advanced compilation <link-advanced_compilation>` for further details.
@@ -124,3 +123,9 @@ GPU acceleration
 
 Compilers
 =========
+
+Only :literal:`gcc` so far.
+
+Intel compiler (:literal:`icc`) support comming.
+
+Attempting to add :literal:`clang` support.
