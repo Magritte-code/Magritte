@@ -61,6 +61,8 @@ int main (int argc, char **argv)
     model.compute_LTE_level_populations();
     model.compute_inverse_line_widths();
     cout << "model read"<<endl;
+    cout <<"solving without multigrid"<<endl;
+    model.compute_level_populations(true,100);
     model.setup_multigrid(10, 1, 0.1);
     cout << "setup multigrid" << endl;
     for (Size point=0;point<parameters.npoints();point++)

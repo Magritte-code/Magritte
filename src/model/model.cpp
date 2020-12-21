@@ -505,12 +505,12 @@ int Model :: compute_level_populations_multigrid (
             error_max .push_back (lines.lineProducingSpecies[l].relative_change_max);
 
             // fraction allowed to not be converged:
-            // const double max_frac_not_converged=(parameters.npoints()-geometry.points.multiscale.get_total_points(curr_max_coars_lvl))/(double)parameters.npoints()+0.005;
+            const double max_frac_not_converged=(parameters.npoints()-geometry.points.multiscale.get_total_points(curr_max_coars_lvl))/(double)parameters.npoints()+0.005;
 
-            // cout << "max frac non coverged: " <<max_frac_not_converged<<endl;
+            cout << "max frac non coverged: " <<max_frac_not_converged<<endl;
 
-            // if (lines.lineProducingSpecies[l].fraction_not_converged > max_frac_not_converged)
-            if (lines.lineProducingSpecies[l].fraction_not_converged > 0.005)
+            if (lines.lineProducingSpecies[l].fraction_not_converged > max_frac_not_converged)
+            // if (lines.lineProducingSpecies[l].fraction_not_converged > 0.005)
             {
                 some_not_converged = true;
             }
