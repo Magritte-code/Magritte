@@ -198,7 +198,7 @@ inline void Solver :: solve_feautrier_order_2 (Model& model)
           {
             const Real dshift_max = get_dshift_max (model, o);
 
-            cout << "dshift_max = " << dshift_max * CC << endl;
+            // cout << "dshift_max = " << dshift_max * CC << endl;
 
             nr_   ()[centre] = o;
             shift_()[centre] = 1.0;
