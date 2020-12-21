@@ -62,6 +62,8 @@ inline void Multiscale::coarsen_around_point (const Size p)
 {
     // New neighbors for p.
     std::set<Size> new_neighbors;
+    // Boundary neighbors need to be treated differently
+    std::set<Size> boundary_neighbors;
 
     // Identify all neighbors with the current point (p),
     // i.e. remove its neighbors from the mesh by masking,
@@ -94,8 +96,24 @@ inline void Multiscale::coarsen_around_point (const Size p)
       else
       {//also do not forget to actually add our boundary elements as a neighbor of our point
         new_neighbors.insert(n);
+        boundary_neighbors.insert(n);
       }
     }
+
+    // Also deleting the neighbors (not on boundary) from the on boundary neighbors
+    for (const Size n:neighbors.back()[p])
+    {
+      if (not_on_boundary(n))
+      {
+        for (const Size b:boundary_neighbors)
+        {
+          neighbors.back()[b].erase(n);
+        }
+      }
+    }
+
+
+
     // std::cout << "Size neighbors_of_neighbors: " << neighbors_of_neighbors.size() << std::endl;
     for (const Size n_n:neighbors_of_neighbors)
     {
