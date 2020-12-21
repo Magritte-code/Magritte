@@ -207,10 +207,6 @@ inline void Solver :: solve_feautrier_order_2 (Model& model)
             last_ () = trace_ray <CoMoving> (model.geometry, o, ar, dshift_max, +1, centre+1, centre  ) - 1;
             n_tot_() = (last_()+1) - first_();
 
-            std::cout << "n_tot_(): " << n_tot_() << std::endl;
-            std::cout << "first_(): " << first_() << std::endl;
-            std::cout << "last_(): "  << last_()  << std::endl;
-
             if (n_tot_() > 1)
             {
                 for (Size f = 0; f < model.parameters.nfreqs(); f++)
@@ -304,8 +300,6 @@ accel inline Size Solver :: trace_ray (
 
     Size nxt = geometry.get_next (o, r, o, Z, dZ);
 
-    cout << "nxt: " << nxt << endl;
-
     if (geometry.valid_point(nxt))
     {
         Size         crt = o;
@@ -321,8 +315,6 @@ accel inline Size Solver :: trace_ray (
 
                   nxt = geometry.get_next          (o, r, nxt, Z, dZ);
             shift_nxt = geometry.get_shift <frame> (o, r, nxt, Z    );
-
-            cout << "nxt" << nxt << endl;
 
             set_data (crt, nxt, shift_crt, shift_nxt, dZ, dshift_max, increment, id1, id2);
         }

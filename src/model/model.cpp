@@ -435,6 +435,7 @@ int Model :: compute_level_populations_multigrid (
       Size curr_max_coars_lvl=max_coars_lvl-subtract;
       std::cout<<"Current coarsening level: "<< curr_max_coars_lvl<<std::endl;
       std::cout<<"Current number points:"<<geometry.points.multiscale.get_total_points(curr_max_coars_lvl)<<std::endl;
+      geometry.points.multiscale.set_curr_coars_lvl(curr_max_coars_lvl);
 
       // Initialize the number of iterations
       int iteration        = 0;
@@ -466,10 +467,10 @@ int Model :: compute_level_populations_multigrid (
         {
             // logger.write ("Computing the radiation field...");
             cout << "Computing the radiation field..." << endl;
-            //calculate radiation field on coarser level
+            // calculate radiation field on coarser level
             geometry.points.multiscale.set_curr_coars_lvl(curr_max_coars_lvl);
             compute_radiation_field_feautrier_order_2 ();
-            //and interpolate it
+            // and interpolate it
             while(geometry.points.multiscale.get_curr_coars_lvl()>0)
             {//maybe TODO: add support for interpolating skipping levels
               cout<<"trying to interpolate matrix"<<endl;
@@ -503,6 +504,12 @@ int Model :: compute_level_populations_multigrid (
             error_mean.push_back (lines.lineProducingSpecies[l].relative_change_mean);
             error_max .push_back (lines.lineProducingSpecies[l].relative_change_max);
 
+            // fraction allowed to not be converged:
+            // const double max_frac_not_converged=(parameters.npoints()-geometry.points.multiscale.get_total_points(curr_max_coars_lvl))/(double)parameters.npoints()+0.005;
+
+            // cout << "max frac non coverged: " <<max_frac_not_converged<<endl;
+
+            // if (lines.lineProducingSpecies[l].fraction_not_converged > max_frac_not_converged)
             if (lines.lineProducingSpecies[l].fraction_not_converged > 0.005)
             {
                 some_not_converged = true;
@@ -514,10 +521,22 @@ int Model :: compute_level_populations_multigrid (
             cout << "Already " << 100 * (1.0 - fnc) << " % converged!" << endl;
         }
       } // end of while loop of iterations
+      // //TODO add check of final iteration
+      // cout<<"trying to interpolate matrix"<<endl;
+      // for (Size test=0;test<parameters.npoints();test++)
+      // {
+      //   std::cout<<radiation.J(test,0)<<std::endl;
+      // }
+      // //for all frequencies, interpolate J
+      // interpolate_matrix_local(geometry.points.multiscale.get_curr_coars_lvl(),radiation.J);
+      // cout<<"successfully interpolated matrix"<<endl;
+      // geometry.points.multiscale.set_curr_coars_lvl(geometry.points.multiscale.get_curr_coars_lvl()-1);
+
       // Print convergence stats
       cout << "Converged after " << iteration << " iterations" << endl;
-      curr_max_coars_lvl-=1;
+      // curr_max_coars_lvl-=1;
       iteration_sum+=iteration;
+
     }
 
     return iteration_sum;
@@ -542,11 +561,11 @@ int Model :: compute_level_populations_multigrid (
 //     geometry.points.multiscale.set_curr_coars_lvl(geometry.points.multiscale.get_curr_coars_lvl()-1);
 //     std::cout<<"Current coarsening level: "<< geometry.points.multiscale.get_curr_coars_lvl()<<std::endl;
 //     std::cout<<"Current number points:"<<geometry.points.multiscale.get_total_points(geometry.points.multiscale.get_curr_coars_lvl())<<std::endl;
-//     compute_Jeff                              ();
-//     lines.iteration_using_statistical_equilibrium (
-//         chemistry.species.abundance,
-//         thermodynamics.temperature.gas,
-//         parameters.pop_prec()                     );
+//     // compute_Jeff                              ();
+//     // lines.iteration_using_statistical_equilibrium (
+//     //     chemistry.species.abundance,
+//     //     thermodynamics.temperature.gas,
+//     //     parameters.pop_prec()                     );
 //   }
 //     //finally, solve for the final grid
 //     //as a test, we can just not calculate the radiation field again for the finest grid
