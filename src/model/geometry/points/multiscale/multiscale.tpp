@@ -91,6 +91,10 @@ inline void Multiscale::coarsen_around_point (const Size p)
         }
         neighbors.back()[n]=std::set<Size>();//and finally also delete every neighbors of the deleted point
       }
+      else
+      {//also do not forget to actually add our boundary elements as a neighbor of our point
+        new_neighbors.insert(n);
+      }
     }
     // std::cout << "Size neighbors_of_neighbors: " << neighbors_of_neighbors.size() << std::endl;
     for (const Size n_n:neighbors_of_neighbors)

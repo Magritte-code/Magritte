@@ -50,7 +50,7 @@ int main (int argc, char **argv)
     cout << "sizeof Vector3D = " << sizeof(Vector3D) << endl;
 
     cout << "n threads = " << paracabs::multi_threading::n_threads_avail() << endl;
-    paracabs::multi_threading::set_n_threads_avail(6);
+    paracabs::multi_threading::set_n_threads_avail(1);//set nb threads to one for debugging output
     cout << "n threads = " << paracabs::multi_threading::n_threads_avail() << endl;
 
 
