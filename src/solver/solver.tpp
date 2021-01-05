@@ -191,6 +191,7 @@ inline void Solver :: solve_feautrier_order_2 (Model& model)
 
         cout << "--- rr = " << rr << endl;
 
+        //FIXME: just use list of all points in current grid and use o as index
         //TODO: only use the points currently in the grid!!!!
         accelerated_for (o, model.parameters.npoints(), nblocks, nthreads,
         { //if the point o lies in the current grid, do the whole calculation
