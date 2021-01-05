@@ -1249,7 +1249,6 @@ inline int Model::setup_multigrid(Size min_nb_points, Size max_coars_lvl, double
 {
   std::cout<<"Tolerance: "<<tol<<std::endl;
   std::function<bool(Size,Size)> fun_to_del=points_are_similar(tol);//function that says if two points are similar enough
-  std::cout<<"point 0 similar to 0: "<<fun_to_del(0,0)<<std::endl;
   geometry.points.multiscale.set_not_on_boundary_fun([&](Size p){return geometry.not_on_boundary(p);});//function that says whether a point lies on the boundary
   geometry.points.multiscale.set_comparison_fun(fun_to_del);
   //first, we coarsen the grid until we either have too few points left or have too many coarsening levels
