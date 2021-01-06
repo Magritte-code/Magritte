@@ -78,7 +78,7 @@ inline void Model::coarsen(double tol)
         if (can_be_coarsened(p, points_coarsened_around, tol))
         {
           coarsen_around_point(p);
-          std::cout << "Deleted around point: " << p <<std::endl;
+          // std::cout << "Deleted around point: " << p <<std::endl;
           points_coarsened_around.insert(p);
         }
     }
@@ -204,7 +204,7 @@ inline int Model::setup_multigrid(Size min_nb_points, Size max_coars_lvl, double
   // std::cout<<"max coarsening lvl: "<<geometry.points.multiscale.get_max_coars_lvl()<<std::endl;
   // std::cout<<"curr coarsening lvl: "<<geometry.points.multiscale.get_curr_coars_lvl()<<std::endl;
     coarsen(tol);
-    std::cout<<"coarsened layer"<<std::endl;
+    std::cout<<"coarsened layer; number points remaining: "<<geometry.points.multiscale.get_total_points(geometry.points.multiscale.get_max_coars_lvl())<<std::endl;
   }
   std::cout<<"finished coarsening"<<std::endl;
   return (0);
