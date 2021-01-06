@@ -67,11 +67,11 @@ inline bool Model::points_are_similar(Size point1, Size point2, double tolerance
 // i.e. add another layer of coarsening.
 inline void Model::coarsen(double tol)
 {
-    auto mult=geometry.points.multiscale;
-    mult.mask     .push_back(vector<bool>          (mult.mask     .back()));//should be deep copy
-    mult.neighbors.push_back(vector<std::set<Size>>(mult.neighbors.back()));//should be deep copy
+    // auto mult=geometry.points.multiscale;
+    geometry.points.multiscale.mask     .push_back(vector<bool>          (geometry.points.multiscale.mask     .back()));//should be deep copy
+    geometry.points.multiscale.neighbors.push_back(vector<std::set<Size>>(geometry.points.multiscale.neighbors.back()));//should be deep copy
     std::set<Size> points_coarsened_around;
-    mult.curr_coarsening_lvl=mult.get_max_coars_lvl();
+    geometry.points.multiscale.curr_coarsening_lvl=geometry.points.multiscale.get_max_coars_lvl();
 
     for (Size p = 0; p < parameters.npoints(); p++)
     {
@@ -88,13 +88,13 @@ inline void Model::coarsen(double tol)
 // Returns whether the mesh at a point (p) can be coarsened.
 inline bool Model::can_be_coarsened (const Size p, std::set<Size>& points_coarsened_around, double tol)
 {
-    auto mult=geometry.points.multiscale;
-    if (!mult.mask.back()[p]||!geometry.not_on_boundary(p)) {
+    // auto mult=geometry.points.multiscale;
+    if (!geometry.points.multiscale.mask.back()[p]||!geometry.not_on_boundary(p)) {
       // std::cout<<"point on boundary or mask is set wrong?"<<std::endl;
       return false;}//if point no longer in grid, do not coarsen
     //if the point lies on the boundary, do not waste time trying to coarsen around it
 
-    for (const Size n : mult.neighbors.back()[p])
+    for (const Size n : geometry.points.multiscale.neighbors.back()[p])
     {
         // Do not coarsen if a neighbor was already coarsend at this level,
         // this avoids creating large holes in the mesh.
@@ -117,7 +117,7 @@ inline bool Model::can_be_coarsened (const Size p, std::set<Size>& points_coarse
 
 inline void Model::coarsen_around_point (const Size p)
 {
-    auto mult=geometry.points.multiscale;
+    // auto mult=geometry.points.multiscale;
     // New neighbors for p.
     std::set<Size> new_neighbors;
     // Boundary neighbors need to be treated differently
@@ -126,30 +126,30 @@ inline void Model::coarsen_around_point (const Size p)
     // Identify all neighbors with the current point (p),
     // i.e. remove its neighbors from the mesh by masking,
     // TODO: figure out whether it is ok/necessary to empty their neighbors
-    for (const Size n : mult.neighbors.back()[p])
+    for (const Size n : geometry.points.multiscale.neighbors.back()[p])
     {
       if (geometry.not_on_boundary(n))//boundary points will NEVER get removed
         {
-          mult.mask.back()[n] = false;
+          geometry.points.multiscale.mask.back()[n] = false;
         }
     }
 
     // ..., and replace the neighbors of p (which are removed)
     // in their neighbors by p, using the symmetry of neighbors.
     std::set<Size> neighbors_of_neighbors;
-    for (const Size n : mult.neighbors.back()[p])
+    for (const Size n : geometry.points.multiscale.neighbors.back()[p])
     {
       if (geometry.not_on_boundary(n))
       {
-        for (const Size n_n : mult.neighbors.back()[n])
+        for (const Size n_n : geometry.points.multiscale.neighbors.back()[n])
         {
-          if (mult.mask.back()[n_n]&&n_n!=p)//if neighbor of neighbor is still in the grid, i.e. not just a neighbor; also, do never try to add a point as its own neighbor!!!!
+          if (geometry.points.multiscale.mask.back()[n_n]&&n_n!=p)//if neighbor of neighbor is still in the grid, i.e. not just a neighbor; also, do never try to add a point as its own neighbor!!!!
           {
             neighbors_of_neighbors.insert(n_n);
-            mult.neighbors.back()[n_n].erase(n);//remove n from neighbors of n_n
+            geometry.points.multiscale.neighbors.back()[n_n].erase(n);//remove n from neighbors of n_n
           }
         }
-        mult.neighbors.back()[n]=std::set<Size>();//and finally also delete every neighbor of the deleted point
+        geometry.points.multiscale.neighbors.back()[n]=std::set<Size>();//and finally also delete every neighbor of the deleted point
       }
       else
       {//also do not forget to actually add our boundary elements as a neighbor of our point
@@ -159,13 +159,13 @@ inline void Model::coarsen_around_point (const Size p)
     }
 
     // Also deleting the neighbors (not on boundary) from the on boundary neighbors
-    for (const Size n:mult.neighbors.back()[p])
+    for (const Size n:geometry.points.multiscale.neighbors.back()[p])
     {
       if (geometry.not_on_boundary(n))
       {
         for (const Size b:boundary_neighbors)
         {
-          mult.neighbors.back()[b].erase(n);
+          geometry.points.multiscale.neighbors.back()[b].erase(n);
         }
       }
     }
@@ -176,14 +176,14 @@ inline void Model::coarsen_around_point (const Size p)
     for (const Size n_n:neighbors_of_neighbors)
     {
       // Replace the removed points by p
-      mult.neighbors.back()[n_n].insert(p);
+      geometry.points.multiscale.neighbors.back()[n_n].insert(p);
 
       // And add the others as new neighbors.
       new_neighbors.insert(n_n);
     }
 
     // Set the new nearest neighbors.
-    mult.neighbors.back()[p] = new_neighbors;
+    geometry.points.multiscale.neighbors.back()[p] = new_neighbors;
 }
 
 
@@ -193,16 +193,18 @@ inline void Model::coarsen_around_point (const Size p)
 ///   @Parameter[in]: tol: the tolerance level for which we still consider points similar enough
 inline int Model::setup_multigrid(Size min_nb_points, Size max_coars_lvl, double tol)
 {
-  std::cout<<"Tolerance: "<<tol<<std::endl;
+  // std::cout<<"Tolerance: "<<tol<<std::endl;
   // std::function<bool(Size,Size)> fun_to_del=points_are_similar(tol);//function that says if two points are similar enough
   // geometry.points.multiscale.set_not_on_boundary_fun([&](Size p){return geometry.not_on_boundary(p);});//function that says whether a point lies on the boundary
   // geometry.points.multiscale.set_comparison_fun(fun_to_del);
   //first, we coarsen the grid until we either have too few points left or have too many coarsening levels
   while((geometry.points.multiscale.get_max_coars_lvl()<max_coars_lvl)&&
   (geometry.points.multiscale.get_total_points(geometry.points.multiscale.get_max_coars_lvl())>min_nb_points))
-  {std::cout<<"coursening layer"<<std::endl;
+  {std::cout<<"coarsening layer"<<std::endl;
+  // std::cout<<"max coarsening lvl: "<<geometry.points.multiscale.get_max_coars_lvl()<<std::endl;
+  // std::cout<<"curr coarsening lvl: "<<geometry.points.multiscale.get_curr_coars_lvl()<<std::endl;
     coarsen(tol);
-    std::cout<<"coarsened_layer"<<std::endl;
+    std::cout<<"coarsened layer"<<std::endl;
   }
   std::cout<<"finished coarsening"<<std::endl;
   return (0);

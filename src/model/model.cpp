@@ -323,8 +323,6 @@ int Model :: compute_radiation_field_feautrier_order_2 ()
     solver.setup <CoMoving>        (*this);
     solver.solve_feautrier_order_2 (*this);
 
-    cout <<"here"<<endl;
-
     return (0);
 }
 
