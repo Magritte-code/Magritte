@@ -230,7 +230,7 @@ PYBIND11_MODULE (core, module)
     // Multiscale
     py::class_<Multiscale> (module, "Multiscale")
         // attributes
-        .def_readonly("points_are_similar", &Multiscale::points_are_similar)
+        //.def_readonly("points_are_similar", &Multiscale::points_are_similar)
         // functions
         .def("set_all_neighbors", &Multiscale::set_all_neighbors)
         //.def("get_neighbors", &Multiscale::get_neighbors) TODO: figure out how to handle overloaded functions

@@ -21,34 +21,36 @@ struct Multiscale
     // Assume the finest mesh (l=0) is given.
     vector<vector<std::set<Size>>> neighbors;
 
-    // Function to check whether two points are similar enough to be able to coarsen them
-    // Should be a lambda function supplied by something else.
-    // Maybe also add tolerance to it TODO
-    // Should return true when we may coarsen the grid
-    // Should also take into account wehther there are boundary points involved
-    std::function<bool(Size, Size)> points_are_similar;
-
-    ///FIXME: also take care to NOT delete boundary points; maybe just take the same reference as geometry
-
-    std::function<bool(Size)> not_on_boundary;
+    ///DEPRECATED
+    // // Function to check whether two points are similar enough to be able to coarsen them
+    // // Should be a lambda function supplied by something else.
+    // // Maybe also add tolerance to it TODO
+    // // Should return true when we may coarsen the grid
+    // // Should also take into account wehther there are boundary points involved
+    // std::function<bool(Size, Size)> points_are_similar;
+    //
+    // ///FIXME: also take care to NOT delete boundary points; maybe just take the same reference as geometry
+    //
+    // std::function<bool(Size)> not_on_boundary;
 
     //current coarsening level
     Size curr_coarsening_lvl=0;
 
-    // Just some safety precations that should be true before calling coarsen
-    bool boundary_set=false;
-    bool comparison_set=false;
+    ///DEPRECATED
+    // // Just some safety precations that should be true before calling coarsen
+    // bool boundary_set=false;
+    // bool comparison_set=false;
 
-
-    // Coarsen the mesh,
-    // i.e. add another layer of coarsening.
-    inline void coarsen ();
-
-    // Returns whether the mesh at a point (p) can be coarsened.
-    inline bool can_be_coarsened (const Size p, std::set<Size>& points_coarsened_around);
-
-    // Coarsens the neighbors of p and updates the neighbors of p and neighbors of the neighbors of neighbors
-    inline void coarsen_around_point (const Size p);
+    ///DEPRECATED, moved to Model
+    // // Coarsen the mesh,
+    // // i.e. add another layer of coarsening.
+    // inline void coarsen ();
+    //
+    // // Returns whether the mesh at a point (p) can be coarsened.
+    // inline bool can_be_coarsened (const Size p, std::set<Size>& points_coarsened_around);
+    //
+    // // Coarsens the neighbors of p and updates the neighbors of p and neighbors of the neighbors of neighbors
+    // inline void coarsen_around_point (const Size p);
 
     //returns the current max coarsening level (=size neighbors-1)
     inline Size get_max_coars_lvl();

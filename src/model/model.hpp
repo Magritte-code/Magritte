@@ -34,52 +34,24 @@ struct Model
         read ();
     }
 
-    /// Deprecated
-    // Size curr_coarsening_lvl=0;
-    // Size max_reached_coarsening_lvl=0;
-    // std::multimap<Size,double> density_diff_map;//stores (point,density_diff)
-    // std::multimap<double,Size> rev_density_diff_map;//for ease of accessing data, i also store the reverse map
-    //   //@Frederik: if you know a better data type to store this, let me know
-    // vector <Neighbors> neighbors_lists;
-    // vector <Size> nb_points_at_lvl;//keeps the number of points at each coarsening level
-    // Size current_nb_points;//is the number of points at the coarsest level
-    //
-    // vector<vector<bool>> mask_list;//stores the list of masks
-    // //true means point is still in grid, false means point is deleted
-
-    /// Deprecated
-    // //debug stuff for point deletion
-    // vector<std::map<Size, std::set<Size>>> reduced_neighbors_before;//without curr_point
-    // vector<vector<vector<Size>>> added_lines;//the lines in the order in which they are added
-    // vector<vector<vector<vector<Size>>>> added_tetras;//the tetrahedra in the order in which they are added (probably does not include all possible tetrahedra); might contain duplicates
-    // vector<Size> deleted_points;
-    // vector<std::map<Size, std::set<Size>>> reduced_neighbors_after;//without curr_point obviously
-    // bool debug_mode=false;
-
-
-
     void read  (const Io& io);
     void write (const Io& io) const;
 
     inline double calc_diff_abundance_with_point(Size point1, Size point2);
-    inline std::function<bool(Size,Size)> points_are_similar(double tolerance);
+    // inline std::function<bool(Size,Size)> points_are_similar(double tolerance);
+    inline bool points_are_similar(Size point1, Size point2, double tolerance);
 
-    /// Deprecated
-    // inline double orientation(const vector<Size> &plane, Size point);
-    // inline double calc_power(const vector<Size> &triangle, Size point);
-    // inline double calc_diff_abundance_with_neighbours(Size point, Size next_coars_lvl);
-    // inline void generate_initial_ears(const vector<Size> &neighbors_of_point, const vector<Size> &plane, std::map<Size, std::set<Size>> &neighbor_map,
-    //  std::multimap<vector<Size>,double> &ears_map, std::multimap<double,vector<Size>> &rev_ears_map, Size &curr_point);
-    // //inline void generate_new_ears(const std::set<vector<Size>> &neighbor_lines, vector<Size> &new_line,std::map<Size,std::set<Size>> &neighbor_map, std::multimap<vector<Size>,double> &ears_map, std::multimap<double,vector<Size>> &rev_ears_map, Size &curr_point);
-    // inline void generate_new_ears(const vector<Size> &neighbors_of_point, const vector<Size> &plane, std::map<Size, std::set<Size>> &neighbor_map,
-    //  std::multimap<vector<Size>,double> &ears_map, std::multimap<double,vector<Size>> &rev_ears_map, Size &curr_point, Size &orient_point, std::map<vector<Size>,Size> &plane_counter, std::set<std::vector<Size>> &edge_planes, std::set<vector<Size>> forbidden_planes);
-    //
-    // inline void coarsen_grid(float perc_points_deleted);
-    //
-    // inline std::set<vector<Size>> calc_all_tetra_with_point(Size point, Size coars_lvl);
-    // inline Eigen::Vector<double,4> calc_barycentric_coords(const vector<Size> &triangle, Size point);
-    // //TODO:inline void rerefine_grid();
-    // inline void interpolate_vector(Size coarser_lvl, Size finer_lvl, vector<double> &to_interpolate);
+    // Coarsen the mesh given a certain tolerance,
+    // i.e. add another layer of coarsening.
+    inline void coarsen (double tol);
+
+    // Returns whether the mesh at a point (p) can be coarsened, given a certain tolerance.
+    inline bool can_be_coarsened (const Size p, std::set<Size>& points_coarsened_around, double tol);
+
+    // Coarsens the neighbors of p and updates the neighbors of p and neighbors of the neighbors of neighbors
+    inline void coarsen_around_point (const Size p);
+
+
     template <typename T>
     inline void interpolate_vector_local(Size coarser_lvl, vector<T> &to_interpolate);
     template <typename T>
