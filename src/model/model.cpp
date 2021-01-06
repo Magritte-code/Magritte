@@ -471,11 +471,16 @@ int Model :: compute_level_populations_multigrid (
             // and interpolate it
             while(geometry.points.multiscale.get_curr_coars_lvl()>0)
             {//maybe TODO: add support for interpolating skipping levels
-              cout<<"trying to interpolate matrix"<<endl;
+              const vector<bool> curr_mask=geometry.points.multiscale.get_mask(geometry.points.multiscale.get_curr_coars_lvl());
               for (Size test=0;test<parameters.npoints();test++)
               {
+                if (curr_mask[test])
+                {
                 std::cout<<radiation.J(test,0)<<std::endl;
+                }
               }
+              cout<<"trying to interpolate matrix; current coarsening level: "<<geometry.points.multiscale.get_curr_coars_lvl()<<endl;
+              //TODO print number of nans
               //for all frequencies, interpolate J
               interpolate_matrix_local(geometry.points.multiscale.get_curr_coars_lvl(),radiation.J);
               cout<<"successfully interpolated matrix"<<endl;
@@ -485,7 +490,7 @@ int Model :: compute_level_populations_multigrid (
                 std::cout<<radiation.J(test,0)<<std::endl;
               }
             }
-            cout << "Computed feautrier" << std::endl;
+            std::cout << "Computed feautrier" << std::endl;
             compute_Jeff                              ();
 
             lines.iteration_using_statistical_equilibrium (

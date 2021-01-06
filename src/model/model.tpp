@@ -395,8 +395,10 @@ inline void Model::interpolate_matrix_local(Size coarser_lvl, Matrix<T> &to_inte
     // to_interpolate[diff_point]=interpolated_value;
     //TODO: also use neighbors of neighbors as better interpolation
     // Note: using the current multigrid creation method, the number of neighbors in the coarse grid is always at least 1
+
+    ///commented out for now until we solve the issue with having way too much neighbors if we apply this...
     // In the case we do not really have enough points for a good interpolation, just add more
-    if (neighbors_coarser_grid.size()<4)//FIXME: define this value somewhere else
+    if (neighbors_coarser_grid.size()<2)//FIXME: define this value somewhere else
     {//because this estimate is just beyond terrible: also add neighbors of neighbors
       // for (Size freqidx=0; freqidx<parameters.nfreqs(); freqidx++)
       // {
@@ -418,18 +420,49 @@ inline void Model::interpolate_matrix_local(Size coarser_lvl, Matrix<T> &to_inte
       //Finally add our new points too
       std::copy(temp_neighbors_coarser_grid.begin(), temp_neighbors_coarser_grid.end(), std::back_inserter(neighbors_coarser_grid));
     }
-    if (neighbors_coarser_grid.size()>50)//FIXME: define this value somewhere else
-    {//now this just becomes: 1) to expensive to calculate and 2)is also using irrelevant information
+    if (neighbors_coarser_grid.size()>50)//FIXME: define this value somewhere else and base this number on something
+    {//now this just becomes: 1) to expensive to calculate and 2)difference between distances might become too large
       /// This gives too much spam, commenting for now
       // std::cout<<"far too many neighbors to interpolate: "<<neighbors_coarser_grid.size()<<std::endl;
       // std::cout<<"using the first 50 neighbors instead to interpolate"<<std::endl;
-      vector<Size> subvector = {neighbors_coarser_grid.begin(), neighbors_coarser_grid.begin()+50};
+      Size maxnbneighbors=50;
+      Size nbneighbors=neighbors_coarser_grid.size();
+      vector<double> distances2;//stores the distances2 of the n closest points
+      distances2.resize(maxnbneighbors);
+      std::fill(distances2.begin(), distances2.end(), std::numeric_limits<double>::max());
+      vector<Size> closest_points;//stores the n closest points
+      double maxdist=std::numeric_limits<double>::max();//maximum distance of the n closest points
+      Size maxindex=0;//corresponding index
+      closest_points.resize(maxnbneighbors);
+      std::fill(closest_points.begin(), closest_points.end(), parameters.npoints());
+      for (Size idx=0;idx<nbneighbors;idx++)
+      {
+        double tempdistance=(geometry.points.position[neighbors_coarser_grid[idx]]-geometry.points.position[diff_point]).squaredNorm();
+        if (tempdistance<maxdist)
+        {//replace the curr max distance
+          closest_points[maxindex]=neighbors_coarser_grid[idx];
+          distances2[maxindex]=tempdistance;
+          //get new max distance and corresponding max index
+          auto tempindex = std::max_element(distances2.begin(), distances2.end());
+          maxindex=tempindex - distances2.begin();
+          maxdist=distances2[maxindex];
+        }
+      }
+      // vector<double> distances2=(geometry.points.position[neighbors_coarser_grid[idx]]-geometry.points.position[diff_point]).squaredNorm());
+
+      // vector<Size> subvector = indices;
       //Maybe TODO: find a better way to choose the best neighbors, maybe just order them on distance
-      neighbors_coarser_grid=subvector;
+      neighbors_coarser_grid=closest_points;
     }
+    // cout<<"number neighbors to interpolate from: "<<neighbors_coarser_grid.size()<<std::endl;
     // else
     // {//use rbf estimate
     Size nb_neighbors_coarser_grid=neighbors_coarser_grid.size();
+    if (nb_neighbors_coarser_grid==0)//this shouldn't be possible, but you never know what goes wrong
+    {
+      std::cout<<"No neighbors for the current point!!!"<<std::endl;
+      std::cout<<"Current point: "<<diff_point<<std::endl;
+    }
     Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic> rbf_mat(nb_neighbors_coarser_grid, nb_neighbors_coarser_grid);
     Eigen::Matrix<T,1,Eigen::Dynamic> distance_with_neighbors(1,nb_neighbors_coarser_grid);
     for (Size idx=0; idx<nb_neighbors_coarser_grid; idx++)
@@ -445,12 +478,14 @@ inline void Model::interpolate_matrix_local(Size coarser_lvl, Matrix<T> &to_inte
         rbf_mat(idx2,idx)=radius;
       }
     }
-    T maxdist=rbf_mat.maxCoeff()*5.0;//arbitrary number 5 to make the max_dist larger
+    T maxdist=rbf_mat.maxCoeff();//arbitrary number 5 to make the max_dist larger
     rbf_mat=rbf_mat/maxdist;
     rbf_mat=rbf_mat.unaryExpr(std::ptr_fun(rbf_local<T>));
     distance_with_neighbors=distance_with_neighbors/maxdist;
     distance_with_neighbors=distance_with_neighbors.unaryExpr(std::ptr_fun(rbf_local<T>));
-    Eigen::LLT<Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic>> lltdec(rbf_mat);
+    // std::cout<<"determinant: "<<distance_with_neighbors.determinant()<<std::endl;
+    //going with more robust LDLT decomposition in the hope that this reduces the number of nans generated
+    Eigen::LDLT<Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic>> ldltdec(rbf_mat);
     //now that we have our llt decomposition, calculate the interpolated value
     for (Size freqidx=0; freqidx<parameters.nfreqs(); freqidx++)
     {
@@ -460,10 +495,14 @@ inline void Model::interpolate_matrix_local(Size coarser_lvl, Matrix<T> &to_inte
         // std::cout<<"Interpolation values"<<to_interpolate(idx,freqidx)<<std::endl;
         right_hand_side(idx)=to_interpolate(idx,freqidx);
       }
-      Eigen::Vector<T,Eigen::Dynamic> weights=lltdec.solve(right_hand_side);
+      Eigen::Vector<T,Eigen::Dynamic> weights=ldltdec.solve(right_hand_side);
       T interpolated_value=(distance_with_neighbors*weights)(0,0);
       // std::cout<<"interpolated value: "<<interpolated_value<<std::endl;
       to_interpolate(diff_point,freqidx)=interpolated_value;
+      if (std::isnan(interpolated_value))
+      {
+        std::cout<<"Something went wrong during interpolating: nan value occuring"<<std::endl;
+      }
     }
     // }
 
