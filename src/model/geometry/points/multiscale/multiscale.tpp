@@ -258,3 +258,21 @@ inline Size Multiscale::get_total_points(const Size curr_lvl)
 {
   return std::count(mask[curr_lvl].begin(), mask[curr_lvl].end(), true);
 }
+
+//Returns the points in the current grid
+inline vector<Size> Multiscale::get_current_points_in_grid()
+{
+  // vector<Size> v(parameters.npoints());
+  // std::iota(v.begin(), v.end(), 0);//creating vector going from 0 to npoints-1
+  vector<Size> toreturn;
+  // toreturn.reserve(parameters.npoints());
+  for (Size idx=0; idx<parameters.npoints(); idx++)
+  {
+    if (mask[curr_coarsening_lvl][idx])
+    {
+      toreturn.push_back(idx);
+    }
+  }
+  return toreturn;
+
+}

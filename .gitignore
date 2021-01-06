@@ -59,5 +59,9 @@ perf.data*
 ##############
 tests/results/*
 
+# test models
+#############
+tests/models/*
+
 magritte.egg-info/*
 dist/*

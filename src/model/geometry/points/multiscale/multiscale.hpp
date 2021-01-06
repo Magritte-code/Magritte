@@ -85,6 +85,8 @@ struct Multiscale
     inline vector<bool> get_mask(const Size curr_lvl) const;
     //Returns the total number of points remaining at level curr_level
     inline Size get_total_points(const Size curr_lvl);
+    //Returns the points in the current grid
+    inline vector<Size> get_current_points_in_grid();
 
 };
 

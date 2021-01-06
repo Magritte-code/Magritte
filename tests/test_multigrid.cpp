@@ -50,7 +50,7 @@ int main (int argc, char **argv)
     cout << "sizeof Vector3D = " << sizeof(Vector3D) << endl;
 
     cout << "n threads = " << paracabs::multi_threading::n_threads_avail() << endl;
-    paracabs::multi_threading::set_n_threads_avail(1);//set nb threads to one for debugging output
+    // paracabs::multi_threading::set_n_threads_avail(6);//set nb threads to one for debugging output
     cout << "n threads = " << paracabs::multi_threading::n_threads_avail() << endl;
 
 
@@ -63,18 +63,18 @@ int main (int argc, char **argv)
     cout << "model read"<<endl;
     cout <<"solving without multigrid"<<endl;
     model.compute_level_populations(true,100);
-    model.setup_multigrid(10, 1, 0.1);
-    cout << "setup multigrid" << endl;
-    for (Size point=0;point<parameters.npoints();point++)
-    {
-      cout<<model.geometry.points.multiscale.get_nb_neighbors(point)<<std::endl;
-      std::set<Size>neighbors=model.geometry.points.multiscale.get_neighbors(point);
-      for (Size n:neighbors){
-        cout<<n<<endl;
-      }
-    }
-
-    model.compute_level_populations_multigrid(true, 15);
+    // model.setup_multigrid(10, 1, 0.1);
+    // cout << "setup multigrid" << endl;
+    // for (Size point=0;point<parameters.npoints();point++)
+    // {
+    //   cout<<model.geometry.points.multiscale.get_nb_neighbors(point)<<std::endl;
+    //   std::set<Size>neighbors=model.geometry.points.multiscale.get_neighbors(point);
+    //   for (Size n:neighbors){
+    //     cout<<n<<endl;
+    //   }
+    // }
+    //
+    // model.compute_level_populations_multigrid(true, 15);
 
 
     // auto fun_to_del=model.points_are_similar(0.1);
