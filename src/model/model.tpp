@@ -396,7 +396,7 @@ inline void Model::interpolate_matrix_local(Size coarser_lvl, Matrix<T> &to_inte
     //TODO: also use neighbors of neighbors as better interpolation
     // Note: using the current multigrid creation method, the number of neighbors in the coarse grid is always at least 1
     // In the case we do not really have enough points for a good interpolation, just add more
-    if (neighbors_coarser_grid.size()<4)
+    if (neighbors_coarser_grid.size()<4)//FIXME: define this value somewhere else
     {//because this estimate is just beyond terrible: also add neighbors of neighbors
       // for (Size freqidx=0; freqidx<parameters.nfreqs(); freqidx++)
       // {
@@ -417,6 +417,15 @@ inline void Model::interpolate_matrix_local(Size coarser_lvl, Matrix<T> &to_inte
       }
       //Finally add our new points too
       std::copy(temp_neighbors_coarser_grid.begin(), temp_neighbors_coarser_grid.end(), std::back_inserter(neighbors_coarser_grid));
+    }
+    if (neighbors_coarser_grid.size()>50)//FIXME: define this value somewhere else
+    {//now this just becomes: 1) to expensive to calculate and 2)is also using irrelevant information
+      /// This gives too much spam, commenting for now
+      // std::cout<<"far too many neighbors to interpolate: "<<neighbors_coarser_grid.size()<<std::endl;
+      // std::cout<<"using the first 50 neighbors instead to interpolate"<<std::endl;
+      vector<Size> subvector = {neighbors_coarser_grid.begin(), neighbors_coarser_grid.begin()+50};
+      //Maybe TODO: find a better way to choose the best neighbors, maybe just order them on distance
+      neighbors_coarser_grid=subvector;
     }
     // else
     // {//use rbf estimate
