@@ -478,7 +478,7 @@ inline void Model::interpolate_matrix_local(Size coarser_lvl, Matrix<T> &to_inte
         rbf_mat(idx2,idx)=radius;
       }
     }
-    T maxdist=rbf_mat.maxCoeff();//arbitrary number 5 to make the max_dist larger
+    T maxdist=rbf_mat.maxCoeff()*5.0;//arbitrary number 5 to make the max_dist larger
     rbf_mat=rbf_mat/maxdist;
     rbf_mat=rbf_mat.unaryExpr(std::ptr_fun(rbf_local<T>));
     distance_with_neighbors=distance_with_neighbors/maxdist;
@@ -498,6 +498,7 @@ inline void Model::interpolate_matrix_local(Size coarser_lvl, Matrix<T> &to_inte
       Eigen::Vector<T,Eigen::Dynamic> weights=ldltdec.solve(right_hand_side);
       T interpolated_value=(distance_with_neighbors*weights)(0,0);
       // std::cout<<"interpolated value: "<<interpolated_value<<std::endl;
+      // sometimes, this procedure can give very small negative values (which we do not want),
       to_interpolate(diff_point,freqidx)=interpolated_value;
       if (std::isnan(interpolated_value))
       {
