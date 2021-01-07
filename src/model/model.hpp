@@ -40,6 +40,10 @@ struct Model
     inline double calc_diff_abundance_with_point(Size point1, Size point2);
     // inline std::function<bool(Size,Size)> points_are_similar(double tolerance);
     inline bool points_are_similar(Size point1, Size point2, double tolerance);
+    //calculates distance squared between two points
+    inline double calc_distance2(Size point1,Size point2);
+    //calculates cosine similarity
+    inline double calc_cosine(Size base, Size point1,Size point2);
 
     // Coarsen the mesh given a certain tolerance,
     // i.e. add another layer of coarsening.
