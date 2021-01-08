@@ -438,6 +438,8 @@ int Model :: compute_level_populations_multigrid (
       // Initialize the number of iterations
       int iteration        = 0;
       int iteration_normal = 0;
+      // Also initialize the previous fraction of converged points
+      vector<double> prev_it_frac_not_converged(parameters.nlspecs(),1);
 
       // Initialize errors
       error_mean.clear ();
@@ -512,13 +514,17 @@ int Model :: compute_level_populations_multigrid (
 
             cout << "max frac non coverged: " <<max_frac_not_converged<<endl;
 
-            if (lines.lineProducingSpecies[l].fraction_not_converged > max_frac_not_converged)
+            //check whether the fraction non-corverged points has truly stabilized
+            if (((lines.lineProducingSpecies[l].fraction_not_converged > max_frac_not_converged)
+                ||(abs(lines.lineProducingSpecies[l].fraction_not_converged-prev_it_frac_not_converged[l])>0.005))
+              &&(lines.lineProducingSpecies[l].fraction_not_converged > 0.005))
             // if (lines.lineProducingSpecies[l].fraction_not_converged > 0.005)
             {
                 some_not_converged = true;
             }
 
             const double fnc = lines.lineProducingSpecies[l].fraction_not_converged;
+            prev_it_frac_not_converged[l]=fnc;
 
             // logger.write ("Already ", 100 * (1.0 - fnc), " % converged!");
             cout << "Already " << 100 * (1.0 - fnc) << " % converged!" << endl;

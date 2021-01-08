@@ -64,7 +64,7 @@ int main (int argc, char **argv)
     // cout <<"solving without multigrid"<<endl;
     // model.compute_level_populations(true,100);
     //NOTE TO SELF: do NOT every try to use a ridiculous amount of coarsening: if only boundary points are left, the interpolation part will probably be hell
-    model.setup_multigrid(10, 1, 0.1);
+    model.setup_multigrid(10, 10, 1);
     cout << "setup multigrid" << endl;
     // for (Size point=0;point<parameters.npoints();point++)
     // {
