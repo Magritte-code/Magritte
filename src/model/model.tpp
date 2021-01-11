@@ -94,28 +94,28 @@ inline void Model::coarsen(double tol)
     vector<Size> points_to_process=geometry.points.multiscale.get_current_points_in_grid();
     // vector<Size> next_points_to_process;
     // Size max_nb_neighbors=10;
-
+    //
     // while(!points_to_process.empty())
     // {
-    for (Size p: points_to_process)
-    {
-      if (can_be_coarsened(p, points_coarsened_around, tol))
-      {//we want to prioritize coarsening around points with not too much neighbors
+      for (Size p: points_to_process)
+      {
+        if (can_be_coarsened(p, points_coarsened_around, tol))
+        {//we want to prioritize coarsening around points with not too much neighbors
           // if (geometry.points.multiscale.get_nb_neighbors(p)<=max_nb_neighbors)
           // {
-      coarsen_around_point(p);
+            coarsen_around_point(p);
           // std::cout << "Deleted around point: " << p <<std::endl;
-      points_coarsened_around.insert(p);
+            points_coarsened_around.insert(p);
           // }
           // else
           // {//if it has too much neighbors, try again in a next iteration
           //   next_points_to_process.push_back(p);
           // }
+        }
       }
-    }
-    //   max_nb_neighbors*=2;
-    //   points_to_process=next_points_to_process;
-    //   next_points_to_process=vector<Size>();
+      // max_nb_neighbors*=2;
+      // points_to_process=next_points_to_process;
+      // next_points_to_process=vector<Size>();
     // }
 }
 
@@ -161,6 +161,7 @@ inline void Model::coarsen_around_point (const Size p)
     // Identify all neighbors with the current point (p),
     // i.e. remove its neighbors from the mesh by masking,
     // TODO: figure out whether it is ok/necessary to empty their neighbors
+    //TODO: get the points to remove from somewhere else
     for (const Size n : geometry.points.multiscale.neighbors.back()[p])
     {
       if (geometry.not_on_boundary(n))//boundary points will NEVER get removed
@@ -171,12 +172,14 @@ inline void Model::coarsen_around_point (const Size p)
 
     // ..., and replace the neighbors of p (which are removed)
     // in their neighbors by p, using the symmetry of neighbors.
+    // Also can contain non-deleted neighbors
     std::set<Size> neighbors_of_neighbors;
-    // keeping track of which neighbors are deleted for each neighbor of neighbor
+
+    // keeping track of which neighbors are deleted for each affected point
     // needed for reconnection purposes when deleting more than 1 neighbor from a neighbor of neighbor
     std::map<Size,vector<Size>> n_n_deleted_neighbors;
-    // The reverse map of the previous; this holds for each deleted point all n_n which are neighbors
-    std::map<Size,vector<Size>> n_n_of_deleted_points;
+    // // The reverse map of the previous; this holds for each deleted point all n_n which are neighbors
+    // std::map<Size,vector<Size>> n_n_of_deleted_points;
 
     for (const Size n : geometry.points.multiscale.neighbors.back()[p])
     {
@@ -197,7 +200,7 @@ inline void Model::coarsen_around_point (const Size p)
             neighbors_of_neighbors.insert(n_n);
             geometry.points.multiscale.neighbors.back()[n_n].erase(n);//remove n from neighbors of n_n
             n_n_deleted_neighbors[n_n].push_back(n);
-            n_n_of_deleted_points[n].push_back(n_n);
+            // n_n_of_deleted_points[n].push_back(n_n);
           }
         }
         //for every deleted point, add its neighbors to its neighbors
@@ -245,11 +248,16 @@ inline void Model::coarsen_around_point (const Size p)
       new_neighbors.insert(n_n);
     }
 
+    //contains the non-deleted neighbors and the neighbors of deleted neighbors
+    std::set<Size> affected_points;
+    std::set_union (neighbors_of_neighbors.begin(), neighbors_of_neighbors.end(), boundary_neighbors.begin(), boundary_neighbors.end(),
+                    std::inserter(affected_points, affected_points.begin()));
+
     // Finally also check whether neighbors of neighbors need some extra neighbors
     for (Size n_n:neighbors_of_neighbors)
     {
       Size nb_deleted_neighbors=n_n_deleted_neighbors[n_n].size();
-      if (nb_deleted_neighbors>1)//we do not want the amount of neighbors around points to decrease
+      // if (nb_deleted_neighbors>1)//we do not want the amount of neighbors around points to decrease
       {
         // Determine the deleted neighbor closest to p (when looking at directions)
         double maxcos=-1;//maximum cosine similarity
@@ -263,34 +271,37 @@ inline void Model::coarsen_around_point (const Size p)
             maxindex=idx;
           }
         }
-        n_n_deleted_neighbors[n_n].erase(n_n_deleted_neighbors[n_n].begin() + maxindex);
+        // Testing commenting this out
+        // n_n_deleted_neighbors[n_n].erase(n_n_deleted_neighbors[n_n].begin() + maxindex);
         // For all other deleted points, calculate the closest n_n (in direction; calculate using the cosine)
         for (Size deleted_neighbor: n_n_deleted_neighbors[n_n])
         {
           double maxcos=-1;//maximum cosine similarity
-          Size maxindex=0;//corresponding index in n_n_of_deleted_neighbor
-          vector<Size> n_n_of_deleted_neighbor=n_n_of_deleted_points[deleted_neighbor];
-          Size vectorsize=n_n_of_deleted_neighbor.size();
-          if (vectorsize==1)
+          Size opt_n_n=parameters.npoints();//corresponding optimal neighbor of neighbor
+          // vector<Size> n_n_of_deleted_neighbor=n_n_of_deleted_points[deleted_neighbor];
+          // Size vectorsize=neighbors_of_neighbors.size();
+          Size vectorsize=affected_points.size();
+          // if (vectorsize==1)
+          // {
+          //   std::cout<<"Wait, this deleted point only had two non-coarsened neighbors. Skipping for now."<<std::endl;
+          //   break;//TODO?? throw error or resolve this any other way.
+          // }
+          // for (Size temp_n_n:neighbors_of_neighbors)
+          for (Size temp_n_n:affected_points)
           {
-            std::cout<<"Wait, this deleted point only had two non-coarsened neighbors. Skipping for now."<<std::endl;
-            break;//TODO?? throw error or resolve this any other way.
-          }
-          for (Size idx=0;idx<vectorsize;idx++)
-          {
-            if (n_n_of_deleted_neighbor[idx]!=n_n)//do not try to add a point as its own neighbor//also division by zero would ensue
+            if (temp_n_n!=n_n)//do not try to add a point as its own neighbor//also division by zero would ensue
             {
-              double cossim=calc_cosine(n_n,p,n_n_of_deleted_neighbor[idx]);
+              double cossim=calc_cosine(n_n,p,temp_n_n);
               if (cossim>maxcos)
               {
                 maxcos=cossim;
-                maxindex=idx;
+                opt_n_n=temp_n_n;
               }
             }
           }
-          Size point_to_insert=n_n_of_deleted_neighbor[maxindex];
-          geometry.points.multiscale.neighbors.back()[n_n].insert(point_to_insert);
-          geometry.points.multiscale.neighbors.back()[point_to_insert].insert(n_n);
+          // Size point_to_insert=neighbors_of_neighbors[maxindex];
+          geometry.points.multiscale.neighbors.back()[n_n].insert(opt_n_n);
+          geometry.points.multiscale.neighbors.back()[opt_n_n].insert(n_n);
         }
 
       }
