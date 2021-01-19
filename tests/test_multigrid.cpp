@@ -64,22 +64,27 @@ int main (int argc, char **argv)
     // cout <<"solving without multigrid"<<endl;
     // model.compute_level_populations(true,100);
     //NOTE TO SELF: do NOT every try to use a ridiculous amount of coarsening: if only boundary points are left, the interpolation part will probably be hell
-    model.setup_multigrid(10, 10, 1);
+    model.setup_multigrid(10, 4, 0.1);
     cout << "setup multigrid" << endl;
-    // for (Size point=0;point<parameters.npoints();point++)
+    // vector<Size> current_points_in_grid=model.geometry.points.multiscale.get_current_points_in_grid();
+    // for (Size idx=0;idx<current_points_in_grid.size();idx++)
     // {
-    //   cout<<model.geometry.points.multiscale.get_nb_neighbors(point)<<std::endl;
-    //   std::set<Size>neighbors=model.geometry.points.multiscale.get_neighbors(point);
-    //   for (Size n:neighbors){
-    //     cout<<n<<endl;
-    //   }
+    //   Size nb_neighbors=model.geometry.points.multiscale.get_nb_neighbors(current_points_in_grid[idx]);
+    //   cout<<nb_neighbors<<std::endl;
+    //
+    //   // std::set<Size>neighbors=model.geometry.points.multiscale.get_neighbors(point);
+    //   // for (Size n:neighbors){
+    //   //   cout<<n<<endl;
+    //   // }
     // }
 
+    Size nb_boundary_points=0;
     for (Size p=0;p<parameters.npoints();p++)
     {
       //check whether all boundary points have neighbors
       if (!model.geometry.not_on_boundary(p))
       {
+        nb_boundary_points++;
         if (model.geometry.points.multiscale.get_nb_neighbors(p)==0)
         {
           std::cout<<"Boundary point: "<<p<<" does not have any neighbors"<<std::endl;
@@ -87,6 +92,10 @@ int main (int argc, char **argv)
       }
     }
     cout<<"done checking boundary points"<<endl;
+    // cout<<"number boundary points left: "<<nb_boundary_points<<endl;
+
+
+
 
     model.compute_level_populations_multigrid(true, 100);
 

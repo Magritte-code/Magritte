@@ -4,6 +4,7 @@ include_directories (../dependencies)
 include_directories (../dependencies/eigen)
 include_directories (../dependencies/pybind11)
 include_directories (../dependencies/pybind11/include)
+include_directories (../dependencies/voro++/src)
 
 # Add Python package separately
 find_package (PythonLibs REQUIRED)
@@ -69,6 +70,9 @@ target_link_libraries (test_feautrier_order_2 Magritte)
 
 add_executable        (test_imager test_imager.cpp)
 target_link_libraries (test_imager Magritte)
+
+add_executable        (test_voro test_voro.cpp)
+target_link_libraries (test_voro Magritte voro++)
 
 package_add_test      (test_solver_lambda test_solver_lambda.cpp)
 target_link_libraries (test_solver_lambda Magritte)

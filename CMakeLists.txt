@@ -97,6 +97,7 @@ if    (PYTHON_BINDINGS OR PYTHON_IO)
     add_subdirectory (dependencies/pybind11 pybind11)
 endif (PYTHON_BINDINGS OR PYTHON_IO)
 
+add_subdirectory (dependencies/voro++)
 # Add source directory
 add_subdirectory (src)
 
