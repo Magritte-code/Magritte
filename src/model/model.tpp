@@ -666,7 +666,7 @@ inline void Model::interpolate_matrix_local(Size coarser_lvl, Matrix<T> &to_inte
     }
     ///commented out for now until we solve the issue with having way too much neighbors if we apply this...
     // In the case we do not really have enough points for a good interpolation, just add more
-    if (neighbors_coarser_grid.size()<2)//FIXME: define this value somewhere else
+    if (neighbors_coarser_grid.size()<MIN_INTERPOLATION_POINTS)
     {//because this estimate is just beyond terrible: also add neighbors of neighbors
       // for (Size freqidx=0; freqidx<parameters.nfreqs(); freqidx++)
       // {
@@ -688,7 +688,7 @@ inline void Model::interpolate_matrix_local(Size coarser_lvl, Matrix<T> &to_inte
       //Finally add our new points too
       std::copy(temp_neighbors_coarser_grid.begin(), temp_neighbors_coarser_grid.end(), std::back_inserter(neighbors_coarser_grid));
     }
-    if (neighbors_coarser_grid.size()>50)//FIXME: define this value somewhere else and base this number on something
+    if (neighbors_coarser_grid.size()>MAX_INTERPOLATION_POINTS)
     {//now this just becomes: 1) to expensive to calculate and 2)difference between distances might become too large
       /// This gives too much spam, commenting for now
       // std::cout<<"far too many neighbors to interpolate: "<<neighbors_coarser_grid.size()<<std::endl;

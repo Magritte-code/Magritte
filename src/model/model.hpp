@@ -16,6 +16,11 @@
 
 struct Model
 {
+    //minimum number points used during interpolation
+    const Size MIN_INTERPOLATION_POINTS=4;
+    //maximum number points used during interpolation
+    const Size MAX_INTERPOLATION_POINTS=50;
+
     Parameters     parameters;
     Geometry       geometry;
     Chemistry      chemistry;
