@@ -50,7 +50,7 @@ int main() {
 		// x=x_min+rnd()*(x_max-x_min);
 		// y=y_min+rnd()*(y_max-y_min);
 		// z=z_min+rnd()*(z_max-z_min);
-		con.put(p_order,i,xvals[i],yvals[i],zvals[i]);
+		con.put(p_order,10+i,xvals[i],yvals[i],zvals[i]);
 	}
 
   c_loop_order l_order(con,p_order);
@@ -64,7 +64,7 @@ int main() {
   con.compute_cell(cell,l_order);
   std::vector<int> test_neighbors;
   cell.neighbors(test_neighbors);
-  std::cout<<"neighbor of cell "<<idx<<": ";
+  std::cout<<"neighbor of cell "<<l_order.pid()<<": ";
   //note:negative values refer to the boundaries
   for (int i:test_neighbors)
   {

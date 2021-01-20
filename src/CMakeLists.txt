@@ -4,6 +4,7 @@ include_directories (../dependencies)
 include_directories (../dependencies/eigen)
 include_directories (../dependencies/pybind11)
 include_directories (../dependencies/pybind11/include)
+include_directories (../dependencies/voro++/src)
 
 set (SOURCE_FILES
     io/cpp/io_cpp_text.cpp

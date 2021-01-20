@@ -7,6 +7,8 @@
 #include "tools/types.hpp"
 #include <limits>
 #include <algorithm>
+#include "voro++.hh"
+using namespace voro;
 
 //NOTE: i have mistakenly called tetrahedra triangles throughout this entire piece of code
 
@@ -47,6 +49,17 @@ inline double Model::calc_cosine(Size base, Size point1,Size point2)
   return innerprod/(length1*length2);
 }
 
+// Determines whether a point p2 lies further than p1 from point base when projected on (p1 base).
+// Maybe TODO:make sure we first divide by length1, then apply the inner product//but for this we need a division operator for Vector3D
+inline bool Model::lies_further_than(Size base, Size point1, Size point2)
+{
+  double length_squared=calc_distance2(base,point1);//length (p1 base) for normalization purposes
+  double innerprod=(geometry.points.position[point1]-geometry.points.position[base])
+              .dot((geometry.points.position[point2]-geometry.points.position[base]));
+  double norm=innerprod/length_squared;
+  return (norm>1.0);
+}
+
 // Calculates the relative difference of the density of point1 with respect to point2
 //    @Returns: abs((d-d_other)/(d+d_other)) such that the smallest values will be assigned
 inline double Model :: calc_diff_abundance_with_point(Size point1, Size point2)
@@ -78,7 +91,6 @@ inline bool Model::points_are_similar(Size point1, Size point2, double tolerance
 {
     return (calc_diff_abundance_with_point(point1,point2)<tolerance);
 }
-
 
 
 // Coarsen the mesh,
@@ -217,98 +229,213 @@ inline void Model::coarsen_around_point (const Size p)
         // }
         geometry.points.multiscale.neighbors.back()[n]=std::set<Size>();//and finally also delete every neighbor of the deleted point
       }
-      else
-      {//also do not forget to actually add our boundary elements as a neighbor of our point
-        new_neighbors.insert(n);
-        boundary_neighbors.insert(n);
-      }
+      // also has become redundant
+      // else
+      // {//also do not forget to actually add our boundary elements as a neighbor of our point
+      //   new_neighbors.insert(n);
+      //   boundary_neighbors.insert(n);
+      // }
     }
 
-    // Also deleting the neighbors (not on boundary) from the on boundary neighbors
-    for (const Size n:geometry.points.multiscale.neighbors.back()[p])
-    {
-      if (geometry.not_on_boundary(n))
-      {
-        for (const Size b:boundary_neighbors)
-        {
-          geometry.points.multiscale.neighbors.back()[b].erase(n);
-        }
-      }
-    }
+    //kind of redundant, i guess
+    // // Also deleting the neighbors (not on boundary) from the on boundary neighbors
+    // for (const Size n:geometry.points.multiscale.neighbors.back()[p])
+    // {
+    //   if (geometry.not_on_boundary(n))
+    //   {
+    //     for (const Size b:boundary_neighbors)
+    //     {
+    //       geometry.points.multiscale.neighbors.back()[b].erase(n);
+    //     }
+    //   }
+    // }
 
 
+    // old method
+    // // std::cout << "Size neighbors_of_neighbors: " << neighbors_of_neighbors.size() << std::endl;
+    // for (const Size n_n:neighbors_of_neighbors)
+    // {
+    //   // Replace the removed points by p
+    //   geometry.points.multiscale.neighbors.back()[n_n].insert(p);
+    //
+    //   // And add the others as new neighbors.
+    //   new_neighbors.insert(n_n);
+    // }
 
-    // std::cout << "Size neighbors_of_neighbors: " << neighbors_of_neighbors.size() << std::endl;
-    for (const Size n_n:neighbors_of_neighbors)
-    {
-      // Replace the removed points by p
-      geometry.points.multiscale.neighbors.back()[n_n].insert(p);
-
-      // And add the others as new neighbors.
-      new_neighbors.insert(n_n);
-    }
+    //clear the old neighbors of point p
+    geometry.points.multiscale.neighbors.back()[p]=std::set<Size>();
 
     //contains the non-deleted neighbors and the neighbors of deleted neighbors
-    std::set<Size> affected_points;
-    std::set_union (neighbors_of_neighbors.begin(), neighbors_of_neighbors.end(), boundary_neighbors.begin(), boundary_neighbors.end(),
-                    std::inserter(affected_points, affected_points.begin()));
+    std::vector<Size> affected_points;
+    affected_points.reserve(1+neighbors_of_neighbors.size());
+    affected_points.push_back(p);
+    std::copy(neighbors_of_neighbors.begin(), neighbors_of_neighbors.end(), std::back_inserter(affected_points));
+    // std::set_union (neighbors_of_neighbors.begin(), neighbors_of_neighbors.end(), boundary_neighbors.begin(), boundary_neighbors.end(),
+    //                 std::inserter(affected_points, affected_points.begin()));
 
-    // Finally also check whether neighbors of neighbors need some extra neighbors
-    for (Size n_n:neighbors_of_neighbors)
+    //correctly setting up a rectangular boundary for all affected points
+    double x_min=std::numeric_limits<double>::max();
+    double x_max=std::numeric_limits<double>::min();
+    double y_min=std::numeric_limits<double>::max();
+    double y_max=std::numeric_limits<double>::min();
+    double z_min=std::numeric_limits<double>::max();
+    double z_max=std::numeric_limits<double>::min();
+
+    for (Size aff_point: affected_points)
     {
-      Size nb_deleted_neighbors=n_n_deleted_neighbors[n_n].size();
-      // if (nb_deleted_neighbors>1)//we do not want the amount of neighbors around points to decrease
+      Vector3D pos=geometry.points.position[aff_point];
+      if (x_min>pos.x())
+      {x_min=pos.x();}
+      if (x_max<pos.x())
+      {x_max=pos.x();}
+      if (y_min>pos.y())
+      {y_min=pos.y();}
+      if (y_max<pos.y())
+      {y_max=pos.y();}
+      if (z_min>pos.z())
+      {z_min=pos.z();}
+      if (z_max<pos.z())
+      {z_max=pos.z();}
+    }
+    //also making sure that all points lie strictly inside the boundary
+    double deltax=x_max-x_min;
+    double deltay=y_max-y_min;
+    double deltaz=z_max-z_min;
+    //TODO/FIXME: also make sure that no overflow can ever happen!!
+    x_max=x_max+0.001*deltax;
+    x_min=x_min-0.001*deltax;
+    y_max=y_max+0.001*deltay;
+    y_min=y_min-0.001*deltay;
+    z_max=z_max+0.001*deltaz;
+    z_min=z_min-0.001*deltaz;
+
+    container con(x_min,x_max,y_min,y_max,z_min,z_max,8,8,8,
+                  			false,false,false,8);
+
+    particle_order p_order;
+    voronoicell_neighbor cell;
+
+  	// add particles into the container, starting with point p
+  	for(Size aff_point:affected_points)
+    { Vector3D pos=geometry.points.position[aff_point];
+      con.put(p_order,static_cast<int>(aff_point),pos.x(),pos.y(),pos.z());
+    }
+
+    c_loop_order l_order(con,p_order);
+
+    //back to the beginning
+    l_order.start();
+    std::cout<<"currently computing neighbors around point: "<<l_order.pid()<<std::endl;
+    //for point p, just add all found neighbors to its neighbors list
+    con.compute_cell(cell,l_order);
+    std::vector<int> found_neighbors;
+    cell.neighbors(found_neighbors);
+    for (int new_neighbor:found_neighbors)
+    {
+      //note: voro++ return negative values for the boundaries//not that it should play a role here
+      if (new_neighbor>=0)
+      { //and finally adding new neighbors to point p
+        geometry.points.multiscale.neighbors.back()[p].insert(static_cast<Size>(new_neighbor));
+        geometry.points.multiscale.neighbors.back()[static_cast<Size>(new_neighbor)].insert(p);
+      }
+    }
+    //use inc() for incrementing (returns false when not finding a next one)
+    if(l_order.inc())//the if-statement should always return true
+    {
+      do {
+      con.compute_cell(cell,l_order);
+      std::vector<int> found_neighbors;
+      cell.neighbors(found_neighbors);
+      Size current_point=static_cast<Size>(l_order.pid());
+      std::cout<<"computed partial neighbors around: "<<l_order.pid()<<std::endl;
+      //note:negative values refer to the boundaries
+      for (int found_neighbor:found_neighbors)
       {
-        // Determine the deleted neighbor closest to p (when looking at directions)
-        double maxcos=-1;//maximum cosine similarity
-        Size maxindex=0;//corresponding index in n_n_deleted_neighbors[n_n]
-        for (Size idx=0;idx<n_n_deleted_neighbors[n_n].size();idx++)
+        if (found_neighbor>=0)//voro++ denotes the walls (which we do not need) by negative values
         {
-          double cossim=calc_cosine(n_n,p,n_n_deleted_neighbors[n_n][idx]);
-          if (cossim>maxcos)
-          {
-            maxcos=cossim;
-            maxindex=idx;
-          }
-        }
-        // Testing commenting this out
-        // n_n_deleted_neighbors[n_n].erase(n_n_deleted_neighbors[n_n].begin() + maxindex);
-        // For all other deleted points, calculate the closest n_n (in direction; calculate using the cosine)
-        for (Size deleted_neighbor: n_n_deleted_neighbors[n_n])
-        {
-          double maxcos=-1;//maximum cosine similarity
-          Size opt_n_n=parameters.npoints();//corresponding optimal neighbor of neighbor
-          // vector<Size> n_n_of_deleted_neighbor=n_n_of_deleted_points[deleted_neighbor];
-          // Size vectorsize=neighbors_of_neighbors.size();
-          Size vectorsize=affected_points.size();
-          // if (vectorsize==1)
-          // {
-          //   std::cout<<"Wait, this deleted point only had two non-coarsened neighbors. Skipping for now."<<std::endl;
-          //   break;//TODO?? throw error or resolve this any other way.
-          // }
-          // for (Size temp_n_n:neighbors_of_neighbors)
-          for (Size temp_n_n:affected_points)
-          {
-            if (temp_n_n!=n_n)//do not try to add a point as its own neighbor//also division by zero would ensue
-            {
-              double cossim=calc_cosine(n_n,p,temp_n_n);
-              if (cossim>maxcos)
+          Size size_found_neighbor=static_cast<Size>(found_neighbor);
+          if (size_found_neighbor>current_point)//in order to not try to add neighbors twice
+          { //check if already a neighbor
+            if (geometry.points.multiscale.neighbors.back()[current_point].find(size_found_neighbor) !=
+                geometry.points.multiscale.neighbors.back()[current_point].end())
               {
-                maxcos=cossim;
-                opt_n_n=temp_n_n;
+              for (Size deleted_neighbor:n_n_deleted_neighbors[current_point])
+              { // normally, one should also put the 'neighbors of the neighbors of the neighbors' in the container to accurately find the neighbors of the 'neighbors of the neighbors'.
+                //but as we do not change the n_n_n, we can instead check if the new proposed neighbors somehow replace the old deleted neighbors
+                //without this check, we might accidentally also include too much neighbors.
+                if (lies_further_than(current_point, deleted_neighbor, size_found_neighbor))
+                {
+                  //and finally adding new neighbors to point p
+                  geometry.points.multiscale.neighbors.back()[current_point].insert(size_found_neighbor);
+                  geometry.points.multiscale.neighbors.back()[size_found_neighbor].insert(current_point);
+                  break;
+                }
               }
             }
           }
-          // Size point_to_insert=neighbors_of_neighbors[maxindex];
-          geometry.points.multiscale.neighbors.back()[n_n].insert(opt_n_n);
-          geometry.points.multiscale.neighbors.back()[opt_n_n].insert(n_n);
         }
-
       }
+
+      } while(l_order.inc());
     }
 
-    // Set the new nearest neighbors.
-    geometry.points.multiscale.neighbors.back()[p] = new_neighbors;
+    // old method
+    // // Finally also check whether neighbors of neighbors need some extra neighbors
+    // for (Size n_n:neighbors_of_neighbors)
+    // {
+    //   Size nb_deleted_neighbors=n_n_deleted_neighbors[n_n].size();
+    //   // if (nb_deleted_neighbors>1)//we do not want the amount of neighbors around points to decrease
+    //   {
+    //     // Determine the deleted neighbor closest to p (when looking at directions)
+    //     double maxcos=-1;//maximum cosine similarity
+    //     Size maxindex=0;//corresponding index in n_n_deleted_neighbors[n_n]
+    //     for (Size idx=0;idx<n_n_deleted_neighbors[n_n].size();idx++)
+    //     {
+    //       double cossim=calc_cosine(n_n,p,n_n_deleted_neighbors[n_n][idx]);
+    //       if (cossim>maxcos)
+    //       {
+    //         maxcos=cossim;
+    //         maxindex=idx;
+    //       }
+    //     }
+    //     // Testing commenting this out
+    //     // n_n_deleted_neighbors[n_n].erase(n_n_deleted_neighbors[n_n].begin() + maxindex);
+    //     // For all other deleted points, calculate the closest n_n (in direction; calculate using the cosine)
+    //     for (Size deleted_neighbor: n_n_deleted_neighbors[n_n])
+    //     {
+    //       double maxcos=-1;//maximum cosine similarity
+    //       Size opt_n_n=parameters.npoints();//corresponding optimal neighbor of neighbor
+    //       // vector<Size> n_n_of_deleted_neighbor=n_n_of_deleted_points[deleted_neighbor];
+    //       // Size vectorsize=neighbors_of_neighbors.size();
+    //       Size vectorsize=affected_points.size();
+    //       // if (vectorsize==1)
+    //       // {
+    //       //   std::cout<<"Wait, this deleted point only had two non-coarsened neighbors. Skipping for now."<<std::endl;
+    //       //   break;//TODO?? throw error or resolve this any other way.
+    //       // }
+    //       // for (Size temp_n_n:neighbors_of_neighbors)
+    //       for (Size temp_n_n:affected_points)
+    //       {
+    //         if (temp_n_n!=n_n)//do not try to add a point as its own neighbor//also division by zero would ensue
+    //         {
+    //           double cossim=calc_cosine(n_n,p,temp_n_n);
+    //           if (cossim>maxcos)
+    //           {
+    //             maxcos=cossim;
+    //             opt_n_n=temp_n_n;
+    //           }
+    //         }
+    //       }
+    //       // Size point_to_insert=neighbors_of_neighbors[maxindex];
+    //       geometry.points.multiscale.neighbors.back()[n_n].insert(opt_n_n);
+    //       geometry.points.multiscale.neighbors.back()[opt_n_n].insert(n_n);
+    //     }
+    //
+    //   }
+    // }
+    //
+    // // Set the new nearest neighbors.
+    // geometry.points.multiscale.neighbors.back()[p] = new_neighbors;
 }
 
 

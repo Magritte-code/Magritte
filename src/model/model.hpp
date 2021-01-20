@@ -44,6 +44,8 @@ struct Model
     inline double calc_distance2(Size point1,Size point2);
     //calculates cosine similarity
     inline double calc_cosine(Size base, Size point1,Size point2);
+    //criterion for adding neighbors
+    inline bool lies_further_than(Size base, Size point1, Size point2);
 
     // Coarsen the mesh given a certain tolerance,
     // i.e. add another layer of coarsening.
