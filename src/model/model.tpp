@@ -50,6 +50,7 @@ inline double Model::calc_cosine(Size base, Size point1,Size point2)
 }
 
 // Determines whether a point p2 lies further than p1 from point base when projected on (p1 base).
+// note: should raname to 'lies far enough'
 // Maybe TODO:make sure we first divide by length1, then apply the inner product//but for this we need a division operator for Vector3D
 inline bool Model::lies_further_than(Size base, Size point1, Size point2)
 {
@@ -57,7 +58,7 @@ inline bool Model::lies_further_than(Size base, Size point1, Size point2)
   double innerprod=(geometry.points.position[point1]-geometry.points.position[base])
               .dot((geometry.points.position[point2]-geometry.points.position[base]));
   double norm=innerprod/length_squared;
-  return (norm>1.0);
+  return (norm>0.5);
 }
 
 // Calculates the relative difference of the density of point1 with respect to point2
@@ -356,7 +357,7 @@ inline void Model::coarsen_around_point (const Size p)
           Size size_found_neighbor=static_cast<Size>(found_neighbor);
           if (size_found_neighbor>current_point)//in order to not try to add neighbors twice
           { //check if already a neighbor
-            if (geometry.points.multiscale.neighbors.back()[current_point].find(size_found_neighbor) !=
+            if (geometry.points.multiscale.neighbors.back()[current_point].find(size_found_neighbor) ==
                 geometry.points.multiscale.neighbors.back()[current_point].end())
               {
               for (Size deleted_neighbor:n_n_deleted_neighbors[current_point])
