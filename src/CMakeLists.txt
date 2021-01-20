@@ -63,3 +63,5 @@ endif (PYTHON_IO)
 if    (PYTHON_BINDINGS)
     add_subdirectory (bindings)
 endif (PYTHON_BINDINGS)
+
+target_link_libraries(Magritte voro++)
