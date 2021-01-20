@@ -177,9 +177,17 @@ inline void Model::coarsen_around_point (const Size p)
     //TODO: get the points to remove from somewhere else
     for (const Size n : geometry.points.multiscale.neighbors.back()[p])
     {
+      // //DEBUG STUFF
+      // if (n==16187)
+      // {
+      //   std::cout<<"This is the point which deletes point 16187: "<<p<<std::endl;
+      //   throw std::runtime_error("Nan encountered during interpolation");
+      // }
       if (geometry.not_on_boundary(n))//boundary points will NEVER get removed
         {
           geometry.points.multiscale.mask.back()[n] = false;
+          //maps neighbor to point which deleted it (fallback plan for interpolation)
+          geometry.points.multiscale.point_deleted_map.insert(std::pair<Size,Size>(n,p));
         }
     }
 
@@ -647,8 +655,15 @@ inline void Model::interpolate_matrix_local(Size coarser_lvl, Matrix<T> &to_inte
     // double interpolated_value=accumulate(neighbors_coarser_grid.begin(), neighbors_coarser_grid.end(), 0.0)/neighbors_coarser_grid.size();
     // to_interpolate[diff_point]=interpolated_value;
     //TODO: also use neighbors of neighbors as better interpolation
-    // Note: using the current multigrid creation method, the number of neighbors in the coarse grid is always at least 1
-
+    // Note: using the current multigrid creation method, the number of neighbors in the coarse grid is almost always at least 1
+    if (neighbors_coarser_grid.size()==0)//this shouldn't be possible, but you never know what goes wrong
+    {
+      std::cout<<"No neighbors for the current point! Using point which deleted it instead as neighbor."<<std::endl;
+      std::cout<<"Current point: "<<diff_point<<std::endl;
+      std::cout<<"Point which replaces it: "<<geometry.points.multiscale.point_deleted_map.at(diff_point)<<std::endl;
+      neighbors_coarser_grid.push_back(geometry.points.multiscale.point_deleted_map.at(diff_point));
+      std::cout<<"Succesfully replaced neighbors"<<std::endl;
+    }
     ///commented out for now until we solve the issue with having way too much neighbors if we apply this...
     // In the case we do not really have enough points for a good interpolation, just add more
     if (neighbors_coarser_grid.size()<2)//FIXME: define this value somewhere else
@@ -711,11 +726,7 @@ inline void Model::interpolate_matrix_local(Size coarser_lvl, Matrix<T> &to_inte
     // else
     // {//use rbf estimate
     Size nb_neighbors_coarser_grid=neighbors_coarser_grid.size();
-    if (nb_neighbors_coarser_grid==0)//this shouldn't be possible, but you never know what goes wrong
-    {
-      std::cout<<"No neighbors for the current point!!!"<<std::endl;
-      std::cout<<"Current point: "<<diff_point<<std::endl;
-    }
+
     Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic> rbf_mat(nb_neighbors_coarser_grid, nb_neighbors_coarser_grid);
     Eigen::Matrix<T,1,Eigen::Dynamic> distance_with_neighbors(1,nb_neighbors_coarser_grid);
     for (Size idx=0; idx<nb_neighbors_coarser_grid; idx++)

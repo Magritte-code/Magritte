@@ -1,6 +1,7 @@
 #include "io/io.hpp"
 #include "model/parameters/parameters.hpp"
 #include <set>
+#include <map>
 ///First implementation of the multiscale class
 /// This class is meant to easily coarsen the grid stored in it.
 struct Multiscale
@@ -20,6 +21,10 @@ struct Multiscale
     // third index over neighbors (n).
     // Assume the finest mesh (l=0) is given.
     vector<vector<std::set<Size>>> neighbors;
+
+    // Maps a point to the point which deleted it
+    // Needed for fallback plan for interpolation
+    std::map<Size,Size> point_deleted_map;
 
     ///DEPRECATED
     // // Function to check whether two points are similar enough to be able to coarsen them
