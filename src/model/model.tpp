@@ -693,7 +693,7 @@ inline void Model::interpolate_matrix_local(Size coarser_lvl, Matrix<T> &to_inte
       /// This gives too much spam, commenting for now
       // std::cout<<"far too many neighbors to interpolate: "<<neighbors_coarser_grid.size()<<std::endl;
       // std::cout<<"using the first 50 neighbors instead to interpolate"<<std::endl;
-      Size maxnbneighbors=50;
+      Size maxnbneighbors=MAX_INTERPOLATION_POINTS;
       Size nbneighbors=neighbors_coarser_grid.size();
       vector<double> distances2;//stores the distances2 of the n closest points
       distances2.resize(maxnbneighbors);
