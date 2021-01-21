@@ -167,9 +167,9 @@ inline void Model::coarsen_around_point (const Size p)
 {
     // auto mult=geometry.points.multiscale;
     // New neighbors for p.
-    std::set<Size> new_neighbors;
+    // std::set<Size> new_neighbors;
     // Boundary neighbors need to be treated differently
-    std::set<Size> boundary_neighbors;
+    // std::set<Size> boundary_neighbors;
 
     // Identify all neighbors with the current point (p),
     // i.e. remove its neighbors from the mesh by masking,
@@ -177,12 +177,6 @@ inline void Model::coarsen_around_point (const Size p)
     //TODO: get the points to remove from somewhere else
     for (const Size n : geometry.points.multiscale.neighbors.back()[p])
     {
-      // //DEBUG STUFF
-      // if (n==16187)
-      // {
-      //   std::cout<<"This is the point which deletes point 16187: "<<p<<std::endl;
-      //   throw std::runtime_error("Nan encountered during interpolation");
-      // }
       if (geometry.not_on_boundary(n))//boundary points will NEVER get removed
         {
           geometry.points.multiscale.mask.back()[n] = false;
@@ -246,6 +240,25 @@ inline void Model::coarsen_around_point (const Size p)
       // }
     }
 
+    //for now just the neighbors of neighbors of neighbors
+    std::set<Size> container_points;
+    for (const Size aff_point: neighbors_of_neighbors)
+    {
+      for (const Size n_n_n : geometry.points.multiscale.neighbors.back()[aff_point])
+      {
+        if (geometry.points.multiscale.mask.back()[n_n_n]&&n_n_n!=p)//add if neighbor of affected point is still in the grid, i.e. not just a neighbor; also, do never try to add a point as its own neighbor!!!!
+        {
+          container_points.insert(n_n_n);
+        }
+      }
+    }
+
+    //now also contains neighbors of neighbors and their neighbors
+    container_points.insert(neighbors_of_neighbors.begin(),neighbors_of_neighbors.end());
+    // std::merge(neighbors_of_neighbors, neighbors_of_neighbors.end(),neighbors_of_n_n,neighbors_of_n_n.end(),container_points.begin())
+    std::cout<<"Number of points in neighbors of neighbors: "<<neighbors_of_neighbors.size()<<std::endl;
+    std::cout<<"Number of points in container (-1): "<<container_points.size()<<std::endl;
+
     //kind of redundant, i guess
     // // Also deleting the neighbors (not on boundary) from the on boundary neighbors
     // for (const Size n:geometry.points.multiscale.neighbors.back()[p])
@@ -278,7 +291,8 @@ inline void Model::coarsen_around_point (const Size p)
     std::vector<Size> affected_points;
     affected_points.reserve(1+neighbors_of_neighbors.size());
     affected_points.push_back(p);
-    std::copy(neighbors_of_neighbors.begin(), neighbors_of_neighbors.end(), std::back_inserter(affected_points));
+    // std::copy(neighbors_of_neighbors.begin(), neighbors_of_neighbors.end(), std::back_inserter(affected_points));
+    std::copy(container_points.begin(), container_points.end(), std::back_inserter(affected_points));
     // std::set_union (neighbors_of_neighbors.begin(), neighbors_of_neighbors.end(), boundary_neighbors.begin(), boundary_neighbors.end(),
     //                 std::inserter(affected_points, affected_points.begin()));
 
@@ -349,13 +363,18 @@ inline void Model::coarsen_around_point (const Size p)
       }
     }
     //use inc() for incrementing (returns false when not finding a next one)
-    if(l_order.inc())//the if-statement should always return true
+    if(l_order.inc())//this if-statement should always return true
     {
       do {
+      Size current_point=static_cast<Size>(l_order.pid());
+      if (neighbors_of_neighbors.find(current_point)==neighbors_of_neighbors.end())
+      { //we only care about finding the neighbors of the neighbors of neighbors
+        continue;
+      }
       con.compute_cell(cell,l_order);
       std::vector<int> found_neighbors;
       cell.neighbors(found_neighbors);
-      Size current_point=static_cast<Size>(l_order.pid());
+
       std::cout<<"computed partial neighbors around: "<<l_order.pid()<<std::endl;
       //note:negative values refer to the boundaries
       for (int found_neighbor:found_neighbors)
@@ -363,25 +382,25 @@ inline void Model::coarsen_around_point (const Size p)
         if (found_neighbor>=0)//voro++ denotes the walls (which we do not need) by negative values
         {
           Size size_found_neighbor=static_cast<Size>(found_neighbor);
-          if (size_found_neighbor>current_point)//in order to not try to add neighbors twice
-          { //check if already a neighbor
-            if (geometry.points.multiscale.neighbors.back()[current_point].find(size_found_neighbor) ==
-                geometry.points.multiscale.neighbors.back()[current_point].end())
-              {
-              for (Size deleted_neighbor:n_n_deleted_neighbors[current_point])
-              { // normally, one should also put the 'neighbors of the neighbors of the neighbors' in the container to accurately find the neighbors of the 'neighbors of the neighbors'.
+          // if (size_found_neighbor>current_point)//in order to not try to add neighbors twice
+          // { //check if already a neighbor (thus no need to add again)
+          if (geometry.points.multiscale.neighbors.back()[current_point].find(size_found_neighbor) ==
+              geometry.points.multiscale.neighbors.back()[current_point].end())
+          {
+              // for (Size deleted_neighbor:n_n_deleted_neighbors[current_point])
+              // { // normally, one should also put the 'neighbors of the neighbors of the neighbors' in the container to accurately find the neighbors of the 'neighbors of the neighbors'.
                 //but as we do not change the n_n_n, we can instead check if the new proposed neighbors somehow replace the old deleted neighbors
                 //without this check, we might accidentally also include too much neighbors.
-                if (lies_further_than(current_point, deleted_neighbor, size_found_neighbor))
-                {
+                // if (lies_further_than(current_point, deleted_neighbor, size_found_neighbor))
+                // {
                   //and finally adding new neighbors to point p
-                  geometry.points.multiscale.neighbors.back()[current_point].insert(size_found_neighbor);
-                  geometry.points.multiscale.neighbors.back()[size_found_neighbor].insert(current_point);
-                  break;
-                }
-              }
-            }
+            geometry.points.multiscale.neighbors.back()[current_point].insert(size_found_neighbor);
+            geometry.points.multiscale.neighbors.back()[size_found_neighbor].insert(current_point);
+                  // break;
+                // }
+              // }
           }
+          // }
         }
       }
 
