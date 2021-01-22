@@ -99,12 +99,12 @@ void Lines :: iteration_using_LTE (const Double2 &abundance, const Vector<Real> 
 }
 
 
-void Lines :: iteration_using_Ng_acceleration (const Real pop_prec)
+void Lines :: iteration_using_Ng_acceleration (const Real pop_prec, vector<Size> &points_in_grid)
 {
     for (LineProducingSpecies &lspec : lineProducingSpecies)
     {
         lspec.update_using_Ng_acceleration ();
-        lspec.check_for_convergence        (pop_prec);
+        lspec.check_for_convergence        (pop_prec,points_in_grid);
     }
 
     set_emissivity_and_opacity ();
@@ -122,7 +122,7 @@ void Lines :: iteration_using_statistical_equilibrium (
     for (LineProducingSpecies &lspec : lineProducingSpecies)
     {
         lspec.update_using_statistical_equilibrium (abundance, temperature, points_in_grid);
-        lspec.check_for_convergence                (pop_prec);
+        lspec.check_for_convergence                (pop_prec, points_in_grid);
     }
 
     set_emissivity_and_opacity ();

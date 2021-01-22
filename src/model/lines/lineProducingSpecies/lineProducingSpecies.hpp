@@ -64,7 +64,7 @@ struct LineProducingSpecies
     inline void set_level_pop  (const Size p, const Size i, const Real value);
 
     inline void check_for_convergence (
-        const Real pop_prec );
+        const Real pop_prec , vector<Size> &points_in_grid);
 
     inline void update_using_LTE (
         const Double2      &abundance,

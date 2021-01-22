@@ -326,12 +326,12 @@ inline void Model::coarsen_around_point (const Size p)
     double deltaz=z_max-z_min;
     //TODO/FIXME: also make sure that no overflow can ever happen!!
     //+-1 is a temporary fix for also allowing 1D simulations
-    x_max=x_max+0.001*deltax+1;
-    x_min=x_min-0.001*deltax-1;
-    y_max=y_max+0.001*deltay+1;
-    y_min=y_min-0.001*deltay-1;
-    z_max=z_max+0.001*deltaz+1;
-    z_min=z_min-0.001*deltaz-1;
+    x_max=x_max+0.001*deltax+1.0;
+    x_min=x_min-0.001*deltax-1.0;
+    y_max=y_max+0.001*deltay+1.0;
+    y_min=y_min-0.001*deltay-1.0;
+    z_max=z_max+0.001*deltaz+1.0;
+    z_min=z_min-0.001*deltaz-1.0;
 
     container con(x_min,x_max,y_min,y_max,z_min,z_max,8,8,8,
                   			false,false,false,8);

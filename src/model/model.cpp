@@ -470,7 +470,8 @@ int Model :: compute_level_populations_multigrid (
 
         if (use_Ng_acceleration && (iteration_normal == 4))
         {
-            lines.iteration_using_Ng_acceleration (parameters.pop_prec());
+            vector<Size> points_in_grid=geometry.points.multiscale.get_current_points_in_grid();
+            lines.iteration_using_Ng_acceleration (parameters.pop_prec(), points_in_grid);
 
             iteration_normal = 0;
         }
@@ -531,19 +532,20 @@ int Model :: compute_level_populations_multigrid (
 
         for (int l = 0; l < parameters.nlspecs(); l++)
         {
+            //note: this information is only based on the points currently in the grid.
             error_mean.push_back (lines.lineProducingSpecies[l].relative_change_mean);
             error_max .push_back (lines.lineProducingSpecies[l].relative_change_max);
 
             // fraction allowed to not be converged:
-            const double max_frac_not_converged=(parameters.npoints()-geometry.points.multiscale.get_total_points(curr_max_coars_lvl))/(double)parameters.npoints()+0.005;
+            // const double max_frac_not_converged=(parameters.npoints()-geometry.points.multiscale.get_total_points(curr_max_coars_lvl))/(double)parameters.npoints()+0.005;
 
-            cout << "max frac non coverged: " <<max_frac_not_converged<<endl;
+            // cout << "max frac non coverged: " <<max_frac_not_converged<<endl;
 
             //check whether the fraction non-corverged points has truly stabilized
-            if (((lines.lineProducingSpecies[l].fraction_not_converged > max_frac_not_converged)
-                ||(abs(lines.lineProducingSpecies[l].fraction_not_converged-prev_it_frac_not_converged[l])>0.005))
-              &&(lines.lineProducingSpecies[l].fraction_not_converged > 0.005))
-            // if (lines.lineProducingSpecies[l].fraction_not_converged > 0.005)
+            // if (((lines.lineProducingSpecies[l].fraction_not_converged > max_frac_not_converged)
+            //     ||(abs(lines.lineProducingSpecies[l].fraction_not_converged-prev_it_frac_not_converged[l])>0.005))
+            //   &&(lines.lineProducingSpecies[l].fraction_not_converged > 0.005))
+            if (lines.lineProducingSpecies[l].fraction_not_converged > 0.005)
             {
                 some_not_converged = true;
             }
@@ -654,7 +656,8 @@ int Model :: compute_level_populations (
 
         if (use_Ng_acceleration && (iteration_normal == 4))
         {
-            lines.iteration_using_Ng_acceleration (parameters.pop_prec());
+            vector<Size> points_in_grid=geometry.points.multiscale.get_current_points_in_grid();
+            lines.iteration_using_Ng_acceleration (parameters.pop_prec(), points_in_grid);
 
             iteration_normal = 0;
         }

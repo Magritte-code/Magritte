@@ -42,7 +42,8 @@ struct Lines
         vector<Size> &points_in_grid            );
 
     void iteration_using_Ng_acceleration (
-        const Real pop_prec              );
+        const Real pop_prec,
+        vector<Size> &points_in_grid            );
 
     inline Size      index (const Size p, const Size line_index     ) const;
     inline Size line_index (              const Size l, const Size k) const;

@@ -98,9 +98,12 @@ inline void LineProducingSpecies :: update_using_LTE (
 }
 
 
-inline void LineProducingSpecies :: check_for_convergence (const Real pop_prec)
+inline void LineProducingSpecies :: check_for_convergence (const Real pop_prec, vector<Size> &points_in_grid)
 {
-    const Real weight = 1.0 / (parameters.npoints() * linedata.nlev);
+    //this also needs some changes for coarser grids; because interpolation happens at later time, there can be inconsistencies
+    const Size nbpoints=points_in_grid.size();
+    const Real weight = 1.0 / (nbpoints * linedata.nlev);
+    // const Real weight = 1.0 / (parameters.npoints() * linedata.nlev);
 
     Real fnc = 0.0;
     Real rcm = 0.0;
@@ -109,8 +112,9 @@ inline void LineProducingSpecies :: check_for_convergence (const Real pop_prec)
 
 //    for (long p = 0; p < ncells; p++)
 #   pragma omp parallel for reduction (+: fnc, rcm)
-    for (Size p = 0; p < parameters.npoints(); p++)
+    for (Size idx = 0; idx < nbpoints; idx++)
     {
+        const Size p=points_in_grid[idx];
         const double min_pop = 1.0E-10 * population_tot[p];
 
         for (Size i = 0; i < linedata.nlev; i++)
@@ -121,6 +125,7 @@ inline void LineProducingSpecies :: check_for_convergence (const Real pop_prec)
             {
                 Real relative_change = 2.0;
 
+                //note: with multigrid, the population at points not in the grid does not get updated quickly enough, making the relative change always 0
                 relative_change *= fabs (population (ind) - population_prev1 (ind));
                 relative_change /=      (population (ind) + population_prev1 (ind));
 
