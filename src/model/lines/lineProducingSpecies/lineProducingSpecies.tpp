@@ -240,10 +240,12 @@ void LineProducingSpecies :: update_using_acceleration (const Size order)
 ///  the statistical equilibrium equation taking into account the radiation field
 ///    @param[in] abundance: chemical abundances of species in the model
 ///    @param[in] temperature: gas temperature in the model
+///    @param[in] points_in_grid: the points in the current grid
 /////////////////////////////////////////////////////////////////////////////////
 inline void LineProducingSpecies :: update_using_statistical_equilibrium (
     const Double2      &abundance,
-    const Vector<Real> &temperature )
+    const Vector<Real> &temperature,
+    vector<Size> &points_in_grid)
 {
     const Size non_zeros = parameters.npoints() * (      linedata.nlev
                                                    + 6 * linedata.nrad
@@ -269,9 +271,12 @@ inline void LineProducingSpecies :: update_using_statistical_equilibrium (
     triplets_LS.reserve (non_zeros);
 
     //todo: use current grid ...
+    // vector<Size> points_in_grid=model.geometry.points.multiscale.get_current_points_in_grid();
+    Size nbpoints=points_in_grid.size();
 
-    for (Size p = 0; p < parameters.npoints(); p++) // !!! no OMP because push_back is not thread safe !!!
+    for (Size idx = 0; idx < nbpoints; idx++) // !!! no OMP because push_back is not thread safe !!!
     {
+        Size p=points_in_grid[idx];
         // Radiative transitions
 
         for (Size k = 0; k < linedata.nrad; k++)

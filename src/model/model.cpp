@@ -398,10 +398,13 @@ int Model :: compute_Jeff ()
 ///////////////////////////////////////////////////////////
 int Model :: compute_level_populations_from_stateq ()
 {
+    vector<Size> points_in_grid=geometry.points.multiscale.get_current_points_in_grid();
+
     lines.iteration_using_statistical_equilibrium (
             chemistry.species.abundance,
             thermodynamics.temperature.gas,
-            parameters.pop_prec()                 );
+            parameters.pop_prec(),
+            points_in_grid                       );
 
     return (0);
 }
@@ -494,11 +497,13 @@ int Model :: compute_level_populations_multigrid (
             }
             std::cout << "Computed feautrier" << std::endl;
             compute_Jeff                              ();
-
+            //TODO: also interpolate lambda diagonal thing
+            vector<Size> points_in_grid=geometry.points.multiscale.get_current_points_in_grid();
             lines.iteration_using_statistical_equilibrium (
                 chemistry.species.abundance,
                 thermodynamics.temperature.gas,
-                parameters.pop_prec()                     );
+                parameters.pop_prec(),
+                points_in_grid);
 
             iteration_normal++;
         }
@@ -642,10 +647,13 @@ int Model :: compute_level_populations (
             cout << "Computed feautrier" << std::endl;
             compute_Jeff                              ();
 
+            vector<Size> points_in_grid=geometry.points.multiscale.get_current_points_in_grid();
+
             lines.iteration_using_statistical_equilibrium (
                 chemistry.species.abundance,
                 thermodynamics.temperature.gas,
-                parameters.pop_prec()                     );
+                parameters.pop_prec(),
+                points_in_grid);
 
             iteration_normal++;
         }

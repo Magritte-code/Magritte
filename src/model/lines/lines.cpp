@@ -116,11 +116,12 @@ void Lines :: iteration_using_Ng_acceleration (const Real pop_prec)
 void Lines :: iteration_using_statistical_equilibrium (
     const Double2      &abundance,
     const Vector<Real> &temperature,
-    const Real          pop_prec )
+    const Real          pop_prec,
+    vector<Size> &points_in_grid)
 {
     for (LineProducingSpecies &lspec : lineProducingSpecies)
     {
-        lspec.update_using_statistical_equilibrium (abundance, temperature);
+        lspec.update_using_statistical_equilibrium (abundance, temperature, points_in_grid);
         lspec.check_for_convergence                (pop_prec);
     }
 

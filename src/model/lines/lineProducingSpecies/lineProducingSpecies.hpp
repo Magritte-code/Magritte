@@ -72,7 +72,8 @@ struct LineProducingSpecies
 
     inline void update_using_statistical_equilibrium (
         const Double2      &abundance,
-        const Vector<Real> &temperature );
+        const Vector<Real> &temperature,
+        vector<Size> &points_in_grid);
 
     inline void update_using_Ng_acceleration ();
     inline void update_using_acceleration (const Size order);

@@ -473,6 +473,8 @@ inline void Model::coarsen_around_point (const Size p)
 ///   @Parameter[in]: tol: the tolerance level for which we still consider points similar enough
 inline int Model::setup_multigrid(Size min_nb_points, Size max_coars_lvl, double tol)
 {
+  //set number of off-diagonal elements in lambda matrix 0; needed because we will interpolate these values
+  parameters.n_off_diag=0;
   // std::cout<<"Tolerance: "<<tol<<std::endl;
   // std::function<bool(Size,Size)> fun_to_del=points_are_similar(tol);//function that says if two points are similar enough
   // geometry.points.multiscale.set_not_on_boundary_fun([&](Size p){return geometry.not_on_boundary(p);});//function that says whether a point lies on the boundary

@@ -38,7 +38,8 @@ struct Lines
     void iteration_using_statistical_equilibrium (
         const Double2      &abundance,
         const Vector<Real> &temperature,
-        const Real          pop_prec             );
+        const Real          pop_prec,
+        vector<Size> &points_in_grid            );
 
     void iteration_using_Ng_acceleration (
         const Real pop_prec              );
