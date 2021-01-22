@@ -16,6 +16,20 @@ inline Size LineProducingSpecies :: index (const Size p, const Size i) const
 {
     return i + p*linedata.nlev;
 }
+/// Getter for level populations
+///    @param[in] p : index of the cell
+///    @param[in] i : index of the level
+inline Real LineProducingSpecies :: get_level_pop  (const Size p, const Size i) const
+{
+    return population(index(p,i));
+}
+/// Setter for level populations
+///    @param[in] p : index of the cell
+///    @param[in] i : index of the level
+inline void LineProducingSpecies :: set_level_pop  (const Size p, const Size i, const Real value)
+{
+    population(index(p,i))=value;
+}
 
 
 ///  Getter for the line emissivity
@@ -253,6 +267,8 @@ inline void LineProducingSpecies :: update_using_statistical_equilibrium (
     triplets   .reserve (non_zeros);
     triplets_LT.reserve (non_zeros);
     triplets_LS.reserve (non_zeros);
+
+    //todo: use current grid ...
 
     for (Size p = 0; p < parameters.npoints(); p++) // !!! no OMP because push_back is not thread safe !!!
     {

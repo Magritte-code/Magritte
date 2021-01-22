@@ -60,6 +60,9 @@ struct LineProducingSpecies
     inline Real get_emissivity (const Size p, const Size k) const;
     inline Real get_opacity    (const Size p, const Size k) const;
 
+    inline Real get_level_pop  (const Size p, const Size i) const;
+    inline void set_level_pop  (const Size p, const Size i, const Real value);
+
     inline void check_for_convergence (
         const Real pop_prec );
 
