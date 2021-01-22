@@ -5,15 +5,16 @@ from scipy.spatial import Delaunay
 from plotneighbors import PlotFuns
 import matplotlib.pyplot as plt
 import healpy as hp
-import scipy as sp
-import statsmodels.api as sm
+import scipy.interpolate as spint
+# import statsmodels.api as sm
 
-x=[1,0,0]
-y=[0,1,0]
-z=[0,0,1]
+x=[10,0,0,1]
+y=[0,1,0,0]
+z=[0,0,1,0]
 
-vals=[1,2,5]
+vals=[1,4.5,5,5]
 
-rbfi=sp.interpolate.Rbf(x,y,z,vals,function='gaussian',epsilon=5);
+rbfi=spint.Rbf(x,y,z,vals,function='gaussian',epsilon=10);
 print(rbfi(0,0,0))
+print(rbfi(0,0.5,0))
 print(rbfi.function)

@@ -604,7 +604,7 @@ inline void Model::interpolate_vector_local(Size coarser_lvl, vector<T> &to_inte
           rbf_mat(idx2,idx)=radius;
         }
       }
-      T maxdist=rbf_mat.maxCoeff()*5.0;//arbitrary number 5 to make the max_dist larger
+      T maxdist=rbf_mat.maxCoeff();
       rbf_mat=rbf_mat/maxdist;
       rbf_mat=rbf_mat.unaryExpr(std::ptr_fun(rbf_local<T>));
       distance_with_neighbors=distance_with_neighbors/maxdist;
@@ -767,7 +767,7 @@ inline void Model::interpolate_vector_local(Size coarser_lvl, vector<T> &to_inte
 //         rbf_mat(idx2,idx)=radius;
 //       }
 //     }
-//     T maxdist=rbf_mat.maxCoeff()*5.0;//arbitrary number 5 to make the max_dist larger
+//     T maxdist=rbf_mat.maxCoeff();
 //     rbf_mat=rbf_mat/maxdist;
 //     rbf_mat=rbf_mat.unaryExpr(std::ptr_fun(rbf_local<T>));
 //     distance_with_neighbors=distance_with_neighbors/maxdist;
@@ -946,7 +946,7 @@ inline void Model::interpolate_matrix_local(Size coarser_lvl, Matrix<T> &to_inte
         rbf_mat(idx2,idx)=radius;
       }
     }
-    T maxdist=rbf_mat.maxCoeff()*5.0;//arbitrary number 5 to make the max_dist larger
+    T maxdist=rbf_mat.maxCoeff();
     rbf_mat=rbf_mat/maxdist;
     rbf_mat=rbf_mat.unaryExpr(std::ptr_fun(rbf_local<T>));
     distance_with_neighbors=distance_with_neighbors/maxdist;
