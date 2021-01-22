@@ -242,11 +242,14 @@ void LineProducingSpecies :: update_using_acceleration (const Size order)
 ///    @param[in] temperature: gas temperature in the model
 ///    @param[in] points_in_grid: the points in the current grid
 /////////////////////////////////////////////////////////////////////////////////
+/// Note: for points currently not in the grid, the solution may be bogus
+/// FIXME: instead return the previous values for the level pops
 inline void LineProducingSpecies :: update_using_statistical_equilibrium (
     const Double2      &abundance,
     const Vector<Real> &temperature,
     vector<Size> &points_in_grid)
 {
+
     const Size non_zeros = parameters.npoints() * (      linedata.nlev
                                                    + 6 * linedata.nrad
                                                    + 4 * linedata.ncol_tot );
@@ -276,7 +279,8 @@ inline void LineProducingSpecies :: update_using_statistical_equilibrium (
 
     for (Size idx = 0; idx < nbpoints; idx++) // !!! no OMP because push_back is not thread safe !!!
     {
-        Size p=points_in_grid[idx];
+        const Size p=points_in_grid[idx];
+        std::cout<<"current point: "<<p<<std::endl;
         // Radiative transitions
 
         for (Size k = 0; k < linedata.nrad; k++)
@@ -290,6 +294,9 @@ inline void LineProducingSpecies :: update_using_statistical_equilibrium (
             // Note: we define our transition matrix as the transpose of R in the paper.
             const Size I = index (p, linedata.irad[k]);
             const Size J = index (p, linedata.jrad[k]);
+
+            std::cout<<"I: "<<I<<std::endl;
+            std::cout<<"J: "<<J<<std::endl;
 
             if (linedata.jrad[k] != linedata.nlev-1)
             {
@@ -310,6 +317,8 @@ inline void LineProducingSpecies :: update_using_statistical_equilibrium (
             }
         }
 
+        std::cout<<"flag 2"<<std::endl;
+
         // Approximated Lambda operator
 
         for (Size k = 0; k < linedata.nrad; k++)
@@ -322,6 +331,9 @@ inline void LineProducingSpecies :: update_using_statistical_equilibrium (
                 // Note: we define our transition matrix as the transpose of R in the paper.
                 const Size I = index (nr, linedata.irad[k]);
                 const Size J = index (p,  linedata.jrad[k]);
+
+                std::cout<<"I: "<<I<<std::endl;
+                std::cout<<"J: "<<J<<std::endl;
 
                 if (linedata.jrad[k] != linedata.nlev-1)
                 {
@@ -337,7 +349,7 @@ inline void LineProducingSpecies :: update_using_statistical_equilibrium (
             }
         }
 
-
+        std::cout<<"flag 3"<<std::endl;
 
         // Collisional transitions
 
@@ -360,6 +372,9 @@ inline void LineProducingSpecies :: update_using_statistical_equilibrium (
                 const Size I = index (p, colpar.icol[k]);
                 const Size J = index (p, colpar.jcol[k]);
 
+                std::cout<<"I: "<<I<<std::endl;
+                std::cout<<"J: "<<J<<std::endl;
+
                 if (colpar.jcol[k] != linedata.nlev-1)
                 {
                     triplets.push_back (Triplet<Real, Size> (J, I, +v_IJ));
@@ -380,6 +395,9 @@ inline void LineProducingSpecies :: update_using_statistical_equilibrium (
             const Size I = index (p, linedata.nlev-1);
             const Size J = index (p, i);
 
+            std::cout<<"I: "<<I<<std::endl;
+            std::cout<<"J: "<<J<<std::endl;
+
             triplets.push_back (Triplet<Real, Size> (I, J, 1.0));
         }
 
@@ -387,12 +405,41 @@ inline void LineProducingSpecies :: update_using_statistical_equilibrium (
         y[index (p, linedata.nlev-1)] = population_tot[p];
         //y.insert (index (p, linedata.nlev-1)) = 1.0;//population_tot[p];
 
+
     } // for all cells
 
+
+    // adding 1 to diagonal for line transitions currently not in the grid
+    // currently, they should not be affected in any way (only interpolation may change them)
+
+    // well, points_in_grid should be ordered, but extra precautions can never hurt
+    std::sort(points_in_grid.begin(),points_in_grid.end());
+    Size otheridx=0;
+    for (Size p=0;p<parameters.npoints();p++)
+    {
+      if (p==points_in_grid[otheridx])
+      {otheridx++;}
+      else
+      {//add 1 to all diagonal line transitions of this point
+        for (Size l = 0; l < linedata.nlev; l++)
+        {
+          const Size I = index (p, l);
+          triplets.push_back (Triplet<Real, Size> (I, I, 1.0));
+          // RT.insert(I,I)=1.0;
+          std::cout<<"added to index: "<<I<<std::endl;
+        }
+      }
+    }
 
     RT        .setFromTriplets (triplets   .begin(), triplets   .end());
     LambdaStar.setFromTriplets (triplets_LS.begin(), triplets_LS.end());
     LambdaTest.setFromTriplets (triplets_LT.begin(), triplets_LT.end());
+
+    std::cout<<"RT rows: "<<RT.rows()<<std::endl;
+    std::cout<<"RT cols: "<<RT.cols()<<std::endl;
+
+
+
 
 
     //cout << "Compressing RT" << endl;
@@ -460,6 +507,13 @@ inline void LineProducingSpecies :: update_using_statistical_equilibrium (
     cout << "Solving rate equations for the level populations..." << endl;
 
     population = solver.solve (y);
+
+    // VectorXr reduced_population = solver.solve (y);
+    //
+    // for (Size p: points_in_grid)
+    // {
+    //   population(p) = reduced_population(p);
+    // }
 
     if (solver.info() != Eigen::Success)
     {

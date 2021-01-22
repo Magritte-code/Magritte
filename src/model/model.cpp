@@ -354,12 +354,20 @@ int Model :: compute_radiation_field_feautrier_order_2 ()
 ///////////////////////////////////////////////////
 int Model :: compute_Jeff ()
 {
+
+    //as usual, only do this for the points currently in the grid
+    vector<Size> points_in_grid=geometry.points.multiscale.get_current_points_in_grid();
+    Size nbpoints=points_in_grid.size();
+
+
     for (LineProducingSpecies &lspec : lines.lineProducingSpecies)
     {
        // Lambda = MatrixXd::Zero (lspec.population.size(), lspec.population.size());
 
-        threaded_for (p, parameters.npoints(),
+        threaded_for (idx, nbpoints,
         {
+            const Size p=points_in_grid[idx];
+
             for (Size k = 0; k < lspec.linedata.nrad; k++)
             {
                 const Size1 freq_nrs = lspec.nr_line[p][k];
@@ -474,27 +482,28 @@ int Model :: compute_level_populations_multigrid (
             geometry.points.multiscale.set_curr_coars_lvl(curr_max_coars_lvl);
             compute_radiation_field_feautrier_order_2 ();
             // and interpolate it
-            while(geometry.points.multiscale.get_curr_coars_lvl()>0)
-            {//maybe TODO: add support for interpolating skipping levels
-              const vector<bool> curr_mask=geometry.points.multiscale.get_mask(geometry.points.multiscale.get_curr_coars_lvl());
-              for (Size test=0;test<parameters.npoints();test++)
-              {
-                if (curr_mask[test])
-                {
-                std::cout<<radiation.J(test,0)<<std::endl;
-                }
-              }
-              cout<<"trying to interpolate matrix; current coarsening level: "<<geometry.points.multiscale.get_curr_coars_lvl()<<endl;
-              //TODO print number of nans
-              //for all frequencies, interpolate J
-              interpolate_matrix_local(geometry.points.multiscale.get_curr_coars_lvl(),radiation.J);
-              cout<<"successfully interpolated matrix"<<endl;
-              geometry.points.multiscale.set_curr_coars_lvl(geometry.points.multiscale.get_curr_coars_lvl()-1);
-              for (Size test=0;test<parameters.npoints();test++)
-              {
-                std::cout<<radiation.J(test,0)<<std::endl;
-              }
-            }
+            // while(geometry.points.multiscale.get_curr_coars_lvl()>0)
+            // {//maybe TODO: add support for interpolating skipping levels
+            //
+            //   const vector<bool> curr_mask=geometry.points.multiscale.get_mask(geometry.points.multiscale.get_curr_coars_lvl());
+            //   for (Size test=0;test<parameters.npoints();test++)
+            //   {
+            //     if (curr_mask[test])
+            //     {
+            //     std::cout<<radiation.J(test,0)<<std::endl;
+            //     }
+            //   }
+            //   cout<<"trying to interpolate matrix; current coarsening level: "<<geometry.points.multiscale.get_curr_coars_lvl()<<endl;
+            //   //TODO print number of nans
+            //   //for all frequencies, interpolate J
+            //   interpolate_matrix_local(geometry.points.multiscale.get_curr_coars_lvl(),radiation.J);
+            //   cout<<"successfully interpolated matrix"<<endl;
+            //   geometry.points.multiscale.set_curr_coars_lvl(geometry.points.multiscale.get_curr_coars_lvl()-1);
+            //   for (Size test=0;test<parameters.npoints();test++)
+            //   {
+            //     std::cout<<radiation.J(test,0)<<std::endl;
+            //   }
+            // }
             std::cout << "Computed feautrier" << std::endl;
             compute_Jeff                              ();
             //TODO: also interpolate lambda diagonal thing
@@ -504,6 +513,17 @@ int Model :: compute_level_populations_multigrid (
                 thermodynamics.temperature.gas,
                 parameters.pop_prec(),
                 points_in_grid);
+
+            //Now interpolating the level populations to the finest level//TODO: thus should only happen when we change grid, but does not incurr too high a cost
+            while(geometry.points.multiscale.get_curr_coars_lvl()>0)
+            {//maybe TODO: add support for interpolating skipping levels
+                cout<<"trying to interpolate level populations; current coarsening level: "<<geometry.points.multiscale.get_curr_coars_lvl()<<endl;
+                //TODO print number of nans
+                //for all frequencies, interpolate J
+                interpolate_levelpops_local(geometry.points.multiscale.get_curr_coars_lvl());
+                cout<<"successfully interpolated level populations"<<endl;
+                geometry.points.multiscale.set_curr_coars_lvl(geometry.points.multiscale.get_curr_coars_lvl()-1);
+            }
 
             iteration_normal++;
         }
