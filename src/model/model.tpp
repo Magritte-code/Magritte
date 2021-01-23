@@ -755,6 +755,7 @@ inline void Model::interpolate_levelpops_local(Size coarser_lvl)
 
     Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic> rbf_mat(nb_neighbors_coarser_grid, nb_neighbors_coarser_grid);
     Eigen::Matrix<double,1,Eigen::Dynamic> distance_with_neighbors(1,nb_neighbors_coarser_grid);
+
     for (Size idx=0; idx<nb_neighbors_coarser_grid; idx++)
     {
       // std::cout<<"calc dist with point"<<std::endl;
@@ -768,10 +769,12 @@ inline void Model::interpolate_levelpops_local(Size coarser_lvl)
         rbf_mat(idx2,idx)=radius;
       }
     }
-    double maxdist=rbf_mat.maxCoeff()*5.0;//arbitrary number 5 to make the max_dist larger
-    rbf_mat=rbf_mat/maxdist;
+    double mindist=distance_with_neighbors.minCoeff();
+    mindist=mindist*5.0;
+    // double maxdist=rbf_mat.maxCoeff()*5.0;//arbitrary number 5 to make the max_dist larger
+    rbf_mat=rbf_mat/mindist;
     rbf_mat=rbf_mat.unaryExpr(std::ptr_fun(rbf_local<double>));
-    distance_with_neighbors=distance_with_neighbors/maxdist;
+    distance_with_neighbors=distance_with_neighbors/mindist;
     distance_with_neighbors=distance_with_neighbors.unaryExpr(std::ptr_fun(rbf_local<double>));
     // std::cout<<"determinant: "<<distance_with_neighbors.determinant()<<std::endl;
     //going with more robust LDLT decomposition in the hope that this reduces the number of nans generated
@@ -939,6 +942,7 @@ inline void Model::interpolate_matrix_local(Size coarser_lvl, Matrix<T> &to_inte
 
     Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic> rbf_mat(nb_neighbors_coarser_grid, nb_neighbors_coarser_grid);
     Eigen::Matrix<T,1,Eigen::Dynamic> distance_with_neighbors(1,nb_neighbors_coarser_grid);
+
     for (Size idx=0; idx<nb_neighbors_coarser_grid; idx++)
     {
       // std::cout<<"calc dist with point"<<std::endl;
@@ -952,10 +956,12 @@ inline void Model::interpolate_matrix_local(Size coarser_lvl, Matrix<T> &to_inte
         rbf_mat(idx2,idx)=radius;
       }
     }
-    T maxdist=rbf_mat.maxCoeff()*5.0;//arbitrary number 5 to make the max_dist larger
-    rbf_mat=rbf_mat/maxdist;
+    T mindist=distance_with_neighbors.minCoeff();
+    mindist=mindist*5.0;
+    // T maxdist=rbf_mat.maxCoeff()*5.0;//arbitrary number 5 to make the max_dist larger
+    rbf_mat=rbf_mat/mindist;
     rbf_mat=rbf_mat.unaryExpr(std::ptr_fun(rbf_local<T>));
-    distance_with_neighbors=distance_with_neighbors/maxdist;
+    distance_with_neighbors=distance_with_neighbors/mindist;
     distance_with_neighbors=distance_with_neighbors.unaryExpr(std::ptr_fun(rbf_local<T>));
     // std::cout<<"determinant: "<<distance_with_neighbors.determinant()<<std::endl;
     //going with more robust LDLT decomposition in the hope that this reduces the number of nans generated
