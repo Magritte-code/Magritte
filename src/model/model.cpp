@@ -516,15 +516,15 @@ int Model :: compute_level_populations_multigrid (
                 points_in_grid);
 
             //Now interpolating the level populations to the finest level//TODO: thus should only happen when we change grid, but does not incurr too high a cost
-            while(geometry.points.multiscale.get_curr_coars_lvl()>0)
-            {//maybe TODO: add support for interpolating skipping levels
-                cout<<"trying to interpolate level populations; current coarsening level: "<<geometry.points.multiscale.get_curr_coars_lvl()<<endl;
-                //TODO print number of nans
-                //for all frequencies, interpolate J
-                interpolate_levelpops_local(geometry.points.multiscale.get_curr_coars_lvl());
-                cout<<"successfully interpolated level populations"<<endl;
-                geometry.points.multiscale.set_curr_coars_lvl(geometry.points.multiscale.get_curr_coars_lvl()-1);
-            }
+            // while(geometry.points.multiscale.get_curr_coars_lvl()>0)
+            // {//maybe TODO: add support for interpolating skipping levels
+            //     cout<<"trying to interpolate level populations; current coarsening level: "<<geometry.points.multiscale.get_curr_coars_lvl()<<endl;
+            //     //TODO print number of nans
+            //     //for all frequencies, interpolate J
+            //     interpolate_levelpops_local(geometry.points.multiscale.get_curr_coars_lvl());
+            //     cout<<"successfully interpolated level populations"<<endl;
+            //     geometry.points.multiscale.set_curr_coars_lvl(geometry.points.multiscale.get_curr_coars_lvl()-1);
+            // }
 
             iteration_normal++;
         }
