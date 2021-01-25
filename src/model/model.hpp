@@ -17,9 +17,9 @@
 struct Model
 {
     //minimum number points used during interpolation
-    const Size MIN_INTERPOLATION_POINTS=4;
+    const Size MIN_INTERPOLATION_POINTS=1;
     //maximum number points used during interpolation
-    const Size MAX_INTERPOLATION_POINTS=4;
+    const Size MAX_INTERPOLATION_POINTS=1;
 
     Parameters     parameters;
     Geometry       geometry;

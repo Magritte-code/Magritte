@@ -285,7 +285,6 @@ inline void LineProducingSpecies :: update_using_statistical_equilibrium (
     for (Size idx = 0; idx < nbpoints; idx++) // !!! no OMP because push_back is not thread safe !!!
     {
         const Size p=points_in_grid[idx];
-        std::cout<<"current point: "<<p<<std::endl;
         // Radiative transitions
 
         for (Size k = 0; k < linedata.nrad; k++)
@@ -300,8 +299,6 @@ inline void LineProducingSpecies :: update_using_statistical_equilibrium (
             const Size I = index (p, linedata.irad[k]);
             const Size J = index (p, linedata.jrad[k]);
 
-            std::cout<<"I: "<<I<<std::endl;
-            std::cout<<"J: "<<J<<std::endl;
 
             if (linedata.jrad[k] != linedata.nlev-1)
             {
@@ -322,8 +319,6 @@ inline void LineProducingSpecies :: update_using_statistical_equilibrium (
             }
         }
 
-        std::cout<<"flag 2"<<std::endl;
-
         // Approximated Lambda operator
 
         for (Size k = 0; k < linedata.nrad; k++)
@@ -337,8 +332,6 @@ inline void LineProducingSpecies :: update_using_statistical_equilibrium (
                 const Size I = index (nr, linedata.irad[k]);
                 const Size J = index (p,  linedata.jrad[k]);
 
-                std::cout<<"I: "<<I<<std::endl;
-                std::cout<<"J: "<<J<<std::endl;
 
                 if (linedata.jrad[k] != linedata.nlev-1)
                 {
@@ -353,8 +346,6 @@ inline void LineProducingSpecies :: update_using_statistical_equilibrium (
                 }
             }
         }
-
-        std::cout<<"flag 3"<<std::endl;
 
         // Collisional transitions
 
@@ -377,8 +368,6 @@ inline void LineProducingSpecies :: update_using_statistical_equilibrium (
                 const Size I = index (p, colpar.icol[k]);
                 const Size J = index (p, colpar.jcol[k]);
 
-                std::cout<<"I: "<<I<<std::endl;
-                std::cout<<"J: "<<J<<std::endl;
 
                 if (colpar.jcol[k] != linedata.nlev-1)
                 {
@@ -400,8 +389,6 @@ inline void LineProducingSpecies :: update_using_statistical_equilibrium (
             const Size I = index (p, linedata.nlev-1);
             const Size J = index (p, i);
 
-            std::cout<<"I: "<<I<<std::endl;
-            std::cout<<"J: "<<J<<std::endl;
 
             triplets.push_back (Triplet<Real, Size> (I, J, 1.0));
         }
@@ -431,7 +418,6 @@ inline void LineProducingSpecies :: update_using_statistical_equilibrium (
           const Size I = index (p, l);
           triplets.push_back (Triplet<Real, Size> (I, I, 1.0));
           // RT.insert(I,I)=1.0;
-          std::cout<<"added to index: "<<I<<std::endl;
         }
       }
     }
@@ -439,9 +425,6 @@ inline void LineProducingSpecies :: update_using_statistical_equilibrium (
     RT        .setFromTriplets (triplets   .begin(), triplets   .end());
     LambdaStar.setFromTriplets (triplets_LS.begin(), triplets_LS.end());
     LambdaTest.setFromTriplets (triplets_LT.begin(), triplets_LT.end());
-
-    std::cout<<"RT rows: "<<RT.rows()<<std::endl;
-    std::cout<<"RT cols: "<<RT.cols()<<std::endl;
 
 
 

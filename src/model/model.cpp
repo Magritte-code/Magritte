@@ -461,7 +461,6 @@ int Model :: compute_level_populations_multigrid (
       while (some_not_converged && (iteration < max_niterations))
       {
         iteration++;
-
         // logger.write ("Starting iteration ", iteration);
         cout << "Starting iteration " << iteration << endl;
 
@@ -573,7 +572,33 @@ int Model :: compute_level_populations_multigrid (
       // curr_max_coars_lvl-=1;
       iteration_sum+=iteration;
 
-    }
+      // cout <<"level pops before interpolating"<<endl;
+      // //DEBUG STUFF
+      // for (Size test=0;test<parameters.npoints();test++)
+      // {
+      //   std::cout<<lines.lineProducingSpecies[0].population[lines.lineProducingSpecies[0].index(test,0)]<<std::endl;
+      // }
+
+
+      //Now interpolating the level populations to the next finer level
+      if (geometry.points.multiscale.get_curr_coars_lvl()>0)
+      {//maybe TODO: add support for interpolating skipping levels
+          cout<<"trying to interpolate level populations; current coarsening level: "<<geometry.points.multiscale.get_curr_coars_lvl()<<endl;
+          //TODO print number of nans
+          //for all frequencies, interpolate J
+          interpolate_levelpops_local(geometry.points.multiscale.get_curr_coars_lvl());
+          cout<<"successfully interpolated level populations"<<endl;
+          geometry.points.multiscale.set_curr_coars_lvl(geometry.points.multiscale.get_curr_coars_lvl()-1);
+      }
+
+      // cout <<"level pops after interpolating"<<endl;
+      // //DEBUG STUFF
+      // for (Size test=0;test<parameters.npoints();test++)
+      // {
+      //   std::cout<<lines.lineProducingSpecies[0].population[lines.lineProducingSpecies[0].index(test,0)]<<std::endl;
+      // }
+
+    }//end of giant while loop over different coarsening levels
 
     return iteration_sum;
 }

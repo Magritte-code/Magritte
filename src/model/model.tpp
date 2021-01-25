@@ -337,10 +337,10 @@ inline void Model::coarsen_around_point (const Size p)
     y_min=y_min-0.001*deltay-1.0;
     z_max=z_max+0.001*deltaz+1.0;
     z_min=z_min-0.001*deltaz-1.0;
-    std::cout<<"coarsening around point: "<<p<<std::endl;
-    std::cout<<"container xlims: "<<x_min<<","<<x_max<<std::endl;
-    std::cout<<"container ylims: "<<y_min<<","<<y_max<<std::endl;
-    std::cout<<"container zlims: "<<z_min<<","<<z_max<<std::endl;
+    // std::cout<<"coarsening around point: "<<p<<std::endl;
+    // std::cout<<"container xlims: "<<x_min<<","<<x_max<<std::endl;
+    // std::cout<<"container ylims: "<<y_min<<","<<y_max<<std::endl;
+    // std::cout<<"container zlims: "<<z_min<<","<<z_max<<std::endl;
 
     container con(x_min,x_max,y_min,y_max,z_min,z_max,8,8,8,
                   			false,false,false,8);
@@ -352,8 +352,8 @@ inline void Model::coarsen_around_point (const Size p)
   	for(Size aff_point:affected_points)
     { Vector3D pos=geometry.points.position[aff_point];
       con.put(p_order,static_cast<int>(aff_point),pos.x(),pos.y(),pos.z());
-      std::cout<<"aff point: "<<aff_point<<std::endl;
-      std::cout<<"(x,y,z)=("<<pos.x()<<","<<pos.y()<<","<<pos.z()<<")"<<std::endl;
+      // std::cout<<"aff point: "<<aff_point<<std::endl;
+      // std::cout<<"(x,y,z)=("<<pos.x()<<","<<pos.y()<<","<<pos.z()<<")"<<std::endl;
     }
 
     c_loop_order l_order(con,p_order);
@@ -646,28 +646,29 @@ inline void Model::interpolate_levelpops_local(Size coarser_lvl)
   {return;}
   std::cout<<"Starting the interpolation"<<std::endl;
   Size nb_points=parameters.npoints();
-  std::vector<Size> all_points(nb_points);
-  std::iota(all_points.begin(), all_points.end(), 0); // all_points will become: [0..nb_points-1]
+  // std::vector<Size> all_points(nb_points);
+  // std::iota(all_points.begin(), all_points.end(), 0); // all_points will become: [0..nb_points-1]
   vector<bool> coarse_mask=geometry.points.multiscale.get_mask(coarser_lvl);
   vector<bool> finer_mask=geometry.points.multiscale.get_mask(coarser_lvl-1);
 
   vector<Size> diff_points;
   // vector<double> to_interpolate_values;//values of the coarse grid we need to interpolate (after applying the mask)
-  vector<Size> coarse_points;
-  for (Size point: all_points)
+  // vector<Size> coarse_points;
+  for (Size point=0; point<nb_points; point++)
   {
-    if(finer_mask[point])
+    if(finer_mask[point]&&!coarse_mask[point])
     {
-      if (coarse_mask[point])
-      {
-        coarse_points.push_back(point);
+      diff_points.push_back(point);
+        // coarse_points.push_back(point);
         // to_interpolate_values.push_back(to_interpolate[point]);
-      }else{diff_points.push_back(point);}
     }
   }
 
-  Size nb_coarse_points=coarse_points.size();
+  // Size nb_coarse_points=coarse_points.size();
   Size nb_diff_points=diff_points.size();
+
+  // std::cout<<"Nb coarse points: "<<nb_coarse_points<<std::endl;
+  std::cout<<"Nb diff points: "<<nb_diff_points<<std::endl;
 
   //if we have truly nothing to do, just do nothing
   if (nb_diff_points==0)
@@ -697,7 +698,11 @@ inline void Model::interpolate_levelpops_local(Size coarser_lvl)
     {
       std::cout<<"No neighbors for the current point! Using point which deleted it instead as neighbor."<<std::endl;
       std::cout<<"Current point: "<<diff_point<<std::endl;
+      std::cout<<"Position: ("<<geometry.points.position[diff_point].x()<<","<<geometry.points.position[diff_point].y()<<","<<geometry.points.position[diff_point].z()<<")"<<std::endl;
       std::cout<<"Point which replaces it: "<<geometry.points.multiscale.point_deleted_map.at(diff_point)<<std::endl;
+      Size repl_point=geometry.points.multiscale.point_deleted_map.at(diff_point);
+      std::cout<<"Position: ("<<geometry.points.position[repl_point].x()<<","<<geometry.points.position[repl_point].y()<<","<<geometry.points.position[repl_point].z()<<")"<<std::endl;
+
       neighbors_coarser_grid.push_back(geometry.points.multiscale.point_deleted_map.at(diff_point));
       std::cout<<"Succesfully replaced neighbors"<<std::endl;
     }
@@ -743,6 +748,7 @@ inline void Model::interpolate_levelpops_local(Size coarser_lvl)
       for (Size idx=0;idx<nbneighbors;idx++)
       {
         double tempdistance=(geometry.points.position[neighbors_coarser_grid[idx]]-geometry.points.position[diff_point]).squaredNorm();
+        std::cout<<"Considered point: "<<neighbors_coarser_grid[idx]<<"   Tempdistance: "<<tempdistance<<std::endl;
         if (tempdistance<maxdist)
         {//replace the curr max distance
           closest_points[maxindex]=neighbors_coarser_grid[idx];
@@ -764,6 +770,15 @@ inline void Model::interpolate_levelpops_local(Size coarser_lvl)
     // {//use rbf estimate
     Size nb_neighbors_coarser_grid=neighbors_coarser_grid.size();
 
+    //DEBUG STUFF
+    std::cout<<"Neighbors for interpolating point: "<<diff_point<<std::endl;
+    std::cout<<"Neighbors: ";
+    for (Size test: neighbors_coarser_grid)
+    {
+      std::cout<<test<<", ";
+    }
+    std::cout<<std::endl;
+
     Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic> rbf_mat(nb_neighbors_coarser_grid, nb_neighbors_coarser_grid);
     Eigen::Matrix<double,1,Eigen::Dynamic> distance_with_neighbors(1,nb_neighbors_coarser_grid);
 
@@ -771,6 +786,7 @@ inline void Model::interpolate_levelpops_local(Size coarser_lvl)
     {
       // std::cout<<"calc dist with point"<<std::endl;
       distance_with_neighbors(idx)=std::sqrt((geometry.points.position[neighbors_coarser_grid[idx]]-geometry.points.position[diff_point]).squaredNorm());
+      std::cout<<"distance with neighbor: "<<distance_with_neighbors(idx)<<std::endl;
       rbf_mat(idx,idx)=0;//distance between point and itself is zero
       for (Size idx2=0; idx2<idx; idx2++)
       {
@@ -801,13 +817,15 @@ inline void Model::interpolate_levelpops_local(Size coarser_lvl)
           // std::cout<<"Interpolation values"<<to_interpolate(idx,freqidx)<<std::endl;
           // interpolating the logarithm to avoid any semblance of negative numbers as result
           right_hand_side(idx)=static_cast<double>(lines.lineProducingSpecies[specidx].get_level_pop(neighbors_coarser_grid[idx],levidx));
+          std::cout<<"Value at neighbor: "<<right_hand_side(idx)<<std::endl;
         }
         Eigen::Vector<double,Eigen::Dynamic> weights=ldltdec.solve(right_hand_side);
         double interpolated_value=(distance_with_neighbors*weights)(0,0);
+        std::cout<<"Interpolated value: "<<interpolated_value<<std::endl;
         // std::cout<<"interpolated value: "<<interpolated_value<<std::endl;
         // sometimes, this procedure can give negative values (which we do not want),
         // FIXME: at least add a warning when this happens
-        lines.lineProducingSpecies[specidx].set_level_pop(diff_point,levidx,abs(static_cast<Real>(interpolated_value)));
+        lines.lineProducingSpecies[specidx].set_level_pop(diff_point,levidx,static_cast<Real>(interpolated_value));
         if (std::isnan(interpolated_value))
         {
           std::cout<<"Something went wrong during interpolating: nan value occuring"<<std::endl;
@@ -991,7 +1009,7 @@ inline void Model::interpolate_matrix_local(Size coarser_lvl, Matrix<T> &to_inte
       T interpolated_value=(distance_with_neighbors*weights)(0,0);
       // std::cout<<"interpolated value: "<<interpolated_value<<std::endl;
       // sometimes, this procedure can give negative values (which we do not want),
-      to_interpolate(diff_point,freqidx)=abs(interpolated_value);
+      to_interpolate(diff_point,freqidx)=interpolated_value;
       if (std::isnan(interpolated_value))
       {
         std::cout<<"Something went wrong during interpolating: nan value occuring"<<std::endl;
