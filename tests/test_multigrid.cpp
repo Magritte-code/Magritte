@@ -98,7 +98,6 @@ int main (int argc, char **argv)
     {
       std::cout<<"point: "<<p<<" has number neighbors: "<<model.geometry.points.multiscale.get_nb_neighbors(p)<<std::endl;
     }
-    cout<<"done checking boundary points"<<endl;
 
 
     // std::set<Size> test_neighbors=model.geometry.points.multiscale.get_neighbors(16187,0);
@@ -114,7 +113,7 @@ int main (int argc, char **argv)
 
 
 
-    model.compute_level_populations_multigrid(true, 100);
+    // model.compute_level_populations_multigrid(true, 100);
 
 
     // auto fun_to_del=model.points_are_similar(0.1);

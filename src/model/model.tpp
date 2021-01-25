@@ -8,7 +8,7 @@
 #include <limits>
 #include <algorithm>
 #include "voro++.hh"
-using namespace voro;
+using namespace voro;//FIXME: Do not use namespace, instead use voro:: for all functions of voro++
 
 //NOTE: i have mistakenly called tetrahedra triangles throughout this entire piece of code
 
@@ -169,7 +169,7 @@ inline void Model::coarsen_around_point (const Size p)
     // New neighbors for p.
     // std::set<Size> new_neighbors;
     // Boundary neighbors need to be treated differently
-    // std::set<Size> boundary_neighbors;
+    std::set<Size> boundary_neighbors;
 
     // Identify all neighbors with the current point (p),
     // i.e. remove its neighbors from the mesh by masking,
@@ -233,11 +233,11 @@ inline void Model::coarsen_around_point (const Size p)
         geometry.points.multiscale.neighbors.back()[n]=std::set<Size>();//and finally also delete every neighbor of the deleted point
       }
       // also has become redundant
-      // else
-      // {//also do not forget to actually add our boundary elements as a neighbor of our point
-      //   new_neighbors.insert(n);
-      //   boundary_neighbors.insert(n);
-      // }
+      else
+      {//also do not forget to actually add our boundary elements as a neighbor of our point
+        // new_neighbors.insert(n);
+        boundary_neighbors.insert(n);
+      }
     }
 
     //for now just the neighbors of neighbors of neighbors
@@ -252,12 +252,17 @@ inline void Model::coarsen_around_point (const Size p)
         }
       }
     }
+    //also add non-deleted neighbors to container_points
+    for (Size bound_neigh:boundary_neighbors)
+    {
+      container_points.insert(bound_neigh);
+    }
 
     //now also contains neighbors of neighbors and their neighbors
     container_points.insert(neighbors_of_neighbors.begin(),neighbors_of_neighbors.end());
     // std::merge(neighbors_of_neighbors, neighbors_of_neighbors.end(),neighbors_of_n_n,neighbors_of_n_n.end(),container_points.begin())
-    std::cout<<"Number of points in neighbors of neighbors: "<<neighbors_of_neighbors.size()<<std::endl;
-    std::cout<<"Number of points in container (-1): "<<container_points.size()<<std::endl;
+    // std::cout<<"Number of points in neighbors of neighbors: "<<neighbors_of_neighbors.size()<<std::endl;
+    // std::cout<<"Number of points in container (-1): "<<container_points.size()<<std::endl;
 
     //kind of redundant, i guess
     // // Also deleting the neighbors (not on boundary) from the on boundary neighbors
@@ -332,6 +337,10 @@ inline void Model::coarsen_around_point (const Size p)
     y_min=y_min-0.001*deltay-1.0;
     z_max=z_max+0.001*deltaz+1.0;
     z_min=z_min-0.001*deltaz-1.0;
+    std::cout<<"coarsening around point: "<<p<<std::endl;
+    std::cout<<"container xlims: "<<x_min<<","<<x_max<<std::endl;
+    std::cout<<"container ylims: "<<y_min<<","<<y_max<<std::endl;
+    std::cout<<"container zlims: "<<z_min<<","<<z_max<<std::endl;
 
     container con(x_min,x_max,y_min,y_max,z_min,z_max,8,8,8,
                   			false,false,false,8);
@@ -343,13 +352,15 @@ inline void Model::coarsen_around_point (const Size p)
   	for(Size aff_point:affected_points)
     { Vector3D pos=geometry.points.position[aff_point];
       con.put(p_order,static_cast<int>(aff_point),pos.x(),pos.y(),pos.z());
+      std::cout<<"aff point: "<<aff_point<<std::endl;
+      std::cout<<"(x,y,z)=("<<pos.x()<<","<<pos.y()<<","<<pos.z()<<")"<<std::endl;
     }
 
     c_loop_order l_order(con,p_order);
 
     //back to the beginning
     l_order.start();
-    std::cout<<"currently computing neighbors around point: "<<l_order.pid()<<std::endl;
+    // std::cout<<"currently computing neighbors around point: "<<l_order.pid()<<std::endl;
     //for point p, just add all found neighbors to its neighbors list
     con.compute_cell(cell,l_order);
     std::vector<int> found_neighbors;
@@ -376,7 +387,7 @@ inline void Model::coarsen_around_point (const Size p)
       std::vector<int> found_neighbors;
       cell.neighbors(found_neighbors);
 
-      std::cout<<"computed partial neighbors around: "<<l_order.pid()<<std::endl;
+      // std::cout<<"computed partial neighbors around: "<<l_order.pid()<<std::endl;
       //note:negative values refer to the boundaries
       for (int found_neighbor:found_neighbors)
       {
