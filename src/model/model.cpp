@@ -439,7 +439,7 @@ int Model :: compute_level_populations_multigrid (
     // geometry.points.multiscale.set_curr_coars_lvl(geometry.points.multiscale.get_max_coars_lvl());
     int iteration_sum    = 0;
     // Now testing without the finest grid
-    for(Size subtract=0; subtract<=max_coars_lvl-1; subtract++)
+    for(Size subtract=0; subtract<=max_coars_lvl; subtract++)
     {
       Size curr_max_coars_lvl=max_coars_lvl-subtract;
       std::cout<<"Current coarsening level: "<< curr_max_coars_lvl<<std::endl;
@@ -590,6 +590,8 @@ int Model :: compute_level_populations_multigrid (
           cout<<"successfully interpolated level populations"<<endl;
           geometry.points.multiscale.set_curr_coars_lvl(geometry.points.multiscale.get_curr_coars_lvl()-1);
       }
+      //after interpolating the level populations, do NOT forget to set the opacities and emissivities, otherwise this was all for nothing...
+      lines.set_emissivity_and_opacity ();
 
       // cout <<"level pops after interpolating"<<endl;
       // //DEBUG STUFF

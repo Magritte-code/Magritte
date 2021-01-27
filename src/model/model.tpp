@@ -668,7 +668,7 @@ inline void Model::interpolate_levelpops_local(Size coarser_lvl)
   Size nb_diff_points=diff_points.size();
 
   // std::cout<<"Nb coarse points: "<<nb_coarse_points<<std::endl;
-  std::cout<<"Nb diff points: "<<nb_diff_points<<std::endl;
+  // std::cout<<"Nb diff points: "<<nb_diff_points<<std::endl;
 
   //if we have truly nothing to do, just do nothing
   if (nb_diff_points==0)
@@ -698,13 +698,13 @@ inline void Model::interpolate_levelpops_local(Size coarser_lvl)
     {
       std::cout<<"No neighbors for the current point! Using point which deleted it instead as neighbor."<<std::endl;
       std::cout<<"Current point: "<<diff_point<<std::endl;
-      std::cout<<"Position: ("<<geometry.points.position[diff_point].x()<<","<<geometry.points.position[diff_point].y()<<","<<geometry.points.position[diff_point].z()<<")"<<std::endl;
+      // std::cout<<"Position: ("<<geometry.points.position[diff_point].x()<<","<<geometry.points.position[diff_point].y()<<","<<geometry.points.position[diff_point].z()<<")"<<std::endl;
       std::cout<<"Point which replaces it: "<<geometry.points.multiscale.point_deleted_map.at(diff_point)<<std::endl;
       Size repl_point=geometry.points.multiscale.point_deleted_map.at(diff_point);
-      std::cout<<"Position: ("<<geometry.points.position[repl_point].x()<<","<<geometry.points.position[repl_point].y()<<","<<geometry.points.position[repl_point].z()<<")"<<std::endl;
+      // std::cout<<"Position: ("<<geometry.points.position[repl_point].x()<<","<<geometry.points.position[repl_point].y()<<","<<geometry.points.position[repl_point].z()<<")"<<std::endl;
 
       neighbors_coarser_grid.push_back(geometry.points.multiscale.point_deleted_map.at(diff_point));
-      std::cout<<"Succesfully replaced neighbors"<<std::endl;
+      // std::cout<<"Succesfully replaced neighbors"<<std::endl;
     }
     ///commented out for now until we solve the issue with having way too much neighbors if we apply this...
     // In the case we do not really have enough points for a good interpolation, just add more
@@ -748,7 +748,7 @@ inline void Model::interpolate_levelpops_local(Size coarser_lvl)
       for (Size idx=0;idx<nbneighbors;idx++)
       {
         double tempdistance=(geometry.points.position[neighbors_coarser_grid[idx]]-geometry.points.position[diff_point]).squaredNorm();
-        std::cout<<"Considered point: "<<neighbors_coarser_grid[idx]<<"   Tempdistance: "<<tempdistance<<std::endl;
+        // std::cout<<"Considered point: "<<neighbors_coarser_grid[idx]<<"   Tempdistance: "<<tempdistance<<std::endl;
         if (tempdistance<maxdist)
         {//replace the curr max distance
           closest_points[maxindex]=neighbors_coarser_grid[idx];
@@ -771,13 +771,13 @@ inline void Model::interpolate_levelpops_local(Size coarser_lvl)
     Size nb_neighbors_coarser_grid=neighbors_coarser_grid.size();
 
     //DEBUG STUFF
-    std::cout<<"Neighbors for interpolating point: "<<diff_point<<std::endl;
-    std::cout<<"Neighbors: ";
-    for (Size test: neighbors_coarser_grid)
-    {
-      std::cout<<test<<", ";
-    }
-    std::cout<<std::endl;
+    // std::cout<<"Neighbors for interpolating point: "<<diff_point<<std::endl;
+    // std::cout<<"Neighbors: ";
+    // for (Size test: neighbors_coarser_grid)
+    // {
+    //   std::cout<<test<<", ";
+    // }
+    // std::cout<<std::endl;
 
     Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic> rbf_mat(nb_neighbors_coarser_grid, nb_neighbors_coarser_grid);
     Eigen::Matrix<double,1,Eigen::Dynamic> distance_with_neighbors(1,nb_neighbors_coarser_grid);
@@ -786,7 +786,7 @@ inline void Model::interpolate_levelpops_local(Size coarser_lvl)
     {
       // std::cout<<"calc dist with point"<<std::endl;
       distance_with_neighbors(idx)=std::sqrt((geometry.points.position[neighbors_coarser_grid[idx]]-geometry.points.position[diff_point]).squaredNorm());
-      std::cout<<"distance with neighbor: "<<distance_with_neighbors(idx)<<std::endl;
+      // std::cout<<"distance with neighbor: "<<distance_with_neighbors(idx)<<std::endl;
       rbf_mat(idx,idx)=0;//distance between point and itself is zero
       for (Size idx2=0; idx2<idx; idx2++)
       {
@@ -821,13 +821,13 @@ inline void Model::interpolate_levelpops_local(Size coarser_lvl)
         {
           // interpolating the fractional level populations, so we need the abundance of each species
           double abund=chemistry.species.abundance[neighbors_coarser_grid[idx]][speciesnum];
-          std::cout<<"Abundance: "<<abund<<std::endl;
+          // std::cout<<"Abundance: "<<abund<<std::endl;
           right_hand_side(idx)=static_cast<double>(lines.lineProducingSpecies[specidx].get_level_pop(neighbors_coarser_grid[idx],levidx))/abund;
-          std::cout<<"Value at neighbor: "<<right_hand_side(idx)<<std::endl;
+          // std::cout<<"Value at neighbor: "<<right_hand_side(idx)<<std::endl;
         }
         Eigen::Vector<double,Eigen::Dynamic> weights=ldltdec.solve(right_hand_side);
         Real interpolated_value=static_cast<Real>((distance_with_neighbors*weights)(0,0));
-        std::cout<<"Interpolated value: "<<interpolated_value<<std::endl;
+        // std::cout<<"Interpolated value: "<<interpolated_value<<std::endl;
         linefracs[levidx]=interpolated_value;
         if (std::isnan(interpolated_value)||std::isinf(interpolated_value))
         {
@@ -837,7 +837,7 @@ inline void Model::interpolate_levelpops_local(Size coarser_lvl)
       }// end of iterating over lines of species
       // Linefracs should sum to 1, otherwise divide by the sum
       Real sum_of_linefracs=std::accumulate(linefracs.begin(), linefracs.end(), 0.0);
-      std::cout<<"Sum of linefracs: "<<sum_of_linefracs<<std::endl;
+      // std::cout<<"Sum of linefracs: "<<sum_of_linefracs<<std::endl;
       //and now we finally set the values
       Real diff_point_abund=static_cast<Real>(chemistry.species.abundance[diff_point][speciesnum]);
       for (Size levidx=0; levidx<lines.lineProducingSpecies[specidx].linedata.nlev; levidx++)
