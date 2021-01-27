@@ -467,14 +467,14 @@ int Model :: compute_level_populations_multigrid (
         // Start assuming convergence
         some_not_converged = false;
 
-        // if (use_Ng_acceleration && (iteration_normal == 4))
-        // {
-        //     vector<Size> points_in_grid=geometry.points.multiscale.get_current_points_in_grid();
-        //     lines.iteration_using_Ng_acceleration (parameters.pop_prec(), points_in_grid);
-        //
-        //     iteration_normal = 0;
-        // }
-        // else
+        if (use_Ng_acceleration && (iteration_normal == 4))
+        {
+            vector<Size> points_in_grid=geometry.points.multiscale.get_current_points_in_grid();
+            lines.iteration_using_Ng_acceleration (parameters.pop_prec(), points_in_grid);
+
+            iteration_normal = 0;
+        }
+        else
         {
             // logger.write ("Computing the radiation field...");
             cout << "Computing the radiation field..." << endl;
