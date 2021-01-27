@@ -797,7 +797,7 @@ inline void Model::interpolate_levelpops_local(Size coarser_lvl)
       }
     }
     double mindist=distance_with_neighbors.minCoeff();
-    mindist=mindist*5.0;
+    mindist=mindist*3.0;
     // double maxdist=rbf_mat.maxCoeff()*5.0;//arbitrary number 5 to make the max_dist larger
     rbf_mat=rbf_mat/mindist;
     rbf_mat=rbf_mat.unaryExpr(std::ptr_fun(rbf_local<double>));
@@ -809,29 +809,47 @@ inline void Model::interpolate_levelpops_local(Size coarser_lvl)
     //now that we have our llt decomposition, calculate the interpolated value
     for (Size specidx=0; specidx<parameters.nlspecs(); specidx++)
     {
+      // For finding out which abundance corresponds to to the current species
+      Size speciesnum=lines.lineProducingSpecies[specidx].linedata.num;
+      // We will need to renormalize the level pops, so first we should collect them
+      vector<Real> linefracs;
+      linefracs.resize(lines.lineProducingSpecies[specidx].linedata.nlev);
       for (Size levidx=0; levidx<lines.lineProducingSpecies[specidx].linedata.nlev; levidx++)
       {
         Eigen::Vector<double,Eigen::Dynamic> right_hand_side(nb_neighbors_coarser_grid);
         for (Size idx=0; idx<nb_neighbors_coarser_grid; idx++)
         {
-          // std::cout<<"Interpolation values"<<to_interpolate(idx,freqidx)<<std::endl;
-          // interpolating the logarithm to avoid any semblance of negative numbers as result
-          right_hand_side(idx)=static_cast<double>(lines.lineProducingSpecies[specidx].get_level_pop(neighbors_coarser_grid[idx],levidx));
+          // interpolating the fractional level populations, so we need the abundance of each species
+          double abund=chemistry.species.abundance[neighbors_coarser_grid[idx]][speciesnum];
+          std::cout<<"Abundance: "<<abund<<std::endl;
+          right_hand_side(idx)=static_cast<double>(lines.lineProducingSpecies[specidx].get_level_pop(neighbors_coarser_grid[idx],levidx))/abund;
           std::cout<<"Value at neighbor: "<<right_hand_side(idx)<<std::endl;
         }
         Eigen::Vector<double,Eigen::Dynamic> weights=ldltdec.solve(right_hand_side);
-        double interpolated_value=(distance_with_neighbors*weights)(0,0);
+        Real interpolated_value=static_cast<Real>((distance_with_neighbors*weights)(0,0));
         std::cout<<"Interpolated value: "<<interpolated_value<<std::endl;
-        // std::cout<<"interpolated value: "<<interpolated_value<<std::endl;
-        // sometimes, this procedure can give negative values (which we do not want),
-        // FIXME: at least add a warning when this happens
-        lines.lineProducingSpecies[specidx].set_level_pop(diff_point,levidx,static_cast<Real>(interpolated_value));
-        if (std::isnan(interpolated_value))
+        linefracs[levidx]=interpolated_value;
+        if (std::isnan(interpolated_value)||std::isinf(interpolated_value))
         {
-          std::cout<<"Something went wrong during interpolating: nan value occuring"<<std::endl;
-          throw std::runtime_error("Nan encountered during interpolation");
+          std::cout<<"Something went wrong during interpolating: nan/inf value occuring"<<std::endl;
+          throw std::runtime_error("Nan/inf encountered during interpolation");
         }
+      }// end of iterating over lines of species
+      // Linefracs should sum to 1, otherwise divide by the sum
+      Real sum_of_linefracs=std::accumulate(linefracs.begin(), linefracs.end(), 0.0);
+      std::cout<<"Sum of linefracs: "<<sum_of_linefracs<<std::endl;
+      //and now we finally set the values
+      Real diff_point_abund=static_cast<Real>(chemistry.species.abundance[diff_point][speciesnum]);
+      for (Size levidx=0; levidx<lines.lineProducingSpecies[specidx].linedata.nlev; levidx++)
+      {
+        lines.lineProducingSpecies[specidx].set_level_pop(diff_point,levidx,diff_point_abund*(linefracs[levidx]/sum_of_linefracs));
       }
+        // if (std::isnan(interpolated_value))
+        // {
+        //   std::cout<<"Something went wrong during interpolating: nan value occuring"<<std::endl;
+        //   throw std::runtime_error("Nan encountered during interpolation");
+        // }
+      // }
     }
     // }
 
@@ -986,7 +1004,7 @@ inline void Model::interpolate_matrix_local(Size coarser_lvl, Matrix<T> &to_inte
       }
     }
     T mindist=distance_with_neighbors.minCoeff();
-    mindist=mindist*5.0;
+    mindist=mindist*3.0;
     // T maxdist=rbf_mat.maxCoeff()*5.0;//arbitrary number 5 to make the max_dist larger
     rbf_mat=rbf_mat/mindist;
     rbf_mat=rbf_mat.unaryExpr(std::ptr_fun(rbf_local<T>));
