@@ -797,7 +797,7 @@ inline void Model::interpolate_levelpops_local(Size coarser_lvl)
       }
     }
     double mindist=distance_with_neighbors.minCoeff();
-    mindist=mindist*3.0;
+    mindist=mindist*RADIUS_MULT_FACTOR;
     // double maxdist=rbf_mat.maxCoeff()*5.0;//arbitrary number 5 to make the max_dist larger
     rbf_mat=rbf_mat/mindist;
     rbf_mat=rbf_mat.unaryExpr(std::ptr_fun(rbf_local<double>));
@@ -1004,7 +1004,7 @@ inline void Model::interpolate_matrix_local(Size coarser_lvl, Matrix<T> &to_inte
       }
     }
     T mindist=distance_with_neighbors.minCoeff();
-    mindist=mindist*3.0;
+    mindist=mindist*RADIUS_MULT_FACTOR;
     // T maxdist=rbf_mat.maxCoeff()*5.0;//arbitrary number 5 to make the max_dist larger
     rbf_mat=rbf_mat/mindist;
     rbf_mat=rbf_mat.unaryExpr(std::ptr_fun(rbf_local<T>));

@@ -20,6 +20,8 @@ struct Model
     const Size MIN_INTERPOLATION_POINTS=5;
     //maximum number points used during interpolation
     const Size MAX_INTERPOLATION_POINTS=5;
+    //normalization factor for RBF interpolation
+    const double RADIUS_MULT_FACTOR=10.0;
 
     Parameters     parameters;
     Geometry       geometry;
