@@ -545,7 +545,7 @@ inline void Model::interpolate_levelpops_local(Size coarser_lvl)
         }
         Eigen::Vector<double,Eigen::Dynamic> weights=ldltdec.solve(right_hand_side);
         Real interpolated_value=static_cast<Real>((distance_with_neighbors*weights)(0,0));
-        // std::cout<<"Interpolated value: "<<interpolated_value<<std::endl;
+
         linefracs[levidx]=interpolated_value;
         if (std::isnan(interpolated_value)||std::isinf(interpolated_value))
         {
@@ -555,21 +555,14 @@ inline void Model::interpolate_levelpops_local(Size coarser_lvl)
       }// end of iterating over lines of species
       // Linefracs should sum to 1, otherwise divide by the sum
       Real sum_of_linefracs=std::accumulate(linefracs.begin(), linefracs.end(), 0.0);
-      // std::cout<<"Sum of linefracs: "<<sum_of_linefracs<<std::endl;
+
       //and now we finally set the values
       Real diff_point_abund=static_cast<Real>(chemistry.species.abundance[diff_point][speciesnum]);
       for (Size levidx=0; levidx<lines.lineProducingSpecies[specidx].linedata.nlev; levidx++)
       {
         lines.lineProducingSpecies[specidx].set_level_pop(diff_point,levidx,diff_point_abund*(linefracs[levidx]/sum_of_linefracs));
       }
-        // if (std::isnan(interpolated_value))
-        // {
-        //   std::cout<<"Something went wrong during interpolating: nan value occuring"<<std::endl;
-        //   throw std::runtime_error("Nan encountered during interpolation");
-        // }
-      // }
     }
-    // }
 
   }
 }
