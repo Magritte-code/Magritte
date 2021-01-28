@@ -8,57 +8,12 @@
 #include <limits>
 #include <algorithm>
 #include "voro++.hh"
-using namespace voro;//FIXME: Do not use namespace, instead use voro:: for all functions of voro++
-
-//NOTE: i have mistakenly called tetrahedra triangles throughout this entire piece of code
-
-// Calculates the relative difference of the density with respect to the neighbours
-//    @Returns: abs((d-d_other)/(d+d_other)) such that the smallest values will be assigned
-// to the points we want to delete
-///TODO : change to use only two points
-// inline double Model :: calc_diff_abundance_with_neighbours(Size point, Size next_coars_lvl)
-// {
-//   double temp_max=0;//current implementation is probably slow
-//   for (Size neigbor: neighbors_lists[next_coars_lvl].get_neighbors(point))
-//     {
-//       double abundance_self=chemistry.species.abundance[point][1];
-//       double abundance_other=chemistry.species.abundance[neigbor][1];
-//       //std::cout<< "abundance self: " << abundance_self << std::endl;
-//       //std::cout<< "abundance other: " << abundance_other << std::endl;
-//       double temp_diff=std::abs((abundance_self-abundance_other)/(abundance_self+abundance_other));
-//       temp_max=std::max(temp_max, temp_diff);
-//     }
-//     return temp_max;
-// }
-
+// using namespace voro;//FIXME: Do not use namespace, instead use voro:: for all functions of voro++
 
 // Calculates the distance squared between two points
 inline double Model::calc_distance2(Size point1,Size point2)
 {
   return (geometry.points.position[point1]-geometry.points.position[point2]).squaredNorm();
-}
-
-// Calculates the normalized inner product between two directions (base to point1) and (base to point2)
-// Better known as cosine similarity
-inline double Model::calc_cosine(Size base, Size point1,Size point2)
-{
-  double length1=std::sqrt(calc_distance2(base,point1));
-  double length2=std::sqrt(calc_distance2(base,point2));
-  double innerprod=(geometry.points.position[point1]-geometry.points.position[base])
-              .dot((geometry.points.position[point2]-geometry.points.position[base]));
-  return innerprod/(length1*length2);
-}
-
-// Determines whether a point p2 lies further than p1 from point base when projected on (p1 base).
-// note: should raname to 'lies far enough'
-// Maybe TODO:make sure we first divide by length1, then apply the inner product//but for this we need a division operator for Vector3D
-inline bool Model::lies_further_than(Size base, Size point1, Size point2)
-{
-  double length_squared=calc_distance2(base,point1);//length (p1 base) for normalization purposes
-  double innerprod=(geometry.points.position[point1]-geometry.points.position[base])
-              .dot((geometry.points.position[point2]-geometry.points.position[base]));
-  double norm=innerprod/length_squared;
-  return (norm>0.5);
 }
 
 // Calculates the relative difference of the density of point1 with respect to point2
@@ -67,25 +22,10 @@ inline double Model :: calc_diff_abundance_with_point(Size point1, Size point2)
 {
     double abundance_self=chemistry.species.abundance[point1][1];
     double abundance_other=chemistry.species.abundance[point2][1];
-    //std::cout<< "abundance self: " << abundance_self << std::endl;
-    //std::cout<< "abundance other: " << abundance_other << std::endl;
     double temp_diff=std::abs((abundance_self-abundance_other)/(abundance_self+abundance_other));
-    // std::cout<<"temp_diff:"<<temp_diff<<std::endl;
     return temp_diff;
 }
 
-// /// Returns function that determines whether two points are similar enough, according to the tolerance
-// inline std::function<bool(Size,Size)> Model::points_are_similar(double tolerance)
-// {
-//   std::function<bool(Size,Size)> fun_to_return = [this,tolerance](Size p1, Size p2)
-//   {
-//     // std::cout<<"diff_abundance:"<<calc_diff_abundance_with_point(p1,p2)<<std::endl;
-//     // std::cout<<"tolerance: "<<tolerance<<std::endl;
-//     // std::cout<<"result: "<<(calc_diff_abundance_with_point(p1,p2)<tolerance)<<std::endl;
-//     return (calc_diff_abundance_with_point(p1,p2)<tolerance);
-//   };
-//   return fun_to_return;
-// }
 
 /// Returns whether two points are similar enough, according to the tolerance
 inline bool Model::points_are_similar(Size point1, Size point2, double tolerance)
@@ -98,47 +38,27 @@ inline bool Model::points_are_similar(Size point1, Size point2, double tolerance
 // i.e. add another layer of coarsening.
 inline void Model::coarsen(double tol)
 {
-    // auto mult=geometry.points.multiscale;
     geometry.points.multiscale.mask     .push_back(vector<bool>          (geometry.points.multiscale.mask     .back()));//should be deep copy
     geometry.points.multiscale.neighbors.push_back(vector<std::set<Size>>(geometry.points.multiscale.neighbors.back()));//should be deep copy
     std::set<Size> points_coarsened_around;
     geometry.points.multiscale.curr_coarsening_lvl=geometry.points.multiscale.get_max_coars_lvl();
 
     vector<Size> points_to_process=geometry.points.multiscale.get_current_points_in_grid();
-    // vector<Size> next_points_to_process;
-    // Size max_nb_neighbors=10;
-    //
-    // while(!points_to_process.empty())
-    // {
-      for (Size p: points_to_process)
+    for (Size p: points_to_process)
+    {
+      if (can_be_coarsened(p, points_coarsened_around, tol))
       {
-        if (can_be_coarsened(p, points_coarsened_around, tol))
-        {//we want to prioritize coarsening around points with not too much neighbors
-          // if (geometry.points.multiscale.get_nb_neighbors(p)<=max_nb_neighbors)
-          // {
-            coarsen_around_point(p);
-          // std::cout << "Deleted around point: " << p <<std::endl;
-            points_coarsened_around.insert(p);
-          // }
-          // else
-          // {//if it has too much neighbors, try again in a next iteration
-          //   next_points_to_process.push_back(p);
-          // }
-        }
+        coarsen_around_point(p);
+        points_coarsened_around.insert(p);
       }
-      // max_nb_neighbors*=2;
-      // points_to_process=next_points_to_process;
-      // next_points_to_process=vector<Size>();
-    // }
+    }
 }
 
 
 // Returns whether the mesh at a point (p) can be coarsened.
 inline bool Model::can_be_coarsened (const Size p, std::set<Size>& points_coarsened_around, double tol)
 {
-    // auto mult=geometry.points.multiscale;
     if (!geometry.points.multiscale.mask.back()[p]||!geometry.not_on_boundary(p)) {
-      // std::cout<<"point on boundary or mask is set wrong?"<<std::endl;
       return false;}//if point no longer in grid, do not coarsen
     //if the point lies on the boundary, do not waste time trying to coarsen around it
 
@@ -146,15 +66,11 @@ inline bool Model::can_be_coarsened (const Size p, std::set<Size>& points_coarse
     {
         // Do not coarsen if a neighbor was already coarsend at this level,
         // this avoids creating large holes in the mesh.
-        // TODO: replace this....
-        // if (!mask.back()[n]) {return false;}
         if (points_coarsened_around.find(n)!=points_coarsened_around.end()) {
-          // std::cout<<"neighbor was already coarsened in this level"<<std::endl;
           return false;}
 
         // Do not coarsen if the required coarsening criterion does not hold.
         if(!points_are_similar(p,n,tol)) {
-          // std::cout<<"points are too different"<<std::endl;
           return false;}
     }
 
@@ -162,17 +78,17 @@ inline bool Model::can_be_coarsened (const Size p, std::set<Size>& points_coarse
     return true;
 }
 
-
+/// Coarsens the mesh around a point p
+/// Will delete all (non-neighbor) points around p and then reconnect all neighbors of neighbors
+/// such that we have a delaunay grid
 inline void Model::coarsen_around_point (const Size p)
 {
-    // auto mult=geometry.points.multiscale;
-    // New neighbors for p.
-    // std::set<Size> new_neighbors;
+
     // Boundary neighbors need to be treated differently
     std::set<Size> boundary_neighbors;
 
-    // Identify all neighbors with the current point (p),
-    // i.e. remove its neighbors from the mesh by masking,
+    // Delete all neighbors around the current point (p),
+    // i.e. remove its neighbors from the mesh by masking
     // TODO: figure out whether it is ok/necessary to empty their neighbors
     //TODO: get the points to remove from somewhere else
     for (const Size n : geometry.points.multiscale.neighbors.back()[p])
@@ -185,54 +101,25 @@ inline void Model::coarsen_around_point (const Size p)
         }
     }
 
-    // ..., and replace the neighbors of p (which are removed)
-    // in their neighbors by p, using the symmetry of neighbors.
+    // Contains the neighbors of neighbors
     // Also can contain non-deleted neighbors
     std::set<Size> neighbors_of_neighbors;
-
-    // keeping track of which neighbors are deleted for each affected point
-    // needed for reconnection purposes when deleting more than 1 neighbor from a neighbor of neighbor
-    std::map<Size,vector<Size>> n_n_deleted_neighbors;
-    // // The reverse map of the previous; this holds for each deleted point all n_n which are neighbors
-    // std::map<Size,vector<Size>> n_n_of_deleted_points;
 
     for (const Size n : geometry.points.multiscale.neighbors.back()[p])
     {
       if (geometry.not_on_boundary(n))
       {
-        // std::set<Size> curr_neighbors_of_n;//set of neighbors of n
         for (const Size n_n : geometry.points.multiscale.neighbors.back()[n])
         {
           if (geometry.points.multiscale.mask.back()[n_n]&&n_n!=p)//if neighbor of neighbor is still in the grid, i.e. not just a neighbor; also, do never try to add a point as its own neighbor!!!!
-          { //for every deleted point, add its neighbors to its neighbors
-            // for (Size other_n_n:curr_neighbors_of_n)
-            // {
-            //   geometry.points.multiscale.neighbors.back()[n_n].insert(other_n_n);
-            //   geometry.points.multiscale.neighbors.back()[other_n_n].insert(n_n);
-            // }
-            // curr_neighbors_of_n.insert(n_n); //This leads to exponential growth of the number of neighbors in one single iteration//TODO:replace with post-processing
-            //FIXME: find a way to select neighbors to add without increasing the total amount of neighbors of a n_n
-            neighbors_of_neighbors.insert(n_n);
+          {
+            neighbors_of_neighbors.insert(n_n);// add neighbor of neighbor to the vector
             geometry.points.multiscale.neighbors.back()[n_n].erase(n);//remove n from neighbors of n_n
-            n_n_deleted_neighbors[n_n].push_back(n);
-            // n_n_of_deleted_points[n].push_back(n_n);
+
           }
         }
-        //for every deleted point, add its neighbors to its neighbors
-        // for (const Size n_n:curr_neighbors_of_n)
-        // {
-        //   for (const Size other_n_n:curr_neighbors_of_n)
-        //   {
-        //     if (n_n<other_n_n)//add strict order to prevent adding the neighbors twice
-        //     {
-        //       geometry.points.multiscale.neighbors.back()[n_n].insert(other_n_n);
-        //       geometry.points.multiscale.neighbors.back()[other_n_n].insert(n_n);
-        //     }
-        //   }
-        // }
         geometry.points.multiscale.neighbors.back()[n]=std::set<Size>();//and finally also delete every neighbor of the deleted point
       }
-      // also has become redundant
       else
       {//also do not forget to actually add our boundary elements as a neighbor of our point
         // new_neighbors.insert(n);
@@ -260,34 +147,6 @@ inline void Model::coarsen_around_point (const Size p)
 
     //now also contains neighbors of neighbors and their neighbors
     container_points.insert(neighbors_of_neighbors.begin(),neighbors_of_neighbors.end());
-    // std::merge(neighbors_of_neighbors, neighbors_of_neighbors.end(),neighbors_of_n_n,neighbors_of_n_n.end(),container_points.begin())
-    // std::cout<<"Number of points in neighbors of neighbors: "<<neighbors_of_neighbors.size()<<std::endl;
-    // std::cout<<"Number of points in container (-1): "<<container_points.size()<<std::endl;
-
-    //kind of redundant, i guess
-    // // Also deleting the neighbors (not on boundary) from the on boundary neighbors
-    // for (const Size n:geometry.points.multiscale.neighbors.back()[p])
-    // {
-    //   if (geometry.not_on_boundary(n))
-    //   {
-    //     for (const Size b:boundary_neighbors)
-    //     {
-    //       geometry.points.multiscale.neighbors.back()[b].erase(n);
-    //     }
-    //   }
-    // }
-
-
-    // old method
-    // // std::cout << "Size neighbors_of_neighbors: " << neighbors_of_neighbors.size() << std::endl;
-    // for (const Size n_n:neighbors_of_neighbors)
-    // {
-    //   // Replace the removed points by p
-    //   geometry.points.multiscale.neighbors.back()[n_n].insert(p);
-    //
-    //   // And add the others as new neighbors.
-    //   new_neighbors.insert(n_n);
-    // }
 
     //clear the old neighbors of point p
     geometry.points.multiscale.neighbors.back()[p]=std::set<Size>();
@@ -296,10 +155,7 @@ inline void Model::coarsen_around_point (const Size p)
     std::vector<Size> affected_points;
     affected_points.reserve(1+neighbors_of_neighbors.size());
     affected_points.push_back(p);
-    // std::copy(neighbors_of_neighbors.begin(), neighbors_of_neighbors.end(), std::back_inserter(affected_points));
     std::copy(container_points.begin(), container_points.end(), std::back_inserter(affected_points));
-    // std::set_union (neighbors_of_neighbors.begin(), neighbors_of_neighbors.end(), boundary_neighbors.begin(), boundary_neighbors.end(),
-    //                 std::inserter(affected_points, affected_points.begin()));
 
     //correctly setting up a rectangular boundary for all affected points
     double x_min=std::numeric_limits<double>::max();
@@ -330,37 +186,31 @@ inline void Model::coarsen_around_point (const Size p)
     double deltay=y_max-y_min;
     double deltaz=z_max-z_min;
     //TODO/FIXME: also make sure that no overflow can ever happen!!
-    //+-1 is a temporary fix for also allowing 1D simulations
+    //+-1 is a fix for also allowing 1D, 2D simulations
     x_max=x_max+0.001*deltax+1.0;
     x_min=x_min-0.001*deltax-1.0;
     y_max=y_max+0.001*deltay+1.0;
     y_min=y_min-0.001*deltay-1.0;
     z_max=z_max+0.001*deltaz+1.0;
     z_min=z_min-0.001*deltaz-1.0;
-    // std::cout<<"coarsening around point: "<<p<<std::endl;
-    // std::cout<<"container xlims: "<<x_min<<","<<x_max<<std::endl;
-    // std::cout<<"container ylims: "<<y_min<<","<<y_max<<std::endl;
-    // std::cout<<"container zlims: "<<z_min<<","<<z_max<<std::endl;
 
-    container con(x_min,x_max,y_min,y_max,z_min,z_max,8,8,8,
+    voro::container con(x_min,x_max,y_min,y_max,z_min,z_max,8,8,8,
                   			false,false,false,8);
 
-    particle_order p_order;
-    voronoicell_neighbor cell;
+    voro::particle_order p_order;
+    voro::voronoicell_neighbor cell;
 
   	// add particles into the container, starting with point p
   	for(Size aff_point:affected_points)
-    { Vector3D pos=geometry.points.position[aff_point];
+    {
+      Vector3D pos=geometry.points.position[aff_point];
       con.put(p_order,static_cast<int>(aff_point),pos.x(),pos.y(),pos.z());
-      // std::cout<<"aff point: "<<aff_point<<std::endl;
-      // std::cout<<"(x,y,z)=("<<pos.x()<<","<<pos.y()<<","<<pos.z()<<")"<<std::endl;
     }
 
-    c_loop_order l_order(con,p_order);
+    voro::c_loop_order l_order(con,p_order);
 
     //back to the beginning
     l_order.start();
-    // std::cout<<"currently computing neighbors around point: "<<l_order.pid()<<std::endl;
     //for point p, just add all found neighbors to its neighbors list
     con.compute_cell(cell,l_order);
     std::vector<int> found_neighbors;
@@ -375,7 +225,7 @@ inline void Model::coarsen_around_point (const Size p)
       }
     }
     //use inc() for incrementing (returns false when not finding a next one)
-    if(l_order.inc())//this if-statement should always return true
+    if(l_order.inc())//this first if-statement should always return true
     {
       do {
       Size current_point=static_cast<Size>(l_order.pid());
@@ -387,95 +237,25 @@ inline void Model::coarsen_around_point (const Size p)
       std::vector<int> found_neighbors;
       cell.neighbors(found_neighbors);
 
-      // std::cout<<"computed partial neighbors around: "<<l_order.pid()<<std::endl;
-      //note:negative values refer to the boundaries
+      //note: negative values given by voro++ refer to the boundaries
       for (int found_neighbor:found_neighbors)
       {
         if (found_neighbor>=0)//voro++ denotes the walls (which we do not need) by negative values
         {
           Size size_found_neighbor=static_cast<Size>(found_neighbor);
-          // if (size_found_neighbor>current_point)//in order to not try to add neighbors twice
-          // { //check if already a neighbor (thus no need to add again)
+          //check if already a neighbor (thus no need to add again)
           if (geometry.points.multiscale.neighbors.back()[current_point].find(size_found_neighbor) ==
               geometry.points.multiscale.neighbors.back()[current_point].end())
           {
-              // for (Size deleted_neighbor:n_n_deleted_neighbors[current_point])
-              // { // normally, one should also put the 'neighbors of the neighbors of the neighbors' in the container to accurately find the neighbors of the 'neighbors of the neighbors'.
-                //but as we do not change the n_n_n, we can instead check if the new proposed neighbors somehow replace the old deleted neighbors
-                //without this check, we might accidentally also include too much neighbors.
-                // if (lies_further_than(current_point, deleted_neighbor, size_found_neighbor))
-                // {
-                  //and finally adding new neighbors to point p
+            // finally adding a new neighbor for a neighbor of neighbor
             geometry.points.multiscale.neighbors.back()[current_point].insert(size_found_neighbor);
             geometry.points.multiscale.neighbors.back()[size_found_neighbor].insert(current_point);
-                  // break;
-                // }
-              // }
           }
-          // }
         }
       }
 
       } while(l_order.inc());
     }
-
-    // old method
-    // // Finally also check whether neighbors of neighbors need some extra neighbors
-    // for (Size n_n:neighbors_of_neighbors)
-    // {
-    //   Size nb_deleted_neighbors=n_n_deleted_neighbors[n_n].size();
-    //   // if (nb_deleted_neighbors>1)//we do not want the amount of neighbors around points to decrease
-    //   {
-    //     // Determine the deleted neighbor closest to p (when looking at directions)
-    //     double maxcos=-1;//maximum cosine similarity
-    //     Size maxindex=0;//corresponding index in n_n_deleted_neighbors[n_n]
-    //     for (Size idx=0;idx<n_n_deleted_neighbors[n_n].size();idx++)
-    //     {
-    //       double cossim=calc_cosine(n_n,p,n_n_deleted_neighbors[n_n][idx]);
-    //       if (cossim>maxcos)
-    //       {
-    //         maxcos=cossim;
-    //         maxindex=idx;
-    //       }
-    //     }
-    //     // Testing commenting this out
-    //     // n_n_deleted_neighbors[n_n].erase(n_n_deleted_neighbors[n_n].begin() + maxindex);
-    //     // For all other deleted points, calculate the closest n_n (in direction; calculate using the cosine)
-    //     for (Size deleted_neighbor: n_n_deleted_neighbors[n_n])
-    //     {
-    //       double maxcos=-1;//maximum cosine similarity
-    //       Size opt_n_n=parameters.npoints();//corresponding optimal neighbor of neighbor
-    //       // vector<Size> n_n_of_deleted_neighbor=n_n_of_deleted_points[deleted_neighbor];
-    //       // Size vectorsize=neighbors_of_neighbors.size();
-    //       Size vectorsize=affected_points.size();
-    //       // if (vectorsize==1)
-    //       // {
-    //       //   std::cout<<"Wait, this deleted point only had two non-coarsened neighbors. Skipping for now."<<std::endl;
-    //       //   break;//TODO?? throw error or resolve this any other way.
-    //       // }
-    //       // for (Size temp_n_n:neighbors_of_neighbors)
-    //       for (Size temp_n_n:affected_points)
-    //       {
-    //         if (temp_n_n!=n_n)//do not try to add a point as its own neighbor//also division by zero would ensue
-    //         {
-    //           double cossim=calc_cosine(n_n,p,temp_n_n);
-    //           if (cossim>maxcos)
-    //           {
-    //             maxcos=cossim;
-    //             opt_n_n=temp_n_n;
-    //           }
-    //         }
-    //       }
-    //       // Size point_to_insert=neighbors_of_neighbors[maxindex];
-    //       geometry.points.multiscale.neighbors.back()[n_n].insert(opt_n_n);
-    //       geometry.points.multiscale.neighbors.back()[opt_n_n].insert(n_n);
-    //     }
-    //
-    //   }
-    // }
-    //
-    // // Set the new nearest neighbors.
-    // geometry.points.multiscale.neighbors.back()[p] = new_neighbors;
 }
 
 
@@ -485,42 +265,21 @@ inline void Model::coarsen_around_point (const Size p)
 ///   @Parameter[in]: tol: the tolerance level for which we still consider points similar enough
 inline int Model::setup_multigrid(Size min_nb_points, Size max_coars_lvl, double tol)
 {
-  //set number of off-diagonal elements in lambda matrix 0; needed because we will interpolate these values
+  //set number of off-diagonal elements in lambda matrix 0; needed because we will interpolate these values??
+  //TODO: find reasons to remove this
   parameters.n_off_diag=0;
-  // std::cout<<"Tolerance: "<<tol<<std::endl;
-  // std::function<bool(Size,Size)> fun_to_del=points_are_similar(tol);//function that says if two points are similar enough
-  // geometry.points.multiscale.set_not_on_boundary_fun([&](Size p){return geometry.not_on_boundary(p);});//function that says whether a point lies on the boundary
-  // geometry.points.multiscale.set_comparison_fun(fun_to_del);
+  // tol=deltatol
   //first, we coarsen the grid until we either have too few points left or have too many coarsening levels
   while((geometry.points.multiscale.get_max_coars_lvl()<max_coars_lvl)&&
   (geometry.points.multiscale.get_total_points(geometry.points.multiscale.get_max_coars_lvl())>min_nb_points))
   {std::cout<<"coarsening layer"<<std::endl;
-  // std::cout<<"max coarsening lvl: "<<geometry.points.multiscale.get_max_coars_lvl()<<std::endl;
-  // std::cout<<"curr coarsening lvl: "<<geometry.points.multiscale.get_curr_coars_lvl()<<std::endl;
+    //options for choosing the tolerance adaptively
+    //tol=n*deltatol
+    //tol=1-(1-deltatol)^n
     coarsen(tol);
     std::cout<<"coarsened layer; number points remaining: "<<geometry.points.multiscale.get_total_points(geometry.points.multiscale.get_max_coars_lvl())<<std::endl;
   }
   std::cout<<"finished coarsening"<<std::endl;
-  return (0);
-}
-
-/// Computes second order feautrier using multigrid //never mind, this is useless
-inline int Model::compute_feautrier_order_2_multigrid()
-{
-  //set curr coarsening level to max
-  geometry.points.multiscale.set_curr_coars_lvl(geometry.points.multiscale.get_max_coars_lvl());
-  //solve and interpolate J for all coarser grids
-  while(geometry.points.multiscale.get_curr_coars_lvl()>0)
-  {
-    compute_radiation_field_feautrier_order_2();
-    std::cout<<"Probably crashes at interpolation"<<std::endl;
-    //for all frequencies, interpolate J
-    interpolate_matrix_local(geometry.points.multiscale.get_curr_coars_lvl(),radiation.J);
-    std::cout<<"Did not crash at interpolation"<<std::endl;
-    geometry.points.multiscale.set_curr_coars_lvl(geometry.points.multiscale.get_curr_coars_lvl()-1);
-  }
-  //finally, solve for the final grid
-  compute_radiation_field_feautrier_order_2();
   return (0);
 }
 
@@ -640,35 +399,27 @@ inline void Model::interpolate_vector_local(Size coarser_lvl, vector<T> &to_inte
 // template <Real T>//T should be double, long or long double
 inline void Model::interpolate_levelpops_local(Size coarser_lvl)
 {
-  //TODO: only use large vector and some masks
   //we cannot interpolate from lvl 0 to some level -..., so just return
   if (coarser_lvl==0)
   {return;}
   std::cout<<"Starting the interpolation"<<std::endl;
   Size nb_points=parameters.npoints();
-  // std::vector<Size> all_points(nb_points);
-  // std::iota(all_points.begin(), all_points.end(), 0); // all_points will become: [0..nb_points-1]
+
   vector<bool> coarse_mask=geometry.points.multiscale.get_mask(coarser_lvl);
   vector<bool> finer_mask=geometry.points.multiscale.get_mask(coarser_lvl-1);
 
   vector<Size> diff_points;
-  // vector<double> to_interpolate_values;//values of the coarse grid we need to interpolate (after applying the mask)
-  // vector<Size> coarse_points;
+
   for (Size point=0; point<nb_points; point++)
   {
     if(finer_mask[point]&&!coarse_mask[point])
     {
       diff_points.push_back(point);
-        // coarse_points.push_back(point);
-        // to_interpolate_values.push_back(to_interpolate[point]);
     }
   }
 
   // Size nb_coarse_points=coarse_points.size();
   Size nb_diff_points=diff_points.size();
-
-  // std::cout<<"Nb coarse points: "<<nb_coarse_points<<std::endl;
-  // std::cout<<"Nb diff points: "<<nb_diff_points<<std::endl;
 
   //if we have truly nothing to do, just do nothing
   if (nb_diff_points==0)
@@ -688,30 +439,21 @@ inline void Model::interpolate_levelpops_local(Size coarser_lvl)
         neighbors_coarser_grid.push_back(neighbor);
       }
     }
-    // std::cout << "number of neighbors: " << neighbors_coarser_grid.size() << std::endl;
-    // //now we could also use the extremely fast method of interpolating: taking the average of the neighbors // i am not sure what actually gives the best results: rbf or just averaging
-    // double interpolated_value=accumulate(neighbors_coarser_grid.begin(), neighbors_coarser_grid.end(), 0.0)/neighbors_coarser_grid.size();
-    // to_interpolate[diff_point]=interpolated_value;
-    //TODO: also use neighbors of neighbors as better interpolation
+
     // Note: using the current multigrid creation method, the number of neighbors in the coarse grid is almost always at least 1
-    if (neighbors_coarser_grid.size()==0)//this shouldn't be possible, but you never know what goes wrong
+    if (neighbors_coarser_grid.size()==0)//this happens very rarely
     {
       std::cout<<"No neighbors for the current point! Using point which deleted it instead as neighbor."<<std::endl;
       std::cout<<"Current point: "<<diff_point<<std::endl;
-      // std::cout<<"Position: ("<<geometry.points.position[diff_point].x()<<","<<geometry.points.position[diff_point].y()<<","<<geometry.points.position[diff_point].z()<<")"<<std::endl;
       std::cout<<"Point which replaces it: "<<geometry.points.multiscale.point_deleted_map.at(diff_point)<<std::endl;
       Size repl_point=geometry.points.multiscale.point_deleted_map.at(diff_point);
-      // std::cout<<"Position: ("<<geometry.points.position[repl_point].x()<<","<<geometry.points.position[repl_point].y()<<","<<geometry.points.position[repl_point].z()<<")"<<std::endl;
 
       neighbors_coarser_grid.push_back(geometry.points.multiscale.point_deleted_map.at(diff_point));
-      // std::cout<<"Succesfully replaced neighbors"<<std::endl;
     }
-    ///commented out for now until we solve the issue with having way too much neighbors if we apply this...
+
     // In the case we do not really have enough points for a good interpolation, just add more
     if (neighbors_coarser_grid.size()<MIN_INTERPOLATION_POINTS)
-    {//because this estimate is just beyond terrible: also add neighbors of neighbors
-      // for (Size freqidx=0; freqidx<parameters.nfreqs(); freqidx++)
-      // {
+    {
       std::set<Size> temp_neighbors_coarser_grid;
       for (Size neighbor_coarse: neighbors_coarser_grid)
       {
@@ -722,19 +464,12 @@ inline void Model::interpolate_levelpops_local(Size coarser_lvl)
             temp_neighbors_coarser_grid.insert(neighbor_of_coarse_neighbor);
           }
         }
-        // }
-      // std::cout<<"Just taking the value of the closest point"<<std::endl;
-      // std::cout<<"Interpolation values"<<to_interpolate(neighbors_coarser_grid[0],freqidx)<<std::endl;
-      // to_interpolate[diff_point,freqidx]=to_interpolate(neighbors_coarser_grid[0],freqidx);
       }
       //Finally add our new points too
       std::copy(temp_neighbors_coarser_grid.begin(), temp_neighbors_coarser_grid.end(), std::back_inserter(neighbors_coarser_grid));
     }
     if (neighbors_coarser_grid.size()>MAX_INTERPOLATION_POINTS)
     {//now this just becomes: 1) to expensive to calculate and 2)difference between distances might become too large
-      /// This gives too much spam, commenting for now
-      // std::cout<<"far too many neighbors to interpolate: "<<neighbors_coarser_grid.size()<<std::endl;
-      // std::cout<<"using the first 50 neighbors instead to interpolate"<<std::endl;
       Size maxnbneighbors=MAX_INTERPOLATION_POINTS;
       Size nbneighbors=neighbors_coarser_grid.size();
       vector<double> distances2;//stores the distances2 of the n closest points
@@ -759,34 +494,17 @@ inline void Model::interpolate_levelpops_local(Size coarser_lvl)
           maxdist=distances2[maxindex];
         }
       }
-      // vector<double> distances2=(geometry.points.position[neighbors_coarser_grid[idx]]-geometry.points.position[diff_point]).squaredNorm());
-
-      // vector<Size> subvector = indices;
-      //Maybe TODO: find a better way to choose the best neighbors, maybe just order them on distance
       neighbors_coarser_grid=closest_points;
     }
-    // cout<<"number neighbors to interpolate from: "<<neighbors_coarser_grid.size()<<std::endl;
-    // else
-    // {//use rbf estimate
-    Size nb_neighbors_coarser_grid=neighbors_coarser_grid.size();
 
-    //DEBUG STUFF
-    // std::cout<<"Neighbors for interpolating point: "<<diff_point<<std::endl;
-    // std::cout<<"Neighbors: ";
-    // for (Size test: neighbors_coarser_grid)
-    // {
-    //   std::cout<<test<<", ";
-    // }
-    // std::cout<<std::endl;
+    Size nb_neighbors_coarser_grid=neighbors_coarser_grid.size();
 
     Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic> rbf_mat(nb_neighbors_coarser_grid, nb_neighbors_coarser_grid);
     Eigen::Matrix<double,1,Eigen::Dynamic> distance_with_neighbors(1,nb_neighbors_coarser_grid);
 
     for (Size idx=0; idx<nb_neighbors_coarser_grid; idx++)
     {
-      // std::cout<<"calc dist with point"<<std::endl;
       distance_with_neighbors(idx)=std::sqrt((geometry.points.position[neighbors_coarser_grid[idx]]-geometry.points.position[diff_point]).squaredNorm());
-      // std::cout<<"distance with neighbor: "<<distance_with_neighbors(idx)<<std::endl;
       rbf_mat(idx,idx)=0;//distance between point and itself is zero
       for (Size idx2=0; idx2<idx; idx2++)
       {
@@ -797,16 +515,17 @@ inline void Model::interpolate_levelpops_local(Size coarser_lvl)
       }
     }
     double mindist=distance_with_neighbors.minCoeff();
-    mindist=mindist*RADIUS_MULT_FACTOR;
-    // double maxdist=rbf_mat.maxCoeff()*5.0;//arbitrary number 5 to make the max_dist larger
+    mindist=mindist*RADIUS_MULT_FACTOR;//arbitrary number to make mindist larger
+
     rbf_mat=rbf_mat/mindist;
     rbf_mat=rbf_mat.unaryExpr(std::ptr_fun(rbf_local<double>));
     distance_with_neighbors=distance_with_neighbors/mindist;
     distance_with_neighbors=distance_with_neighbors.unaryExpr(std::ptr_fun(rbf_local<double>));
-    // std::cout<<"determinant: "<<distance_with_neighbors.determinant()<<std::endl;
-    //going with more robust LDLT decomposition in the hope that this reduces the number of nans generated
+
+    //Going with more robust LDLT decomposition in the hope that this reduces the number of nans generated
+    // Not that it should matter with such small matrices
     Eigen::LDLT<Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic>> ldltdec(rbf_mat);
-    //now that we have our llt decomposition, calculate the interpolated value
+    //now that we have our ldlt decomposition, calculate the interpolated value
     for (Size specidx=0; specidx<parameters.nlspecs(); specidx++)
     {
       // For finding out which abundance corresponds to to the current species
@@ -821,9 +540,8 @@ inline void Model::interpolate_levelpops_local(Size coarser_lvl)
         {
           // interpolating the fractional level populations, so we need the abundance of each species
           double abund=chemistry.species.abundance[neighbors_coarser_grid[idx]][speciesnum];
-          // std::cout<<"Abundance: "<<abund<<std::endl;
+          // interpolating fractional level populations
           right_hand_side(idx)=static_cast<double>(lines.lineProducingSpecies[specidx].get_level_pop(neighbors_coarser_grid[idx],levidx))/abund;
-          // std::cout<<"Value at neighbor: "<<right_hand_side(idx)<<std::endl;
         }
         Eigen::Vector<double,Eigen::Dynamic> weights=ldltdec.solve(right_hand_side);
         Real interpolated_value=static_cast<Real>((distance_with_neighbors*weights)(0,0));

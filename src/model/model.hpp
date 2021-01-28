@@ -49,10 +49,6 @@ struct Model
     inline bool points_are_similar(Size point1, Size point2, double tolerance);
     //calculates distance squared between two points
     inline double calc_distance2(Size point1,Size point2);
-    //calculates cosine similarity
-    inline double calc_cosine(Size base, Size point1,Size point2);
-    //criterion for adding neighbors
-    inline bool lies_further_than(Size base, Size point1, Size point2);
 
     // Coarsen the mesh given a certain tolerance,
     // i.e. add another layer of coarsening.
@@ -74,7 +70,7 @@ struct Model
 
     //initializes multigrid
     inline int setup_multigrid(Size min_nb_points, Size max_coars_lvl, double tol);
-    inline int compute_feautrier_order_2_multigrid();
+
     // inline void reset_grid();
 
 
