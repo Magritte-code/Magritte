@@ -12,8 +12,8 @@
 using namespace voro;
 
 // Set up constants for the container geometry
-const double x_min=-1.1,x_max=2.1;
-const double y_min=-1.1,y_max=1.1;
+const double x_min=-2.5,x_max=2.5;
+const double y_min=-2.5,y_max=2.5;
 const double z_min=-1.1,z_max=1.1;
 const double cvol=(x_max-x_min)*(y_max-y_min)*(x_max-x_min);
 
@@ -21,7 +21,7 @@ const double cvol=(x_max-x_min)*(y_max-y_min)*(x_max-x_min);
 const int n_x=10,n_y=10,n_z=10;
 
 // Set the number of particles that are going to be randomly introduced
-const int particles=8;
+const int particles=9;
 // const int particles=200;
 
 // This function returns a random double between 0 and 1
@@ -37,9 +37,12 @@ int main() {
 	container con(x_min,x_max,y_min,y_max,z_min,z_max,n_x,n_y,n_z,
 			false,false,false,8);
 
-  std::vector<double> xvals{0,1,-1,0,0,0,0,2};
-  std::vector<double> yvals{0,0,0,1,-1,0,0,0.1};
-  std::vector<double> zvals{0,0,0,0,0,1,-1,-0.1};
+  // std::vector<double> xvals{0,-1,1,0,-1,1,0,-1,1,2,-2,0,0};
+  // std::vector<double> yvals{0,0,0,1,1,1,-1,-1,-1,0,0,2,-2};
+  // std::vector<double> zvals{0,0,0,0,0,0,0,0,0,0,0,0,0};
+	std::vector<double> xvals{0,-1,1,-1,1,2,-2,0,0};
+	std::vector<double> yvals{0,1,1,-1,-1,0,0,2,-2};
+	std::vector<double> zvals{0,0,0,0,0,0,0,0,0};
 
   particle_order p_order;
 
