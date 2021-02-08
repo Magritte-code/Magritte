@@ -522,9 +522,9 @@ inline void Model::interpolate_levelpops_local(Size coarser_lvl)
     distance_with_neighbors=distance_with_neighbors/mindist;
     distance_with_neighbors=distance_with_neighbors.unaryExpr(std::ptr_fun(rbf_local<double>));
 
-    //Going with more robust LDLT decomposition in the hope that this reduces the number of nans generated
-    // Not that it should matter with such small matrices
-    Eigen::LDLT<Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic>> ldltdec(rbf_mat);
+    // Going with ColPivHouseholderQR for simplicity and accuracy
+    // Eigen::LDLT<Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic>> ldltdec(rbf_mat);
+    Eigen::ColPivHouseholderQR<Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic>> colPivHouseholderQr(rbf_mat);
     //now that we have our ldlt decomposition, calculate the interpolated value
     for (Size specidx=0; specidx<parameters.nlspecs(); specidx++)
     {
@@ -543,7 +543,7 @@ inline void Model::interpolate_levelpops_local(Size coarser_lvl)
           // interpolating fractional level populations
           right_hand_side(idx)=static_cast<double>(lines.lineProducingSpecies[specidx].get_level_pop(neighbors_coarser_grid[idx],levidx))/abund;
         }
-        Eigen::Vector<double,Eigen::Dynamic> weights=ldltdec.solve(right_hand_side);
+        Eigen::Vector<double,Eigen::Dynamic> weights=colPivHouseholderQr.solve(right_hand_side);
         Real interpolated_value=static_cast<Real>((distance_with_neighbors*weights)(0,0));
 
         linefracs[levidx]=interpolated_value;
@@ -722,8 +722,8 @@ inline void Model::interpolate_matrix_local(Size coarser_lvl, Matrix<T> &to_inte
     distance_with_neighbors=distance_with_neighbors/mindist;
     distance_with_neighbors=distance_with_neighbors.unaryExpr(std::ptr_fun(rbf_local<T>));
     // std::cout<<"determinant: "<<distance_with_neighbors.determinant()<<std::endl;
-    //going with more robust LDLT decomposition in the hope that this reduces the number of nans generated
-    Eigen::LDLT<Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic>> ldltdec(rbf_mat);
+    //going with colPivHouseholderQr decomposition for accuracy
+    Eigen::ColPivHouseholderQR<Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic>> colPivHouseholderQr(rbf_mat);
     //now that we have our llt decomposition, calculate the interpolated value
     for (Size freqidx=0; freqidx<parameters.nfreqs(); freqidx++)
     {
@@ -734,7 +734,7 @@ inline void Model::interpolate_matrix_local(Size coarser_lvl, Matrix<T> &to_inte
         // interpolating the logarithm to avoid any semblance of negative numbers as result
         right_hand_side(idx)=to_interpolate(neighbors_coarser_grid[idx],freqidx);
       }
-      Eigen::Vector<T,Eigen::Dynamic> weights=ldltdec.solve(right_hand_side);
+      Eigen::Vector<T,Eigen::Dynamic> weights=colPivHouseholderQr.solve(right_hand_side);
       T interpolated_value=(distance_with_neighbors*weights)(0,0);
       // std::cout<<"interpolated value: "<<interpolated_value<<std::endl;
       // sometimes, this procedure can give negative values (which we do not want),
