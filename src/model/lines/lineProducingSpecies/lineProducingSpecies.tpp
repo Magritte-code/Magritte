@@ -253,6 +253,9 @@ inline void LineProducingSpecies :: update_using_statistical_equilibrium (
     const Double2      &abundance,
     const Vector<Real> &temperature,
     vector<Size> &points_in_grid)
+    //, const Double2 levelpops_higher_level,
+    //, Bool use_residual,
+    //, const Double2 residualy_higher_level
 {
 
     const Size non_zeros = parameters.npoints() * (      linedata.nlev
@@ -262,6 +265,7 @@ inline void LineProducingSpecies :: update_using_statistical_equilibrium (
     population_prev3 = population_prev2;
     population_prev2 = population_prev1;
     population_prev1 = population;
+    //FIXME: do this somewhere else/remove this: gets far too complicated (and useless) with multigrid
 
     residuals  .push_back(population-populations.back());
     populations.push_back(population);
@@ -395,6 +399,10 @@ inline void LineProducingSpecies :: update_using_statistical_equilibrium (
 
         //y.insert (index (p, linedata.nlev-1)) = population_tot[p];
         y[index (p, linedata.nlev-1)] = population_tot[p];
+        //if use_residual
+        // add residual for all levels
+        //else just use previous definition
+        //...
         //y.insert (index (p, linedata.nlev-1)) = 1.0;//population_tot[p];
 
 
@@ -425,6 +433,11 @@ inline void LineProducingSpecies :: update_using_statistical_equilibrium (
     RT        .setFromTriplets (triplets   .begin(), triplets   .end());
     LambdaStar.setFromTriplets (triplets_LS.begin(), triplets_LS.end());
     LambdaTest.setFromTriplets (triplets_LT.begin(), triplets_LT.end());
+
+
+    //if use_residual
+    //NOW use RT to calculate RT*levelpops and add it to y
+    //then we should have the right_hand_side
 
 
 

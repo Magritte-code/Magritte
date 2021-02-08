@@ -392,6 +392,10 @@ inline void Model::interpolate_vector_local(Size coarser_lvl, vector<T> &to_inte
 }
 
 
+
+///TODO: interpolate_relative_differences_local // similar to interpolate_levelpops_local, but interpolating the relative pops and then using those to get the interpolated abundances
+
+
 // /// NOTE: with some better data structure, we can remove this duplication
 /// Interpolates the level populations (linearized matrix) from the coarser level to the first finer level
 ///   @Parameter [in] coarser_lvl: the coarsening level of the coarser grid
