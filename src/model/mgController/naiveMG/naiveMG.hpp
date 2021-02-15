@@ -39,14 +39,14 @@ struct NaiveMG : virtual public MgController
     inline NaiveMG(Size nb_levels, Size finest_lvl);//TODO add much more
 
     //returns the next action and updates what to do next
-    Actions get_next_action();
+    inline Actions get_next_action() override;
 
     //returns the current level
-    Size get_current_level();
+    inline Size get_current_level() override;
 
     //Call this when the solution is converged on the current grid.
     //Sets the state such that the next action will be something else than stay (skips the following 'stay's)
-    void converged_on_current_grid();
+    inline void converged_on_current_grid() override;
 
     //Call when the solution has directly converged on the current grid.
     // In this case, we no longer need to use this and the coarser grid

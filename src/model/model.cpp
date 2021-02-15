@@ -2,7 +2,7 @@
 #include "model.hpp"
 #include "tools/heapsort.hpp"
 #include "solver/solver.hpp"
-#include "mgController/mgControllerHelper.hpp"
+// #include "mgController/mgControllerHelper.hpp"
 
 
 void Model :: read (const Io& io)
@@ -464,6 +464,7 @@ int Model :: compute_level_populations_multigrid (
 
     while(!finished)
     {
+      std::cout<<"looping"<<std::endl;
     // Now testing without the finest grid
     // for(Size subtract=0; subtract<=max_coars_lvl; subtract++)
     // {
@@ -586,6 +587,10 @@ int Model :: compute_level_populations_multigrid (
         finished=true;
         std::cout<<"Multigrid sequence is finished"<<std::endl;
 
+      break;
+
+        default:
+        std::cout<<"Hey, you shouldn't be here"<<std::endl;
       break;
       }//end of switch statement
     }//end of giant while loop until finished

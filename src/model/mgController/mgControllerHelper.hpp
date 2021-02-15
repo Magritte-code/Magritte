@@ -1,6 +1,6 @@
 #pragma once
 
-#include "model/mgController/mgController.hpp"
+// #include "model/mgController/mgController.hpp" mgController already included in naiveMG
 #include "model/mgController/naiveMG/naiveMG.hpp"
 
 
@@ -33,7 +33,7 @@ struct MgControllerHelper : virtual public MgController
     //   goto_coarsest           //signals that we start iterating at the coarsest grid//also possible after reset()
     // };
 
-    MgControllerHelper(){current_implementation=WhichImplementation::None;}
+    // MgControllerHelper(){current_implementation=WhichImplementation::None;}
 
     //initializes the mgController
     //MgController(Size nb_levels, Size nb_pre_interpolation_steps);//TODO add much more
@@ -42,14 +42,14 @@ struct MgControllerHelper : virtual public MgController
     inline void UseNaiveMG(Size nb_levels, Size finest_lvl);
 
     //returns the next action and updates what to do next
-    Actions get_next_action();
+    inline Actions get_next_action() override;
 
     //returns the current level
-    Size get_current_level();
+    inline Size get_current_level() override;
 
     //Call this when the solution is converged on the current grid.
     //Sets the state such that the next action will be something else than stay (skips the following 'stay's)
-    void converged_on_current_grid();
+    inline void converged_on_current_grid() override;
 
     //Call when the solution has directly converged on the current grid.
     // In this case, we no longer need to use this and the coarser grid
