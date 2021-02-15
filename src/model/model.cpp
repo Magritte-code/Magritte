@@ -2,6 +2,7 @@
 #include "model.hpp"
 #include "tools/heapsort.hpp"
 #include "solver/solver.hpp"
+#include "mgController/mgController.hpp"
 
 
 void Model :: read (const Io& io)
@@ -438,26 +439,41 @@ int Model :: compute_level_populations_multigrid (
     Size max_coars_lvl=geometry.points.multiscale.get_max_coars_lvl();
     // geometry.points.multiscale.set_curr_coars_lvl(geometry.points.multiscale.get_max_coars_lvl());
     int iteration_sum    = 0;
-    // Now testing without the finest grid
-    for(Size subtract=0; subtract<=max_coars_lvl; subtract++)
+
+    bool finished=false;
+
+    //TODO: initialize multigrid
+
+    //TODO: use something a bit more robust and RESET THE CONTROLLER
+    Size curr_max_coars_lvl=mgController.get_current_level();//max_coars_lvl-subtract;
+    std::cout<<"Current coarsening level: "<< curr_max_coars_lvl<<std::endl;
+    std::cout<<"Current number points:"<<geometry.points.multiscale.get_total_points(curr_max_coars_lvl)<<std::endl;
+    geometry.points.multiscale.set_curr_coars_lvl(curr_max_coars_lvl);
+
+    // Initialize the number of iterations
+    int iteration        = 0;
+    int iteration_normal = 0;
+    // Also initialize the previous fraction of converged points
+    vector<double> prev_it_frac_not_converged(parameters.nlspecs(),1);
+
+    // Initialize errors
+    error_mean.clear ();
+    error_max .clear ();
+    // Initialize some_not_converged
+    bool some_not_converged = true;
+
+    while(!finished)
     {
-      Size curr_max_coars_lvl=max_coars_lvl-subtract;
-      std::cout<<"Current coarsening level: "<< curr_max_coars_lvl<<std::endl;
-      std::cout<<"Current number points:"<<geometry.points.multiscale.get_total_points(curr_max_coars_lvl)<<std::endl;
-      geometry.points.multiscale.set_curr_coars_lvl(curr_max_coars_lvl);
+    // Now testing without the finest grid
+    // for(Size subtract=0; subtract<=max_coars_lvl; subtract++)
+    // {
+      //TODO: rename
 
-      // Initialize the number of iterations
-      int iteration        = 0;
-      int iteration_normal = 0;
-      // Also initialize the previous fraction of converged points
-      vector<double> prev_it_frac_not_converged(parameters.nlspecs(),1);
-
-      // Initialize errors
-      error_mean.clear ();
-      error_max .clear ();
-      // Initialize some_not_converged
-      bool some_not_converged = true;
       // Iterate as long as some levels are not converged
+      switch (mgController.get_next_action()) {
+
+        case MgController::Actions::stay:
+
       while (some_not_converged && (iteration < max_niterations))
       {
         iteration++;
@@ -481,29 +497,7 @@ int Model :: compute_level_populations_multigrid (
             // calculate radiation field on coarser level
             geometry.points.multiscale.set_curr_coars_lvl(curr_max_coars_lvl);
             compute_radiation_field_feautrier_order_2 ();
-            // and interpolate it
-            // while(geometry.points.multiscale.get_curr_coars_lvl()>0)
-            // {//maybe TODO: add support for interpolating skipping levels
-            //
-            //   const vector<bool> curr_mask=geometry.points.multiscale.get_mask(geometry.points.multiscale.get_curr_coars_lvl());
-            //   for (Size test=0;test<parameters.npoints();test++)
-            //   {
-            //     if (curr_mask[test])
-            //     {
-            //     std::cout<<radiation.J(test,0)<<std::endl;
-            //     }
-            //   }
-            //   cout<<"trying to interpolate matrix; current coarsening level: "<<geometry.points.multiscale.get_curr_coars_lvl()<<endl;
-            //   //TODO print number of nans
-            //   //for all frequencies, interpolate J
-            //   interpolate_matrix_local(geometry.points.multiscale.get_curr_coars_lvl(),radiation.J);
-            //   cout<<"successfully interpolated matrix"<<endl;
-            //   geometry.points.multiscale.set_curr_coars_lvl(geometry.points.multiscale.get_curr_coars_lvl()-1);
-            //   for (Size test=0;test<parameters.npoints();test++)
-            //   {
-            //     std::cout<<radiation.J(test,0)<<std::endl;
-            //   }
-            // }
+
             std::cout << "Computed feautrier" << std::endl;
             compute_Jeff                              ();
             //TODO: also interpolate lambda diagonal thing
@@ -513,17 +507,6 @@ int Model :: compute_level_populations_multigrid (
                 thermodynamics.temperature.gas,
                 parameters.pop_prec(),
                 points_in_grid);
-
-            //Now interpolating the level populations to the finest level//TODO: thus should only happen when we change grid, but does not incurr too high a cost
-            // while(geometry.points.multiscale.get_curr_coars_lvl()>0)
-            // {//maybe TODO: add support for interpolating skipping levels
-            //     cout<<"trying to interpolate level populations; current coarsening level: "<<geometry.points.multiscale.get_curr_coars_lvl()<<endl;
-            //     //TODO print number of nans
-            //     //for all frequencies, interpolate J
-            //     interpolate_levelpops_local(geometry.points.multiscale.get_curr_coars_lvl());
-            //     cout<<"successfully interpolated level populations"<<endl;
-            //     geometry.points.multiscale.set_curr_coars_lvl(geometry.points.multiscale.get_curr_coars_lvl()-1);
-            // }
 
             iteration_normal++;
         }
@@ -557,31 +540,22 @@ int Model :: compute_level_populations_multigrid (
         }
       } // end of while loop of iterations
       // //TODO add check of final iteration
-      // cout<<"trying to interpolate matrix"<<endl;
-      // for (Size test=0;test<parameters.npoints();test++)
-      // {
-      //   std::cout<<radiation.J(test,0)<<std::endl;
-      // }
-      // //for all frequencies, interpolate J
-      // interpolate_matrix_local(geometry.points.multiscale.get_curr_coars_lvl(),radiation.J);
-      // cout<<"successfully interpolated matrix"<<endl;
-      // geometry.points.multiscale.set_curr_coars_lvl(geometry.points.multiscale.get_curr_coars_lvl()-1);
-
+      if (!some_not_converged)
+      {
       // Print convergence stats
       cout << "Converged after " << iteration << " iterations" << endl;
       // curr_max_coars_lvl-=1;
       iteration_sum+=iteration;
+      //signal convergence on current grid
+      mgController.converged_on_current_grid();
 
-      // cout <<"level pops before interpolating"<<endl;
-      // //DEBUG STUFF
-      // for (Size test=0;test<parameters.npoints();test++)
-      // {
-      //   std::cout<<lines.lineProducingSpecies[0].population[lines.lineProducingSpecies[0].index(test,0)]<<std::endl;
-      // }
+      }
+      break;
 
+        case MgController::Actions::interpolate_levelpops:
 
       //Now interpolating the level populations to the next finer level
-      if (geometry.points.multiscale.get_curr_coars_lvl()>0)
+      // if (geometry.points.multiscale.get_curr_coars_lvl()>0)
       {//maybe TODO: add support for interpolating skipping levels
           cout<<"trying to interpolate level populations; current coarsening level: "<<geometry.points.multiscale.get_curr_coars_lvl()<<endl;
           //TODO print number of nans
@@ -592,15 +566,29 @@ int Model :: compute_level_populations_multigrid (
       }
       //after interpolating the level populations, do NOT forget to set the opacities and emissivities, otherwise this was all for nothing...
       lines.set_emissivity_and_opacity ();
+      //and also reset some statistics
+      // reinitialize the number of iterations
+      iteration        = 0;
+      iteration_normal = 0;
+      // Also initialize the previous fraction of converged points
+      prev_it_frac_not_converged=vector<double>(parameters.nlspecs(),1);
 
-      // cout <<"level pops after interpolating"<<endl;
-      // //DEBUG STUFF
-      // for (Size test=0;test<parameters.npoints();test++)
-      // {
-      //   std::cout<<lines.lineProducingSpecies[0].population[lines.lineProducingSpecies[0].index(test,0)]<<std::endl;
-      // }
+      // reinitialize errors
+      error_mean.clear ();
+      error_max .clear ();
+      // reinitialize some_not_converged
+      some_not_converged = true;
 
-    }//end of giant while loop over different coarsening levels
+
+      break;
+
+        case MgController::Actions::finish:
+        finished=true;
+        std::cout<<"Multigrid sequence is finished"<<std::endl;
+
+      break;
+      }//end of switch statement
+    }//end of giant while loop until finished
 
     return iteration_sum;
 }

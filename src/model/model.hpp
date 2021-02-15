@@ -12,6 +12,7 @@
 #include "radiation/radiation.hpp"
 #include <set>
 #include "image/image.hpp"
+#include "mgController/naiveMG/naiveMG.hpp"
 
 
 struct Model
@@ -30,6 +31,7 @@ struct Model
     Lines          lines;
     Radiation      radiation;
     vector<Image>  images;
+    MgController   mgController;
 
     enum SpectralDiscretisation {None, SD_Lines, SD_Image}
          spectralDiscretisation = None;

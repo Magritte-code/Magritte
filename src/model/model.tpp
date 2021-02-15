@@ -8,7 +8,8 @@
 #include <limits>
 #include <algorithm>
 #include "voro++.hh"
-// using namespace voro;//FIXME: Do not use namespace, instead use voro:: for all functions of voro++
+// #include "mgController/naiveMG/naiveMG.hpp"
+
 
 // Calculates the distance squared between two points
 inline double Model::calc_distance2(Size point1,Size point2)
@@ -267,6 +268,9 @@ inline int Model::setup_multigrid(Size min_nb_points, Size max_coars_lvl, double
 {
   //set number of off-diagonal elements in lambda matrix 0; needed because we will interpolate these values??
   //TODO: find reasons to remove this
+  //TODO maybe add switch
+  //Setup mgController
+  mgController=NaiveMG(max_coars_lvl+1,0);
   parameters.n_off_diag=0;
   // tol=deltatol
   //first, we coarsen the grid until we either have too few points left or have too many coarsening levels
