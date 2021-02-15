@@ -1,6 +1,8 @@
+#pragma once
+
 // Initializes the multigrid controller
 // Finest level is for debug purposes, restrict the finest level until we iterate
-NaiveMG::NaiveMG(Size nb_levels, Size finest_lvl)
+inline NaiveMG::NaiveMG(Size nb_levels, Size finest_lvl)
 {
   //FIXME: check if nb_levels>=2 // otherwise we only have a single grid
   //FIXME: check if nb_pre_interpolation_steps>=1

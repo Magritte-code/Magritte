@@ -2,7 +2,7 @@
 #include "model.hpp"
 #include "tools/heapsort.hpp"
 #include "solver/solver.hpp"
-#include "mgController/mgController.hpp"
+#include "mgController/mgControllerHelper.hpp"
 
 
 void Model :: read (const Io& io)
@@ -445,7 +445,7 @@ int Model :: compute_level_populations_multigrid (
     //TODO: initialize multigrid
 
     //TODO: use something a bit more robust and RESET THE CONTROLLER
-    Size curr_max_coars_lvl=mgController.get_current_level();//max_coars_lvl-subtract;
+    Size curr_max_coars_lvl=mgControllerHelper.get_current_level();//max_coars_lvl-subtract;
     std::cout<<"Current coarsening level: "<< curr_max_coars_lvl<<std::endl;
     std::cout<<"Current number points:"<<geometry.points.multiscale.get_total_points(curr_max_coars_lvl)<<std::endl;
     geometry.points.multiscale.set_curr_coars_lvl(curr_max_coars_lvl);
@@ -470,7 +470,7 @@ int Model :: compute_level_populations_multigrid (
       //TODO: rename
 
       // Iterate as long as some levels are not converged
-      switch (mgController.get_next_action()) {
+      switch (mgControllerHelper.get_next_action()) {
 
         case MgController::Actions::stay:
 
@@ -547,7 +547,7 @@ int Model :: compute_level_populations_multigrid (
       // curr_max_coars_lvl-=1;
       iteration_sum+=iteration;
       //signal convergence on current grid
-      mgController.converged_on_current_grid();
+      mgControllerHelper.converged_on_current_grid();
 
       }
       break;

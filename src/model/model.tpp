@@ -270,7 +270,8 @@ inline int Model::setup_multigrid(Size min_nb_points, Size max_coars_lvl, double
   //TODO: find reasons to remove this
   //TODO maybe add switch
   //Setup mgController
-  mgController=NaiveMG(max_coars_lvl+1,0);
+  //FIXME: check which level we actually reach!!!!!
+
   parameters.n_off_diag=0;
   // tol=deltatol
   //first, we coarsen the grid until we either have too few points left or have too many coarsening levels
@@ -284,6 +285,11 @@ inline int Model::setup_multigrid(Size min_nb_points, Size max_coars_lvl, double
     std::cout<<"coarsened layer; number points remaining: "<<geometry.points.multiscale.get_total_points(geometry.points.multiscale.get_max_coars_lvl())<<std::endl;
   }
   std::cout<<"finished coarsening"<<std::endl;
+
+  //Setting up the multrigrid controller
+  // mgControllerHelper();
+  mgControllerHelper.UseNaiveMG(geometry.points.multiscale.get_max_coars_lvl()+1,0);
+
   return (0);
 }
 
