@@ -30,8 +30,10 @@ inline MgController::Actions NaiveMG::get_next_action()
   if (is_next_action_set)
   {
     is_next_action_set=false;
+    std::cout<<"Returning next action set"<<std::endl;
     return next_action;
   }else{//otherwise just remain on the current grid, iterating until convergence
+    std::cout<<"Returning stay"<<std::endl;
     return Actions::stay;
   }
 }
@@ -48,7 +50,7 @@ inline void NaiveMG::converged_on_current_grid()
   }
   else if (current_level>finest_lvl)
   {
-    next_action=Actions::interpolate_corrections;
+    next_action=Actions::interpolate_levelpops;
     is_next_action_set=true;
     current_level--;
     return;
@@ -57,7 +59,7 @@ inline void NaiveMG::converged_on_current_grid()
   {
     next_action=Actions::finish;
     //TODO also return error
-    std::cout<<"Somehow, you are currently on a level finer than the finer level you allowed"<<std::endl;
+    std::cout<<"Somehow, you are currently on a level finer than the finest level you allowed"<<std::endl;
     std::cout<<"Finishing the multigrid computation either way"<<std::endl;
     std::cout<<"Finest level: "<<finest_lvl<<"Current level: "<<current_level<<std::endl;
     return;

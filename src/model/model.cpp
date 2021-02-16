@@ -474,9 +474,11 @@ int Model :: compute_level_populations_multigrid (
       switch (mgControllerHelper.get_next_action()) {
 
         case MgController::Actions::stay:
+        {
+        std::cout<<"Action stay"<<std::endl;
 
-      while (some_not_converged && (iteration < max_niterations))
-      {
+      // while (some_not_converged && (iteration < max_niterations))
+      // {
         iteration++;
         // logger.write ("Starting iteration ", iteration);
         cout << "Starting iteration " << iteration << endl;
@@ -539,21 +541,29 @@ int Model :: compute_level_populations_multigrid (
             // logger.write ("Already ", 100 * (1.0 - fnc), " % converged!");
             cout << "Already " << 100 * (1.0 - fnc) << " % converged!" << endl;
         }
-      } // end of while loop of iterations
+      // } // end of while loop of iterations
       // //TODO add check of final iteration
-      if (!some_not_converged)
+      std::cout<<"iteration: "<<iteration<<std::endl;
+      std::cout<<"max iteration: "<<max_niterations<<std::endl;
+      //if converged or reached max number of iterations
+      if (!some_not_converged||iteration==max_niterations)
       {
       // Print convergence stats
       cout << "Converged after " << iteration << " iterations" << endl;
       // curr_max_coars_lvl-=1;
       iteration_sum+=iteration;
+      iteration=0;
       //signal convergence on current grid
       mgControllerHelper.converged_on_current_grid();
+      std::cout<<"Signaling convergence"<<std::endl;
 
       }
       break;
+        }
 
         case MgController::Actions::interpolate_levelpops:
+        {
+        std::cout<<"Action interpolate levelpops"<<std::endl;
 
       //Now interpolating the level populations to the next finer level
       // if (geometry.points.multiscale.get_curr_coars_lvl()>0)
@@ -582,16 +592,22 @@ int Model :: compute_level_populations_multigrid (
 
 
       break;
+        }
 
         case MgController::Actions::finish:
+        {
+        std::cout<<"Action finish"<<std::endl;
         finished=true;
         std::cout<<"Multigrid sequence is finished"<<std::endl;
+        }
 
       break;
 
         default:
+        {
         std::cout<<"Hey, you shouldn't be here"<<std::endl;
-      break;
+        break;
+        }
       }//end of switch statement
     }//end of giant while loop until finished
 

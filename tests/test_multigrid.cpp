@@ -117,7 +117,7 @@ int main (int argc, char **argv)
 
 
 
-    model.compute_level_populations_multigrid(true, 1);
+    model.compute_level_populations_multigrid(true, 4);
 
 
     // auto fun_to_del=model.points_are_similar(0.1);
