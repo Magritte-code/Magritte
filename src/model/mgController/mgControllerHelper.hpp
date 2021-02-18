@@ -7,18 +7,21 @@
 //The Multigrid controller helper structure
 //just for the practical implementation
 // for getting where we currently are in the multigrid sequence
-struct MgControllerHelper : virtual public MgController
+template <MgImplementation> struct MgControllerHelper : virtual public MgController
 {
   private:
-    enum class WhichImplementation {
-      None,//Default type; no implementation
-      NaiveMG
-    };
 
-    WhichImplementation current_implementation=WhichImplementation::None;
+    MgImplementation implementation_instance;
+
+    // enum class WhichImplementation {
+    //   None,//Default type; no implementation
+    //   NaiveMG
+    // };
+
+    // WhichImplementation current_implementation=WhichImplementation::None;
 
     //references to the different implementations
-    NaiveMG naiveMGref;
+    // NaiveMG naiveMGref;
     //TODO add many more
 
   public:
@@ -33,13 +36,14 @@ struct MgControllerHelper : virtual public MgController
     //   goto_coarsest           //signals that we start iterating at the coarsest grid//also possible after reset()
     // };
 
-    // MgControllerHelper(){current_implementation=WhichImplementation::None;}
+    MgControllerHelper()=default;
 
     //initializes the mgController
     //MgController(Size nb_levels, Size nb_pre_interpolation_steps);//TODO add much more
+    inline MgControllerHelper(MgImplementation implementation_instance);
 
     //Because we cannot change constructor names, we use the default constructor just need to 'construct' using some regular functions
-    inline void UseNaiveMG(Size nb_levels, Size finest_lvl);
+    // inline void UseNaiveMG(Size nb_levels, Size finest_lvl);
 
     //returns the next action and updates what to do next
     inline Actions get_next_action() override;

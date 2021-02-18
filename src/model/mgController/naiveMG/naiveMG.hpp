@@ -35,7 +35,7 @@ struct NaiveMG : virtual public MgController
     //Default necessary for mgControllerHelper
     inline NaiveMG()=default;
 
-    //initializes the mgController
+    //initializes the mgController //FIXME: add maxn_iterations here instead of in Model::compute_level_populations_multigrid
     inline NaiveMG(Size nb_levels, Size finest_lvl);//TODO add much more
 
     //returns the next action and updates what to do next

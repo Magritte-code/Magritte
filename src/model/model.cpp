@@ -418,6 +418,8 @@ int Model :: compute_level_populations_from_stateq ()
     return (0);
 }
 
+
+///TODO remove maxn_iterations; has no place here anymore
 ///  Compute level populations self-consistenly with the radiation field using multigrid
 ///  assuming statistical equilibrium (detailed balance for the levels)
 ///  @param[in] io                  : io object (for writing level populations)
@@ -593,6 +595,54 @@ int Model :: compute_level_populations_multigrid (
 
       break;
         }
+
+        //It turns out that, because of the choice of our restriction operator, (mere insertation at points still in grid)
+        // that nothing particularly interesting happens to the right-hand side with this restriction operator.
+        case MgController::Actions::restrict:
+        {
+          std::cout<<"Action restrict"<<std::endl;
+
+          //Using one step coarser grid
+          geometry.points.multiscale.set_curr_coars_lvl(geometry.points.multiscale.get_curr_coars_lvl()+1);
+
+          //TODO: save current levelpops for later interpolate residual stuff
+
+          //after interpolating the level populations, do NOT forget to set the opacities and emissivities, otherwise this was all for nothing...
+          // Not necessary to set emissivities and opacities due to choice of restriction Operator
+          // lines.set_emissivity_and_opacity ();
+          //and also reset some statistics
+          // reinitialize the number of iterations
+          iteration        = 0;
+          iteration_normal = 0;
+          // Also initialize the previous fraction of converged points
+          prev_it_frac_not_converged=vector<double>(parameters.nlspecs(),1);
+
+          // reinitialize errors
+          error_mean.clear ();
+          error_max .clear ();
+          // reinitialize some_not_converged
+          some_not_converged = true;
+
+      break;
+        }
+
+        //In contrast to the restriction action, this is a bit more interesting. Instead of only interpolating the solution on the coarser grid,
+        // i will also need to restrict and then interpolate an older solution on the finer grid. Then we take the difference of this result and add it to the previous solution (on the finer grid)
+        // For points on the coarser grid, there is will be no difference compared to merely interpolating the coarser level populations;
+        // However, for points in the difference between the two grid, there might be a difference due to the interpolation
+        case::MgController::Actions::interpolate_corrections:
+        {
+
+          //In order to make it a bit simpler to implement, we will interpolate the current solution and the restricted solution on the finer grid independently
+
+          //TODO: further implement this
+
+          //for all species:
+          //new levelpops=old levelpops+(interpolated(current levelpops)+interpolated(restricted(old levelpops)))
+
+      break;
+        }
+
 
         case MgController::Actions::finish:
         {

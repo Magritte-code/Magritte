@@ -1,7 +1,8 @@
 #pragma once
 
-//The Multigrid controller structure
+//The abstract Multigrid controller structure
 // for getting where we currently are in the multigrid sequence
+// For practical usage, use the mgControllerHelper class: that class is an implementation that implements all current multigrid variants
 struct MgController
 {
   public:
@@ -19,6 +20,8 @@ struct MgController
 
     //initializes the mgController
     //MgController(Size nb_levels, Size nb_pre_interpolation_steps);//TODO add much more
+
+    virtual void initialize(Size nb_levels, ...) = 0;
 
     //returns the next action and updates what to do next
     virtual Actions get_next_action() = 0;
