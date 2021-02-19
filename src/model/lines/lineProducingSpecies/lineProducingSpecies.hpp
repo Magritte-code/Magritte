@@ -77,6 +77,10 @@ struct LineProducingSpecies
 
     inline void update_using_Ng_acceleration ();
     inline void update_using_acceleration (const Size order);
+
+
+    inline void set_all_level_pops(VectorXr new_population);
+    inline VectorXr get_all_level_pops();
 };
 
 

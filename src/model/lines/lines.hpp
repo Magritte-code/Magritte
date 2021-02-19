@@ -53,6 +53,9 @@ struct Lines
     inline void set_inverse_width (const Thermodynamics& thermodynamics);
 
     void gather_emissivities_and_opacities ();
+
+    inline void set_all_level_pops(vector<VectorXr> new_population);
+    inline vector<VectorXr> get_all_level_pops();
 };
 
 

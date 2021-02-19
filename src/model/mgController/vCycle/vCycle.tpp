@@ -1,5 +1,10 @@
 #pragma once
 
+//TODO TODO TODO
+///first start from the coarsest grid, then interpolate the levelpops until finest, then coarsen until coarsest and
+///now start interpolating using 'residuals'
+
+
 // Initializes the multigrid controller
 // Finest level is for debug purposes, restrict the finest level until we iterate
 inline NaiveMG::NaiveMG(Size nb_levels, Size finest_lvl)
@@ -10,10 +15,6 @@ inline NaiveMG::NaiveMG(Size nb_levels, Size finest_lvl)
   current_level=nb_levels-1;
   //this.min_level_visited=nb_levels-1;
   finest_lvl=finest_lvl;
-
-  //first, we go to the coarsest grid
-  is_next_action_set=true;
-  next_action=Actions::goto_coarsest;
 
   // this.going_coarser=false;
 

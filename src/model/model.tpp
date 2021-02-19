@@ -288,7 +288,9 @@ inline int Model::setup_multigrid(Size min_nb_points, Size max_coars_lvl, double
 
   //Setting up the multrigrid controller
   // mgControllerHelper();
-  mgControllerHelper.UseNaiveMG(geometry.points.multiscale.get_max_coars_lvl()+1,0);
+  NaiveMG tempImplement=NaiveMG(geometry.points.multiscale.get_max_coars_lvl()+1,0);
+  mgControllerHelper=MgControllerHelper<NaiveMG>(tempImplement);
+  // mgControllerHelper.UseNaiveMG(geometry.points.multiscale.get_max_coars_lvl()+1,0);
   //Initialize structure for previously computed level populations at each level// actually, we do not need it for the coarsest level
   computed_level_populations.resize(geometry.points.multiscale.get_max_coars_lvl()+1);
 

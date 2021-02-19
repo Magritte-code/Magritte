@@ -447,10 +447,10 @@ int Model :: compute_level_populations_multigrid (
     //TODO: initialize multigrid
 
     //TODO: use something a bit more robust and RESET THE CONTROLLER
-    Size curr_max_coars_lvl=mgControllerHelper.get_current_level();//max_coars_lvl-subtract;
-    std::cout<<"Current coarsening level: "<< curr_max_coars_lvl<<std::endl;
-    std::cout<<"Current number points:"<<geometry.points.multiscale.get_total_points(curr_max_coars_lvl)<<std::endl;
-    geometry.points.multiscale.set_curr_coars_lvl(curr_max_coars_lvl);
+    // Size curr_max_coars_lvl=mgControllerHelper.get_current_level();//max_coars_lvl-subtract;
+    // std::cout<<"Current coarsening level: "<< curr_max_coars_lvl<<std::endl;
+    // std::cout<<"Current number points:"<<geometry.points.multiscale.get_total_points(curr_max_coars_lvl)<<std::endl;
+    // geometry.points.multiscale.set_curr_coars_lvl(curr_max_coars_lvl);
 
     // Initialize the number of iterations
     int iteration        = 0;
@@ -474,6 +474,16 @@ int Model :: compute_level_populations_multigrid (
 
       // Iterate as long as some levels are not converged
       switch (mgControllerHelper.get_next_action()) {
+
+        case::MgController::Actions::goto_coarsest:
+        {
+        std::cout<<"Action goto_coarsest"<<std::endl;
+        geometry.points.multiscale.set_curr_coars_lvl(geometry.points.multiscale.get_max_coars_lvl());
+        std::cout<<"Current coarsening level: "<<mgControllerHelper.get_current_level()<<std::endl;
+
+      break;
+        }
+
 
         case MgController::Actions::stay:
         {
@@ -500,7 +510,7 @@ int Model :: compute_level_populations_multigrid (
             // logger.write ("Computing the radiation field...");
             cout << "Computing the radiation field..." << endl;
             // calculate radiation field on coarser level
-            geometry.points.multiscale.set_curr_coars_lvl(curr_max_coars_lvl);
+            // geometry.points.multiscale.set_curr_coars_lvl(curr_max_coars_lvl);
             compute_radiation_field_feautrier_order_2 ();
 
             std::cout << "Computed feautrier" << std::endl;
@@ -602,12 +612,14 @@ int Model :: compute_level_populations_multigrid (
         {
           std::cout<<"Action restrict"<<std::endl;
 
+          //Saving the current level populations
+          computed_level_populations[geometry.points.multiscale.get_curr_coars_lvl()]=lines.get_all_level_pops();
+
+
           //Using one step coarser grid
           geometry.points.multiscale.set_curr_coars_lvl(geometry.points.multiscale.get_curr_coars_lvl()+1);
 
-          //TODO: save current levelpops for later interpolate residual stuff
-
-          //after interpolating the level populations, do NOT forget to set the opacities and emissivities, otherwise this was all for nothing...
+          //after restricting the level populations, do NOT forget to set the opacities and emissivities, otherwise this was all for nothing...
           // Not necessary to set emissivities and opacities due to choice of restriction Operator
           // lines.set_emissivity_and_opacity ();
           //and also reset some statistics
@@ -639,6 +651,92 @@ int Model :: compute_level_populations_multigrid (
 
           //for all species:
           //new levelpops=old levelpops+(interpolated(current levelpops)+interpolated(restricted(old levelpops)))
+          vector<VectorXr> old_levelpops=computed_level_populations[geometry.points.multiscale.get_curr_coars_lvl()-1];
+          //now interpolate current levelpops
+
+
+          //Maybe TODO: create function that directly interpolates both, such that we do not waste extra time when recreating the same matrices
+          cout<<"trying to interpolate level populations; current coarsening level: "<<geometry.points.multiscale.get_curr_coars_lvl()<<endl;
+          interpolate_levelpops_local(geometry.points.multiscale.get_curr_coars_lvl());
+          cout<<"successfully interpolated level populations"<<endl;
+
+          vector<VectorXr> interpolated_new_levelpops=lines.get_all_level_pops();
+
+          cout<<"trying to interpolate old level populations; current coarsening level: "<<geometry.points.multiscale.get_curr_coars_lvl()<<endl;
+          interpolate_levelpops_local(geometry.points.multiscale.get_curr_coars_lvl());
+          cout<<"successfully interpolated level populations"<<endl;
+
+          vector<VectorXr> interpolated_old_levelpops=lines.get_all_level_pops();
+
+          geometry.points.multiscale.set_curr_coars_lvl(geometry.points.multiscale.get_curr_coars_lvl()-1);
+
+          vector<VectorXr> corrected_levelpops;
+          //FIXME: add some check for negative values maybe and do something about them
+          for (Size specidx=0; i<parameters.nlspecs(); i++)
+          {
+            VectorXr temp_corrected_levelpops=old_levelpops[specidx]+interpolated_new_levelpops[specidx]-interpolated_old_levelpops[specidx];
+
+            //setting negative levelpops to 0.
+            temp_corrected_levelpops.cwisemax(0);
+            // For finding out which abundance corresponds to to the current species
+            Size speciesnum=lines.lineProducingSpecies[specidx].linedata.num;
+            // We will need to renormalize the level pops, so first we should collect them
+            // vector<Real> linefracs;
+            // linefracs.resize(lines.lineProducingSpecies[specidx].linedata.nlev);
+
+            vector<Size> current_points_in_grid=geometry.points.multiscale.get_current_points_in_grid();
+            //Note: we might have some issues with multiple threads accessing data near eachother
+            //for every point in the current grid, we will check if some levelpopulations of that point are negative
+            threaded_for (p, current_points_in_grid.size(),
+              Size current_point=current_points_in_grid[p];
+              bool negative_value=false;
+              for (Size levidx=0; levidx<lines.lineProducingSpecies[specidx].linedata.nlev; levidx++)
+              {
+                if (temp_corrected_levelpops(lines.lineProducingSpecies[specidx].index(current_point,levidx))==0)
+                {
+                  //probably, there was some negative value there
+                  negative_value=true;
+                  break;
+                  // //and set the negative value to 0
+                  // temp_corrected_levelpops(lines.lineProducingSpecies[specidx].index(current_point,levidx))=0;
+                }
+              }
+              //if negative level population encountered, renormalize
+              if (negative_value)
+              {
+                Real abund=static_cast<Real>(chemistry.species.abundance[current_point][speciesnum]);
+                Size segment_start=lines.lineProducingSpecies[specidx].index(current_point,0);
+                Size nb_levels=lines.lineProducingSpecies[specidx].linedata.nlev;
+                //Note: because the sum of levelpops must always be equal to the abundance, at least one value should be greater than zero (after zeroing the negative values)
+                // and thus we will never divide by zero
+                Real sum_of_levelpops=temp_corrected_levelpops.segment(start,nb_levels).sum();
+                //and finally renormalizing it; such that the sum of levelpops is again equal to the abundance
+                temp_corrected_levelpops.segment(start,nb_levels)=temp_corrected_levelpops.segment(start,nb_levels)*(abund/sum_of_levelpops);
+              }
+            )
+
+            corrected_levelpops.push_back(temp_corrected_levelpops);
+          }
+
+          std::cout<<"Now setting the corrected levelpops"<<std::endl;
+          lines.set_all_level_pops(corrected_levelpops);
+
+
+
+          //after interpolating the level populations, do NOT forget to set the opacities and emissivities, otherwise this was all for nothing...
+          lines.set_emissivity_and_opacity ();
+          //and also reset some statistics
+          // reinitialize the number of iterations
+          iteration        = 0;
+          iteration_normal = 0;
+          // Also initialize the previous fraction of converged points
+          prev_it_frac_not_converged=vector<double>(parameters.nlspecs(),1);
+
+          // reinitialize errors
+          error_mean.clear ();
+          error_max .clear ();
+          // reinitialize some_not_converged
+          some_not_converged = true;
 
       break;
         }

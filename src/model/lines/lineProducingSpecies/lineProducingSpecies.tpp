@@ -541,3 +541,13 @@ inline void LineProducingSpecies :: update_using_statistical_equilibrium (
     //  }
     //}
 }
+
+
+inline void LineProducingSpecies::set_all_level_pops(VectorXr new_population)
+{
+  population=new_population;
+}
+inline VectorXr LineProducingSpecies::get_all_level_pops()
+{
+  return population;
+}

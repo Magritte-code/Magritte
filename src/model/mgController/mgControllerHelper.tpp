@@ -13,7 +13,7 @@
 //just assign the properly initialize mgController to this.
 inline MgControllerHelper::MgControllerHelper(MgImplementation implementation_instance)
 {
-  implementation_instance=implementation_instance;
+  implementation_instance_ptr=&implementation_instance;
 }
 
     //returns the next action and updates what to do next
@@ -29,7 +29,7 @@ MgController::Actions MgControllerHelper::get_next_action()
   //     break;
   // }
   // return MgController::Actions::error;
-  return implementation_instance.get_next_action();
+  return (*implementation_instance_ptr).get_next_action();
 }
 
 //returns the current level
@@ -45,7 +45,7 @@ Size MgControllerHelper::get_current_level()
   //     break;
   // }
   // return 0;
-  return implementation_instance.get_current_level();
+  return (*implementation_instance_ptr).get_current_level();
 }
 
     //Call this when the solution is converged on the current grid.
@@ -61,7 +61,7 @@ void MgControllerHelper::converged_on_current_grid()
   //   //TODO: raise error
   //     break;
   // }
-  implementation_instance.converged_on_current_grid();
+  (*implementation_instance_ptr).converged_on_current_grid();
 }
 
     //Call when the solution has directly converged on the current grid.

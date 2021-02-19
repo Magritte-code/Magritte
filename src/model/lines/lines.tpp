@@ -74,3 +74,20 @@ inline void Lines :: set_inverse_width (const Thermodynamics& thermodynamics)
         }
     })
 }
+
+inline void Lines :: set_all_level_pops(vector<VectorXr> new_population)
+{
+  threaded_for (i, parameters.nlspecs(),
+    lineProducingSpecies[i].set_all_level_pops(new_population[i]);
+  )
+}
+inline vector<VectorXr> Lines :: get_all_level_pops()
+{
+  vector<VectorXr> toreturn;
+  toreturn.reserve(parameters.nlspecs());
+  //No threaded for possible, because we might push back in a random order
+  for (Size i=0; i<parameters.nlspecs(); i++)
+  {
+    toreturn.push_back(lineProducingSpecies[i].get_all_level_pops());
+  }
+}

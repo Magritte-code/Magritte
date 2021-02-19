@@ -1,32 +1,28 @@
 #pragma once
 
-// #include "model/mgController/mgController.hpp" mgController already included in naiveMG
-#include "model/mgController/naiveMG/naiveMG.hpp"
-
-
-//The Multigrid controller helper structure
-//just for the practical implementation
+#include "model/mgController/mgController.hpp"
+//The Multigrid controller structure
 // for getting where we currently are in the multigrid sequence
-template <MgImplementation> struct MgControllerHelper : virtual public MgController
+struct VCycle : virtual public MgController
 {
   private:
+    bool going_coarser;// true when currently going to coarser grids
 
-    MgImplementation* implementation_instance_ptr=nullptr;
+    // Size nb_iterations_on_current_grid_remaining;// number of iterations remaining on current grid
+    Size finest_lvl=0;
+    Size max_level=0;//number of levels going from 0 (finest grid) to nb_levels-1 (coarsest grid)
+    Size current_level=0;//the current level
+    //Size min_level_visited=0;
+    // Size nb_pre_interpolation_steps=1;//number of iterations on the current grid before interpolating/coarsening
 
-    // enum class WhichImplementation {
-    //   None,//Default type; no implementation
-    //   NaiveMG
-    // };
+    bool is_next_action_set;//checks whether the next action has been set
+    Actions next_action;//the next action (if it has been set)
+    //for now, I implement the V-cycle
 
-    // WhichImplementation current_implementation=WhichImplementation::None;
-
-    //references to the different implementations
-    // NaiveMG naiveMGref;
-    //TODO add many more
 
   public:
 
-    //Inherited from mgController
+    // Inherited from mgController
     // enum class Actions {
     //   interpolate_levelpops,  //interpolating the levelpopulations
     //   interpolate_corrections,//interpolating the relative corrections
@@ -34,16 +30,13 @@ template <MgImplementation> struct MgControllerHelper : virtual public MgControl
     //   stay,                   //remain on the same grid level; keep iterating
     //   finish,                 //the entire multigrid procedure is finished
     //   goto_coarsest           //signals that we start iterating at the coarsest grid//also possible after reset()
-    // };
+    //     }
 
-    MgControllerHelper()=default;
+    //Default necessary for mgControllerHelper
+    inline NaiveMG()=default;
 
     //initializes the mgController
-    //MgController(Size nb_levels, Size nb_pre_interpolation_steps);//TODO add much more
-    inline MgControllerHelper(MgImplementation implementation_instance);
-
-    //Because we cannot change constructor names, we use the default constructor just need to 'construct' using some regular functions
-    // inline void UseNaiveMG(Size nb_levels, Size finest_lvl);
+    inline NaiveMG(Size nb_levels, Size finest_lvl);//TODO add much more
 
     //returns the next action and updates what to do next
     inline Actions get_next_action() override;
@@ -63,4 +56,5 @@ template <MgImplementation> struct MgControllerHelper : virtual public MgControl
     //inline void reset();
 };
 
-#include "mgControllerHelper.tpp"
+
+#include "vCycle.tpp"
