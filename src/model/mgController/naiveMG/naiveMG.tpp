@@ -2,7 +2,7 @@
 
 // Initializes the multigrid controller
 // Finest level is for debug purposes, restrict the finest level until we iterate
-inline NaiveMG::NaiveMG(Size nb_levels, Size finest_lvl)
+inline NaiveMG::NaiveMG(Size nb_levels, Size finest_lvl, Size max_nb_iterations)
 {
   //FIXME: check if nb_levels>=2 // otherwise we only have a single grid
   //FIXME: check if nb_pre_interpolation_steps>=1
@@ -10,11 +10,12 @@ inline NaiveMG::NaiveMG(Size nb_levels, Size finest_lvl)
   current_level=nb_levels-1;
   std::cout<<"current level:"<<current_level<<std::endl;
   //this.min_level_visited=nb_levels-1;
-  finest_lvl=finest_lvl;
+  this->finest_lvl=finest_lvl;
 
   //first, we go to the coarsest grid
   is_next_action_set=true;
   next_action=Actions::goto_coarsest;
+  this->max_nb_iterations=max_nb_iterations;
 
   // this.going_coarser=false;
 
@@ -37,9 +38,24 @@ inline MgController::Actions NaiveMG::get_next_action()
     is_next_action_set=false;
     std::cout<<"Returning next action set"<<std::endl;
     return next_action;
-  }else{//otherwise just remain on the current grid, iterating until convergence
-    std::cout<<"Returning stay"<<std::endl;
-    return Actions::stay;
+  }else{//otherwise just remain on the current grid, iterating until convergence/max_nb_iterations reached
+    if (current_nb_iterations<max_nb_iterations)
+    {
+      std::cout<<"Returning stay"<<std::endl;
+      current_nb_iterations++;
+      return Actions::stay;
+    }else{
+      if (current_level>finest_lvl)
+      {
+        std::cout<<"Returning interpolate_levelpops"<<std::endl;
+        current_level--;
+        current_nb_iterations=0;
+        return Actions::interpolate_levelpops;
+      }else{
+        std::cout<<"Returning finish"<<std::endl;
+        return Actions::finish;
+      }
+    }
   }
 }
 
@@ -55,6 +71,8 @@ inline void NaiveMG::converged_on_current_grid()
   }
   else if (current_level>finest_lvl)
   {
+    //reset current_nb_iterations, as we interpolate to the finer grid
+    current_nb_iterations=0;
     next_action=Actions::interpolate_levelpops;
     is_next_action_set=true;
     std::cout<<"current level: "<<current_level<<std::endl;

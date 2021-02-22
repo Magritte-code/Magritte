@@ -7,7 +7,7 @@
 
 // Initializes the multigrid controller
 // Finest level is for debug purposes, restrict the finest level until we iterate
-inline VCycle::VCycle(Size nb_levels, Size finest_lvl, Size nb_pre_interpolation_steps)
+inline VCycle::VCycle(Size nb_levels, Size finest_lvl, Size nb_pre_interpolation_steps, Size max_nb_iterations)
 {
   //FIXME: check if nb_levels>=2 // otherwise we only have a single grid
   //FIXME: check if nb_pre_interpolation_steps>=1
@@ -16,8 +16,9 @@ inline VCycle::VCycle(Size nb_levels, Size finest_lvl, Size nb_pre_interpolation
   //this.min_level_visited=nb_levels-1;
   finest_lvl=finest_lvl;
 
-  this->going_coarser=true;
+  this->max_nb_iterations=max_nb_iterations;
 
+  this->going_coarser=true;
   this->nb_pre_interpolation_steps=nb_pre_interpolation_steps;
 
 }
@@ -32,6 +33,10 @@ inline Size VCycle::get_current_level()
 //Currently implements a V-cycle with some initial steps on the coarsest grid
 inline MgController::Actions VCycle::get_next_action()
 {
+  if (current_nb_iterations>=max_nb_iterations)
+  {
+    return Actions::finish;
+  }
 
   if (is_next_action_set)
   {
@@ -46,8 +51,11 @@ inline MgController::Actions VCycle::get_next_action()
         return Actions::stay;
       }
       if (current_level==0){
+        if (first_upward)
+        {first_upward=false;}
+        else//increasing the counter of number iterations every time the finest grid is reached (except the first time)
+        {current_nb_iterations++;}
         going_coarser=true;
-        first_upward=false;
       } else if (current_level>=max_level) {
         going_coarser=false;
       }
@@ -65,14 +73,14 @@ inline MgController::Actions VCycle::get_next_action()
         if (first_upward)
         {
           return Actions::interpolate_levelpops;
-        //TODO:also interpolate corrections//add something to see whether it is the first time interpolating to that grid
-        }else{
+        }else{//if it is not the first time upward, interpolate the corrections instead
           return Actions::interpolate_corrections;
         }
       }
     }
     else
     {//still need to do some pre_interpolation steps
+      not_yet_iterated=false;
       nb_pre_interpolation_steps--;
       return Actions::stay;
     }

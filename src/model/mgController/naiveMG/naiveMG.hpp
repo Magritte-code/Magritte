@@ -7,7 +7,9 @@ struct NaiveMG : virtual public MgController
 {
   private:
     // bool going_coarser;// true when currently going to coarser grids
-
+    //The maximum number of iterations per level
+    Size max_nb_iterations;
+    Size current_nb_iterations=0;
     // Size nb_iterations_on_current_grid_remaining;// number of iterations remaining on current grid
     Size finest_lvl=0;
     Size max_level=0;//number of levels going from 0 (finest grid) to nb_levels-1 (coarsest grid)
@@ -33,10 +35,10 @@ struct NaiveMG : virtual public MgController
     //     }
 
     //Default necessary for mgControllerHelper
-    inline NaiveMG()=default;
+    // inline NaiveMG()=default;
 
     //initializes the mgController //FIXME: add maxn_iterations here instead of in Model::compute_level_populations_multigrid
-    inline NaiveMG(Size nb_levels, Size finest_lvl);//TODO add much more
+    inline NaiveMG(Size nb_levels, Size finest_lvl, Size max_nb_iterations);//TODO add much more
 
     //returns the next action and updates what to do next
     inline Actions get_next_action() override;

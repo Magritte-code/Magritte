@@ -17,6 +17,9 @@ struct VCycle : virtual public MgController
     //Size min_level_visited=0;
     Size nb_pre_interpolation_steps=1;//number of iterations on the current grid before interpolating/coarsening
 
+    Size max_nb_iterations;
+    Size current_nb_iterations=0;
+
     bool is_next_action_set;//checks whether the next action has been set
     Actions next_action;//the next action (if it has been set)
     //for now, I implement the V-cycle
@@ -35,10 +38,10 @@ struct VCycle : virtual public MgController
     //     }
 
     //Default necessary for mgControllerHelper
-    inline VCycle()=default;
+    // inline VCycle()=default;
 
     //initializes the mgController
-    inline VCycle(Size nb_levels, Size finest_lvl, Size nb_pre_interpolation_steps);//TODO add much more
+    inline VCycle(Size nb_levels, Size finest_lvl, Size nb_pre_interpolation_steps, Size max_nb_iterations);//TODO add much more
 
     //returns the next action and updates what to do next
     inline Actions get_next_action() override;

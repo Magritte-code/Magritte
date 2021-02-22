@@ -265,6 +265,7 @@ inline void Model::coarsen_around_point (const Size p)
 ///   @Parameter[in]: min_nb_points: stop coarsening when number of points of finest layers is equal or less than this
 ///   @Parameter[in]: max_coars_lvl: The maximum coarsening level we allow
 ///   @Parameter[in]: tol: the tolerance level for which we still consider points similar enough
+//FIXME: ADD PARAMETER FOR MAX_NB_ITERATIONS
 inline int Model::setup_multigrid(Size min_nb_points, Size max_coars_lvl, double tol)
 {
   //set number of off-diagonal elements in lambda matrix 0; needed because we will interpolate these values??
@@ -289,11 +290,12 @@ inline int Model::setup_multigrid(Size min_nb_points, Size max_coars_lvl, double
 
   //Setting up the multrigrid controller
 
-  // std::shared_ptr<MgController> tempImplement_ptr=std::make_shared<NaiveMG>(geometry.points.multiscale.get_max_coars_lvl()+1,0);
-  // mgControllerHelper=MgControllerHelper(tempImplement_ptr);
-
-  std::shared_ptr<MgController> tempImplement_ptr=std::make_shared<VCycle>(geometry.points.multiscale.get_max_coars_lvl()+1,0,5);
+  std::shared_ptr<MgController> tempImplement_ptr=std::make_shared<NaiveMG>(geometry.points.multiscale.get_max_coars_lvl()+1,0,20);
   mgControllerHelper=MgControllerHelper(tempImplement_ptr);
+
+  // std::shared_ptr<MgController> tempImplement_ptr=std::make_shared<VCycle>(geometry.points.multiscale.get_max_coars_lvl()+1,0,5,20);
+  // mgControllerHelper=MgControllerHelper(tempImplement_ptr);
+  
   //Initialize structure for previously computed level populations at each level// actually, we do not need it for the coarsest level
   computed_level_populations.resize(geometry.points.multiscale.get_max_coars_lvl()+1);
 

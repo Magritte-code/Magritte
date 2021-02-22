@@ -557,8 +557,8 @@ int Model :: compute_level_populations_multigrid (
       // //TODO add check of final iteration
       std::cout<<"iteration: "<<iteration<<std::endl;
       std::cout<<"max iteration: "<<max_niterations<<std::endl;
-      //if converged or reached max number of iterations
-      if (!some_not_converged||iteration==max_niterations)
+      //if converged //or reached max number of iterations; moved logic to mgController
+      if (!some_not_converged)//||iteration==max_niterations)
       {
       // Print convergence stats
       cout << "Converged after " << iteration << " iterations" << endl;
