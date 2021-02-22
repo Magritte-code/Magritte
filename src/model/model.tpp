@@ -288,12 +288,12 @@ inline int Model::setup_multigrid(Size min_nb_points, Size max_coars_lvl, double
   std::cout<<"finished coarsening"<<std::endl;
 
   //Setting up the multrigrid controller
-  // mgControllerHelper();
-  std::shared_ptr<MgController> tempImplement_ptr=std::make_shared<NaiveMG>(geometry.points.multiscale.get_max_coars_lvl()+1,0);
+
+  // std::shared_ptr<MgController> tempImplement_ptr=std::make_shared<NaiveMG>(geometry.points.multiscale.get_max_coars_lvl()+1,0);
+  // mgControllerHelper=MgControllerHelper(tempImplement_ptr);
+
+  std::shared_ptr<MgController> tempImplement_ptr=std::make_shared<VCycle>(geometry.points.multiscale.get_max_coars_lvl()+1,0,5);
   mgControllerHelper=MgControllerHelper(tempImplement_ptr);
-  // NaiveMG tempImplement_ptr(geometry.points.multiscale.get_max_coars_lvl()+1,0);
-  // mgControllerHelper=MgControllerHelper(dynamic_cast<MgController*>(&tempImplement_ptr));
-  // mgControllerHelper.UseNaiveMG(geometry.points.multiscale.get_max_coars_lvl()+1,0);
   //Initialize structure for previously computed level populations at each level// actually, we do not need it for the coarsest level
   computed_level_populations.resize(geometry.points.multiscale.get_max_coars_lvl()+1);
 

@@ -648,7 +648,6 @@ int Model :: compute_level_populations_multigrid (
           //In order to make it a bit simpler to implement, we will interpolate the current solution and the restricted solution on the finer grid independently
 
           //TODO: further implement this
-
           //for all species:
           //new levelpops=old levelpops+(interpolated(current levelpops)+interpolated(restricted(old levelpops)))
           vector<VectorXr> old_levelpops=computed_level_populations[geometry.points.multiscale.get_curr_coars_lvl()-1];
@@ -678,13 +677,17 @@ int Model :: compute_level_populations_multigrid (
 
             //setting negative levelpops to 0.
             temp_corrected_levelpops.cwiseMax(0);
+
             // For finding out which abundance corresponds to to the current species
             Size speciesnum=lines.lineProducingSpecies[specidx].linedata.num;
             // We will need to renormalize the level pops, so first we should collect them
             // vector<Real> linefracs;
             // linefracs.resize(lines.lineProducingSpecies[specidx].linedata.nlev);
 
+
             vector<Size> current_points_in_grid=geometry.points.multiscale.get_current_points_in_grid();
+
+
             //Note: we might have some issues with multiple threads accessing data near eachother
             //for every point in the current grid, we will check if some levelpopulations of that point are negative
             threaded_for (p, current_points_in_grid.size(),
@@ -701,6 +704,7 @@ int Model :: compute_level_populations_multigrid (
                   // temp_corrected_levelpops(lines.lineProducingSpecies[specidx].index(current_point,levidx))=0;
                 }
               }
+
               //if negative level population encountered, renormalize
               if (negative_value)
               {

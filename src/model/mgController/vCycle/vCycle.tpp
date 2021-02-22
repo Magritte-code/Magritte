@@ -16,9 +16,9 @@ inline VCycle::VCycle(Size nb_levels, Size finest_lvl, Size nb_pre_interpolation
   //this.min_level_visited=nb_levels-1;
   finest_lvl=finest_lvl;
 
-  this.going_coarser=true;
+  this->going_coarser=true;
 
-  this.nb_pre_interpolation_steps=nb_pre_interpolation_steps;
+  this->nb_pre_interpolation_steps=nb_pre_interpolation_steps;
 
 }
 
@@ -30,7 +30,7 @@ inline Size VCycle::get_current_level()
 
 
 //Currently implements a V-cycle with some initial steps on the coarsest grid
-inline Actions VCycle::next_action()
+inline MgController::Actions VCycle::get_next_action()
 {
 
   if (is_next_action_set)
@@ -62,8 +62,13 @@ inline Actions VCycle::next_action()
       else{
         current_level--;
         not_yet_iterated=true;
-        return Actions::interpolate_levelpops;
+        if (first_upward)
+        {
+          return Actions::interpolate_levelpops;
         //TODO:also interpolate corrections//add something to see whether it is the first time interpolating to that grid
+        }else{
+          return Actions::interpolate_corrections;
+        }
       }
     }
     else

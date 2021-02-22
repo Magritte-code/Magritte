@@ -7,7 +7,7 @@ struct VCycle : virtual public MgController
 {
   private:
     bool going_coarser;// true when currently going to coarser grids
-    bool first_upward;//first time going up should use standard interpolation of the level populations
+    bool first_upward=true;//first time going up should use standard interpolation of the level populations
     bool not_yet_iterated=true;//checks whether we have already done a single iteration on the grid
 
     // Size nb_iterations_on_current_grid_remaining;// number of iterations remaining on current grid
@@ -15,7 +15,7 @@ struct VCycle : virtual public MgController
     Size max_level=0;//number of levels going from 0 (finest grid) to nb_levels-1 (coarsest grid)
     Size current_level=0;//the current level
     //Size min_level_visited=0;
-    // Size nb_pre_interpolation_steps=1;//number of iterations on the current grid before interpolating/coarsening
+    Size nb_pre_interpolation_steps=1;//number of iterations on the current grid before interpolating/coarsening
 
     bool is_next_action_set;//checks whether the next action has been set
     Actions next_action;//the next action (if it has been set)
@@ -38,7 +38,7 @@ struct VCycle : virtual public MgController
     inline VCycle()=default;
 
     //initializes the mgController
-    inline VCycle(Size nb_levels, Size finest_lvl);//TODO add much more
+    inline VCycle(Size nb_levels, Size finest_lvl, Size nb_pre_interpolation_steps);//TODO add much more
 
     //returns the next action and updates what to do next
     inline Actions get_next_action() override;

@@ -4,6 +4,7 @@
 #include <memory>
 #include "model/mgController/mgController.hpp"
 #include "model/mgController/naiveMG/naiveMG.hpp"
+#include "model/mgController/vCycle/vCycle.hpp"
 
 
 
