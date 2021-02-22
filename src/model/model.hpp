@@ -31,7 +31,7 @@ struct Model
     Lines          lines;
     Radiation      radiation;
     vector<Image>  images;
-    MgControllerHelper<MgController> mgControllerHelper;
+    MgControllerHelper mgControllerHelper;
 
     //vector of level populations, used for multigrid purposes
     vector<vector<VectorXr>> computed_level_populations;//For each coarsening level; for each line species; the vector of population (see lineProducingSpecies.hpp)

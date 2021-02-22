@@ -672,12 +672,12 @@ int Model :: compute_level_populations_multigrid (
 
           vector<VectorXr> corrected_levelpops;
           //FIXME: add some check for negative values maybe and do something about them
-          for (Size specidx=0; i<parameters.nlspecs(); i++)
+          for (Size specidx=0; specidx<parameters.nlspecs(); specidx++)
           {
             VectorXr temp_corrected_levelpops=old_levelpops[specidx]+interpolated_new_levelpops[specidx]-interpolated_old_levelpops[specidx];
 
             //setting negative levelpops to 0.
-            temp_corrected_levelpops.cwisemax(0);
+            temp_corrected_levelpops.cwiseMax(0);
             // For finding out which abundance corresponds to to the current species
             Size speciesnum=lines.lineProducingSpecies[specidx].linedata.num;
             // We will need to renormalize the level pops, so first we should collect them
@@ -709,9 +709,9 @@ int Model :: compute_level_populations_multigrid (
                 Size nb_levels=lines.lineProducingSpecies[specidx].linedata.nlev;
                 //Note: because the sum of levelpops must always be equal to the abundance, at least one value should be greater than zero (after zeroing the negative values)
                 // and thus we will never divide by zero
-                Real sum_of_levelpops=temp_corrected_levelpops.segment(start,nb_levels).sum();
+                Real sum_of_levelpops=temp_corrected_levelpops.segment(segment_start,nb_levels).sum();
                 //and finally renormalizing it; such that the sum of levelpops is again equal to the abundance
-                temp_corrected_levelpops.segment(start,nb_levels)=temp_corrected_levelpops.segment(start,nb_levels)*(abund/sum_of_levelpops);
+                temp_corrected_levelpops.segment(segment_start,nb_levels)=temp_corrected_levelpops.segment(segment_start,nb_levels)*(abund/sum_of_levelpops);
               }
             )
 

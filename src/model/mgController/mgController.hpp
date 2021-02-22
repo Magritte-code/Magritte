@@ -21,7 +21,7 @@ struct MgController
     //initializes the mgController
     //MgController(Size nb_levels, Size nb_pre_interpolation_steps);//TODO add much more
 
-    virtual void initialize(Size nb_levels, ...) = 0;
+    // virtual void initialize(Size nb_levels, ...) = 0;
 
     //returns the next action and updates what to do next
     virtual Actions get_next_action() = 0;

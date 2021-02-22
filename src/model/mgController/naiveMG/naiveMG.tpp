@@ -8,6 +8,7 @@ inline NaiveMG::NaiveMG(Size nb_levels, Size finest_lvl)
   //FIXME: check if nb_pre_interpolation_steps>=1
   max_level=nb_levels-1;
   current_level=nb_levels-1;
+  std::cout<<"current level:"<<current_level<<std::endl;
   //this.min_level_visited=nb_levels-1;
   finest_lvl=finest_lvl;
 
@@ -56,7 +57,9 @@ inline void NaiveMG::converged_on_current_grid()
   {
     next_action=Actions::interpolate_levelpops;
     is_next_action_set=true;
+    std::cout<<"current level: "<<current_level<<std::endl;
     current_level--;
+    std::cout<<"finest level: "<<finest_lvl<<std::endl;
     return;
   }
   else

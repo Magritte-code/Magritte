@@ -75,12 +75,15 @@ inline void Lines :: set_inverse_width (const Thermodynamics& thermodynamics)
     })
 }
 
+//Sets the vector (per species) of vectors (per line) of all level populations
 inline void Lines :: set_all_level_pops(vector<VectorXr> new_population)
 {
   threaded_for (i, parameters.nlspecs(),
     lineProducingSpecies[i].set_all_level_pops(new_population[i]);
   )
 }
+
+//Returns the vector (per species) of vectors (per line) of all level populations
 inline vector<VectorXr> Lines :: get_all_level_pops()
 {
   vector<VectorXr> toreturn;
@@ -90,4 +93,5 @@ inline vector<VectorXr> Lines :: get_all_level_pops()
   {
     toreturn.push_back(lineProducingSpecies[i].get_all_level_pops());
   }
+  return toreturn;
 }

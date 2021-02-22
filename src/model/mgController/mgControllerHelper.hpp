@@ -1,17 +1,22 @@
 #pragma once
 
-// #include "model/mgController/mgController.hpp" mgController already included in naiveMG
+
+#include <memory>
+#include "model/mgController/mgController.hpp"
 #include "model/mgController/naiveMG/naiveMG.hpp"
+
 
 
 //The Multigrid controller helper structure
 //just for the practical implementation
 // for getting where we currently are in the multigrid sequence
-template <MgImplementation> struct MgControllerHelper : virtual public MgController
+// template <class MgImplementation>
+struct MgControllerHelper : virtual public MgController
 {
   private:
 
-    MgImplementation* implementation_instance_ptr=nullptr;
+    // std::shared_ptr<MgImplementation> implementation_instance_ptr;
+    std::shared_ptr<MgController> implementation_instance_ptr=std::shared_ptr<MgController>(nullptr);
 
     // enum class WhichImplementation {
     //   None,//Default type; no implementation
@@ -40,7 +45,8 @@ template <MgImplementation> struct MgControllerHelper : virtual public MgControl
 
     //initializes the mgController
     //MgController(Size nb_levels, Size nb_pre_interpolation_steps);//TODO add much more
-    inline MgControllerHelper(MgImplementation implementation_instance);
+    // inline MgControllerHelper(MgController* implementation_instance_ptr);
+    inline MgControllerHelper(std::shared_ptr<MgController> implementation_instance_ptr);
 
     //Because we cannot change constructor names, we use the default constructor just need to 'construct' using some regular functions
     // inline void UseNaiveMG(Size nb_levels, Size finest_lvl);
