@@ -74,7 +74,7 @@ struct Model
     inline void interpolate_levelpops_local(Size coarser_lvl);
 
     //initializes multigrid
-    inline int setup_multigrid(Size min_nb_points, Size max_coars_lvl, double tol);
+    inline int setup_multigrid(Size min_nb_points, Size max_coars_lvl, double tol, Size mgImplementation);
 
     // inline void reset_grid();
 

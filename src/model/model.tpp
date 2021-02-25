@@ -266,7 +266,10 @@ inline void Model::coarsen_around_point (const Size p)
 ///   @Parameter[in]: max_coars_lvl: The maximum coarsening level we allow
 ///   @Parameter[in]: tol: the tolerance level for which we still consider points similar enough
 //FIXME: ADD PARAMETER FOR MAX_NB_ITERATIONS
-inline int Model::setup_multigrid(Size min_nb_points, Size max_coars_lvl, double tol)
+/// mgImplementation options: 1) NaiveMG
+///                           2) VCycle
+/// Others not yet implemented
+inline int Model::setup_multigrid(Size min_nb_points, Size max_coars_lvl, double tol, Size mgImplementation)//, string MgImplementation
 {
   //set number of off-diagonal elements in lambda matrix 0; needed because we will interpolate these values??
   //TODO: find reasons to remove this
@@ -288,14 +291,32 @@ inline int Model::setup_multigrid(Size min_nb_points, Size max_coars_lvl, double
   }
   std::cout<<"finished coarsening"<<std::endl;
 
+  switch (mgImplementation) {
+    case 1://"NaiveMG":
+      {
+      std::shared_ptr<MgController> tempImplement_ptr=std::make_shared<NaiveMG>(geometry.points.multiscale.get_max_coars_lvl()+1,0,20);
+      mgControllerHelper=MgControllerHelper(tempImplement_ptr);
+      }
+      break;
+    case 2://"VCycle":
+      {
+      std::shared_ptr<MgController> tempImplement_ptr=std::make_shared<VCycle>(geometry.points.multiscale.get_max_coars_lvl()+1,0,5,20);
+      mgControllerHelper=MgControllerHelper(tempImplement_ptr);
+      }
+      break;
+    default:
+    std::cout<<"The value entered for mgImplementation: "<<mgImplementation<<" does not refer to a valid multigrid implementation."<<std::endl;
+      throw std::runtime_error("Error: " + std::to_string(mgImplementation) +" is not a valid multigrid implementation argument.");
+      break;
+  }
   //Setting up the multrigrid controller
 
-  std::shared_ptr<MgController> tempImplement_ptr=std::make_shared<NaiveMG>(geometry.points.multiscale.get_max_coars_lvl()+1,0,20);
-  mgControllerHelper=MgControllerHelper(tempImplement_ptr);
+  // std::shared_ptr<MgController> tempImplement_ptr=std::make_shared<NaiveMG>(geometry.points.multiscale.get_max_coars_lvl()+1,0,20);
+  // mgControllerHelper=MgControllerHelper(tempImplement_ptr);
 
   // std::shared_ptr<MgController> tempImplement_ptr=std::make_shared<VCycle>(geometry.points.multiscale.get_max_coars_lvl()+1,0,5,20);
   // mgControllerHelper=MgControllerHelper(tempImplement_ptr);
-  
+
   //Initialize structure for previously computed level populations at each level// actually, we do not need it for the coarsest level
   computed_level_populations.resize(geometry.points.multiscale.get_max_coars_lvl()+1);
 
