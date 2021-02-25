@@ -300,7 +300,7 @@ inline int Model::setup_multigrid(Size min_nb_points, Size max_coars_lvl, double
       break;
     case 2://"VCycle":
       {
-      std::shared_ptr<MgController> tempImplement_ptr=std::make_shared<VCycle>(geometry.points.multiscale.get_max_coars_lvl()+1,0,5,20);
+      std::shared_ptr<MgController> tempImplement_ptr=std::make_shared<VCycle>(geometry.points.multiscale.get_max_coars_lvl()+1,1,5,20);
       mgControllerHelper=MgControllerHelper(tempImplement_ptr);
       }
       break;

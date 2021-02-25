@@ -64,7 +64,8 @@ int main (int argc, char **argv)
     // cout <<"solving without multigrid"<<endl;
     // model.compute_level_populations(true,100);
     //NOTE TO SELF: do NOT every try to use a ridiculous amount of coarsening: if only boundary points are left, the interpolation part will probably be hell
-    model.setup_multigrid(10, 1, 0.1);
+    //mgImplementation choices: 1:"NaiveMG", 2:"VCycle"
+    model.setup_multigrid(10, 3, 0.2, 2);
     cout << "setup multigrid" << endl;
     // vector<Size> current_points_in_grid=model.geometry.points.multiscale.get_current_points_in_grid();
     // for (Size idx=0;idx<current_points_in_grid.size();idx++)
@@ -94,14 +95,14 @@ int main (int argc, char **argv)
     // cout<<"done checking boundary points"<<endl;
     // cout<<"number boundary points left: "<<nb_boundary_points<<endl;
 
-    for (Size p=0;p<parameters.npoints();p++)
-    {
-      std::cout<<"point: "<<p<<" has number neighbors: "<<model.geometry.points.multiscale.get_nb_neighbors(p)<<std::endl;
-      for (Size n: model.geometry.points.multiscale.get_neighbors(p,0))
-      {
-        std::cout<<"Distance: "<<std::sqrt((model.geometry.points.position[p]-model.geometry.points.position[n]).squaredNorm())<<std::endl;
-      }
-    }
+    // for (Size p=0;p<parameters.npoints();p++)
+    // {
+    //   std::cout<<"point: "<<p<<" has number neighbors: "<<model.geometry.points.multiscale.get_nb_neighbors(p)<<std::endl;
+    //   for (Size n: model.geometry.points.multiscale.get_neighbors(p,0))
+    //   {
+    //     std::cout<<"Distance: "<<std::sqrt((model.geometry.points.position[p]-model.geometry.points.position[n]).squaredNorm())<<std::endl;
+    //   }
+    // }
 
 
     // std::set<Size> test_neighbors=model.geometry.points.multiscale.get_neighbors(16187,0);
@@ -117,7 +118,7 @@ int main (int argc, char **argv)
 
 
 
-    model.compute_level_populations_multigrid(true, 4);
+    model.compute_level_populations_multigrid(true, 20);
 
 
     // auto fun_to_del=model.points_are_similar(0.1);

@@ -14,7 +14,7 @@ inline VCycle::VCycle(Size nb_levels, Size finest_lvl, Size nb_pre_interpolation
   max_level=nb_levels-1;
   current_level=nb_levels-1;
   //this.min_level_visited=nb_levels-1;
-  finest_lvl=finest_lvl;
+  this->finest_lvl=finest_lvl;
 
   this->max_nb_iterations=max_nb_iterations;
 
@@ -50,7 +50,7 @@ inline MgController::Actions VCycle::get_next_action()
         not_yet_iterated=false;
         return Actions::stay;
       }
-      if (current_level==0){
+      if (current_level<=finest_lvl){
         if (first_upward)
         {first_upward=false;}
         else//increasing the counter of number iterations every time the finest grid is reached (except the first time)
@@ -59,7 +59,7 @@ inline MgController::Actions VCycle::get_next_action()
       } else if (current_level>=max_level) {
         going_coarser=false;
       }
-      if (max_level==0){//there is only a single level left, so staying is the only option (except from finishing)
+      if (max_level==finest_lvl){//there is only a single level left, so staying is the only option (except from finishing)
         return Actions::stay;
       }
       if (going_coarser){

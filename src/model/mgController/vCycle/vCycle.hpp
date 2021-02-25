@@ -20,7 +20,7 @@ struct VCycle : virtual public MgController
     Size max_nb_iterations;
     Size current_nb_iterations=0;
 
-    bool is_next_action_set;//checks whether the next action has been set
+    bool is_next_action_set=false;//checks whether the next action has been set
     Actions next_action;//the next action (if it has been set)
     //for now, I implement the V-cycle
 
