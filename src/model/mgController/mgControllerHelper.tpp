@@ -24,36 +24,36 @@ inline MgControllerHelper::MgControllerHelper(std::shared_ptr<MgController> impl
     //returns the next action and updates what to do next
 // template <typename MgImplementation>
 MgController::Actions MgControllerHelper::get_next_action()
-{
-  // switch (current_implementation) {
-  //   case WhichImplementation::NaiveMG:
-  //     return naiveMGref.get_next_action();
-  //     break;
-  //   case WhichImplementation::None:
-  //   default:
-  //   //TODO: raise error
-  //     break;
-  // }
-  // return MgController::Actions::error;
+{ //check if not nullptr
+  if (implementation_instance_ptr)
+  {
   std::cout<<"Getting next action"<<std::endl;
   return (*implementation_instance_ptr).get_next_action();
+  }
+  else
+  {
+    std::cout<<"You forgot to properly initialize mgControllerHelper;"<<std::endl;
+    std::cout<<"Did you forget to use setup_multigrid?"<<std::endl;
+    throw std::runtime_error("Error: mgControllerHelper pointer not set");
+    // return MgController::Actions::error;
+  }
 }
 
 //returns the current level
 // template <typename MgImplementation>
 Size MgControllerHelper::get_current_level()
 {
-  // switch (current_implementation) {
-  //   case WhichImplementation::NaiveMG:
-  //     return naiveMGref.get_current_level();
-  //     break;
-  //   case WhichImplementation::None:
-  //   default:
-  //   //TODO: raise error
-  //     break;
-  // }
-  // return 0;
-  return (*implementation_instance_ptr).get_current_level();
+  if (implementation_instance_ptr)
+  {
+    return (*implementation_instance_ptr).get_current_level();
+  }
+  else
+  {
+    std::cout<<"You forgot to properly initialize mgControllerHelper;"<<std::endl;
+    std::cout<<"Did you forget to use setup_multigrid?"<<std::endl;
+    throw std::runtime_error("Error: mgControllerHelper pointer not set");
+    // return parameters.npoints() //if uncomment, do not forget to include parameters somewhere in the hpp file
+  }
 }
 
     //Call this when the solution is converged on the current grid.
@@ -61,16 +61,16 @@ Size MgControllerHelper::get_current_level()
 // template <typename MgImplementation>
 void MgControllerHelper::converged_on_current_grid()
 {
-  // switch (current_implementation) {
-  //   case WhichImplementation::NaiveMG:
-  //     naiveMGref.converged_on_current_grid();
-  //     break;
-  //   case WhichImplementation::None:
-  //   default:
-  //   //TODO: raise error
-  //     break;
-  // }
-  (*implementation_instance_ptr).converged_on_current_grid();
+  if (implementation_instance_ptr)
+  {
+    (*implementation_instance_ptr).converged_on_current_grid();
+  }
+  else
+  {
+    std::cout<<"You forgot to properly initialize mgControllerHelper;"<<std::endl;
+    std::cout<<"Did you forget to use setup_multigrid?"<<std::endl;
+    throw std::runtime_error("Error: mgControllerHelper pointer not set");
+  }
 }
 
     //Call when the solution has directly converged on the current grid.

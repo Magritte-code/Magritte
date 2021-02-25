@@ -42,6 +42,8 @@ struct MgControllerHelper : virtual public MgController
     //   goto_coarsest           //signals that we start iterating at the coarsest grid//also possible after reset()
     // };
 
+    //DO NOT USE THE DEFAULT IMPLEMENTATION!!!
+    //FIXME: THROW ERROR WHEN TRYING TO USE DEFAULT IMPLEMENTATION
     MgControllerHelper()=default;
 
     //initializes the mgController
