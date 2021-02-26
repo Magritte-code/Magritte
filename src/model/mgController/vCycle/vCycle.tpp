@@ -33,7 +33,7 @@ inline Size VCycle::get_current_level()
 //Currently implements a V-cycle with some initial steps on the coarsest grid
 inline MgController::Actions VCycle::get_next_action()
 {
-  if (current_nb_iterations>=max_nb_iterations)
+  if ((current_nb_iterations>=max_nb_iterations)&&(!not_yet_iterated))
   {
     return Actions::finish;
   }
@@ -121,7 +121,12 @@ inline void VCycle::converged_on_current_grid()
   }
   else if (current_level>finest_lvl)
   {
-    next_action=Actions::interpolate_levelpops;
+    if (first_upward)//note:convergence during the first time going upward should not be practically possible, but hey, it could happen...
+    {
+      next_action=Actions::interpolate_levelpops;
+    }else{
+      next_action=Actions::interpolate_corrections;
+    }
     is_next_action_set=true;
     current_level--;
     return;

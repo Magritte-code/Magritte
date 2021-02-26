@@ -268,6 +268,7 @@ inline void Model::coarsen_around_point (const Size p)
 //FIXME: ADD PARAMETER FOR MAX_NB_ITERATIONS
 /// mgImplementation options: 1) NaiveMG
 ///                           2) VCycle
+///                           3) WCycle
 /// Others not yet implemented
 inline int Model::setup_multigrid(Size min_nb_points, Size max_coars_lvl, double tol, Size mgImplementation)//, string MgImplementation
 {
@@ -304,8 +305,14 @@ inline int Model::setup_multigrid(Size min_nb_points, Size max_coars_lvl, double
       mgControllerHelper=MgControllerHelper(tempImplement_ptr);
       }
       break;
+    case 3://"VCycle":
+      {
+      std::shared_ptr<MgController> tempImplement_ptr=std::make_shared<WCycle>(geometry.points.multiscale.get_max_coars_lvl()+1,1,5,20);
+      mgControllerHelper=MgControllerHelper(tempImplement_ptr);
+      }
+      break;
     default:
-    std::cout<<"The value entered for mgImplementation: "<<mgImplementation<<" does not refer to a valid multigrid implementation."<<std::endl;
+      std::cout<<"The value entered for mgImplementation: "<<mgImplementation<<" does not refer to a valid multigrid implementation."<<std::endl;
       throw std::runtime_error("Error: " + std::to_string(mgImplementation) +" is not a valid multigrid implementation argument.");
       break;
   }

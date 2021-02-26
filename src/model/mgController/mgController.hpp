@@ -15,6 +15,7 @@ struct MgController
       stay,                   //remain on the same grid level; keep iterating
       finish,                 //the entire multigrid procedure is finished
       goto_coarsest,          //signals that we start iterating at the coarsest grid//also possible after reset()
+      do_nothing,             //signals that we do not need to do anything this iteration (for simplifying the state of some mgControllers)
       error                   //Somehow, we have an error
     };
 
@@ -26,7 +27,9 @@ struct MgController
     //returns the next action and updates what to do next
     virtual Actions get_next_action() = 0;
 
+    //TODO think about deleting this// i cannot guarantee that this is consistent
     //returns the current level
+    //DEPRECATED: DO NOT USE ANYMORE
     virtual Size get_current_level() = 0;
 
     //Call this when the solution is converged on the current grid.

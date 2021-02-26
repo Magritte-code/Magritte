@@ -64,8 +64,8 @@ int main (int argc, char **argv)
     // cout <<"solving without multigrid"<<endl;
     // model.compute_level_populations(true,100);
     //NOTE TO SELF: do NOT every try to use a ridiculous amount of coarsening: if only boundary points are left, the interpolation part will probably be hell
-    //mgImplementation choices: 1:"NaiveMG", 2:"VCycle"
-    model.setup_multigrid(10, 3, 0.2, 2);
+    //mgImplementation choices: 1:"NaiveMG", 2:"VCycle", 3:"WCycle"
+    model.setup_multigrid(10, 3, 0.2, 3);
     cout << "setup multigrid" << endl;
     // vector<Size> current_points_in_grid=model.geometry.points.multiscale.get_current_points_in_grid();
     // for (Size idx=0;idx<current_points_in_grid.size();idx++)

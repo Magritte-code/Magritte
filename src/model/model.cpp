@@ -479,7 +479,8 @@ int Model :: compute_level_populations_multigrid (
         {
         std::cout<<"Action goto_coarsest"<<std::endl;
         geometry.points.multiscale.set_curr_coars_lvl(geometry.points.multiscale.get_max_coars_lvl());
-        std::cout<<"Current coarsening level: "<<mgControllerHelper.get_current_level()<<std::endl;
+        std::cout<<"Current coarsening level: "<<geometry.points.multiscale.get_curr_coars_lvl()<<std::endl;
+        // std::cout<<"Current coarsening level: "<<mgControllerHelper.get_current_level()<<std::endl;
 
       break;
         }
@@ -751,6 +752,13 @@ int Model :: compute_level_populations_multigrid (
         std::cout<<"Action finish"<<std::endl;
         finished=true;
         std::cout<<"Multigrid sequence is finished"<<std::endl;
+        }
+
+      break;
+
+        case MgController::Actions::do_nothing:
+        {
+        std::cout<<"Action do nothing"<<std::endl;
         }
 
       break;

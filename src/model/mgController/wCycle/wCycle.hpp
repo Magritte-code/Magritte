@@ -24,7 +24,7 @@ struct WCycle : virtual public MgController
     Actions next_action;//the next action (if it has been set)
     //for now, I implement the V-cycle
 
-    vector<Actions> action_order;//contains the order of the actions in the w-cycle
+    vector<Actions> action_order;//contains the order of the actions (interpolate_corrections and restrict) in the w-cycle
     //the state for the multigrid cycle was already getting complicated for the v-cycle, ergo this helps alleviate it
     Size curr_action_nb=0;// the index at which we currently are in the action_order
 
