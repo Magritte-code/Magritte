@@ -286,7 +286,7 @@ inline void LineProducingSpecies :: update_using_statistical_equilibrium (
     // vector<Size> points_in_grid=model.geometry.points.multiscale.get_current_points_in_grid();
     Size nbpoints=points_in_grid.size();
 
-    for (Size idx = 0; idx < nbpoints; idx++) // !!! no OMP because push_back is not thread safe !!!
+    for (Size idx = 0; idx < nbpoints; idx++) // !!! no OMP because push_back is not thread safe !!! // TODO: replace with some gather operation
     {
         const Size p=points_in_grid[idx];
         // Radiative transitions
