@@ -1,6 +1,7 @@
 #include "paracabs.hpp"
 #include "model.hpp"
 #include "tools/heapsort.hpp"
+#include "tools/timer.hpp"
 #include "solver/solver.hpp"
 // #include "mgController/mgControllerHelper.hpp"
 
@@ -442,6 +443,10 @@ int Model :: compute_level_populations_multigrid (
     // geometry.points.multiscale.set_curr_coars_lvl(geometry.points.multiscale.get_max_coars_lvl());
     int iteration_sum    = 0;
 
+    //storing the number of ieterations each level
+    vector<Size> iterations_per_level;
+    iterations_per_level.resize(max_coars_lvl+1);
+
     bool finished=false;
 
 
@@ -496,9 +501,10 @@ int Model :: compute_level_populations_multigrid (
 
       // while (some_not_converged && (iteration < max_niterations))
       // {
+        iterations_per_level[geometry.points.multiscale.get_curr_coars_lvl()]++;
         iteration++;
         // logger.write ("Starting iteration ", iteration);
-        cout << "Starting iteration " << iteration << endl;
+        cout << "Starting iteration " << iterations_per_level[geometry.points.multiscale.get_curr_coars_lvl()] << " for coarsening level: " << geometry.points.multiscale.get_curr_coars_lvl() << endl;
 
 
         // If a multigrid operation has happened, just put the previous level populations here to compare against
@@ -569,13 +575,13 @@ int Model :: compute_level_populations_multigrid (
         }
       // } // end of while loop of iterations
       // //TODO add check of final iteration
-      std::cout<<"iteration: "<<iteration<<std::endl;
-      std::cout<<"max iteration: "<<max_niterations<<std::endl;
+      // std::cout<<"iteration: "<<iteration<<std::endl;
+      // std::cout<<"max iteration: "<<max_niterations<<std::endl;
       //if converged //or reached max number of iterations; moved logic to mgController
       if (!some_not_converged)//||iteration==max_niterations)
       {
       // Print convergence stats
-      cout << "Converged after " << iteration << " iterations" << endl;
+      // cout << "Converged after " << iteration << " iterations" << endl;
       // curr_max_coars_lvl-=1;
       iteration_sum+=iteration;
       iteration=0;
@@ -663,6 +669,7 @@ int Model :: compute_level_populations_multigrid (
         case::MgController::Actions::interpolate_corrections:
         {
           multigrid_operation_happened=true;
+          std::cout<<"Action interpolate corrections"<<std::endl;
 
           //In order to make it a bit simpler to implement, we will interpolate the current solution and the restricted solution on the finer grid independently
 
@@ -676,15 +683,15 @@ int Model :: compute_level_populations_multigrid (
 
 
           //Maybe TODO: create function that directly interpolates both, such that we do not waste extra time when recreating the same matrices
-          cout<<"trying to interpolate level populations; current coarsening level: "<<geometry.points.multiscale.get_curr_coars_lvl()<<endl;
+          // cout<<"trying to interpolate level populations; current coarsening level: "<<geometry.points.multiscale.get_curr_coars_lvl()<<endl;
           interpolate_levelpops_local(geometry.points.multiscale.get_curr_coars_lvl());
-          cout<<"successfully interpolated level populations"<<endl;
+          // cout<<"successfully interpolated level populations"<<endl;
 
           vector<VectorXr> interpolated_new_levelpops=lines.get_all_level_pops();
 
-          cout<<"trying to interpolate old level populations; current coarsening level: "<<geometry.points.multiscale.get_curr_coars_lvl()<<endl;
+          // cout<<"trying to interpolate old level populations; current coarsening level: "<<geometry.points.multiscale.get_curr_coars_lvl()<<endl;
           interpolate_levelpops_local(geometry.points.multiscale.get_curr_coars_lvl());
-          cout<<"successfully interpolated level populations"<<endl;
+          // cout<<"successfully interpolated level populations"<<endl;
 
           vector<VectorXr> interpolated_old_levelpops=lines.get_all_level_pops();
 
@@ -772,6 +779,11 @@ int Model :: compute_level_populations_multigrid (
         std::cout<<"Action finish"<<std::endl;
         finished=true;
         std::cout<<"Multigrid sequence is finished"<<std::endl;
+        std::cout<<"Nb iterations per level:"<<std::endl;
+        for (Size levelidx=0;levelidx<iterations_per_level.size();levelidx++)
+        {
+          std::cout<<"Level "<<levelidx<<" #iterations: "<<iterations_per_level[levelidx]<<std::endl;
+        }
         }
 
       break;

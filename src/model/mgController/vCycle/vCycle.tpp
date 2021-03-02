@@ -129,6 +129,7 @@ inline void VCycle::converged_on_current_grid()
     }
     is_next_action_set=true;
     current_level--;
+    max_level=current_level;
     return;
   }
   else

@@ -166,7 +166,7 @@ inline void WCycle::converged_on_current_grid()
     }
     is_next_action_set=true;
     current_level--;
-    Size temp_nb_level_diff=current_level;
+    Size temp_nb_level_diff=current_level-finest_lvl;
 
     //initialize new w-cycle
     initialize_w_cycle(temp_nb_level_diff);
