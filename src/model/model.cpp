@@ -444,6 +444,10 @@ int Model :: compute_level_populations_multigrid (
 
     bool finished=false;
 
+
+    bool multigrid_operation_happened=false;//denotes whether we have just done a multigrid operation: either 'restrict' or 'interpolate_corrections'
+    //neccessary because we should calculate convergence compared to previous iteration on SAME GRID LEVEL (when possible).
+
     //TODO: initialize multigrid
 
     //TODO: use something a bit more robust and RESET THE CONTROLLER
@@ -496,12 +500,20 @@ int Model :: compute_level_populations_multigrid (
         // logger.write ("Starting iteration ", iteration);
         cout << "Starting iteration " << iteration << endl;
 
+
+        // If a multigrid operation has happened, just put the previous level populations here to compare against
+        if (multigrid_operation_happened)
+        {
+          multigrid_operation_happened=false;
+          lines.set_all_level_pops(computed_level_populations[geometry.points.multiscale.get_curr_coars_lvl()]);
+        }
         // Start assuming convergence
         some_not_converged = false;
 
         if (use_Ng_acceleration && (iteration_normal == 4))
         {
             vector<Size> points_in_grid=geometry.points.multiscale.get_current_points_in_grid();
+            //In this next line, we will also calculate the convergence of the levelpops
             lines.iteration_using_Ng_acceleration (parameters.pop_prec(), points_in_grid);
 
             iteration_normal = 0;
@@ -518,6 +530,7 @@ int Model :: compute_level_populations_multigrid (
             compute_Jeff                              ();
             //TODO: also interpolate lambda diagonal thing
             vector<Size> points_in_grid=geometry.points.multiscale.get_current_points_in_grid();
+            //In this next line, we will also calculate the convergence of the levelpops
             lines.iteration_using_statistical_equilibrium (
                 chemistry.species.abundance,
                 thermodynamics.temperature.gas,
@@ -578,6 +591,9 @@ int Model :: compute_level_populations_multigrid (
         {
         std::cout<<"Action interpolate levelpops"<<std::endl;
 
+        //Saving the current level populations
+        computed_level_populations[geometry.points.multiscale.get_curr_coars_lvl()]=lines.get_all_level_pops();
+
       //Now interpolating the level populations to the next finer level
       // if (geometry.points.multiscale.get_curr_coars_lvl()>0)
       {//maybe TODO: add support for interpolating skipping levels
@@ -612,6 +628,7 @@ int Model :: compute_level_populations_multigrid (
         case MgController::Actions::restrict:
         {
           std::cout<<"Action restrict"<<std::endl;
+          multigrid_operation_happened=true;
 
           //Saving the current level populations
           computed_level_populations[geometry.points.multiscale.get_curr_coars_lvl()]=lines.get_all_level_pops();
@@ -645,10 +662,13 @@ int Model :: compute_level_populations_multigrid (
         // However, for points in the difference between the two grid, there might be a difference due to the interpolation
         case::MgController::Actions::interpolate_corrections:
         {
+          multigrid_operation_happened=true;
 
           //In order to make it a bit simpler to implement, we will interpolate the current solution and the restricted solution on the finer grid independently
 
-          //TODO: further implement this
+          //Saving the current level populations
+          computed_level_populations[geometry.points.multiscale.get_curr_coars_lvl()]=lines.get_all_level_pops();
+
           //for all species:
           //new levelpops=old levelpops+(interpolated(current levelpops)+interpolated(restricted(old levelpops)))
           vector<VectorXr> old_levelpops=computed_level_populations[geometry.points.multiscale.get_curr_coars_lvl()-1];
