@@ -307,7 +307,7 @@ inline int Model::setup_multigrid(Size min_nb_points, Size max_coars_lvl, double
       break;
     case 3://"VCycle":
       {
-      std::shared_ptr<MgController> tempImplement_ptr=std::make_shared<WCycle>(geometry.points.multiscale.get_max_coars_lvl()+1,0,5,20);
+      std::shared_ptr<MgController> tempImplement_ptr=std::make_shared<WCycle>(geometry.points.multiscale.get_max_coars_lvl()+1,2,5,20);
       mgControllerHelper=MgControllerHelper(tempImplement_ptr);
       }
       break;
@@ -680,11 +680,11 @@ inline void Model::interpolate_matrix_local(Size coarser_lvl, Matrix<T> &to_inte
     // Note: using the current multigrid creation method, the number of neighbors in the coarse grid is almost always at least 1
     if (neighbors_coarser_grid.size()==0)//this shouldn't be possible, but you never know what goes wrong
     {
-      std::cout<<"No neighbors for the current point! Using point which deleted it instead as neighbor."<<std::endl;
-      std::cout<<"Current point: "<<diff_point<<std::endl;
-      std::cout<<"Point which replaces it: "<<geometry.points.multiscale.point_deleted_map.at(diff_point)<<std::endl;
+      // std::cout<<"No neighbors for the current point! Using point which deleted it instead as neighbor."<<std::endl;
+      // std::cout<<"Current point: "<<diff_point<<std::endl;
+      // std::cout<<"Point which replaces it: "<<geometry.points.multiscale.point_deleted_map.at(diff_point)<<std::endl;
       neighbors_coarser_grid.push_back(geometry.points.multiscale.point_deleted_map.at(diff_point));
-      std::cout<<"Succesfully replaced neighbors"<<std::endl;
+      // std::cout<<"Succesfully replaced neighbors"<<std::endl;
     }
     ///commented out for now until we solve the issue with having way too much neighbors if we apply this...
     // In the case we do not really have enough points for a good interpolation, just add more

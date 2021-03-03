@@ -440,12 +440,31 @@ int Model :: compute_level_populations_multigrid (
 
     //set curr coarsening level to max
     Size max_coars_lvl=geometry.points.multiscale.get_max_coars_lvl();
+    // std::cout<<"max_coars_lvl: "<<max_coars_lvl<<std::endl;
     // geometry.points.multiscale.set_curr_coars_lvl(geometry.points.multiscale.get_max_coars_lvl());
     int iteration_sum    = 0;
 
     //storing the number of ieterations each level
     vector<Size> iterations_per_level;
     iterations_per_level.resize(max_coars_lvl+1);
+    //Timing info
+    vector<Timer> timers_per_level;
+    for (Size i=0; i<=max_coars_lvl; i++)
+    {
+      Timer temp_timer("Time on level "+std::to_string(i));
+      timers_per_level.push_back(temp_timer);
+    }
+    Timer totalTime("Total time");
+    Timer interpolation_timer("Interpolation time");
+    Timer* current_timer_pointer;
+
+
+    current_timer_pointer=&timers_per_level[max_coars_lvl];
+    //For now, i assume we start iterating at the coarsest level and start both timers at the same time
+    (*current_timer_pointer).start();
+    totalTime.start();
+
+
 
     bool finished=false;
 
@@ -485,7 +504,7 @@ int Model :: compute_level_populations_multigrid (
       switch (mgControllerHelper.get_next_action()) {
 
         case::MgController::Actions::goto_coarsest:
-        {
+        {//Not much is happening here, so no timer
         std::cout<<"Action goto_coarsest"<<std::endl;
         geometry.points.multiscale.set_curr_coars_lvl(geometry.points.multiscale.get_max_coars_lvl());
         std::cout<<"Current coarsening level: "<<geometry.points.multiscale.get_curr_coars_lvl()<<std::endl;
@@ -497,6 +516,11 @@ int Model :: compute_level_populations_multigrid (
 
         case MgController::Actions::stay:
         {
+          //Stopping current timer and replace with timer at current level
+          (*current_timer_pointer).stop();
+          timers_per_level[geometry.points.multiscale.get_curr_coars_lvl()].start();
+          current_timer_pointer=&timers_per_level[geometry.points.multiscale.get_curr_coars_lvl()];
+
         std::cout<<"Action stay"<<std::endl;
 
       // while (some_not_converged && (iteration < max_niterations))
@@ -595,6 +619,11 @@ int Model :: compute_level_populations_multigrid (
 
         case MgController::Actions::interpolate_levelpops:
         {
+          //Stopping current timer and replace with timer at current level
+          (*current_timer_pointer).stop();
+          interpolation_timer.start();
+          current_timer_pointer=&interpolation_timer;
+
         std::cout<<"Action interpolate levelpops"<<std::endl;
 
         //Saving the current level populations
@@ -633,6 +662,8 @@ int Model :: compute_level_populations_multigrid (
         // that nothing particularly interesting happens to the right-hand side with this restriction operator.
         case MgController::Actions::restrict:
         {
+          //Not much is happening here, so no timer
+
           std::cout<<"Action restrict"<<std::endl;
           multigrid_operation_happened=true;
 
@@ -668,6 +699,12 @@ int Model :: compute_level_populations_multigrid (
         // However, for points in the difference between the two grid, there might be a difference due to the interpolation
         case::MgController::Actions::interpolate_corrections:
         {
+          //Stopping current timer and replace with timer at current level
+          (*current_timer_pointer).stop();
+          interpolation_timer.start();
+          current_timer_pointer=&interpolation_timer;
+
+
           multigrid_operation_happened=true;
           std::cout<<"Action interpolate corrections"<<std::endl;
 
@@ -776,6 +813,10 @@ int Model :: compute_level_populations_multigrid (
 
         case MgController::Actions::finish:
         {
+        //Stop the timers
+        (*current_timer_pointer).stop();
+        totalTime.stop();
+
         std::cout<<"Action finish"<<std::endl;
         finished=true;
         std::cout<<"Multigrid sequence is finished"<<std::endl;
@@ -784,6 +825,15 @@ int Model :: compute_level_populations_multigrid (
         {
           std::cout<<"Level "<<levelidx<<" #iterations: "<<iterations_per_level[levelidx]<<std::endl;
         }
+
+        //and print out the timings
+        std::cout<<totalTime.get_print_total_string()<<std::endl;
+        for (Size i=0; i<=max_coars_lvl; i++)
+        {
+          std::cout<<timers_per_level[i].get_print_total_string()<<std::endl;
+        }
+        std::cout<<interpolation_timer.get_print_total_string()<<std::endl;
+
         }
 
       break;
