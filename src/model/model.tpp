@@ -286,8 +286,9 @@ inline int Model::setup_multigrid(Size min_nb_points, Size max_coars_lvl, double
   {std::cout<<"coarsening layer"<<std::endl;
     //options for choosing the tolerance adaptively
     //tol=n*deltatol
-    //tol=1-(1-deltatol)^n
-    coarsen(tol);
+    double temp_tol=1-std::pow(1-tol,geometry.points.multiscale.get_max_coars_lvl()+1);
+    std::cout<<"temp tol: "<<temp_tol<<std::endl;
+    coarsen(temp_tol);
     std::cout<<"coarsened layer; number points remaining: "<<geometry.points.multiscale.get_total_points(geometry.points.multiscale.get_max_coars_lvl())<<std::endl;
   }
   std::cout<<"finished coarsening"<<std::endl;
