@@ -307,7 +307,7 @@ inline int Model::setup_multigrid(Size min_nb_points, Size max_coars_lvl, double
       break;
     case 3://"VCycle":
       {
-      std::shared_ptr<MgController> tempImplement_ptr=std::make_shared<WCycle>(geometry.points.multiscale.get_max_coars_lvl()+1,2,5,20);
+      std::shared_ptr<MgController> tempImplement_ptr=std::make_shared<WCycle>(geometry.points.multiscale.get_max_coars_lvl()+1,0,5,20);
       mgControllerHelper=MgControllerHelper(tempImplement_ptr);
       }
       break;
@@ -494,10 +494,10 @@ inline void Model::interpolate_levelpops_local(Size coarser_lvl)
     // Note: using the current multigrid creation method, the number of neighbors in the coarse grid is almost always at least 1
     if (neighbors_coarser_grid.size()==0)//this happens very rarely
     {
-      std::cout<<"No neighbors for the current point! Using point which deleted it instead as neighbor."<<std::endl;
-      std::cout<<"Current point: "<<diff_point<<std::endl;
-      std::cout<<"Point which replaces it: "<<geometry.points.multiscale.point_deleted_map.at(diff_point)<<std::endl;
-      Size repl_point=geometry.points.multiscale.point_deleted_map.at(diff_point);
+      // std::cout<<"No neighbors for the current point! Using point which deleted it instead as neighbor."<<std::endl;
+      // std::cout<<"Current point: "<<diff_point<<std::endl;
+      // std::cout<<"Point which replaces it: "<<geometry.points.multiscale.point_deleted_map.at(diff_point)<<std::endl;
+      // Size repl_point=geometry.points.multiscale.point_deleted_map.at(diff_point);
 
       neighbors_coarser_grid.push_back(geometry.points.multiscale.point_deleted_map.at(diff_point));
     }
@@ -565,12 +565,16 @@ inline void Model::interpolate_levelpops_local(Size coarser_lvl)
         rbf_mat(idx2,idx)=radius;
       }
     }
-    double mindist=distance_with_neighbors.minCoeff();
-    mindist=mindist*RADIUS_MULT_FACTOR;//arbitrary number to make mindist larger
+    //just use the mean distance for less parameter tuning
+    double meandist=distance_with_neighbors.mean();
+    // double mindist=distance_with_neighbors.minCoeff();
+    // mindist=mindist*RADIUS_MULT_FACTOR;//arbitrary number to make mindist larger
 
-    rbf_mat=rbf_mat/mindist;
+    // rbf_mat=rbf_mat/mindist;
+    rbf_mat=rbf_mat/meandist;
     rbf_mat=rbf_mat.unaryExpr(std::ptr_fun(rbf_local<double>));
-    distance_with_neighbors=distance_with_neighbors/mindist;
+    // distance_with_neighbors=distance_with_neighbors/mindist;
+    distance_with_neighbors=distance_with_neighbors/meandist;
     distance_with_neighbors=distance_with_neighbors.unaryExpr(std::ptr_fun(rbf_local<double>));
 
     // Going with ColPivHouseholderQR for simplicity and accuracy
@@ -765,12 +769,16 @@ inline void Model::interpolate_matrix_local(Size coarser_lvl, Matrix<T> &to_inte
         rbf_mat(idx2,idx)=radius;
       }
     }
-    T mindist=distance_with_neighbors.minCoeff();
-    mindist=mindist*RADIUS_MULT_FACTOR;
+    //Just use the mean distance for less parameter tuning
+    T meandist=distance_with_neighbors.mean();
+    // T mindist=distance_with_neighbors.minCoeff();
+    // mindist=mindist*RADIUS_MULT_FACTOR;
     // T maxdist=rbf_mat.maxCoeff()*5.0;//arbitrary number 5 to make the max_dist larger
-    rbf_mat=rbf_mat/mindist;
+    // rbf_mat=rbf_mat/mindist;
+    rbf_mat=rbf_mat/meandist;
     rbf_mat=rbf_mat.unaryExpr(std::ptr_fun(rbf_local<T>));
-    distance_with_neighbors=distance_with_neighbors/mindist;
+    // distance_with_neighbors=distance_with_neighbors/mindist;
+    distance_with_neighbors=distance_with_neighbors/meandist;
     distance_with_neighbors=distance_with_neighbors.unaryExpr(std::ptr_fun(rbf_local<T>));
     // std::cout<<"determinant: "<<distance_with_neighbors.determinant()<<std::endl;
     //going with colPivHouseholderQr decomposition for accuracy
