@@ -277,6 +277,7 @@ inline int Model::setup_multigrid(Size min_nb_points, Size max_coars_lvl, double
   //TODO maybe add switch
   //Setup mgController
   //FIXME: check which level we actually reach!!!!!
+  //TODO: add check whether one is between 2*nb boundary points (because then we devolve into useless territory)
 
   parameters.n_off_diag=0;
   // tol=deltatol
@@ -334,7 +335,12 @@ inline int Model::setup_multigrid(Size min_nb_points, Size max_coars_lvl, double
 
 template <typename T>
 inline T rbf_local(T radius)
-{
+{ //exact choice of radial basis function does not seems to matter that much; so we'll stick with the gaussian
+  //inverse quadratic
+  // return 1.0/(1+std::pow(radius,2));
+  //multiquadratic // a tiny bit worse than gaussian in my experience
+  // return std::sqrt(1+std::pow(radius,2));
+  //gaussian
   return std::exp(-std::pow(radius,2));
 }
 
