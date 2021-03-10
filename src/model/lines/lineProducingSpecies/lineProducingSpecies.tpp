@@ -12,6 +12,7 @@
 ///    @param[in] i : index of the level
 ///    @return corresponding index for p and i
 //////////////////////////////////////////////
+/// REQUIRED: Please do not change this unless you also have a look at solve_statistical_equilibrium for the 'compressed indices' and change them accordingly
 inline Size LineProducingSpecies :: index (const Size p, const Size i) const
 {
     return i + p*linedata.nlev;
@@ -258,288 +259,594 @@ inline void LineProducingSpecies :: update_using_statistical_equilibrium (
     //, const Double2 residualy_higher_level
 {
 
-    const Size non_zeros = parameters.npoints() * (      linedata.nlev
-                                                   + 6 * linedata.nrad
-                                                   + 4 * linedata.ncol_tot );
-
     population_prev3 = population_prev2;
     population_prev2 = population_prev1;
     population_prev1 = population;
-    //FIXME: do this somewhere else/remove this: gets far too complicated (and useless) with multigrid
 
     residuals  .push_back(population-populations.back());
     populations.push_back(population);
 
+
 //    SparseMatrix<double> RT (ncells*linedata.nlev, ncells*linedata.nlev);
+    std::cout<<"setting vector population"<<std::endl;
+    VectorXr new_population = VectorXr::Zero (parameters.npoints()*linedata.nlev);
 
-    VectorXr y = VectorXr::Zero (parameters.npoints()*linedata.nlev);
+    const Size max_matrix_size=100*1024*1024;//hundred megabyte
 
-    vector<Triplet<Real, Size>> triplets;
-    vector<Triplet<Real, Size>> triplets_LT;
-    vector<Triplet<Real, Size>> triplets_LS;
+    //FIXME: will most definately overflow!!!!!!!!!!!!!!
+    const unsigned long long int total_non_zeros = parameters.npoints() * (      linedata.nlev
+                                                   + 6 * linedata.nrad
+                                                   + 4 * linedata.ncol_tot );
 
-    triplets   .reserve (non_zeros);
-    triplets_LT.reserve (non_zeros);
-    triplets_LS.reserve (non_zeros);
+    // We can split our block diagonal matrix if there are no non-local contributions
+    if (parameters.n_off_diag==0){
+      Size nb_points_per_block=max_matrix_size/((linedata.nlev + 6 * linedata.nrad + 4 * linedata.ncol_tot )*sizeof(Real));
+      Size nb_different_matrices=(points_in_grid.size()+(nb_points_per_block-1))/nb_points_per_block;//rounding up
+      std::cout<<"Splitting big matrix into n parts: "<<nb_different_matrices<<std::endl;
+      //TODO: replace with parallel for
+      for (Size idx=0;idx<nb_different_matrices;idx++)
+      {
+        Size firstidx=idx*nb_points_per_block;
+        Size lastidx=std::min(static_cast<Size>(points_in_grid.size()-1),(idx+1)*nb_points_per_block-1);
+        vector<Size> current_points_in_block = std::vector<Size>(points_in_grid.begin() + firstidx, points_in_grid.begin()+lastidx+1);
+        VectorXr resulting_y = solve_statistical_equilibrium(abundance,temperature,current_points_in_block);//does not need to be continguous
 
-    //todo: use current grid ...
-    // vector<Size> points_in_grid=model.geometry.points.multiscale.get_current_points_in_grid();
-    Size nbpoints=points_in_grid.size();
-
-    for (Size idx = 0; idx < nbpoints; idx++) // !!! no OMP because push_back is not thread safe !!! // TODO: replace with some gather operation
-    {
-        const Size p=points_in_grid[idx];
-        // Radiative transitions
-
-        for (Size k = 0; k < linedata.nrad; k++)
+        //and finally putting those resulting y values at the right place in the y vector
+        Size temp_idx=0;
+        for (Size point_in_block:current_points_in_block)
         {
-            const Real v_IJ = linedata.A[k] + linedata.Bs[k] * Jeff[p][k];
-            const Real v_JI =                 linedata.Ba[k] * Jeff[p][k];
-
-            const Real t_IJ = linedata.Bs[k] * Jdif[p][k];
-            const Real t_JI = linedata.Ba[k] * Jdif[p][k];
-
-            // Note: we define our transition matrix as the transpose of R in the paper.
-            const Size I = index (p, linedata.irad[k]);
-            const Size J = index (p, linedata.jrad[k]);
-
-
-            if (linedata.jrad[k] != linedata.nlev-1)
-            {
-                triplets   .push_back (Triplet<Real, Size> (J, I, +v_IJ));
-                triplets   .push_back (Triplet<Real, Size> (J, J, -v_JI));
-
-                triplets_LS.push_back (Triplet<Real, Size> (J, I, +t_IJ));
-                triplets_LS.push_back (Triplet<Real, Size> (J, J, -t_JI));
-            }
-
-            if (linedata.irad[k] != linedata.nlev-1)
-            {
-                triplets   .push_back (Triplet<Real, Size> (I, J, +v_JI));
-                triplets   .push_back (Triplet<Real, Size> (I, I, -v_IJ));
-
-                triplets_LS.push_back (Triplet<Real, Size> (I, J, +t_JI));
-                triplets_LS.push_back (Triplet<Real, Size> (I, I, -t_IJ));
-            }
+          new_population(Eigen::seq(index(point_in_block,0),index(point_in_block,linedata.nlev-1)))=resulting_y(Eigen::seq(index(temp_idx,0),index(temp_idx,linedata.nlev-1)));
+          temp_idx++;
         }
 
-        // Approximated Lambda operator
-
-        for (Size k = 0; k < linedata.nrad; k++)
-        {
-            for (Size m = 0; m < lambda.get_size(p,k); m++)
-            {
-                const Size   nr =  lambda.get_nr(p, k, m);
-                const Real v_IJ = -lambda.get_Ls(p, k, m) * get_opacity(p, k);
-
-                // Note: we define our transition matrix as the transpose of R in the paper.
-                const Size I = index (nr, linedata.irad[k]);
-                const Size J = index (p,  linedata.jrad[k]);
-
-
-                if (linedata.jrad[k] != linedata.nlev-1)
-                {
-                    triplets   .push_back (Triplet<Real, Size> (J, I, +v_IJ));
-                    triplets_LT.push_back (Triplet<Real, Size> (J, I, +v_IJ));
-                }
-
-                if (linedata.irad[k] != linedata.nlev-1)
-                {
-                    triplets   .push_back (Triplet<Real, Size> (I, I, -v_IJ));
-                    triplets_LT.push_back (Triplet<Real, Size> (I, I, -v_IJ));
-                }
-            }
-        }
-
-        // Collisional transitions
-
-        for (CollisionPartner &colpar : linedata.colpar)
-        {
-            Real abn = abundance[p][colpar.num_col_partner];
-            Real tmp = temperature[p];
-
-            colpar.adjust_abundance_for_ortho_or_para (tmp, abn);
-            colpar.interpolate_collision_coefficients (tmp);
-
-
-            for (Size k = 0; k < colpar.ncol; k++)
-            {
-                const Real v_IJ = colpar.Cd_intpld[k] * abn;
-                const Real v_JI = colpar.Ce_intpld[k] * abn;
-
-
-                // Note: we define our transition matrix as the transpose of R in the paper.
-                const Size I = index (p, colpar.icol[k]);
-                const Size J = index (p, colpar.jcol[k]);
-
-
-                if (colpar.jcol[k] != linedata.nlev-1)
-                {
-                    triplets.push_back (Triplet<Real, Size> (J, I, +v_IJ));
-                    triplets.push_back (Triplet<Real, Size> (J, J, -v_JI));
-                }
-
-                if (colpar.icol[k] != linedata.nlev-1)
-                {
-                    triplets.push_back (Triplet<Real, Size> (I, J, +v_JI));
-                    triplets.push_back (Triplet<Real, Size> (I, I, -v_IJ));
-                }
-            }
-        }
-
-
-        for (Size i = 0; i < linedata.nlev; i++)
-        {
-            const Size I = index (p, linedata.nlev-1);
-            const Size J = index (p, i);
-
-
-            triplets.push_back (Triplet<Real, Size> (I, J, 1.0));
-        }
-
-        //y.insert (index (p, linedata.nlev-1)) = population_tot[p];
-        y[index (p, linedata.nlev-1)] = population_tot[p];
-        //if use_residual
-        // add residual for all levels
-        //else just use previous definition
-        //...
-        //y.insert (index (p, linedata.nlev-1)) = 1.0;//population_tot[p];
-
-
-    } // for all cells
-
-
-    // adding 1 to diagonal for line transitions currently not in the grid
-    // currently, they should not be affected in any way (only interpolation may change them)
-
-    // well, points_in_grid should be ordered, but extra precautions can never hurt
-    std::sort(points_in_grid.begin(),points_in_grid.end());
-    Size otheridx=0;
-    for (Size p=0;p<parameters.npoints();p++)
-    {
-      if (p==points_in_grid[otheridx])
-      {otheridx++;}
-      else
-      {//add 1 to all diagonal line transitions of this point
-        for (Size l = 0; l < linedata.nlev; l++)
-        {
-          const Size I = index (p, l);
-          triplets.push_back (Triplet<Real, Size> (I, I, 1.0));
-          // RT.insert(I,I)=1.0;
-        }
       }
     }
-
-    RT        .setFromTriplets (triplets   .begin(), triplets   .end());
-    LambdaStar.setFromTriplets (triplets_LS.begin(), triplets_LS.end());
-    LambdaTest.setFromTriplets (triplets_LT.begin(), triplets_LT.end());
-
-
-    //if use_residual
-    //NOW use RT to calculate RT*levelpops and add it to y
-    //then we should have the right_hand_side
-
-
-
-
-
-    //cout << "Compressing RT" << endl;
-
-    //RT.makeCompressed ();
-
-
-    //Eigen::BiCGSTAB <SparseMatrix<double>> solver;
-
-    //cout << "Try compute" << endl;
-
-    //solver.compute (RT);
-
-    //if (solver.info() != Eigen::Success)
-    //{
-    //  cout << "Decomposition failed" << endl;
-    //  //assert(false);
-    //}
-
-
-    //for (int tel=0; tel<5; tel++)
-    //{
-    //  //Eigen::Gues x0 = population;
-
-    //  population = solver.solveWithGuess (y, population);
-    //  std::cout << "#iterations:     " << solver.iterations() << std::endl;
-    //  std::cout << "estimated error: " << solver.error()      << std::endl;
-    //}
-
-    //assert (false);
-
-
-    SparseLU <SparseMatrix<Real>, COLAMDOrdering<int>> solver;
-    //Eigen::SimplicialLDLT<Eigen::SparseMatrix<double>> solver;
-
-
-    cout << "Analyzing system of rate equations..."      << endl;
-
-    solver.analyzePattern (RT);
-
-    cout << "Factorizing system of rate equations..."    << endl;
-
-    solver.factorize (RT);
-
-    if (solver.info() != Eigen::Success)
-    {
-        cout << "Factorization failed with error message:" << endl;
-        cout << solver.lastErrorMessage()                  << endl;
-
-        // cout << endl << RT << endl;
-
-        throw std::runtime_error ("Eigen solver ERROR.");
+    else
+    {//unfortunately, we cannot split this matrix into smaller pieces without making any errors
+      new_population = solve_statistical_equilibrium(abundance,temperature,points_in_grid);
     }
 
-    //cout << "Try compute" << endl;
+    population=new_population;
+    // std::cout<<"Non zeros: "<<non_zeros<<std::endl;
+    // std::cout<<"linedata.nlev: "<<linedata.nlev<<std::endl;
+    // std::cout<<"linedata.nrad: "<<linedata.nrad<<std::endl;
+    // std::cout<<"linedata.ncol_tot"<<linedata.ncol_tot<<std::endl;
 
-    //solver.compute (RT);
-
-    //if (solver.info() != Eigen::Success)
-    //{
-    //  cout << "Decomposition failed" << endl;
-    //  //assert(false);
-    //}
-
-    cout << "Solving rate equations for the level populations..." << endl;
-
-    population = solver.solve (y);
-
-    // VectorXr reduced_population = solver.solve (y);
+    // vector<Triplet<Real, Size>> triplets;
+    // // vector<Triplet<Real, Size>> triplets_LT;
+    // // vector<Triplet<Real, Size>> triplets_LS;
+    // std::cout<<"reserving triplets"<<std::endl;
+    // triplets   .reserve (non_zeros);
+    // // triplets_LT.reserve (non_zeros);
+    // // triplets_LS.reserve (non_zeros);
     //
-    // for (Size p: points_in_grid)
+    // //todo: use current grid ...
+    // // vector<Size> points_in_grid=model.geometry.points.multiscale.get_current_points_in_grid();
+    // Size nbpoints=points_in_grid.size();
+    //
+    // std::cout<<"starting the main computation"<<std::endl;
+    //
+    // for (Size idx = 0; idx < nbpoints; idx++) // !!! no OMP because push_back is not thread safe !!! // TODO: replace with some gather operation
     // {
-    //   population(p) = reduced_population(p);
+    //     const Size p=points_in_grid[idx];
+    //     // Radiative transitions
+    //
+    //     for (Size k = 0; k < linedata.nrad; k++)
+    //     {
+    //         const Real v_IJ = linedata.A[k] + linedata.Bs[k] * Jeff[p][k];
+    //         const Real v_JI =                 linedata.Ba[k] * Jeff[p][k];
+    //
+    //         const Real t_IJ = linedata.Bs[k] * Jdif[p][k];
+    //         const Real t_JI = linedata.Ba[k] * Jdif[p][k];
+    //
+    //         // Note: we define our transition matrix as the transpose of R in the paper.
+    //         const Size I = index (p, linedata.irad[k]);
+    //         const Size J = index (p, linedata.jrad[k]);
+    //
+    //
+    //         if (linedata.jrad[k] != linedata.nlev-1)
+    //         {
+    //             triplets   .push_back (Triplet<Real, Size> (J, I, +v_IJ));
+    //             triplets   .push_back (Triplet<Real, Size> (J, J, -v_JI));
+    //
+    //             // triplets_LS.push_back (Triplet<Real, Size> (J, I, +t_IJ));
+    //             // triplets_LS.push_back (Triplet<Real, Size> (J, J, -t_JI));
+    //         }
+    //
+    //         if (linedata.irad[k] != linedata.nlev-1)
+    //         {
+    //             triplets   .push_back (Triplet<Real, Size> (I, J, +v_JI));
+    //             triplets   .push_back (Triplet<Real, Size> (I, I, -v_IJ));
+    //
+    //             // triplets_LS.push_back (Triplet<Real, Size> (I, J, +t_JI));
+    //             // triplets_LS.push_back (Triplet<Real, Size> (I, I, -t_IJ));
+    //         }
+    //     }
+    //
+    //     // Approximated Lambda operator
+    //
+    //     for (Size k = 0; k < linedata.nrad; k++)
+    //     {
+    //         for (Size m = 0; m < lambda.get_size(p,k); m++)
+    //         {
+    //             const Size   nr =  lambda.get_nr(p, k, m);
+    //             const Real v_IJ = -lambda.get_Ls(p, k, m) * get_opacity(p, k);
+    //
+    //             // Note: we define our transition matrix as the transpose of R in the paper.
+    //             const Size I = index (nr, linedata.irad[k]);
+    //             const Size J = index (p,  linedata.jrad[k]);
+    //
+    //
+    //             if (linedata.jrad[k] != linedata.nlev-1)
+    //             {
+    //                 triplets   .push_back (Triplet<Real, Size> (J, I, +v_IJ));
+    //                 // triplets_LT.push_back (Triplet<Real, Size> (J, I, +v_IJ));
+    //             }
+    //
+    //             if (linedata.irad[k] != linedata.nlev-1)
+    //             {
+    //                 triplets   .push_back (Triplet<Real, Size> (I, I, -v_IJ));
+    //                 // triplets_LT.push_back (Triplet<Real, Size> (I, I, -v_IJ));
+    //             }
+    //         }
+    //     }
+    //
+    //     // Collisional transitions
+    //
+    //     for (CollisionPartner &colpar : linedata.colpar)
+    //     {
+    //         Real abn = abundance[p][colpar.num_col_partner];
+    //         Real tmp = temperature[p];
+    //
+    //         colpar.adjust_abundance_for_ortho_or_para (tmp, abn);
+    //         colpar.interpolate_collision_coefficients (tmp);
+    //
+    //
+    //         for (Size k = 0; k < colpar.ncol; k++)
+    //         {
+    //             const Real v_IJ = colpar.Cd_intpld[k] * abn;
+    //             const Real v_JI = colpar.Ce_intpld[k] * abn;
+    //
+    //
+    //             // Note: we define our transition matrix as the transpose of R in the paper.
+    //             const Size I = index (p, colpar.icol[k]);
+    //             const Size J = index (p, colpar.jcol[k]);
+    //
+    //
+    //             if (colpar.jcol[k] != linedata.nlev-1)
+    //             {
+    //                 triplets.push_back (Triplet<Real, Size> (J, I, +v_IJ));
+    //                 triplets.push_back (Triplet<Real, Size> (J, J, -v_JI));
+    //             }
+    //
+    //             if (colpar.icol[k] != linedata.nlev-1)
+    //             {
+    //                 triplets.push_back (Triplet<Real, Size> (I, J, +v_JI));
+    //                 triplets.push_back (Triplet<Real, Size> (I, I, -v_IJ));
+    //             }
+    //         }
+    //     }
+    //
+    //
+    //     for (Size i = 0; i < linedata.nlev; i++)
+    //     {
+    //         const Size I = index (p, linedata.nlev-1);
+    //         const Size J = index (p, i);
+    //
+    //
+    //         triplets.push_back (Triplet<Real, Size> (I, J, 1.0));
+    //     }
+    //
+    //     //y.insert (index (p, linedata.nlev-1)) = population_tot[p];
+    //     y[index (p, linedata.nlev-1)] = population_tot[p];
+    //     //if use_residual
+    //     // add residual for all levels
+    //     //else just use previous definition
+    //     //...
+    //     //y.insert (index (p, linedata.nlev-1)) = 1.0;//population_tot[p];
+    //
+    //
+    // } // for all cells
+    //
+    //
+    // // adding 1 to diagonal for line transitions currently not in the grid
+    // // currently, they should not be affected in any way (only interpolation may change them)
+    //
+    // // well, points_in_grid should be ordered, but extra precautions can never hurt
+    // std::sort(points_in_grid.begin(),points_in_grid.end());
+    // Size otheridx=0;
+    // for (Size p=0;p<parameters.npoints();p++)
+    // {
+    //   if (p==points_in_grid[otheridx])
+    //   {otheridx++;}
+    //   else
+    //   {//add 1 to all diagonal line transitions of this point
+    //     for (Size l = 0; l < linedata.nlev; l++)
+    //     {
+    //       const Size I = index (p, l);
+    //       triplets.push_back (Triplet<Real, Size> (I, I, 1.0));
+    //       // RT.insert(I,I)=1.0;
+    //     }
+    //   }
     // }
+    //
+    // std::cout<<"Setting RT"<<std::endl;
+    //
+    // RT        .setFromTriplets (triplets   .begin(), triplets   .end());
+    // // LambdaStar.setFromTriplets (triplets_LS.begin(), triplets_LS.end());
+    // // LambdaTest.setFromTriplets (triplets_LT.begin(), triplets_LT.end());
+    //
+    //
+    // //if use_residual
+    // //NOW use RT to calculate RT*levelpops and add it to y
+    // //then we should have the right_hand_side
+    //
+    //
+    //
+    //
+    //
+    // //cout << "Compressing RT" << endl;
+    //
+    // //RT.makeCompressed ();
+    //
+    //
+    // //Eigen::BiCGSTAB <SparseMatrix<double>> solver;
+    //
+    // //cout << "Try compute" << endl;
+    //
+    // //solver.compute (RT);
+    //
+    // //if (solver.info() != Eigen::Success)
+    // //{
+    // //  cout << "Decomposition failed" << endl;
+    // //  //assert(false);
+    // //}
+    //
+    //
+    // //for (int tel=0; tel<5; tel++)
+    // //{
+    // //  //Eigen::Gues x0 = population;
+    //
+    // //  population = solver.solveWithGuess (y, population);
+    // //  std::cout << "#iterations:     " << solver.iterations() << std::endl;
+    // //  std::cout << "estimated error: " << solver.error()      << std::endl;
+    // //}
+    //
+    // //assert (false);
+    //
+    // SparseLU <SparseMatrix<Real>, COLAMDOrdering<int>> solver;
+    // //Eigen::SimplicialLDLT<Eigen::SparseMatrix<double>> solver;
+    //
+    //
+    // cout << "Analyzing system of rate equations..."      << endl;
+    //
+    // solver.analyzePattern (RT);
+    //
+    // cout << "Factorizing system of rate equations..."    << endl;
+    //
+    // solver.factorize (RT);
+    //
+    // if (solver.info() != Eigen::Success)
+    // {
+    //     cout << "Factorization failed with error message:" << endl;
+    //     cout << solver.lastErrorMessage()                  << endl;
+    //
+    //     // cout << endl << RT << endl;
+    //
+    //     throw std::runtime_error ("Eigen solver ERROR.");
+    // }
+    //
+    // //cout << "Try compute" << endl;
+    //
+    // //solver.compute (RT);
+    //
+    // //if (solver.info() != Eigen::Success)
+    // //{
+    // //  cout << "Decomposition failed" << endl;
+    // //  //assert(false);
+    // //}
+    //
+    // cout << "Solving rate equations for the level populations..." << endl;
+    //
+    // population = solver.solve (y);
+    //
+    // // VectorXr reduced_population = solver.solve (y);
+    // //
+    // // for (Size p: points_in_grid)
+    // // {
+    // //   population(p) = reduced_population(p);
+    // // }
+    //
+    // if (solver.info() != Eigen::Success)
+    // {
+    //     cout << "Solving failed with error:" << endl;
+    //     cout << solver.lastErrorMessage()    << endl;
+    //     assert (false);
+    // }
+    //
+    // cout << "Succesfully solved for the level populations!"       << endl;
+    //
+    // //OMP_PARALLEL_FOR (p, ncells)
+    // //{
+    // //
+    // //  for (long i = 0; i < linedata.nlev; i++)
+    // //  {
+    // //    const long I = index (p, i);
+    //
+    // //    population[I] = population_prev1[I];
+    //
+    // //    //if (population[I] < 1.0E-50)
+    // //    //{
+    // //    //  population[I] = 1.0E-50;
+    // //    //}
+    // //  }
+    // //}
+}
 
-    if (solver.info() != Eigen::Success)
+
+// Refactor of the matrix solving for allowing to use less point per block matrix (decreases memory usage)
+// IMPORTANT: Only call this with a part of the points currently in grid if parameters.n_off_diag==0
+// OTHERWISE this will result in bogus (starting with the approximated lambda operator part)
+inline VectorXr LineProducingSpecies::solve_statistical_equilibrium(const Double2 &abundance,
+        const Vector<Real> &temperature, vector<Size> &points_to_use){
+
+    if ((parameters.n_off_diag!=0)&&(parameters.npoints()!=points_to_use.size()))//if you do not set n_off_diag to 0, then we cannot split this almost 'block'matrix into blocks
     {
-        cout << "Solving failed with error:" << endl;
-        cout << solver.lastErrorMessage()    << endl;
-        assert (false);
+      std::cout<<"Attempted to split non-block matrix into blocks"<<std::endl;
+      throw std::runtime_error("Attempted to split non-block matrix into blocks");
     }
 
-    cout << "Succesfully solved for the level populations!"       << endl;
+      // std::cout<<"setting vector y"<<std::endl;
+      VectorXr y = VectorXr::Zero (points_to_use.size()*linedata.nlev);
 
-    //OMP_PARALLEL_FOR (p, ncells)
-    //{
-    //
-    //  for (long i = 0; i < linedata.nlev; i++)
-    //  {
-    //    const long I = index (p, i);
+      // const Size max_matrix_size=100*1024*1024;//hundred megabyte
 
-    //    population[I] = population_prev1[I];
+      const Size non_zeros = points_to_use.size() * (      linedata.nlev
+                                                     + 6 * linedata.nrad
+                                                     + 4 * linedata.ncol_tot );
 
-    //    //if (population[I] < 1.0E-50)
-    //    //{
-    //    //  population[I] = 1.0E-50;
-    //    //}
-    //  }
-    //}
+      // We can split our block diagonal matrix if there are no non-local contributions
+      // if (parameters.n_off_diag==0){
+      //   nbsizeof(Real)
+      // }
+      // std::cout<<"Non zeros: "<<non_zeros<<std::endl;
+      // std::cout<<"linedata.nlev: "<<linedata.nlev<<std::endl;
+      // std::cout<<"linedata.nrad: "<<linedata.nrad<<std::endl;
+      // std::cout<<"linedata.ncol_tot"<<linedata.ncol_tot<<std::endl;
+
+      vector<Triplet<Real, Size>> triplets;
+      // vector<Triplet<Real, Size>> triplets_LT;
+      // vector<Triplet<Real, Size>> triplets_LS;
+      std::cout<<"reserving triplets"<<std::endl;
+      triplets   .reserve (non_zeros);
+      // triplets_LT.reserve (non_zeros);
+      // triplets_LS.reserve (non_zeros);
+
+      //todo: use current grid ...
+      // vector<Size> points_in_grid=model.geometry.points.multiscale.get_current_points_in_grid();
+      Size nbpoints=points_to_use.size();
+
+      std::cout<<"starting the main computation"<<std::endl;
+
+      for (Size idx = 0; idx < nbpoints; idx++) // !!! no OMP because push_back is not thread safe !!! // TODO: replace with some gather operation
+      {
+          const Size p=points_to_use[idx];
+          // Radiative transitions
+
+          for (Size k = 0; k < linedata.nrad; k++)
+          {
+              const Real v_IJ = linedata.A[k] + linedata.Bs[k] * Jeff[p][k];
+              const Real v_JI =                 linedata.Ba[k] * Jeff[p][k];
+
+              const Real t_IJ = linedata.Bs[k] * Jdif[p][k];
+              const Real t_JI = linedata.Ba[k] * Jdif[p][k];
+
+              // Note: we define our transition matrix as the transpose of R in the paper.
+              // const Size I = index (p, linedata.irad[k]);
+              // const Size J = index (p, linedata.jrad[k]);
+
+              //compressed index notation (such that there are no zero rows when points_to_use!=all grid points)
+              const Size I = index (idx, linedata.irad[k]);
+              const Size J = index (idx, linedata.jrad[k]);
+
+
+              if (linedata.jrad[k] != linedata.nlev-1)
+              {
+                  std::cout<<"printing I: "<<I<<std::endl;
+                  std::cout<<"printing J: "<<J<<std::endl;
+                  triplets   .push_back (Triplet<Real, Size> (J, I, +v_IJ));
+                  triplets   .push_back (Triplet<Real, Size> (J, J, -v_JI));
+
+                  // triplets_LS.push_back (Triplet<Real, Size> (J, I, +t_IJ));
+                  // triplets_LS.push_back (Triplet<Real, Size> (J, J, -t_JI));
+              }
+
+              if (linedata.irad[k] != linedata.nlev-1)
+              {
+                std::cout<<"printing I: "<<I<<std::endl;
+                std::cout<<"printing J: "<<J<<std::endl;
+                  triplets   .push_back (Triplet<Real, Size> (I, J, +v_JI));
+                  triplets   .push_back (Triplet<Real, Size> (I, I, -v_IJ));
+
+                  // triplets_LS.push_back (Triplet<Real, Size> (I, J, +t_JI));
+                  // triplets_LS.push_back (Triplet<Real, Size> (I, I, -t_IJ));
+              }
+          }
+
+          // Approximated Lambda operator // is ignored when parameters.n_off_diag==0
+
+          for (Size k = 0; k < linedata.nrad; k++)
+          {
+              for (Size m = 0; m < lambda.get_size(p,k); m++)
+              {
+                  const Size   nr =  lambda.get_nr(p, k, m);
+                  const Real v_IJ = -lambda.get_Ls(p, k, m) * get_opacity(p, k);
+
+                  // Note: we define our transition matrix as the transpose of R in the paper.
+                  Size I = index (nr, linedata.irad[k]);
+                  Size J = index (p,  linedata.jrad[k]);
+                  if (parameters.n_off_diag==0){//no non-local effects exist, so compressed index notation can be used (nr=p)
+                    I = index (idx, linedata.irad[k]);
+                    J = index (idx, linedata.jrad[k]);
+                    std::cout<<"We should be here"<<std::endl;
+                  }
+
+                  // Compressed index notation cant be used here
+
+                  if (linedata.jrad[k] != linedata.nlev-1)
+                  {std::cout<<"printing I: "<<I<<std::endl;
+                  std::cout<<"printing J: "<<J<<std::endl;
+                      triplets   .push_back (Triplet<Real, Size> (J, I, +v_IJ));
+                      // triplets_LT.push_back (Triplet<Real, Size> (J, I, +v_IJ));
+                  }
+
+                  if (linedata.irad[k] != linedata.nlev-1)
+                  {std::cout<<"printing I: "<<I<<std::endl;
+                  std::cout<<"printing J: "<<J<<std::endl;
+                      triplets   .push_back (Triplet<Real, Size> (I, I, -v_IJ));
+                      // triplets_LT.push_back (Triplet<Real, Size> (I, I, -v_IJ));
+                  }
+              }
+          }
+
+          // Collisional transitions
+
+          for (CollisionPartner &colpar : linedata.colpar)
+          {
+              Real abn = abundance[p][colpar.num_col_partner];
+              Real tmp = temperature[p];
+
+              colpar.adjust_abundance_for_ortho_or_para (tmp, abn);
+              colpar.interpolate_collision_coefficients (tmp);
+
+
+              for (Size k = 0; k < colpar.ncol; k++)
+              {
+                  const Real v_IJ = colpar.Cd_intpld[k] * abn;
+                  const Real v_JI = colpar.Ce_intpld[k] * abn;
+
+
+                  // Note: we define our transition matrix as the transpose of R in the paper.
+                  // const Size I = index (p, colpar.icol[k]);
+                  // const Size J = index (p, colpar.jcol[k]);
+
+                  //compressed index notation (such that there are no zero rows when points_to_use!=all grid points)
+                  const Size I = index (idx, colpar.icol[k]);
+                  const Size J = index (idx, colpar.jcol[k]);
+
+
+                  if (colpar.jcol[k] != linedata.nlev-1)
+                  {std::cout<<"printing I: "<<I<<std::endl;
+                  std::cout<<"printing J: "<<J<<std::endl;
+                      triplets.push_back (Triplet<Real, Size> (J, I, +v_IJ));
+                      triplets.push_back (Triplet<Real, Size> (J, J, -v_JI));
+                  }
+
+                  if (colpar.icol[k] != linedata.nlev-1)
+                  {std::cout<<"printing I: "<<I<<std::endl;
+                  std::cout<<"printing J: "<<J<<std::endl;
+                      triplets.push_back (Triplet<Real, Size> (I, J, +v_JI));
+                      triplets.push_back (Triplet<Real, Size> (I, I, -v_IJ));
+                  }
+              }
+          }
+
+
+          for (Size i = 0; i < linedata.nlev; i++)
+          {
+              // const Size I = index (p, linedata.nlev-1);
+              // const Size J = index (p, i);
+
+              //compressed index notation (such that there are no zero rows when points_to_use!=all grid points)
+              const Size I = index (idx, linedata.nlev-1);
+              const Size J = index (idx, i);
+
+std::cout<<"printing I: "<<I<<std::endl;
+std::cout<<"printing J: "<<J<<std::endl;
+              triplets.push_back (Triplet<Real, Size> (I, J, 1.0));
+          }
+
+          //y.insert (index (p, linedata.nlev-1)) = population_tot[p];
+          // y[index (p, linedata.nlev-1)] = population_tot[p];
+          //again compressed index notation
+          y[index (idx, linedata.nlev-1)] = population_tot[p];
+
+          //y.insert (index (p, linedata.nlev-1)) = 1.0;//population_tot[p];
+
+      } // for all cells
+
+
+      // now that we can choose what points to use, this is useless
+      // // adding 1 to diagonal for line transitions currently not in the grid
+      // // currently, they should not be affected in any way (only interpolation may change them)
+      //
+      // // well, points_in_grid should be ordered, but extra precautions can never hurt
+      // std::sort(points_in_grid.begin(),points_in_grid.end());
+      // Size otheridx=0;
+      // for (Size p=0;p<parameters.npoints();p++)
+      // {
+      //   if (p==points_in_grid[otheridx])
+      //   {otheridx++;}
+      //   else
+      //   {//add 1 to all diagonal line transitions of this point
+      //     for (Size l = 0; l < linedata.nlev; l++)
+      //     {
+      //       const Size I = index (p, l);
+      //       triplets.push_back (Triplet<Real, Size> (I, I, 1.0));
+      //       // RT.insert(I,I)=1.0;
+      //     }
+      //   }
+      // }
+
+      std::cout<<"Setting RT"<<std::endl;
+
+      Eigen::SparseMatrix<Real> RTmat;
+
+      RTmat.resize (points_to_use.size()*linedata.nlev,
+                    points_to_use.size()*linedata.nlev );
+
+      RTmat.setFromTriplets (triplets.begin(), triplets.end());
+
+      std::cout << "The matrix RT is of size "
+          << RTmat.rows() << "x" << RTmat.cols() << std::endl;
+
+      std::cout << "The vector y is of size " << y.size() << std::endl;
+
+      SparseLU <SparseMatrix<Real>, COLAMDOrdering<int>> solver;
+
+      cout << "Analyzing system of rate equations..."      << endl;
+
+      solver.analyzePattern (RTmat);
+
+      cout << "Factorizing system of rate equations..."    << endl;
+
+      solver.factorize (RTmat);
+
+      if (solver.info() != Eigen::Success)
+      {
+          cout << "Factorization failed with error message:" << endl;
+          cout << solver.lastErrorMessage()                  << endl;
+
+          // cout << endl << RT << endl;
+
+          throw std::runtime_error ("Eigen solver ERROR.");
+      }
+
+      cout << "Solving rate equations for the level populations..." << endl;
+
+      VectorXr temp_population = solver.solve (y);
+
+      if (solver.info() != Eigen::Success)
+      {
+          cout << "Solving failed with error:" << endl;
+          cout << solver.lastErrorMessage()    << endl;
+          assert (false);
+      }
+
+      cout << "Succesfully solved for the level populations!"       << endl;
+
+      return temp_population;
+
 }
 
 

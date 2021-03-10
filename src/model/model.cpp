@@ -947,14 +947,18 @@ int Model :: compute_level_populations (
             compute_radiation_field_feautrier_order_2 ();
             cout << "Computed feautrier" << std::endl;
             compute_Jeff                              ();
+            cout << "Computed Jeff" << std::endl;
 
             vector<Size> points_in_grid=geometry.points.multiscale.get_current_points_in_grid();
 
+            cout<< "got point_in_grid"<<std::endl;
             lines.iteration_using_statistical_equilibrium (
                 chemistry.species.abundance,
                 thermodynamics.temperature.gas,
                 parameters.pop_prec(),
                 points_in_grid);
+
+              cout<<"iterated using statistical equilibrium"<<std::endl;
 
             iteration_normal++;
         }
