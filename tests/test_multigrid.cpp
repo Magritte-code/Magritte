@@ -49,6 +49,8 @@ int main (int argc, char **argv)
     cout << "sizeof points   = " << sizeof(Points)   << endl;
     cout << "sizeof Vector3D = " << sizeof(Vector3D) << endl;
 
+    cout << "sizeof Real = " <<sizeof(Real) << endl;
+
     cout << "n threads = " << paracabs::multi_threading::n_threads_avail() << endl;
     // paracabs::multi_threading::set_n_threads_avail(6);//set nb threads to one for debugging output
     cout << "n threads = " << paracabs::multi_threading::n_threads_avail() << endl;
@@ -61,12 +63,33 @@ int main (int argc, char **argv)
     model.compute_LTE_level_populations();
     model.compute_inverse_line_widths();
     cout << "model read"<<endl;
+
+
+
+
     // cout <<"solving without multigrid"<<endl;
     // model.compute_level_populations(true,100);
     //NOTE TO SELF: do NOT every try to use a ridiculous amount of coarsening: if only boundary points are left, the interpolation part will probably be hell
     //mgImplementation choices: 1:"NaiveMG", 2:"VCycle", 3:"WCycle"
-    model.setup_multigrid(10, 4, 0.2, 3);
+    model.setup_multigrid(10, 1, 0.1, 1);
     cout << "setup multigrid" << endl;
+
+    std::cout<<"checking symmetry of neighbors"<<std::endl;
+    vector<Size> current_points_in_grid=model.geometry.points.multiscale.get_current_points_in_grid();
+    for (Size point_to_check: current_points_in_grid)
+    {
+      std::set<Size> neighbors_of_point=model.geometry.points.multiscale.get_neighbors(point_to_check);
+      for (Size neighbor:neighbors_of_point)
+      {
+        std::set<Size> neighbors_of_neighbor=model.geometry.points.multiscale.get_neighbors(neighbor);
+        if (neighbors_of_neighbor.find(point_to_check)==neighbors_of_neighbor.end())
+        {
+          std::cout<<"Point "<<point_to_check<<"is not a neighbor of "<<neighbor<<std::endl;
+        }
+      }
+    }
+
+    // model.compute_level_populations_multigrid(true, 100);
     // vector<Size> current_points_in_grid=model.geometry.points.multiscale.get_current_points_in_grid();
     // for (Size idx=0;idx<current_points_in_grid.size();idx++)
     // {
@@ -105,20 +128,61 @@ int main (int argc, char **argv)
     // }
 
 
-    // std::set<Size> test_neighbors=model.geometry.points.multiscale.get_neighbors(16187,0);
-    // cout<<"neighbors of point 16187 in finest grid:"<<endl;
+    // std::set<Size> test_neighbors=model.geometry.points.multiscale.get_neighbors(152970,0);
+    // cout<<"neighbors of point 152970 in finest grid:"<<endl;
     // for (Size fine_neighbor:test_neighbors)
     // {
-    //   cout<<fine_neighbor<<" is part of coarse grid?: "<<model.geometry.points.multiscale.get_mask(1)[fine_neighbor]<<endl;
+    //   cout<<fine_neighbor<<" is part of coarse grid?: "<<model.geometry.points.multiscale.get_mask(2)[fine_neighbor]<<endl;
+    // }
+    //
+    // std::cout<<"Is point 152970 still in coarse grid? "<<(model.geometry.points.multiscale.get_mask(1)[152970])<<std::endl;
+    //
+    // test_neighbors=model.geometry.points.multiscale.get_neighbors(152970,1);
+    // cout<<"neighbors of point 152970 in coarser grid:"<<endl;
+    // for (Size coarse_neighbor:test_neighbors)
+    // {
+    //   cout<<coarse_neighbor<<" is part of coarser grid."<<endl;
+    // }
+    //
+    // std::cout<<"Is point 152970 still in coarsest grid? "<<(model.geometry.points.multiscale.get_mask(2)[152970])<<std::endl;
+    // test_neighbors=model.geometry.points.multiscale.get_neighbors(152970,2);
+    // cout<<"neighbors of point 152970 in coarsest grid:"<<endl;
+    // for (Size coarse_neighbor:test_neighbors)
+    // {
+    //   cout<<coarse_neighbor<<" is part of coarsest grid."<<endl;
+    // }
+    //
+    //
+    //
+    // std::set<Size> test_neighbors2=model.geometry.points.multiscale.get_neighbors(152833,0);
+    // cout<<"neighbors of point 152833 in finest grid:"<<endl;
+    // for (Size fine_neighbor:test_neighbors2)
+    // {
+    //   cout<<fine_neighbor<<" is part of coarse grid?: "<<model.geometry.points.multiscale.get_mask(2)[fine_neighbor]<<endl;
+    // }
+    //
+    // std::cout<<"Is point 152833 still in coarse grid? "<<(model.geometry.points.multiscale.get_mask(1)[152833])<<std::endl;
+    //
+    // test_neighbors2=model.geometry.points.multiscale.get_neighbors(152833,1);
+    // cout<<"neighbors of point 152833 in coarser grid:"<<endl;
+    // for (Size coarse_neighbor:test_neighbors2)
+    // {
+    //   cout<<coarse_neighbor<<" is part of coarser grid."<<endl;
+    // }
+    //
+    // std::cout<<"Is point 152833 still in coarsest grid? "<<(model.geometry.points.multiscale.get_mask(2)[152833])<<std::endl;
+    // test_neighbors2=model.geometry.points.multiscale.get_neighbors(152833,2);
+    // cout<<"neighbors of point 152833 in coarsest grid:"<<endl;
+    // for (Size coarse_neighbor:test_neighbors2)
+    // {
+    //   cout<<coarse_neighbor<<" is part of coarsest grid."<<endl;
     // }
 
 
 
+    // model.compute_level_populations (true,100);
 
-
-
-
-    model.compute_level_populations_multigrid(true, 20);
+    // model.compute_level_populations_multigrid(true, 100);
 
 
     // auto fun_to_del=model.points_are_similar(0.1);
