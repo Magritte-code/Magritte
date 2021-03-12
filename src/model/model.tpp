@@ -86,8 +86,8 @@ inline bool Model::can_be_coarsened (const Size p, std::set<Size>& points_coarse
 inline void Model::coarsen_around_point (const Size p)
 {
 
-    // Boundary neighbors need to be treated differently
-    std::set<Size> boundary_neighbors;
+    // // Boundary neighbors need to be treated differently
+    // std::set<Size> boundary_neighbors;
 
     // Delete all neighbors around the current point (p),
     // i.e. remove its neighbors from the mesh by masking
@@ -125,7 +125,8 @@ inline void Model::coarsen_around_point (const Size p)
       else
       {//also do not forget to actually add our boundary elements as a neighbor of our point
         // new_neighbors.insert(n);
-        boundary_neighbors.insert(n);
+        // boundary_neighbors.insert(n);
+        neighbors_of_neighbors.insert(n);
       }
     }
 
@@ -141,11 +142,11 @@ inline void Model::coarsen_around_point (const Size p)
         }
       }
     }
-    //also add non-deleted neighbors to container_points
-    for (Size bound_neigh:boundary_neighbors)
-    {
-      container_points.insert(bound_neigh);
-    }
+    // // also add non-deleted neighbors to container_points
+    // for (Size bound_neigh:boundary_neighbors)
+    // {
+    //   container_points.insert(bound_neigh);
+    // }
 
     //now also contains neighbors of neighbors and their neighbors
     container_points.insert(neighbors_of_neighbors.begin(),neighbors_of_neighbors.end());
