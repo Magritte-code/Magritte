@@ -215,6 +215,13 @@ accel inline Size Geometry :: get_ray_length (
                   nxt = get_next          (o, r, nxt, Z, dZ);
             shift_nxt = get_shift <frame> (o, r, nxt, Z    );
 
+            // FOR DEBUG PURPOSES, when we somehow cannot find a next point
+            // if (nxt==parameters.npoints())
+            // {
+            //   std::cout<<"From point: "<<crt<<" no next point found"<<std::endl;
+            //   throw std::runtime_error("Did not find new point");
+            // }
+
             l += get_n_interpl (shift_crt, shift_nxt, dshift_max);
         }
     }

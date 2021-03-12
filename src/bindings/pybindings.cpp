@@ -192,6 +192,7 @@ PYBIND11_MODULE (core, module)
         .def ("read",               &Geometry::read)
         .def ("write",              &Geometry::write)
         // functions
+        .def ("not_on_boundary",    &Geometry::not_on_boundary)
         // .def ("get_ray_lengths",     &Geometry::get_ray_lengths)
         // .def ("get_ray_lengths_gpu", &Geometry::get_ray_lengths_gpu)
         // constructor
