@@ -74,7 +74,7 @@ struct Model
     inline void interpolate_levelpops_local(Size coarser_lvl);
 
     //initializes multigrid
-    inline int setup_multigrid(Size min_nb_points, Size max_coars_lvl, double tol, Size mgImplementation);
+    inline int setup_multigrid(Size min_nb_points, Size max_coars_lvl, double tol, Size mgImplementation, Size max_nb_iterations);
 
     // inline void reset_grid();
 
@@ -101,8 +101,8 @@ struct Model
         const long  max_niterations);
     int compute_level_populations_multigrid       (
         // const Io   &io,
-        const bool  use_Ng_acceleration,
-        const long  max_niterations);
+        const bool  use_Ng_acceleration);
+        // const long  max_niterations);
     int compute_image                             (const Size ray_nr);
 
     Double1 error_max;

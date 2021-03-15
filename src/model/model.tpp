@@ -303,7 +303,7 @@ inline void Model::coarsen_around_point (const Size p)
 ///                           2) VCycle
 ///                           3) WCycle
 /// Others not yet implemented
-inline int Model::setup_multigrid(Size min_nb_points, Size max_coars_lvl, double tol, Size mgImplementation)//, string MgImplementation
+inline int Model::setup_multigrid(Size min_nb_points, Size max_coars_lvl, double tol, Size mgImplementation, Size max_nb_iterations)//, string MgImplementation
 {
   //set number of off-diagonal elements in lambda matrix 0; needed because we will interpolate these values??
   //TODO: find reasons to remove this
@@ -330,19 +330,19 @@ inline int Model::setup_multigrid(Size min_nb_points, Size max_coars_lvl, double
   switch (mgImplementation) {
     case 1://"NaiveMG":
       {
-      std::shared_ptr<MgController> tempImplement_ptr=std::make_shared<NaiveMG>(geometry.points.multiscale.get_max_coars_lvl()+1,0,20);
+      std::shared_ptr<MgController> tempImplement_ptr=std::make_shared<NaiveMG>(geometry.points.multiscale.get_max_coars_lvl()+1,0,max_nb_iterations);
       mgControllerHelper=MgControllerHelper(tempImplement_ptr);
       }
       break;
     case 2://"VCycle":
       {
-      std::shared_ptr<MgController> tempImplement_ptr=std::make_shared<VCycle>(geometry.points.multiscale.get_max_coars_lvl()+1,0,5,20);
+      std::shared_ptr<MgController> tempImplement_ptr=std::make_shared<VCycle>(geometry.points.multiscale.get_max_coars_lvl()+1,0,5,max_nb_iterations);
       mgControllerHelper=MgControllerHelper(tempImplement_ptr);
       }
       break;
     case 3://"VCycle":
       {
-      std::shared_ptr<MgController> tempImplement_ptr=std::make_shared<WCycle>(geometry.points.multiscale.get_max_coars_lvl()+1,0,5,20);
+      std::shared_ptr<MgController> tempImplement_ptr=std::make_shared<WCycle>(geometry.points.multiscale.get_max_coars_lvl()+1,0,5,max_nb_iterations);
       mgControllerHelper=MgControllerHelper(tempImplement_ptr);
       }
       break;

@@ -429,8 +429,7 @@ int Model :: compute_level_populations_from_stateq ()
 ///  @return number of iteration done
 ///////////////////////////////////////////////////////////////////////////////
 int Model :: compute_level_populations_multigrid (
-    const bool use_Ng_acceleration,
-    const long max_niterations     )
+    const bool use_Ng_acceleration)
 {
     // Check spectral discretisation setting
     if (spectralDiscretisation != SD_Lines)
