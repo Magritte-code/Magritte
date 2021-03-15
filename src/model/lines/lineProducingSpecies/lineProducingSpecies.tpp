@@ -272,22 +272,26 @@ inline void LineProducingSpecies :: update_using_statistical_equilibrium (
     VectorXr new_population = VectorXr::Zero (parameters.npoints()*linedata.nlev);
 
     const Size max_matrix_size=100*1024*1024;//hundred megabyte
+    // const Size max_matrix_size=1*1024*1024;//one megabyte
+    // It turns out that due to triplets, the total extra memory needed for this calculation is about three times this number
 
-    //FIXME: will most definately overflow!!!!!!!!!!!!!!
-    const unsigned long long int total_non_zeros = parameters.npoints() * (      linedata.nlev
-                                                   + 6 * linedata.nrad
-                                                   + 4 * linedata.ncol_tot );
+    // const unsigned long long int total_non_zeros = parameters.npoints() * (      linedata.nlev
+    //                                                + 6 * linedata.nrad
+    //                                                + 4 * linedata.ncol_tot );
 
     // We can split our block diagonal matrix if there are no non-local contributions
     if (parameters.n_off_diag==0){
       Size nb_points_per_block=max_matrix_size/((linedata.nlev + 6 * linedata.nrad + 4 * linedata.ncol_tot )*sizeof(Real));
       Size nb_different_matrices=(points_in_grid.size()+(nb_points_per_block-1))/nb_points_per_block;//rounding up
       std::cout<<"Splitting big matrix into n parts: "<<nb_different_matrices<<std::endl;
-      //TODO: replace with parallel for
-      for (Size idx=0;idx<nb_different_matrices;idx++)
+
+      //trivial parallelisation
+      threaded_for (idx, nb_different_matrices,
       {
+      // for (Size idx=0;idx<nb_different_matrices;idx++)
+      // {
         Size firstidx=idx*nb_points_per_block;
-        Size lastidx=std::min(static_cast<Size>(points_in_grid.size()-1),(idx+1)*nb_points_per_block-1);
+        Size lastidx=std::min(static_cast<Size>(points_in_grid.size()-1),static_cast<Size>((idx+1)*nb_points_per_block-1));
         vector<Size> current_points_in_block = std::vector<Size>(points_in_grid.begin() + firstidx, points_in_grid.begin()+lastidx+1);
         VectorXr resulting_y = solve_statistical_equilibrium(abundance,temperature,current_points_in_block);//does not need to be continguous
 
@@ -298,13 +302,15 @@ inline void LineProducingSpecies :: update_using_statistical_equilibrium (
           new_population(Eigen::seq(index(point_in_block,0),index(point_in_block,linedata.nlev-1)))=resulting_y(Eigen::seq(index(temp_idx,0),index(temp_idx,linedata.nlev-1)));
           temp_idx++;
         }
-
-      }
+      // }
+      })
     }
     else
     {//unfortunately, we cannot split this matrix into smaller pieces without making any errors
       new_population = solve_statistical_equilibrium(abundance,temperature,points_in_grid);
     }
+
+    cout << "Succesfully solved for the level populations!"       << endl;
 
     population=new_population;
     // std::cout<<"Non zeros: "<<non_zeros<<std::endl;
@@ -591,7 +597,7 @@ inline VectorXr LineProducingSpecies::solve_statistical_equilibrium(const Double
         const Vector<Real> &temperature, vector<Size> &points_to_use){
 
     if ((parameters.n_off_diag!=0)&&(parameters.npoints()!=points_to_use.size()))//if you do not set n_off_diag to 0, then we cannot split this almost 'block'matrix into blocks
-    {
+    {//please do not try to be smart and call this function while n_off_diag!=0 and points_to_use!={0,1,2,...,parameters.npoints()-1} (in that exact, albeit default order)
       std::cout<<"Attempted to split non-block matrix into blocks"<<std::endl;
       throw std::runtime_error("Attempted to split non-block matrix into blocks");
     }
@@ -617,7 +623,7 @@ inline VectorXr LineProducingSpecies::solve_statistical_equilibrium(const Double
       vector<Triplet<Real, Size>> triplets;
       // vector<Triplet<Real, Size>> triplets_LT;
       // vector<Triplet<Real, Size>> triplets_LS;
-      std::cout<<"reserving triplets"<<std::endl;
+      // std::cout<<"reserving triplets"<<std::endl;
       triplets   .reserve (non_zeros);
       // triplets_LT.reserve (non_zeros);
       // triplets_LS.reserve (non_zeros);
@@ -626,7 +632,7 @@ inline VectorXr LineProducingSpecies::solve_statistical_equilibrium(const Double
       // vector<Size> points_in_grid=model.geometry.points.multiscale.get_current_points_in_grid();
       Size nbpoints=points_to_use.size();
 
-      std::cout<<"starting the main computation"<<std::endl;
+      // std::cout<<"starting the main computation"<<std::endl;
 
       for (Size idx = 0; idx < nbpoints; idx++) // !!! no OMP because push_back is not thread safe !!! // TODO: replace with some gather operation
       {
@@ -637,6 +643,11 @@ inline VectorXr LineProducingSpecies::solve_statistical_equilibrium(const Double
           {
               const Real v_IJ = linedata.A[k] + linedata.Bs[k] * Jeff[p][k];
               const Real v_JI =                 linedata.Ba[k] * Jeff[p][k];
+
+              // std::cout<<"v_IJ: "<<v_IJ<<std::endl;
+              // if (isnan(v_IJ)){
+              //   std::cout<<"At point p: "<<p<<std::endl;
+              //   throw std::runtime_error("Nan encountered");}
 
               const Real t_IJ = linedata.Bs[k] * Jdif[p][k];
               const Real t_JI = linedata.Ba[k] * Jdif[p][k];
@@ -652,8 +663,7 @@ inline VectorXr LineProducingSpecies::solve_statistical_equilibrium(const Double
 
               if (linedata.jrad[k] != linedata.nlev-1)
               {
-                  std::cout<<"printing I: "<<I<<std::endl;
-                  std::cout<<"printing J: "<<J<<std::endl;
+
                   triplets   .push_back (Triplet<Real, Size> (J, I, +v_IJ));
                   triplets   .push_back (Triplet<Real, Size> (J, J, -v_JI));
 
@@ -663,8 +673,7 @@ inline VectorXr LineProducingSpecies::solve_statistical_equilibrium(const Double
 
               if (linedata.irad[k] != linedata.nlev-1)
               {
-                std::cout<<"printing I: "<<I<<std::endl;
-                std::cout<<"printing J: "<<J<<std::endl;
+
                   triplets   .push_back (Triplet<Real, Size> (I, J, +v_JI));
                   triplets   .push_back (Triplet<Real, Size> (I, I, -v_IJ));
 
@@ -673,7 +682,7 @@ inline VectorXr LineProducingSpecies::solve_statistical_equilibrium(const Double
               }
           }
 
-          // Approximated Lambda operator // is ignored when parameters.n_off_diag==0
+          // Approximated Lambda operator
 
           for (Size k = 0; k < linedata.nrad; k++)
           {
@@ -682,27 +691,30 @@ inline VectorXr LineProducingSpecies::solve_statistical_equilibrium(const Double
                   const Size   nr =  lambda.get_nr(p, k, m);
                   const Real v_IJ = -lambda.get_Ls(p, k, m) * get_opacity(p, k);
 
+                  // std::cout<<"v_IJ: "<<v_IJ<<std::endl;
+                  // if (isnan(v_IJ)){
+                  //   std::cout<<"At point p: "<<p<<std::endl;
+                  //   throw std::runtime_error("Nan encountered");}
+
                   // Note: we define our transition matrix as the transpose of R in the paper.
                   Size I = index (nr, linedata.irad[k]);
                   Size J = index (p,  linedata.jrad[k]);
                   if (parameters.n_off_diag==0){//no non-local effects exist, so compressed index notation can be used (nr=p)
                     I = index (idx, linedata.irad[k]);
                     J = index (idx, linedata.jrad[k]);
-                    std::cout<<"We should be here"<<std::endl;
+
                   }
 
                   // Compressed index notation cant be used here
 
                   if (linedata.jrad[k] != linedata.nlev-1)
-                  {std::cout<<"printing I: "<<I<<std::endl;
-                  std::cout<<"printing J: "<<J<<std::endl;
+                  {
                       triplets   .push_back (Triplet<Real, Size> (J, I, +v_IJ));
                       // triplets_LT.push_back (Triplet<Real, Size> (J, I, +v_IJ));
                   }
 
                   if (linedata.irad[k] != linedata.nlev-1)
-                  {std::cout<<"printing I: "<<I<<std::endl;
-                  std::cout<<"printing J: "<<J<<std::endl;
+                  {
                       triplets   .push_back (Triplet<Real, Size> (I, I, -v_IJ));
                       // triplets_LT.push_back (Triplet<Real, Size> (I, I, -v_IJ));
                   }
@@ -725,6 +737,14 @@ inline VectorXr LineProducingSpecies::solve_statistical_equilibrium(const Double
                   const Real v_IJ = colpar.Cd_intpld[k] * abn;
                   const Real v_JI = colpar.Ce_intpld[k] * abn;
 
+                  // std::cout<<"v_IJ: "<<v_IJ<<std::endl;
+                  // if (isnan(v_IJ)){
+                  //   std::cout<<"At point p: "<<p<<std::endl;
+                  //   throw std::runtime_error("Nan encountered");}
+                  // std::cout<<"v_JI: "<<v_IJ<<std::endl;
+                  // if (isnan(v_JI)){
+                  //   std::cout<<"At point p: "<<p<<std::endl;
+                  //   throw std::runtime_error("Nan encountered");}
 
                   // Note: we define our transition matrix as the transpose of R in the paper.
                   // const Size I = index (p, colpar.icol[k]);
@@ -736,15 +756,13 @@ inline VectorXr LineProducingSpecies::solve_statistical_equilibrium(const Double
 
 
                   if (colpar.jcol[k] != linedata.nlev-1)
-                  {std::cout<<"printing I: "<<I<<std::endl;
-                  std::cout<<"printing J: "<<J<<std::endl;
+                  {
                       triplets.push_back (Triplet<Real, Size> (J, I, +v_IJ));
                       triplets.push_back (Triplet<Real, Size> (J, J, -v_JI));
                   }
 
                   if (colpar.icol[k] != linedata.nlev-1)
-                  {std::cout<<"printing I: "<<I<<std::endl;
-                  std::cout<<"printing J: "<<J<<std::endl;
+                  {
                       triplets.push_back (Triplet<Real, Size> (I, J, +v_JI));
                       triplets.push_back (Triplet<Real, Size> (I, I, -v_IJ));
                   }
@@ -761,8 +779,6 @@ inline VectorXr LineProducingSpecies::solve_statistical_equilibrium(const Double
               const Size I = index (idx, linedata.nlev-1);
               const Size J = index (idx, i);
 
-std::cout<<"printing I: "<<I<<std::endl;
-std::cout<<"printing J: "<<J<<std::endl;
               triplets.push_back (Triplet<Real, Size> (I, J, 1.0));
           }
 
@@ -798,7 +814,7 @@ std::cout<<"printing J: "<<J<<std::endl;
       //   }
       // }
 
-      std::cout<<"Setting RT"<<std::endl;
+      // std::cout<<"Setting RT"<<std::endl;
 
       Eigen::SparseMatrix<Real> RTmat;
 
@@ -807,18 +823,18 @@ std::cout<<"printing J: "<<J<<std::endl;
 
       RTmat.setFromTriplets (triplets.begin(), triplets.end());
 
-      std::cout << "The matrix RT is of size "
-          << RTmat.rows() << "x" << RTmat.cols() << std::endl;
-
-      std::cout << "The vector y is of size " << y.size() << std::endl;
+      // std::cout << "The matrix RT is of size "
+      //     << RTmat.rows() << "x" << RTmat.cols() << std::endl;
+      //
+      // std::cout << "The vector y is of size " << y.size() << std::endl;
 
       SparseLU <SparseMatrix<Real>, COLAMDOrdering<int>> solver;
 
-      cout << "Analyzing system of rate equations..."      << endl;
+      // cout << "Analyzing system of rate equations..."      << endl;
 
       solver.analyzePattern (RTmat);
 
-      cout << "Factorizing system of rate equations..."    << endl;
+      // cout << "Factorizing system of rate equations..."    << endl;
 
       solver.factorize (RTmat);
 
@@ -826,13 +842,12 @@ std::cout<<"printing J: "<<J<<std::endl;
       {
           cout << "Factorization failed with error message:" << endl;
           cout << solver.lastErrorMessage()                  << endl;
-
           // cout << endl << RT << endl;
 
           throw std::runtime_error ("Eigen solver ERROR.");
       }
 
-      cout << "Solving rate equations for the level populations..." << endl;
+      // cout << "Solving rate equations for the level populations..." << endl;
 
       VectorXr temp_population = solver.solve (y);
 
@@ -843,7 +858,7 @@ std::cout<<"printing J: "<<J<<std::endl;
           assert (false);
       }
 
-      cout << "Succesfully solved for the level populations!"       << endl;
+      // cout << "Succesfully solved for the level populations!"       << endl;
 
       return temp_population;
 
