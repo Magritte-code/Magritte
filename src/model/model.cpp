@@ -455,7 +455,7 @@ int Model :: compute_level_populations_multigrid (
     }
     Timer totalTime("Total time");
     Timer interpolation_timer("Interpolation time");
-    Timer* current_timer_pointer;
+    Timer* current_timer_pointer;//FIXME: use uniqueptr
 
 
     current_timer_pointer=&timers_per_level[max_coars_lvl];
@@ -835,6 +835,10 @@ int Model :: compute_level_populations_multigrid (
 
         }
 
+        //and do not forget to delete the pointer to timer
+        delete current_timer_pointer;
+        current_timer_pointer=NULL;
+        
       break;
 
         case MgController::Actions::do_nothing:

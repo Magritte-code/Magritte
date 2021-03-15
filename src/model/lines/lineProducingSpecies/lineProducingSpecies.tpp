@@ -95,7 +95,7 @@ inline void LineProducingSpecies :: update_using_LTE (
         }
     })
 
-    populations.push_back (population);
+    // populations.push_back (population);
 }
 
 
@@ -209,37 +209,37 @@ void LineProducingSpecies :: update_using_Ng_acceleration ()
     }
 }
 
-
-///  update_using_acceleration: perform a Ng accelerated iteration step
-///    for level populations. All variable names are based on lecture notes
-///    by C.P. Dullemond which are based on Olson, Auer and Buchler (1985).
-///////////////////////////////////////////////////////////////////////////
-void LineProducingSpecies :: update_using_acceleration (const Size order)
-{
-    MatrixXr RTR (order, order);
-
-    for (Size i = 0; i < order; i++)
-    {
-        for (Size j = 0; j < order; j++)
-        {
-            RTR(i,j) = residuals[i].dot(residuals[j]);
-        }
-    }
-
-    VectorXr ones  = VectorXr::Constant(order, 1.0);
-    VectorXr coef  = RTR.colPivHouseholderQr().solve(ones);
-             coef /= coef.sum();
-
-    residuals  .push_back(population-populations.back());
-    populations.push_back(population);
-
-    population = VectorXr::Zero(population.size());
-
-    for (Size i = 0; i < order; i++)
-    {
-        population += populations[order-1-i] * coef[order-1-i];
-    }
-}
+// DEPRECATED; no longer in use
+// ///  update_using_acceleration: perform a Ng accelerated iteration step
+// ///    for level populations. All variable names are based on lecture notes
+// ///    by C.P. Dullemond which are based on Olson, Auer and Buchler (1985).
+// ///////////////////////////////////////////////////////////////////////////
+// void LineProducingSpecies :: update_using_acceleration (const Size order)
+// {
+//     MatrixXr RTR (order, order);
+//
+//     for (Size i = 0; i < order; i++)
+//     {
+//         for (Size j = 0; j < order; j++)
+//         {
+//             RTR(i,j) = residuals[i].dot(residuals[j]);
+//         }
+//     }
+//
+//     VectorXr ones  = VectorXr::Constant(order, 1.0);
+//     VectorXr coef  = RTR.colPivHouseholderQr().solve(ones);
+//              coef /= coef.sum();
+//
+//     residuals  .push_back(population-populations.back());
+//     populations.push_back(population);
+//
+//     population = VectorXr::Zero(population.size());
+//
+//     for (Size i = 0; i < order; i++)
+//     {
+//         population += populations[order-1-i] * coef[order-1-i];
+//     }
+// }
 
 
 ///  update_using_statistical_equilibrium: computes level populations by solving
@@ -263,8 +263,8 @@ inline void LineProducingSpecies :: update_using_statistical_equilibrium (
     population_prev2 = population_prev1;
     population_prev1 = population;
 
-    residuals  .push_back(population-populations.back());
-    populations.push_back(population);
+    // residuals  .push_back(population-populations.back());
+    // populations.push_back(population);
 
 
 //    SparseMatrix<double> RT (ncells*linedata.nlev, ncells*linedata.nlev);

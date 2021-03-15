@@ -129,15 +129,15 @@ def run_model (nosave=False):
     model.compute_spectral_discretisation ()
     model.compute_inverse_line_widths     ()
     model.compute_LTE_level_populations   ()
-    # nlevels=3;#should be coarsest level; misleading name
-    #2 multigrid levels, minimum 1 point remaining, 0.1 as tolerance, mgImplementation=1 (Naive,Vcycle,Wcycle)
-    # model.setup_multigrid(1,nlevels,0.1,1);
+    coarsest_level=3;#should be coarsest level; misleading name
+    #4 multigrid levels, minimum 1 point remaining, 0.1 as tolerance, mgImplementation=1 (Naive,Vcycle,Wcycle)
+    model.setup_multigrid(1,coarsest_level,0.1,1,100);
     timer2.stop()
 
     timer3 = tools.Timer('running model')
     timer3.start()
-    model.compute_level_populations(True, 100)
-    # model.compute_level_populations_multigrid(True, 20)
+    # model.compute_level_populations(True, 100)
+    model.compute_level_populations_multigrid(True)
     timer3.stop()
 
     pops = np.array(model.lines.lineProducingSpecies[0].population).reshape((model.parameters.npoints(), model.lines.lineProducingSpecies[0].linedata.nlev))

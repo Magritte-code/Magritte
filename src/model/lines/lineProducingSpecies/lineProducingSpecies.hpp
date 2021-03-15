@@ -37,17 +37,20 @@ struct LineProducingSpecies
     VectorXr population;             ///< level population (most recent)
     Real1    population_tot;         ///< total level population (sum over levels)
 
-    vector<VectorXr> populations;    ///< list of populations in previous iterations
-    vector<VectorXr> residuals;      ///< list of residuals in the populations
+    // vector<VectorXr> populations;    ///< list of populations in previous iterations
+    // vector<VectorXr> residuals;      ///< list of residuals in the populations
 
 
     VectorXr population_prev1;       ///< level populations 1 iteration  back
     VectorXr population_prev2;       ///< level populations 2 iterations back
     VectorXr population_prev3;       ///< level populations 3 iterations back
 
-    SparseMatrix<Real> RT;
-    SparseMatrix<Real> LambdaTest;
-    SparseMatrix<Real> LambdaStar;
+    // pc::multi_threading::ThreadPrivate<VectorXr> resulting_y;
+    // pc::multi_threading::ThreadPrivate<SparseMatrix<Real>> RTmat;
+    // pc::multi_threading::ThreadPrivate<vector<Size>> current_points_in_block;
+    // pc::multi_threading::ThreadPrivate<vector<Triplet<Real, Size>>> triplets;
+    // SparseMatrix<Real> LambdaTest;
+    // SparseMatrix<Real> LambdaStar;
 
     void read  (const Io& io, const Size l);
     void write (const Io& io, const Size l) const;
@@ -82,7 +85,7 @@ struct LineProducingSpecies
       vector<Size> &points_to_use);
 
     inline void update_using_Ng_acceleration ();
-    inline void update_using_acceleration (const Size order);
+    // inline void update_using_acceleration (const Size order);
 
 
     inline void set_all_level_pops(VectorXr new_population);
