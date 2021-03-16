@@ -835,10 +835,6 @@ int Model :: compute_level_populations_multigrid (
 
         }
 
-        //and do not forget to delete the pointer to timer
-        delete current_timer_pointer;
-        current_timer_pointer=NULL;
-        
       break;
 
         case MgController::Actions::do_nothing:
