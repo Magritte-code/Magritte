@@ -301,121 +301,129 @@ class LamdaFileReader ():
 
 
 
-def set_linedata_from_LAMDA_file (model, fileName, config={}):
+def set_linedata_from_LAMDA_file (model, fileNames, config={}):
     """
     Set line data by reading it from a data file in LAMDA format.
-    Note: Do not use the Magritte objects ld etc. this will kill performance. Hence, the copies.
+    Note: Do not use the Magritte objects linedata etc. this will kill performance. Hence, the copies.
     """
-    # Create lineProducingSpecies object
-    model.lines.lineProducingSpecies = vLineProducingSpecies([LineProducingSpecies()])
+    # Make sure fileNames is a list
+    if not type(fileNames) is list:
+        fileNames = [fileNames]
+    # Make sure a file is provides for each species
+    if len(fileNames) != model.parameters.nlspecs():
+        raise ValueError('Number of provided LAMDA files != nlspecs')
+    # Create lineProducingSpecies objects
+    model.lines.lineProducingSpecies = vLineProducingSpecies([LineProducingSpecies() for _ in fileNames])
     # Convenient name
     species = model.chemistry.species
-    # Create reader for data file
-    rd = LamdaFileReader(fileName)
-    # Read radiative data
-    sym          = rd.readColumn(start= 1,      nElem=1,    columnNr=0, type='str')[0]
-    num          = getSpeciesNumber(species, sym)
-    mass         = rd.readColumn(start= 3,      nElem=1,    columnNr=0, type='float')[0]
-    inverse_mass = float (1.0 / mass)
-    nlev         = rd.readColumn(start= 5,      nElem=1,    columnNr=0, type='int')[0]
-    energy       = rd.readColumn(start= 7,      nElem=nlev, columnNr=1, type='float')
-    weight       = rd.readColumn(start= 7,      nElem=nlev, columnNr=2, type='float')
-    nrad         = rd.readColumn(start= 8+nlev, nElem=1,    columnNr=0, type='int')[0]
-    irad         = rd.readColumn(start=10+nlev, nElem=nrad, columnNr=1, type='int')
-    jrad         = rd.readColumn(start=10+nlev, nElem=nrad, columnNr=2, type='int')
-    A            = rd.readColumn(start=10+nlev, nElem=nrad, columnNr=3, type='float')
-    # Change index range from [1, nlev] to [0, nlev-1]
-    for k in range(nrad):
-        irad[k] += -1
-        jrad[k] += -1
-    # Convert to SI units
-    for i in range(nlev):
-        # Energy from [cm^-1] to [J]
-        energy[i] *= 1.0E+2*HH*CC
-    # Set data
-    model.lines.lineProducingSpecies[0].linedata.sym          = sym
-    model.lines.lineProducingSpecies[0].linedata.num          = num
-    model.lines.lineProducingSpecies[0].linedata.inverse_mass = inverse_mass
-    model.lines.lineProducingSpecies[0].linedata.nlev         = nlev
-    model.lines.lineProducingSpecies[0].linedata.energy       = energy
-    model.lines.lineProducingSpecies[0].linedata.weight       = weight
-    # Start reading collisional data
-    nlr = nlev + nrad
-    # Get number of collision partners
-    ncolpar = rd.readColumn(start=11+nlr, nElem=1,  columnNr=0, type='int')[0]
-    ind     = 13 + nlr
-    # Set number of collision partners
-    model.lines.lineProducingSpecies[0].linedata.ncolpar = ncolpar
-    # Create list of CollisionPartners
-    model.lines.lineProducingSpecies[0].linedata.colpar = vCollisionPartner([CollisionPartner() for _ in range(ncolpar)])
-    # Loop over the collision partners
-    for c in range(ncolpar):
-        num_col_partner = rd.extractCollisionPartner(line=ind, species=species, elem=sym)[0]
-        orth_or_para_H2 = rd.extractCollisionPartner(line=ind, species=species, elem=sym)[1]
-        ncol            = rd.readColumn(start=ind+2, nElem=1,    columnNr=0,   type='int')[0]
-        ntmp            = rd.readColumn(start=ind+4, nElem=1,    columnNr=0,   type='int')[0]
-        icol            = rd.readColumn(start=ind+8, nElem=ncol, columnNr=1,   type='int')
-        jcol            = rd.readColumn(start=ind+8, nElem=ncol, columnNr=2,   type='int')
+    # Add data for each LAMDA file
+    for lspec, fileName in enumerate(fileNames):
+        # Create reader for data file
+        rd = LamdaFileReader(fileName)
+        # Read radiative data
+        sym          = rd.readColumn(start= 1,      nElem=1,    columnNr=0, type='str')[0]
+        num          = getSpeciesNumber(species, sym)
+        mass         = rd.readColumn(start= 3,      nElem=1,    columnNr=0, type='float')[0]
+        inverse_mass = float (1.0 / mass)
+        nlev         = rd.readColumn(start= 5,      nElem=1,    columnNr=0, type='int')[0]
+        energy       = rd.readColumn(start= 7,      nElem=nlev, columnNr=1, type='float')
+        weight       = rd.readColumn(start= 7,      nElem=nlev, columnNr=2, type='float')
+        nrad         = rd.readColumn(start= 8+nlev, nElem=1,    columnNr=0, type='int')[0]
+        irad         = rd.readColumn(start=10+nlev, nElem=nrad, columnNr=1, type='int')
+        jrad         = rd.readColumn(start=10+nlev, nElem=nrad, columnNr=2, type='int')
+        A            = rd.readColumn(start=10+nlev, nElem=nrad, columnNr=3, type='float')
         # Change index range from [1, nlev] to [0, nlev-1]
-        for k in range(ncol):
-            icol[k] += -1
-            jcol[k] += -1
-        tmp = []
-        Cd  = []
-        for t in range (ntmp):
-            tmp.append (rd.readColumn(start=ind+6, nElem=1,    columnNr=t,   type='float')[0])
-            Cd .append (rd.readColumn(start=ind+8, nElem=ncol, columnNr=3+t, type='float'))
+        for k in range(nrad):
+            irad[k] += -1
+            jrad[k] += -1
         # Convert to SI units
-        for t in range(ntmp):
-            for k in range(ncol):
-                # Cd from [cm^3] to [m^3]
-                Cd[t][k] *= 1.0E-6
-        # Derive excitation coefficients
-        Ce = [[0.0 for _ in range(ncol)] for _ in range(ntmp)]
-        for t in range(ntmp):
-            for k in range(ncol):
-                i = icol[k]
-                j = jcol[k]
-                Ce[t][k] = Cd[t][k] * weight[i]/weight[j] * np.exp( -(energy[i]-energy[j]) / (KB*tmp[t]) )
+        for i in range(nlev):
+            # Energy from [cm^-1] to [J]
+            energy[i] *= 1.0E+2*HH*CC
         # Set data
-        model.lines.lineProducingSpecies[0].linedata.colpar[c].num_col_partner = num_col_partner
-        model.lines.lineProducingSpecies[0].linedata.colpar[c].orth_or_para_H2 = orth_or_para_H2
-        model.lines.lineProducingSpecies[0].linedata.colpar[c].ncol            = ncol
-        model.lines.lineProducingSpecies[0].linedata.colpar[c].ntmp            = ntmp
-        model.lines.lineProducingSpecies[0].linedata.colpar[c].icol            = icol
-        model.lines.lineProducingSpecies[0].linedata.colpar[c].jcol            = jcol
-        model.lines.lineProducingSpecies[0].linedata.colpar[c].tmp             = tmp
-        model.lines.lineProducingSpecies[0].linedata.colpar[c].Cd              = Cd
-        model.lines.lineProducingSpecies[0].linedata.colpar[c].Ce              = Ce
-        # Increment index
-        ind += 9 + ncol
-    # Limit to the specified lines if required
-    if ('considered transitions' in config) and (config['considered transitions'] is not None):
-        if not isinstance(config['considered transitions'], list):
-            config['considered transitions'] = [config['considered transitions']]
-        if (len(config['considered transitions']) > 0):
-            print('Not considering all radiative transitions on the data file but only the specified ones!')
-            nrad = len (config['considered transitions'])
-            irad = [irad[k] for k in config['considered transitions']]
-            jrad = [jrad[k] for k in config['considered transitions']]
-            A    = [   A[k] for k in config['considered transitions']]
-    # Set derived quantities
-    Bs        = [0.0 for _ in range(nrad)]
-    Ba        = [0.0 for _ in range(nrad)]
-    frequency = [0.0 for _ in range(nrad)]
-    for k in range(nrad):
-        i = irad[k]
-        j = jrad[k]
-        frequency[k] = (energy[i]-energy[j]) / HH
-        Bs[k]        = A[k] * CC**2 / (2.0*HH*(frequency[k])**3)
-        Ba[k]        = weight[i]/weight[j] * Bs[k]
-    # Set data
-    model.lines.lineProducingSpecies[0].linedata.nrad      = nrad
-    model.lines.lineProducingSpecies[0].linedata.irad      = irad
-    model.lines.lineProducingSpecies[0].linedata.jrad      = jrad
-    model.lines.lineProducingSpecies[0].linedata.A         = A
-    model.lines.lineProducingSpecies[0].linedata.Bs        = Bs
-    model.lines.lineProducingSpecies[0].linedata.Ba        = Ba
-    model.lines.lineProducingSpecies[0].linedata.frequency = frequency
+        model.lines.lineProducingSpecies[lspec].linedata.sym          = sym
+        model.lines.lineProducingSpecies[lspec].linedata.num          = num
+        model.lines.lineProducingSpecies[lspec].linedata.inverse_mass = inverse_mass
+        model.lines.lineProducingSpecies[lspec].linedata.nlev         = nlev
+        model.lines.lineProducingSpecies[lspec].linedata.energy       = energy
+        model.lines.lineProducingSpecies[lspec].linedata.weight       = weight
+        # Start reading collisional data
+        nlr = nlev + nrad
+        # Get number of collision partners
+        ncolpar = rd.readColumn(start=11+nlr, nElem=1,  columnNr=0, type='int')[0]
+        ind     = 13 + nlr
+        # Set number of collision partners
+        model.lines.lineProducingSpecies[lspec].linedata.ncolpar = ncolpar
+        # Create list of CollisionPartners
+        model.lines.lineProducingSpecies[lspec].linedata.colpar = vCollisionPartner([CollisionPartner() for _ in range(ncolpar)])
+        # Loop over the collision partners
+        for c in range(ncolpar):
+            num_col_partner = rd.extractCollisionPartner(line=ind, species=species, elem=sym)[0]
+            orth_or_para_H2 = rd.extractCollisionPartner(line=ind, species=species, elem=sym)[1]
+            ncol            = rd.readColumn(start=ind+2, nElem=1,    columnNr=0,   type='int')[0]
+            ntmp            = rd.readColumn(start=ind+4, nElem=1,    columnNr=0,   type='int')[0]
+            icol            = rd.readColumn(start=ind+8, nElem=ncol, columnNr=1,   type='int')
+            jcol            = rd.readColumn(start=ind+8, nElem=ncol, columnNr=2,   type='int')
+            # Change index range from [1, nlev] to [0, nlev-1]
+            for k in range(ncol):
+                icol[k] += -1
+                jcol[k] += -1
+            tmp = []
+            Cd  = []
+            for t in range (ntmp):
+                tmp.append (rd.readColumn(start=ind+6, nElem=1,    columnNr=t,   type='float')[0])
+                Cd .append (rd.readColumn(start=ind+8, nElem=ncol, columnNr=3+t, type='float'))
+            # Convert to SI units
+            for t in range(ntmp):
+                for k in range(ncol):
+                    # Cd from [cm^3] to [m^3]
+                    Cd[t][k] *= 1.0E-6
+            # Derive excitation coefficients
+            Ce = [[0.0 for _ in range(ncol)] for _ in range(ntmp)]
+            for t in range(ntmp):
+                for k in range(ncol):
+                    i = icol[k]
+                    j = jcol[k]
+                    Ce[t][k] = Cd[t][k] * weight[i]/weight[j] * np.exp( -(energy[i]-energy[j]) / (KB*tmp[t]) )
+            # Set data
+            model.lines.lineProducingSpecies[lspec].linedata.colpar[c].num_col_partner = num_col_partner
+            model.lines.lineProducingSpecies[lspec].linedata.colpar[c].orth_or_para_H2 = orth_or_para_H2
+            model.lines.lineProducingSpecies[lspec].linedata.colpar[c].ncol            = ncol
+            model.lines.lineProducingSpecies[lspec].linedata.colpar[c].ntmp            = ntmp
+            model.lines.lineProducingSpecies[lspec].linedata.colpar[c].icol            = icol
+            model.lines.lineProducingSpecies[lspec].linedata.colpar[c].jcol            = jcol
+            model.lines.lineProducingSpecies[lspec].linedata.colpar[c].tmp             = tmp
+            model.lines.lineProducingSpecies[lspec].linedata.colpar[c].Cd              = Cd
+            model.lines.lineProducingSpecies[lspec].linedata.colpar[c].Ce              = Ce
+            # Increment index
+            ind += 9 + ncol
+        # Limit to the specified lines if required
+        if ('considered transitions' in config) and (config['considered transitions'] is not None):
+            if not isinstance(config['considered transitions'], list):
+                config['considered transitions'] = [config['considered transitions']]
+            if (len(config['considered transitions']) > 0):
+                print('Not considering all radiative transitions on the data file but only the specified ones!')
+                nrad = len (config['considered transitions'])
+                irad = [irad[k] for k in config['considered transitions']]
+                jrad = [jrad[k] for k in config['considered transitions']]
+                A    = [   A[k] for k in config['considered transitions']]
+        # Set derived quantities
+        Bs        = [0.0 for _ in range(nrad)]
+        Ba        = [0.0 for _ in range(nrad)]
+        frequency = [0.0 for _ in range(nrad)]
+        for k in range(nrad):
+            i = irad[k]
+            j = jrad[k]
+            frequency[k] = (energy[i]-energy[j]) / HH
+            Bs[k]        = A[k] * CC**2 / (2.0*HH*(frequency[k])**3)
+            Ba[k]        = weight[i]/weight[j] * Bs[k]
+        # Set data
+        model.lines.lineProducingSpecies[lspec].linedata.nrad      = nrad
+        model.lines.lineProducingSpecies[lspec].linedata.irad      = irad
+        model.lines.lineProducingSpecies[lspec].linedata.jrad      = jrad
+        model.lines.lineProducingSpecies[lspec].linedata.A         = A
+        model.lines.lineProducingSpecies[lspec].linedata.Bs        = Bs
+        model.lines.lineProducingSpecies[lspec].linedata.Ba        = Ba
+        model.lines.lineProducingSpecies[lspec].linedata.frequency = frequency
     # Done
     return model
