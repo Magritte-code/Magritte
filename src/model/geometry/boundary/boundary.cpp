@@ -35,17 +35,17 @@ void Boundary :: read (const Io& io)
     boundary_condition  .resize (parameters.nboundary());
     boundary_temperature.resize (parameters.nboundary());
 
-    String1 boundary_condition_str (parameters.nboundary());
+    Size1 boundary_condition_int (parameters.nboundary());
 
     io.read_list (prefix+"boundary_temperature", boundary_temperature);
-    io.read_list (prefix+"boundary_condition", boundary_condition_str);
+    io.read_list (prefix+"boundary_condition", boundary_condition_int);
 
 
     for (Size b = 0; b < parameters.nboundary(); b++)
     {
-        if (boundary_condition_str[b].compare("zero"   )) boundary_condition[b] = Zero;
-        if (boundary_condition_str[b].compare("thermal")) boundary_condition[b] = Thermal;
-        if (boundary_condition_str[b].compare("cmb"    )) boundary_condition[b] = CMB;
+        if (boundary_condition_int[b] == 0) boundary_condition[b] = Zero;
+        if (boundary_condition_int[b] == 1) boundary_condition[b] = Thermal;
+        if (boundary_condition_int[b] == 2) boundary_condition[b] = CMB;
     }
 
 
@@ -63,17 +63,17 @@ void Boundary :: write (const Io& io) const
 
     io.write_list (prefix+"boundary2point", boundary2point);
 
-    String1 boundary_condition_str (parameters.nboundary());
+    Size1 boundary_condition_int (parameters.nboundary());
 
     for (Size b = 0; b < parameters.nboundary(); b++) switch (boundary_condition[b])
     {
-        case Zero    : boundary_condition_str[b] = "zero";
-        case Thermal : boundary_condition_str[b] = "thermal";
-        case CMB     : boundary_condition_str[b] = "cmb";
+        case Zero    : boundary_condition_int[b] = 0;
+        case Thermal : boundary_condition_int[b] = 1;
+        case CMB     : boundary_condition_int[b] = 2;
     }
 
     io.write_list (prefix+"boundary_temperature", boundary_temperature);
-    io.write_list (prefix+"boundary_condition", boundary_condition_str);
+    io.write_list (prefix+"boundary_condition", boundary_condition_int);
 }
 
 
