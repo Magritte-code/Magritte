@@ -195,6 +195,11 @@ accel inline Size Geometry :: get_ray_length (
             shift_nxt = get_shift <frame> (o, r, nxt, Z    );
 
             l += get_n_interpl (shift_crt, shift_nxt, dshift_max);
+
+            if (!valid_point(nxt))
+            {
+                printf("ERROR: no valid neighbor o=%u, r=%u, crt=%u\n", o, r, crt);
+            }
         }
     }
 
@@ -290,11 +295,6 @@ accel inline Size Geometry :: get_next (
     {
         next = get_next_general_geometry   (o, r, crt, Z, dZ);
     }
-
-    //if (!valid_point (next))
-    //{
-    //    printf ("ERROR (next is not valid): o = %d, crt = %d, ray = %d\n", o, crt, r);
-    //}
 
     return next;
 }

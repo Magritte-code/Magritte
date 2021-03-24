@@ -223,11 +223,10 @@ inline void Solver :: solve_feautrier_order_2 (Model& model)
                 }
             }
 
-            if (isnan(model.radiation.u(rr,o,0)))
-            {
-
-                cout << "NANs : r = " << rr << "  o = " << o << "  n_tot = " << n_tot_() << endl;
-            }
+            // if (isnan(model.radiation.u(rr,o,0)))
+            // {
+            //     cout << "NANs : r = " << rr << "  o = " << o << "  n_tot = " << n_tot_() << endl;
+            // }
 
         })
 
@@ -765,12 +764,6 @@ accel inline void Solver :: solve_feautrier_order_2 (
 
     Su[last] = term_n + two * I_bdy_l * inverse_dtau_l;
     Su[last] = (A[last] * Su[last-1] + Su[last]) * (one + FF[last-1]) * denominator;
-
-    if(isnan(Su[last]))
-    {
-        cout << "  --- I_bdy_f = " << I_bdy_f << "  I_bdy_l = " << I_bdy_l << endl;
-    }
-
 
     if (n_off_diag == 0)
     {
