@@ -128,7 +128,7 @@ void LineProducingSpecies :: write (const Io& io, const Size l) const
 ///    @param[in] tag : extra info tag
 ////////////////////////////////////////////////////////
 void LineProducingSpecies :: read_populations (const Io &io, const Size l, const string tag)
-{
+{   //"lines/lineProducingSpecies_'l'/"
     const string prefix_l = prefix + std::to_string (l) + "/";
 
     Double2 pops (parameters.npoints(), Double1 (linedata.nlev));

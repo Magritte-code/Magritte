@@ -87,6 +87,7 @@ PYBIND11_MODULE (core, module)
     py::class_<Model> (module, "Model")
         // .def_property_readonly_static("model", [](const py::object&) { return Model(); });
         // attributes
+        .def_readwrite ("writing_populations_to_disk", &Model::writing_populations_to_disk)
         .def_readwrite ("parameters",     &Model::parameters)
         .def_readwrite ("geometry",       &Model::geometry)
         .def_readwrite ("chemistry",      &Model::chemistry)
@@ -234,6 +235,7 @@ PYBIND11_MODULE (core, module)
         //.def_readonly("points_are_similar", &Multiscale::points_are_similar)
         // functions
         .def("set_all_neighbors", &Multiscale::set_all_neighbors)
+        .def("get_current_points_in_grid", &Multiscale::get_current_points_in_grid)
         //.def("get_neighbors", &Multiscale::get_neighbors) TODO: figure out how to handle overloaded functions
         // constructor
         .def (py::init<>());

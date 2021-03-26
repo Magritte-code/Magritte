@@ -129,14 +129,14 @@ def run_model (a_or_b, nosave=False):
     model.compute_spectral_discretisation ()
     model.compute_inverse_line_widths     ()
     model.compute_LTE_level_populations   ()
-    nlevels=3;#should be coarsest level; misleading name
+    nlevels=1;#should be coarsest level; misleading name
     #2 multigrid levels, minimum 1 point remaining, 0.1 as tolerance, mgImplementation=1 (Naive,Vcycle,Wcycle)
-    model.setup_multigrid(1,nlevels,0.1,1);
+    model.setup_multigrid(1,nlevels,0.1,1,20);
     timer2.stop()
 
     timer3 = tools.Timer('running model')
     timer3.start()
-    model.compute_level_populations_multigrid(True, 20)
+    model.compute_level_populations_multigrid(True)
     timer3.stop()
 
     pops = np.array(model.lines.lineProducingSpecies[0].population).reshape((model.parameters.npoints(), 2))
@@ -183,6 +183,9 @@ def run_model (a_or_b, nosave=False):
         plt.xlabel('r [m]')
         plt.ylabel('fractional level populations [.]')
         plt.savefig(f'{resdir}{modelName}-{timestamp}.png', dpi=150)
+
+        with open('vanZadelhoff_incomplete_multigird_1_lvl.npy', 'wb') as f:
+            np.save(f, pops)
 
     return
 

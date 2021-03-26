@@ -569,6 +569,12 @@ int Model :: compute_level_populations_multigrid (
             iteration_normal++;
         }
 
+        if (writing_populations_to_disk){
+          IoPython io = IoPython ("hdf5", parameters.model_name());
+          lines.write_populations_of_iteration(io, iteration);
+          std::cout<<"Wrote populations to disk"<<std::endl;
+        }
+
 
         for (int l = 0; l < parameters.nlspecs(); l++)
         {
@@ -950,14 +956,20 @@ int Model :: compute_level_populations (
 
             vector<Size> points_in_grid=geometry.points.multiscale.get_current_points_in_grid();
 
-            cout<< "got point_in_grid"<<std::endl;
+            // cout<< "got point_in_grid"<<std::endl;
             lines.iteration_using_statistical_equilibrium (
                 chemistry.species.abundance,
                 thermodynamics.temperature.gas,
                 parameters.pop_prec(),
                 points_in_grid);
 
-              cout<<"iterated using statistical equilibrium"<<std::endl;
+            cout<<"iterated using statistical equilibrium"<<std::endl;
+
+            if (writing_populations_to_disk){
+              IoPython io = IoPython ("hdf5", parameters.model_name());
+              lines.write_populations_of_iteration(io, iteration);
+              std::cout<<"Wrote populations to disk"<<std::endl;
+            }
 
             iteration_normal++;
         }

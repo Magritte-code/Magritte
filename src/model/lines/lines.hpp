@@ -56,6 +56,9 @@ struct Lines
 
     inline void set_all_level_pops(vector<VectorXr> new_population);
     inline vector<VectorXr> get_all_level_pops();
+
+    //TODO: maybe also add coarsening level?
+    inline void write_populations_of_iteration(const Io& io, const Size it) const;
 };
 
 

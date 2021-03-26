@@ -17,6 +17,7 @@
 
 struct Model
 {
+    bool writing_populations_to_disk=false;//after the iterations_using_statistical_equilibrium, write the level populations to disk
     //minimum number points used during interpolation
     const Size MIN_INTERPOLATION_POINTS=16;//~=average nb neighors in voronoi grid
     //maximum number points used during interpolation

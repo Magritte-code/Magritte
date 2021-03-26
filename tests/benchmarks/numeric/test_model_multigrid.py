@@ -115,7 +115,7 @@ from scipy.interpolate import interp1d
 
 def run_model (nosave=False):
 
-    modelName = f'model_jan'
+    modelName = f'model_Jan_reduced'
     modelFile = f'{moddir}{modelName}.hdf5'
     timestamp = tools.timestamp()
 
@@ -129,9 +129,10 @@ def run_model (nosave=False):
     model.compute_spectral_discretisation ()
     model.compute_inverse_line_widths     ()
     model.compute_LTE_level_populations   ()
+    # model.writing_populations_to_disk=True;
     coarsest_level=3;#should be coarsest level; misleading name
     #4 multigrid levels, minimum 1 point remaining, 0.1 as tolerance, mgImplementation=1 (Naive,Vcycle,Wcycle)
-    model.setup_multigrid(1,coarsest_level,0.1,1,100);
+    model.setup_multigrid(1,coarsest_level,0.1,1,1000);
     timer2.stop()
 
     timer3 = tools.Timer('running model')
@@ -171,7 +172,7 @@ def run_model (nosave=False):
     print(result)
 
     # chosen_lines=np.arange(0,model.lines.lineProducingSpecies[0].linedata.nlev,5)
-    chosen_lines=[0,1,2,3,4]#first five lines are the most important
+    chosen_lines=[0,1]#first five lines are the most important
 
     if not nosave:
         with open(f'{resdir}{modelName}-{timestamp}_non_multigrid.log' ,'w') as log:

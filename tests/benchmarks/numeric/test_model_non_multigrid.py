@@ -115,7 +115,7 @@ from scipy.interpolate import interp1d
 
 def run_model (nosave=False):
 
-    modelName = f'model_jan'
+    modelName = f'model_Jan_reduced'
     modelFile = f'{moddir}{modelName}.hdf5'
     timestamp = tools.timestamp()
 
@@ -136,7 +136,7 @@ def run_model (nosave=False):
 
     timer3 = tools.Timer('running model')
     timer3.start()
-    model.compute_level_populations(True, 100)
+    model.compute_level_populations(True, 1000)
     # model.compute_level_populations_multigrid(True, 20)
     timer3.stop()
 
