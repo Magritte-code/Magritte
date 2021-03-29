@@ -298,6 +298,7 @@ int Model :: restart_from_iteration(Size iteration)
   IoPython io = IoPython ("hdf5", parameters.model_name());
   lines.read_populations_of_iteration(io, iteration);
   std::cout<<"Read populations from disk"<<std::endl;
+  lines.set_emissivity_and_opacity ();
   std::cout<<"Restarting from iteration: "<<iteration<<std::endl;
   iteration_to_start_from=iteration;
   return (0);
