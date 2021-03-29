@@ -113,10 +113,9 @@ from scipy.interpolate import interp1d
 #     return #magritte.Model (modelFile)
 
 
-def run_model (nosave=False):
+def run_model (a_or_b, nosave=False):
 
-    # modelName = f'all_constant_single_ray'
-    modelName = f'model_Jan_reduced'
+    modelName = f'vanZadelhoff_1{a_or_b}_3D_mesher'
     modelFile = f'{moddir}{modelName}.hdf5'
     timestamp = tools.timestamp()
 
@@ -125,94 +124,99 @@ def run_model (nosave=False):
     model = magritte.Model (modelFile)
     timer1.stop()
 
-    timer2 = tools.Timer('setting model')
-    timer2.start()
-    model.compute_spectral_discretisation ()
-    model.compute_inverse_line_widths     ()
-
+    # timer2 = tools.Timer('setting model')
+    # timer2.start()
+    # model.compute_spectral_discretisation ()
+    # model.compute_inverse_line_widths     ()
     # model.compute_LTE_level_populations   ()
-    model.restart_from_iteration(1);
+    nlevels=1;#should be coarsest level; misleading name
+    # #2 multigrid levels, minimum 1 point remaining, 0.1 as tolerance, mgImplementation=1 (Naive,Vcycle,Wcycle)
+    model.setup_multigrid(1,nlevels,0.1,1,20);
+    # timer2.stop()
+    #
+    # timer3 = tools.Timer('running model')
+    # timer3.start()
+    # # model.compute_level_populations_multigrid(True, 20)
+    # timer3.stop()
 
-    model.writing_populations_to_disk=True;
-    # nlevels=3;#should be coarsest level; misleading name
-    #2 multigrid levels, minimum 1 point remaining, 0.1 as tolerance, mgImplementation=1 (Naive,Vcycle,Wcycle)
-    # model.setup_multigrid(1,nlevels,0.1,1);
-    timer2.stop()
-
-    timer3 = tools.Timer('running model')
-    timer3.start()
-    model.compute_level_populations(True, 1000)
-
-    # model.compute_level_populations_multigrid(True, 20)
-    timer3.stop()
-
-    pops = np.array(model.lines.lineProducingSpecies[0].population).reshape((model.parameters.npoints(), model.lines.lineProducingSpecies[0].linedata.nlev))
+    # pops = np.array(model.lines.lineProducingSpecies[0].population).reshape((model.parameters.npoints(), 2))
     abun = np.array(model.chemistry.species.abundance)[:,1]
     rs   = np.linalg.norm(np.array(model.geometry.points.position), axis=1)
-
-    # (i,ra,rb,nh,tk,nm,vr,db,td,lp0,lp1) = np.loadtxt (f'{curdir}/Ratran_results/vanZadelhoff_1{a_or_b}.out', skiprows=14, unpack=True)
-
+    coarser_points = np.array(model.geometry.points.multiscale.get_current_points_in_grid())
+    #
+    (i,ra,rb,nh,tk,nm,vr,db,td,lp0,lp1) = np.loadtxt (f'{curdir}/Ratran_results/vanZadelhoff_1{a_or_b}.out', skiprows=14, unpack=True)
+    #
     # interp_0 = interp1d(0.5*(ra+rb), lp0, fill_value='extrapolate')
     # interp_1 = interp1d(0.5*(ra+rb), lp1, fill_value='extrapolate')
     #
     # error_0 = tools.relative_error(pops[:,0]/abun, interp_0(rs))
     # error_1 = tools.relative_error(pops[:,1]/abun, interp_1(rs))
-
-    result  = f'--- Benchmark name -----------------------\n'
-    result += f'{modelName                               }\n'
-    result += f'--- Parameters ---------------------------\n'
-    result += f'dimension = {model.parameters.dimension()}\n'
-    result += f'npoints   = {model.parameters.npoints  ()}\n'
-    result += f'nrays     = {model.parameters.nrays    ()}\n'
-    result += f'nquads    = {model.parameters.nquads   ()}\n'
+    #
+    # result  = f'--- Benchmark name -----------------------\n'
+    # result += f'{modelName                               }\n'
+    # result += f'--- Parameters ---------------------------\n'
+    # result += f'dimension = {model.parameters.dimension()}\n'
+    # result += f'npoints   = {model.parameters.npoints  ()}\n'
+    # result += f'nrays     = {model.parameters.nrays    ()}\n'
+    # result += f'nquads    = {model.parameters.nquads   ()}\n'
     # result += f'--- Accuracy -----------------------------\n'
     # result += f'max error in (0) = {np.max(error_0[1:])  }\n'
     # result += f'max error in (1) = {np.max(error_1[1:])  }\n'
-    result += f'--- Timers -------------------------------\n'
-    result += f'{timer1.print()                          }\n'
-    result += f'{timer2.print()                          }\n'
-    result += f'{timer3.print()                          }\n'
-    result += f'------------------------------------------\n'
-
-    print(result)
-
-    # chosen_lines=np.arange(0,model.lines.lineProducingSpecies[0].linedata.nlev,5)
-    chosen_lines=[0,1,2,3,4]#first five lines are the most important
+    # result += f'--- Timers -------------------------------\n'
+    # result += f'{timer1.print()                          }\n'
+    # result += f'{timer2.print()                          }\n'
+    # result += f'{timer3.print()                          }\n'
+    # result += f'------------------------------------------\n'
+    #
+    # print(result)
 
     if not nosave:
-        with open(f'{resdir}{modelName}-{timestamp}_non_multigrid.log' ,'w') as log:
-            log.write(result)
+        # with open(f'{resdir}{modelName}-{timestamp}_multigrid_{nlevels}_lvls.log' ,'w') as log:
+        #     log.write(result)
+
+        # plt.title(modelName)
+        # plt.scatter(rs, pops[:,0]/abun, s=0.5, label='i=0', zorder=1)
+        # plt.scatter(rs, pops[:,1]/abun, s=0.5, label='i=1', zorder=1)
+        # plt.plot(ra, lp0, c='lightgray', zorder=0)
+        # plt.plot(ra, lp1, c='lightgray', zorder=0)
+        # plt.legend()
+        # plt.xscale('log')
+        # plt.xlabel('r [m]')
+        # plt.ylabel('fractional level populations [.]')
+        # plt.savefig(f'{resdir}{modelName}-{timestamp}.png', dpi=150)
+
+        # with np.load('test.npy', 'r') as pops:
+            # pops=np.load(f, pops)
+        pops_full = np.load('vanZadelhoff_full_multigird_1_lvl.npy')
+        pops_incomplete = np.load('vanZadelhoff_incomplete_multigird_1_lvl.npy')
+        rel_diff_pops0=abs(pops_full[:,0]-pops_incomplete[:,0])/(pops_full[:,0])
+        rel_diff_pops1=abs(pops_full[:,1]-pops_incomplete[:,1])/(pops_full[:,1])
 
         plt.title(modelName)
-        for levidx in range(len(chosen_lines)):
-            plt.scatter(rs, pops[:,chosen_lines[levidx]]/abun, s=0.5, label=str('i='+str(chosen_lines[levidx])), zorder=1)
-        # plt.scatter(rs, pops[:,1]/abun, s=0.5, label='i=1', zorder=1)
+        # plt.scatter(rs, abs(pops_full[:,0]-pops_incomplete[:,0])/(pops_full[:,0]), s=0.5, label='i=0', zorder=1)
+        # plt.scatter(rs, abs(pops_full[:,1]-pops_incomplete[:,0])/(pops_full[:,1]), s=0.5, label='i=1', zorder=1)
+        print(len(rel_diff_pops0[coarser_points]))
+        plt.scatter(rs[coarser_points],rel_diff_pops0[coarser_points], s=0.5, label='i=0', zorder=1)
+        plt.scatter(rs[coarser_points],rel_diff_pops1[coarser_points], s=0.5, label='i=1', zorder=1)
+
+        # plt.scatter(rs,pops_full[:,1]/abun, s=0.5, label='i=1', zorder=1)
+        # plt.scatter(rs,pops_incomplete[:,1]/abun, s=0.5, label='i=1', zorder=1)
         # plt.plot(ra, lp0, c='lightgray', zorder=0)
         # plt.plot(ra, lp1, c='lightgray', zorder=0)
         plt.legend()
         plt.xscale('log')
         plt.xlabel('r [m]')
-        plt.ylabel('fractional level populations [.]')
-        plt.savefig(f'{resdir}{modelName}-{timestamp}.png', dpi=150)
-
-
-
-    # #plotting gas temperature
-    #
-    # plt.title(modelName)
-    # plt.scatter(rs ,model.thermodynamics.temperature.gas)
-    # plt.legend()
-    # plt.xscale('log')
-    # plt.xlabel('r [m]')
-    # plt.ylabel('temperature [K]')
-    # plt.show()
+        plt.ylabel('level populations relative difference[.]')
+        # plt.show()
+        plt.savefig(f'{resdir}{modelName}-{timestamp}-relative_difference.png', dpi=150)
 
     return
+
 
 def run_test (nosave=False):
 # for simplicity, we only try the first model
     # create_model ('a')
-    run_model    (nosave)
+    run_model    ('a', nosave)
 
     # create_model ('b')
     # run_model    ('b', nosave)
