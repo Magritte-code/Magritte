@@ -25,6 +25,9 @@ struct Model
     //normalization factor for RBF interpolation
     const double RADIUS_MULT_FACTOR=10.0;
 
+    //TODO: add instead a global iteration counter!!!
+    Size iteration_to_start_from=0;
+
     Parameters     parameters;
     Geometry       geometry;
     Chemistry      chemistry;
@@ -105,6 +108,8 @@ struct Model
         const bool  use_Ng_acceleration);
         // const long  max_niterations);
     int compute_image                             (const Size ray_nr);
+
+    int restart_from_iteration(Size iteration);
 
     Double1 error_max;
     Double1 error_mean;

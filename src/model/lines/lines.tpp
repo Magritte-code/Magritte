@@ -105,3 +105,13 @@ inline void Lines::write_populations_of_iteration(const Io& io, const Size it) c
       lineProducingSpecies[l].write_populations (io, l, tag_it);
   }
 }
+
+//Reads the level populations of a certain iteration//currently also writes the J_lin and J_eff due to using the already implemented lineProducingSpecies::write_populations
+inline void Lines::read_populations_of_iteration(const Io& io, const Size it)
+{
+  const string tag_it="it"+std::to_string(it);
+  for (Size l = 0; l < parameters.nlspecs(); l++)
+  {
+      lineProducingSpecies[l].read_populations (io, l, tag_it);
+  }
+}

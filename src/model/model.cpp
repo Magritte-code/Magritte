@@ -290,6 +290,19 @@ int Model :: compute_LTE_level_populations ()
     return (0);
 }
 
+/// Restarting from the iteration levelpops, assuming it has been written to disk
+////////////////////////////////////////////////////////////////////////////
+/// CURRENTLY ASSUMES THE LEVELPOPS BEING WRITTEN TO THE HDF5 FILE FIXME: change this
+int Model :: restart_from_iteration(Size iteration)
+{
+  IoPython io = IoPython ("hdf5", parameters.model_name());
+  lines.read_populations_of_iteration(io, iteration);
+  std::cout<<"Read populations from disk"<<std::endl;
+  std::cout<<"Restarting from iteration: "<<iteration<<std::endl;
+  iteration_to_start_from=iteration;
+  return (0);
+}
+
 
 ///  Computer for the radiation field
 /////////////////////////////////////
@@ -480,7 +493,8 @@ int Model :: compute_level_populations_multigrid (
     // geometry.points.multiscale.set_curr_coars_lvl(curr_max_coars_lvl);
 
     // Initialize the number of iterations
-    int iteration        = 0;
+    int iteration        = iteration_to_start_from;
+    //FIXME: also try to implement a way to also read the previous level pops
     int iteration_normal = 0;
     // Also initialize the previous fraction of converged points
     vector<double> prev_it_frac_not_converged(parameters.nlspecs(),1);
@@ -916,7 +930,8 @@ int Model :: compute_level_populations (
     }
 
     // Initialize the number of iterations
-    int iteration        = 0;
+    int iteration        = iteration_to_start_from;
+    //FIXME: also try to implement a way to also read the previous level pops
     int iteration_normal = 0;
 
     // Initialize errors

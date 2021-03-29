@@ -59,6 +59,8 @@ struct Lines
 
     //TODO: maybe also add coarsening level?
     inline void write_populations_of_iteration(const Io& io, const Size it) const;
+    //TODO: maybe also add coarsening level?
+    inline void read_populations_of_iteration(const Io& io, const Size it);
 };
 
 
