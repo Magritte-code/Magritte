@@ -295,6 +295,7 @@ int Model :: compute_LTE_level_populations ()
 /// CURRENTLY ASSUMES THE LEVELPOPS BEING WRITTEN TO THE HDF5 FILE FIXME: change this
 int Model :: restart_from_iteration(Size iteration)
 {
+  compute_LTE_level_populations();
   IoPython io = IoPython ("hdf5", parameters.model_name());
   lines.read_populations_of_iteration(io, iteration);
   std::cout<<"Read populations from disk"<<std::endl;
@@ -981,13 +982,13 @@ int Model :: compute_level_populations (
 
             cout<<"iterated using statistical equilibrium"<<std::endl;
 
-            if (writing_populations_to_disk){
-              IoPython io = IoPython ("hdf5", parameters.model_name());
-              lines.write_populations_of_iteration(io, iteration);
-              std::cout<<"Wrote populations to disk"<<std::endl;
-            }
-
             iteration_normal++;
+        }
+
+        if (writing_populations_to_disk){
+          IoPython io = IoPython ("hdf5", parameters.model_name());
+          lines.write_populations_of_iteration(io, iteration);
+          std::cout<<"Wrote populations to disk"<<std::endl;
         }
 
 

@@ -33,9 +33,9 @@ def run_model (a_or_b, nosave=False):
 
     # timer2 = tools.Timer('setting model')
     # timer2.start()
-    model.compute_spectral_discretisation ()
-    model.compute_inverse_line_widths     ()
-    model.compute_LTE_level_populations   ()
+    # model.compute_spectral_discretisation ()
+    # model.compute_inverse_line_widths     ()
+    # model.compute_LTE_level_populations   ()
     # nlevels=4;#should be coarsest level; misleading name
     # #2 multigrid levels, minimum 1 point remaining, 0.1 as tolerance, mgImplementation=1 (Naive,Vcycle,Wcycle)
     # model.setup_multigrid(1,nlevels,0.1,1,20);
@@ -70,7 +70,7 @@ def run_model (a_or_b, nosave=False):
 
         # with np.load('test.npy', 'r') as pops:
             # pops=np.load(f, pops)
-    last_iteration=1 #iterations from 1 till this number
+    # last_iteration=1 #iterations from 1 till this number
     print(file['lines/lineProducingSpecies_0'].keys())
 
     relative_differences=np.empty((0,len(coarser_points)))
@@ -82,7 +82,7 @@ def run_model (a_or_b, nosave=False):
 
     #previtpops = np.array(model.lines.lineProducingSpecies[0].population).reshape((model.parameters.npoints(), model.lines.lineProducingSpecies[0].linedata.nlev))
 
-    it=1
+    it=7
     # for it in range(last_iteration):
         # previtpops=np.array(file['lines/lineProducingSpecies_0/populationit'+str(it+1)])
     previtpops=np.array(file['lines/lineProducingSpecies_0/populationit'+str(it)])
