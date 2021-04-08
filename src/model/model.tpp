@@ -642,6 +642,8 @@ inline void Model::interpolate_levelpops_local(Size coarser_lvl)
 
     // Going with ColPivHouseholderQR for simplicity and accuracy
     // Eigen::LDLT<Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic>> ldltdec(rbf_mat);
+    // Technically, when using a gaussian RBF, the matrix should be positive definite:  see e.g. Fornberg and Flyer (2015). "Solving PDEs with radial basis functions"
+    // But numerical nonsense can always occur (and the current implementation is fast enough)
     Eigen::ColPivHouseholderQR<Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic>> colPivHouseholderQr(rbf_mat);
     //now that we have our ldlt decomposition, calculate the interpolated value
     for (Size specidx=0; specidx<parameters.nlspecs(); specidx++)
@@ -665,7 +667,7 @@ inline void Model::interpolate_levelpops_local(Size coarser_lvl)
         Real interpolated_value=static_cast<Real>((distance_with_neighbors*weights)(0,0));
 
         linefracs[levidx]=interpolated_value;
-        if (std::isnan(interpolated_value)||std::isinf(interpolated_value))
+        if (std::isnan(interpolated_value)||std::isinf(interpolated_value))//FIXME: also check for the potential rare case of getting negative levelpops
         {
           std::cout<<"Something went wrong during interpolating: nan/inf value occuring"<<std::endl;
           throw std::runtime_error("Nan/inf encountered during interpolation");

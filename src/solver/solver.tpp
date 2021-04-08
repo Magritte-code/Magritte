@@ -700,6 +700,7 @@ accel inline void Solver :: solve_feautrier_order_2 (
     const Real inverse_dtau_f = one / dtau_n;
 
     C[first] = two * inverse_dtau_f * inverse_dtau_f;
+    inverse_C[first] = 1.0 / C[first];
 
     const Real Bf_min_Cf = one + two * inverse_dtau_f;
     const Real Bf        = Bf_min_Cf + C[first];
@@ -888,6 +889,7 @@ accel inline void Solver :: image_feautrier_order_2 (
     const Real inverse_dtau_f = one / dtau_n;
 
     C[first] = two * inverse_dtau_f * inverse_dtau_f;
+    inverse_C[first] = 1.0 / C[first];
 
     const Real Bf_min_Cf = one + two * inverse_dtau_f;
     const Real Bf        = Bf_min_Cf + C[first];

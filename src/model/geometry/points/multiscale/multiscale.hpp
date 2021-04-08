@@ -69,10 +69,10 @@ struct Multiscale
     //Maybe TODO: also add support for other ways to initialize this class
     //Also maybe TODO: add support for copying this struct (if we would ever need it)
 
-    //sets the comparison function to see whether points are similar enough
-    inline void set_comparison_fun(std::function<bool(Size, Size)> func);
-    //sets function that checks whether a point does not lie on the boundary
-    inline void set_not_on_boundary_fun(std::function<bool(Size)> func);
+    // //sets the comparison function to see whether points are similar enough
+    // inline void set_comparison_fun(std::function<bool(Size, Size)> func);
+    // //sets function that checks whether a point does not lie on the boundary
+    // inline void set_not_on_boundary_fun(std::function<bool(Size)> func);
 
     //Returns the neighbors of point p, at coarsening level coars_lvl
     inline std::set<Size> get_neighbors(const Size p, const Size coars_lvl) const;
