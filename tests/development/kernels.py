@@ -1,6 +1,5 @@
 import numpy as np
-
-from numba import njit
+from numba import njit:q
 
 
 @njit
@@ -13,6 +12,27 @@ def RBF_Lucy(r):
     # Compute Lucy's kernel
     if (rr < 1.0):
         return (1.0 + 3.0*rr) * (1 - rr)**3
+    else:
+        return 0.0
+
+    
+@njit
+def grad_RBF_Lucy(r):
+    # Ensure to take the absolute value
+    rr = np.abs(r)
+    # Compute the gradient of Lucy's kernel
+    if (rr < 1.0):
+        return -12.0 * (rr - 1.0)**2 * rr * np.sign(r)
+    else:
+        return 0.0
+
+@njit
+def grad2_RBF_Lucy(r):
+    # Ensure to take the absolute value
+    rr = np.abs(r)
+    # Compute the gradient^2 of Lucy's kernel
+    if (rr < 1.0):
+        return -12.0 * (rr - 1.0) * (3.0 * rr - 1.0)
     else:
         return 0.0
     

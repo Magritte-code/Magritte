@@ -27,7 +27,7 @@ class Mesh:
         self.points    = self.mesh.points
         self.tetras    = self.mesh.cells_dict['tetra']
         self.edges     = self.get_edges()
-        # self.neighbors = self.get_neighbors()
+        self.neighbors = self.get_neighbors()
         self.boundary  = self.get_boundary()
         # Remove non-connected points
         non_point = self.get_non_point()
@@ -58,12 +58,12 @@ class Mesh:
         # self.neighbors = relocate_indices(self.neighbors, p)
 
     # Does not work properly, crashes Magritte.
-    # def get_neighbors(self):
-    #     neighbors = [[] for _ in range(len(self.points))]
-    #     for edge in self.edges:
-    #         neighbors[edge[0]].append(edge[1])
-    #         neighbors[edge[1]].append(edge[0])
-    #     return neighbors
+    def get_neighbors(self):
+        neighbors = [[] for _ in range(len(self.points))]
+        for edge in self.edges:
+            neighbors[edge[0]].append(edge[1])
+            neighbors[edge[1]].append(edge[0])
+        return neighbors
 
     def get_tetra_volume(self, tetra):
         a = self.points[tetra[0]]

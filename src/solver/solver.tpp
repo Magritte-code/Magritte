@@ -193,8 +193,6 @@ inline void Solver :: solve_feautrier_order_2 (Model& model)
         {
             const Real dshift_max = get_dshift_max (model, o);
 
-            // cout << "dshift_max = " << dshift_max * CC << endl;
-
             nr_   ()[centre] = o;
             shift_()[centre] = 1.0;
 
@@ -222,12 +220,6 @@ inline void Solver :: solve_feautrier_order_2 (Model& model)
                     model.radiation.J(   o,f) += two * model.geometry.rays.weight[rr] * model.radiation.u(rr,o,f);
                 }
             }
-
-            // if (isnan(model.radiation.u(rr,o,0)))
-            // {
-            //     cout << "NANs : r = " << rr << "  o = " << o << "  n_tot = " << n_tot_() << endl;
-            // }
-
         })
 
         pc::accelerator::synchronize();
@@ -265,9 +257,6 @@ inline void Solver :: image_feautrier_order_2 (Model& model, const Size rr)
                 image_feautrier_order_2 (model, o, rr, ar, f);
 
                 image.I(o,f) = two*Su_()[first_()] - boundary_intensity(model, nr_()[first_()], model.radiation.frequencies.nu(o, f));
-
-                // cout << "Su[first]   = " << Su_()[first_()] << endl;
-                // cout << "subtracting = " << boundary_intensity(model, nr_()[first_()], model.radiation.frequencies.nu(o, f)) << endl;
             }
         }
         else
@@ -350,12 +339,9 @@ accel inline void Solver :: set_data (
         const double     dZ_interpl =     dZ_loc / n_interpl;
         const double dshift_interpl =     dshift / n_interpl;
 
-        // cout << "n_interpl = " << n_interpl << endl;
-
         if (n_interpl > 10000)
         {
             printf ("ERROR (n_intpl > 10 000) || (dshift_max < 0, probably due to overflow)\n");
-            // printf ("dshift_abs = %le; dshift_max = %le\n", dshift_abs, dshift_max);
         }
 
         // Assign current cell to first half of interpolation points
@@ -704,7 +690,8 @@ accel inline void Solver :: solve_feautrier_order_2 (
     // Set boundary conditions
     const Real inverse_dtau_f = one / dtau_n;
 
-    C[first] = two * inverse_dtau_f * inverse_dtau_f;
+            C[first] = two * inverse_dtau_f * inverse_dtau_f;
+    inverse_C[first] = 1.0 / C[first];   // Required for Lambda_diag
 
     const Real Bf_min_Cf = one + two * inverse_dtau_f;
     const Real Bf        = Bf_min_Cf + C[first];

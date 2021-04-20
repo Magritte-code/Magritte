@@ -352,7 +352,7 @@ PYBIND11_MODULE (core, module)
         // attributes
         .def_readwrite ("Ls",   &Lambda::Ls)
         .def_readwrite ("nr",   &Lambda::nr)
-        .def_readwrite ("size", &Lambda::size)
+        // .def_readwrite ("size", &Lambda::size)
         .def_readwrite ("Lss",  &Lambda::Lss)
         .def_readwrite ("nrs",  &Lambda::nrs)
         // functions
