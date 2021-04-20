@@ -82,7 +82,7 @@ def set_uniform_rays(model, randomize=False):
     nrays = model.parameters.nrays()
     if (model.parameters.dimension() == 1):
         if (model.parameters.spherical_symmetry()):
-            set_rays_spherical_symmetry (model, uniform=True)
+            return set_rays_spherical_symmetry (model, uniform=True)
         else:
             if (nrays != 2):
                 raise ValueError ('In 1D without spherical symmetry, nrays should be 2.')
