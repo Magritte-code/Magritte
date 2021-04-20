@@ -129,6 +129,7 @@ def run_model (a_or_b, nosave=False):
     model.compute_spectral_discretisation ()
     model.compute_inverse_line_widths     ()
     model.compute_LTE_level_populations   ()
+    model.writing_populations_to_disk=True;
     timer2.stop()
 
     timer3 = tools.Timer('running model')

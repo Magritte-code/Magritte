@@ -130,8 +130,8 @@ def run_model (nosave=False):
     model.compute_spectral_discretisation ()
     model.compute_inverse_line_widths     ()
 
-    # model.compute_LTE_level_populations   ()
-    model.restart_from_iteration(1);
+    model.compute_LTE_level_populations   ()
+    # model.restart_from_iteration(15);
 
     model.writing_populations_to_disk=True;
     # nlevels=3;#should be coarsest level; misleading name
