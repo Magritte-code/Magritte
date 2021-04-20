@@ -194,15 +194,16 @@ PYBIND11_MODULE (core, module)
     // Points
     py::class_<Points> (module, "Points")
         // attributes
-        .def_readwrite ("position",    &Points::position)
-        .def_readwrite ("velocity",    &Points::velocity)
-        .def_readwrite ("n_neighbors", &Points::n_neighbors)
-        .def_readwrite ("neighbors",   &Points::neighbors)
-        // .def_readwrite ("nbs",         &Points::nbs)
-        .def ("print",                 &Points::print)
+        .def_readwrite ("position",        &Points::position)
+        .def_readwrite ("velocity",        &Points::velocity)
+        .def_readwrite ("neighbors",       &Points::neighbors)
+        .def_readwrite ("n_neighbors",     &Points::n_neighbors)
+        .def_readwrite ("cum_n_neighbors", &Points::cum_n_neighbors)
+        // .def_readwrite ("nbs",             &Points::nbs)
+        .def ("print",                     &Points::print)
         // io
-        .def ("read",                  &Points::read)
-        .def ("write",                 &Points::write)
+        .def ("read",                      &Points::read)
+        .def ("write",                     &Points::write)
         // constructor
         .def (py::init<>());
 
@@ -351,7 +352,7 @@ PYBIND11_MODULE (core, module)
         // attributes
         .def_readwrite ("Ls",   &Lambda::Ls)
         .def_readwrite ("nr",   &Lambda::nr)
-        .def_readwrite ("size", &Lambda::size)
+        // .def_readwrite ("size", &Lambda::size)
         .def_readwrite ("Lss",  &Lambda::Lss)
         .def_readwrite ("nrs",  &Lambda::nrs)
         // functions

@@ -55,8 +55,9 @@ class Mesh:
         # Change all indices, since a point got removed
         self.tetras    = relocate_indices(self.tetras,    p)
         self.edges     = relocate_indices(self.edges,     p)
-        self.neighbors = relocate_indices(self.neighbors, p)
+        # self.neighbors = relocate_indices(self.neighbors, p)
 
+    # Does not work properly, crashes Magritte.
     def get_neighbors(self):
         neighbors = [[] for _ in range(len(self.points))]
         for edge in self.edges:

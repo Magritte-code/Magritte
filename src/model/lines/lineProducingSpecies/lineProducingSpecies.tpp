@@ -247,12 +247,12 @@ inline void LineProducingSpecies :: update_using_statistical_equilibrium (
     VectorXr y = VectorXr::Zero (parameters.npoints()*linedata.nlev);
 
     vector<Triplet<Real, Size>> triplets;
-    vector<Triplet<Real, Size>> triplets_LT;
-    vector<Triplet<Real, Size>> triplets_LS;
+//    vector<Triplet<Real, Size>> triplets_LT;
+//    vector<Triplet<Real, Size>> triplets_LS;
 
     triplets   .reserve (non_zeros);
-    triplets_LT.reserve (non_zeros);
-    triplets_LS.reserve (non_zeros);
+//    triplets_LT.reserve (non_zeros);
+//    triplets_LS.reserve (non_zeros);
 
     for (Size p = 0; p < parameters.npoints(); p++) // !!! no OMP because push_back is not thread safe !!!
     {
@@ -263,8 +263,8 @@ inline void LineProducingSpecies :: update_using_statistical_equilibrium (
             const Real v_IJ = linedata.A[k] + linedata.Bs[k] * Jeff[p][k];
             const Real v_JI =                 linedata.Ba[k] * Jeff[p][k];
 
-            const Real t_IJ = linedata.Bs[k] * Jdif[p][k];
-            const Real t_JI = linedata.Ba[k] * Jdif[p][k];
+            // const Real t_IJ = linedata.Bs[k] * Jdif[p][k];
+            // const Real t_JI = linedata.Ba[k] * Jdif[p][k];
 
             // Note: we define our transition matrix as the transpose of R in the paper.
             const Size I = index (p, linedata.irad[k]);
@@ -275,8 +275,8 @@ inline void LineProducingSpecies :: update_using_statistical_equilibrium (
                 triplets   .push_back (Triplet<Real, Size> (J, I, +v_IJ));
                 triplets   .push_back (Triplet<Real, Size> (J, J, -v_JI));
 
-                triplets_LS.push_back (Triplet<Real, Size> (J, I, +t_IJ));
-                triplets_LS.push_back (Triplet<Real, Size> (J, J, -t_JI));
+                // triplets_LS.push_back (Triplet<Real, Size> (J, I, +t_IJ));
+                // triplets_LS.push_back (Triplet<Real, Size> (J, J, -t_JI));
             }
 
             if (linedata.irad[k] != linedata.nlev-1)
@@ -284,8 +284,8 @@ inline void LineProducingSpecies :: update_using_statistical_equilibrium (
                 triplets   .push_back (Triplet<Real, Size> (I, J, +v_JI));
                 triplets   .push_back (Triplet<Real, Size> (I, I, -v_IJ));
 
-                triplets_LS.push_back (Triplet<Real, Size> (I, J, +t_JI));
-                triplets_LS.push_back (Triplet<Real, Size> (I, I, -t_IJ));
+                // triplets_LS.push_back (Triplet<Real, Size> (I, J, +t_JI));
+                // triplets_LS.push_back (Triplet<Real, Size> (I, I, -t_IJ));
             }
         }
 
@@ -305,13 +305,13 @@ inline void LineProducingSpecies :: update_using_statistical_equilibrium (
                 if (linedata.jrad[k] != linedata.nlev-1)
                 {
                     triplets   .push_back (Triplet<Real, Size> (J, I, +v_IJ));
-                    triplets_LT.push_back (Triplet<Real, Size> (J, I, +v_IJ));
+                    // triplets_LT.push_back (Triplet<Real, Size> (J, I, +v_IJ));
                 }
 
                 if (linedata.irad[k] != linedata.nlev-1)
                 {
                     triplets   .push_back (Triplet<Real, Size> (I, I, -v_IJ));
-                    triplets_LT.push_back (Triplet<Real, Size> (I, I, -v_IJ));
+                    // triplets_LT.push_back (Triplet<Real, Size> (I, I, -v_IJ));
                 }
             }
         }
@@ -328,12 +328,10 @@ inline void LineProducingSpecies :: update_using_statistical_equilibrium (
             colpar.adjust_abundance_for_ortho_or_para (tmp, abn);
             colpar.interpolate_collision_coefficients (tmp);
 
-
             for (Size k = 0; k < colpar.ncol; k++)
             {
                 const Real v_IJ = colpar.Cd_intpld[k] * abn;
                 const Real v_JI = colpar.Ce_intpld[k] * abn;
-
 
                 // Note: we define our transition matrix as the transpose of R in the paper.
                 const Size I = index (p, colpar.icol[k]);
@@ -362,16 +360,14 @@ inline void LineProducingSpecies :: update_using_statistical_equilibrium (
             triplets.push_back (Triplet<Real, Size> (I, J, 1.0));
         }
 
-        //y.insert (index (p, linedata.nlev-1)) = population_tot[p];
         y[index (p, linedata.nlev-1)] = population_tot[p];
-        //y.insert (index (p, linedata.nlev-1)) = 1.0;//population_tot[p];
 
     } // for all cells
 
 
     RT        .setFromTriplets (triplets   .begin(), triplets   .end());
-    LambdaStar.setFromTriplets (triplets_LS.begin(), triplets_LS.end());
-    LambdaTest.setFromTriplets (triplets_LT.begin(), triplets_LT.end());
+    // LambdaStar.setFromTriplets (triplets_LS.begin(), triplets_LS.end());
+    // LambdaTest.setFromTriplets (triplets_LT.begin(), triplets_LT.end());
 
 
     //cout << "Compressing RT" << endl;
