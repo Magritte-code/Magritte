@@ -13,7 +13,7 @@ inline void CollisionPartner :: interpolate_collision_coefficients (const Real t
         Ce_intpld = Ce[0];
         Cd_intpld = Cd[0];
     }
-    else if (t == ntmp)
+    else if (t == ntmp-1)
     {
         Ce_intpld = Ce[ntmp-1];
         Cd_intpld = Cd[ntmp-1];
