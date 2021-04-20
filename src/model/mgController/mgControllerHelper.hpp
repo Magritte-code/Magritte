@@ -12,24 +12,11 @@
 //The Multigrid controller helper structure
 //just for the practical implementation
 // for getting where we currently are in the multigrid sequence
-// template <class MgImplementation>
 struct MgControllerHelper : virtual public MgController
 {
   private:
 
-    // std::shared_ptr<MgImplementation> implementation_instance_ptr;
     std::shared_ptr<MgController> implementation_instance_ptr=std::shared_ptr<MgController>(nullptr);
-
-    // enum class WhichImplementation {
-    //   None,//Default type; no implementation
-    //   NaiveMG
-    // };
-
-    // WhichImplementation current_implementation=WhichImplementation::None;
-
-    //references to the different implementations
-    // NaiveMG naiveMGref;
-    //TODO add many more
 
   public:
 

@@ -17,7 +17,7 @@ struct WCycle : virtual public MgController
     //Size min_level_visited=0;
     Size nb_pre_interpolation_steps=1;//number of iterations on the current grid before interpolating/coarsening
 
-    Size max_nb_iterations;
+    Size max_nb_iterations;//the maximum number of cycles allowed for this multigrid scheme
     Size current_nb_iterations=0;
 
     bool is_next_action_set=false;//checks whether the next action has been set
@@ -50,22 +50,17 @@ struct WCycle : virtual public MgController
     //returns the next action and updates what to do next
     inline Actions get_next_action() override;
 
-    //returns the current level
+    //returns the current level TODO DEPRECATE THIS
     inline Size get_current_level() override;
 
     //Call this when the solution is converged on the current grid.
     //Sets the state such that the next action will be something else than stay (skips the following 'stay's)
     inline void converged_on_current_grid() override;
 
-
+    //Subroutine for helping with the initialization of the W-cycle
+    //It constructs the action_order
     inline void initialize_w_cycle(Size nb_level_diff);
 
-    //Call when the solution has directly converged on the current grid.
-    // In this case, we no longer need to use this and the coarser grid
-    //inline void disable_current_and_coarser_grids();
-
-    //resets the mgController
-    //inline void reset();
 };
 
 

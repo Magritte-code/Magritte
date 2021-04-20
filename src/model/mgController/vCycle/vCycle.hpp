@@ -10,14 +10,12 @@ struct VCycle : virtual public MgController
     bool first_upward=true;//first time going up should use standard interpolation of the level populations
     bool not_yet_iterated=true;//checks whether we have already done a single iteration on the grid
 
-    // Size nb_iterations_on_current_grid_remaining;// number of iterations remaining on current grid
-    Size finest_lvl=0;
+    Size finest_lvl=0;//Debug variable, denotes the finest level the multigrid sequence should go to TODO DEPRECATE THIS
     Size max_level=0;//number of levels going from 0 (finest grid) to nb_levels-1 (coarsest grid)
     Size current_level=0;//the current level
-    //Size min_level_visited=0;
-    Size nb_pre_interpolation_steps=1;//number of iterations on the current grid before interpolating/coarsening
+    Size nb_pre_interpolation_steps=1;//number of iterations on the coarsest grid before interpolating
 
-    Size max_nb_iterations;
+    Size max_nb_iterations;//the maximum number of cycles allowed for this multigrid scheme
     Size current_nb_iterations=0;
 
     bool is_next_action_set=false;//checks whether the next action has been set
@@ -46,19 +44,13 @@ struct VCycle : virtual public MgController
     //returns the next action and updates what to do next
     inline Actions get_next_action() override;
 
-    //returns the current level
+    //returns the current level TODO DEPRECATE THIS
     inline Size get_current_level() override;
 
     //Call this when the solution is converged on the current grid.
     //Sets the state such that the next action will be something else than stay (skips the following 'stay's)
     inline void converged_on_current_grid() override;
 
-    //Call when the solution has directly converged on the current grid.
-    // In this case, we no longer need to use this and the coarser grid
-    //inline void disable_current_and_coarser_grids();
-
-    //resets the mgController
-    //inline void reset();
 };
 
 
