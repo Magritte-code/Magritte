@@ -6,6 +6,9 @@
 #include "tools/types.hpp"
 #include "paracabs.hpp"
 
+#include <map>
+
+
 
 ///  Indexer for level populations
 ///    @param[in] p : index of the cell
@@ -271,8 +274,9 @@ inline void LineProducingSpecies :: update_using_statistical_equilibrium (
     std::cout<<"setting vector population"<<std::endl;
     VectorXr new_population = VectorXr::Zero (parameters.npoints()*linedata.nlev);
 
-    const Size max_matrix_size=100*1024*1024;//hundred megabyte
-    // const Size max_matrix_size=1*1024*1024;//one megabyte
+    const Size max_matrix_size=1*1024*1024*1024;//For testing purposes
+    // const Size max_matrix_size=100*1024*1024;//hundred megabyte
+    // const Size max_matrix_size=10*1024*1024;//one megabyte
     // It turns out that due to triplets, the total extra memory needed for this calculation is about three times this number
 
     // const unsigned long long int total_non_zeros = parameters.npoints() * (      linedata.nlev
@@ -632,11 +636,21 @@ inline VectorXr LineProducingSpecies::solve_statistical_equilibrium(const Double
       // vector<Size> points_in_grid=model.geometry.points.multiscale.get_current_points_in_grid();
       Size nbpoints=points_to_use.size();
 
-      // std::cout<<"starting the main computation"<<std::endl;
-
-      for (Size idx = 0; idx < nbpoints; idx++) // !!! no OMP because push_back is not thread safe !!! // TODO: replace with some gather operation
+      std::map<Size,Size> indexmap;//for simplicity, maps the indices from points_to_use to consecutive indices
+      // indexmap.reserve(nbpoints);
+      Size temp_idx=0;
+      for(Size point: points_to_use)
       {
-          const Size p=points_to_use[idx];
+        indexmap.insert(std::pair<Size,Size>(point,temp_idx));
+        temp_idx++;
+      }
+
+
+      // std::cout<<"starting the main computation"<<std::endl;
+      for (Size p : points_to_use)
+      // for (Size idx = 0; idx < nbpoints; idx++) // !!! no OMP because push_back is not thread safe !!! // TODO: replace with some gather operation
+      {
+          // const Size p=points_to_use[idx];
           // Radiative transitions
 
           for (Size k = 0; k < linedata.nrad; k++)
@@ -657,8 +671,8 @@ inline VectorXr LineProducingSpecies::solve_statistical_equilibrium(const Double
               // const Size J = index (p, linedata.jrad[k]);
 
               //compressed index notation (such that there are no zero rows when points_to_use!=all grid points)
-              const Size I = index (idx, linedata.irad[k]);
-              const Size J = index (idx, linedata.jrad[k]);
+              const Size I = index (indexmap.at(p), linedata.irad[k]);
+              const Size J = index (indexmap.at(p), linedata.jrad[k]);
 
 
               if (linedata.jrad[k] != linedata.nlev-1)
@@ -697,13 +711,13 @@ inline VectorXr LineProducingSpecies::solve_statistical_equilibrium(const Double
                   //   throw std::runtime_error("Nan encountered");}
 
                   // Note: we define our transition matrix as the transpose of R in the paper.
-                  Size I = index (nr, linedata.irad[k]);
-                  Size J = index (p,  linedata.jrad[k]);
-                  if (parameters.n_off_diag==0){//no non-local effects exist, so compressed index notation can be used (nr=p)
-                    I = index (idx, linedata.irad[k]);
-                    J = index (idx, linedata.jrad[k]);
-
-                  }
+                  const Size I = index (indexmap.at(nr), linedata.irad[k]);
+                  const Size J = index (indexmap.at(p),  linedata.jrad[k]);
+                  // if (parameters.n_off_diag==0){//no non-local effects exist, so compressed index notation can be used (nr=p)
+                  //   I = index (idx, linedata.irad[k]);
+                  //   J = index (idx, linedata.jrad[k]);
+                  //
+                  // }
 
                   // Compressed index notation cant be used here
 
@@ -751,8 +765,8 @@ inline VectorXr LineProducingSpecies::solve_statistical_equilibrium(const Double
                   // const Size J = index (p, colpar.jcol[k]);
 
                   //compressed index notation (such that there are no zero rows when points_to_use!=all grid points)
-                  const Size I = index (idx, colpar.icol[k]);
-                  const Size J = index (idx, colpar.jcol[k]);
+                  const Size I = index (indexmap.at(p), colpar.icol[k]);
+                  const Size J = index (indexmap.at(p), colpar.jcol[k]);
 
 
                   if (colpar.jcol[k] != linedata.nlev-1)
@@ -776,8 +790,8 @@ inline VectorXr LineProducingSpecies::solve_statistical_equilibrium(const Double
               // const Size J = index (p, i);
 
               //compressed index notation (such that there are no zero rows when points_to_use!=all grid points)
-              const Size I = index (idx, linedata.nlev-1);
-              const Size J = index (idx, i);
+              const Size I = index (indexmap.at(p), linedata.nlev-1);
+              const Size J = index (indexmap.at(p), i);
 
               triplets.push_back (Triplet<Real, Size> (I, J, 1.0));
           }
@@ -785,7 +799,7 @@ inline VectorXr LineProducingSpecies::solve_statistical_equilibrium(const Double
           //y.insert (index (p, linedata.nlev-1)) = population_tot[p];
           // y[index (p, linedata.nlev-1)] = population_tot[p];
           //again compressed index notation
-          y[index (idx, linedata.nlev-1)] = population_tot[p];
+          y[index (indexmap.at(p), linedata.nlev-1)] = population_tot[p];
 
           //y.insert (index (p, linedata.nlev-1)) = 1.0;//population_tot[p];
 
