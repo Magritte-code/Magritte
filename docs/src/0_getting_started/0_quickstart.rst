@@ -55,5 +55,5 @@ This will create the necessary files for the Magritte python package.
 Run
 ***
 
-If all the above worked, go download and experiment with some of our
-`examples <https://github.com/Magritte-code/Examples>`_!
+If all the above worked, go download and experiment with some of our :ref:`examples
+<link-examples>`!
