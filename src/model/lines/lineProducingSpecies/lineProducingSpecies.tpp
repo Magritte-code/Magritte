@@ -276,7 +276,7 @@ inline void LineProducingSpecies :: update_using_statistical_equilibrium (
 
     // const Size max_matrix_size=1*1024*1024*1024;//For testing purposes
     const Size max_matrix_size=100*1024*1024;//hundred megabyte
-    // const Size max_matrix_size=10*1024*1024;//one megabyte
+    // const Size max_matrix_size=1*1024*1024;//one megabyte
     // It turns out that due to triplets, the total extra memory needed for this calculation is about three times this number
 
     // const unsigned long long int total_non_zeros = parameters.npoints() * (      linedata.nlev
