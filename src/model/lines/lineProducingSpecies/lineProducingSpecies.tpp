@@ -274,8 +274,8 @@ inline void LineProducingSpecies :: update_using_statistical_equilibrium (
     std::cout<<"setting vector population"<<std::endl;
     VectorXr new_population = VectorXr::Zero (parameters.npoints()*linedata.nlev);
 
-    const Size max_matrix_size=1*1024*1024*1024;//For testing purposes
-    // const Size max_matrix_size=100*1024*1024;//hundred megabyte
+    // const Size max_matrix_size=1*1024*1024*1024;//For testing purposes
+    const Size max_matrix_size=100*1024*1024;//hundred megabyte
     // const Size max_matrix_size=10*1024*1024;//one megabyte
     // It turns out that due to triplets, the total extra memory needed for this calculation is about three times this number
 
@@ -289,11 +289,11 @@ inline void LineProducingSpecies :: update_using_statistical_equilibrium (
       Size nb_different_matrices=(points_in_grid.size()+(nb_points_per_block-1))/nb_points_per_block;//rounding up
       std::cout<<"Splitting big matrix into n parts: "<<nb_different_matrices<<std::endl;
 
-      //trivial parallelisation
-      threaded_for (idx, nb_different_matrices,
-      {
-      // for (Size idx=0;idx<nb_different_matrices;idx++)
+      //trivial parallelisation //DO NOT USE THIS FOR NOW: A PART OF THIS ADJUSTS AN INTERNAL STATE
+      // threaded_for (idx, nb_different_matrices,
       // {
+      for (Size idx=0;idx<nb_different_matrices;idx++)
+      {
         Size firstidx=idx*nb_points_per_block;
         Size lastidx=std::min(static_cast<Size>(points_in_grid.size()-1),static_cast<Size>((idx+1)*nb_points_per_block-1));
         vector<Size> current_points_in_block = std::vector<Size>(points_in_grid.begin() + firstidx, points_in_grid.begin()+lastidx+1);
@@ -306,8 +306,8 @@ inline void LineProducingSpecies :: update_using_statistical_equilibrium (
           new_population(Eigen::seq(index(point_in_block,0),index(point_in_block,linedata.nlev-1)))=resulting_y(Eigen::seq(index(temp_idx,0),index(temp_idx,linedata.nlev-1)));
           temp_idx++;
         }
-      // }
-      })
+      }
+      // })
     }
     else
     {//unfortunately, we cannot split this matrix into smaller pieces without making any errors
@@ -713,6 +713,14 @@ inline VectorXr LineProducingSpecies::solve_statistical_equilibrium(const Double
                   // Note: we define our transition matrix as the transpose of R in the paper.
                   const Size I = index (indexmap.at(nr), linedata.irad[k]);
                   const Size J = index (indexmap.at(p),  linedata.jrad[k]);
+
+                  // if (nr!=p)
+                  // {
+                  //   std::cout<<"nr!=p!!!"<<std::endl;
+                  //   std::cout<<"p: "<<p<<std::endl;
+                  //   std::cout<<"nr: "<<nr<<std::endl;
+                  // }
+
                   // if (parameters.n_off_diag==0){//no non-local effects exist, so compressed index notation can be used (nr=p)
                   //   I = index (idx, linedata.irad[k]);
                   //   J = index (idx, linedata.jrad[k]);
@@ -743,12 +751,12 @@ inline VectorXr LineProducingSpecies::solve_statistical_equilibrium(const Double
               Real tmp = temperature[p];
 
               colpar.adjust_abundance_for_ortho_or_para (tmp, abn);
-              colpar.interpolate_collision_coefficients (tmp);
-
+              colpar.interpolate_collision_coefficients (tmp);//CURRENTLY NOT THREAD SAFE
+              //ADJUSTS INTERNAL STATE
 
               for (Size k = 0; k < colpar.ncol; k++)
               {
-                  const Real v_IJ = colpar.Cd_intpld[k] * abn;
+                  const Real v_IJ = colpar.Cd_intpld[k] * abn;//ONLY HERE IS THIS INTERNAL STATE USED
                   const Real v_JI = colpar.Ce_intpld[k] * abn;
 
                   // std::cout<<"v_IJ: "<<v_IJ<<std::endl;
