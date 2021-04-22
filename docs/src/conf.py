@@ -13,12 +13,13 @@
 import os
 import sys
 sys.path.insert(0, os.path.abspath('.'))
-
+import datetime
+year = datetime.datetime.now().year
 
 # -- Project information -----------------------------------------------------
 
 project = 'Magritte'
-copyright = '2020, Frederik De Ceuster'
+copyright = f'{year}, Frederik De Ceuster'
 author = 'Frederik De Ceuster'
 
 # -- Explicitly specify master doc -------------------------------------------
@@ -53,7 +54,7 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # a list of builtin themes.
 #
 html_theme = 'sphinx_rtd_theme'
-html_logo  = 'images/Magritte_logo_white.svg'
+html_logo  = 'images/Magritte_logo_white_plain.svg'
 html_theme_options = {'logo_only': True}
 
 

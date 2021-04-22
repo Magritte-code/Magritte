@@ -5,18 +5,27 @@ Magritte documentation
     These pages are still under construction!
 
 Welcome to the Magritte documentation! Magritte is an open-source software
-library for simulating radiation transport, developed at University College
-London (UK) and KU Leuven (Belgium).
+library for simulating radiation transport, developed at `University College
+London <https://www.ucl.ac.uk/>`_ (UK) and `KU Leuven <https://www.kuleuven.be/english/>`_
+(Belgium).
+
+.. raw:: html
+
+    <video width="100%" controls playsinline autoplay muted loop>
+      <source src="_static/movie.webm">
+      Your browser does not support the video tag.
+    </video>
 
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Contents:
 
    0_getting_started/index
    1_examples/index
    2_benchmarks/index
-   3_api_documentation/index
+   3_python_api_documentation/index
+   4_cpp_api_documentation/index
 
 
 Papers about Magritte
@@ -25,12 +34,15 @@ Papers about Magritte
 The following list of papers might provide further insights in the inner workings of Magritte:
 
 * Magritte: **Adaptive ray-tracing, mesh construction and reduction**,
-  *F. De Ceuster, J. Bolte, W. Homan, S. Maes, J. Malfait, L. Decin, J. Yates, P. Boyle, J. Hetherington*, 2020 (`arXiv <https://arxiv.org/abs/2011.14998>`_, `MNRAS <https://doi.org/10.1093/mnras/staa3199>`_);
+  *F. De Ceuster, J. Bolte, W. Homan, S. Maes, J. Malfait, L. Decin, J. Yates, P. Boyle, J. Hetherington*, 2020
+  (`arXiv <https://arxiv.org/abs/2011.14998>`_,
+  `MNRAS <https://doi.org/10.1093/mnras/staa3199>`_);
 
 
 * Magritte: **Non-LTE atomic and molecular line modelling**,
   *F. De Ceuster, W. Homan, J. Yates, L. Decin, P. Boyle, J. Hetherington*, 2019
-  (`arXiv <https://arxiv.org/abs/1912.08445>`_, `MNRAS <https://doi.org/10.1093/mnras/stz3557>`_);
+  (`arXiv <https://arxiv.org/abs/1912.08445>`_,
+  `MNRAS <https://doi.org/10.1093/mnras/stz3557>`_);
 
 Please note that some features presented in these papers might not yet be implemented
 and documented in the latest release of Magritte.
@@ -39,7 +51,8 @@ and documented in the latest release of Magritte.
 Contact
 *******
 
-Please report any issues with Magritte or its documentation `here <https://github.com/Magritte-code/Magritte/issues>`_.
+Please report any issues with Magritte or its documentation `here
+<https://github.com/Magritte-code/Magritte/issues>`_.
 If you need any further help, please contact Frederik De Ceuster.
 
 

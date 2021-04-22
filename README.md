@@ -1,4 +1,4 @@
-<img src="docs/src/images/Magritte_logo.svg" alt="logo" width="350"/>
+<img src="docs/src/images/Magritte_logo_plain.svg" alt="logo" width="350"/>
 
 [![Build Status](https://travis-ci.com/Magritte-code/Magritte.svg?branch=master)](https://travis-ci.com/Magritte-code/Magritte)
 [![Documentation Status](https://readthedocs.com/projects/magritte-magritte/badge/?version=latest&token=7d7b32178f0e9cfbbf7e0967233b680ccf113dd73b8d4b567f3587445c936036)](https://magritte-magritte.readthedocs-hosted.com/en/latest/?badge=latest)
