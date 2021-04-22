@@ -27,7 +27,7 @@ how these models can be reduced to smaller approximate models for fast radiative
    
    0_create_AMRVAC_1D.ipynb
    1_create_AMRVAC_3D.ipynb
-..   2_reduce_AMRVAC_3D.ipynb
+   2_reduce_AMRVAC_3D.ipynb
 
 .. toctree::
    :maxdepth: 1
