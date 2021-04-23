@@ -11,10 +11,10 @@ The following examples show how to create synthetic observations with Magritte.
     on how to create a Magritte model, please refer to the :ref:`creating models
     <link-creating_models>` or :ref:`post-processing examples <link-post-processing>`.
 
-..
- .. toctree::
+.. toctree::
    :maxdepth: 1
    :caption: Contents
    
-   mpc.ipynb
+   0_image_1D_models.ipynb
+   1_image_3D_models.ipynb
 

@@ -4,3 +4,4 @@ sphinx-copybutton
 nbsphinx
 breathe
 ipython
+jupyter_sphinx

@@ -1,6 +1,6 @@
 import sys, os
+import meshio
 import numpy     as np
-import meshio    as mio
 import itertools as itt
 
 from string                  import Template
@@ -8,8 +8,7 @@ from subprocess              import Popen, PIPE
 from healpy                  import pixelfunc
 from scipy.spatial           import Delaunay
 from scipy.spatial.transform import Rotation
-
-# Add this to the path to ensure the templates can be found.
+from numba                   import njit
 
 
 def relocate_indices(arr, p):
@@ -21,9 +20,11 @@ def relocate_indices(arr, p):
 
 
 class Mesh:
-
+    """
+    Magritte custom mesh class.
+    """
     def __init__(self, meshFile):
-        self.mesh      = mio.read(meshFile)
+        self.mesh      = meshio.read(meshFile)
         self.points    = self.mesh.points
         self.tetras    = self.mesh.cells_dict['tetra']
         self.edges     = self.get_edges()
@@ -272,7 +273,7 @@ def create_mesh_from_background(meshName, boundary, scale_min, scale_max):
     # run gmsh in a subprocess to generate the mesh from the background
     run(f'gmsh {meshing_script} -3 -saveall -o {resulting_mesh}')
     # Remove the script file
-    os.remove(meshing_script)
+    # os.remove(meshing_script)
 
 
 def create_mesh_from_function(meshName, boundary, scale_min, scale_max, scale_function):
@@ -314,8 +315,127 @@ def generate_background_from_1D_data(meshName, R, data):
 
     delaunay = Delaunay(points)
 
-    mio.write_points_cells(
+    meshio.write_points_cells(
         filename   = f'{meshName}.msh',
         points     =             delaunay.points,
         cells      = {'tetra'  : delaunay.simplices},
         point_data = {'weights': np.array(data_s)}   )
+    
+    return
+
+
+@njit
+def get_pfs(nns):
+    pfs = np.zeros(nns.shape, dtype=np.int64)
+    tot = 0
+    for i, n in enumerate(nns):
+        tot    += n
+        pfs[i]  = tot
+    return pfs
+
+
+@njit
+def get_nbs(nbs, pfs, i):
+    if (i == 0):
+        return nbs[0:pfs[0]]
+    else:
+        return nbs[pfs[i-1]:pfs[i]]
+
+
+@njit
+def norm(vec_arr):
+    norms = np.zeros(vec_arr.shape[0])
+    for i in range(vec_arr.shape[0]):
+        for j in range(vec_arr.shape[1]):
+            norms[i] = norms[i] + vec_arr[i,j]**2
+    return np.sqrt(norms)
+
+
+@njit
+def get_Gs(tracer, nbs, pfs):
+    """
+    Get the maximum relative difference in the tracer function for each point.
+    """
+    Gs = np.zeros(tracer.shape[0])
+    for i in range(tracer.shape[0]):
+        tracer_i = tracer[i]
+        tracer_n = tracer[get_nbs(nbs, pfs, i)]
+        Gs[i] = np.max(np.abs(tracer_i - tracer_n) / (tracer_i + tracer_n))
+    return Gs
+
+
+@njit
+def get_Ls(pos, nbs, pfs):
+    """
+    Get the element size distributions for each point.
+    """
+    Ls = np.zeros(pos.shape[0])
+    for i in range(pos.shape[0]):
+        Ls[i] = np.mean(norm(pos[i] - pos[get_nbs(nbs, pfs, i)]))
+    return Ls
+
+
+@njit
+def get_weights(pos, nbs, nns, tracer, threshold=0.21, fmin=1.0, ftarget=2.15):
+    """
+    Get the weights (desired element sizes) for each point.
+    """
+    pfs = get_pfs (nns)
+    GGs = get_Gs  (tracer, nbs, pfs)
+    LLs = get_Ls  (pos,    nbs, pfs)
+    
+    L_min    = fmin    * LLs
+    L_target = ftarget * LLs
+    
+    weights = L_target
+    weights[GGs > threshold] = L_min[GGs > threshold]
+
+    return weights
+
+    
+def reduce(
+        meshName,
+        delaunay,
+        tracer,
+        boundary,
+        scale_max = 1.0e+99,  # Maximum value of the scale parameter
+        scale_min = 0.0e+00,  # Minimum value of the scale parameter
+        threshold = 0.21,     # Threashold relative difference for coarsening
+        fmin      = 1.0,      # Don't allow refinenment 
+        ftarget   = 2.15      # Approx 10^(-1/3) for approx 10 times fewer points
+    ):
+    
+    # Remove extension from meshName
+    meshName, extension = os.path.splitext(meshName)
+
+    # Extract mesh structure from delaunay object
+    (indptr, indices) = delaunay.vertex_neighbor_vertices
+    neighbors = [indices[indptr[k]:indptr[k+1]] for k in range(len(delaunay.points))]
+    nbs       = np.array([n for sublist in neighbors for n in sublist])
+    nns       = np.array([len(sublist) for sublist in neighbors])
+    pos       = delaunay.points    
+    
+    # Create a background mesh (in .msh format)
+    meshio.write_points_cells(
+        filename   = f'{meshName}.msh',
+        points     = delaunay.points,
+        cells      = {'tetra'  : delaunay.simplices},
+        point_data = {'weights': get_weights(pos=pos,
+                                             nbs=nbs,
+                                             nns=nns,
+                                             tracer=tracer,
+                                             threshold=threshold,
+                                             fmin=fmin,
+                                             ftarget=ftarget)}
+    )
+
+    # Convert .msh to .pos mesh for Gmsh
+    convert_msh_to_pos (meshName=meshName, replace=True)
+    
+    # Create a new mesh from the background mesh
+    create_mesh_from_background(
+        meshName  = meshName,
+        boundary  = boundary,
+        scale_min = scale_min,
+        scale_max = scale_max
+    )

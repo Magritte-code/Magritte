@@ -6,8 +6,13 @@ Magritte documentation
 
 Welcome to the Magritte documentation! Magritte is an open-source software
 library for simulating radiation transport, developed at `University College
-London <https://www.ucl.ac.uk/>`_ (UK) and `KU Leuven <https://www.kuleuven.be/english/>`_
-(Belgium).
+London <https://www.ucl.ac.uk/>`_ (UCL, UK) and `KU Leuven
+<https://www.kuleuven.be/english/>`_ (Belgium).
+
+Magritte is currently mainly used for post-processing hydrodynamical simulations by
+creating synthetic observations. The plot below shows synthetic observations made with
+Magritte at three different inclinations for a hydro simulation of the stellar wind around
+an asymptotic giant branch (AGB) star as it is perturbed by a companion.
 
 .. raw:: html
 
@@ -16,6 +21,9 @@ London <https://www.ucl.ac.uk/>`_ (UK) and `KU Leuven <https://www.kuleuven.be/e
       Your browser does not support the video tag.
     </video>
 
+The hydro model was created by Jan Bolte using `MPI-AMRVAC <http://amrvac.org/>`_. See
+the :ref:`examples <link-examples>` to learn how the synthetic observations were created
+with Magritte.
 
 .. toctree::
    :maxdepth: 1
@@ -51,9 +59,10 @@ and documented in the latest release of Magritte.
 Contact
 *******
 
-Please report any issues with Magritte or its documentation `here
-<https://github.com/Magritte-code/Magritte/issues>`_.
-If you need any further help, please contact Frederik De Ceuster.
+Please report any `issues <https://github.com/Magritte-code/Magritte/issues>`_ with
+Magritte or its documentation `here <https://github.com/Magritte-code/Magritte/issues>`_.
+If you need any further help, please contact `Frederik De Ceuster
+<https://www.kuleuven.be/wieiswie/en/person/00101884>`_.
 
 
 Developers & Contributors
