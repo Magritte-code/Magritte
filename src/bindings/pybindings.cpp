@@ -206,7 +206,7 @@ PYBIND11_MODULE (core, module)
         // attributes
         .def_readwrite ("position",    &Points::position)
         .def_readwrite ("velocity",    &Points::velocity)
-        .def_readwrite ("curr_neighbors", &Points::curr_neighbors)
+        // .def_readwrite ("curr_neighbors", &Points::curr_neighbors)
         .def_readwrite ("multiscale", &Points::multiscale)
 //@Frederik: I'm commenting these out for now :
 // We should replace these with some methods from the Neighbors struct
@@ -220,15 +220,15 @@ PYBIND11_MODULE (core, module)
         .def (py::init<>());
 
 
-    // Neighbors
-    py::class_<Neighbors> (module, "Neighbors")
-        // attributes
-        .def_readwrite ("n_neighbors",    &Neighbors::n_neighbors)
-        .def_readwrite ("neighbors",    &Neighbors::neighbors)
-        // functions
-        .def("get_neighbors", &Neighbors::get_neighbors)
-            // constructor
-        .def (py::init<>());
+    // // Neighbors
+    // py::class_<Neighbors> (module, "Neighbors")
+    //     // attributes
+    //     .def_readwrite ("n_neighbors",    &Neighbors::n_neighbors)
+    //     .def_readwrite ("neighbors",    &Neighbors::neighbors)
+    //     // functions
+    //     .def("get_neighbors", &Neighbors::get_neighbors)
+    //         // constructor
+    //     .def (py::init<>());
 
     // Multiscale
     py::class_<Multiscale> (module, "Multiscale")

@@ -4,7 +4,7 @@
 #include "io/io.hpp"
 #include "model/parameters/parameters.hpp"
 #include "tools/types.hpp"
-#include "model/geometry/points/neighbors/neighbors.hpp"
+// #include "model/geometry/points/neighbors/neighbors.hpp"
 #include "model/geometry/points/multiscale/multiscale.hpp"
 
 
@@ -16,7 +16,7 @@ struct Points
     Vector <Vector3D> velocity;          ///< velocity vectors of each point
 
     //TODO deprecate this entirely
-    Neighbors curr_neighbors;   ///Does everything the old data 'structure' did
+    // Neighbors curr_neighbors;   ///Does everything the old data 'structure' did
 //    Vector <Size>     cum_n_neighbors;   ///< cumulative number of neighbors
 //    Vector <Size>         n_neighbors;   ///< number of neighbors each point has
 //    Vector <Size>           neighbors;   ///< neighbors of each point, listed after eachother

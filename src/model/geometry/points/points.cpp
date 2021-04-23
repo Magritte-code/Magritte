@@ -14,9 +14,9 @@ void Points :: read (const Io& io)
 or they try to set it to a different value, in which case a DoubleSetException is thrown, so i'm commenting one out for now
 Also assert that the lengths are the same; You can change this to any other exception
 */
-    assert(io.get_length (prefix+"position")==io.get_length (prefix+"velocity"));
+    // assert(io.get_length (prefix+"position")==io.get_length (prefix+"velocity"));
     parameters.set_npoints (io.get_length (prefix+"position"));
-//    parameters.set_npoints (io.get_length (prefix+"velocity"));
+    parameters.set_npoints (io.get_length (prefix+"velocity"));
 
     position.resize (parameters.npoints());
     velocity.resize (parameters.npoints());
