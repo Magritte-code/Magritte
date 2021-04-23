@@ -707,16 +707,13 @@ int Model :: compute_level_populations_multigrid (
 
 
         //Maybe TODO: create function that directly interpolates both, such that we do not waste extra time when recreating the same matrices
+        //interpolating the current levelpops (at the coarser level)
         interpolate_levelpops_local(geometry.points.multiscale.get_curr_coars_lvl());
-
         vector<VectorXr> interpolated_new_levelpops=lines.get_all_level_pops();
 
-
-        //?????? did i forget to set the levelpops to the old levelpops??????
-        //FIXME:BUG forgot to temporarily set the old levelpops
-
+        //Now also interpolating the previous levelpops at the finer level
+        lines.set_all_level_pops(old_levelpops);
         interpolate_levelpops_local(geometry.points.multiscale.get_curr_coars_lvl());
-
         vector<VectorXr> interpolated_old_levelpops=lines.get_all_level_pops();
 
         geometry.points.multiscale.set_curr_coars_lvl(geometry.points.multiscale.get_curr_coars_lvl()-1);
