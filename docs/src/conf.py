@@ -15,6 +15,7 @@ import sys
 sys.path.insert(0, os.path.abspath('.'))
 import datetime
 year = datetime.datetime.now().year
+from ipywidgets.embed import DEFAULT_EMBED_REQUIREJS_URL
 
 # -- Project information -----------------------------------------------------
 
@@ -31,7 +32,7 @@ master_doc = 'index'
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = [ "breathe", 'sphinx_copybutton', 'nbsphinx' ]
+extensions = [ "breathe", 'sphinx_copybutton', 'nbsphinx', 'jupyter_sphinx.execute' ]
 
 breathe_default_project = "Magritte"
 breathe_projects = {'Magritte' : 'doxygen/xml'}
@@ -56,12 +57,19 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 html_theme = 'sphinx_rtd_theme'
 html_logo  = 'images/Magritte_logo_white_plain.svg'
 html_theme_options = {'logo_only': True}
+html_js_files = [
+    'https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js',
+    DEFAULT_EMBED_REQUIREJS_URL,
+                ]
 
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
+
+
+
 
 
 # -- Run doxygen on READTHEDOCS server ---------------------------------------

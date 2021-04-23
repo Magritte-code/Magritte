@@ -150,6 +150,7 @@ PYBIND11_MODULE (core, module)
         .def ("set_spherical_symmetry",       &Parameters::set_spherical_symmetry  )
         .def ("set_adaptive_ray_tracing",     &Parameters::set_adaptive_ray_tracing)
         // getters
+		.def ("model_name",                   &Parameters::model_name          )
         .def ("dimension",                    &Parameters::dimension           )
         .def ("npoints",                      &Parameters::npoints             )
         .def ("nrays",                        &Parameters::nrays               )
