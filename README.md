@@ -4,8 +4,6 @@
 [![Documentation Status](https://readthedocs.com/projects/magritte-magritte/badge/?version=latest&token=7d7b32178f0e9cfbbf7e0967233b680ccf113dd73b8d4b567f3587445c936036)](https://magritte-magritte.readthedocs-hosted.com/en/latest/?badge=latest)
 ---
 
-_*Preparing for first release...*_
-
 Welcome to the Magritte repository! Magritte is a open-source software library for
 simulating radiation transport, developed at
 [University College London](https://www.ucl.ac.uk/) (UCL, UK) and
@@ -37,8 +35,8 @@ for a quick intro.
 ## Issues & Contact
 Please report any issues with Magritte or its documentation
 [here](https://github.com/UCL/Magritte/issues).
-If you need any further help, please contact `Frederik De Ceuster
-<https://www.kuleuven.be/wieiswie/en/person/00101884>`_.
+If you need any further help, please contact [Frederik De Ceuster]
+(https://www.kuleuven.be/wieiswie/en/person/00101884).
 
 
 ## Papers about Magritte
@@ -59,17 +57,14 @@ examples to facilitate its independent use. Until then, please
 [contact us](https://www.kuleuven.be/wieiswie/en/person/00101884).
 
 
-Developers & Contributors
-*************************
+## Developers & Contributors
 
-**Developers**
-
+### Developers
 * Frederik De Ceuster
 * Thomas Ceulemans
 * Atulit Srivastava
 
-**Scientific & Technical advisors**
-
+### Scientific & Technical advisors
 * Ward Homan
 * Jan Bolte
 * Jeremy Yates
@@ -77,14 +72,11 @@ Developers & Contributors
 * Peter Boyle
 * James Hetherington
 
-**Contributors**
-
+## Contributors
 * Silke Maes
 * Jolien Malfait
 
 
-Acknowledgements
-****************
-
+## Acknowledgements
 FDC is supported by the EPSRC iCASE studentship programme, Intel Corporation and Cray Inc.
 FDC, JB, WH, and LD acknowledge support from the ERC consolidator grant 646758 AEROSOL.
