@@ -29,7 +29,7 @@ inline Size VCycle::get_current_level()
 //Currently implements a V-cycle with some initial steps on the coarsest grid
 inline MgController::Actions VCycle::get_next_action()
 {
-  //If the max number of iterations is reached, stop
+  //If the max number of iterations is reached, stop//TODO: think about whether this part is still useful
   if ((current_nb_iterations>=max_nb_iterations)&&(!not_yet_iterated))
   {
     return Actions::finish;
@@ -52,7 +52,13 @@ inline MgController::Actions VCycle::get_next_action()
         if (first_upward)
         {first_upward=false;}
         else//increasing the counter of number iterations every time the finest grid is reached (except the first time)
-        {current_nb_iterations++;}
+        {
+          current_nb_iterations++;
+          if (current_nb_iterations>=max_nb_iterations)//If the max number of iterations is reached, stop
+          {
+            return Actions::finish;
+          }
+        }
         going_coarser=true;
       } else if (current_level>=max_level) {
         going_coarser=false;
