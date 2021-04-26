@@ -164,8 +164,8 @@ inline void Model::coarsen_around_point (const Size p)
 
     //clear the old neighbors of point p
     geometry.points.multiscale.neighbors.back()[p]=std::set<Size>();
-    //also clear point p from all boundary neighbors?? / because they might no longer be connected? Argh, stupid edge case.
-    // It gets recalculated anyway
+    //Also clear point p from all boundary neighbors. Otherwise edge cases might occur that result in the neighbors not being symmetric.
+    // These neighbors get recalculated anyway
     for (Size bound_neigh:boundary_neighbors)
     {
       geometry.points.multiscale.neighbors.back()[bound_neigh].erase(p);
@@ -298,7 +298,6 @@ inline void Model::coarsen_around_point (const Size p)
 ///   @Parameter[in]: min_nb_points: stop coarsening when number of points of finest layers is equal or less than this
 ///   @Parameter[in]: max_coars_lvl: The maximum coarsening level we allow
 ///   @Parameter[in]: tol: the tolerance level for which we still consider points similar enough
-//FIXME: ADD PARAMETER FOR MAX_NB_ITERATIONS
 /// mgImplementation options: 1) NaiveMG
 ///                           2) VCycle
 ///                           3) WCycle
@@ -336,13 +335,13 @@ inline int Model::setup_multigrid(Size min_nb_points, Size max_coars_lvl, double
       break;
     case 2://"VCycle":
       {
-      std::shared_ptr<MgController> tempImplement_ptr=std::make_shared<VCycle>(geometry.points.multiscale.get_max_coars_lvl()+1,0,5,max_nb_iterations);
+      std::shared_ptr<MgController> tempImplement_ptr=std::make_shared<VCycle>(geometry.points.multiscale.get_max_coars_lvl()+1,0,1,max_nb_iterations);
       mgControllerHelper=MgControllerHelper(tempImplement_ptr);
       }
       break;
     case 3://"VCycle":
       {
-      std::shared_ptr<MgController> tempImplement_ptr=std::make_shared<WCycle>(geometry.points.multiscale.get_max_coars_lvl()+1,0,5,max_nb_iterations);
+      std::shared_ptr<MgController> tempImplement_ptr=std::make_shared<WCycle>(geometry.points.multiscale.get_max_coars_lvl()+1,0,1,max_nb_iterations);
       mgControllerHelper=MgControllerHelper(tempImplement_ptr);
       }
       break;
@@ -673,8 +672,19 @@ inline void Model::interpolate_levelpops_local(Size coarser_lvl)
           throw std::runtime_error("Nan/inf encountered during interpolation");
         }
       }// end of iterating over lines of species
+      //Now first set negative values to 0 (because we do not want negative level populations)
+      for (Size i=0; i<linefracs.size(); i++)
+      {
+        if (linefracs[i]<0){linefracs[i]=0;}
+      }
       // Linefracs should sum to 1, otherwise divide by the sum
       Real sum_of_linefracs=std::accumulate(linefracs.begin(), linefracs.end(), 0.0);
+
+      if (sum_of_linefracs==0)
+      {
+        std::cout<<"Something went wrong during interpolating: all interpolated linefracs were negative"<<std::endl;
+        throw std::runtime_error("all interpolated linefracs were negative during interpolation");
+      }
 
       //and now we finally set the values
       Real diff_point_abund=static_cast<Real>(chemistry.species.abundance[diff_point][speciesnum]);
