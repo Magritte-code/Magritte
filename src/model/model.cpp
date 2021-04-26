@@ -293,11 +293,12 @@ int Model :: compute_LTE_level_populations ()
 /// Restarting from the iteration levelpops, assuming it has been written to disk
 ////////////////////////////////////////////////////////////////////////////
 /// CURRENTLY ASSUMES THE LEVELPOPS BEING WRITTEN TO THE HDF5 FILE FIXME: change this
-int Model :: restart_from_iteration(Size iteration)
+/// FIXME: currently, the mgController information is NOT SAVED, so this is not that useful for restarting a multigrid scheme
+int Model :: restart_from_iteration(Size iteration, Size lvl)
 {
   compute_LTE_level_populations();
   IoPython io = IoPython ("hdf5", parameters.model_name());
-  lines.read_populations_of_iteration(io, iteration);
+  lines.read_populations_of_iteration(io, iteration, lvl);
   std::cout<<"Read populations from disk"<<std::endl;
   lines.set_emissivity_and_opacity ();
   std::cout<<"Restarting from iteration: "<<iteration<<std::endl;
@@ -570,7 +571,7 @@ int Model :: compute_level_populations_multigrid (
         //If enabled, we now write the level populations to the hdf5 file
         if (writing_populations_to_disk){
           IoPython io = IoPython ("hdf5", parameters.model_name());
-          lines.write_populations_of_iteration(io, iteration);
+          lines.write_populations_of_iteration(io, iteration, geometry.points.multiscale.get_curr_coars_lvl());
           std::cout<<"Wrote populations to disk"<<std::endl;
         }
 
@@ -715,6 +716,16 @@ int Model :: compute_level_populations_multigrid (
         lines.set_all_level_pops(old_levelpops);
         interpolate_levelpops_local(geometry.points.multiscale.get_curr_coars_lvl());
         vector<VectorXr> interpolated_old_levelpops=lines.get_all_level_pops();
+
+        //TODO: check whether there is an error when
+        //IF SO: make a copy of the levelpops instead
+
+        ///SIMPLE TEST:todo test it
+        if (interpolated_old_levelpops==old_levelpops)
+        {
+          std::cout<<"interpolated old levelpops and old levelpops are equal"<<std::endl;
+          std::cout<<"Thus there is an error with references"<<std::endl;
+        }
 
         geometry.points.multiscale.set_curr_coars_lvl(geometry.points.multiscale.get_curr_coars_lvl()-1);
 
@@ -905,7 +916,7 @@ int Model :: compute_level_populations (
         //If enabled, we now write the level populations to the hdf5 file
         if (writing_populations_to_disk){
           IoPython io = IoPython ("hdf5", parameters.model_name());
-          lines.write_populations_of_iteration(io, iteration);
+          lines.write_populations_of_iteration(io, iteration, geometry.points.multiscale.get_curr_coars_lvl());
           std::cout<<"Wrote populations to disk"<<std::endl;
         }
 

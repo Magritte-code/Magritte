@@ -195,11 +195,7 @@ inline void Solver :: solve_feautrier_order_2 (Model& model)
         Size nbpoints=points_in_grid.size();
         //only use the points currently in the grid
         accelerated_for (idx, nbpoints, nblocks, nthreads,
-        { //if the point o lies in the current grid, do the whole calculation
-        // accelerated_for (o, model.parameters.npoints(), nblocks, nthreads,
-        // { //if the point o lies in the current grid, do the whole calculation
-          // if (model.geometry.points.multiscale.get_mask(model.geometry.points.multiscale.get_curr_coars_lvl())[o])
-          // {
+        {
             const Size o=points_in_grid[idx];
             const Real dshift_max = get_dshift_max (model, o);
 
@@ -232,7 +228,6 @@ inline void Solver :: solve_feautrier_order_2 (Model& model)
                     model.radiation.J(   o,f) += two * model.geometry.rays.weight[rr] * model.radiation.u(rr,o,f);
                 }
             }
-          // }
 
         })
 

@@ -109,7 +109,7 @@ struct Model
         // const long  max_niterations);
     int compute_image                             (const Size ray_nr);
 
-    int restart_from_iteration(Size iteration);
+    int restart_from_iteration(Size iteration, Size lvl);
 
     Double1 error_max;
     Double1 error_mean;
