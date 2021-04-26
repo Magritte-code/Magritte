@@ -1,7 +1,7 @@
 Magritte documentation
 ######################
 
-W\2elcome to the Magritte documentation! Magritte is an open-source software
+Welcome to the Magritte documentation! Magritte is an open-source software
 library for simulating radiation transport, developed at `University College
 London <https://www.ucl.ac.uk/>`_ (UCL, UK) and `KU Leuven
 <https://www.kuleuven.be/english/>`_ (Belgium).

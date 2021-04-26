@@ -48,6 +48,9 @@ setup(
         'yt',
         'mpi4py',
         'tqdm',
+        'ipywidgets',
+        'palettable',
+        'plotly'
     ],
     cmdclass={'build_ext': my_build_ext},
     url="https://github.com/Magritte-code/Magritte",

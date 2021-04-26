@@ -29,9 +29,8 @@ Dependencies
 
 Magritte has several dependencies, some of which are optional.
 
-**Required**
 
-* `CMake <https://cmake.org/>`_, version :literal:`3.18.0` or later, for building the library;
+**Submodules**
 
 * `Eigen <http://eigen.tuxfamily.org/index.php?title=Main_Page>`_, version :literal:`3.3.7` or later, for some of the linear algebra;
 
@@ -40,6 +39,11 @@ Magritte has several dependencies, some of which are optional.
 * `googletest <https://github.com/google/googletest>`_ version :literal:`1.10.0` or later, for some of the tests;
 
 * `Paracabs <https://github.com/Magritte-code/Paracabs>`_, our custom parallelization and acceleration abstractions.
+
+**Required**
+
+* `CMake <https://cmake.org/>`_, version :literal:`3.18.0` or later, for building the library;
+
 
 **Optional**
 
@@ -85,6 +89,13 @@ the model files.
         conda activate magritte
 
     Please ensure that this environment is active whenever Magritte is compiled or used.
+
+.. warning::
+
+    Magritte uses plotly for some interactive plots. Plotly requires additional
+    extensions to be able to render plots in a jupyter notebook or in jupyter lab. Please
+    see their `intstallation notes <https://plotly.com/python/getting-started/>`_ to get
+    plotly working with jupyter.
 
 
 Compilation
