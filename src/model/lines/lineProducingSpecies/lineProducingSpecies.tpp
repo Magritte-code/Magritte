@@ -104,7 +104,7 @@ inline void LineProducingSpecies :: update_using_LTE (
 
 inline void LineProducingSpecies :: check_for_convergence (const Real pop_prec, vector<Size> &points_in_grid)
 {
-    //this also needs some changes for coarser grids; because interpolation happens at later time, there can be inconsistencies
+    //Checking convergence for all points in the current grid
     const Size nbpoints=points_in_grid.size();
     const Real weight = 1.0 / (nbpoints * linedata.nlev);
     // const Real weight = 1.0 / (parameters.npoints() * linedata.nlev);
@@ -886,11 +886,13 @@ inline VectorXr LineProducingSpecies::solve_statistical_equilibrium(const Double
 
 }
 
-
+///Sets all the level populations of this species to the new_population
 inline void LineProducingSpecies::set_all_level_pops(VectorXr new_population)
 {
   population=new_population;
 }
+
+///Returns all level populations of this species
 inline VectorXr LineProducingSpecies::get_all_level_pops()
 {
   return population;
