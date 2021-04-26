@@ -1,16 +1,18 @@
 Magritte documentation
 ######################
 
-.. Warning::
-    These pages are still under construction!
-
 Welcome to the Magritte documentation! Magritte is an open-source software
 library for simulating radiation transport, developed at `University College
 London <https://www.ucl.ac.uk/>`_ (UCL, UK) and `KU Leuven
 <https://www.kuleuven.be/english/>`_ (Belgium).
 
 Magritte is currently mainly used for post-processing hydrodynamical simulations by
-creating synthetic observations. The plot below shows synthetic observations made with
+creating synthetic observations, but the techniques could also be applied more general.
+It can either be used as a Python package or as a C++ library.
+Magritte uses a deterministic ray-tracer with a formal solver that currently focusses on
+line radiative transfer (see
+`De Ceuster et al. 2019 <https://ui.adsabs.harvard.edu/abs/2020MNRAS.492.1812D/abstract>`_
+for more details). The plot below shows synthetic observations made with
 Magritte at three different inclinations for a hydro simulation of the stellar wind around
 an asymptotic giant branch (AGB) star as it is perturbed by a companion.
 
@@ -22,7 +24,7 @@ an asymptotic giant branch (AGB) star as it is perturbed by a companion.
     </video>
 
 The hydro model was created by Jan Bolte using `MPI-AMRVAC <http://amrvac.org/>`_. See
-the :ref:`examples <link-examples>` to learn how the synthetic observations were created
+the :ref:`examples <link-examples>` to learn how these synthetic observations were created
 with Magritte.
 
 .. toctree::
@@ -39,7 +41,8 @@ with Magritte.
 Papers about Magritte
 *********************
 
-The following list of papers might provide further insights in the inner workings of Magritte:
+The following list of papers might provide further insights in the inner workings of
+Magritte:
 
 * Magritte: **Adaptive ray-tracing, mesh construction and reduction**,
   *F. De Ceuster, J. Bolte, W. Homan, S. Maes, J. Malfait, L. Decin, J. Yates, P. Boyle, J. Hetherington*, 2020
@@ -56,8 +59,8 @@ Please note that some features presented in these papers might not yet be implem
 and documented in the latest release of Magritte.
 
 
-Contact
-*******
+Issues & Contact
+****************
 
 Please report any `issues <https://github.com/Magritte-code/Magritte/issues>`_ with
 Magritte or its documentation `here <https://github.com/Magritte-code/Magritte/issues>`_.

@@ -36,8 +36,6 @@ extensions = [ "breathe", 'sphinx_copybutton', 'nbsphinx' ]
 breathe_default_project = "Magritte"
 breathe_projects = {'Magritte' : 'doxygen/xml'}
 
-# breathe_projects = {"Magritte":"../../examples/specific/nutshell/xml/",
-# }
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
