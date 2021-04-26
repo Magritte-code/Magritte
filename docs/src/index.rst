@@ -1,10 +1,7 @@
 Magritte documentation
 ######################
 
-.. Warning::
-    These pages are still under construction!
-
-Welcome to the Magritte documentation! Magritte is an open-source software
+W\2elcome to the Magritte documentation! Magritte is an open-source software
 library for simulating radiation transport, developed at `University College
 London <https://www.ucl.ac.uk/>`_ (UCL, UK) and `KU Leuven
 <https://www.kuleuven.be/english/>`_ (Belgium).
@@ -44,7 +41,8 @@ with Magritte.
 Papers about Magritte
 *********************
 
-The following list of papers might provide further insights in the inner workings of Magritte:
+The following list of papers might provide further insights in the inner workings of
+Magritte:
 
 * Magritte: **Adaptive ray-tracing, mesh construction and reduction**,
   *F. De Ceuster, J. Bolte, W. Homan, S. Maes, J. Malfait, L. Decin, J. Yates, P. Boyle, J. Hetherington*, 2020

@@ -26,20 +26,16 @@ The hydro model was created by Jan Bolte using [MPI-AMRVAC](http://amrvac.org/).
 documentation to learn how these synthetic observations were created with Magritte.
 
 
-## Quickstart
-See our
+## Documentation
+Please find our online documentation [here](https://magritte.readthedocs.io).
+In particular, see our
 [quickstart documentation](https://magritte.readthedocs.io/en/latest/0_getting_started/0_quickstart.html)
 for a quick intro.
 
 
-## Issues & Contact
-Please report any issues with Magritte or its documentation
-[here](https://github.com/UCL/Magritte/issues).
-If you need any further help, please contact [Frederik De Ceuster]
-(https://www.kuleuven.be/wieiswie/en/person/00101884).
-
-
 ## Papers about Magritte
+The following list of papers might provide further insights in the inner workings of
+Magritte:
 * _Magritte II: Adaptive ray-tracing, mesh construction and reduction_
 ([arXiv](https://arxiv.org/abs/2011.14998), [MNRAS](https://doi.org/10.1093/mnras/staa3199));
 * _Magritte I: Non-LTE atomic and molecular line modelling_
@@ -50,6 +46,13 @@ Please note that some features presented in these papers might not yet be implem
 and documented in the latest release of Magritte.
 
 
+## Issues & Contact
+Please report any issues with Magritte or its documentation
+[here](https://github.com/UCL/Magritte/issues).
+If you need any further help, please contact
+[Frederik De Ceuster](https://www.kuleuven.be/wieiswie/en/person/00101884).
+
+
 ## Cite
 Please contact the authors of the papers referenced above if you want to use
 Magritte in your research. We are currently working on documentation and
@@ -58,13 +61,12 @@ examples to facilitate its independent use. Until then, please
 
 
 ## Developers & Contributors
-
-### Developers
+**Developers**
 * Frederik De Ceuster
 * Thomas Ceulemans
 * Atulit Srivastava
 
-### Scientific & Technical advisors
+**Scientific & Technical advisors**
 * Ward Homan
 * Jan Bolte
 * Jeremy Yates
@@ -72,7 +74,7 @@ examples to facilitate its independent use. Until then, please
 * Peter Boyle
 * James Hetherington
 
-## Contributors
+**Contributors**
 * Silke Maes
 * Jolien Malfait
 
