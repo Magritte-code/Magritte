@@ -571,7 +571,7 @@ int Model :: compute_level_populations_multigrid (
         //If enabled, we now write the level populations to the hdf5 file
         if (writing_populations_to_disk){
           IoPython io = IoPython ("hdf5", parameters.model_name());
-          lines.write_populations_of_iteration(io, iteration, geometry.points.multiscale.get_curr_coars_lvl());
+          lines.write_populations_of_iteration(io, iterations_per_level[geometry.points.multiscale.get_curr_coars_lvl()], geometry.points.multiscale.get_curr_coars_lvl());
           std::cout<<"Wrote populations to disk"<<std::endl;
         }
 
