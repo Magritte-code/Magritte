@@ -159,7 +159,9 @@ def image_plotly(
         npix_x   = 300,
         npix_y   = 300,
         x_unit   = units.au,
-        v_unit   = units.km/units.s
+        v_unit   = units.km/units.s,
+        width    = 620,   # Yields approx square channel map
+        height   = 540,   # Yields approx square channel map
     ):
     """
     Plot channel maps of synthetic observation (image) with plotly.
@@ -348,16 +350,16 @@ def image_plotly(
     
     # Subplot titles are annotations
     fig.update_annotations(
-        font_size = 24,
+        font_size = 16,
         borderpad = 7
     )
 
     fig.update_layout(
-        width        = 1000,   # Yields approx square channel map
-        height       =  744,   # Yields approx square channel map
+        width        = width,
+        height       = height,
         plot_bgcolor = 'rgba(0,0,0,0)',
         dragmode     = 'pan',
-        font         = dict(family="Calibri", size=18, color='black')
+        font         = dict(family="Calibri", size=14, color='black')
     )
 
     # Make 3 middle traces visible
