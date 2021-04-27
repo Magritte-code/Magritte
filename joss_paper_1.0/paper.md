@@ -1,11 +1,10 @@
 ---
-title: 'Magritte: a modern software library for radiative transfer modelling'
+title: 'Magritte: a modern software library for radiative transfer and synthetic observations'
 tags:
   - Python
+  - C++
   - astronomy
-  - dy
-  - galactic dynamics
-  - milky way
+  - radiative transfer
 authors:
   - name: Frederik De Ceuster^[Custom footnotes for e.g. denoting who the corresponding author is can be included like this.]
     orcid: 0000-0001-5887-8498
