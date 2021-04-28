@@ -71,7 +71,7 @@ int main (int argc, char **argv)
     // model.compute_level_populations(true,100);
     //NOTE TO SELF: do NOT every try to use a ridiculous amount of coarsening: if only boundary points are left, the interpolation part will probably be hell
     //mgImplementation choices: 1:"NaiveMG", 2:"VCycle", 3:"WCycle"
-    model.setup_multigrid(10, 1, 0.1, 1, 2);
+    model.setup_multigrid(10, 2, 0.1, 2, 20);
     cout << "setup multigrid" << endl;
 
     std::cout<<"checking symmetry of neighbors"<<std::endl;
@@ -102,6 +102,8 @@ int main (int argc, char **argv)
       }
       // }
     }
+
+    model.writing_populations_to_disk=true;
 
     model.compute_level_populations_multigrid(true);
     // vector<Size> current_points_in_grid=model.geometry.points.multiscale.get_current_points_in_grid();
