@@ -506,9 +506,215 @@ inline void Model::interpolate_vector_local(Size coarser_lvl, vector<T> &to_inte
 
 
 // /// NOTE: with some better data structure, we can remove this duplication
+/// Interpolates the relative differences of level populations (linearized matrix) from the coarser level to the first finer level
+///  The result will be stored in relative_difference_levelpopulations
+///   @Parameter [in] coarser_lvl: the coarsening level of the coarser grid
+///   @Parameter [in/out] relative_difference_levelpopulations: for all linespecies, the vector of level populations (with the index notation as in lineProducingSpecies)
+// template <Real T>//T should be double, long or long double
+inline void Model::interpolate_relative_differences_local(Size coarser_lvl, vector<VectorXr> &relative_difference_levelpopulations)
+{
+  //we cannot interpolate from lvl 0 to some level -..., so just return
+  if (coarser_lvl==0)
+  {return;}
+  std::cout<<"Starting the interpolation"<<std::endl;
+  Size nb_points=parameters.npoints();
+
+  vector<bool> coarse_mask=geometry.points.multiscale.get_mask(coarser_lvl);
+  vector<bool> finer_mask=geometry.points.multiscale.get_mask(coarser_lvl-1);
+
+  vector<Size> diff_points;
+
+  for (Size point=0; point<nb_points; point++)
+  {
+    if(finer_mask[point]&&!coarse_mask[point])
+    {
+      diff_points.push_back(point);
+    }
+  }
+
+  // Size nb_coarse_points=coarse_points.size();
+  Size nb_diff_points=diff_points.size();
+
+  //if we have truly nothing to do, just do nothing
+  if (nb_diff_points==0)
+  {return;}
+
+  //for every points in diff_points, try to find interpolating value using rbf function
+  for (Size diff_point: diff_points)
+  {
+    std::set<Size> curr_neighbors=geometry.points.multiscale.get_neighbors(diff_point,coarser_lvl-1);
+    //get neighbors in coarser grid
+    vector<Size> neighbors_coarser_grid;
+    neighbors_coarser_grid.reserve(curr_neighbors.size());//i am overallocating a bit, but this variable is temporary anyway...
+    for (Size neighbor: curr_neighbors)
+    {
+      if (coarse_mask[neighbor])
+      {
+        neighbors_coarser_grid.push_back(neighbor);
+      }
+    }
+
+    // Note: using the current multigrid creation method, the number of neighbors in the coarse grid is almost always at least 1
+    if (neighbors_coarser_grid.size()==0)//this happens very rarely
+    {
+      // std::cout<<"No neighbors for the current point! Using point which deleted it instead as neighbor."<<std::endl;
+      // std::cout<<"Current point: "<<diff_point<<std::endl;
+      // std::cout<<"Point which replaces it: "<<geometry.points.multiscale.point_deleted_map.at(diff_point)<<std::endl;
+      // Size repl_point=geometry.points.multiscale.point_deleted_map.at(diff_point);
+
+      neighbors_coarser_grid.push_back(geometry.points.multiscale.point_deleted_map.at(diff_point));
+    }
+
+    // In the case we do not really have enough points for a good interpolation, just add more
+    if (neighbors_coarser_grid.size()<MIN_INTERPOLATION_POINTS)
+    {
+      std::set<Size> temp_neighbors_coarser_grid;
+      for (Size neighbor_coarse: neighbors_coarser_grid)
+      {
+        for (Size neighbor_of_coarse_neighbor: geometry.points.multiscale.get_neighbors(neighbor_coarse,coarser_lvl))
+        { //just make sure that we do not accidentally insert a point we already have (in neighbors_coarser_grid)
+          if (std::find(neighbors_coarser_grid.begin(), neighbors_coarser_grid.end(), neighbor_of_coarse_neighbor) == neighbors_coarser_grid.end())
+          {
+            temp_neighbors_coarser_grid.insert(neighbor_of_coarse_neighbor);
+          }
+        }
+      }
+      //Finally add our new points too
+      std::copy(temp_neighbors_coarser_grid.begin(), temp_neighbors_coarser_grid.end(), std::back_inserter(neighbors_coarser_grid));
+    }
+    if (neighbors_coarser_grid.size()>MAX_INTERPOLATION_POINTS)
+    {//now this just becomes: 1) to expensive to calculate and 2)difference between distances might become too large
+      Size maxnbneighbors=MAX_INTERPOLATION_POINTS;
+      Size nbneighbors=neighbors_coarser_grid.size();
+      vector<double> distances2;//stores the distances2 of the n closest points
+      distances2.resize(maxnbneighbors);
+      std::fill(distances2.begin(), distances2.end(), std::numeric_limits<double>::max());
+      vector<Size> closest_points;//stores the n closest points
+      double maxdist=std::numeric_limits<double>::max();//maximum distance of the n closest points
+      Size maxindex=0;//corresponding index
+      closest_points.resize(maxnbneighbors);
+      std::fill(closest_points.begin(), closest_points.end(), parameters.npoints());
+      for (Size idx=0;idx<nbneighbors;idx++)
+      {
+        double tempdistance=(geometry.points.position[neighbors_coarser_grid[idx]]-geometry.points.position[diff_point]).squaredNorm();
+        // std::cout<<"Considered point: "<<neighbors_coarser_grid[idx]<<"   Tempdistance: "<<tempdistance<<std::endl;
+        if (tempdistance<maxdist)
+        {//replace the curr max distance
+          closest_points[maxindex]=neighbors_coarser_grid[idx];
+          distances2[maxindex]=tempdistance;
+          //get new max distance and corresponding max index
+          auto tempindex = std::max_element(distances2.begin(), distances2.end());
+          maxindex=tempindex - distances2.begin();
+          maxdist=distances2[maxindex];
+        }
+      }
+      neighbors_coarser_grid=closest_points;
+    }
+
+    Size nb_neighbors_coarser_grid=neighbors_coarser_grid.size();
+
+    Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic> rbf_mat(nb_neighbors_coarser_grid, nb_neighbors_coarser_grid);
+    Eigen::Matrix<double,1,Eigen::Dynamic> distance_with_neighbors(1,nb_neighbors_coarser_grid);
+
+    for (Size idx=0; idx<nb_neighbors_coarser_grid; idx++)
+    {
+      distance_with_neighbors(idx)=std::sqrt((geometry.points.position[neighbors_coarser_grid[idx]]-geometry.points.position[diff_point]).squaredNorm());
+      rbf_mat(idx,idx)=0;//distance between point and itself is zero
+      for (Size idx2=0; idx2<idx; idx2++)
+      {
+        //calculate radius
+        double radius=std::sqrt((geometry.points.position[neighbors_coarser_grid[idx]]-geometry.points.position[neighbors_coarser_grid[idx2]]).squaredNorm());
+        rbf_mat(idx,idx2)=radius;
+        rbf_mat(idx2,idx)=radius;
+      }
+    }
+    //just use the mean distance for less parameter tuning
+    double meandist=distance_with_neighbors.mean();
+    // double mindist=distance_with_neighbors.minCoeff();
+    // mindist=mindist*RADIUS_MULT_FACTOR;//arbitrary number to make mindist larger
+
+    // rbf_mat=rbf_mat/mindist;
+    rbf_mat=rbf_mat/meandist;
+    rbf_mat=rbf_mat.unaryExpr(std::ptr_fun(rbf_local<double>));
+    // distance_with_neighbors=distance_with_neighbors/mindist;
+    distance_with_neighbors=distance_with_neighbors/meandist;
+    distance_with_neighbors=distance_with_neighbors.unaryExpr(std::ptr_fun(rbf_local<double>));
+
+    // Going with ColPivHouseholderQR for simplicity and accuracy
+    // Eigen::LDLT<Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic>> ldltdec(rbf_mat);
+    // Technically, when using a gaussian RBF, the matrix should be positive definite:  see e.g. Fornberg and Flyer (2015). "Solving PDEs with radial basis functions"
+    // But numerical nonsense can always occur (and the current implementation is fast enough)
+    Eigen::ColPivHouseholderQR<Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic>> colPivHouseholderQr(rbf_mat);
+    //now that we have our ldlt decomposition, calculate the interpolated value
+    for (Size specidx=0; specidx<parameters.nlspecs(); specidx++)
+    {
+      // For finding out which abundance corresponds to to the current species
+      Size speciesnum=lines.lineProducingSpecies[specidx].linedata.num;
+      // We will need to renormalize the level pops, so first we should collect them
+      // vector<Real> linefracs;
+      vector<Real> rel_diff_of_point;
+      rel_diff_of_point.resize(lines.lineProducingSpecies[specidx].linedata.nlev);
+      for (Size levidx=0; levidx<lines.lineProducingSpecies[specidx].linedata.nlev; levidx++)
+      {
+        Eigen::Vector<double,Eigen::Dynamic> right_hand_side(nb_neighbors_coarser_grid);
+        for (Size idx=0; idx<nb_neighbors_coarser_grid; idx++)
+        {
+          // // interpolating the fractional level populations, so we need the abundance of each species
+          // double abund=chemistry.species.abundance[neighbors_coarser_grid[idx]][speciesnum];
+          // // interpolating fractional level populations
+          // right_hand_side(idx)=static_cast<double>(lines.lineProducingSpecies[specidx].get_level_pop(neighbors_coarser_grid[idx],levidx))/abund;
+          right_hand_side(idx)=static_cast<double>(relative_difference_levelpopulations[specidx](lines.lineProducingSpecies[specidx].index(neighbors_coarser_grid[idx],levidx)));
+        }
+        Eigen::Vector<double,Eigen::Dynamic> weights=colPivHouseholderQr.solve(right_hand_side);
+        Real interpolated_value=static_cast<Real>((distance_with_neighbors*weights)(0,0));//just get the single value in this 1-element 'matrix'
+
+        // linefracs[levidx]=interpolated_value;
+        rel_diff_of_point[levidx]=interpolated_value;
+        if (std::isnan(interpolated_value)||std::isinf(interpolated_value))//FIXME: also check for the potential rare case of getting negative levelpops
+        {
+          std::cout<<"Something went wrong during interpolating: nan/inf value occuring"<<std::endl;
+          throw std::runtime_error("Nan/inf encountered during interpolation");
+        }
+      }// end of iterating over lines of species
+      // //Now first set negative values to 0 (because we do not want negative level populations)
+      // for (Size i=0; i<linefracs.size(); i++)
+      // {
+      //   if (linefracs[i]<0){linefracs[i]=0;}
+      // }
+      // // Linefracs should sum to 1, otherwise divide by the sum
+      // Real sum_of_linefracs=std::accumulate(linefracs.begin(), linefracs.end(), 0.0);
+      //
+      // if (sum_of_linefracs==0)
+      // {
+      //   //FIXME: add fallback values
+      //   std::cout<<"Something went wrong during interpolating: all interpolated linefracs were negative"<<std::endl;
+      //   throw std::runtime_error("all interpolated linefracs were negative during interpolation");
+      // }
+
+      //and now we finally set the values
+      for (Size levidx=0; levidx<lines.lineProducingSpecies[specidx].linedata.nlev; levidx++)
+      {
+        relative_difference_levelpopulations[specidx](lines.lineProducingSpecies[specidx].index(diff_point,levidx))=static_cast<Real>(rel_diff_of_point[levidx]);
+      }
+
+      // Real diff_point_abund=static_cast<Real>(chemistry.species.abundance[diff_point][speciesnum]);
+      // for (Size levidx=0; levidx<lines.lineProducingSpecies[specidx].linedata.nlev; levidx++)
+      // {
+      //   lines.lineProducingSpecies[specidx].set_level_pop(diff_point,levidx,diff_point_abund*(linefracs[levidx]/sum_of_linefracs));
+      // }
+    }
+
+  }
+}
+
+
+
+
+
+
+// /// NOTE: with some better data structure, we can remove this duplication
 /// Interpolates the level populations (linearized matrix) from the coarser level to the first finer level
 ///   @Parameter [in] coarser_lvl: the coarsening level of the coarser grid
-///   @Parameter [in/out] to_interpolate: the paracabs matrix with values at the points of the coarser grid (and some irrelevant values inbetween), has length equal to the total number of points
 // template <Real T>//T should be double, long or long double
 inline void Model::interpolate_levelpops_local(Size coarser_lvl)
 {
@@ -682,6 +888,7 @@ inline void Model::interpolate_levelpops_local(Size coarser_lvl)
 
       if (sum_of_linefracs==0)
       {
+        //TODO: add fallback values in the unlikely case that all interpolated levelpops are negative
         std::cout<<"Something went wrong during interpolating: all interpolated linefracs were negative"<<std::endl;
         throw std::runtime_error("all interpolated linefracs were negative during interpolation");
       }

@@ -237,6 +237,7 @@ PYBIND11_MODULE (core, module)
         // functions
         .def("set_all_neighbors", &Multiscale::set_all_neighbors)
         .def("get_current_points_in_grid", &Multiscale::get_current_points_in_grid)
+        .def("set_curr_coars_lvl",&Multiscale::set_curr_coars_lvl)
         //.def("get_neighbors", &Multiscale::get_neighbors) TODO: figure out how to handle overloaded functions
         // constructor
         .def (py::init<>());

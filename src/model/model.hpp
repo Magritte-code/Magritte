@@ -75,6 +75,8 @@ struct Model
     template <typename T>
     inline void interpolate_matrix_local(Size coarser_lvl, Matrix<T> &to_interpolate);
 
+    inline void interpolate_relative_differences_local(Size coarser_lvl, vector<VectorXr> &relative_difference_levelpopulations);
+
     inline void interpolate_levelpops_local(Size coarser_lvl);
 
     //initializes multigrid

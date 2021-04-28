@@ -292,6 +292,7 @@ int Model :: compute_LTE_level_populations ()
 
 /// Restarting from the iteration levelpops, assuming it has been written to disk
 ////////////////////////////////////////////////////////////////////////////
+/// Note: currently no state of where we are in any multilevel operation is stored, so unless changed, please use this only with without multigrid or just naive multigrid (then the number of iterations done that is reported will be incorrect (because it doesnt count the iterations prior to loading))
 /// CURRENTLY ASSUMES THE LEVELPOPS BEING WRITTEN TO THE HDF5 FILE FIXME: change this
 /// FIXME: currently, the mgController information is NOT SAVED, so this is not that useful for restarting a multigrid scheme
 int Model :: restart_from_iteration(Size iteration, Size lvl)
@@ -697,35 +698,60 @@ int Model :: compute_level_populations_multigrid (
 
         //In order to make it a bit simpler to implement, we will interpolate the current solution and the restricted solution on the finer grid independently
 
+        //FIXME:CURRENTLY USING WRONG FORMULA (should actually interpolate the relative correction on the coarse grid)
+
         //Saving the current level populations
         computed_level_populations[geometry.points.multiscale.get_curr_coars_lvl()]=lines.get_all_level_pops();
 
         //pseudocode of what will be happening
         //for all species:
-        //new levelpops=old levelpops+(interpolated(current levelpops)+interpolated(restricted(old levelpops)))
+        //new levelpops=old levelpops+(interpolated(current levelpops)-interpolated(restricted(old levelpops)))
         vector<VectorXr> old_levelpops=computed_level_populations[geometry.points.multiscale.get_curr_coars_lvl()-1];
         //now interpolate current levelpops
 
+        vector<VectorXr> rel_diff_pops;
+        rel_diff_pops.resize(parameters.nlspecs());
+        vector<bool> mask=geometry.points.multiscale.get_mask(geometry.points.multiscale.get_curr_coars_lvl());
+        for (Size specidx=0; specidx<parameters.nlspecs(); specidx++)
+        {//this is just the difference in level populations
+          LineProducingSpecies currlspec=lines.lineProducingSpecies[specidx];
+          VectorXr currspeclevelpops=computed_level_populations[geometry.points.multiscale.get_curr_coars_lvl()][specidx];
+          VectorXr diff_pops=currspeclevelpops-old_levelpops[specidx];
 
-        //Maybe TODO: create function that directly interpolates both, such that we do not waste extra time when recreating the same matrices
-        //interpolating the current levelpops (at the coarser level)
-        interpolate_levelpops_local(geometry.points.multiscale.get_curr_coars_lvl());
-        vector<VectorXr> interpolated_new_levelpops=lines.get_all_level_pops();
-
-        //Now also interpolating the previous levelpops at the finer level
-        lines.set_all_level_pops(old_levelpops);
-        interpolate_levelpops_local(geometry.points.multiscale.get_curr_coars_lvl());
-        vector<VectorXr> interpolated_old_levelpops=lines.get_all_level_pops();
-
-        //TODO: check whether there is an error when
-        //IF SO: make a copy of the levelpops instead
-
-        ///SIMPLE TEST:todo test it
-        if (interpolated_old_levelpops==old_levelpops)
-        {
-          std::cout<<"interpolated old levelpops and old levelpops are equal"<<std::endl;
-          std::cout<<"Thus there is an error with references"<<std::endl;
+          for (Size pointidx=0;pointidx<parameters.npoints();pointidx++)
+          {
+            if (mask[pointidx])//point still in grid, so we can calculate the relative difference
+            {
+              rel_diff_pops[specidx](Eigen::seq(currlspec.index(pointidx,0),currlspec.index(pointidx,currlspec.linedata.nlev-1)))=diff_pops.cwiseProduct(currspeclevelpops(Eigen::seq(currlspec.index(pointidx,0),currlspec.index(pointidx,currlspec.linedata.nlev-1))).cwiseInverse());
+            }
+            else
+            {//otherwise the point does not lie in the coarser grid, thus the relative difference must be equal to zero
+              rel_diff_pops[specidx](Eigen::seq(currlspec.index(pointidx,0),currlspec.index(pointidx,currlspec.linedata.nlev-1))).setZero();
+            }
+          }
         }
+
+
+
+        // //Maybe TODO: create function that directly interpolates both, such that we do not waste extra time when recreating the same matrices
+        // //interpolating the current levelpops (at the coarser level)
+        // interpolate_levelpops_local(geometry.points.multiscale.get_curr_coars_lvl());
+        // vector<VectorXr> interpolated_new_levelpops=lines.get_all_level_pops();
+        //
+        // //Now also interpolating the previous levelpops at the finer level
+        // lines.set_all_level_pops(old_levelpops);
+        // interpolate_levelpops_local(geometry.points.multiscale.get_curr_coars_lvl());
+        // vector<VectorXr> interpolated_old_levelpops=lines.get_all_level_pops();
+        //
+        // //TODO: check whether there is an error when
+        // //IF SO: make a copy of the levelpops instead
+        //
+        // ///SIMPLE TEST:todo test it
+        // if (interpolated_old_levelpops==old_levelpops)
+        // {
+        //   std::cout<<"interpolated old levelpops and old levelpops are equal"<<std::endl;
+        //   std::cout<<"Thus there is an error with references"<<std::endl;
+        // }
 
         geometry.points.multiscale.set_curr_coars_lvl(geometry.points.multiscale.get_curr_coars_lvl()-1);
 
@@ -733,7 +759,8 @@ int Model :: compute_level_populations_multigrid (
         //FIXME: add some check for negative values maybe and do something about them
         for (Size specidx=0; specidx<parameters.nlspecs(); specidx++)
         {
-          VectorXr temp_corrected_levelpops=old_levelpops[specidx]+interpolated_new_levelpops[specidx]-interpolated_old_levelpops[specidx];
+          // VectorXr temp_corrected_levelpops=old_levelpops[specidx]+interpolated_new_levelpops[specidx]-interpolated_old_levelpops[specidx];
+          VectorXr temp_corrected_levelpops=old_levelpops[specidx]+old_levelpops[specidx].cwiseProduct(rel_diff_pops[specidx]);
 
           //setting negative levelpops to 0.
           temp_corrected_levelpops.cwiseMax(0);
@@ -745,22 +772,23 @@ int Model :: compute_level_populations_multigrid (
 
           //Note: we might have some minor performance issues with multiple threads accessing data near eachother
           //for every point in the current grid, we will check if some levelpopulations of that point are negative
+          //Note: because we are interpolating the relative corrections, we will need to renormalize the levelpops
           threaded_for (p, current_points_in_grid.size(),
             Size current_point=current_points_in_grid[p];
-            bool negative_value=false;
-            for (Size levidx=0; levidx<lines.lineProducingSpecies[specidx].linedata.nlev; levidx++)
-            {
-              if (temp_corrected_levelpops(lines.lineProducingSpecies[specidx].index(current_point,levidx))==0)
-              {
-                //there was probably some negative value there
-                negative_value=true;//singals that we need to renormalize
-                break;
-              }
-            }
-
-            //if negative level population encountered, renormalize
-            if (negative_value)
-            {
+            // bool negative_value=false;
+            // for (Size levidx=0; levidx<lines.lineProducingSpecies[specidx].linedata.nlev; levidx++)
+            // {
+            //   if (temp_corrected_levelpops(lines.lineProducingSpecies[specidx].index(current_point,levidx))==0)
+            //   {
+            //     //there was probably some negative value there
+            //     negative_value=true;//singals that we need to renormalize
+            //     break;
+            //   }
+            // }
+            //
+            // //if negative level population encountered, renormalize
+            // if (negative_value)
+            // {
               Real abund=static_cast<Real>(chemistry.species.abundance[current_point][speciesnum]);
               Size segment_start=lines.lineProducingSpecies[specidx].index(current_point,0);
               Size nb_levels=lines.lineProducingSpecies[specidx].linedata.nlev;
@@ -769,7 +797,7 @@ int Model :: compute_level_populations_multigrid (
               Real sum_of_levelpops=temp_corrected_levelpops.segment(segment_start,nb_levels).sum();
               //and finally renormalizing it; such that the sum of levelpops is again equal to the abundance
               temp_corrected_levelpops.segment(segment_start,nb_levels)=temp_corrected_levelpops.segment(segment_start,nb_levels)*(abund/sum_of_levelpops);
-            }
+            // }
           )//end of threaded_for
         //and add the corrected levelpops for this species
         corrected_levelpops.push_back(temp_corrected_levelpops);
