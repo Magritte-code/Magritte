@@ -52,7 +52,7 @@ rs = np.linalg.norm(position, axis=1)
 
 def create_model (a_or_b):
     """
-    Create a model file for the van Zadelhoff 1 benchmark in 1D.
+    Create a model file for the van Zadelhoff 1 benchmark in 3D.
     """
 
     modelName = f'vanZadelhoff_1{a_or_b}_3D_healpix'
