@@ -19,11 +19,11 @@ struct Model
 {
     bool writing_populations_to_disk=false;//after the iterations_using_statistical_equilibrium, write the level populations to disk
     //minimum number points used during interpolation
-    const Size MIN_INTERPOLATION_POINTS=16;//~=average nb neighors in voronoi grid
+    const Size MIN_INTERPOLATION_POINTS=32;//~=average nb neighors in voronoi grid
     //maximum number points used during interpolation
-    const Size MAX_INTERPOLATION_POINTS=16;
+    const Size MAX_INTERPOLATION_POINTS=32;
     //normalization factor for RBF interpolation
-    const double RADIUS_MULT_FACTOR=10.0;
+    // const double RADIUS_MULT_FACTOR=10.0;
 
     //TODO: add instead a global iteration counter!!!
     Size iteration_to_start_from=0;
