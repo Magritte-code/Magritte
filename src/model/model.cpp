@@ -717,19 +717,20 @@ int Model :: compute_level_populations_multigrid (
 
         for (Size specidx=0; specidx<parameters.nlspecs(); specidx++)
         {//this is just the difference in level populations
-
           LineProducingSpecies currlspec=lines.lineProducingSpecies[specidx];
           VectorXr currspeclevelpops=computed_level_populations[geometry.points.multiscale.get_curr_coars_lvl()][specidx];
           VectorXr diff_pops=currspeclevelpops-old_levelpops[specidx];
 
           VectorXr temp_rel_diff_pops=diff_pops;//just to get the right size
+          // VectorXr currspeclevelpops_inverse
 
 
           for (Size pointidx=0;pointidx<parameters.npoints();pointidx++)
           {
             if (mask[pointidx])//point still in grid, so we can calculate the relative difference
             {
-              temp_rel_diff_pops(Eigen::seq(currlspec.index(pointidx,0),currlspec.index(pointidx,currlspec.linedata.nlev-1)))=diff_pops.cwiseProduct(currspeclevelpops(Eigen::seq(currlspec.index(pointidx,0),currlspec.index(pointidx,currlspec.linedata.nlev-1))).cwiseInverse());
+              VectorXr temp_inverse_curr_levelpops=currspeclevelpops(Eigen::seq(currlspec.index(pointidx,0),currlspec.index(pointidx,currlspec.linedata.nlev-1))).cwiseInverse();
+              temp_rel_diff_pops(Eigen::seq(currlspec.index(pointidx,0),currlspec.index(pointidx,currlspec.linedata.nlev-1)))=diff_pops(Eigen::seq(currlspec.index(pointidx,0),currlspec.index(pointidx,currlspec.linedata.nlev-1))).cwiseProduct(temp_inverse_curr_levelpops);
             }
             else
             {//otherwise the point does not lie in the coarser grid, thus the relative difference must be equal to zero
@@ -738,7 +739,6 @@ int Model :: compute_level_populations_multigrid (
           }
           rel_diff_pops[specidx]=temp_rel_diff_pops;
         }
-
 
         //Now finally interpolate the relative differences
         interpolate_relative_differences_local(geometry.points.multiscale.get_curr_coars_lvl(), rel_diff_pops);
