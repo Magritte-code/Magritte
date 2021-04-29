@@ -61,9 +61,9 @@ def create_model (a_or_b):
     r_in  = min(r_shell)
     r_out = max(r_shell)
     
-    scale_max = 0.05 * r_out
-    scale_min = 0.05 * r_in
-    scale_cte = 0.05 * r_in
+    scale_max = 0.1 * r_out
+    scale_min = 0.1 * r_in
+    scale_cte = 0.1 * r_in
     scale_fun = f'{scale_cte / r_in**2} * (x*x + y*y + z*z)'
 
     meshName = f'{moddir}/vanZadelhoff_2_3D_mesher.vtk'
@@ -78,7 +78,9 @@ def create_model (a_or_b):
         scale_function = scale_fun )
 
     mesh = mesher.Mesh(meshName)
-
+    
+    position = mesh.points
+    
     npoints = len(mesh.points)
     print(npoints)
 #     nbs     = [n for sublist in mesh.neighbors for n in sublist]
