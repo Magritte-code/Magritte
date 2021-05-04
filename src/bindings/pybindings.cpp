@@ -17,8 +17,6 @@
 namespace py = pybind11;
 
 
-template <typename... Args>
-using overload_cast_ = pybind11::detail::overload_cast_impl<Args...>;
 
 
 PYBIND11_MAKE_OPAQUE (vector<LineProducingSpecies>);
@@ -248,8 +246,9 @@ PYBIND11_MODULE (core, module)
         .def("get_current_points_in_grid", &Multiscale::get_current_points_in_grid)
         .def("get_curr_coars_lvl", &Multiscale::get_curr_coars_lvl)
         .def("set_curr_coars_lvl", &Multiscale::set_curr_coars_lvl)
-        .def("get_neighbors", overload_cast_<const Size>()(&Multiscale::get_neighbors, py::const_))
-        .def("get_neighbors", overload_cast_<const Size, const Size>()(&Multiscale::get_neighbors, py::const_))
+        //(void (Model::*)(void))            &Model::read
+        .def("get_neighbors", (std::set<Size> (Multiscale::*)(const Size) const) &Multiscale::get_neighbors)
+        .def("get_neighbors", (std::set<Size> (Multiscale::*)(const Size, const Size) const) &Multiscale::get_neighbors)
         .def("get_all_neighbors_as_vector", &Multiscale::get_all_neighbors_as_vector)
         .def("get_all_nb_neighbors", &Multiscale::get_all_nb_neighbors)
         .def("get_mask", &Multiscale::get_mask)
@@ -394,9 +393,12 @@ PYBIND11_MODULE (core, module)
         // .def_readwrite ("LambdaStar",       &LineProducingSpecies::LambdaStar)
         // .def_readwrite ("LambdaTest",       &LineProducingSpecies::LambdaTest)
         // functions
+        .def ("index",                      &LineProducingSpecies::index)
+        .def ("get_all_level_pops",         &LineProducingSpecies::get_all_level_pops)
+        .def ("set_all_level_pops",         &LineProducingSpecies::set_all_level_pops)
+        // io
         .def ("read",                       &LineProducingSpecies::read)
         .def ("write",                      &LineProducingSpecies::write)
-        .def ("index",                      &LineProducingSpecies::index)
         // constructor
         .def (py::init<>());
 
