@@ -17,6 +17,10 @@
 namespace py = pybind11;
 
 
+template <typename... Args>
+using overload_cast_ = pybind11::detail::overload_cast_impl<Args...>;
+
+
 PYBIND11_MAKE_OPAQUE (vector<LineProducingSpecies>);
 PYBIND11_MAKE_OPAQUE (vector<CollisionPartner>);
 // PYBIND11_MAKE_OPAQUE (vector<Matrix<Real>>);
@@ -125,6 +129,7 @@ PYBIND11_MODULE (core, module)
         .def ("set_eta_and_chi",                                                    &Model::set_eta_and_chi)
         .def ("set_boundary_condition",                                             &Model::set_boundary_condition)
         .def ("setup_multigrid",                                                    &Model::setup_multigrid)
+        .def ("interpolate_levelpops_local",                                        &Model::interpolate_levelpops_local)
         // .def ("compute_feautrier_order_2_multigrid",                                &Model::compute_feautrier_order_2_multigrid)
         .def ("points_are_similar",                                                 &Model::points_are_similar)
         .def_readwrite ("eta",                &Model::eta)
@@ -233,12 +238,26 @@ PYBIND11_MODULE (core, module)
     // Multiscale
     py::class_<Multiscale> (module, "Multiscale")
         // attributes
-        //.def_readonly("points_are_similar", &Multiscale::points_are_similar)
+        .def_readwrite("neighbors", &Multiscale::neighbors)
+        .def_readwrite("mask", &Multiscale::mask)
+        .def_readwrite("point_deleted_map", &Multiscale::point_deleted_map)
+        .def_readwrite("curr_coarsening_lvl", &Multiscale::curr_coarsening_lvl)
         // functions
+        .def("get_max_coars_lvl", &Multiscale:: get_max_coars_lvl)
         .def("set_all_neighbors", &Multiscale::set_all_neighbors)
         .def("get_current_points_in_grid", &Multiscale::get_current_points_in_grid)
-        .def("set_curr_coars_lvl",&Multiscale::set_curr_coars_lvl)
-        //.def("get_neighbors", &Multiscale::get_neighbors) TODO: figure out how to handle overloaded functions
+        .def("get_curr_coars_lvl", &Multiscale::get_curr_coars_lvl)
+        .def("set_curr_coars_lvl", &Multiscale::set_curr_coars_lvl)
+        .def("get_neighbors", overload_cast_<const Size>()(&Multiscale::get_neighbors, py::const_))
+        .def("get_neighbors", overload_cast_<const Size, const Size>()(&Multiscale::get_neighbors, py::const_))
+        .def("get_all_neighbors_as_vector", &Multiscale::get_all_neighbors_as_vector)
+        .def("get_all_nb_neighbors", &Multiscale::get_all_nb_neighbors)
+        .def("get_mask", &Multiscale::get_mask)
+        .def("get_total_points", &Multiscale::get_total_points)
+        .def("get_current_points_in_grid", &Multiscale::get_current_points_in_grid)
+        // io
+        .def("set_all_neighbors", &Multiscale::set_all_neighbors)
+
         // constructor
         .def (py::init<>());
 

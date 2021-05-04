@@ -78,9 +78,9 @@ struct Multiscale
     inline std::set<Size> get_neighbors(const Size p, const Size coars_lvl) const;
     //Returns the neighbors of point p, at current coarsening level
     inline std::set<Size> get_neighbors(const Size p) const;
-    //Returns all neighbors as a single vector
+    //Returns all neighbors on the finest level as a single vector
     inline vector<Size> get_all_neighbors_as_vector() const;
-    //Returns the number of neighbors as vector
+    //Returns the number of neighbors on the finest level as vector
     inline vector<Size> get_all_nb_neighbors() const;
     //Returns the number of neighbors od point p at coarsening level coars_lvl
     inline Size get_nb_neighbors(const Size p, const Size coars_lvl) const;
