@@ -724,7 +724,7 @@ int Model :: compute_level_populations_multigrid (
           VectorXr temp_rel_diff_pops=diff_pops;//just to get the right size
           // VectorXr currspeclevelpops_inverse
 
-
+          //TODO: this way of calculating the corrections is quite slow; try to use operations on the whole vector instead
           for (Size pointidx=0;pointidx<parameters.npoints();pointidx++)
           {
             if (mask[pointidx])//point still in grid, so we can calculate the relative difference
@@ -768,7 +768,8 @@ int Model :: compute_level_populations_multigrid (
         geometry.points.multiscale.set_curr_coars_lvl(geometry.points.multiscale.get_curr_coars_lvl()-1);
 
         vector<VectorXr> corrected_levelpops;
-        //FIXME: add some check for negative values maybe and do something about them
+        //TODO: or it is possible that this thing here is slow
+        //Now applying the correction and then renormalizing the level populations
         for (Size specidx=0; specidx<parameters.nlspecs(); specidx++)
         {
           // VectorXr temp_corrected_levelpops=old_levelpops[specidx]+interpolated_new_levelpops[specidx]-interpolated_old_levelpops[specidx];
