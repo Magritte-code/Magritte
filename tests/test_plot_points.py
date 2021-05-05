@@ -132,7 +132,7 @@ def run_model (nosave=False):
     model.compute_LTE_level_populations   ()
     nlevels=2;#should be coarsest level; misleading name
     #2 multigrid levels, minimum 1 point remaining, 0.1 as tolerance, mgImplementation=1 (Naive,Vcycle,Wcycle)
-    # model.setup_multigrid(2,nlevels,0.1,1);
+    # model.setup_multigrid(nlevels,0.1,1,100);
     timer2.stop()
 
     print("point 152833 lies not on boundary? "+str(model.geometry.not_on_boundary(152833)))

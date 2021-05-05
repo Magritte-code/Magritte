@@ -295,14 +295,14 @@ inline void Model::coarsen_around_point (const Size p)
 
 
 /// Initializes the multigrid
-///   @Parameter[in]: min_nb_points: stop coarsening when number of points of finest layers is equal or less than this
 ///   @Parameter[in]: max_coars_lvl: The maximum coarsening level we allow
 ///   @Parameter[in]: tol: the tolerance level for which we still consider points similar enough
 /// mgImplementation options: 1) NaiveMG
 ///                           2) VCycle
 ///                           3) WCycle
+///   @Parameter[in] max_nb_iterations: The maximum number of iterations the multigrid scheme is allowed to do
 /// Others not yet implemented
-inline int Model::setup_multigrid(Size min_nb_points, Size max_coars_lvl, double tol, Size mgImplementation, Size max_nb_iterations)//, string MgImplementation
+inline int Model::setup_multigrid(Size max_coars_lvl, double tol, Size mgImplementation, Size max_nb_iterations)//, string MgImplementation
 {
   //set number of off-diagonal elements in lambda matrix 0; needed because we will interpolate these values??
   //TODO: find reasons to remove this
@@ -314,8 +314,8 @@ inline int Model::setup_multigrid(Size min_nb_points, Size max_coars_lvl, double
   parameters.n_off_diag=0;
   // tol=deltatol
   //first, we coarsen the grid until we either have too few points left or have too many coarsening levels
-  while((geometry.points.multiscale.get_max_coars_lvl()<max_coars_lvl)&&
-  (geometry.points.multiscale.get_total_points(geometry.points.multiscale.get_max_coars_lvl())>min_nb_points))
+  while(geometry.points.multiscale.get_max_coars_lvl()<max_coars_lvl)
+  // (geometry.points.multiscale.get_total_points(geometry.points.multiscale.get_max_coars_lvl())>min_nb_points))
   {std::cout<<"coarsening layer"<<std::endl;
     //options for choosing the tolerance adaptively
     //tol=n*deltatol

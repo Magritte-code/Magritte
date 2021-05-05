@@ -91,8 +91,9 @@ def create_model (a_or_b):
     model.geometry.points.position.set(mesh.points)
     model.geometry.points.velocity.set(np.zeros((npoints, 3)))
 
-    model.geometry.points.  neighbors.set(  nbs)
-    model.geometry.points.n_neighbors.set(n_nbs)
+    # model.geometry.points.  neighbors.set(  nbs)
+    # model.geometry.points.n_neighbors.set(n_nbs)
+    model.geometry.points.multiscale.set_all_neighbors(n_nbs, nbs);
 
     model.chemistry.species.abundance = [[     0.0, nTT(r), nH2(r),  0.0,      1.0] for r in rs]
     model.chemistry.species.symbol    =  ['dummy0', 'test',   'H2', 'e-', 'dummy1']
@@ -130,11 +131,12 @@ def run_model (a_or_b, nosave=False):
     model.compute_inverse_line_widths     ()
     model.compute_LTE_level_populations   ()
     model.writing_populations_to_disk=True;
+    model.restart_from_iteration(100,0);
     timer2.stop()
 
     timer3 = tools.Timer('running model')
     timer3.start()
-    model.compute_level_populations (True, 100)
+    model.compute_level_populations (False, 1000)
     timer3.stop()
 
     pops = np.array(model.lines.lineProducingSpecies[0].population).reshape((model.parameters.npoints(), 2))
@@ -188,10 +190,10 @@ def run_model (a_or_b, nosave=False):
 def run_test (nosave=False):
 
     # create_model ('a')
-    run_model    ('a', nosave)
+    # run_model    ('a', nosave)
 
     # create_model ('b')
-    # run_model    ('b', nosave)
+    run_model    ('b', nosave)
 
     return
 
