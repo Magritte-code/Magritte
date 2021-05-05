@@ -70,10 +70,10 @@ struct Model
     inline void coarsen_around_point (const Size p);
 
 
-    template <typename T>
-    inline void interpolate_vector_local(Size coarser_lvl, vector<T> &to_interpolate);
-    template <typename T>
-    inline void interpolate_matrix_local(Size coarser_lvl, Matrix<T> &to_interpolate);
+    // template <typename T>
+    // inline void interpolate_vector_local(Size coarser_lvl, vector<T> &to_interpolate);
+    // template <typename T>
+    // inline void interpolate_matrix_local(Size coarser_lvl, Matrix<T> &to_interpolate);
 
     inline void interpolate_relative_differences_local(Size coarser_lvl, vector<VectorXr> &relative_difference_levelpopulations);
 
