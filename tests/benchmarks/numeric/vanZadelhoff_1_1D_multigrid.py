@@ -102,7 +102,7 @@ def run_model (a_or_b, nosave=False):
     model.compute_spectral_discretisation ()
     model.compute_inverse_line_widths     ()
     model.compute_LTE_level_populations   ()
-    model.setup_multigrid(1,0.1,1,100);#TODO update this description... 5 multigrid steps, tolerance 1 (i just want to coarsen the grid).
+    model.setup_multigrid(1,0.1,1,100,0);#TODO update this description... 5 multigrid steps, tolerance 1 (i just want to coarsen the grid).
     # i just can't seem to coarsen them...
     timer2.stop()
 

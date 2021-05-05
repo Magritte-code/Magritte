@@ -301,8 +301,10 @@ inline void Model::coarsen_around_point (const Size p)
 ///                           2) VCycle
 ///                           3) WCycle
 ///   @Parameter[in] max_nb_iterations: The maximum number of iterations the multigrid scheme is allowed to do
+///   @Parameter[in] finest_lvl: The finest level the multigrid procedure will use. If not set to zero (i.e. just using all levels),
+///  the resulting converged level populations will be those corresponding to the chosen 'finest_lvl'. This means one has to interpolate these level populations themselves. (using interpolate_levelpops_local)
 /// Others not yet implemented
-inline int Model::setup_multigrid(Size max_coars_lvl, double tol, Size mgImplementation, Size max_nb_iterations)//, string MgImplementation
+inline int Model::setup_multigrid(Size max_coars_lvl, double tol, Size mgImplementation, Size max_nb_iterations, Size finest_lvl)//, string MgImplementation
 {
   //set number of off-diagonal elements in lambda matrix 0; needed because we will interpolate these values??
   //TODO: find reasons to remove this
@@ -329,19 +331,19 @@ inline int Model::setup_multigrid(Size max_coars_lvl, double tol, Size mgImpleme
   switch (mgImplementation) {
     case 1://"NaiveMG":
       {
-      std::shared_ptr<MgController> tempImplement_ptr=std::make_shared<NaiveMG>(geometry.points.multiscale.get_max_coars_lvl()+1,0,max_nb_iterations);
+      std::shared_ptr<MgController> tempImplement_ptr=std::make_shared<NaiveMG>(geometry.points.multiscale.get_max_coars_lvl()+1,finest_lvl,max_nb_iterations);
       mgControllerHelper=MgControllerHelper(tempImplement_ptr);
       }
       break;
     case 2://"VCycle":
       {
-      std::shared_ptr<MgController> tempImplement_ptr=std::make_shared<VCycle>(geometry.points.multiscale.get_max_coars_lvl()+1,0,1,max_nb_iterations);
+      std::shared_ptr<MgController> tempImplement_ptr=std::make_shared<VCycle>(geometry.points.multiscale.get_max_coars_lvl()+1,finest_lvl,1,max_nb_iterations);
       mgControllerHelper=MgControllerHelper(tempImplement_ptr);
       }
       break;
-    case 3://"VCycle":
+    case 3://"WCycle":
       {
-      std::shared_ptr<MgController> tempImplement_ptr=std::make_shared<WCycle>(geometry.points.multiscale.get_max_coars_lvl()+1,0,1,max_nb_iterations);
+      std::shared_ptr<MgController> tempImplement_ptr=std::make_shared<WCycle>(geometry.points.multiscale.get_max_coars_lvl()+1,finest_lvl,1,max_nb_iterations);
       mgControllerHelper=MgControllerHelper(tempImplement_ptr);
       }
       break;

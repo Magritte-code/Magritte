@@ -131,7 +131,7 @@ def run_model (a_or_b, nosave=False):
     model.compute_LTE_level_populations   ()
     nlevels=1;#should be coarsest level; misleading name
     #1 multigrid levels, 0.1 as tolerance, mgImplementation=2 (Naive,Vcycle,Wcycle)
-    model.setup_multigrid(nlevels,0.1,1,1000);
+    model.setup_multigrid(nlevels,0.1,1,1000,0);
 
     model.writing_populations_to_disk=True;
     timer2.stop()

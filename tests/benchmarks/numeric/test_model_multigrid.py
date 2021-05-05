@@ -132,7 +132,7 @@ def run_model (nosave=False):
     model.writing_populations_to_disk=True;
     coarsest_level=1;#should be coarsest level; misleading name
     #3 multigrid levels, 0.4 as tolerance, mgImplementation=1 (Naive,Vcycle,Wcycle)
-    model.setup_multigrid(coarsest_level,0.4,1,1000);
+    model.setup_multigrid(coarsest_level,0.4,1,1000,0);
     timer2.stop()
 
     timer3 = tools.Timer('running model')

@@ -71,7 +71,7 @@ int main (int argc, char **argv)
     // model.compute_level_populations(true,100);
     //NOTE TO SELF: do NOT every try to use a ridiculous amount of coarsening: if only boundary points are left, the interpolation part will probably be hell
     //mgImplementation choices: 1:"NaiveMG", 2:"VCycle", 3:"WCycle"
-    model.setup_multigrid(2, 0.1, 2, 20);
+    model.setup_multigrid(2, 0.1, 2, 20,0);
     cout << "setup multigrid" << endl;
 
     std::cout<<"checking symmetry of neighbors"<<std::endl;
