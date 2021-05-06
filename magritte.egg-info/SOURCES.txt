@@ -1,3 +1,4 @@
+MANIFEST.in
 README.md
 setup.py
 magritte/__init__.py
@@ -10,3 +11,10 @@ magritte.egg-info/dependency_links.txt
 magritte.egg-info/not-zip-safe
 magritte.egg-info/requires.txt
 magritte.egg-info/top_level.txt
+magritte/templates/convert_to_pos.template
+magritte/templates/cuboid.template
+magritte/templates/mesh_from_background.template
+magritte/templates/mesh_from_function.template
+magritte/templates/sphere.template
+magritte/templates/sphere_in_cuboid.template
+magritte/templates/sphere_in_sphere.template

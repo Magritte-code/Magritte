@@ -292,9 +292,10 @@ int Model :: compute_LTE_level_populations ()
 
 /// Restarting from the iteration levelpops, assuming it has been written to disk
 ////////////////////////////////////////////////////////////////////////////
+/// Note: when the level populations cannot be read, starts from LTE instead without warning
 /// Note: currently no state of where we are in any multilevel operation is stored, so unless changed, please use this only with without multigrid or just naive multigrid (then the number of iterations done that is reported will be incorrect (because it doesnt count the iterations prior to loading))
-/// CURRENTLY ASSUMES THE LEVELPOPS BEING WRITTEN TO THE HDF5 FILE FIXME: change this
-/// FIXME: currently, the mgController information is NOT SAVED, so this is not that useful for restarting a multigrid scheme
+
+/// TODO: currently, the mgController information is NOT SAVED, so this is not that useful for restarting a multigrid scheme
 int Model :: restart_from_iteration(Size iteration, Size lvl)
 {
   compute_LTE_level_populations();
