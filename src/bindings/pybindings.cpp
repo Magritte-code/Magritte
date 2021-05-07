@@ -13,7 +13,10 @@
 #include "pybind11/numpy.h"
 #include "pybind11/eigen.h"
 #include "pybind11/stl.h"
+#include "pybind11/functional.h"
 namespace py = pybind11;
+
+
 
 
 PYBIND11_MAKE_OPAQUE (vector<LineProducingSpecies>);
@@ -186,6 +189,7 @@ PYBIND11_MODULE (core, module)
         .def ("read",               &Geometry::read)
         .def ("write",              &Geometry::write)
         // functions
+        .def ("not_on_boundary",    &Geometry::not_on_boundary)
         // .def ("get_ray_lengths",     &Geometry::get_ray_lengths)
         // .def ("get_ray_lengths_gpu", &Geometry::get_ray_lengths_gpu)
         // constructor
@@ -195,16 +199,39 @@ PYBIND11_MODULE (core, module)
     // Points
     py::class_<Points> (module, "Points")
         // attributes
-        .def_readwrite ("position",        &Points::position)
-        .def_readwrite ("velocity",        &Points::velocity)
-        .def_readwrite ("neighbors",       &Points::neighbors)
-        .def_readwrite ("n_neighbors",     &Points::n_neighbors)
-        .def_readwrite ("cum_n_neighbors", &Points::cum_n_neighbors)
-        // .def_readwrite ("nbs",             &Points::nbs)
-        .def ("print",                     &Points::print)
+        .def_readwrite ("position",    &Points::position)
+        .def_readwrite ("velocity",    &Points::velocity)
+        .def_readwrite ("multiscale", &Points::multiscale)
         // io
-        .def ("read",                      &Points::read)
-        .def ("write",                     &Points::write)
+        .def ("read",                  &Points::read)
+        .def ("write",                 &Points::write)
+        // constructor
+        .def (py::init<>());
+
+
+    // Multiscale
+    py::class_<Multiscale> (module, "Multiscale")
+        // attributes
+        .def_readwrite("neighbors", &Multiscale::neighbors)
+        .def_readwrite("mask", &Multiscale::mask)
+        .def_readwrite("point_deleted_map", &Multiscale::point_deleted_map)
+        .def_readwrite("curr_coarsening_lvl", &Multiscale::curr_coarsening_lvl)
+        // functions
+        .def("get_max_coars_lvl", &Multiscale:: get_max_coars_lvl)
+        .def("set_all_neighbors", &Multiscale::set_all_neighbors)
+        .def("get_current_points_in_grid", &Multiscale::get_current_points_in_grid)
+        .def("get_curr_coars_lvl", &Multiscale::get_curr_coars_lvl)
+        .def("set_curr_coars_lvl", &Multiscale::set_curr_coars_lvl)
+        .def("get_neighbors", (std::set<Size> (Multiscale::*)(const Size) const) &Multiscale::get_neighbors)
+        .def("get_neighbors", (std::set<Size> (Multiscale::*)(const Size, const Size) const) &Multiscale::get_neighbors)
+        .def("get_all_neighbors_as_vector", &Multiscale::get_all_neighbors_as_vector)
+        .def("get_all_nb_neighbors", &Multiscale::get_all_nb_neighbors)
+        .def("get_mask", &Multiscale::get_mask)
+        .def("get_total_points", &Multiscale::get_total_points)
+        .def("get_current_points_in_grid", &Multiscale::get_current_points_in_grid)
+        // io
+        .def("set_all_neighbors", &Multiscale::set_all_neighbors)
+
         // constructor
         .def (py::init<>());
 
