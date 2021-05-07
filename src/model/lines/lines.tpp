@@ -75,7 +75,9 @@ inline void Lines :: set_inverse_width (const Thermodynamics& thermodynamics)
     })
 }
 
-///Sets the vector (per species) of vectors (per line) of all level populations
+///  Sets the vector (per species) of vectors (per line) of all level populations
+///    @param[in]  new_population: the new level populations
+//////////////////////////////////////////////////////////////////////////////////
 inline void Lines :: set_all_level_pops(vector<VectorXr> new_population)
 {
   threaded_for (i, parameters.nlspecs(),
@@ -83,7 +85,8 @@ inline void Lines :: set_all_level_pops(vector<VectorXr> new_population)
   )
 }
 
-///Returns the vector (per species) of vectors (per line) of all level populations
+///  Returns the vector (per species) of vectors (per line) of all level populations
+////////////////////////////////////////////////////////////////////////////////////
 inline vector<VectorXr> Lines :: get_all_level_pops()
 {
   vector<VectorXr> toreturn;
@@ -96,7 +99,9 @@ inline vector<VectorXr> Lines :: get_all_level_pops()
   return toreturn;
 }
 
-///Writes the level populations of a certain iteration//currently also writes the J_lin and J_eff due to using the already implemented lineProducingSpecies::write_populations
+///  Writes the level populations of a certain iteration
+////////////////////////////////////////////////////////
+//currently also writes the J_lin and J_eff due to using the already implemented lineProducingSpecies::write_populations
 inline void Lines::write_populations_of_iteration(const Io& io, const Size it, const Size lvl) const
 {
   const string tag_it="lvl"+std::to_string(lvl)+"it"+std::to_string(it);
@@ -106,7 +111,12 @@ inline void Lines::write_populations_of_iteration(const Io& io, const Size it, c
   }
 }
 
-///Reads the level populations of a certain iteration//currently also writes the J_lin and J_eff due to using the already implemented lineProducingSpecies::write_populations
+///  Reads the level populations of a given iteration
+///    @param[in]:  io: Reference to the Io structure
+///    @param[in]:  it: The number of the iteration to read from
+///    @param[in]:  lvl: The coarsening level to read from
+///////////////////////////////////////////////////////
+//currently also reads the J_lin and J_eff due to using the already implemented lineProducingSpecies::write_populations
 inline void Lines::read_populations_of_iteration(const Io& io, const Size it, const Size lvl)
 {
   const string tag_it="lvl"+std::to_string(lvl)+"it"+std::to_string(it);

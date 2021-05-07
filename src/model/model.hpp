@@ -17,16 +17,13 @@
 
 struct Model
 {
-    bool writing_populations_to_disk=false;//after the iterations_using_statistical_equilibrium, write the level populations to disk
-    //minimum number points used during interpolation
-    const Size MIN_INTERPOLATION_POINTS=16;//~=average nb neighors in voronoi grid
-    //maximum number points used during interpolation
-    const Size MAX_INTERPOLATION_POINTS=16;
-    //normalization factor for RBF interpolation
-    // const double RADIUS_MULT_FACTOR=10.0;
+    bool writing_populations_to_disk=false;   ///< Toggle for writing the level populations after each iteration
 
-    //TODO: add instead a global iteration counter!!!
-    Size iteration_to_start_from=0;
+    const Size MIN_INTERPOLATION_POINTS=16;   ///< Minimum number of points used during interpolation (~=average nb neighors in voronoi grid)
+
+    const Size MAX_INTERPOLATION_POINTS=16;   ///< Maximum number of points used during interpolation (~=average nb neighors in voronoi grid)
+
+    Size iteration_to_start_from=0;           ///< Number to start the iterations from (can be non-zero when loading the level populations)
 
     Parameters     parameters;
     Geometry       geometry;
@@ -37,8 +34,8 @@ struct Model
     vector<Image>  images;
     MgControllerHelper mgControllerHelper;
 
-    //vector of level populations, used for multigrid purposes
-    vector<vector<VectorXr>> computed_level_populations;//For each coarsening level; for each line species; the vector of population (see lineProducingSpecies.hpp)
+
+    vector<vector<VectorXr>> computed_level_populations;///< Vector of computed level populations, used for multigrid purposes. (coarsening level, line species, lineProducingSpecies.index(point, level))
 
     enum SpectralDiscretisation {None, SD_Lines, SD_Image}
          spectralDiscretisation = None;
@@ -54,36 +51,37 @@ struct Model
     void write (const Io& io) const;
 
     inline double calc_diff_abundance_with_point(Size point1, Size point2);
-    // inline std::function<bool(Size,Size)> points_are_similar(double tolerance);
+
+    /// Decides whether points are similar enough to be coarsened
+    /////////////////////////////////////////////////////////////
     inline bool points_are_similar(Size point1, Size point2, double tolerance);
-    //calculates distance squared between two points
+    ///calculates distance squared between two points
+    /////////////////////////////////////////////////
     inline double calc_distance2(Size point1,Size point2);
 
-    // Coarsen the mesh given a certain tolerance,
-    // i.e. add another layer of coarsening.
+    /// Coarsens the mesh given a certain tolerance, i.e. add another layer of coarsening
+    /////////////////////////////////////////////////////////////////////////////////////
     inline void coarsen (double tol);
 
-    // Returns whether the mesh at a point (p) can be coarsened, given a certain tolerance.
+    /// Returns whether the mesh at a point (p) can be coarsened, given a certain tolerance
+    ///////////////////////////////////////////////////////////////////////////////////////
     inline bool can_be_coarsened (const Size p, std::set<Size>& points_coarsened_around, double tol);
 
-    // Coarsens the neighbors of p and updates the neighbors of p and neighbors of the neighbors of neighbors
+    /// Coarsens the neighbors of p and updates the neighbors of p and neighbors of the neighbors of neighbors
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
     inline void coarsen_around_point (const Size p);
 
-
-    // template <typename T>
-    // inline void interpolate_vector_local(Size coarser_lvl, vector<T> &to_interpolate);
-    // template <typename T>
-    // inline void interpolate_matrix_local(Size coarser_lvl, Matrix<T> &to_interpolate);
-
+    /// Interpolates the relative differences between level populations locally
+    ///////////////////////////////////////////////////////////////////////////
     inline void interpolate_relative_differences_local(Size coarser_lvl, vector<VectorXr> &relative_difference_levelpopulations);
 
+    /// Interpolated the level populations locally
+    //////////////////////////////////////////////
     inline void interpolate_levelpops_local(Size coarser_lvl);
 
-    //initializes multigrid
+    /// Initializes multigrid
+    /////////////////////////
     inline int setup_multigrid(Size max_coars_lvl, double tol, Size mgImplementation, Size max_nb_iterations, Size finest_lvl);
-
-    // inline void reset_grid();
-
 
     void read  ()       {read  (IoPython ("hdf5", parameters.model_name()));};
     void write () const {write (IoPython ("hdf5", parameters.model_name()));};
