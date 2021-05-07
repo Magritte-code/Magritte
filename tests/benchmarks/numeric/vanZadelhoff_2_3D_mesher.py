@@ -221,10 +221,10 @@ def run_model (a_or_b, nosave=False):
 def run_test (nosave=False):
 
     # create_model ('a')
-    run_model    ('a', nosave)
+    # run_model    ('a', nosave)
 
-    # create_model ('b')
-    # run_model    ('b', nosave)
+    create_model ('b')
+    run_model    ('b', nosave)
 
     return
 
