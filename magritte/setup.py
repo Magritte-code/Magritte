@@ -68,8 +68,7 @@ def set_Delaunay_neighbor_lists (model):
     else:
         raise ValueError ('Dimension should be 1 or 3.')
     # Cast to numpy arrays of appropriate type
-    model.geometry.points.  neighbors.set(  nbs)
-    model.geometry.points.n_neighbors.set(n_nbs)
+    model.geometry.points.multiscale.set_all_neighbors(n_nbs, nbs)
     # Done
     return model
 

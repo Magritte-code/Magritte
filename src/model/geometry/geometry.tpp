@@ -1,5 +1,7 @@
 #include <limits>
 #include <cmath>
+#include <algorithm>    // std::max
+#include <set>
 
 
 ///  Getter for the number of the next cell on ray and its distance along ray in
@@ -7,7 +9,7 @@
 ///    @param[in]      o : number of cell from which the ray originates
 ///    @param[in]      r : number of the ray along which we are looking
 ///    @param[in]      c : number of the cell put last on the ray
-///    @param[in/out]  Z : reference to the current distance along the ray
+///    @param[in,out]  Z : reference to the current distance along the ray
 ///    @param[out]    dZ : reference to the distance increment to the next ray
 ///    @return number of the next cell on the ray after the current cell
 ///////////////////////////////////////////////////////////////////////////////////
@@ -18,17 +20,24 @@ accel inline Size Geometry :: get_next_general_geometry (
           double& Z,
           double& dZ                   ) const
 {
-    const Size     n_nbs = points.    n_neighbors[c];
-    const Size cum_n_nbs = points.cum_n_neighbors[c];
+    Size n_nbs = points.multiscale.get_nb_neighbors(c);//    n_neighbors[c];
+//    const Size cum_n_nbs = points.cum_n_neighbors[c];
 
     double dmin = std::numeric_limits<Real>::max();   // Initialize to "infinity"
     Size   next = parameters.npoints();               // return npoints when there is no next
 
 //    for (Size i = 0; i < nnbs; i++)
-    for (Size i = 0; i < n_nbs; i++)
+
+    //TODO: update to use set instead of vector
+    std::set<Size> temp_neighbors=points.multiscale.get_neighbors(c);
+    // std::cout<<"number of neighbors"<<temp_neighbors.size()<<std::endl;
+    // temp_neighbors.insert(std::end(temp_neighbors), std::begin(points.multiscale.get_neighbors(c).begin()), std::end(points.multiscale.get_neighbors(c).end()));
+    // Vector<Size> temp_neighbors(temp_vector);
+    for (Size n:temp_neighbors)
+    // for (Size i = 0; i < n_nbs; i++)
     {
 //        const Size     n     = points.nbs[c*nnbs+i];
-        const Size     n     = points.neighbors[cum_n_nbs+i];
+        // const Size     n     = temp_neighbors[i];//points.neighbors[cum_n_nbs+i];
         const Vector3D R     = points.position[n] - points.position[o];
         const double   Z_new = R.dot(rays.direction[r]);
 
@@ -57,7 +66,7 @@ accel inline Size Geometry :: get_next_general_geometry (
 ///    @param[in]      o : number of cell from which the ray originates
 ///    @param[in]      r : number of the ray along which we are looking
 ///    @param[in]      c : number of the cell put last on the ray
-///    @param[in/out]  Z : reference to the current distance along the ray
+///    @param[in,out]  Z : reference to the current distance along the ray
 ///    @param[out]    dZ : reference to the distance increment to the next ray
 ///    @return number of the next cell on the ray after the current cell
 ///////////////////////////////////////////////////////////////////////////////////
@@ -86,6 +95,12 @@ inline Size Geometry :: get_next_spherical_symmetry (
         if (points.position[c-1].squaredNorm() >= Rsin2)
         {
             next = c - 1;
+            Size curr_coars_lvl=points.multiscale.get_curr_coars_lvl();
+            while(!(points.multiscale.get_mask(curr_coars_lvl))[next])
+            {
+              // std::cout<<"next: "<<next<<std::endl;
+              next=next-1;
+            }
             dZ   = -sqrt(points.position[next].squaredNorm() - Rsin2) - Rcos_plus_Z;
         }
         else
@@ -102,6 +117,12 @@ inline Size Geometry :: get_next_spherical_symmetry (
         }
 
         next = c + 1;
+        Size curr_coars_lvl=points.multiscale.get_curr_coars_lvl();
+        while(!(points.multiscale.get_mask(curr_coars_lvl))[next])
+        {
+          // std::cout<<"next: "<<next<<std::endl;
+          next=next+1;
+        }
         dZ   = +sqrt(points.position[next].squaredNorm() - Rsin2) - Rcos_plus_Z;
     }
 
@@ -194,12 +215,14 @@ accel inline Size Geometry :: get_ray_length (
                   nxt = get_next          (o, r, nxt, Z, dZ);
             shift_nxt = get_shift <frame> (o, r, nxt, Z    );
 
-            l += get_n_interpl (shift_crt, shift_nxt, dshift_max);
+            // FOR DEBUG PURPOSES, when we somehow cannot find a next point
+            // if (nxt==parameters.npoints())
+            // {
+            //   std::cout<<"From point: "<<crt<<" no next point found"<<std::endl;
+            //   throw std::runtime_error("Did not find new point");
+            // }
 
-            if (!valid_point(nxt))
-            {
-                printf("ERROR: no valid neighbor o=%u, r=%u, crt=%u\n", o, r, crt);
-            }
+            l += get_n_interpl (shift_crt, shift_nxt, dshift_max);
         }
     }
 
@@ -274,7 +297,7 @@ inline bool Geometry :: not_on_boundary (const Size p) const
 ///    @param[in]      o : number of cell from which the ray originates
 ///    @param[in]      r : number of the ray along which we are looking
 ///    @param[in]      c : number of the cell put last on the ray
-///    @param[in/out]  Z : reference to the current distance along the ray
+///    @param[in,out]  Z : reference to the current distance along the ray
 ///    @param[out]    dZ : reference to the distance increment to the next ray
 ///    @return number of the next cell on the ray after the current cell
 ///////////////////////////////////////////////////////////////////////////////////
@@ -296,6 +319,11 @@ accel inline Size Geometry :: get_next (
         next = get_next_general_geometry   (o, r, crt, Z, dZ);
     }
 
+    //if (!valid_point (next))
+    //{
+    //    printf ("ERROR (next is not valid): o = %d, crt = %d, ray = %d\n", o, crt, r);
+    //}
+
     return next;
 }
 
@@ -305,7 +333,7 @@ accel inline Size Geometry :: get_next (
 ///    @param[in]      o : number of cell from which the ray originates
 ///    @param[in]      r : number of the ray along which we are looking
 ///    @param[in]      c : number of the cell put last on the ray
-///    @param[in/out]  Z : reference to the current distance along the ray
+///    @param[in,out]  Z : reference to the current distance along the ray
 ///    @param[out]    dZ : reference to the distance increment to the next ray
 ///    @return number of the next cell on the ray after the current cell
 ///////////////////////////////////////////////////////////////////////////////////
