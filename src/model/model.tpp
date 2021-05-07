@@ -396,7 +396,7 @@ inline T rbf_local(T radius)
 ///  Interpolates the relative differences of level populations (linearized matrix) from the coarser level to the first finer level
 ///  The result will be stored in relative_difference_levelpopulations
 ///    @param[in] coarser_lvl: The coarsening level of the coarser grid
-///    @param[in/out] relative_difference_levelpopulations: The relative differences for the level populations (line species, lineProducingSpecies.index(point, level))
+///    @param[in,out] relative_difference_levelpopulations: The relative differences for the level populations (line species, lineProducingSpecies.index(point, level))
 ///  NOTE: with some better data structure, we can remove some duplication between the interpolation functions
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 inline void Model::interpolate_relative_differences_local(Size coarser_lvl, vector<VectorXr> &relative_difference_levelpopulations)

@@ -12,7 +12,7 @@ const string IoPython::io_folder = string (MAGRITTE_FOLDER) + "/src/io/python/";
 
 
 ///  Constructor for IoPython
-///    @param[in] implementaion : name of python module with io implementation
+///    @param[in] imp : name of python module with io implementation
 ///    @param[in] io_file       : file to read from and write to
 //////////////////////////////////////////////////////////////////////////////
 IoPython :: IoPython (const string &imp, const string &io_file)
@@ -44,7 +44,7 @@ Size IoPython :: get_length (const string file_name) const
 ///  Reader for the number of columns (width) of a file
 ///  or the number of files with a similar file name
 ///    @param[in]  file_name : path to file containing the data
-///    @param[out] width     : width to be read
+///    @param[out] length    : width to be read
 ///////////////////////////////////////////////////////////////
 int IoPython :: read_width (const string file_name, Size &length) const
 {

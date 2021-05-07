@@ -45,9 +45,9 @@ Image :: Image (const Image& image) : ray_nr (image.ray_nr)
     I.set_dat ();
 }
 
-///  print: write out the images
-///    @param[in] io: io object
-////////////////////////////////
+//  print: write out the images
+//    @param[in] io: io object
+//
 //void Image :: write (const Io &io) const
 //{
 //    cout << "Writing image..."    << endl;

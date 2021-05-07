@@ -9,7 +9,7 @@
 ///    @param[in]      o : number of cell from which the ray originates
 ///    @param[in]      r : number of the ray along which we are looking
 ///    @param[in]      c : number of the cell put last on the ray
-///    @param[in/out]  Z : reference to the current distance along the ray
+///    @param[in,out]  Z : reference to the current distance along the ray
 ///    @param[out]    dZ : reference to the distance increment to the next ray
 ///    @return number of the next cell on the ray after the current cell
 ///////////////////////////////////////////////////////////////////////////////////
@@ -66,7 +66,7 @@ accel inline Size Geometry :: get_next_general_geometry (
 ///    @param[in]      o : number of cell from which the ray originates
 ///    @param[in]      r : number of the ray along which we are looking
 ///    @param[in]      c : number of the cell put last on the ray
-///    @param[in/out]  Z : reference to the current distance along the ray
+///    @param[in,out]  Z : reference to the current distance along the ray
 ///    @param[out]    dZ : reference to the distance increment to the next ray
 ///    @return number of the next cell on the ray after the current cell
 ///////////////////////////////////////////////////////////////////////////////////
@@ -297,7 +297,7 @@ inline bool Geometry :: not_on_boundary (const Size p) const
 ///    @param[in]      o : number of cell from which the ray originates
 ///    @param[in]      r : number of the ray along which we are looking
 ///    @param[in]      c : number of the cell put last on the ray
-///    @param[in/out]  Z : reference to the current distance along the ray
+///    @param[in,out]  Z : reference to the current distance along the ray
 ///    @param[out]    dZ : reference to the distance increment to the next ray
 ///    @return number of the next cell on the ray after the current cell
 ///////////////////////////////////////////////////////////////////////////////////
@@ -333,7 +333,7 @@ accel inline Size Geometry :: get_next (
 ///    @param[in]      o : number of cell from which the ray originates
 ///    @param[in]      r : number of the ray along which we are looking
 ///    @param[in]      c : number of the cell put last on the ray
-///    @param[in/out]  Z : reference to the current distance along the ray
+///    @param[in,out]  Z : reference to the current distance along the ray
 ///    @param[out]    dZ : reference to the distance increment to the next ray
 ///    @return number of the next cell on the ray after the current cell
 ///////////////////////////////////////////////////////////////////////////////////

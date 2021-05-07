@@ -33,7 +33,7 @@ inline void CollisionPartner :: interpolate_collision_coefficients (const Real t
 
 ///  Makes correction for ortho and para in H2 abundance
 ///    @param[in] temperature_gas : gas temperature
-///    @param[in/out] abundance       : H2 abundance
+///    @param[in,out] abundance   : H2 abundance
 ////////////////////////////////////////////////////////
 inline void CollisionPartner :: adjust_abundance_for_ortho_or_para (
     const Real temperature_gas, Real& abundance) const

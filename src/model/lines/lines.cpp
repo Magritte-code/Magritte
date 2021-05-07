@@ -7,7 +7,6 @@ const string prefix = "lines/";
 
 ///  Reader for the Lines data
 ///    @param[in] io         : io object to read with
-///    @param[in] parameters : model parameters object
 //////////////////////////////////////////////////////
 void Lines :: read (const Io& io)
 {

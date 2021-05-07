@@ -32,7 +32,7 @@ inline Size search (const Real1 &x, const Real value)
 
 ///  Linear search for value in ordered list vec
 ///    @param[in] vec: vectorized (and ordered) list in which to search value
-///    @param[in/out] notch: start for search, increase until higher than value
+///    @param[in,out] notch: start for search, increase until higher than value
 ///    @param[in] value: the value we look for in vec
 ///////////////////////////////////////////////////////////////////////////////
 inline void search_with_notch (const Real1 &vec, Size &notch, const Real value)
