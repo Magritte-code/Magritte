@@ -14,7 +14,8 @@
 #include "image/image.hpp"
 #include "mgController/mgControllerHelper.hpp"
 
-
+/// The main structure, which has a reference to most of the other structures
+/////////////////////////////////////////////////////////////////////////////
 struct Model
 {
     bool writing_populations_to_disk=false;   ///< Toggle for writing the level populations after each iteration
@@ -52,35 +53,20 @@ struct Model
 
     inline double calc_diff_abundance_with_point(Size point1, Size point2);
 
-    /// Decides whether points are similar enough to be coarsened
-    /////////////////////////////////////////////////////////////
     inline bool points_are_similar(Size point1, Size point2, double tolerance);
-    ///calculates distance squared between two points
-    /////////////////////////////////////////////////
+
     inline double calc_distance2(Size point1,Size point2);
 
-    /// Coarsens the mesh given a certain tolerance, i.e. add another layer of coarsening
-    /////////////////////////////////////////////////////////////////////////////////////
     inline void coarsen (double tol);
 
-    /// Returns whether the mesh at a point (p) can be coarsened, given a certain tolerance
-    ///////////////////////////////////////////////////////////////////////////////////////
     inline bool can_be_coarsened (const Size p, std::set<Size>& points_coarsened_around, double tol);
 
-    /// Coarsens the neighbors of p and updates the neighbors of p and neighbors of the neighbors of neighbors
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////
     inline void coarsen_around_point (const Size p);
 
-    /// Interpolates the relative differences between level populations locally
-    ///////////////////////////////////////////////////////////////////////////
     inline void interpolate_relative_differences_local(Size coarser_lvl, vector<VectorXr> &relative_difference_levelpopulations);
 
-    /// Interpolated the level populations locally
-    //////////////////////////////////////////////
     inline void interpolate_levelpops_local(Size coarser_lvl);
 
-    /// Initializes multigrid
-    /////////////////////////
     inline int setup_multigrid(Size max_coars_lvl, double tol, Size mgImplementation, Size max_nb_iterations, Size finest_lvl);
 
     void read  ()       {read  (IoPython ("hdf5", parameters.model_name()));};
@@ -100,13 +86,10 @@ struct Model
     int compute_Jeff                              ();
     int compute_level_populations_from_stateq     ();
     int compute_level_populations                 (
-        // const Io   &io,
         const bool  use_Ng_acceleration,
         const long  max_niterations);
     int compute_level_populations_multigrid       (
-        // const Io   &io,
         const bool  use_Ng_acceleration);
-        // const long  max_niterations);
     int compute_image                             (const Size ray_nr);
 
     int restart_from_iteration(Size iteration, Size lvl);

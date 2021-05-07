@@ -247,8 +247,8 @@ int Model :: compute_spectral_discretisation (const Real width)
 
 ///  Computer for spectral (=frequency) discretisation
 ///  Gives same frequency bins to each point
-///    @param[in] min : minimal frequency
-///    @param[in] max : maximal frequency
+///    @param[in] nu_min : minimal frequency
+///    @param[in] nu_max : maximal frequency
 ///////////////////////////////////////////////////////
 int Model :: compute_spectral_discretisation (
     const long double nu_min,
@@ -290,14 +290,14 @@ int Model :: compute_LTE_level_populations ()
     return (0);
 }
 
-/// Restarting from the iteration levelpops, assuming it has been written to disk
-////////////////////////////////////////////////////////////////////////////
-/// Note: when the level populations cannot be read, starts from LTE instead without warning
-/// Note: currently no state of where we are in any multilevel operation is stored, so unless changed, please use this only with without multigrid or just naive multigrid (then the number of iterations done that is reported will be incorrect (because it doesnt count the iterations prior to loading))
-
-/// TODO: currently, the mgController information is NOT SAVED, so this is not that useful for restarting a multigrid scheme
+///  Restarting from the iteration levelpops, assuming it has been written to disk
+///    @param[in] iteration : The iteration to start from
+///    @param[in] lvl : The coarsening level to start from
+//////////////////////////////////////////////////////////////////////////////////
+///  Note: when the level populations cannot be read, starts from LTE instead without warning
+///  Note: currently no state of where we are in any multilevel operation is stored, so unless changed, please use this only with without multigrid or just naive multigrid (then the number of iterations done that is reported will be incorrect (because it doesnt count the iterations prior to loading))
 int Model :: restart_from_iteration(Size iteration, Size lvl)
-{
+{// TODO: currently, the mgController information is NOT SAVED, so this is not that useful for restarting a multigrid scheme
   compute_LTE_level_populations();
   IoPython io = IoPython ("hdf5", parameters.model_name());
   lines.read_populations_of_iteration(io, iteration, lvl);
@@ -422,7 +422,7 @@ int Model :: compute_Jeff ()
 }
 
 
-///  compute level populations from statistical equilibrium
+///  Compute level populations from statistical equilibrium
 ///////////////////////////////////////////////////////////
 int Model :: compute_level_populations_from_stateq ()
 {
@@ -440,10 +440,8 @@ int Model :: compute_level_populations_from_stateq ()
 
 ///  Compute level populations self-consistenly with the radiation field using multigrid
 ///  assuming statistical equilibrium (detailed balance for the levels)
-///  @param[in] io                  : io object (for writing level populations)
 ///  @param[in] use_Ng_acceleration : true if Ng acceleration has to be used
-///  @param[in] max_niterations     : maximum number of iterations
-///  @return number of iteration done
+///  @return Total number of iterations done
 ///////////////////////////////////////////////////////////////////////////////
 /// Assumes one has setup the multigrid beforehand see 'model.tpp' 'setup_multigrid'
 int Model :: compute_level_populations_multigrid (
@@ -744,28 +742,6 @@ int Model :: compute_level_populations_multigrid (
         //Now finally interpolate the relative differences
         interpolate_relative_differences_local(geometry.points.multiscale.get_curr_coars_lvl(), rel_diff_pops);
 
-
-
-        // //Maybe TODO: create function that directly interpolates both, such that we do not waste extra time when recreating the same matrices
-        // //interpolating the current levelpops (at the coarser level)
-        // interpolate_levelpops_local(geometry.points.multiscale.get_curr_coars_lvl());
-        // vector<VectorXr> interpolated_new_levelpops=lines.get_all_level_pops();
-        //
-        // //Now also interpolating the previous levelpops at the finer level
-        // lines.set_all_level_pops(old_levelpops);
-        // interpolate_levelpops_local(geometry.points.multiscale.get_curr_coars_lvl());
-        // vector<VectorXr> interpolated_old_levelpops=lines.get_all_level_pops();
-        //
-        // //TODO: check whether there is an error when
-        // //IF SO: make a copy of the levelpops instead
-        //
-        // ///SIMPLE TEST:todo test it
-        // if (interpolated_old_levelpops==old_levelpops)
-        // {
-        //   std::cout<<"interpolated old levelpops and old levelpops are equal"<<std::endl;
-        //   std::cout<<"Thus there is an error with references"<<std::endl;
-        // }
-
         geometry.points.multiscale.set_curr_coars_lvl(geometry.points.multiscale.get_curr_coars_lvl()-1);
 
         vector<VectorXr> corrected_levelpops;
@@ -791,30 +767,17 @@ int Model :: compute_level_populations_multigrid (
           //Note: because we are interpolating the relative corrections, we will need to renormalize the levelpops
           threaded_for (p, current_points_in_grid.size(),
             Size current_point=current_points_in_grid[p];
-            // bool negative_value=false;
-            // for (Size levidx=0; levidx<lines.lineProducingSpecies[specidx].linedata.nlev; levidx++)
-            // {
-            //   if (temp_corrected_levelpops(lines.lineProducingSpecies[specidx].index(current_point,levidx))==0)
-            //   {
-            //     //there was probably some negative value there
-            //     negative_value=true;//singals that we need to renormalize
-            //     break;
-            //   }
-            // }
-            //
-            // //if negative level population encountered, renormalize
-            // if (negative_value)
-            // {
-              Real abund=static_cast<Real>(chemistry.species.abundance[current_point][speciesnum]);
-              Size segment_start=lines.lineProducingSpecies[specidx].index(current_point,0);
-              Size nb_levels=lines.lineProducingSpecies[specidx].linedata.nlev;
-              //Note: because the sum of levelpops must always be equal to the abundance, at least one value should be greater than zero (after zeroing the negative values)
-              // and thus we will never divide by zero
-              Real sum_of_levelpops=temp_corrected_levelpops.segment(segment_start,nb_levels).sum();
-              //and finally renormalizing it; such that the sum of levelpops is again equal to the abundance
-              temp_corrected_levelpops.segment(segment_start,nb_levels)=temp_corrected_levelpops.segment(segment_start,nb_levels)*(abund/sum_of_levelpops);
-            // }
-          )//end of threaded_for
+
+            Real abund=static_cast<Real>(chemistry.species.abundance[current_point][speciesnum]);
+            Size segment_start=lines.lineProducingSpecies[specidx].index(current_point,0);
+            Size nb_levels=lines.lineProducingSpecies[specidx].linedata.nlev;
+            //Note: because the sum of levelpops must always be equal to the abundance, at least one value should be greater than zero (after zeroing the negative values)
+            // and thus we will never divide by zero
+            Real sum_of_levelpops=temp_corrected_levelpops.segment(segment_start,nb_levels).sum();
+            //and finally renormalizing it; such that the sum of levelpops is again equal to the abundance
+            temp_corrected_levelpops.segment(segment_start,nb_levels)=temp_corrected_levelpops.segment(segment_start,nb_levels)*(abund/sum_of_levelpops);
+
+            )//end of threaded_for
         //and add the corrected levelpops for this species
         corrected_levelpops.push_back(temp_corrected_levelpops);
         }
