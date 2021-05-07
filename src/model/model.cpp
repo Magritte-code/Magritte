@@ -854,10 +854,9 @@ int Model :: compute_level_populations_multigrid (
 
 ///  Compute level populations self-consistenly with the radiation field
 ///  assuming statistical equilibrium (detailed balance for the levels)
-///  @param[in] io                  : io object (for writing level populations)
 ///  @param[in] use_Ng_acceleration : true if Ng acceleration has to be used
 ///  @param[in] max_niterations     : maximum number of iterations
-///  @return number of iteration done
+///  @return Number of iterations done
 ///////////////////////////////////////////////////////////////////////////////
 int Model :: compute_level_populations (
     const bool use_Ng_acceleration,
@@ -970,7 +969,8 @@ int Model :: compute_image (const Size ray_nr)
     return (0);
 }
 
-
+/// Sets the emmisivity and opacity
+///////////////////////////////////
 int Model :: set_eta_and_chi ()
 {
     Solver solver;
@@ -979,7 +979,8 @@ int Model :: set_eta_and_chi ()
     return (0);
 }
 
-
+/// Sets the boundary conditions
+////////////////////////////////
 int Model :: set_boundary_condition ()
 {
     Solver solver;

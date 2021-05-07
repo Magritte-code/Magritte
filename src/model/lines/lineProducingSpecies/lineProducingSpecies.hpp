@@ -37,7 +37,7 @@ struct LineProducingSpecies
     VectorXr population;             ///< level population (most recent)
     Real1    population_tot;         ///< total level population (sum over levels)
 
-    /// DO NOT REINTRODUCE THESE VARIABLES WITHOUT MAKING SURE WE DO NOT HAVE A MEMORY LEAK
+    // DO NOT REINTRODUCE THESE VARIABLES WITHOUT MAKING SURE WE DO NOT HAVE A MEMORY LEAK
     // vector<VectorXr> populations;    ///< list of populations in previous iterations
     // vector<VectorXr> residuals;      ///< list of residuals in the populations
 
