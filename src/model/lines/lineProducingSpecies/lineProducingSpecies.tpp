@@ -269,15 +269,12 @@ inline void LineProducingSpecies :: update_using_statistical_equilibrium (
     // residuals  .push_back(population-populations.back());
     // populations.push_back(population);
 
-
-//    SparseMatrix<double> RT (ncells*linedata.nlev, ncells*linedata.nlev);
     std::cout<<"setting vector population"<<std::endl;
     VectorXr new_population = VectorXr::Zero (parameters.npoints()*linedata.nlev);
 
-    // const Size max_matrix_size=1*1024*1024*1024;//For testing purposes
     const Size max_matrix_size=100*1024*1024;//hundred megabyte
     // const Size max_matrix_size=1*1024*1024;//one megabyte
-    // It turns out that due to triplets, the total extra memory needed for this calculation is about three times this number
+    // It turns out that due to using triplets to construct the sparse matrix, the total extra memory needed for this calculation is about three times this number
 
     // const unsigned long long int total_non_zeros = parameters.npoints() * (      linedata.nlev
     //                                                + 6 * linedata.nrad
@@ -285,29 +282,26 @@ inline void LineProducingSpecies :: update_using_statistical_equilibrium (
 
     // We can split our block diagonal matrix if there are no non-local contributions
     if (parameters.n_off_diag==0){
-      Size nb_points_per_block=max_matrix_size/((linedata.nlev + 6 * linedata.nrad + 4 * linedata.ncol_tot )*sizeof(Real));
-      Size nb_different_matrices=(points_in_grid.size()+(nb_points_per_block-1))/nb_points_per_block;//rounding up
-      std::cout<<"Splitting big matrix into n parts: "<<nb_different_matrices<<std::endl;
+        Size nb_points_per_block=max_matrix_size/((linedata.nlev + 6 * linedata.nrad + 4 * linedata.ncol_tot )*sizeof(Real));
+        Size nb_different_matrices=(points_in_grid.size()+(nb_points_per_block-1))/nb_points_per_block;//rounding up
+        std::cout<<"Splitting big matrix into n parts: "<<nb_different_matrices<<std::endl;
 
-      //trivial parallelisation //DO NOT USE THIS FOR NOW: A PART OF THIS ADJUSTS AN INTERNAL STATE
-      // threaded_for (idx, nb_different_matrices,
-      // {
-      for (Size idx=0;idx<nb_different_matrices;idx++)
-      {
-        Size firstidx=idx*nb_points_per_block;
-        Size lastidx=std::min(static_cast<Size>(points_in_grid.size()-1),static_cast<Size>((idx+1)*nb_points_per_block-1));
-        vector<Size> current_points_in_block = std::vector<Size>(points_in_grid.begin() + firstidx, points_in_grid.begin()+lastidx+1);
-        VectorXr resulting_y = solve_statistical_equilibrium(abundance,temperature,current_points_in_block);//does not need to be continguous
-
-        //and finally putting those resulting y values at the right place in the y vector
-        Size temp_idx=0;
-        for (Size point_in_block:current_points_in_block)
+        //A trivial parallelisation would be possible, if it were not that we modify an internal state during the calculation
+        for (Size idx=0;idx<nb_different_matrices;idx++)
         {
-          new_population(Eigen::seq(index(point_in_block,0),index(point_in_block,linedata.nlev-1)))=resulting_y(Eigen::seq(index(temp_idx,0),index(temp_idx,linedata.nlev-1)));
-          temp_idx++;
+            Size firstidx=idx*nb_points_per_block;
+            Size lastidx=std::min(static_cast<Size>(points_in_grid.size()-1),static_cast<Size>((idx+1)*nb_points_per_block-1));
+            vector<Size> current_points_in_block = std::vector<Size>(points_in_grid.begin() + firstidx, points_in_grid.begin()+lastidx+1);
+            VectorXr resulting_y = solve_statistical_equilibrium(abundance,temperature,current_points_in_block);//does not need to be continguous
+
+            //and finally putting those resulting y values at the right place in the y vector
+            Size temp_idx=0;
+            for (Size point_in_block:current_points_in_block)
+            {
+                new_population(Eigen::seq(index(point_in_block,0),index(point_in_block,linedata.nlev-1)))=resulting_y(Eigen::seq(index(temp_idx,0),index(temp_idx,linedata.nlev-1)));
+                temp_idx++;
+            }
         }
-      }
-      // })
     }
     else
     {//unfortunately, we cannot split this matrix into smaller pieces without making any errors
@@ -321,74 +315,55 @@ inline void LineProducingSpecies :: update_using_statistical_equilibrium (
 }
 
 
-// Refactor of the matrix solving for allowing to use less point per block matrix (decreases memory usage)
-// IMPORTANT: Only call this with a part of the points currently in grid if parameters.n_off_diag==0
-// OTHERWISE this will result in bogus (starting with the approximated lambda operator part)
+///  Refactor of the matrix solving for allowing to use less point per block matrix (decreases memory usage)
+///    @param[in] abundance: chemical abundances of species in the model
+///    @param[in] temperature: gas temperature in the model
+///    @param[in] points_in_grid: the points in the current grid
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// IMPORTANT: Only call this with a part of the points currently in grid if parameters.n_off_diag==0
+/// OTHERWISE this will result in bogus (starting with the approximated lambda operator part)
 inline VectorXr LineProducingSpecies::solve_statistical_equilibrium(const Double2 &abundance,
-        const Vector<Real> &temperature, vector<Size> &points_to_use){
+        const Vector<Real> &temperature, vector<Size> &points_to_use)
+{
 
     if ((parameters.n_off_diag!=0)&&(parameters.npoints()!=points_to_use.size()))//if you do not set n_off_diag to 0, then we cannot split this almost 'block'matrix into blocks
-    {//please do not try to be smart and call this function while n_off_diag!=0 and points_to_use!={0,1,2,...,parameters.npoints()-1} (in that exact, albeit default order)
-      std::cout<<"Attempted to split non-block matrix into blocks"<<std::endl;
-      throw std::runtime_error("Attempted to split non-block matrix into blocks");
+    {// if parameters.n_off_diag!=0, then the points are assumed to be ordered from low to high
+        std::cout<<"Attempted to split non-block matrix into blocks"<<std::endl;
+        throw std::runtime_error("Attempted to split non-block matrix into blocks");
     }
 
-      // std::cout<<"setting vector y"<<std::endl;
-      VectorXr y = VectorXr::Zero (points_to_use.size()*linedata.nlev);
 
-      // const Size max_matrix_size=100*1024*1024;//hundred megabyte
+    VectorXr y = VectorXr::Zero (points_to_use.size()*linedata.nlev);
 
-      const Size non_zeros = points_to_use.size() * (      linedata.nlev
+
+    const Size non_zeros = points_to_use.size() * (      linedata.nlev
                                                      + 6 * linedata.nrad
                                                      + 4 * linedata.ncol_tot );
 
-      // We can split our block diagonal matrix if there are no non-local contributions
-      // if (parameters.n_off_diag==0){
-      //   nbsizeof(Real)
-      // }
-      // std::cout<<"Non zeros: "<<non_zeros<<std::endl;
-      // std::cout<<"linedata.nlev: "<<linedata.nlev<<std::endl;
-      // std::cout<<"linedata.nrad: "<<linedata.nrad<<std::endl;
-      // std::cout<<"linedata.ncol_tot"<<linedata.ncol_tot<<std::endl;
 
-      vector<Triplet<Real, Size>> triplets;
-      // vector<Triplet<Real, Size>> triplets_LT;
-      // vector<Triplet<Real, Size>> triplets_LS;
-      // std::cout<<"reserving triplets"<<std::endl;
-      triplets   .reserve (non_zeros);
-      // triplets_LT.reserve (non_zeros);
-      // triplets_LS.reserve (non_zeros);
+    vector<Triplet<Real, Size>> triplets;
 
-      //todo: use current grid ...
-      // vector<Size> points_in_grid=model.geometry.points.multiscale.get_current_points_in_grid();
-      Size nbpoints=points_to_use.size();
+    triplets   .reserve (non_zeros);
 
-      std::map<Size,Size> indexmap;//for simplicity, maps the indices from points_to_use to consecutive indices
-      // indexmap.reserve(nbpoints);
-      Size temp_idx=0;
-      for(Size point: points_to_use)
-      {
+    Size nbpoints=points_to_use.size();
+
+    std::map<Size,Size> indexmap;//for simplicity, maps the indices from points_to_use to consecutive indices
+    Size temp_idx=0;
+    for(Size point: points_to_use)
+    {
         indexmap.insert(std::pair<Size,Size>(point,temp_idx));
         temp_idx++;
-      }
+    }
 
 
-      // std::cout<<"starting the main computation"<<std::endl;
-      for (Size p : points_to_use)
-      // for (Size idx = 0; idx < nbpoints; idx++) // !!! no OMP because push_back is not thread safe !!! // TODO: replace with some gather operation
-      {
-          // const Size p=points_to_use[idx];
-          // Radiative transitions
+    for (Size p : points_to_use)
+    {
+        // Radiative transitions
 
-          for (Size k = 0; k < linedata.nrad; k++)
+        for (Size k = 0; k < linedata.nrad; k++)
           {
               const Real v_IJ = linedata.A[k] + linedata.Bs[k] * Jeff[p][k];
               const Real v_JI =                 linedata.Ba[k] * Jeff[p][k];
-
-              // std::cout<<"v_IJ: "<<v_IJ<<std::endl;
-              // if (isnan(v_IJ)){
-              //   std::cout<<"At point p: "<<p<<std::endl;
-              //   throw std::runtime_error("Nan encountered");}
 
               const Real t_IJ = linedata.Bs[k] * Jdif[p][k];
               const Real t_JI = linedata.Ba[k] * Jdif[p][k];
@@ -432,29 +407,10 @@ inline VectorXr LineProducingSpecies::solve_statistical_equilibrium(const Double
                   const Size   nr =  lambda.get_nr(p, k, m);
                   const Real v_IJ = -lambda.get_Ls(p, k, m) * get_opacity(p, k);
 
-                  // std::cout<<"v_IJ: "<<v_IJ<<std::endl;
-                  // if (isnan(v_IJ)){
-                  //   std::cout<<"At point p: "<<p<<std::endl;
-                  //   throw std::runtime_error("Nan encountered");}
-
                   // Note: we define our transition matrix as the transpose of R in the paper.
+                  // Compressed index notation (such that there are no zero rows when points_to_use!=all grid points)
                   const Size I = index (indexmap.at(nr), linedata.irad[k]);
                   const Size J = index (indexmap.at(p),  linedata.jrad[k]);
-
-                  // if (nr!=p)
-                  // {
-                  //   std::cout<<"nr!=p!!!"<<std::endl;
-                  //   std::cout<<"p: "<<p<<std::endl;
-                  //   std::cout<<"nr: "<<nr<<std::endl;
-                  // }
-
-                  // if (parameters.n_off_diag==0){//no non-local effects exist, so compressed index notation can be used (nr=p)
-                  //   I = index (idx, linedata.irad[k]);
-                  //   J = index (idx, linedata.jrad[k]);
-                  //
-                  // }
-
-                  // Compressed index notation cant be used here
 
                   if (linedata.jrad[k] != linedata.nlev-1)
                   {
@@ -486,20 +442,11 @@ inline VectorXr LineProducingSpecies::solve_statistical_equilibrium(const Double
                   const Real v_IJ = colpar.Cd_intpld[k] * abn;//ONLY HERE IS THIS INTERNAL STATE USED
                   const Real v_JI = colpar.Ce_intpld[k] * abn;
 
-                  // std::cout<<"v_IJ: "<<v_IJ<<std::endl;
-                  // if (isnan(v_IJ)){
-                  //   std::cout<<"At point p: "<<p<<std::endl;
-                  //   throw std::runtime_error("Nan encountered");}
-                  // std::cout<<"v_JI: "<<v_IJ<<std::endl;
-                  // if (isnan(v_JI)){
-                  //   std::cout<<"At point p: "<<p<<std::endl;
-                  //   throw std::runtime_error("Nan encountered");}
-
                   // Note: we define our transition matrix as the transpose of R in the paper.
                   // const Size I = index (p, colpar.icol[k]);
                   // const Size J = index (p, colpar.jcol[k]);
 
-                  //compressed index notation (such that there are no zero rows when points_to_use!=all grid points)
+                  // Compressed index notation (such that there are no zero rows when points_to_use!=all grid points)
                   const Size I = index (indexmap.at(p), colpar.icol[k]);
                   const Size J = index (indexmap.at(p), colpar.jcol[k]);
 
@@ -531,37 +478,11 @@ inline VectorXr LineProducingSpecies::solve_statistical_equilibrium(const Double
               triplets.push_back (Triplet<Real, Size> (I, J, 1.0));
           }
 
-          //y.insert (index (p, linedata.nlev-1)) = population_tot[p];
           // y[index (p, linedata.nlev-1)] = population_tot[p];
-          //again compressed index notation
+          // Again compressed index notation
           y[index (indexmap.at(p), linedata.nlev-1)] = population_tot[p];
 
-          //y.insert (index (p, linedata.nlev-1)) = 1.0;//population_tot[p];
-
       } // for all cells
-
-
-      // now that we can choose what points to use, this is useless
-      // // adding 1 to diagonal for line transitions currently not in the grid
-      // // currently, they should not be affected in any way (only interpolation may change them)
-      //
-      // // well, points_in_grid should be ordered, but extra precautions can never hurt
-      // std::sort(points_in_grid.begin(),points_in_grid.end());
-      // Size otheridx=0;
-      // for (Size p=0;p<parameters.npoints();p++)
-      // {
-      //   if (p==points_in_grid[otheridx])
-      //   {otheridx++;}
-      //   else
-      //   {//add 1 to all diagonal line transitions of this point
-      //     for (Size l = 0; l < linedata.nlev; l++)
-      //     {
-      //       const Size I = index (p, l);
-      //       triplets.push_back (Triplet<Real, Size> (I, I, 1.0));
-      //       // RT.insert(I,I)=1.0;
-      //     }
-      //   }
-      // }
 
       // std::cout<<"Setting RT"<<std::endl;
 
@@ -613,13 +534,15 @@ inline VectorXr LineProducingSpecies::solve_statistical_equilibrium(const Double
 
 }
 
-///Sets all the level populations of this species to the new_population
+///  Sets all the level populations of this species to the new_population
+///    @param[in] new_population: The new level populations of this species
 inline void LineProducingSpecies::set_all_level_pops(VectorXr new_population)
 {
   population=new_population;
 }
 
-///Returns all level populations of this species
+///  Returns all level populations of this species
+///    @return The current level populations of this species
 inline VectorXr LineProducingSpecies::get_all_level_pops()
 {
   return population;
