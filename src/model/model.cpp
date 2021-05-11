@@ -582,7 +582,7 @@ int Model :: compute_level_populations_multigrid (
             error_mean.push_back (lines.lineProducingSpecies[l].relative_change_mean);
             error_max .push_back (lines.lineProducingSpecies[l].relative_change_max);
 
-            if (lines.lineProducingSpecies[l].fraction_not_converged > 0.0005)
+            if (lines.lineProducingSpecies[l].fraction_not_converged > 0.005)
             {
                 some_not_converged = true;
             }
@@ -932,7 +932,7 @@ int Model :: compute_level_populations (
             error_mean.push_back (lines.lineProducingSpecies[l].relative_change_mean);
             error_max .push_back (lines.lineProducingSpecies[l].relative_change_max);
 
-            if (lines.lineProducingSpecies[l].fraction_not_converged > 0.0005)
+            if (lines.lineProducingSpecies[l].fraction_not_converged > 0.005)
             {
                 some_not_converged = true;
             }
