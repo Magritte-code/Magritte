@@ -37,8 +37,7 @@ inline void Multiscale::set_all_neighbors(vector<Size>& n_neighbors, vector<Size
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 inline std::tuple<Size*,Size> Multiscale::get_gpu_neighbors(const Size p) const
 {
-    std::cout<<"p: "<<p<<std::endl;
-    std::cout<<"nb_neighbors: "<<gpu_n_neighbors[get_curr_coars_lvl()][p]<<std::endl;
+    std::cout<<"p: "<<p<<" nb_neighbors: "<<gpu_n_neighbors[get_curr_coars_lvl()][p]<<std::endl;
     return std::make_tuple(gpu_neighbors[get_curr_coars_lvl()].dat+gpu_cum_n_neighbors[get_curr_coars_lvl()][p],
                            gpu_n_neighbors[get_curr_coars_lvl()][p]);
 }
@@ -80,16 +79,26 @@ inline void Multiscale::set_gpu_neighbors()
     gpu_neighbors.resize(get_max_coars_lvl()+1);
     for (Size lvl=0; lvl<=get_max_coars_lvl(); lvl++)
     {
-        gpu_neighbors[lvl]=Vector<Size>(get_all_neighbors_as_vector(lvl));
-        gpu_n_neighbors[lvl]=Vector<Size>(get_all_nb_neighbors(lvl));
+        vector<Size> temp_lin_neighbors=get_all_neighbors_as_vector(lvl);
+        gpu_neighbors[lvl].resize(temp_lin_neighbors.size());
+        for (Size i=0; i<temp_lin_neighbors.size(); i++)
+        {
+          gpu_neighbors[lvl][i]=temp_lin_neighbors[i];
+        }
+        // gpu_neighbors[lvl]=Vector<Size>(get_all_neighbors_as_vector(lvl));
+        vector<Size> temp_n_neighbors=get_all_nb_neighbors(lvl);
+        gpu_n_neighbors[lvl].resize(parameters.npoints());
+        for (Size i=0; i<parameters.npoints(); i++)
+        {
+          gpu_n_neighbors[lvl][i]=temp_n_neighbors[i];
+        }
+        // gpu_n_neighbors[lvl]=Vector<Size>(get_all_nb_neighbors(lvl));
 
         gpu_cum_n_neighbors[lvl].resize(parameters.npoints());
         gpu_cum_n_neighbors[lvl][0] = 0;
         //And finally calculating the cumulative number of neighbors
         for (Size point = 1; point < parameters.npoints(); point++)
         {
-            std::cout<<"neighbors:"<<gpu_neighbors[lvl][point-1]<<std::endl;
-            std::cout<<"n_neighbors: "<<gpu_n_neighbors[lvl][point-1]<<std::endl;
             gpu_cum_n_neighbors[lvl][point] = gpu_cum_n_neighbors[lvl][point-1] + gpu_n_neighbors[lvl][point-1];
         }
 
@@ -123,7 +132,7 @@ inline Size1 Multiscale::get_all_neighbors_as_vector(const Size coars_lvl) const
     all_neighbors.reserve(tot_n_nbs);
     for (Size point=0; point<nb_points; point++)
     {
-        std::set<Size> temp_neighbors=get_neighbors(point,0);
+        std::set<Size> temp_neighbors=get_neighbors(point,coars_lvl);
         all_neighbors.insert(std::end(all_neighbors), std::begin(temp_neighbors), std::end(temp_neighbors));
     }
     return all_neighbors;
@@ -170,6 +179,7 @@ inline Size1 Multiscale::get_all_nb_neighbors(const Size coars_lvl) const
     for (Size point=0; point<nb_points; point++)
     {
         nb_neighbors[point]=get_nb_neighbors(point,coars_lvl);
+        std::cout<<"nb_neighbors: "<<nb_neighbors[point]<<std::endl;
     }
     return nb_neighbors;
 }

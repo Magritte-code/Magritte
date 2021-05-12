@@ -43,6 +43,7 @@ accel inline Size Geometry :: get_next_general_geometry (
     for (Size i = 0; i < nb_neighbors; i++)
     {
         const Size n=*(start_neighbors+i);
+        std::cout<<"n:"<<n<<std::endl;
 //        const Size     n     = points.nbs[c*nnbs+i];
         // const Size     n     = temp_neighbors[i];//points.neighbors[cum_n_nbs+i];
         const Vector3D R     = points.position[n] - points.position[o];
