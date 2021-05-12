@@ -4,18 +4,23 @@
 #include <tuple>
 
 
-/// Sets all neighbors and initializes the data structure
-///   @param[in]  n_neighbors: Determines how much neighbors each point has
-///   @param[in]  neigbours: A 1D array which contains all neighbors of all points (in order)
-/// assumed length = sum of new_n_neighbors
+///  Sets all neighbors and initializes the data structure
+///    @param[in]  n_neighbors: Determines how much neighbors each point has
+///    @param[in]  neigbours: A 1D array which contains all neighbors of all points (in order)
+///  assumed length = sum of new_n_neighbors
 /////////////////////////////////
 //TODO: add some form of validation to sizes of new_neighbors and new_n_neighbors
 inline void Multiscale::set_all_neighbors(vector<Size>& n_neighbors, vector<Size>& new_neighbors)
 {
     neighbors.resize(1);
     mask.resize(1);
-    vector<bool> alltrue(parameters.npoints(), true);
-    mask[0]=alltrue;
+    mask[0].resize(parameters.npoints());
+    for (Size i=0; i<parameters.npoints(); i++)
+    {
+        mask[0][i]=true;
+    }
+    // vector<bool> alltrue(parameters.npoints(), true);
+    // mask[0]=alltrue;
 
     vector<std::set<Size>> temp_neighbors;
     temp_neighbors.resize(parameters.npoints());
@@ -23,9 +28,10 @@ inline void Multiscale::set_all_neighbors(vector<Size>& n_neighbors, vector<Size
     auto beginvect=std::begin(new_neighbors);//is iterator
     for (Size i=0; i<parameters.npoints(); i++)
     {
-      std::set<Size> curr_neighbors(beginvect+curr_index,beginvect+curr_index+n_neighbors[i]);
-      curr_index+=n_neighbors[i];
-      temp_neighbors[i]=curr_neighbors;
+        std::cout<<"mask: "<<(mask[0][i]==true)<<std::endl;
+        std::set<Size> curr_neighbors(beginvect+curr_index,beginvect+curr_index+n_neighbors[i]);
+        curr_index+=n_neighbors[i];
+        temp_neighbors[i]=curr_neighbors;
     }
     neighbors[0]=temp_neighbors;
 
@@ -37,7 +43,6 @@ inline void Multiscale::set_all_neighbors(vector<Size>& n_neighbors, vector<Size
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 inline std::tuple<Size*,Size> Multiscale::get_gpu_neighbors(const Size p) const
 {
-    std::cout<<"p: "<<p<<" nb_neighbors: "<<gpu_n_neighbors[get_curr_coars_lvl()][p]<<std::endl;
     return std::make_tuple(gpu_neighbors[get_curr_coars_lvl()].dat+gpu_cum_n_neighbors[get_curr_coars_lvl()][p],
                            gpu_n_neighbors[get_curr_coars_lvl()][p]);
 }
@@ -45,7 +50,7 @@ inline std::tuple<Size*,Size> Multiscale::get_gpu_neighbors(const Size p) const
 
 ///  Returns the gpu_compatible reference to the neighbors of a point in the specified grid and the amount of neighbors it has
 ///    @param[in] p: The index of the point to get its neighbors
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 inline std::tuple<Size*,Size> Multiscale::get_gpu_neighbors(const Size p, const Size coars_lvl) const
 {
     return std::make_tuple(gpu_neighbors[coars_lvl].dat+gpu_cum_n_neighbors[coars_lvl][p],
@@ -62,8 +67,8 @@ inline std::set<Size> Multiscale::get_neighbors(const Size p, const Size coars_l
     return neighbors[coars_lvl][p];
 }
 
-///Returns the neighbors of a point at the current coarsening level
-///   @param[in]  p: Index of the point
+///  Returns the neighbors of a point at the current coarsening level
+///    @param[in]  p: Index of the point
 ///////////////////////////////////////////////////////////////////
 inline std::set<Size> Multiscale::get_neighbors(const Size p) const
 {
@@ -138,8 +143,8 @@ inline Size1 Multiscale::get_all_neighbors_as_vector(const Size coars_lvl) const
     return all_neighbors;
 }
 
-///Returns all neighbors at the finest level as a single vector
-///   @return The linearized vector of all neighbors
+///  Returns all neighbors at the finest level as a single vector
+///    @return The linearized vector of all neighbors
 ///////////////////////////////////////////////////////////////////////
 inline Size1 Multiscale::get_all_neighbors_as_vector() const
 {
@@ -179,14 +184,13 @@ inline Size1 Multiscale::get_all_nb_neighbors(const Size coars_lvl) const
     for (Size point=0; point<nb_points; point++)
     {
         nb_neighbors[point]=get_nb_neighbors(point,coars_lvl);
-        std::cout<<"nb_neighbors: "<<nb_neighbors[point]<<std::endl;
     }
     return nb_neighbors;
 }
 
 
-/// Returns the number of neighbors of each point as vector at the finest level
-///   @param[out] nb_neighbors: The number of neighbors at each point at the finest level
+///  Returns the number of neighbors of each point as vector at the finest level
+///    @param[out] nb_neighbors: The number of neighbors at each point at the finest level
 /////////////////////////////////////////////////////////////////////////////////////////
 inline Size1 Multiscale::get_all_nb_neighbors() const
 {
@@ -200,24 +204,24 @@ inline Size1 Multiscale::get_all_nb_neighbors() const
     return nb_neighbors;
 }
 
-/// Returns the number of neighbors of a point at the given coarsening level
-///   @param[in]  p: The index of the point
-///   @param[in]  coars_lvl: The index of the coarsening level
+///  Returns the number of neighbors of a point at the given coarsening level
+///    @param[in]  p: The index of the point
+///    @param[in]  coars_lvl: The index of the coarsening level
 ////////////////////////////////////////////////////////////////////////////
 inline Size Multiscale::get_nb_neighbors(const Size p, const Size coars_lvl) const
 {
     return neighbors[coars_lvl][p].size();
 }
 
-/// Returns the number of neighbors of a point at the current coarsening level
-///   @param[in]  p: The index of the point
+///  Returns the number of neighbors of a point at the current coarsening level
+///    @param[in]  p: The index of the point
 //////////////////////////////////////////////////////////////////////////////
 inline Size Multiscale::get_nb_neighbors(const Size p) const
 {
     return neighbors[curr_coarsening_lvl][p].size();
 }
 
-/// Returns the current coarsening level
+///  Returns the current coarsening level
 ////////////////////////////////////////
 inline Size Multiscale::get_max_coars_lvl() const
 {
@@ -228,15 +232,15 @@ inline Size Multiscale::get_max_coars_lvl() const
     return 0;//If not initialized, the max coarsening level is 0
 }
 
-/// Returns the current coarsening level
+///  Returns the current coarsening level
 ////////////////////////////////////////
 inline Size Multiscale::get_curr_coars_lvl() const
 {
     return curr_coarsening_lvl;
 }
 
-/// Sets the current coarsening level to the specified lvl (if below the maximum coarsening level)
-///   @param[in]  lvl: The coarsening level to set to
+///  Sets the current coarsening level to the specified lvl (if below the maximum coarsening level)
+///    @param[in]  lvl: The coarsening level to set to
 //////////////////////////////////////////////////////////////////////////////////////////////////
 inline void Multiscale::set_curr_coars_lvl(Size lvl)
 {
@@ -249,7 +253,7 @@ inline void Multiscale::set_curr_coars_lvl(Size lvl)
 /// Returns the mask at the given coarsening level
 ///   @param[in]  lvl: The index of the coarsening level
 ////////////////////////////////////////////////////////
-inline Bool1 Multiscale::get_mask(const Size lvl) const
+inline Vector<unsigned char> Multiscale::get_mask(const Size lvl) const
 {
     return mask[lvl];
 }
@@ -258,7 +262,7 @@ inline Bool1 Multiscale::get_mask(const Size lvl) const
 //////////////////////////////////////////////////////////////////////////////
 inline Size Multiscale::get_total_points(const Size lvl)
 {//Maybe TODO: if useful, just store this value
-    return std::count(mask[lvl].begin(), mask[lvl].end(), true);
+    return std::count(mask[lvl].dat, mask[lvl].dat+parameters.npoints(), true);
 }
 
 /// Returns the points in the current grid (ordered from low to high)

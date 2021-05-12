@@ -711,14 +711,18 @@ int Model :: compute_level_populations_multigrid (
 
         vector<VectorXr> rel_diff_pops;
         rel_diff_pops.resize(parameters.nlspecs());
-        vector<bool> mask=geometry.points.multiscale.get_mask(geometry.points.multiscale.get_curr_coars_lvl());
-
+        std::cout<<"flag"<<std::endl;
+        Vector<unsigned char> mask=geometry.points.multiscale.get_mask(geometry.points.multiscale.get_curr_coars_lvl());
+        std::cout<<"flag2"<<std::endl;
 
         for (Size specidx=0; specidx<parameters.nlspecs(); specidx++)
         {//this is just the difference in level populations
+          std::cout<<"flag21"<<std::endl;
+          std::cout<<"curr_coars_lvl"<<geometry.points.multiscale.get_curr_coars_lvl()<<std::endl;
           LineProducingSpecies currlspec=lines.lineProducingSpecies[specidx];
           VectorXr currspeclevelpops=computed_level_populations[geometry.points.multiscale.get_curr_coars_lvl()][specidx];
           VectorXr diff_pops=currspeclevelpops-old_levelpops[specidx];
+          std::cout<<"flag22"<<std::endl;
 
           VectorXr temp_rel_diff_pops=diff_pops;//just to get the right size
           // VectorXr currspeclevelpops_inverse
@@ -726,8 +730,9 @@ int Model :: compute_level_populations_multigrid (
           //TODO: this way of calculating the corrections is quite slow; try to use operations on the whole vector instead
           for (Size pointidx=0;pointidx<parameters.npoints();pointidx++)
           {
+std::cout<<"point: "<<pointidx<<std::endl;
             if (mask[pointidx])//point still in grid, so we can calculate the relative difference
-            {
+            {            std::cout<<"point: "<<pointidx<<std::endl;
               VectorXr temp_inverse_curr_levelpops=currspeclevelpops(Eigen::seq(currlspec.index(pointidx,0),currlspec.index(pointidx,currlspec.linedata.nlev-1))).cwiseInverse();
               temp_rel_diff_pops(Eigen::seq(currlspec.index(pointidx,0),currlspec.index(pointidx,currlspec.linedata.nlev-1)))=diff_pops(Eigen::seq(currlspec.index(pointidx,0),currlspec.index(pointidx,currlspec.linedata.nlev-1))).cwiseProduct(temp_inverse_curr_levelpops);
             }
@@ -736,11 +741,17 @@ int Model :: compute_level_populations_multigrid (
               temp_rel_diff_pops(Eigen::seq(currlspec.index(pointidx,0),currlspec.index(pointidx,currlspec.linedata.nlev-1))).setZero();
             }
           }
+
+          std::cout<<"flag23"<<std::endl;
           rel_diff_pops[specidx]=temp_rel_diff_pops;
         }
 
+        std::cout<<"flag3"<<std::endl;
+
         //Now finally interpolate the relative differences
         interpolate_relative_differences_local(geometry.points.multiscale.get_curr_coars_lvl(), rel_diff_pops);
+
+        std::cout<<"flag4"<<std::endl;
 
         geometry.points.multiscale.set_curr_coars_lvl(geometry.points.multiscale.get_curr_coars_lvl()-1);
 
@@ -781,6 +792,8 @@ int Model :: compute_level_populations_multigrid (
         //and add the corrected levelpops for this species
         corrected_levelpops.push_back(temp_corrected_levelpops);
         }
+
+        std::cout<<"flag5"<<std::endl;
 
         std::cout<<"Now setting the corrected levelpops"<<std::endl;
         lines.set_all_level_pops(corrected_levelpops);

@@ -15,7 +15,8 @@ struct Multiscale
     // First index over levels of coarsening (l),
     // second index over points (p).
     // Assume the finest mesh (l=0) is given.
-    Bool2 mask;
+    vector<Vector<unsigned char>> mask;
+    // Note: Vector<bool> doesnt work due to not having .data()
 
     // The gpu compatible way of storing the neighbors
     vector<Vector<Size>>     gpu_cum_n_neighbors;   ///< cumulative number of neighbors (coars lvl, point)
@@ -77,7 +78,7 @@ struct Multiscale
     //Returns the number of neighbors od point p at the current coarsening level
     inline Size get_nb_neighbors(const Size p) const;
     //Returns the mask of points still in the grid at level curr_level
-    inline Bool1 get_mask(const Size lvl) const;
+    inline Vector<unsigned char> get_mask(const Size lvl) const;
     //Returns the total number of points remaining at level curr_level
     inline Size get_total_points(const Size lvl);
     //Returns the points in the current grid

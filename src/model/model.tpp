@@ -47,27 +47,33 @@ inline bool Model::points_are_similar(Size point1, Size point2, double tolerance
 
 ///  Coarsen the mesh, i.e. add another coarser level
 ///    @param[in] tol: The coarsening tolerance used for coarsening the grid
-///////////////////////////////////////
-inline void Model::coarsen(double tol)
+///    @param[in] new_coars_lvl: The new coarsening level
+////////////////////////////////////////////////////////////////////////////
+inline void Model::coarsen(double tol, Size new_coars_lvl)
 {
-    geometry.points.multiscale.mask     .push_back(vector<bool>          (geometry.points.multiscale.mask     .back()));//should be deep copy
+    // Adding a new grid; thus introducing its mask
+    geometry.points.multiscale.mask[new_coars_lvl].resize(parameters.npoints());
+
+    // Copying the values for the previous grid
+    for (Size index=0; index<parameters.npoints(); index++)
+    {
+        geometry.points.multiscale.mask[new_coars_lvl][index]=geometry.points.multiscale.mask[new_coars_lvl-1][index];
+    }
+
     geometry.points.multiscale.neighbors.push_back(vector<std::set<Size>>(geometry.points.multiscale.neighbors.back()));//should be deep copy
     std::set<Size> points_coarsened_around;
-    // geometry.points.multiscale.curr_coarsening_lvl=geometry.points.multiscale.get_max_coars_lvl();
-    geometry.points.multiscale.set_curr_coars_lvl(geometry.points.multiscale.get_max_coars_lvl());
+    geometry.points.multiscale.set_curr_coars_lvl(new_coars_lvl);
     std::cout<<"curr coarsening level: "<<geometry.points.multiscale.curr_coarsening_lvl<<std::endl;
 
     vector<Size> points_to_process=geometry.points.multiscale.get_current_points_in_grid();
     for (Size p: points_to_process)
     {
-        if (can_be_coarsened(p, points_coarsened_around, tol))
+        if (can_be_coarsened(p, points_coarsened_around, tol, new_coars_lvl))
         {
-            coarsen_around_point(p);
+            coarsen_around_point(p, new_coars_lvl);
             points_coarsened_around.insert(p);
         }
     }
-    // And do not forget to set the gpu neighbors after coarsening
-    geometry.points.multiscale.set_gpu_neighbors();
 }
 
 
@@ -76,9 +82,9 @@ inline void Model::coarsen(double tol)
 ///    @param[in] points_coarsened_around:  The set of point that are already coarsened around in this coarsening step
 ///    @param[in] tol: The coarsening tolerance
 /////////////////////////////////////////////////////////////
-inline bool Model::can_be_coarsened (const Size p, std::set<Size>& points_coarsened_around, double tol)
+inline bool Model::can_be_coarsened (const Size p, std::set<Size>& points_coarsened_around, double tol, Size new_coars_lvl)
 {
-    if (!geometry.points.multiscale.mask.back()[p]||!geometry.not_on_boundary(p))
+    if (!geometry.points.multiscale.mask[new_coars_lvl][p]||!geometry.not_on_boundary(p))
     {
         return false;
     }//if point no longer in grid, do not coarsen
@@ -105,10 +111,9 @@ inline bool Model::can_be_coarsened (const Size p, std::set<Size>& points_coarse
 /////////////////////////////////////////////////////////////
 ///  Will delete all (non-neighbor) points around p and then reconnect all neighbors of neighbors
 ///  such that we have a delaunay grid
-inline void Model::coarsen_around_point (const Size p)
+inline void Model::coarsen_around_point (const Size p, Size new_coars_lvl)
 {
-
-    // // Boundary neighbors need to be treated differently
+    // Boundary neighbors need to be treated differently
     std::set<Size> boundary_neighbors;
 
     // Delete all neighbors around the current point (p),
@@ -119,14 +124,9 @@ inline void Model::coarsen_around_point (const Size p)
     {
       if (geometry.not_on_boundary(n))//boundary points will NEVER get removed
         {
-          geometry.points.multiscale.mask.back()[n] = false;
+          geometry.points.multiscale.mask[new_coars_lvl][n] = false;
           //maps neighbor to point which deleted it (fallback plan for interpolation)
           geometry.points.multiscale.point_deleted_map.insert(std::pair<Size,Size>(n,p));
-          // //DEBUG STUFF
-          // if(n==152970)
-          // {std::cout<<"Point 152970 deleted!"<<std::endl;}
-          // if(n==152833)
-          // {std::cout<<"Point 152833 deleted!"<<std::endl;}
         }
     }
 
@@ -140,15 +140,10 @@ inline void Model::coarsen_around_point (const Size p)
       {
         for (const Size n_n : geometry.points.multiscale.neighbors.back()[n])
         {
-          if (geometry.points.multiscale.mask.back()[n_n]&&n_n!=p)//if neighbor of neighbor is still in the grid, i.e. not just a neighbor; also, do never try to add a point as its own neighbor!!!!
+          if (geometry.points.multiscale.mask[new_coars_lvl][n_n]&&n_n!=p)//if neighbor of neighbor is still in the grid, i.e. not just a neighbor; also, do never try to add a point as its own neighbor!!!!
           {
             neighbors_of_neighbors.insert(n_n);// add neighbor of neighbor to the vector
             geometry.points.multiscale.neighbors.back()[n_n].erase(n);//remove n from neighbors of n_n
-            // //DEBUG STUFF
-            // if(n==152970)
-            // {std::cout<<"Removed point 152970 as neighbor from "<<n_n<<std::endl;}
-            // if(n==152833)
-            // {std::cout<<"Removed point 152833 as neighbor from "<<n_n<<std::endl;}
           }
         }
         geometry.points.multiscale.neighbors.back()[n]=std::set<Size>();//and finally also delete every neighbor of the deleted point
@@ -167,7 +162,7 @@ inline void Model::coarsen_around_point (const Size p)
     {
       for (const Size n_n_n : geometry.points.multiscale.neighbors.back()[aff_point])
       {
-        if (geometry.points.multiscale.mask.back()[n_n_n]&&n_n_n!=p)//add if neighbor of affected point is still in the grid, i.e. not just a neighbor; also, do never try to add a point as its own neighbor!!!!
+        if (geometry.points.multiscale.mask[new_coars_lvl][n_n_n]&&n_n_n!=p)//add if neighbor of affected point is still in the grid, i.e. not just a neighbor; also, do never try to add a point as its own neighbor!!!!
         {
           container_points.insert(n_n_n);
         }
@@ -291,20 +286,6 @@ inline void Model::coarsen_around_point (const Size p)
             // finally adding a new neighbor for a neighbor of neighbor
             geometry.points.multiscale.neighbors.back()[current_point].insert(size_found_neighbor);
             geometry.points.multiscale.neighbors.back()[size_found_neighbor].insert(current_point);
-            // //DEBUG STUFF
-            // if (current_point==152833&&size_found_neighbor==152970)
-            // {std::cout<<"Point 152833 added point 152970"<<std::endl;
-            // std::cout<<"Point 152833 has point 152970 as neighbor? "<<(geometry.points.multiscale.neighbors.back()[size_found_neighbor].find(current_point) !=
-            //     geometry.points.multiscale.neighbors.back()[size_found_neighbor].end())<<std::endl;
-            // std::cout<<"Point 152970 has point 152833 as neighbor? "<<(geometry.points.multiscale.neighbors.back()[current_point].find(size_found_neighbor) !=
-            //     geometry.points.multiscale.neighbors.back()[current_point].end())<<std::endl;
-            // std::cout<<"Point 152833 has point 152970 as neighbor (using standard functions)? "<<(geometry.points.multiscale.get_neighbors(size_found_neighbor).find(current_point) !=
-            //     geometry.points.multiscale.get_neighbors(size_found_neighbor).end())<<std::endl;
-            // std::cout<<"Point 152970 has point 152833 as neighbor (using standard functions)? "<<(geometry.points.multiscale.get_neighbors(current_point).find(size_found_neighbor) !=
-            //     geometry.points.multiscale.get_neighbors(current_point).end())<<std::endl;
-            // }
-            // if (current_point==152970&&size_found_neighbor==152833)
-            // {std::cout<<"Point 152970 added point 152833"<<std::endl;}
           }
         }
       }
@@ -327,6 +308,15 @@ inline void Model::coarsen_around_point (const Size p)
 /////////////////////////////////////////////////////////////////////////////////
 inline int Model::setup_multigrid(Size max_coars_lvl, double tol, Size mgImplementation, Size max_nb_iterations, Size finest_lvl)//, string MgImplementation
 {
+    //Preparing the masks for each level
+    geometry.points.multiscale.mask.resize(max_coars_lvl+1);
+    //at level 0, the mask is of course all true
+    geometry.points.multiscale.mask[0].resize(parameters.npoints());
+    for (Size i=0; i<parameters.npoints(); i++)
+    {
+        geometry.points.multiscale.mask[0][i]=true;
+    }
+
   //set number of off-diagonal elements in lambda matrix 0; needed because we will interpolate these values??
   //TODO: find reasons to remove this
   //TODO maybe add switch
@@ -334,47 +324,51 @@ inline int Model::setup_multigrid(Size max_coars_lvl, double tol, Size mgImpleme
   //FIXME: check which level we actually reach!!!!!
   //TODO: add check whether one is between 2*nb boundary points (because then we devolve into useless territory)
 
-  parameters.n_off_diag=0;
+    parameters.n_off_diag=0;
   // tol=deltatol
   //first, we coarsen the grid until we either have too few points left or have too many coarsening levels
-  while(geometry.points.multiscale.get_max_coars_lvl()<max_coars_lvl)
+    Size new_coars_lvl=1;
+    while(new_coars_lvl<=max_coars_lvl)
   // (geometry.points.multiscale.get_total_points(geometry.points.multiscale.get_max_coars_lvl())>min_nb_points))
-  {std::cout<<"coarsening layer"<<std::endl;
+    {std::cout<<"coarsening layer"<<std::endl;
     //options for choosing the tolerance adaptively
     //tol=n*deltatol
-    double temp_tol=1-std::pow(1-tol,geometry.points.multiscale.get_max_coars_lvl()+1);
-    std::cout<<"temp tol: "<<temp_tol<<std::endl;
-    coarsen(temp_tol);
-    std::cout<<"coarsened layer; number points remaining: "<<geometry.points.multiscale.get_total_points(geometry.points.multiscale.get_max_coars_lvl())<<std::endl;
-  }
-  std::cout<<"finished coarsening"<<std::endl;
+        double temp_tol=1-std::pow(1-tol,new_coars_lvl);
+        std::cout<<"temp tol: "<<temp_tol<<std::endl;
+        coarsen(temp_tol, new_coars_lvl);
+        std::cout<<"coarsened layer; number points remaining: "<<geometry.points.multiscale.get_total_points(new_coars_lvl)<<std::endl;
+        new_coars_lvl++;
+    }
+    std::cout<<"finished coarsening"<<std::endl;
 
-  switch (mgImplementation) {
-    case 1://"NaiveMG":
+    switch (mgImplementation) {
+        case 1://"NaiveMG":
+        {
+            std::shared_ptr<MgController> tempImplement_ptr=std::make_shared<NaiveMG>(geometry.points.multiscale.get_max_coars_lvl()+1,finest_lvl,max_nb_iterations);
+            mgControllerHelper=MgControllerHelper(tempImplement_ptr);
+        }
+        break;
+        case 2://"VCycle":
+        {
+            std::shared_ptr<MgController> tempImplement_ptr=std::make_shared<VCycle>(geometry.points.multiscale.get_max_coars_lvl()+1,finest_lvl,1,max_nb_iterations);
+            mgControllerHelper=MgControllerHelper(tempImplement_ptr);
+        }
+        break;
+      case 3://"WCycle":
       {
-      std::shared_ptr<MgController> tempImplement_ptr=std::make_shared<NaiveMG>(geometry.points.multiscale.get_max_coars_lvl()+1,finest_lvl,max_nb_iterations);
-      mgControllerHelper=MgControllerHelper(tempImplement_ptr);
+          std::shared_ptr<MgController> tempImplement_ptr=std::make_shared<WCycle>(geometry.points.multiscale.get_max_coars_lvl()+1,finest_lvl,1,max_nb_iterations);
+          mgControllerHelper=MgControllerHelper(tempImplement_ptr);
       }
       break;
-    case 2://"VCycle":
-      {
-      std::shared_ptr<MgController> tempImplement_ptr=std::make_shared<VCycle>(geometry.points.multiscale.get_max_coars_lvl()+1,finest_lvl,1,max_nb_iterations);
-      mgControllerHelper=MgControllerHelper(tempImplement_ptr);
-      }
-      break;
-    case 3://"WCycle":
-      {
-      std::shared_ptr<MgController> tempImplement_ptr=std::make_shared<WCycle>(geometry.points.multiscale.get_max_coars_lvl()+1,finest_lvl,1,max_nb_iterations);
-      mgControllerHelper=MgControllerHelper(tempImplement_ptr);
-      }
-      break;
-    default:
+      default:
       std::cout<<"The value entered for mgImplementation: "<<mgImplementation<<" does not refer to a valid multigrid implementation."<<std::endl;
       throw std::runtime_error("Error: " + std::to_string(mgImplementation) +" is not a valid multigrid implementation argument.");
       break;
   }
   //Initialize structure for previously computed level populations at each level
   computed_level_populations.resize(geometry.points.multiscale.get_max_coars_lvl()+1);
+  // And do not forget to set the gpu neighbors after coarsening
+  geometry.points.multiscale.set_gpu_neighbors();
 
   return (0);
 }
@@ -409,8 +403,8 @@ inline void Model::interpolate_relative_differences_local(Size coarser_lvl, vect
   std::cout<<"Starting the interpolation"<<std::endl;
   Size nb_points=parameters.npoints();
 
-  vector<bool> coarse_mask=geometry.points.multiscale.get_mask(coarser_lvl);
-  vector<bool> finer_mask=geometry.points.multiscale.get_mask(coarser_lvl-1);
+  Vector<unsigned char> coarse_mask=geometry.points.multiscale.get_mask(coarser_lvl);
+  Vector<unsigned char> finer_mask=geometry.points.multiscale.get_mask(coarser_lvl-1);
 
   vector<Size> diff_points;
 
@@ -615,8 +609,8 @@ inline void Model::interpolate_levelpops_local(Size coarser_lvl)
   std::cout<<"Starting the interpolation"<<std::endl;
   Size nb_points=parameters.npoints();
 
-  vector<bool> coarse_mask=geometry.points.multiscale.get_mask(coarser_lvl);
-  vector<bool> finer_mask=geometry.points.multiscale.get_mask(coarser_lvl-1);
+  Vector<unsigned char> coarse_mask=geometry.points.multiscale.get_mask(coarser_lvl);
+  Vector<unsigned char> finer_mask=geometry.points.multiscale.get_mask(coarser_lvl-1);
 
   vector<Size> diff_points;
 

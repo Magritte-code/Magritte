@@ -57,11 +57,11 @@ struct Model
 
     inline double calc_distance2(Size point1,Size point2);
 
-    inline void coarsen (double tol);
+    inline void coarsen (double tol, Size new_coars_lvl);
 
-    inline bool can_be_coarsened (const Size p, std::set<Size>& points_coarsened_around, double tol);
+    inline bool can_be_coarsened (const Size p, std::set<Size>& points_coarsened_around, double tol, Size new_coars_lvl);
 
-    inline void coarsen_around_point (const Size p);
+    inline void coarsen_around_point (const Size p, Size new_coars_lvl);
 
     inline void interpolate_relative_differences_local(Size coarser_lvl, vector<VectorXr> &relative_difference_levelpopulations);
 
