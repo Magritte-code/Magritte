@@ -2,6 +2,7 @@
 #include "model/parameters/parameters.hpp"
 #include <set>
 #include <map>
+#include <tuple>
 
 /// This class is meant to easily coarsen the grid stored in it.
 struct Multiscale
@@ -15,6 +16,21 @@ struct Multiscale
     // second index over points (p).
     // Assume the finest mesh (l=0) is given.
     Bool2 mask;
+
+    // The gpu compatible way of storing the neighbors
+    vector<Vector<Size>>     gpu_cum_n_neighbors;   ///< cumulative number of neighbors (coars lvl, point)
+    vector<Vector<Size>>         gpu_n_neighbors;   ///< number of neighbors (coars lvl, point)
+    vector<Vector<Size>>           gpu_neighbors;   ///< neighbors of each point (coars lvl, point)
+
+    // Sets the neighbors compatible with gpu usage from the other neighbors
+    inline void set_gpu_neighbors();
+
+    // Returns a reference to the first neighbors in the linearized list in which the neighbors are stores and the amount of neighbors the point has
+    inline std::tuple<Size*,Size> get_gpu_neighbors(const Size p) const;
+    inline std::tuple<Size*,Size> get_gpu_neighbors(const Size p, const Size coars_lvl) const;
+
+
+    //Although the next datastructures are more easy to work with, there is currently no gpu support for vectors of vectors
 
     // Nearest neighbors for each point in the geometry,
     // first index over levels of coarsening (l),
@@ -32,7 +48,7 @@ struct Multiscale
 
 
     //returns the current max coarsening level (=size neighbors-1)
-    inline Size get_max_coars_lvl();
+    inline Size get_max_coars_lvl() const;
     //returns the current coarsening level
     inline Size get_curr_coars_lvl() const;
     //sets the current coarsening level
@@ -48,8 +64,12 @@ struct Multiscale
     inline std::set<Size> get_neighbors(const Size p, const Size coars_lvl) const;
     //Returns the neighbors of point p, at current coarsening level
     inline std::set<Size> get_neighbors(const Size p) const;
+    //Returns all neighbors on the specified level as a single vector
+    inline Size1 get_all_neighbors_as_vector(const Size coars_lvl) const;
     //Returns all neighbors on the finest level as a single vector
     inline Size1 get_all_neighbors_as_vector() const;
+    //Returns the number of neighbors on the finest level as vector
+    inline Size1 get_all_nb_neighbors(const Size coars_lvl) const;
     //Returns the number of neighbors on the finest level as vector
     inline Size1 get_all_nb_neighbors() const;
     //Returns the number of neighbors od point p at coarsening level coars_lvl

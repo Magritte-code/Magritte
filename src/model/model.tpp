@@ -66,6 +66,8 @@ inline void Model::coarsen(double tol)
             points_coarsened_around.insert(p);
         }
     }
+    // And do not forget to set the gpu neighbors after coarsening
+    geometry.points.multiscale.set_gpu_neighbors();
 }
 
 
