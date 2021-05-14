@@ -253,7 +253,7 @@ PYBIND11_MODULE (core, module)
         .def("get_all_neighbors_as_vector", (Size1 (Multiscale::*)() const) &Multiscale::get_all_neighbors_as_vector)
         .def("get_all_nb_neighbors", (Size1 (Multiscale::*)(const Size) const) &Multiscale::get_all_nb_neighbors)
         .def("get_all_nb_neighbors", (Size1 (Multiscale::*)() const) &Multiscale::get_all_nb_neighbors)
-        .def("get_mask", &Multiscale::get_mask)
+        // .def("get_mask", &Multiscale::get_mask)
         .def("get_total_points", &Multiscale::get_total_points)
         .def("get_current_points_in_grid", &Multiscale::get_current_points_in_grid)
         // io

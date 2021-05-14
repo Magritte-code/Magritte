@@ -103,7 +103,7 @@ inline Size Geometry :: get_next_spherical_symmetry (
         {
             next = c - 1;
             Size curr_coars_lvl=points.multiscale.get_curr_coars_lvl();
-            while(!(points.multiscale.get_mask(curr_coars_lvl))[next])
+            while(!points.multiscale.mask[curr_coars_lvl][next])
             {
               // std::cout<<"next: "<<next<<std::endl;
               next=next-1;
@@ -125,7 +125,7 @@ inline Size Geometry :: get_next_spherical_symmetry (
 
         next = c + 1;
         Size curr_coars_lvl=points.multiscale.get_curr_coars_lvl();
-        while(!(points.multiscale.get_mask(curr_coars_lvl))[next])
+        while(!points.multiscale.mask[curr_coars_lvl][next])
         {
           // std::cout<<"next: "<<next<<std::endl;
           next=next+1;

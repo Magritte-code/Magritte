@@ -28,7 +28,6 @@ inline void Multiscale::set_all_neighbors(vector<Size>& n_neighbors, vector<Size
     auto beginvect=std::begin(new_neighbors);//is iterator
     for (Size i=0; i<parameters.npoints(); i++)
     {
-        std::cout<<"mask: "<<(mask[0][i]==true)<<std::endl;
         std::set<Size> curr_neighbors(beginvect+curr_index,beginvect+curr_index+n_neighbors[i]);
         curr_index+=n_neighbors[i];
         temp_neighbors[i]=curr_neighbors;
@@ -249,14 +248,15 @@ inline void Multiscale::set_curr_coars_lvl(Size lvl)
         curr_coarsening_lvl=lvl;
     }
 }
+// // TODO: after paracabs vector update, reenable this
+// /// Returns the mask at the given coarsening level
+// ///   @param[in]  lvl: The index of the coarsening level
+// ////////////////////////////////////////////////////////
+// inline Vector<unsigned char> Multiscale::get_mask(const Size lvl) const
+// {
+//     return mask[lvl];
+// }
 
-/// Returns the mask at the given coarsening level
-///   @param[in]  lvl: The index of the coarsening level
-////////////////////////////////////////////////////////
-inline Vector<unsigned char> Multiscale::get_mask(const Size lvl) const
-{
-    return mask[lvl];
-}
 /// Returns the total number of points remaining at the given coarsening level
 ///   @param[in]  lvl: The index of the coarsening level
 //////////////////////////////////////////////////////////////////////////////

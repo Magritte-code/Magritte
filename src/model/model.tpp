@@ -403,14 +403,15 @@ inline void Model::interpolate_relative_differences_local(Size coarser_lvl, vect
   std::cout<<"Starting the interpolation"<<std::endl;
   Size nb_points=parameters.npoints();
 
-  Vector<unsigned char> coarse_mask=geometry.points.multiscale.get_mask(coarser_lvl);
-  Vector<unsigned char> finer_mask=geometry.points.multiscale.get_mask(coarser_lvl-1);
+  // Vector<unsigned char> coarse_mask=geometry.points.multiscale.get_mask(coarser_lvl);
+  // Vector<unsigned char> finer_mask=geometry.points.multiscale.get_mask(coarser_lvl-1);
 
   vector<Size> diff_points;
 
   for (Size point=0; point<nb_points; point++)
   {
-    if(finer_mask[point]&&!coarse_mask[point])
+    // if(finer_mask[point]&&!coarse_mask[point])
+    if((geometry.points.multiscale.mask[coarser_lvl-1][point])&&!(geometry.points.multiscale.mask[coarser_lvl][point]))
     {
       diff_points.push_back(point);
     }
@@ -432,7 +433,8 @@ inline void Model::interpolate_relative_differences_local(Size coarser_lvl, vect
     neighbors_coarser_grid.reserve(curr_neighbors.size());//i am overallocating a bit, but this variable is temporary anyway...
     for (Size neighbor: curr_neighbors)
     {
-      if (coarse_mask[neighbor])
+      // if (coarse_mask[neighbor])
+      if (geometry.points.multiscale.mask[coarser_lvl][neighbor])
       {
         neighbors_coarser_grid.push_back(neighbor);
       }
@@ -609,21 +611,23 @@ inline void Model::interpolate_levelpops_local(Size coarser_lvl)
   std::cout<<"Starting the interpolation"<<std::endl;
   Size nb_points=parameters.npoints();
 
-  Vector<unsigned char> coarse_mask=geometry.points.multiscale.get_mask(coarser_lvl);
-  Vector<unsigned char> finer_mask=geometry.points.multiscale.get_mask(coarser_lvl-1);
+  // Vector<unsigned char> coarse_mask=geometry.points.multiscale.get_mask(coarser_lvl);
+  // Vector<unsigned char> finer_mask=geometry.points.multiscale.get_mask(coarser_lvl-1);
 
   vector<Size> diff_points;
 
   for (Size point=0; point<nb_points; point++)
   {
-    if(finer_mask[point]&&!coarse_mask[point])
+    // if(finer_mask[point]&&!coarse_mask[point])
+    if(geometry.points.multiscale.mask[coarser_lvl-1][point]&&!geometry.points.multiscale.mask[coarser_lvl][point])
     {
       diff_points.push_back(point);
     }
   }
 
-  // Size nb_coarse_points=coarse_points.size();
   Size nb_diff_points=diff_points.size();
+
+  // std::cout<<"nb_diff_points: "<<nb_diff_points<<std::endl;
 
   //if we have truly nothing to do, just do nothing
   if (nb_diff_points==0)
@@ -638,7 +642,8 @@ inline void Model::interpolate_levelpops_local(Size coarser_lvl)
     neighbors_coarser_grid.reserve(curr_neighbors.size());//i am overallocating a bit, but this variable is temporary anyway...
     for (Size neighbor: curr_neighbors)
     {
-      if (coarse_mask[neighbor])
+      // if (coarse_mask[neighbor])
+      if (geometry.points.multiscale.mask[coarser_lvl][neighbor])
       {
         neighbors_coarser_grid.push_back(neighbor);
       }
