@@ -147,7 +147,7 @@ def run_model (a_or_b, nosave=False):
     model.compute_inverse_line_widths     ()
     model.compute_LTE_level_populations   ()
     model.writing_populations_to_disk=True;
-    nlevels=1
+    nlevels=2
     model.setup_multigrid(nlevels,0.2,1,1000,0);
     # model.restart_from_iteration(48,0)
     timer2.stop()

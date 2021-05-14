@@ -17,46 +17,46 @@ import magritte.core     as magritte
 
 from scipy.interpolate import interp1d
 
-# dimension = 3
-# nrays     = 12*3**2
-# nspecs    = 5
-# nlspecs   = 1
-# nquads    = 11
-#
-# r_in   = 1.0E13   # [m]
-# r_out  = 7.8E16   # [m]
-# nH2_in = 2.0E13   # [m^-3]
-# temp   = 20.0     # [K]
-# turb   = 150.00   # [.]
-#
-# get_X_mol = {
-#     'a' : 1.0E-8,
-#     'b' : 1.0E-6
-# }
-#
-# scale_max = 0.05 * r_out
-# scale_min = 0.05 * r_in
-# scale_cte = 0.05 * r_in
-# scale_fun = f'{scale_cte / r_in**2} * (x*x + y*y + z*z)'
-#
-# meshName = f'{moddir}/vanZadelhoff_1_3D_mesher.vtk'
-#
-# mesher.create_mesh_from_function(
-#     meshName       = meshName,
-#     boundary       = mesher.boundary_sphere_in_sphere(
-#                          radius_in  = r_in,
-#                          radius_out = r_out),
-#     scale_min      = scale_min,
-#     scale_max      = scale_max,
-#     scale_function = scale_fun )
-#
-# mesh = mesher.Mesh(meshName)
-#
-# npoints = len(mesh.points)
-# nbs     = [n for sublist in mesh.neighbors for n in sublist]
-# n_nbs   = [len(sublist) for sublist in mesh.neighbors]
-#
-# rs = np.linalg.norm(mesh.points, axis=1)
+dimension = 3
+nrays     = 12*3**2#12*3**2
+nspecs    = 5
+nlspecs   = 1
+nquads    = 11#11
+
+r_in   = 1.0E13   # [m]
+r_out  = 7.8E16   # [m]
+nH2_in = 2.0E13   # [m^-3]
+temp   = 20.0     # [K]
+turb   = 150.00   # [.]
+
+get_X_mol = {
+    'a' : 1.0E-8,
+    'b' : 1.0E-6
+}
+
+scale_max = 0.05 * r_out
+scale_min = 0.05 * r_in
+scale_cte = 0.05 * r_in
+scale_fun = f'{scale_cte / r_in**2} * (x*x + y*y + z*z)'
+
+meshName = f'{moddir}/vanZadelhoff_1_3D_mesher.vtk'
+
+mesher.create_mesh_from_function(
+    meshName       = meshName,
+    boundary       = mesher.boundary_sphere_in_sphere(
+                         radius_in  = r_in,
+                         radius_out = r_out),
+    scale_min      = scale_min,
+    scale_max      = scale_max,
+    scale_function = scale_fun )
+
+mesh = mesher.Mesh(meshName)
+
+npoints = len(mesh.points)
+nbs     = [n for sublist in mesh.neighbors for n in sublist]
+n_nbs   = [len(sublist) for sublist in mesh.neighbors]
+
+rs = np.linalg.norm(mesh.points, axis=1)
 
 
 def create_model (a_or_b):
@@ -130,9 +130,9 @@ def run_model (a_or_b, nosave=False):
     model.compute_inverse_line_widths     ()
     model.compute_LTE_level_populations   ()
     nlevels=1;#should be coarsest level; misleading name
-    #1 multigrid levels, 0.1 as tolerance, mgImplementation=2 (Naive,Vcycle,Wcycle)
+    #1 multigrid levels, 0.1 as tolerance, mgImplementation=1 (Naive,Vcycle,Wcycle)
     model.setup_multigrid(nlevels,0.1,1,1000,0);
-
+    # model.restart_from_iteration(8,1);
     model.writing_populations_to_disk=True;
     timer2.stop()
 
@@ -194,7 +194,7 @@ def run_model (a_or_b, nosave=False):
 
 def run_test (nosave=False):
 # for simplicity, we only try the first model
-    # create_model ('a')
+    create_model ('a')
     run_model    ('a', nosave)
 
     # create_model ('b')

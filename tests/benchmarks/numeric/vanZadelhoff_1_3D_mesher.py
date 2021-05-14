@@ -131,7 +131,7 @@ def run_model (a_or_b, nosave=False):
     model.compute_inverse_line_widths     ()
     model.compute_LTE_level_populations   ()
     model.writing_populations_to_disk=True;
-    model.restart_from_iteration(100,0);
+    # model.restart_from_iteration(100,0);
     timer2.stop()
 
     timer3 = tools.Timer('running model')
@@ -190,10 +190,10 @@ def run_model (a_or_b, nosave=False):
 def run_test (nosave=False):
 
     # create_model ('a')
-    # run_model    ('a', nosave)
+    run_model    ('a', nosave)
 
     # create_model ('b')
-    run_model    ('b', nosave)
+    # run_model    ('b', nosave)
 
     return
 
