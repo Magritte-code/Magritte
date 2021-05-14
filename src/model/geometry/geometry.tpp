@@ -2,6 +2,7 @@
 #include <cmath>
 #include <algorithm>    // std::max
 #include <set>
+#include <tuple>
 
 
 ///  Getter for the number of the next cell on ray and its distance along ray in
@@ -20,15 +21,18 @@ accel inline Size Geometry :: get_next_general_geometry (
           double& Z,
           double& dZ                   ) const
 {
-    Size n_nbs = points.multiscale.get_nb_neighbors(c);
 
     double dmin = std::numeric_limits<Real>::max();   // Initialize to "infinity"
     Size   next = parameters.npoints();               // return npoints when there is no next
 
-    std::set<Size> temp_neighbors=points.multiscale.get_neighbors(c);
-
-    for (Size n:temp_neighbors)
+    std::tuple<Size*,Size> temp_tuple=points.multiscale.get_gpu_neighbors(c);
+    Size* start_neighbors=std::get<0>(temp_tuple);
+    Size nb_neighbors=std::get<1>(temp_tuple);
+    // for (Size n:temp_neighbors)
+    for (Size i = 0; i < nb_neighbors; i++)
     {
+        const Size n=*(start_neighbors+i);
+//        const Size     n     = points.nbs[c*nnbs+i];
         const Vector3D R     = points.position[n] - points.position[o];
         const double   Z_new = R.dot(rays.direction[r]);
 
@@ -87,7 +91,7 @@ inline Size Geometry :: get_next_spherical_symmetry (
         {
             next = c - 1;
             Size curr_coars_lvl=points.multiscale.get_curr_coars_lvl();
-            while(!(points.multiscale.get_mask(curr_coars_lvl))[next])
+            while(!points.multiscale.mask[curr_coars_lvl][next])
             {
               next=next-1;
             }
@@ -108,9 +112,8 @@ inline Size Geometry :: get_next_spherical_symmetry (
 
         next = c + 1;
         Size curr_coars_lvl=points.multiscale.get_curr_coars_lvl();
-        while(!(points.multiscale.get_mask(curr_coars_lvl))[next])
+        while(!points.multiscale.mask[curr_coars_lvl][next])
         {
-          // std::cout<<"next: "<<next<<std::endl;
           next=next+1;
         }
         dZ   = +sqrt(points.position[next].squaredNorm() - Rsin2) - Rcos_plus_Z;
@@ -206,6 +209,11 @@ accel inline Size Geometry :: get_ray_length (
             shift_nxt = get_shift <frame> (o, r, nxt, Z    );
 
             l += get_n_interpl (shift_crt, shift_nxt, dshift_max);
+
+            if (!valid_point(nxt))
+            {
+                printf("ERROR: no valid neighbor o=%u, r=%u, crt=%u\n", o, r, crt);
+            }
         }
     }
 
