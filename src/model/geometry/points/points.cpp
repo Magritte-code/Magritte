@@ -94,7 +94,7 @@ void Points :: write (const Io& io) const
     io.write_array (prefix+"position", position_buffer);
     io.write_array (prefix+"velocity", velocity_buffer);
 
-    io.write_list (prefix+"n_neighbors", this->multiscale.get_all_nb_neighbors());
+    io.write_list (prefix+"n_neighbors", this->multiscale.get_all_n_neighbors());
     io.write_list (prefix+  "neighbors", this->multiscale.get_all_neighbors_as_vector());
 
 }
