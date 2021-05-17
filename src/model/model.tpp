@@ -302,11 +302,11 @@ inline void Model::coarsen_around_point (const Size p, Size new_coars_lvl)
 ///                 options: 1) NaiveMG
 ///                          2) VCycle
 ///                          3) WCycle
-///    @param[in]:  max_nb_iterations: The maximum number of iterations the multigrid scheme is allowed to do
+///    @param[in]:  max_n_iterations: The maximum number of iterations the multigrid scheme is allowed to do
 ///    @param[in]:  finest_lvl: The finest level the multigrid procedure will use. If not set to zero (i.e. just using all levels),
 ///    the resulting converged level populations will be those corresponding to the chosen 'finest_lvl'. This means one has to interpolate these level populations themselves. (using interpolate_levelpops_local)
 /////////////////////////////////////////////////////////////////////////////////
-inline int Model::setup_multigrid(Size max_coars_lvl, double tol, Size mgImplementation, Size max_nb_iterations, Size finest_lvl)//, string MgImplementation
+inline int Model::setup_multigrid(Size max_coars_lvl, double tol, Size mgImplementation, Size max_n_iterations, Size finest_lvl)//, string MgImplementation
 {
     //Preparing the masks for each level
     geometry.points.multiscale.mask.resize(max_coars_lvl+1);
@@ -329,7 +329,7 @@ inline int Model::setup_multigrid(Size max_coars_lvl, double tol, Size mgImpleme
   //first, we coarsen the grid until we either have too few points left or have too many coarsening levels
     Size new_coars_lvl=1;
     while(new_coars_lvl<=max_coars_lvl)
-  // (geometry.points.multiscale.get_total_points(geometry.points.multiscale.get_max_coars_lvl())>min_nb_points))
+  // (geometry.points.multiscale.get_total_points(geometry.points.multiscale.get_max_coars_lvl())>min_n_points))
     {std::cout<<"coarsening layer"<<std::endl;
     //options for choosing the tolerance adaptively
     //tol=n*deltatol
@@ -344,19 +344,19 @@ inline int Model::setup_multigrid(Size max_coars_lvl, double tol, Size mgImpleme
     switch (mgImplementation) {
         case 1://"NaiveMG":
         {
-            std::shared_ptr<MgController> tempImplement_ptr=std::make_shared<NaiveMG>(geometry.points.multiscale.get_max_coars_lvl()+1,finest_lvl,max_nb_iterations);
+            std::shared_ptr<MgController> tempImplement_ptr=std::make_shared<NaiveMG>(geometry.points.multiscale.get_max_coars_lvl()+1,finest_lvl,max_n_iterations);
             mgControllerHelper=MgControllerHelper(tempImplement_ptr);
         }
         break;
         case 2://"VCycle":
         {
-            std::shared_ptr<MgController> tempImplement_ptr=std::make_shared<VCycle>(geometry.points.multiscale.get_max_coars_lvl()+1,finest_lvl,1,max_nb_iterations);
+            std::shared_ptr<MgController> tempImplement_ptr=std::make_shared<VCycle>(geometry.points.multiscale.get_max_coars_lvl()+1,finest_lvl,1,max_n_iterations);
             mgControllerHelper=MgControllerHelper(tempImplement_ptr);
         }
         break;
       case 3://"WCycle":
       {
-          std::shared_ptr<MgController> tempImplement_ptr=std::make_shared<WCycle>(geometry.points.multiscale.get_max_coars_lvl()+1,finest_lvl,1,max_nb_iterations);
+          std::shared_ptr<MgController> tempImplement_ptr=std::make_shared<WCycle>(geometry.points.multiscale.get_max_coars_lvl()+1,finest_lvl,1,max_n_iterations);
           mgControllerHelper=MgControllerHelper(tempImplement_ptr);
       }
       break;
@@ -401,14 +401,14 @@ inline void Model::interpolate_relative_differences_local(Size coarser_lvl, vect
   if (coarser_lvl==0)
   {return;}
   std::cout<<"Starting the interpolation"<<std::endl;
-  Size nb_points=parameters.npoints();
+  Size n_points=parameters.npoints();
 
   // Vector<unsigned char> coarse_mask=geometry.points.multiscale.get_mask(coarser_lvl);
   // Vector<unsigned char> finer_mask=geometry.points.multiscale.get_mask(coarser_lvl-1);
 
   vector<Size> diff_points;
 
-  for (Size point=0; point<nb_points; point++)
+  for (Size point=0; point<n_points; point++)
   {
     // if(finer_mask[point]&&!coarse_mask[point])
     if((geometry.points.multiscale.mask[coarser_lvl-1][point])&&!(geometry.points.multiscale.mask[coarser_lvl][point]))
@@ -417,11 +417,11 @@ inline void Model::interpolate_relative_differences_local(Size coarser_lvl, vect
     }
   }
 
-  // Size nb_coarse_points=coarse_points.size();
-  Size nb_diff_points=diff_points.size();
+  // Size n_coarse_points=coarse_points.size();
+  Size n_diff_points=diff_points.size();
 
   //if we have truly nothing to do, just do nothing
-  if (nb_diff_points==0)
+  if (n_diff_points==0)
   {return;}
 
   //for every points in diff_points, try to find interpolating value using rbf function
@@ -497,12 +497,12 @@ inline void Model::interpolate_relative_differences_local(Size coarser_lvl, vect
       neighbors_coarser_grid=closest_points;
     }
 
-    Size nb_neighbors_coarser_grid=neighbors_coarser_grid.size();
+    Size n_neighbors_coarser_grid=neighbors_coarser_grid.size();
 
-    Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic> rbf_mat(nb_neighbors_coarser_grid, nb_neighbors_coarser_grid);
-    Eigen::Matrix<double,1,Eigen::Dynamic> distance_with_neighbors(1,nb_neighbors_coarser_grid);
+    Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic> rbf_mat(n_neighbors_coarser_grid, n_neighbors_coarser_grid);
+    Eigen::Matrix<double,1,Eigen::Dynamic> distance_with_neighbors(1,n_neighbors_coarser_grid);
 
-    for (Size idx=0; idx<nb_neighbors_coarser_grid; idx++)
+    for (Size idx=0; idx<n_neighbors_coarser_grid; idx++)
     {
       distance_with_neighbors(idx)=std::sqrt((geometry.points.position[neighbors_coarser_grid[idx]]-geometry.points.position[diff_point]).squaredNorm());
       rbf_mat(idx,idx)=0;//distance between point and itself is zero
@@ -542,8 +542,8 @@ inline void Model::interpolate_relative_differences_local(Size coarser_lvl, vect
       rel_diff_of_point.resize(lines.lineProducingSpecies[specidx].linedata.nlev);
       for (Size levidx=0; levidx<lines.lineProducingSpecies[specidx].linedata.nlev; levidx++)
       {
-        Eigen::Vector<double,Eigen::Dynamic> right_hand_side(nb_neighbors_coarser_grid);
-        for (Size idx=0; idx<nb_neighbors_coarser_grid; idx++)
+        Eigen::Vector<double,Eigen::Dynamic> right_hand_side(n_neighbors_coarser_grid);
+        for (Size idx=0; idx<n_neighbors_coarser_grid; idx++)
         {
           // // interpolating the fractional level populations, so we need the abundance of each species
           // double abund=chemistry.species.abundance[neighbors_coarser_grid[idx]][speciesnum];
@@ -609,14 +609,14 @@ inline void Model::interpolate_levelpops_local(Size coarser_lvl)
   if (coarser_lvl==0)
   {return;}
   std::cout<<"Starting the interpolation"<<std::endl;
-  Size nb_points=parameters.npoints();
+  Size n_points=parameters.npoints();
 
   // Vector<unsigned char> coarse_mask=geometry.points.multiscale.get_mask(coarser_lvl);
   // Vector<unsigned char> finer_mask=geometry.points.multiscale.get_mask(coarser_lvl-1);
 
   vector<Size> diff_points;
 
-  for (Size point=0; point<nb_points; point++)
+  for (Size point=0; point<n_points; point++)
   {
     // if(finer_mask[point]&&!coarse_mask[point])
     if(geometry.points.multiscale.mask[coarser_lvl-1][point]&&!geometry.points.multiscale.mask[coarser_lvl][point])
@@ -625,12 +625,12 @@ inline void Model::interpolate_levelpops_local(Size coarser_lvl)
     }
   }
 
-  Size nb_diff_points=diff_points.size();
+  Size n_diff_points=diff_points.size();
 
-  // std::cout<<"nb_diff_points: "<<nb_diff_points<<std::endl;
+  // std::cout<<"n_diff_points: "<<n_diff_points<<std::endl;
 
   //if we have truly nothing to do, just do nothing
-  if (nb_diff_points==0)
+  if (n_diff_points==0)
   {return;}
 
   //for every points in diff_points, try to find interpolating value using rbf function
@@ -706,12 +706,12 @@ inline void Model::interpolate_levelpops_local(Size coarser_lvl)
       neighbors_coarser_grid=closest_points;
     }
 
-    Size nb_neighbors_coarser_grid=neighbors_coarser_grid.size();
+    Size n_neighbors_coarser_grid=neighbors_coarser_grid.size();
 
-    Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic> rbf_mat(nb_neighbors_coarser_grid, nb_neighbors_coarser_grid);
-    Eigen::Matrix<double,1,Eigen::Dynamic> distance_with_neighbors(1,nb_neighbors_coarser_grid);
+    Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic> rbf_mat(n_neighbors_coarser_grid, n_neighbors_coarser_grid);
+    Eigen::Matrix<double,1,Eigen::Dynamic> distance_with_neighbors(1,n_neighbors_coarser_grid);
 
-    for (Size idx=0; idx<nb_neighbors_coarser_grid; idx++)
+    for (Size idx=0; idx<n_neighbors_coarser_grid; idx++)
     {
       distance_with_neighbors(idx)=std::sqrt((geometry.points.position[neighbors_coarser_grid[idx]]-geometry.points.position[diff_point]).squaredNorm());
       rbf_mat(idx,idx)=0;//distance between point and itself is zero
@@ -750,8 +750,8 @@ inline void Model::interpolate_levelpops_local(Size coarser_lvl)
       linefracs.resize(lines.lineProducingSpecies[specidx].linedata.nlev);
       for (Size levidx=0; levidx<lines.lineProducingSpecies[specidx].linedata.nlev; levidx++)
       {
-        Eigen::Vector<double,Eigen::Dynamic> right_hand_side(nb_neighbors_coarser_grid);
-        for (Size idx=0; idx<nb_neighbors_coarser_grid; idx++)
+        Eigen::Vector<double,Eigen::Dynamic> right_hand_side(n_neighbors_coarser_grid);
+        for (Size idx=0; idx<n_neighbors_coarser_grid; idx++)
         {
           // interpolating the fractional level populations, so we need the abundance of each species
           double abund=chemistry.species.abundance[neighbors_coarser_grid[idx]][speciesnum];

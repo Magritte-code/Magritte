@@ -282,15 +282,15 @@ inline void LineProducingSpecies :: update_using_statistical_equilibrium (
 
     // We can split our block diagonal matrix if there are no non-local contributions
     if (parameters.n_off_diag==0){
-        Size nb_points_per_block=max_matrix_size/((linedata.nlev + 6 * linedata.nrad + 4 * linedata.ncol_tot )*sizeof(Real));
-        Size nb_different_matrices=(points_in_grid.size()+(nb_points_per_block-1))/nb_points_per_block;//rounding up
-        std::cout<<"Splitting big matrix into n parts: "<<nb_different_matrices<<std::endl;
+        Size n_points_per_block=max_matrix_size/((linedata.nlev + 6 * linedata.nrad + 4 * linedata.ncol_tot )*sizeof(Real));
+        Size n_different_matrices=(points_in_grid.size()+(n_points_per_block-1))/n_points_per_block;//rounding up
+        std::cout<<"Splitting big matrix into n parts: "<<n_different_matrices<<std::endl;
 
         //A trivial parallelisation would be possible, if it were not that we modify an internal state during the calculation
-        for (Size idx=0;idx<nb_different_matrices;idx++)
+        for (Size idx=0;idx<n_different_matrices;idx++)
         {
-            Size firstidx=idx*nb_points_per_block;
-            Size lastidx=std::min(static_cast<Size>(points_in_grid.size()-1),static_cast<Size>((idx+1)*nb_points_per_block-1));
+            Size firstidx=idx*n_points_per_block;
+            Size lastidx=std::min(static_cast<Size>(points_in_grid.size()-1),static_cast<Size>((idx+1)*n_points_per_block-1));
             vector<Size> current_points_in_block = std::vector<Size>(points_in_grid.begin() + firstidx, points_in_grid.begin()+lastidx+1);
             VectorXr resulting_y = solve_statistical_equilibrium(abundance,temperature,current_points_in_block);//does not need to be continguous
 

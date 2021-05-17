@@ -67,7 +67,7 @@ struct Model
 
     inline void interpolate_levelpops_local(Size coarser_lvl);
 
-    inline int setup_multigrid(Size max_coars_lvl, double tol, Size mgImplementation, Size max_nb_iterations, Size finest_lvl);
+    inline int setup_multigrid(Size max_coars_lvl, double tol, Size mgImplementation, Size max_n_iterations, Size finest_lvl);
 
     void read  ()       {read  (IoPython ("hdf5", parameters.model_name()));};
     void write () const {write (IoPython ("hdf5", parameters.model_name()));};

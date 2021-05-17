@@ -35,12 +35,12 @@ struct MgControllerHelper : virtual public MgController
     MgControllerHelper()=default;
 
     //initializes the mgController
-    //MgController(Size nb_levels, Size nb_pre_interpolation_steps);//TODO add much more
+    //MgController(Size n_levels, Size n_pre_interpolation_steps);//TODO add much more
     // inline MgControllerHelper(MgController* implementation_instance_ptr);
     inline MgControllerHelper(std::shared_ptr<MgController> implementation_instance_ptr);
 
     //Because we cannot change constructor names, we use the default constructor just need to 'construct' using some regular functions
-    // inline void UseNaiveMG(Size nb_levels, Size finest_lvl);
+    // inline void UseNaiveMG(Size n_levels, Size finest_lvl);
 
     //returns the next action and updates what to do next
     inline Actions get_next_action() override;

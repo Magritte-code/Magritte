@@ -7,11 +7,11 @@ struct NaiveMG : virtual public MgController
 {
   private:
     //The maximum number of iterations per level
-    Size max_nb_iterations;
+    Size max_n_iterations;
 
-    Size current_nb_iterations=0;
+    Size current_n_iterations=0;
     Size finest_lvl=0;//Debug variable, denotes the finest level the multigrid sequence should go to TODO DEPRECATE THIS
-    Size max_level=0;//number of levels going from 0 (finest grid) to nb_levels-1 (coarsest grid)
+    Size max_level=0;//number of levels going from 0 (finest grid) to n_levels-1 (coarsest grid)
     Size current_level=0;//the current level
 
     bool is_next_action_set;//checks whether the next action has been set
@@ -35,7 +35,7 @@ struct NaiveMG : virtual public MgController
     // inline NaiveMG()=default;
 
     //Initializes the NaiveMG mgController
-    inline NaiveMG(Size nb_levels, Size finest_lvl, Size max_nb_iterations);
+    inline NaiveMG(Size n_levels, Size finest_lvl, Size max_n_iterations);
 
     //returns the next action and updates what to do next
     inline Actions get_next_action() override;

@@ -3,19 +3,19 @@
 
 // Initializes the multigrid controller
 // Finest level is for debug purposes, restrict the finest level until we iterate
-inline VCycle::VCycle(Size nb_levels, Size finest_lvl, Size nb_pre_interpolation_steps, Size max_nb_iterations)
+inline VCycle::VCycle(Size n_levels, Size finest_lvl, Size n_pre_interpolation_steps, Size max_n_iterations)
 {
-  //FIXME: check if nb_levels>=2 // otherwise we only have a single grid
-  //FIXME: check if nb_pre_interpolation_steps>=1
-  max_level=nb_levels-1;
-  current_level=nb_levels-1;
-  //this.min_level_visited=nb_levels-1;
+  //FIXME: check if n_levels>=2 // otherwise we only have a single grid
+  //FIXME: check if n_pre_interpolation_steps>=1
+  max_level=n_levels-1;
+  current_level=n_levels-1;
+  //this.min_level_visited=n_levels-1;
   this->finest_lvl=finest_lvl;
 
-  this->max_nb_iterations=max_nb_iterations;
+  this->max_n_iterations=max_n_iterations;
 
   this->going_coarser=true;
-  this->nb_pre_interpolation_steps=nb_pre_interpolation_steps;
+  this->n_pre_interpolation_steps=n_pre_interpolation_steps;
 
 }
 
@@ -30,7 +30,7 @@ inline Size VCycle::get_current_level()
 inline MgController::Actions VCycle::get_next_action()
 {
   //If the max number of iterations is reached, stop//TODO: think about whether this part is still useful
-  if ((current_nb_iterations>=max_nb_iterations)&&(!not_yet_iterated))
+  if ((current_n_iterations>=max_n_iterations)&&(!not_yet_iterated))
   {
     return Actions::finish;
   }
@@ -41,7 +41,7 @@ inline MgController::Actions VCycle::get_next_action()
     is_next_action_set=false;
     return next_action;
   }else{
-    if (nb_pre_interpolation_steps==0)//if the initial pre-interpolation steps on the coarsest grid are already done
+    if (n_pre_interpolation_steps==0)//if the initial pre-interpolation steps on the coarsest grid are already done
     {//then change grid, depending on the direction
       if (not_yet_iterated)
       {
@@ -53,8 +53,8 @@ inline MgController::Actions VCycle::get_next_action()
         {first_upward=false;}
         else//increasing the counter of number iterations every time the finest grid is reached (except the first time)
         {
-          current_nb_iterations++;
-          if (current_nb_iterations>=max_nb_iterations)//If the max number of iterations is reached, stop
+          current_n_iterations++;
+          if (current_n_iterations>=max_n_iterations)//If the max number of iterations is reached, stop
           {
             return Actions::finish;
           }
@@ -85,7 +85,7 @@ inline MgController::Actions VCycle::get_next_action()
     else
     {//still need to do some pre_interpolation steps
       not_yet_iterated=false;
-      nb_pre_interpolation_steps--;
+      n_pre_interpolation_steps--;
       return Actions::stay;
     }
   }
@@ -97,7 +97,7 @@ inline MgController::Actions VCycle::get_next_action()
 //Sets the state such that the next action will be something else than stay (skips the following 'stay's)
 inline void VCycle::converged_on_current_grid()
 {
-  nb_pre_interpolation_steps=0;
+  n_pre_interpolation_steps=0;
   if (current_level==finest_lvl)
   {
     next_action=Actions::finish;

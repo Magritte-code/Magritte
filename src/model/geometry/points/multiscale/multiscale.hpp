@@ -70,13 +70,13 @@ struct Multiscale
     //Returns all neighbors on the finest level as a single vector
     inline Size1 get_all_neighbors_as_vector() const;
     //Returns the number of neighbors on the finest level as vector
-    inline Size1 get_all_nb_neighbors(const Size coars_lvl) const;
+    inline Size1 get_all_n_neighbors(const Size coars_lvl) const;
     //Returns the number of neighbors on the finest level as vector
-    inline Size1 get_all_nb_neighbors() const;
+    inline Size1 get_all_n_neighbors() const;
     //Returns the number of neighbors od point p at coarsening level coars_lvl
-    inline Size get_nb_neighbors(const Size p, const Size coars_lvl) const;
+    inline Size get_n_neighbors(const Size p, const Size coars_lvl) const;
     //Returns the number of neighbors od point p at the current coarsening level
-    inline Size get_nb_neighbors(const Size p) const;
+    inline Size get_n_neighbors(const Size p) const;
     // //Returns the pointer to the start of the mask of points still in the grid at the specified level
     // inline Vector<unsigned char> get_mask(const Size lvl) const;
     //Returns the total number of points remaining at level curr_level

@@ -4,21 +4,21 @@
 
 // Initializes the multigrid controller
 // Finest level is for debug purposes, restrict the finest level until we iterate
-inline WCycle::WCycle(Size nb_levels, Size finest_lvl, Size nb_pre_interpolation_steps, Size max_nb_iterations)
+inline WCycle::WCycle(Size n_levels, Size finest_lvl, Size n_pre_interpolation_steps, Size max_n_iterations)
 {
-  //FIXME: check if nb_levels>=2 // otherwise we only have a single grid
-  //FIXME: check if nb_pre_interpolation_steps>=1
+  //FIXME: check if n_levels>=2 // otherwise we only have a single grid
+  //FIXME: check if n_pre_interpolation_steps>=1
 
-  max_level=nb_levels-1;
+  max_level=n_levels-1;
   initialize_w_cycle(max_level-finest_lvl);
-  current_level=nb_levels-1;
-  //this.min_level_visited=nb_levels-1;
+  current_level=n_levels-1;
+  //this.min_level_visited=n_levels-1;
   this->finest_lvl=finest_lvl;
 
-  this->max_nb_iterations=max_nb_iterations;
+  this->max_n_iterations=max_n_iterations;
 
   this->going_coarser=true;
-  this->nb_pre_interpolation_steps=nb_pre_interpolation_steps;
+  this->n_pre_interpolation_steps=n_pre_interpolation_steps;
 
 }
 
@@ -34,7 +34,7 @@ inline Size WCycle::get_current_level()
 inline MgController::Actions WCycle::get_next_action()
 {
   //When done enough iterations, just stop
-  if ((current_nb_iterations>=max_nb_iterations)&&(!not_yet_iterated))
+  if ((current_n_iterations>=max_n_iterations)&&(!not_yet_iterated))
   {
     return Actions::finish;
   }
@@ -45,7 +45,7 @@ inline MgController::Actions WCycle::get_next_action()
     is_next_action_set=false;
     return next_action;
   }else{//otherwise alternate between staying on the grid and going to the next finer/coarser grid as determined by the action_order
-    if (nb_pre_interpolation_steps==0)
+    if (n_pre_interpolation_steps==0)
     {//
       if (not_yet_iterated)
       {
@@ -72,7 +72,7 @@ inline MgController::Actions WCycle::get_next_action()
       if (curr_action_nb>=action_order.size())
       {
         curr_action_nb=0;
-        current_nb_iterations++;
+        current_n_iterations++;
       }
       not_yet_iterated=true;
 
@@ -88,7 +88,7 @@ inline MgController::Actions WCycle::get_next_action()
     else
     {//still need to do some pre_interpolation steps
       not_yet_iterated=false;
-      nb_pre_interpolation_steps--;
+      n_pre_interpolation_steps--;
       return Actions::stay;
     }
   }
@@ -103,7 +103,7 @@ inline MgController::Actions WCycle::get_next_action()
 //Sets the state such that the next action will be something else than stay (skips the following 'stay's)
 inline void WCycle::converged_on_current_grid()
 {
-  nb_pre_interpolation_steps=0;
+  n_pre_interpolation_steps=0;
   if (current_level==finest_lvl)
   {
     next_action=Actions::finish;
@@ -120,12 +120,12 @@ inline void WCycle::converged_on_current_grid()
     }
     is_next_action_set=true;
     current_level--;
-    Size temp_nb_level_diff=current_level-finest_lvl;
+    Size temp_n_level_diff=current_level-finest_lvl;
 
     //initialize new w-cycle
-    initialize_w_cycle(temp_nb_level_diff);
+    initialize_w_cycle(temp_n_level_diff);
     //and set position correct (just after all the restrictions in the beginning)
-    curr_action_nb=temp_nb_level_diff;
+    curr_action_nb=temp_n_level_diff;
 
     return;
   }
@@ -143,27 +143,27 @@ inline void WCycle::converged_on_current_grid()
 /// Initializes the w-cycle
 //Note: does not contain logic about staying on a grid level (which should happen every other iteration anyway)
 //TODO: OPTIMIZE THIS A BIT (if people are asking after 20+ multigrid levels) // NEVER MIND: that means that a single cycle would be more than a million actions long...
-inline void WCycle::initialize_w_cycle(Size nb_level_diff)
-{ //FIXME: throw warning when nb_level_diff=0
-  if (nb_level_diff==0)
+inline void WCycle::initialize_w_cycle(Size n_level_diff)
+{ //FIXME: throw warning when n_level_diff=0
+  if (n_level_diff==0)
   {
     vector<MgController::Actions> temp_action_order{MgController::Actions::do_nothing};
     action_order=temp_action_order;
     return;
   }
-  Size curr_nb_levels=1;
+  Size curr_n_levels=1;
   //start with mini V-cycle
   vector<MgController::Actions> temp_action_order{MgController::Actions::restrict, MgController::Actions::interpolate_corrections};
   //calculate order by copying and adding a single action to the front and the back
 
   //calculating the total size to reserve (always '*2+2') always copy and then add to front and back
-  Size size_to_reserve=std::pow(2,nb_level_diff+1)-2;
-  //explicit formula above // for (Size i=0; i<nb_level_diff<i++) {size_to_reserve=size_to_reserve*2+2;}
+  Size size_to_reserve=std::pow(2,n_level_diff+1)-2;
+  //explicit formula above // for (Size i=0; i<n_level_diff<i++) {size_to_reserve=size_to_reserve*2+2;}
   temp_action_order.reserve(size_to_reserve);
 
-  //example of what this does; nb_level_diff = 1) \/  2) \\/\//  3) \\\/\//\\/\///
+  //example of what this does; n_level_diff = 1) \/  2) \\/\//  3) \\\/\//\\/\///
   // in which '\' respresents the restriction and '/' respresents the correction interpolation
-  while (curr_nb_levels<nb_level_diff)
+  while (curr_n_levels<n_level_diff)
   {
     //std::back_inserter invalidates the iterator when the size of the vector is exceeded->Undefined behaviour
     // by reserving enough space, we ignore this issue
@@ -172,7 +172,7 @@ inline void WCycle::initialize_w_cycle(Size nb_level_diff)
     temp_action_order.insert(temp_action_order.begin(), MgController::Actions::restrict);
     //and an additional interpolate_corrections to the back
     temp_action_order.push_back(MgController::Actions::interpolate_corrections);
-    curr_nb_levels++;
+    curr_n_levels++;
   }
   action_order=temp_action_order;
 }

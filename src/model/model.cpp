@@ -769,12 +769,12 @@ int Model :: compute_level_populations_multigrid (
 
             Real abund=static_cast<Real>(chemistry.species.abundance[current_point][speciesnum]);
             Size segment_start=lines.lineProducingSpecies[specidx].index(current_point,0);
-            Size nb_levels=lines.lineProducingSpecies[specidx].linedata.nlev;
+            Size n_levels=lines.lineProducingSpecies[specidx].linedata.nlev;
             //Note: because the sum of levelpops must always be equal to the abundance, at least one value should be greater than zero (after zeroing the negative values)
             // and thus we will never divide by zero
-            Real sum_of_levelpops=temp_corrected_levelpops.segment(segment_start,nb_levels).sum();
+            Real sum_of_levelpops=temp_corrected_levelpops.segment(segment_start,n_levels).sum();
             //and finally renormalizing it; such that the sum of levelpops is again equal to the abundance
-            temp_corrected_levelpops.segment(segment_start,nb_levels)=temp_corrected_levelpops.segment(segment_start,nb_levels)*(abund/sum_of_levelpops);
+            temp_corrected_levelpops.segment(segment_start,n_levels)=temp_corrected_levelpops.segment(segment_start,n_levels)*(abund/sum_of_levelpops);
 
             )//end of threaded_for
         //and add the corrected levelpops for this species

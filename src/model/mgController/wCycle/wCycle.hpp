@@ -10,15 +10,15 @@ struct WCycle : virtual public MgController
     bool first_upward=true;//first time going up should use standard interpolation of the level populations
     bool not_yet_iterated=true;//checks whether we have already done a single iteration on the grid
 
-    // Size nb_iterations_on_current_grid_remaining;// number of iterations remaining on current grid
+    // Size n_iterations_on_current_grid_remaining;// number of iterations remaining on current grid
     Size finest_lvl=0;
-    Size max_level=0;//number of levels going from 0 (finest grid) to nb_levels-1 (coarsest grid)
+    Size max_level=0;//number of levels going from 0 (finest grid) to n_levels-1 (coarsest grid)
     Size current_level=0;//the current level
     //Size min_level_visited=0;
-    Size nb_pre_interpolation_steps=1;//number of iterations on the current grid before interpolating/coarsening
+    Size n_pre_interpolation_steps=1;//number of iterations on the current grid before interpolating/coarsening
 
-    Size max_nb_iterations;//the maximum number of cycles allowed for this multigrid scheme
-    Size current_nb_iterations=0;
+    Size max_n_iterations;//the maximum number of cycles allowed for this multigrid scheme
+    Size current_n_iterations=0;
 
     bool is_next_action_set=false;//checks whether the next action has been set
     Actions next_action;//the next action (if it has been set)
@@ -45,7 +45,7 @@ struct WCycle : virtual public MgController
     // inline VCycle()=default;
 
     //initializes the mgController
-    inline WCycle(Size nb_levels, Size finest_lvl, Size nb_pre_interpolation_steps, Size max_nb_iterations);//TODO add much more
+    inline WCycle(Size n_levels, Size finest_lvl, Size n_pre_interpolation_steps, Size max_n_iterations);//TODO add much more
 
     //returns the next action and updates what to do next
     inline Actions get_next_action() override;
@@ -59,7 +59,7 @@ struct WCycle : virtual public MgController
 
     //Subroutine for helping with the initialization of the W-cycle
     //It constructs the action_order
-    inline void initialize_w_cycle(Size nb_level_diff);
+    inline void initialize_w_cycle(Size n_level_diff);
 
 };
 

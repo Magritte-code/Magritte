@@ -21,7 +21,7 @@ accel inline Size Geometry :: get_next_general_geometry (
           double& Z,
           double& dZ                   ) const
 {
-    // Size n_nbs = points.multiscale.get_nb_neighbors(c);//    n_neighbors[c];
+    // Size n_nbs = points.multiscale.get_n_neighbors(c);//    n_neighbors[c];
 //    const Size cum_n_nbs = points.cum_n_neighbors[c];
 
     double dmin = std::numeric_limits<Real>::max();   // Initialize to "infinity"
@@ -35,12 +35,12 @@ accel inline Size Geometry :: get_next_general_geometry (
     // std::set<Size> temp_neighbors=points.multiscale.get_neighbors(c);
     std::tuple<Size*,Size> temp_tuple=points.multiscale.get_gpu_neighbors(c);
     Size* start_neighbors=std::get<0>(temp_tuple);
-    Size nb_neighbors=std::get<1>(temp_tuple);
+    Size n_neighbors=std::get<1>(temp_tuple);
     // std::cout<<"number of neighbors"<<temp_neighbors.size()<<std::endl;
     // temp_neighbors.insert(std::end(temp_neighbors), std::begin(points.multiscale.get_neighbors(c).begin()), std::end(points.multiscale.get_neighbors(c).end()));
     // Vector<Size> temp_neighbors(temp_vector);
     // for (Size n:temp_neighbors)
-    for (Size i = 0; i < nb_neighbors; i++)
+    for (Size i = 0; i < n_neighbors; i++)
     {
         const Size n=*(start_neighbors+i);
 //        const Size     n     = points.nbs[c*nnbs+i];

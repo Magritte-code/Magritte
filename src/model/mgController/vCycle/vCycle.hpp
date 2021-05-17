@@ -11,12 +11,12 @@ struct VCycle : virtual public MgController
     bool not_yet_iterated=true;//checks whether we have already done a single iteration on the grid
 
     Size finest_lvl=0;//Debug variable, denotes the finest level the multigrid sequence should go to TODO DEPRECATE THIS
-    Size max_level=0;//number of levels going from 0 (finest grid) to nb_levels-1 (coarsest grid)
+    Size max_level=0;//number of levels going from 0 (finest grid) to n_levels-1 (coarsest grid)
     Size current_level=0;//the current level
-    Size nb_pre_interpolation_steps=1;//number of iterations on the coarsest grid before interpolating
+    Size n_pre_interpolation_steps=1;//number of iterations on the coarsest grid before interpolating
 
-    Size max_nb_iterations;//the maximum number of cycles allowed for this multigrid scheme
-    Size current_nb_iterations=0;
+    Size max_n_iterations;//the maximum number of cycles allowed for this multigrid scheme
+    Size current_n_iterations=0;
 
     bool is_next_action_set=false;//checks whether the next action has been set
     Actions next_action;//the next action (if it has been set)
@@ -39,7 +39,7 @@ struct VCycle : virtual public MgController
     // inline VCycle()=default;
 
     //initializes the mgController
-    inline VCycle(Size nb_levels, Size finest_lvl, Size nb_pre_interpolation_steps, Size max_nb_iterations);//TODO add much more
+    inline VCycle(Size n_levels, Size finest_lvl, Size n_pre_interpolation_steps, Size max_n_iterations);//TODO add much more
 
     //returns the next action and updates what to do next
     inline Actions get_next_action() override;
