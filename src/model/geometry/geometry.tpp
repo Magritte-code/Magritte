@@ -87,14 +87,19 @@ inline Size Geometry :: get_next_spherical_symmetry (
             return parameters.npoints();
         }
 
-        if (points.position[c-1].squaredNorm() >= Rsin2)
+        Size prev_point_in_grid=c-1;
+        Size curr_coars_lvl=points.multiscale.get_curr_coars_lvl();
+
+        //Just making sure that the previous point lies in the grid
+        while (!points.multiscale.mask[curr_coars_lvl][prev_point_in_grid])
         {
-            next = c - 1;
-            Size curr_coars_lvl=points.multiscale.get_curr_coars_lvl();
-            while(!points.multiscale.mask[curr_coars_lvl][next])
-            {
-              next=next-1;
-            }
+            prev_point_in_grid=prev_point_in_grid-1;
+        }
+
+        if (points.position[prev_point_in_grid].squaredNorm() >= Rsin2)
+        {
+            next = prev_point_in_grid;
+
             dZ   = -sqrt(points.position[next].squaredNorm() - Rsin2) - Rcos_plus_Z;
         }
         else
@@ -112,6 +117,7 @@ inline Size Geometry :: get_next_spherical_symmetry (
 
         next = c + 1;
         Size curr_coars_lvl=points.multiscale.get_curr_coars_lvl();
+        //Just making sure that the next point lies in the grid
         while(!points.multiscale.mask[curr_coars_lvl][next])
         {
           next=next+1;
