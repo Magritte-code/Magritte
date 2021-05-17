@@ -102,13 +102,14 @@ def run_model (a_or_b, nosave=False):
     model.compute_spectral_discretisation ()
     model.compute_inverse_line_widths     ()
     model.compute_LTE_level_populations   ()
-    model.setup_multigrid(1,0.1,1,100,0);#TODO update this description... 5 multigrid steps, tolerance 1 (i just want to coarsen the grid).
-    # i just can't seem to coarsen them...
+    nlevels=1;#should be coarsest level; misleading name
+    #1 multigrid levels, 0.1 as tolerance, mgImplementation=1 (Naive,Vcycle,Wcycle)
+    model.setup_multigrid(nlevels,0.1,1,1000,1);
     timer2.stop()
 
     timer3 = tools.Timer('running model')
     timer3.start()
-    model.compute_level_populations_multigrid (True, 100)
+    model.compute_level_populations_multigrid (False)
     timer3.stop()
 
     pops = np.array(model.lines.lineProducingSpecies[0].population).reshape((model.parameters.npoints(), 2))
@@ -165,8 +166,8 @@ def run_test (nosave=False):
     create_model ('a')
     run_model    ('a', nosave)
 
-    create_model ('b')
-    run_model    ('b', nosave)
+    # create_model ('b')
+    # run_model    ('b', nosave)
 
     return
 

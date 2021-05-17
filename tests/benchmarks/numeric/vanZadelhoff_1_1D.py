@@ -17,7 +17,7 @@ from scipy.interpolate import interp1d
 
 
 dimension = 1
-npoints   = 85 #250
+npoints   = 250
 nrays     = 200
 nspecs    = 5
 nlspecs   = 1
@@ -163,8 +163,8 @@ def run_test (nosave=False):
     create_model ('a')
     run_model    ('a', nosave)
 
-    create_model ('b')
-    run_model    ('b', nosave)
+    # create_model ('b')
+    # run_model    ('b', nosave)
 
     return
 
