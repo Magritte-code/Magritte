@@ -23,10 +23,10 @@ def run_model (a_or_b, nosave=False):
     # modelName = f'model_Jan_reduced'
     # modelName = f'model_Jan'
     # modelName = f'model_Jan_reduced_coarsened_test'
-    # modelName = f'vanZadelhoff_1a_3D_mesher'
+    modelName = f'vanZadelhoff_1a_1D'
     # modelName = f'vanZadelhoff_1a_3D_mesher_naive_multigrid_1lvl_01coars'
     # modelName = f'vanZadelhoff_1b_3D_mesher_naive_multigrid_1lvl_01coars'
-    modelName = f'vanZadelhoff_2b_3D_mesher_naive_multigrid_1lvl_02coars'
+    # modelName = f'vanZadelhoff_2b_3D_mesher_naive_multigrid_1lvl_02coars'
     # modelName = f'vanZadelhoff_2a_3D_mesher_no_multigrid'
     # modelName = f'model_Jan_reduced_test_1it_3coars_split2'
     # modelName = f'model_Jan_reduced_final_test_1block'
@@ -67,8 +67,8 @@ def run_model (a_or_b, nosave=False):
     coarser_points = np.array(model.geometry.points.multiscale.get_current_points_in_grid())
     print(model.parameters.n_off_diag)
 
-    final_it_finest=66#24#33
-    final_it_coarsest=100#45#135
+    final_it_finest=21#24#33
+    final_it_coarsest=29#45#135
     # final_it_finest=3
     # final_it_coarsest=19
 
@@ -76,17 +76,17 @@ def run_model (a_or_b, nosave=False):
     model.interpolate_levelpops_local(1);
 
 
-    nlev=21#2#number of level populations of the species
+    nlev=2#2#number of level populations of the species
 
     pops_interpolated = np.array(model.lines.lineProducingSpecies[0].population).reshape((model.parameters.npoints(), nlev))
     pops_full = np.array(file['lines/lineProducingSpecies_0/populationlvl'+str(0)+'it'+str(final_it_finest)])
     rel_diff_pops0=abs(pops_full[:,0]-pops_interpolated[:,0])/(pops_full[:,0])
     rel_diff_pops1=abs(pops_full[:,1]-pops_interpolated[:,1])/(pops_full[:,1])
-    rel_diff_pops2=abs(pops_full[:,2]-pops_interpolated[:,2])/(pops_full[:,2])
-    rel_diff_pops3=abs(pops_full[:,3]-pops_interpolated[:,3])/(pops_full[:,3])
-    rel_diff_pops4=abs(pops_full[:,4]-pops_interpolated[:,4])/(pops_full[:,4])
+    # rel_diff_pops2=abs(pops_full[:,2]-pops_interpolated[:,2])/(pops_full[:,2])
+    # rel_diff_pops3=abs(pops_full[:,3]-pops_interpolated[:,3])/(pops_full[:,3])
+    # rel_diff_pops4=abs(pops_full[:,4]-pops_interpolated[:,4])/(pops_full[:,4])
 
-    plt.title("vanZadelhoff_2b_3D_mesher")
+    plt.title("vanZadelhoff_1a_1D_mesher")
             # plt.scatter(rs, abs(pops_full[:,0]-pops_incomplete[:,0])/(pops_full[:,0]), s=0.5, label='i=0', zorder=1)
             # plt.scatter(rs, abs(pops_full[:,1]-pops_incomplete[:,0])/(pops_full[:,1]), s=0.5, label='i=1', zorder=1)
     # print(len(rel_diff_pops0[coarser_points]))
@@ -94,9 +94,9 @@ def run_model (a_or_b, nosave=False):
     # plt.scatter(rs,rel_diff_pops1, s=0.5, label='i=1', zorder=1)
     plt.scatter(rs[coarser_points],rel_diff_pops0[coarser_points], s=0.5, label='i=0', zorder=1)
     plt.scatter(rs[coarser_points],rel_diff_pops1[coarser_points], s=0.5, label='i=1', zorder=1)
-    plt.scatter(rs[coarser_points],rel_diff_pops2[coarser_points], s=0.5, label='i=2', zorder=1)
-    plt.scatter(rs[coarser_points],rel_diff_pops3[coarser_points], s=0.5, label='i=3', zorder=1)
-    plt.scatter(rs[coarser_points],rel_diff_pops4[coarser_points], s=0.5, label='i=4', zorder=1)
+    # plt.scatter(rs[coarser_points],rel_diff_pops2[coarser_points], s=0.5, label='i=2', zorder=1)
+    # plt.scatter(rs[coarser_points],rel_diff_pops3[coarser_points], s=0.5, label='i=3', zorder=1)
+    # plt.scatter(rs[coarser_points],rel_diff_pops4[coarser_points], s=0.5, label='i=4', zorder=1)
     # plt.scatter(rs,rel_diff_pops0, s=0.5, label='i=0', zorder=1)
     # plt.scatter(rs,rel_diff_pops1, s=0.5, label='i=1', zorder=1)
     # plt.scatter(rs,rel_diff_pops2, s=0.5, label='i=2', zorder=1)
