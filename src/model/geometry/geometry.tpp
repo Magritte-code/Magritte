@@ -25,7 +25,7 @@ accel inline Size Geometry :: get_next_general_geometry (
     double dmin = std::numeric_limits<Real>::max();   // Initialize to "infinity"
     Size   next = parameters.npoints();               // return npoints when there is no next
 
-    std::tuple<Size*,Size> temp_tuple=points.multiscale.get_gpu_neighbors(c);
+    std::tuple<Size*,Size> temp_tuple=points.multiscale.get_intern_neighbors(c);
     Size* start_neighbors=std::get<0>(temp_tuple);
     Size n_neighbors=std::get<1>(temp_tuple);
     // for (Size n:temp_neighbors)

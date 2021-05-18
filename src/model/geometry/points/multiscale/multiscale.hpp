@@ -19,16 +19,16 @@ struct Multiscale
     // Note: Vector<bool> doesnt work due to not having .data()
 
     // The gpu compatible way of storing the neighbors
-    vector<Vector<Size>>     gpu_cum_n_neighbors;   ///< cumulative number of neighbors (coars lvl, point)
-    vector<Vector<Size>>         gpu_n_neighbors;   ///< number of neighbors (coars lvl, point)
-    vector<Vector<Size>>           gpu_neighbors;   ///< neighbors of each point (coars lvl, point)
+    vector<Vector<Size>>     intern_cum_n_neighbors;   ///< cumulative number of neighbors (coars lvl, point)
+    vector<Vector<Size>>         intern_n_neighbors;   ///< number of neighbors (coars lvl, point)
+    vector<Vector<Size>>           intern_neighbors;   ///< neighbors of each point (coars lvl, point)
 
     // Sets the neighbors compatible with gpu usage from the other neighbors
-    inline void set_gpu_neighbors();
+    inline void set_intern_neighbors();
 
     // Returns a reference to the first neighbors in the linearized list in which the neighbors are stores and the amount of neighbors the point has
-    inline std::tuple<Size*,Size> get_gpu_neighbors(const Size p) const;
-    inline std::tuple<Size*,Size> get_gpu_neighbors(const Size p, const Size coars_lvl) const;
+    inline std::tuple<Size*,Size> get_intern_neighbors(const Size p) const;
+    inline std::tuple<Size*,Size> get_intern_neighbors(const Size p, const Size coars_lvl) const;
 
 
     //Although the next datastructures are more easy to work with, there is currently no gpu support for vectors of vectors
