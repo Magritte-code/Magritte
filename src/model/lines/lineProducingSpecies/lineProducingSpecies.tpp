@@ -305,7 +305,7 @@ inline void LineProducingSpecies :: update_using_statistical_equilibrium (
     }
     else
     {//unfortunately, we cannot split this matrix into smaller pieces without making any errors
-      new_population = solve_statistical_equilibrium(abundance,temperature,points_in_grid);
+        new_population = solve_statistical_equilibrium(abundance,temperature,points_in_grid);
     }
 
     cout << "Succesfully solved for the level populations!"       << endl;
