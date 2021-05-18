@@ -293,7 +293,7 @@ int Model :: compute_LTE_level_populations ()
 ///    @param[in] lvl : The coarsening level to start from
 //////////////////////////////////////////////////////////////////////////////////
 ///  Note: when the level populations cannot be read, starts from LTE instead without warning
-///  Note: currently no state of where we are in any multilevel operation is stored, so unless changed, please use this only with without multigrid or just naive multigrid (then the number of iterations done that is reported will be incorrect (because it doesnt count the iterations prior to loading))
+///  Note: currently no state of where we are in any multilevel operation is stored, so unless changed, please use this only without multigrid or just naive multigrid (then the number of iterations done that is reported will be incorrect (because it doesnt count the iterations prior to loading))
 int Model :: restart_from_iteration(Size iteration, Size lvl)
 {// TODO: currently, the mgController information is NOT SAVED, so this is not that useful for restarting a multigrid scheme
   compute_LTE_level_populations();

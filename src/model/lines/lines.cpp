@@ -123,7 +123,6 @@ void Lines :: iteration_using_statistical_equilibrium (
         lspec.update_using_statistical_equilibrium (abundance, temperature, points_in_grid);
         lspec.check_for_convergence                (pop_prec, points_in_grid);
     }
-    std::cout<<"setting emissivity and opacity"<<std::endl;
     set_emissivity_and_opacity ();
 
     //gather_emissivities_and_opacities ();
