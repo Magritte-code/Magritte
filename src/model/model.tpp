@@ -368,7 +368,7 @@ inline int Model::setup_multigrid(Size max_coars_lvl, double tol, Size mgImpleme
   //Initialize structure for previously computed level populations at each level
   computed_level_populations.resize(geometry.points.multiscale.get_max_coars_lvl()+1);
   // And do not forget to set the gpu neighbors after coarsening
-  geometry.points.multiscale.set_gpu_neighbors();
+  geometry.points.multiscale.set_intern_neighbors();
 
   return (0);
 }

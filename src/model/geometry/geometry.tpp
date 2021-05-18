@@ -33,7 +33,7 @@ accel inline Size Geometry :: get_next_general_geometry (
     //TODO add points.get_neighbors
     // TODO use reference to temp_neighbors!!!
     // std::set<Size> temp_neighbors=points.multiscale.get_neighbors(c);
-    std::tuple<Size*,Size> temp_tuple=points.multiscale.get_gpu_neighbors(c);
+    std::tuple<Size*,Size> temp_tuple=points.multiscale.get_intern_neighbors(c);
     Size* start_neighbors=std::get<0>(temp_tuple);
     Size n_neighbors=std::get<1>(temp_tuple);
     // std::cout<<"number of neighbors"<<temp_neighbors.size()<<std::endl;
