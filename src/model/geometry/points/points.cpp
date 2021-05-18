@@ -1,5 +1,6 @@
 #include <assert.h>
 #include "points.hpp"
+#include "tools/types.hpp"
 
 
 const string prefix = "geometry/points/";
@@ -34,47 +35,44 @@ void Points :: read (const Io& io)
 
     parameters.set_totnnbs (io.get_length (prefix+"neighbors"));
 
-    cum_n_neighbors.resize (parameters.npoints());
-        n_neighbors.resize (parameters.npoints());
-          neighbors.resize (parameters.totnnbs());
+    cout << "tot_n_neighbors = " << parameters.totnnbs() << endl;
+
+    //Temporary vectors for neighbors
+    vector <Size> n_neighbors;
+    vector <Size>   neighbors;
+
+    n_neighbors.resize (parameters.npoints());
+      neighbors.resize (parameters.totnnbs());
+
+    cout << "memory_allocated = " << endl;
+
+    cout << "lists made = " << endl;
+
+    cout << &n_neighbors << endl;
+
 
     io.read_list (prefix+"n_neighbors", n_neighbors);
     io.read_list (prefix+  "neighbors",   neighbors);
 
+    cout << n_neighbors[0] << endl;
+    cout << neighbors[0] << endl;
 
-    cum_n_neighbors[0] = 0;
+    this->multiscale.set_all_neighbors(n_neighbors,neighbors);
 
-    for (Size p = 1; p < parameters.npoints(); p++)
-    {
-        cum_n_neighbors[p] = cum_n_neighbors[p-1] + n_neighbors[p-1];
-    }
+
+    cout << "lists read = " << endl;
+
+
+    cout << "first put" << endl;
+
+    cout << &n_neighbors << endl;
+    cout << &n_neighbors[0]        << endl;
+    cout << &n_neighbors      << endl;
+
 
     position.copy_vec_to_ptr ();
     velocity.copy_vec_to_ptr ();
 
-    cum_n_neighbors.copy_vec_to_ptr ();
-        n_neighbors.copy_vec_to_ptr ();
-          neighbors.copy_vec_to_ptr ();
-
-
-    //nbs.resize (parameters.npoints()*nnbs);
-
-    //for (Size p = 0; p < parameters.npoints(); p++)
-    //{
-    //    const Size     n_nbs =     n_neighbors[p];
-    //    const Size cum_n_nbs = cum_n_neighbors[p];
-
-    //    for (Size i = 0; (i < n_nbs) && (i < nnbs); i++)
-    //    {
-    //        nbs[p*nnbs+i] = neighbors[cum_n_nbs+i];
-    //    }
-    //    for (Size i = n_nbs; i < nnbs; i++)
-    //    {
-    //        nbs[p*nnbs+i] = neighbors[cum_n_nbs+n_nbs-1];
-    //    }
-    //}
-
-    //nbs.copy_vec_to_ptr ();
 }
 
 
@@ -96,6 +94,7 @@ void Points :: write (const Io& io) const
     io.write_array (prefix+"position", position_buffer);
     io.write_array (prefix+"velocity", velocity_buffer);
 
-    io.write_list (prefix+"n_neighbors", n_neighbors);
-    io.write_list (prefix+  "neighbors",   neighbors);
+    io.write_list (prefix+"n_neighbors", this->multiscale.get_all_n_neighbors());
+    io.write_list (prefix+  "neighbors", this->multiscale.get_all_neighbors_as_vector());
+
 }

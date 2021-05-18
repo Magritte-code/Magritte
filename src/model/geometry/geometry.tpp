@@ -1,5 +1,8 @@
 #include <limits>
 #include <cmath>
+#include <algorithm>    // std::max
+#include <set>
+#include <tuple>
 
 
 ///  Getter for the number of the next cell on ray and its distance along ray in
@@ -7,7 +10,7 @@
 ///    @param[in]      o : number of cell from which the ray originates
 ///    @param[in]      r : number of the ray along which we are looking
 ///    @param[in]      c : number of the cell put last on the ray
-///    @param[in/out]  Z : reference to the current distance along the ray
+///    @param[in,out]  Z : reference to the current distance along the ray
 ///    @param[out]    dZ : reference to the distance increment to the next ray
 ///    @return number of the next cell on the ray after the current cell
 ///////////////////////////////////////////////////////////////////////////////////
@@ -18,17 +21,18 @@ accel inline Size Geometry :: get_next_general_geometry (
           double& Z,
           double& dZ                   ) const
 {
-    const Size     n_nbs = points.    n_neighbors[c];
-    const Size cum_n_nbs = points.cum_n_neighbors[c];
 
     double dmin = std::numeric_limits<Real>::max();   // Initialize to "infinity"
     Size   next = parameters.npoints();               // return npoints when there is no next
 
-//    for (Size i = 0; i < nnbs; i++)
-    for (Size i = 0; i < n_nbs; i++)
+    std::tuple<Size*,Size> temp_tuple=points.multiscale.get_intern_neighbors(c);
+    Size* start_neighbors=std::get<0>(temp_tuple);
+    Size n_neighbors=std::get<1>(temp_tuple);
+    // for (Size n:temp_neighbors)
+    for (Size i = 0; i < n_neighbors; i++)
     {
+        const Size n=*(start_neighbors+i);
 //        const Size     n     = points.nbs[c*nnbs+i];
-        const Size     n     = points.neighbors[cum_n_nbs+i];
         const Vector3D R     = points.position[n] - points.position[o];
         const double   Z_new = R.dot(rays.direction[r]);
 
@@ -57,7 +61,7 @@ accel inline Size Geometry :: get_next_general_geometry (
 ///    @param[in]      o : number of cell from which the ray originates
 ///    @param[in]      r : number of the ray along which we are looking
 ///    @param[in]      c : number of the cell put last on the ray
-///    @param[in/out]  Z : reference to the current distance along the ray
+///    @param[in,out]  Z : reference to the current distance along the ray
 ///    @param[out]    dZ : reference to the distance increment to the next ray
 ///    @return number of the next cell on the ray after the current cell
 ///////////////////////////////////////////////////////////////////////////////////
@@ -83,9 +87,19 @@ inline Size Geometry :: get_next_spherical_symmetry (
             return parameters.npoints();
         }
 
-        if (points.position[c-1].squaredNorm() >= Rsin2)
+        Size prev_point_in_grid=c-1;
+        Size curr_coars_lvl=points.multiscale.get_curr_coars_lvl();
+
+        //Just making sure that the previous point lies in the grid
+        while (!points.multiscale.mask[curr_coars_lvl][prev_point_in_grid])
         {
-            next = c - 1;
+            prev_point_in_grid=prev_point_in_grid-1;
+        }
+
+        if (points.position[prev_point_in_grid].squaredNorm() >= Rsin2)
+        {
+            next = prev_point_in_grid;
+
             dZ   = -sqrt(points.position[next].squaredNorm() - Rsin2) - Rcos_plus_Z;
         }
         else
@@ -102,6 +116,12 @@ inline Size Geometry :: get_next_spherical_symmetry (
         }
 
         next = c + 1;
+        Size curr_coars_lvl=points.multiscale.get_curr_coars_lvl();
+        //Just making sure that the next point lies in the grid
+        while(!points.multiscale.mask[curr_coars_lvl][next])
+        {
+          next=next+1;
+        }
         dZ   = +sqrt(points.position[next].squaredNorm() - Rsin2) - Rcos_plus_Z;
     }
 
@@ -274,7 +294,7 @@ inline bool Geometry :: not_on_boundary (const Size p) const
 ///    @param[in]      o : number of cell from which the ray originates
 ///    @param[in]      r : number of the ray along which we are looking
 ///    @param[in]      c : number of the cell put last on the ray
-///    @param[in/out]  Z : reference to the current distance along the ray
+///    @param[in,out]  Z : reference to the current distance along the ray
 ///    @param[out]    dZ : reference to the distance increment to the next ray
 ///    @return number of the next cell on the ray after the current cell
 ///////////////////////////////////////////////////////////////////////////////////
@@ -305,7 +325,7 @@ accel inline Size Geometry :: get_next (
 ///    @param[in]      o : number of cell from which the ray originates
 ///    @param[in]      r : number of the ray along which we are looking
 ///    @param[in]      c : number of the cell put last on the ray
-///    @param[in/out]  Z : reference to the current distance along the ray
+///    @param[in,out]  Z : reference to the current distance along the ray
 ///    @param[out]    dZ : reference to the distance increment to the next ray
 ///    @return number of the next cell on the ray after the current cell
 ///////////////////////////////////////////////////////////////////////////////////
