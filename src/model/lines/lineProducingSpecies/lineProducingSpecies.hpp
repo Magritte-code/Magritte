@@ -37,17 +37,18 @@ struct LineProducingSpecies
     VectorXr population;             ///< level population (most recent)
     Real1    population_tot;         ///< total level population (sum over levels)
 
-    vector<VectorXr> populations;    ///< list of populations in previous iterations
-    vector<VectorXr> residuals;      ///< list of residuals in the populations
+    // DO NOT REINTRODUCE THESE VARIABLES WITHOUT MAKING SURE WE DO NOT HAVE A MEMORY LEAK
+    // vector<VectorXr> populations;    ///< list of populations in previous iterations
+    // vector<VectorXr> residuals;      ///< list of residuals in the populations
 
 
     VectorXr population_prev1;       ///< level populations 1 iteration  back
     VectorXr population_prev2;       ///< level populations 2 iterations back
     VectorXr population_prev3;       ///< level populations 3 iterations back
 
-    SparseMatrix<Real> RT;
-    SparseMatrix<Real> LambdaTest;
-    SparseMatrix<Real> LambdaStar;
+    // SparseMatrix<Real> RT;
+    // SparseMatrix<Real> LambdaTest;
+    // SparseMatrix<Real> LambdaStar;
 
     void read  (const Io& io, const Size l);
     void write (const Io& io, const Size l) const;
@@ -60,8 +61,11 @@ struct LineProducingSpecies
     inline Real get_emissivity (const Size p, const Size k) const;
     inline Real get_opacity    (const Size p, const Size k) const;
 
+    inline Real get_level_pop  (const Size p, const Size i) const;
+    inline void set_level_pop  (const Size p, const Size i, const Real value);
+
     inline void check_for_convergence (
-        const Real pop_prec );
+        const Real pop_prec , vector<Size> &points_in_grid);
 
     inline void update_using_LTE (
         const Double2      &abundance,
@@ -69,10 +73,21 @@ struct LineProducingSpecies
 
     inline void update_using_statistical_equilibrium (
         const Double2      &abundance,
-        const Vector<Real> &temperature );
+        const Vector<Real> &temperature,
+        vector<Size> &points_in_grid);
+
+    //refactoring from update_using_statistical_equilibrium
+    inline VectorXr solve_statistical_equilibrium(
+      const Double2      &abundance,
+      const Vector<Real> &temperature,
+      vector<Size> &points_to_use);
 
     inline void update_using_Ng_acceleration ();
-    inline void update_using_acceleration (const Size order);
+    // inline void update_using_acceleration (const Size order);
+
+
+    inline void set_all_level_pops(VectorXr new_population);
+    inline VectorXr get_all_level_pops();
 };
 
 
