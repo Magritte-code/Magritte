@@ -87,6 +87,7 @@ PYBIND11_MODULE (core, module)
     // Model
     py::class_<Model> (module, "Model")
         // attributes
+        .def_readwrite ("writing_populations_to_disk", &Model::writing_populations_to_disk)
         .def_readwrite ("parameters",     &Model::parameters)
         .def_readwrite ("geometry",       &Model::geometry)
         .def_readwrite ("chemistry",      &Model::chemistry)
@@ -111,6 +112,7 @@ PYBIND11_MODULE (core, module)
         .def ("compute_spectral_discretisation", (int (Model::*)(const Real width)) &Model::compute_spectral_discretisation)
         .def ("compute_spectral_discretisation", (int (Model::*)(const long double nu_min, const long double nu_max)) &Model::compute_spectral_discretisation)
         .def ("compute_LTE_level_populations",                                      &Model::compute_LTE_level_populations)
+        .def ("restart_from_iteration",                                             &Model::restart_from_iteration)
         // .def ("compute_radiation_field",                                            &Model::compute_radiation_field)
         .def ("compute_radiation_field_feautrier_order_2",                          &Model::compute_radiation_field_feautrier_order_2)
         .def ("compute_radiation_field_shortchar_order_0",                          &Model::compute_radiation_field_shortchar_order_0)
@@ -363,14 +365,17 @@ PYBIND11_MODULE (core, module)
         .def_readwrite ("population_prev1", &LineProducingSpecies::population_prev1)
         .def_readwrite ("population_prev2", &LineProducingSpecies::population_prev2)
         .def_readwrite ("population_prev3", &LineProducingSpecies::population_prev3)
-        .def_readwrite ("populations",      &LineProducingSpecies::populations)
-        .def_readwrite ("RT",               &LineProducingSpecies::RT)
-        .def_readwrite ("LambdaStar",       &LineProducingSpecies::LambdaStar)
-        .def_readwrite ("LambdaTest",       &LineProducingSpecies::LambdaTest)
+        // .def_readwrite ("populations",      &LineProducingSpecies::populations)
+        // .def_readwrite ("RT",               &LineProducingSpecies::RT)
+        // .def_readwrite ("LambdaStar",       &LineProducingSpecies::LambdaStar)
+        // .def_readwrite ("LambdaTest",       &LineProducingSpecies::LambdaTest)
         // functions
+        .def ("index",                      &LineProducingSpecies::index)
+        .def ("get_all_level_pops",         &LineProducingSpecies::get_all_level_pops)
+        .def ("set_all_level_pops",         &LineProducingSpecies::set_all_level_pops)
+        // io
         .def ("read",                       &LineProducingSpecies::read)
         .def ("write",                      &LineProducingSpecies::write)
-        .def ("index",                      &LineProducingSpecies::index)
         // constructor
         .def (py::init<>());
 

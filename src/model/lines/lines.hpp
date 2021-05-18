@@ -38,10 +38,12 @@ struct Lines
     void iteration_using_statistical_equilibrium (
         const Double2      &abundance,
         const Vector<Real> &temperature,
-        const Real          pop_prec             );
+        const Real          pop_prec,
+        vector<Size> &points_in_grid            );
 
     void iteration_using_Ng_acceleration (
-        const Real pop_prec              );
+        const Real pop_prec,
+        vector<Size> &points_in_grid            );
 
     inline Size      index (const Size p, const Size line_index     ) const;
     inline Size line_index (              const Size l, const Size k) const;
@@ -51,6 +53,12 @@ struct Lines
     inline void set_inverse_width (const Thermodynamics& thermodynamics);
 
     void gather_emissivities_and_opacities ();
+
+    inline void set_all_level_pops(vector<VectorXr> new_population);
+    inline vector<VectorXr> get_all_level_pops();
+
+    inline void write_populations_of_iteration(const Io& io, const Size it, const Size lvl) const;
+    inline void read_populations_of_iteration(const Io& io, const Size it, const Size lvl);
 };
 
 

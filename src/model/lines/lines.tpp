@@ -74,3 +74,54 @@ inline void Lines :: set_inverse_width (const Thermodynamics& thermodynamics)
         }
     })
 }
+
+///  Sets the vector (per species) of vectors (per line) of all level populations
+///    @param[in]  new_population: the new level populations
+//////////////////////////////////////////////////////////////////////////////////
+inline void Lines :: set_all_level_pops(vector<VectorXr> new_population)
+{
+    threaded_for (i, parameters.nlspecs(),
+        lineProducingSpecies[i].set_all_level_pops(new_population[i]);
+    )
+}
+
+///  Returns the vector (per species) of vectors (per line) of all level populations
+////////////////////////////////////////////////////////////////////////////////////
+inline vector<VectorXr> Lines :: get_all_level_pops()
+{
+    vector<VectorXr> toreturn;
+    toreturn.reserve(parameters.nlspecs());
+    //No threaded for possible, because we might push back in a random order
+    for (Size i=0; i<parameters.nlspecs(); i++)
+    {
+        toreturn.push_back(lineProducingSpecies[i].get_all_level_pops());
+    }
+    return toreturn;
+}
+
+///  Writes the level populations of a certain iteration
+////////////////////////////////////////////////////////
+//currently also writes the J_lin and J_eff due to using the already implemented lineProducingSpecies::write_populations
+inline void Lines::write_populations_of_iteration(const Io& io, const Size it, const Size lvl) const
+{
+    const string tag_it="lvl"+std::to_string(lvl)+"it"+std::to_string(it);
+    for (Size l = 0; l < parameters.nlspecs(); l++)
+    {
+        lineProducingSpecies[l].write_populations (io, l, tag_it);
+    }
+}
+
+///  Reads the level populations of a given iteration
+///    @param[in]:  io: Reference to the Io structure
+///    @param[in]:  it: The number of the iteration to read from
+///    @param[in]:  lvl: The coarsening level to read from
+///////////////////////////////////////////////////////
+//currently also reads the J_lin and J_eff due to using the already implemented lineProducingSpecies::write_populations
+inline void Lines::read_populations_of_iteration(const Io& io, const Size it, const Size lvl)
+{
+    const string tag_it="lvl"+std::to_string(lvl)+"it"+std::to_string(it);
+    for (Size l = 0; l < parameters.nlspecs(); l++)
+    {
+        lineProducingSpecies[l].read_populations (io, l, tag_it);
+    }
+}
