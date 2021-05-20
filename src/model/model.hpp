@@ -18,8 +18,6 @@
 /////////////////////////////////////////////////////////////////////////////
 struct Model
 {
-    bool writing_populations_to_disk=false;   ///< Toggle for writing the level populations after each iteration
-
     const Size MIN_INTERPOLATION_POINTS=16;   ///< Minimum number of points used during interpolation (~=average nb neighors in voronoi grid)
 
     const Size MAX_INTERPOLATION_POINTS=16;   ///< Maximum number of points used during interpolation (~=average nb neighors in voronoi grid)

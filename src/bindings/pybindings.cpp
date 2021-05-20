@@ -88,7 +88,6 @@ PYBIND11_MODULE (core, module)
     py::class_<Model> (module, "Model")
         // .def_property_readonly_static("model", [](const py::object&) { return Model(); });
         // attributes
-        .def_readwrite ("writing_populations_to_disk", &Model::writing_populations_to_disk)
         .def_readwrite ("parameters",     &Model::parameters)
         .def_readwrite ("geometry",       &Model::geometry)
         .def_readwrite ("chemistry",      &Model::chemistry)
@@ -141,6 +140,7 @@ PYBIND11_MODULE (core, module)
         // io
         .def_readwrite ("n_off_diag",         &Parameters::n_off_diag)
         .def_readwrite ("max_width_fraction", &Parameters::max_width_fraction)
+        .def_readwrite ("writing_populations_to_disk", &Parameters::writing_populations_to_disk)
         // setters
         .def ("set_model_name",               &Parameters::set_model_name          )
         .def ("set_dimension",                &Parameters::set_dimension           )

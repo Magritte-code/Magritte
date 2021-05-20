@@ -129,7 +129,7 @@ def run_model (nosave=False):
     model.compute_spectral_discretisation ()
     model.compute_inverse_line_widths     ()
     model.compute_LTE_level_populations   ()
-    model.writing_populations_to_disk=True;
+    model.parameters.writing_populations_to_disk=True;
     coarsest_level=1;#should be coarsest level; misleading name
     #3 multigrid levels, 0.4 as tolerance, mgImplementation=1 (Naive,Vcycle,Wcycle)
     model.setup_multigrid(coarsest_level,0.4,1,1000,0);

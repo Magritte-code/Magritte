@@ -129,11 +129,11 @@ def run_model (a_or_b, nosave=False):
     model.compute_spectral_discretisation ()
     model.compute_inverse_line_widths     ()
     model.compute_LTE_level_populations   ()
-    nlevels=1;#should be coarsest level; misleading name
+    nlevels=3;#should be coarsest level; misleading name
     #1 multigrid levels, 0.1 as tolerance, mgImplementation=1 (Naive,Vcycle,Wcycle)
     model.setup_multigrid(nlevels,0.1,1,1000,0);
     # model.restart_from_iteration(8,1);
-    model.writing_populations_to_disk=True;
+    model.parameters.writing_populations_to_disk=True;
     timer2.stop()
 
     timer3 = tools.Timer('running model')
@@ -194,11 +194,11 @@ def run_model (a_or_b, nosave=False):
 
 def run_test (nosave=False):
 # for simplicity, we only try the first model
-    create_model ('a')
-    run_model    ('a', nosave)
+    # create_model ('a')
+    # run_model    ('a', nosave)
 
-    # create_model ('b')
-    # run_model    ('b', nosave)
+    create_model ('b')
+    run_model    ('b', nosave)
 
     return
 

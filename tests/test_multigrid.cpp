@@ -103,7 +103,7 @@ int main (int argc, char **argv)
       // }
     }
 
-    model.writing_populations_to_disk=true;
+    model.parameters.writing_populations_to_disk=true;
 
     model.compute_level_populations_multigrid(true);
     // vector<Size> current_points_in_grid=model.geometry.points.multiscale.get_current_points_in_grid();

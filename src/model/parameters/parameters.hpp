@@ -130,6 +130,8 @@ struct Parameters
 
     long n_off_diag = 0;
 
+    bool writing_populations_to_disk=false;   ///< Toggle for writing the level populations after each iteration
+
     double max_width_fraction = 0.5;
 
     void read (const Io &io);
