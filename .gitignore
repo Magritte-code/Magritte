@@ -4,6 +4,7 @@ CMakeFiles/
 Makefile
 *.cmake
 CMakeCache.txt
+cmake-build-debug/*
 
 # build, bin, docs and run folders
 ##################################
