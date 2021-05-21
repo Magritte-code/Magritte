@@ -179,6 +179,8 @@ inline void Solver :: solve_shortchar_order_0 (Model& model)
 
 inline void Solver :: solve_feautrier_order_2 (Model& model)
 {
+
+    // Clear the approximate LAMBDA operator
     for (auto &lspec : model.lines.lineProducingSpecies) {lspec.lambda.clear();}
 
     model.radiation.initialize_J();

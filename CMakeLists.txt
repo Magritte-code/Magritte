@@ -3,10 +3,10 @@ cmake_minimum_required (VERSION 3.18)
 
 # Set CMake version policy
 cmake_policy (SET CMP0048 NEW)
+cmake_policy (SET CMP0104 OLD)
 
 # Set project title, version, description, and url
-project (
-    "Magritte"
+project ("Magritte"
     VERSION      0.0.1
     DESCRIPTION  "A modern software library for simulating radiation transport."
     HOMEPAGE_URL "https://github.com/Magritte-code/Magritte"
@@ -29,7 +29,7 @@ set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -std=c++11")
 # Build options
 option (PYTHON_IO        "Handling all io through python (slow)" ON)
 option (PYTHON_BINDINGS  "Python front end?"                     ON)
-option (OMP_PARALLEL     "OpenMP parallelisation required?"      OFF)
+option (OMP_PARALLEL     "OpenMP parallelisation required?"      ON)
 option (MPI_PARALLEL     "MPI parallelisation required?"         OFF)
 option (GPU_ACCELERATION "Use the GPU solver"                    OFF)
 option (GPU_CUDA         "Use Paracabs CUDA implementation"      OFF)
@@ -84,7 +84,7 @@ set (PARACABS_USE_SIMD            false)
 if (GPU_ACCELERATION)
     enable_language (CUDA)
     # Specify the accelerator architecture (currently we don't)
-    set (CMAKE_CUDA_ARCHITECTURES OFF)
+	set (CMAKE_CUDA_ARCHITECTURES OFF)
     set (CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --extended-lambda --use_fast_math --expt-relaxed-constexpr")
 endif ()
 

@@ -10,6 +10,8 @@ mkdir build; cd build
 PYTHON_EXECUTABLE=$(which python)
 
 # Get compilers
+#COMPILER_CC=$(which nvcc)
+#COMPILER_CXX=$(which nvcc)
 COMPILER_CC=$(which gcc)
 COMPILER_CXX=$(which g++)
 #COMPILER_CC=$(which clang)
@@ -21,8 +23,8 @@ CXX=$COMPILER_CXX                                   \
 cmake                                               \
   -DPYTHON_EXECUTABLE:FILEPATH=$PYTHON_EXECUTABLE   \
   -DOMP_PARALLEL=ON                                 \
-  -DMPI_PARALLEL=OFF                                \
-  -DGPU_ACCELERATION=OFF                            \
+  -DGPU_ACCELERATION=ON                             \
+  -DGPU_CUDA=ON                                     \
   $DIR
 
 # Run make
