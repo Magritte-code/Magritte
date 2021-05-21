@@ -87,7 +87,6 @@ PYBIND11_MODULE (core, module)
     // Model
     py::class_<Model> (module, "Model")
         // attributes
-        .def_readwrite ("writing_populations_to_disk", &Model::writing_populations_to_disk)
         .def_readwrite ("parameters",     &Model::parameters)
         .def_readwrite ("geometry",       &Model::geometry)
         .def_readwrite ("chemistry",      &Model::chemistry)
@@ -134,6 +133,8 @@ PYBIND11_MODULE (core, module)
         // io
         .def_readwrite ("n_off_diag",         &Parameters::n_off_diag)
         .def_readwrite ("max_width_fraction", &Parameters::max_width_fraction)
+        .def_readwrite ("writing_populations_to_disk", &Parameters::writing_populations_to_disk)
+        .def_readwrite ("max_matrix_size", &Parameters::max_matrix_size)
         // setters
         .def ("set_model_name",               &Parameters::set_model_name          )
         .def ("set_dimension",                &Parameters::set_dimension           )

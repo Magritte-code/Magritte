@@ -10,13 +10,13 @@
 #include "thermodynamics/thermodynamics.hpp"
 #include "lines/lines.hpp"
 #include "radiation/radiation.hpp"
+#include <set>
 #include "image/image.hpp"
 
 /// The main structure, which has a reference to most of the other structures
 /////////////////////////////////////////////////////////////////////////////
 struct Model
 {
-    bool writing_populations_to_disk=false;   ///< Toggle for writing the level populations after each iteration
 
     Size iteration_to_start_from=0;           ///< Number to start the iterations from (can be non-zero when loading the level populations)
 
