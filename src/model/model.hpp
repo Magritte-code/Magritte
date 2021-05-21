@@ -10,11 +10,16 @@
 #include "thermodynamics/thermodynamics.hpp"
 #include "lines/lines.hpp"
 #include "radiation/radiation.hpp"
+#include <set>
 #include "image/image.hpp"
 
-
+/// The main structure, which has a reference to most of the other structures
+/////////////////////////////////////////////////////////////////////////////
 struct Model
 {
+
+    Size iteration_to_start_from=0;           ///< Number to start the iterations from (can be non-zero when loading the level populations)
+
     Parameters     parameters;
     Geometry       geometry;
     Chemistry      chemistry;
@@ -53,10 +58,11 @@ struct Model
     int compute_Jeff                              ();
     int compute_level_populations_from_stateq     ();
     int compute_level_populations                 (
-        // const Io   &io,
         const bool  use_Ng_acceleration,
         const long  max_niterations     );
     int compute_image                             (const Size ray_nr);
+
+    int restart_from_iteration(Size iteration, Size lvl);
 
     Double1 error_max;
     Double1 error_mean;

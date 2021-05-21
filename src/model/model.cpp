@@ -117,7 +117,7 @@ int Model :: compute_spectral_discretisation ()
         {
             nmbrs_inverted[nmbrs[fl]] = fl;
 
-            radiation.frequencies.appears_in_line_integral[fl] = false;;
+            radiation.frequencies.appears_in_line_integral[fl] = false;
             radiation.frequencies.corresponding_l_for_spec[fl] = parameters.nfreqs();
             radiation.frequencies.corresponding_k_for_tran[fl] = parameters.nfreqs();
             radiation.frequencies.corresponding_z_for_line[fl] = parameters.nfreqs();
@@ -164,8 +164,8 @@ int Model :: compute_spectral_discretisation (const Real width)
         Real1 freqs (parameters.nfreqs());
         Size1 nmbrs (parameters.nfreqs());
 
-        Size index0 = 0;
-        Size index1 = 0;
+        Size index0 = 0;//temp index for line number
+        Size index1 = 0;//temp index for frequencies
 
 
         // Add the line frequencies (over the profile)
@@ -215,7 +215,7 @@ int Model :: compute_spectral_discretisation (const Real width)
             radiation.frequencies.corresponding_z_for_line[fl] = parameters.nfreqs();
         }
 
-        Size index2 = 0;
+        Size index2 = 0;//temp index for lookup table from above
 
         for (Size l = 0; l < parameters.nlspecs(); l++)
         {
@@ -245,8 +245,8 @@ int Model :: compute_spectral_discretisation (const Real width)
 
 ///  Computer for spectral (=frequency) discretisation
 ///  Gives same frequency bins to each point
-///    @param[in] min : minimal frequency
-///    @param[in] max : maximal frequency
+///    @param[in] nu_min : minimal frequency
+///    @param[in] nu_max : maximal frequency
 ///////////////////////////////////////////////////////
 int Model :: compute_spectral_discretisation (
     const long double nu_min,
@@ -288,6 +288,24 @@ int Model :: compute_LTE_level_populations ()
     return (0);
 }
 
+///  Restarting from the iteration levelpops, assuming it has been written to disk
+///    @param[in] iteration : The iteration to start from
+///    @param[in] lvl : The coarsening level to start from
+//////////////////////////////////////////////////////////////////////////////////
+///  Note: when the level populations cannot be read, starts from LTE instead without warning
+///  Note: currently no state of where we are in any multilevel operation is stored, so unless changed, please use this only without multigrid or just naive multigrid (then the number of iterations done that is reported will be incorrect (because it doesnt count the iterations prior to loading))
+int Model :: restart_from_iteration(Size iteration, Size lvl)
+{// TODO: currently, the mgController information is NOT SAVED, so this is not that useful for restarting a multigrid scheme
+  compute_LTE_level_populations();
+  IoPython io = IoPython ("hdf5", parameters.model_name());
+  lines.read_populations_of_iteration(io, iteration, lvl);
+  std::cout<<"Read populations from disk"<<std::endl;
+  lines.set_emissivity_and_opacity ();
+  std::cout<<"Restarting from iteration: "<<iteration<<std::endl;
+  iteration_to_start_from=iteration;
+  return (0);
+}
+
 
 ///  Computer for the radiation field
 /////////////////////////////////////
@@ -326,17 +344,48 @@ int Model :: compute_radiation_field_feautrier_order_2 ()
     return (0);
 }
 
+// //// also no declaration here in .hpp file; thus commented out
+// ///  Computer for the radiation field
+// /////////////////////////////////////
+// int Model :: compute_radiation_field_2nd_order_Feautrier ()
+// {
+//     cout << "Computing radiation field..." << endl;
+//
+//     const Size length_max = 4*parameters.npoints() + 1;
+//     const Size  width_max =   parameters.nfreqs ();
+//
+//
+//     cout << "npoints = " << parameters.npoints() << endl;
+//     cout << "nfreqs  = " << parameters.nfreqs () << endl;
+//
+//     cout << "l_max = " << length_max << endl;
+//     cout << "w_max = " <<  width_max << endl;
+//
+//     Solver solver (length_max, width_max, parameters.n_off_diag);
+//     solver.solve_2nd_order_Feautrier (*this);
+//
+//     return (0);
+// }
+
 
 ///  Compute the effective mean intensity in a line
 ///////////////////////////////////////////////////
 int Model :: compute_Jeff ()
 {
+
+    //as usual, only do this for the points currently in the grid
+    vector<Size> points_in_grid=geometry.points.multiscale.get_current_points_in_grid();
+    Size nbpoints=points_in_grid.size();
+
+
     for (LineProducingSpecies &lspec : lines.lineProducingSpecies)
     {
        // Lambda = MatrixXd::Zero (lspec.population.size(), lspec.population.size());
 
-        threaded_for (p, parameters.npoints(),
+        threaded_for (idx, nbpoints,
         {
+            const Size p=points_in_grid[idx];
+
             for (Size k = 0; k < lspec.linedata.nrad; k++)
             {
                 const Size1 freq_nrs = lspec.nr_line[p][k];
@@ -371,14 +420,17 @@ int Model :: compute_Jeff ()
 }
 
 
-///  compute level populations from statistical equilibrium
+///  Compute level populations from statistical equilibrium
 ///////////////////////////////////////////////////////////
 int Model :: compute_level_populations_from_stateq ()
 {
+    vector<Size> points_in_grid=geometry.points.multiscale.get_current_points_in_grid();
+
     lines.iteration_using_statistical_equilibrium (
             chemistry.species.abundance,
             thermodynamics.temperature.gas,
-            parameters.pop_prec()                 );
+            parameters.pop_prec(),
+            points_in_grid                       );
 
     return (0);
 }
@@ -386,10 +438,9 @@ int Model :: compute_level_populations_from_stateq ()
 
 ///  Compute level populations self-consistenly with the radiation field
 ///  assuming statistical equilibrium (detailed balance for the levels)
-///  @param[in] io                  : io object (for writing level populations)
 ///  @param[in] use_Ng_acceleration : true if Ng acceleration has to be used
 ///  @param[in] max_niterations     : maximum number of iterations
-///  @return number of iteration done
+///  @return Number of iterations done
 ///////////////////////////////////////////////////////////////////////////////
 int Model :: compute_level_populations (
     const bool use_Ng_acceleration,
@@ -402,7 +453,7 @@ int Model :: compute_level_populations (
     }
 
     // Initialize the number of iterations
-    int iteration        = 0;
+    int iteration        = iteration_to_start_from;
     int iteration_normal = 0;
 
     // Initialize errors
@@ -417,7 +468,6 @@ int Model :: compute_level_populations (
     {
         iteration++;
 
-        // logger.write ("Starting iteration ", iteration);
         cout << "Starting iteration " << iteration << endl;
 
         // Start assuming convergence
@@ -425,24 +475,34 @@ int Model :: compute_level_populations (
 
         if (use_Ng_acceleration && (iteration_normal == 4))
         {
-            lines.iteration_using_Ng_acceleration (parameters.pop_prec());
+            vector<Size> points_in_grid=geometry.points.multiscale.get_current_points_in_grid();
+            lines.iteration_using_Ng_acceleration (parameters.pop_prec(), points_in_grid);
 
             iteration_normal = 0;
         }
         else
         {
-            // logger.write ("Computing the radiation field...");
             cout << "Computing the radiation field..." << endl;
 
             compute_radiation_field_feautrier_order_2 ();
             compute_Jeff                              ();
 
+            vector<Size> points_in_grid=geometry.points.multiscale.get_current_points_in_grid();
+
             lines.iteration_using_statistical_equilibrium (
                 chemistry.species.abundance,
                 thermodynamics.temperature.gas,
-                parameters.pop_prec()                     );
+                parameters.pop_prec(),
+                points_in_grid);
 
             iteration_normal++;
+        }
+
+        //If enabled, we now write the level populations to the hdf5 file
+        if (parameters.writing_populations_to_disk){
+          IoPython io = IoPython ("hdf5", parameters.model_name());
+          lines.write_populations_of_iteration(io, iteration, geometry.points.multiscale.get_curr_coars_lvl());
+          std::cout<<"Wrote populations to disk"<<std::endl;
         }
 
 
@@ -458,7 +518,6 @@ int Model :: compute_level_populations (
 
             const double fnc = lines.lineProducingSpecies[l].fraction_not_converged;
 
-            // logger.write ("Already ", 100 * (1.0 - fnc), " % converged!");
             cout << "Already " << 100 * (1.0 - fnc) << " % converged!" << endl;
         }
     } // end of while loop of iterations
@@ -488,7 +547,8 @@ int Model :: compute_image (const Size ray_nr)
     return (0);
 }
 
-
+/// Sets the emmisivity and opacity
+///////////////////////////////////
 int Model :: set_eta_and_chi ()
 {
     Solver solver;
@@ -497,7 +557,8 @@ int Model :: set_eta_and_chi ()
     return (0);
 }
 
-
+/// Sets the boundary conditions
+////////////////////////////////
 int Model :: set_boundary_condition ()
 {
     Solver solver;
