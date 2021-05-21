@@ -424,12 +424,9 @@ PYBIND11_MODULE (core, module)
     py::class_<Radiation> (module, "Radiation")
         // attributes
         .def_readwrite ("frequencies", &Radiation::frequencies)
-        // .def_readwrite ("u",           &Radiation::u)
-        // .def_readwrite ("v",           &Radiation::v)
-        .def_readwrite ("I_bdy",       &Radiation::I_bdy)
         .def_readwrite ("I",           &Radiation::I)
         .def_readwrite ("u",           &Radiation::u)
-        .def_readwrite ("v",           &Radiation::v)
+        // .def_readwrite ("v",           &Radiation::v)
         .def_readwrite ("J",           &Radiation::J)
         // functions
         .def ("read",                  &Radiation::read)

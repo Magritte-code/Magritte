@@ -165,7 +165,7 @@ inline void Solver :: solve_shortchar_order_0 (Model& model)
             for (Size f = 0; f < model.parameters.nfreqs(); f++)
             {
                 model.radiation.u(rr,o,f) = 0.5 * (model.radiation.I(rr,o,f) + model.radiation.I(ar,o,f));
-                model.radiation.v(rr,o,f) = 0.5 * (model.radiation.I(rr,o,f) - model.radiation.I(ar,o,f));
+                // model.radiation.v(rr,o,f) = 0.5 * (model.radiation.I(rr,o,f) - model.radiation.I(ar,o,f));
             }
         })
 
@@ -183,7 +183,7 @@ inline void Solver :: solve_feautrier_order_2 (Model& model)
 
     model.radiation.initialize_J();
 
-    for (Size rr = 0; rr < model.parameters.hnrays(); rr++)
+    distributed_for (rr, rr_loc, model.parameters.hnrays(),
     {
         const Size ar = model.geometry.rays.antipod[rr];
 
@@ -204,10 +204,10 @@ inline void Solver :: solve_feautrier_order_2 (Model& model)
             {
                 for (Size f = 0; f < model.parameters.nfreqs(); f++)
                 {
-                    solve_feautrier_order_2 (model, o, rr, ar, f);
+                    solve_feautrier_order_2 (model, o, f);
 
-                    model.radiation.u(rr,o,f)  = Su_()[centre];
-                    model.radiation.J(   o,f) += Su_()[centre] * two * model.geometry.rays.weight[rr];
+                    model.radiation.u(rr_loc,o,f)  = Su_()[centre];
+                    model.radiation.J(       o,f) += Su_()[centre] * two * model.geometry.rays.weight[rr];
 
                     update_Lambda (model, rr, f);
                 }
@@ -216,17 +216,22 @@ inline void Solver :: solve_feautrier_order_2 (Model& model)
             {
                 for (Size f = 0; f < model.parameters.nfreqs(); f++)
                 {
-                    model.radiation.u(rr,o,f)  = boundary_intensity(model, o, model.radiation.frequencies.nu(o, f));
-                    model.radiation.J(   o,f) += two * model.geometry.rays.weight[rr] * model.radiation.u(rr,o,f);
+                    model.radiation.u(rr_loc,o,f)  = boundary_intensity(model, o, model.radiation.frequencies.nu(o, f));
+                    model.radiation.J(       o,f) += two * model.geometry.rays.weight[rr] * model.radiation.u(rr_loc,o,f);
                 }
             }
         })
 
         pc::accelerator::synchronize();
-    }
+    })
 
     model.radiation.u.copy_ptr_to_vec();
     model.radiation.J.copy_ptr_to_vec();
+
+    model.radiation.MPI_reduce_J();
+
+    // Gather contributions to the ALO
+    for (auto &lspec : model.lines.lineProducingSpecies) {lspec.lambda.MPI_gather();}
 }
 
 
@@ -254,7 +259,7 @@ inline void Solver :: image_feautrier_order_2 (Model& model, const Size rr)
         {
             for (Size f = 0; f < model.parameters.nfreqs(); f++)
             {
-                image_feautrier_order_2 (model, o, rr, ar, f);
+                image_feautrier_order_2 (model, o, f);
 
                 image.I(o,f) = two*Su_()[first_()] - boundary_intensity(model, nr_()[first_()], model.radiation.frequencies.nu(o, f));
             }
@@ -635,12 +640,7 @@ accel inline void Solver :: update_Lambda (Model &model, const Size rr, const Si
 ///  2nd-order solver, without adaptive optical depth increments
 ///    @param[in] w : width index
 ///////////////////////////////////////////////////////////////////////
-accel inline void Solver :: solve_feautrier_order_2 (
-          Model& model,
-    const Size   o,
-    const Size   rr,
-    const Size   ar,
-    const Size   f  )
+accel inline void Solver :: solve_feautrier_order_2 (Model& model, const Size o, const Size f)
 {
     const Real freq = model.radiation.frequencies.nu(o, f);
 
@@ -821,12 +821,7 @@ accel inline void Solver :: solve_feautrier_order_2 (
 ///  2nd-order solver, without adaptive optical depth increments
 ///    @param[in] w : width index
 ///////////////////////////////////////////////////////////////////////
-accel inline void Solver :: image_feautrier_order_2 (
-          Model& model,
-    const Size   o,
-    const Size   rr,
-    const Size   ar,
-    const Size   f  )
+accel inline void Solver :: image_feautrier_order_2 (Model& model, const Size o, const Size f)
 {
     const Real freq = model.radiation.frequencies.nu(o, f);
 

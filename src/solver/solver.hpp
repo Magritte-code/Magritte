@@ -132,20 +132,10 @@ class Solver
             const double dshift_max );
 
         accel inline void solve_feautrier_order_2 (Model& model);
-        accel inline void solve_feautrier_order_2 (
-                  Model& model,
-            const Size   o,
-            const Size   rr,
-            const Size   ar,
-            const Size   f  );
+        accel inline void solve_feautrier_order_2 (Model& model, const Size o, const Size f);
 
         accel inline void image_feautrier_order_2 (Model& model, const Size rr);
-        accel inline void image_feautrier_order_2 (
-                  Model& model,
-            const Size   o,
-            const Size   rr,
-            const Size   ar,
-            const Size   f  );
+        accel inline void image_feautrier_order_2 (Model& model, const Size o, const Size f);
 
 
         accel inline Real     kernel (const Vector3D d) const;
