@@ -130,6 +130,8 @@ struct Parameters
 
     long n_off_diag = 0;
 
+    Size max_matrix_size=100*1024*1024;// max temp matrix size when solving for the level populations (do this times 3 for the actual max size) //hundred megabyte
+
     bool writing_populations_to_disk=false;   ///< Toggle for writing the level populations after each iteration
 
     double max_width_fraction = 0.5;

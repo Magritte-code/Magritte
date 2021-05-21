@@ -272,17 +272,13 @@ inline void LineProducingSpecies :: update_using_statistical_equilibrium (
     std::cout<<"setting vector population"<<std::endl;
     VectorXr new_population = VectorXr::Zero (parameters.npoints()*linedata.nlev);
 
-    const Size max_matrix_size=100*1024*1024;//hundred megabyte
-    // const Size max_matrix_size=1*1024*1024;//one megabyte
-    // It turns out that due to using triplets to construct the sparse matrix, the total extra memory needed for this calculation is about three times this number
-
     // const unsigned long long int total_non_zeros = parameters.npoints() * (      linedata.nlev
     //                                                + 6 * linedata.nrad
     //                                                + 4 * linedata.ncol_tot );
 
     // We can split our block diagonal matrix if there are no non-local contributions
     if (parameters.n_off_diag==0){
-        Size n_points_per_block=max_matrix_size/((linedata.nlev + 6 * linedata.nrad + 4 * linedata.ncol_tot )*sizeof(Real));
+        Size n_points_per_block=parameters.max_matrix_size/((linedata.nlev + 6 * linedata.nrad + 4 * linedata.ncol_tot )*sizeof(Real));
         Size n_different_matrices=(points_in_grid.size()+(n_points_per_block-1))/n_points_per_block;//rounding up
         std::cout<<"Splitting big matrix into n parts: "<<n_different_matrices<<std::endl;
 
@@ -290,15 +286,21 @@ inline void LineProducingSpecies :: update_using_statistical_equilibrium (
         for (Size idx=0;idx<n_different_matrices;idx++)
         {
             Size firstidx=idx*n_points_per_block;
-            Size lastidx=std::min(static_cast<Size>(points_in_grid.size()-1),static_cast<Size>((idx+1)*n_points_per_block-1));
+            Size last_index_in_vector=points_in_grid.size()-1;
+            Size last_index_in_block=(idx+1)*n_points_per_block-1;
+            Size lastidx=std::min(last_index_in_vector,last_index_in_block);
+
+            // Size lastidx=std::min(static_cast<Size>(points_in_grid.size()-1),static_cast<Size>((idx+1)*n_points_per_block-1));
             vector<Size> current_points_in_block = std::vector<Size>(points_in_grid.begin() + firstidx, points_in_grid.begin()+lastidx+1);
+
             VectorXr resulting_y = solve_statistical_equilibrium(abundance,temperature,current_points_in_block);//does not need to be continguous
 
-            //and finally putting those resulting y values at the right place in the y vector
+            //and finally putting those resulting y values at the right place in the new population vector
             Size temp_idx=0;
             for (Size point_in_block:current_points_in_block)
             {
-                new_population(Eigen::seq(index(point_in_block,0),index(point_in_block,linedata.nlev-1)))=resulting_y(Eigen::seq(index(temp_idx,0),index(temp_idx,linedata.nlev-1)));
+                new_population(Eigen::seq(index(point_in_block, 0),index(point_in_block, linedata.nlev-1)))
+                  =resulting_y(Eigen::seq(index(temp_idx      , 0),index(temp_idx      , linedata.nlev-1)));
                 temp_idx++;
             }
         }
