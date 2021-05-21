@@ -264,7 +264,7 @@ void Radiation :: MPI_reduce_J ()
 {
     int ierr = MPI_Allreduce (
                   MPI_IN_PLACE,      // pointer to data to be reduced -> here in place
-                  J.data(),          // pointer to data to be received
+                  J.dat,             // pointer to data to be received
                   J.size(),          // size of data to be received
                   MPI_DOUBLE,        // type of reduced data
                   MPI_SUM,           // reduction operation

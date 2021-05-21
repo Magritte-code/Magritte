@@ -21,7 +21,7 @@ CXX=$COMPILER_CXX                                   \
 cmake                                               \
   -DPYTHON_EXECUTABLE:FILEPATH=$PYTHON_EXECUTABLE   \
   -DOMP_PARALLEL=ON                                 \
-  -DMPI_PARALLEL=OFF                                \
+  -DMPI_PARALLEL=ON                                 \
   -DGPU_ACCELERATION=OFF                            \
   $DIR
 

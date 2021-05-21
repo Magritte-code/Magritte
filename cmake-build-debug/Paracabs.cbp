@@ -1,0 +1,1264 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6"/>
+	<Project>
+		<Option title="Paracabs"/>
+		<Option makefile_is_custom="1"/>
+		<Option compiler="gcc"/>
+		<Option virtualFolders="CMake Files\;CMake Files\src\;CMake Files\src\bindings\;CMake Files\dependencies\;CMake Files\dependencies\Paracabs\;CMake Files\dependencies\Paracabs\Paracabs\;CMake Files\dependencies\pybind11\;CMake Files\dependencies\pybind11\tools\;CMake Files\dependencies\googletest\;CMake Files\dependencies\googletest\googlemock\;CMake Files\dependencies\googletest\googlemock\cmake\;CMake Files\dependencies\googletest\googletest\;CMake Files\dependencies\googletest\googletest\cmake\;CMake Files\tests\;"/>
+		<Build>
+			<Target title="all">
+				<Option working_dir="/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/Makefile&quot;  VERBOSE=1 all"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="install/strip">
+				<Option working_dir="/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/Makefile&quot;  VERBOSE=1 install/strip"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="install/local">
+				<Option working_dir="/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/Makefile&quot;  VERBOSE=1 install/local"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="edit_cache">
+				<Option working_dir="/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/Makefile&quot;  VERBOSE=1 edit_cache"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="rebuild_cache">
+				<Option working_dir="/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/Makefile&quot;  VERBOSE=1 rebuild_cache"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="list_install_components">
+				<Option working_dir="/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/Makefile&quot;  VERBOSE=1 list_install_components"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="install">
+				<Option working_dir="/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/Makefile&quot;  VERBOSE=1 install"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="Magritte">
+				<Option output="/home/frederik/Dropbox/GitHub/Magritte/bin/libMagritte.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/src"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/pybind11"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/pybind11/include"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/Paracabs/Paracabs"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/src/."/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/src/../dependencies"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/src/../dependencies/eigen"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/src/../dependencies/pybind11"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/src/../dependencies/pybind11/include"/>
+					<Add directory="/usr/include/python3.8"/>
+					<Add directory="/usr/include/c++/9"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/9"/>
+					<Add directory="/usr/include/c++/9/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/9/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/src/Makefile&quot;  VERBOSE=1 Magritte"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/src/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/src/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/src/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="Magritte/fast">
+				<Option output="/home/frederik/Dropbox/GitHub/Magritte/bin/libMagritte.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/src"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/pybind11"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/pybind11/include"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/Paracabs/Paracabs"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/src/."/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/src/../dependencies"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/src/../dependencies/eigen"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/src/../dependencies/pybind11"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/src/../dependencies/pybind11/include"/>
+					<Add directory="/usr/include/python3.8"/>
+					<Add directory="/usr/include/c++/9"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/9"/>
+					<Add directory="/usr/include/c++/9/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/9/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/src/Makefile&quot;  VERBOSE=1 Magritte/fast"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/src/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/src/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/src/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="PyIo">
+				<Option output="/home/frederik/Dropbox/GitHub/Magritte/bin/libPyIo.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/src"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/pybind11"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/Paracabs/Paracabs"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/src/."/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/src/../dependencies"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/src/../dependencies/eigen"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/src/../dependencies/pybind11"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/src/../dependencies/pybind11/include"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/pybind11/include"/>
+					<Add directory="/usr/include/python3.8"/>
+					<Add directory="/usr/include/c++/9"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/9"/>
+					<Add directory="/usr/include/c++/9/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/9/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/src/Makefile&quot;  VERBOSE=1 PyIo"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/src/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/src/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/src/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="PyIo/fast">
+				<Option output="/home/frederik/Dropbox/GitHub/Magritte/bin/libPyIo.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/src"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/pybind11"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/Paracabs/Paracabs"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/src/."/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/src/../dependencies"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/src/../dependencies/eigen"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/src/../dependencies/pybind11"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/src/../dependencies/pybind11/include"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/pybind11/include"/>
+					<Add directory="/usr/include/python3.8"/>
+					<Add directory="/usr/include/c++/9"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/9"/>
+					<Add directory="/usr/include/c++/9/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/9/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/src/Makefile&quot;  VERBOSE=1 PyIo/fast"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/src/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/src/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/src/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="core">
+				<Option output="/home/frederik/Dropbox/GitHub/Magritte/bin/core.so" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/src/bindings"/>
+				<Option object_output="./"/>
+				<Option type="3"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/pybind11"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/Paracabs/Paracabs"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/src/."/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/src/../dependencies"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/src/../dependencies/eigen"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/src/../dependencies/pybind11"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/src/../dependencies/pybind11/include"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/src/bindings/.."/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/src/bindings/../../dependencies"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/src/bindings/../../dependencies/eigen"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/src/bindings/../../dependencies/pybind11"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/src/bindings/../../dependencies/pybind11/include"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/pybind11/include"/>
+					<Add directory="/usr/include/python3.8"/>
+					<Add directory="/usr/include/c++/9"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/9"/>
+					<Add directory="/usr/include/c++/9/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/9/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/src/bindings/Makefile&quot;  VERBOSE=1 core"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/src/bindings/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/src/bindings/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/src/bindings/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="core/fast">
+				<Option output="/home/frederik/Dropbox/GitHub/Magritte/bin/core.so" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/src/bindings"/>
+				<Option object_output="./"/>
+				<Option type="3"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/pybind11"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/Paracabs/Paracabs"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/src/."/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/src/../dependencies"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/src/../dependencies/eigen"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/src/../dependencies/pybind11"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/src/../dependencies/pybind11/include"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/src/bindings/.."/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/src/bindings/../../dependencies"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/src/bindings/../../dependencies/eigen"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/src/bindings/../../dependencies/pybind11"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/src/bindings/../../dependencies/pybind11/include"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/pybind11/include"/>
+					<Add directory="/usr/include/python3.8"/>
+					<Add directory="/usr/include/c++/9"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/9"/>
+					<Add directory="/usr/include/c++/9/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/9/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/src/bindings/Makefile&quot;  VERBOSE=1 core/fast"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/src/bindings/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/src/bindings/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/src/bindings/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="test_shortchar_order_0">
+				<Option output="/home/frederik/Dropbox/GitHub/Magritte/bin/test_shortchar_order_0" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/frederik/Dropbox/GitHub/Magritte/bin"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/pybind11"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/pybind11/include"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/Paracabs/Paracabs"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../src"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies/eigen"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies/pybind11"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies/pybind11/include"/>
+					<Add directory="/usr/include/python3.8"/>
+					<Add directory="/usr/include/c++/9"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/9"/>
+					<Add directory="/usr/include/c++/9/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/9/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/Makefile&quot;  VERBOSE=1 test_shortchar_order_0"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="test_shortchar_order_0/fast">
+				<Option output="/home/frederik/Dropbox/GitHub/Magritte/bin/test_shortchar_order_0" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/frederik/Dropbox/GitHub/Magritte/bin"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/pybind11"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/pybind11/include"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/Paracabs/Paracabs"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../src"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies/eigen"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies/pybind11"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies/pybind11/include"/>
+					<Add directory="/usr/include/python3.8"/>
+					<Add directory="/usr/include/c++/9"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/9"/>
+					<Add directory="/usr/include/c++/9/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/9/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/Makefile&quot;  VERBOSE=1 test_shortchar_order_0/fast"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="test_levelpops">
+				<Option output="/home/frederik/Dropbox/GitHub/Magritte/bin/test_levelpops" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/frederik/Dropbox/GitHub/Magritte/bin"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/pybind11"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/pybind11/include"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/Paracabs/Paracabs"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../src"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies/eigen"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies/pybind11"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies/pybind11/include"/>
+					<Add directory="/usr/include/python3.8"/>
+					<Add directory="/usr/include/c++/9"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/9"/>
+					<Add directory="/usr/include/c++/9/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/9/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/Makefile&quot;  VERBOSE=1 test_levelpops"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="test_levelpops/fast">
+				<Option output="/home/frederik/Dropbox/GitHub/Magritte/bin/test_levelpops" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/frederik/Dropbox/GitHub/Magritte/bin"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/pybind11"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/pybind11/include"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/Paracabs/Paracabs"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../src"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies/eigen"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies/pybind11"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies/pybind11/include"/>
+					<Add directory="/usr/include/python3.8"/>
+					<Add directory="/usr/include/c++/9"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/9"/>
+					<Add directory="/usr/include/c++/9/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/9/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/Makefile&quot;  VERBOSE=1 test_levelpops/fast"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="test_multigrid">
+				<Option output="/home/frederik/Dropbox/GitHub/Magritte/bin/test_multigrid" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/frederik/Dropbox/GitHub/Magritte/bin"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/pybind11"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/pybind11/include"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/Paracabs/Paracabs"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../src"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies/eigen"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies/pybind11"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies/pybind11/include"/>
+					<Add directory="/usr/include/python3.8"/>
+					<Add directory="/usr/include/c++/9"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/9"/>
+					<Add directory="/usr/include/c++/9/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/9/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/Makefile&quot;  VERBOSE=1 test_multigrid"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="test_multigrid/fast">
+				<Option output="/home/frederik/Dropbox/GitHub/Magritte/bin/test_multigrid" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/frederik/Dropbox/GitHub/Magritte/bin"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/pybind11"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/pybind11/include"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/Paracabs/Paracabs"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../src"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies/eigen"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies/pybind11"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies/pybind11/include"/>
+					<Add directory="/usr/include/python3.8"/>
+					<Add directory="/usr/include/c++/9"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/9"/>
+					<Add directory="/usr/include/c++/9/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/9/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/Makefile&quot;  VERBOSE=1 test_multigrid/fast"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="test_raytracer">
+				<Option output="/home/frederik/Dropbox/GitHub/Magritte/bin/test_raytracer" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/frederik/Dropbox/GitHub/Magritte/bin"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/pybind11"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/pybind11/include"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/Paracabs/Paracabs"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../src"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies/eigen"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies/pybind11"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies/pybind11/include"/>
+					<Add directory="/usr/include/python3.8"/>
+					<Add directory="/usr/include/c++/9"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/9"/>
+					<Add directory="/usr/include/c++/9/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/9/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/Makefile&quot;  VERBOSE=1 test_raytracer"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="test_raytracer/fast">
+				<Option output="/home/frederik/Dropbox/GitHub/Magritte/bin/test_raytracer" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/frederik/Dropbox/GitHub/Magritte/bin"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/pybind11"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/pybind11/include"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/Paracabs/Paracabs"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../src"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies/eigen"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies/pybind11"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies/pybind11/include"/>
+					<Add directory="/usr/include/python3.8"/>
+					<Add directory="/usr/include/c++/9"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/9"/>
+					<Add directory="/usr/include/c++/9/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/9/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/Makefile&quot;  VERBOSE=1 test_raytracer/fast"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="test_solver_lambda">
+				<Option output="/home/frederik/Dropbox/GitHub/Magritte/bin/test_solver_lambda" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/frederik/Dropbox/GitHub/Magritte/bin"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/pybind11"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/pybind11/include"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/Paracabs/Paracabs"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../src"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies/eigen"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies/pybind11"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies/pybind11/include"/>
+					<Add directory="/usr/include/python3.8"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/googletest/googletest/include"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/googletest/googletest"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/googletest/googlemock/include"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/googletest/googlemock"/>
+					<Add directory="/usr/include/c++/9"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/9"/>
+					<Add directory="/usr/include/c++/9/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/9/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/Makefile&quot;  VERBOSE=1 test_solver_lambda"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="test_solver_lambda/fast">
+				<Option output="/home/frederik/Dropbox/GitHub/Magritte/bin/test_solver_lambda" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/frederik/Dropbox/GitHub/Magritte/bin"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/pybind11"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/pybind11/include"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/Paracabs/Paracabs"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../src"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies/eigen"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies/pybind11"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies/pybind11/include"/>
+					<Add directory="/usr/include/python3.8"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/googletest/googletest/include"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/googletest/googletest"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/googletest/googlemock/include"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/googletest/googlemock"/>
+					<Add directory="/usr/include/c++/9"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/9"/>
+					<Add directory="/usr/include/c++/9/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/9/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/Makefile&quot;  VERBOSE=1 test_solver_lambda/fast"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="test_imager">
+				<Option output="/home/frederik/Dropbox/GitHub/Magritte/bin/test_imager" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/frederik/Dropbox/GitHub/Magritte/bin"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/pybind11"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/pybind11/include"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/Paracabs/Paracabs"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../src"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies/eigen"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies/pybind11"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies/pybind11/include"/>
+					<Add directory="/usr/include/python3.8"/>
+					<Add directory="/usr/include/c++/9"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/9"/>
+					<Add directory="/usr/include/c++/9/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/9/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/Makefile&quot;  VERBOSE=1 test_imager"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="test_imager/fast">
+				<Option output="/home/frederik/Dropbox/GitHub/Magritte/bin/test_imager" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/frederik/Dropbox/GitHub/Magritte/bin"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/pybind11"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/pybind11/include"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/Paracabs/Paracabs"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../src"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies/eigen"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies/pybind11"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies/pybind11/include"/>
+					<Add directory="/usr/include/python3.8"/>
+					<Add directory="/usr/include/c++/9"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/9"/>
+					<Add directory="/usr/include/c++/9/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/9/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/Makefile&quot;  VERBOSE=1 test_imager/fast"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="test_feautrier_order_2">
+				<Option output="/home/frederik/Dropbox/GitHub/Magritte/bin/test_feautrier_order_2" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/frederik/Dropbox/GitHub/Magritte/bin"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/pybind11"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/pybind11/include"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/Paracabs/Paracabs"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../src"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies/eigen"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies/pybind11"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies/pybind11/include"/>
+					<Add directory="/usr/include/python3.8"/>
+					<Add directory="/usr/include/c++/9"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/9"/>
+					<Add directory="/usr/include/c++/9/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/9/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/Makefile&quot;  VERBOSE=1 test_feautrier_order_2"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="test_feautrier_order_2/fast">
+				<Option output="/home/frederik/Dropbox/GitHub/Magritte/bin/test_feautrier_order_2" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/frederik/Dropbox/GitHub/Magritte/bin"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/pybind11"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/pybind11/include"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/Paracabs/Paracabs"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../src"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies/eigen"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies/pybind11"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies/pybind11/include"/>
+					<Add directory="/usr/include/python3.8"/>
+					<Add directory="/usr/include/c++/9"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/9"/>
+					<Add directory="/usr/include/c++/9/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/9/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/Makefile&quot;  VERBOSE=1 test_feautrier_order_2/fast"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="gmock_main">
+				<Option output="/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/lib/libgmock_main.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/dependencies/googletest/googlemock"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/pybind11"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/pybind11/include"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/Paracabs/Paracabs"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../src"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies/eigen"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies/pybind11"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies/pybind11/include"/>
+					<Add directory="/usr/include/python3.8"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/googletest/googlemock/include"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/googletest/googlemock"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/googletest/googletest/include"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/googletest/googletest"/>
+					<Add directory="/usr/include/c++/9"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/9"/>
+					<Add directory="/usr/include/c++/9/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/9/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/dependencies/googletest/googlemock/Makefile&quot;  VERBOSE=1 gmock_main"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/dependencies/googletest/googlemock/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/dependencies/googletest/googlemock/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/dependencies/googletest/googlemock/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="gmock_main/fast">
+				<Option output="/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/lib/libgmock_main.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/dependencies/googletest/googlemock"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/pybind11"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/pybind11/include"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/Paracabs/Paracabs"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../src"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies/eigen"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies/pybind11"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies/pybind11/include"/>
+					<Add directory="/usr/include/python3.8"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/googletest/googlemock/include"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/googletest/googlemock"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/googletest/googletest/include"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/googletest/googletest"/>
+					<Add directory="/usr/include/c++/9"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/9"/>
+					<Add directory="/usr/include/c++/9/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/9/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/dependencies/googletest/googlemock/Makefile&quot;  VERBOSE=1 gmock_main/fast"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/dependencies/googletest/googlemock/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/dependencies/googletest/googlemock/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/dependencies/googletest/googlemock/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="gmock">
+				<Option output="/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/lib/libgmock.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/dependencies/googletest/googlemock"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/pybind11"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/pybind11/include"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/Paracabs/Paracabs"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../src"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies/eigen"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies/pybind11"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies/pybind11/include"/>
+					<Add directory="/usr/include/python3.8"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/googletest/googlemock/include"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/googletest/googlemock"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/googletest/googletest/include"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/googletest/googletest"/>
+					<Add directory="/usr/include/c++/9"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/9"/>
+					<Add directory="/usr/include/c++/9/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/9/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/dependencies/googletest/googlemock/Makefile&quot;  VERBOSE=1 gmock"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/dependencies/googletest/googlemock/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/dependencies/googletest/googlemock/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/dependencies/googletest/googlemock/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="gmock/fast">
+				<Option output="/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/lib/libgmock.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/dependencies/googletest/googlemock"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/pybind11"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/pybind11/include"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/Paracabs/Paracabs"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../src"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies/eigen"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies/pybind11"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies/pybind11/include"/>
+					<Add directory="/usr/include/python3.8"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/googletest/googlemock/include"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/googletest/googlemock"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/googletest/googletest/include"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/googletest/googletest"/>
+					<Add directory="/usr/include/c++/9"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/9"/>
+					<Add directory="/usr/include/c++/9/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/9/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/dependencies/googletest/googlemock/Makefile&quot;  VERBOSE=1 gmock/fast"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/dependencies/googletest/googlemock/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/dependencies/googletest/googlemock/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/dependencies/googletest/googlemock/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="gtest_main">
+				<Option output="/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/lib/libgtest_main.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/dependencies/googletest/googletest"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/pybind11"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/pybind11/include"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/Paracabs/Paracabs"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../src"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies/eigen"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies/pybind11"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies/pybind11/include"/>
+					<Add directory="/usr/include/python3.8"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/googletest/googletest/include"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/googletest/googletest"/>
+					<Add directory="/usr/include/c++/9"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/9"/>
+					<Add directory="/usr/include/c++/9/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/9/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/dependencies/googletest/googletest/Makefile&quot;  VERBOSE=1 gtest_main"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/dependencies/googletest/googletest/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/dependencies/googletest/googletest/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/dependencies/googletest/googletest/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="gtest_main/fast">
+				<Option output="/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/lib/libgtest_main.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/dependencies/googletest/googletest"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/pybind11"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/pybind11/include"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/Paracabs/Paracabs"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../src"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies/eigen"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies/pybind11"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies/pybind11/include"/>
+					<Add directory="/usr/include/python3.8"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/googletest/googletest/include"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/googletest/googletest"/>
+					<Add directory="/usr/include/c++/9"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/9"/>
+					<Add directory="/usr/include/c++/9/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/9/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/dependencies/googletest/googletest/Makefile&quot;  VERBOSE=1 gtest_main/fast"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/dependencies/googletest/googletest/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/dependencies/googletest/googletest/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/dependencies/googletest/googletest/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="gtest">
+				<Option output="/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/lib/libgtest.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/dependencies/googletest/googletest"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/pybind11"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/pybind11/include"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/Paracabs/Paracabs"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../src"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies/eigen"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies/pybind11"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies/pybind11/include"/>
+					<Add directory="/usr/include/python3.8"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/googletest/googletest/include"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/googletest/googletest"/>
+					<Add directory="/usr/include/c++/9"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/9"/>
+					<Add directory="/usr/include/c++/9/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/9/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/dependencies/googletest/googletest/Makefile&quot;  VERBOSE=1 gtest"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/dependencies/googletest/googletest/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/dependencies/googletest/googletest/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/dependencies/googletest/googletest/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="gtest/fast">
+				<Option output="/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/lib/libgtest.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/dependencies/googletest/googletest"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/pybind11"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/pybind11/include"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/Paracabs/Paracabs"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../src"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies/eigen"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies/pybind11"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/tests/../dependencies/pybind11/include"/>
+					<Add directory="/usr/include/python3.8"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/googletest/googletest/include"/>
+					<Add directory="/home/frederik/Dropbox/GitHub/Magritte/dependencies/googletest/googletest"/>
+					<Add directory="/usr/include/c++/9"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/9"/>
+					<Add directory="/usr/include/c++/9/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/9/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/dependencies/googletest/googletest/Makefile&quot;  VERBOSE=1 gtest/fast"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/dependencies/googletest/googletest/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/dependencies/googletest/googletest/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/frederik/Dropbox/GitHub/Magritte/cmake-build-debug/tests/dependencies/googletest/googletest/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+		</Build>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/dependencies/googletest/googlemock/src/gmock-all.cc">
+			<Option target="gmock"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/dependencies/googletest/googlemock/src/gmock_main.cc">
+			<Option target="gmock_main"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/dependencies/googletest/googletest/src/gtest-all.cc">
+			<Option target="gtest"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/dependencies/googletest/googletest/src/gtest_main.cc">
+			<Option target="gtest_main"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/src/bindings/pybindings.cpp">
+			<Option target="core"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.cpp">
+			<Option target="Magritte"/>
+			<Option target="core"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/src/io/cpp/io_cpp_text.hpp">
+			<Option target="Magritte"/>
+			<Option target="core"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/src/io/python/io_python.cpp">
+			<Option target="PyIo"/>
+			<Option target="core"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/src/io/python/io_python.hpp">
+			<Option target="PyIo"/>
+			<Option target="core"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/src/model/chemistry/chemistry.cpp">
+			<Option target="Magritte"/>
+			<Option target="core"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/src/model/chemistry/chemistry.hpp">
+			<Option target="Magritte"/>
+			<Option target="core"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/src/model/chemistry/species/species.cpp">
+			<Option target="Magritte"/>
+			<Option target="core"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/src/model/chemistry/species/species.hpp">
+			<Option target="Magritte"/>
+			<Option target="core"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/boundary/boundary.cpp">
+			<Option target="Magritte"/>
+			<Option target="core"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/boundary/boundary.hpp">
+			<Option target="Magritte"/>
+			<Option target="core"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/geometry.cpp">
+			<Option target="Magritte"/>
+			<Option target="core"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/geometry.hpp">
+			<Option target="Magritte"/>
+			<Option target="core"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/points/points.cpp">
+			<Option target="Magritte"/>
+			<Option target="core"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/points/points.hpp">
+			<Option target="Magritte"/>
+			<Option target="core"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/rays/rays.cpp">
+			<Option target="Magritte"/>
+			<Option target="core"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/src/model/geometry/rays/rays.hpp">
+			<Option target="Magritte"/>
+			<Option target="core"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/src/model/image/image.cpp">
+			<Option target="Magritte"/>
+			<Option target="core"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/src/model/image/image.hpp">
+			<Option target="Magritte"/>
+			<Option target="core"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.cpp">
+			<Option target="Magritte"/>
+			<Option target="core"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/lineProducingSpecies.hpp">
+			<Option target="Magritte"/>
+			<Option target="core"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/linedata/collisionPartner/collisionPartner.cpp">
+			<Option target="Magritte"/>
+			<Option target="core"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/linedata/collisionPartner/collisionPartner.hpp">
+			<Option target="Magritte"/>
+			<Option target="core"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/linedata/linedata.cpp">
+			<Option target="Magritte"/>
+			<Option target="core"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/linedata/linedata.hpp">
+			<Option target="Magritte"/>
+			<Option target="core"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/quadrature/quadrature.cpp">
+			<Option target="Magritte"/>
+			<Option target="core"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lineProducingSpecies/quadrature/quadrature.hpp">
+			<Option target="Magritte"/>
+			<Option target="core"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lines.cpp">
+			<Option target="Magritte"/>
+			<Option target="core"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/src/model/lines/lines.hpp">
+			<Option target="Magritte"/>
+			<Option target="core"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/src/model/model.cpp">
+			<Option target="Magritte"/>
+			<Option target="core"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/src/model/model.hpp">
+			<Option target="Magritte"/>
+			<Option target="core"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/src/model/parameters/parameters.cpp">
+			<Option target="Magritte"/>
+			<Option target="core"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/src/model/parameters/parameters.hpp">
+			<Option target="Magritte"/>
+			<Option target="core"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/frequencies/frequencies.cpp">
+			<Option target="Magritte"/>
+			<Option target="core"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/frequencies/frequencies.hpp">
+			<Option target="Magritte"/>
+			<Option target="core"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/radiation.cpp">
+			<Option target="Magritte"/>
+			<Option target="core"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/src/model/radiation/radiation.hpp">
+			<Option target="Magritte"/>
+			<Option target="core"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/src/model/thermodynamics/temperature/temperature.cpp">
+			<Option target="Magritte"/>
+			<Option target="core"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/src/model/thermodynamics/temperature/temperature.hpp">
+			<Option target="Magritte"/>
+			<Option target="core"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/src/model/thermodynamics/thermodynamics.cpp">
+			<Option target="Magritte"/>
+			<Option target="core"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/src/model/thermodynamics/thermodynamics.hpp">
+			<Option target="Magritte"/>
+			<Option target="core"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/src/model/thermodynamics/turbulence/turbulence.cpp">
+			<Option target="Magritte"/>
+			<Option target="core"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/src/model/thermodynamics/turbulence/turbulence.hpp">
+			<Option target="Magritte"/>
+			<Option target="core"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.cpp">
+			<Option target="Magritte"/>
+			<Option target="core"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/src/solver/solver.hpp">
+			<Option target="Magritte"/>
+			<Option target="core"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/tests/test_feautrier_order_2.cpp">
+			<Option target="test_feautrier_order_2"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/tests/test_imager.cpp">
+			<Option target="test_imager"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/tests/test_levelpops.cpp">
+			<Option target="test_levelpops"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/tests/test_multigrid.cpp">
+			<Option target="test_multigrid"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/tests/test_raytracer.cpp">
+			<Option target="test_raytracer"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/tests/test_shortchar_order_0.cpp">
+			<Option target="test_shortchar_order_0"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/tests/test_solver_lambda.cpp">
+			<Option target="test_solver_lambda"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/src/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\src\"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/src/configure.hpp.in">
+			<Option virtualFolder="CMake Files\src\"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/src/bindings/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\src\bindings\"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/dependencies/Paracabs/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\dependencies\Paracabs\"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/dependencies/Paracabs/Paracabs/configure.hpp.in">
+			<Option virtualFolder="CMake Files\dependencies\Paracabs\Paracabs\"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/dependencies/pybind11/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\dependencies\pybind11\"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/dependencies/pybind11/tools/FindPythonLibsNew.cmake">
+			<Option virtualFolder="CMake Files\dependencies\pybind11\tools\"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/dependencies/pybind11/tools/pybind11Common.cmake">
+			<Option virtualFolder="CMake Files\dependencies\pybind11\tools\"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/dependencies/pybind11/tools/pybind11Tools.cmake">
+			<Option virtualFolder="CMake Files\dependencies\pybind11\tools\"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/dependencies/googletest/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\dependencies\googletest\"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/dependencies/googletest/googlemock/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\dependencies\googletest\googlemock\"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/dependencies/googletest/googlemock/cmake/gmock.pc.in">
+			<Option virtualFolder="CMake Files\dependencies\googletest\googlemock\cmake\"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/dependencies/googletest/googlemock/cmake/gmock_main.pc.in">
+			<Option virtualFolder="CMake Files\dependencies\googletest\googlemock\cmake\"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/dependencies/googletest/googletest/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\dependencies\googletest\googletest\"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/dependencies/googletest/googletest/cmake/Config.cmake.in">
+			<Option virtualFolder="CMake Files\dependencies\googletest\googletest\cmake\"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/dependencies/googletest/googletest/cmake/gtest.pc.in">
+			<Option virtualFolder="CMake Files\dependencies\googletest\googletest\cmake\"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/dependencies/googletest/googletest/cmake/gtest_main.pc.in">
+			<Option virtualFolder="CMake Files\dependencies\googletest\googletest\cmake\"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/dependencies/googletest/googletest/cmake/internal_utils.cmake">
+			<Option virtualFolder="CMake Files\dependencies\googletest\googletest\cmake\"/>
+		</Unit>
+		<Unit filename="/home/frederik/Dropbox/GitHub/Magritte/tests/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\tests\"/>
+		</Unit>
+	</Project>
+</CodeBlocks_project_file>

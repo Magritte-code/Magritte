@@ -130,67 +130,69 @@ void Lines :: iteration_using_statistical_equilibrium (
 }
 
 
-void Lines :: gather_emissivities_and_opacities ()
-
-#if (MPI_PARALLEL)
-
-{
-    // Get number of processes
-    const int comm_size = MPI_comm_size ();
-
-    // Extract the buffer lengths and displacements
-    int *buffer_lengths = new int[comm_size];
-    int *displacements  = new int[comm_size];
-
-    for (int w = 0; w < comm_size; w++)
-    {
-        long start = ( w   *parameters.npoints())/comm_size;
-        long stop  = ((w+1)*parameters.npoints())/comm_size;
-
-        long ncells_red_w = stop - start;
-
-        buffer_lengths[w] = ncells_red_w * parameters.nlines();
-    }
-
-    displacements[0] = 0;
-
-    for (int w = 1; w < comm_size; w++)
-    {
-        displacements[w] = buffer_lengths[w-1];
-    }
-
-    // Call MPI to gather the emissivity data
-    int ierr_em = MPI_Allgatherv (
-                      MPI_IN_PLACE,            // pointer to data to be send (here in place)
-                      0,                       // number of elements in the send buffer
-                      MPI_DATATYPE_NULL,       // type of the send data
-                      emissivity.data(),       // pointer to the data to be received
-                      buffer_lengths,          // number of elements in receive buffer
-                      displacements,           // displacements between data blocks
-  	                  MPI_DOUBLE,              // type of the received data
-                      MPI_COMM_WORLD );
-    assert (ierr_em == 0);
-
-    // Call MPI to gather the opacity data
-    int ierr_op = MPI_Allgatherv (
-                      MPI_IN_PLACE,            // pointer to data to be send (here in place)
-                      0,                       // number of elements in the send buffer
-                      MPI_DATATYPE_NULL,       // type of the send data
-                	  opacity.data(),          // pointer to the data to be received
-                	  buffer_lengths,          // number of elements in receive buffer
-                      displacements,           // displacements between data blocks
-                	  MPI_DOUBLE,              // type of the received data
-                      MPI_COMM_WORLD );
-    assert (ierr_op == 0);
-
-    delete [] buffer_lengths;
-    delete [] displacements;
-}
-
-#else
-
-{
-    return;
-}
-
-#endif
+// DEPRECATED: Now try to keep emissivities and opacities local.
+//
+// void Lines :: gather_emissivities_and_opacities ()
+// 
+// #if (MPI_PARALLEL)
+// 
+// {
+//     // Get number of processes
+//     const int comm_size = MPI_comm_size ();
+// 
+//     // Extract the buffer lengths and displacements
+//     int *buffer_lengths = new int[comm_size];
+//     int *displacements  = new int[comm_size];
+// 
+//     for (int w = 0; w < comm_size; w++)
+//     {
+//         long start = ( w   *parameters.npoints())/comm_size;
+//         long stop  = ((w+1)*parameters.npoints())/comm_size;
+// 
+//         long ncells_red_w = stop - start;
+// 
+//         buffer_lengths[w] = ncells_red_w * parameters.nlines();
+//     }
+// 
+//     displacements[0] = 0;
+// 
+//     for (int w = 1; w < comm_size; w++)
+//     {
+//         displacements[w] = buffer_lengths[w-1];
+//     }
+// 
+//     // Call MPI to gather the emissivity data
+//     int ierr_em = MPI_Allgatherv (
+//                       MPI_IN_PLACE,            // pointer to data to be send (here in place)
+//                       0,                       // number of elements in the send buffer
+//                       MPI_DATATYPE_NULL,       // type of the send data
+//                       emissivity.data(),       // pointer to the data to be received
+//                       buffer_lengths,          // number of elements in receive buffer
+//                       displacements,           // displacements between data blocks
+//   	                  MPI_DOUBLE,              // type of the received data
+//                       MPI_COMM_WORLD );
+//     assert (ierr_em == 0);
+// 
+//     // Call MPI to gather the opacity data
+//     int ierr_op = MPI_Allgatherv (
+//                       MPI_IN_PLACE,            // pointer to data to be send (here in place)
+//                       0,                       // number of elements in the send buffer
+//                       MPI_DATATYPE_NULL,       // type of the send data
+//                 	  opacity.data(),          // pointer to the data to be received
+//                 	  buffer_lengths,          // number of elements in receive buffer
+//                       displacements,           // displacements between data blocks
+//                 	  MPI_DOUBLE,              // type of the received data
+//                       MPI_COMM_WORLD );
+//     assert (ierr_op == 0);
+// 
+//     delete [] buffer_lengths;
+//     delete [] displacements;
+// }
+// 
+// #else
+// 
+// {
+//     return;
+// }
+// 
+// #endif

@@ -168,8 +168,8 @@ inline void Lambda :: MPI_gather ()
 
 
     // Gather the lengths of the linearized vectors of each process
-    Int1 buffer_lengths (MPI_comm_size(), 0);
-    Int1 displacements  (MPI_comm_size(), 0);
+    Int1 buffer_lengths (pc::message_passing::comm_size(), 0);
+    Int1 displacements  (pc::message_passing::comm_size(), 0);
 
 
     int ierr_l = MPI_Allgather (
@@ -183,7 +183,7 @@ inline void Lambda :: MPI_gather ()
     assert (ierr_l == 0);
 
 
-    for (int w = 1; w < MPI_comm_size(); w++)
+    for (int w = 1; w < pc::message_passing::comm_size(); w++)
     {
         displacements[w] = buffer_lengths[w-1];
     }
@@ -198,7 +198,7 @@ inline void Lambda :: MPI_gather ()
 
     Lss_total.resize (total_buffer_length);
     nrs_total.resize (total_buffer_length);
-    szs_total.resize (MPI_comm_size()*ncells*nrad);
+    szs_total.resize (pc::message_passing::comm_size()*parameters.npoints()*nrad);
 
 
     int ierr_ls = MPI_Allgatherv (
@@ -226,12 +226,12 @@ inline void Lambda :: MPI_gather ()
 
 
     int ierr_sz = MPI_Allgather (
-                      size.data(),             // pointer to data to be send
-                      ncells*nrad,             // number of elements in the send buffer
-                      MPI_LONG,                // type of the send data
-                      szs_total.data(),        // pointer to the data to be received
-                      ncells*nrad,             // number of elements in receive buffer
-                      MPI_LONG,                // type of the received data
+                      size.data(),               // pointer to data to be send
+                      parameters.npoints()*nrad, // number of elements in the send buffer
+                      MPI_LONG,                  // type of the send data
+                      szs_total.data(),          // pointer to the data to be received
+                      parameters.npoints()*nrad, // number of elements in receive buffer
+                      MPI_LONG,                  // type of the received data
                       MPI_COMM_WORLD);
     assert (ierr_sz == 0);
 
@@ -242,9 +242,9 @@ inline void Lambda :: MPI_gather ()
     Size index_1 = 0;
     Size index_2 = 0;
 
-    for (Size w = 0; w < MPI_comm_size(); w++)
+    for (Size w = 0; w < pc::message_passing::comm_size(); w++)
     {
-        for (Size p = 0; p < ncells; p++)
+        for (Size p = 0; p < parameters.npoints(); p++)
         {
             for (Size k = 0; k < nrad; k++)
             {
