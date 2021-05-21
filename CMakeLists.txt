@@ -1,6 +1,5 @@
 # Set minimun required CMake version
 cmake_minimum_required (VERSION 3.18)
-
 # Set CMake version policy
 cmake_policy (SET CMP0048 NEW)
 
@@ -96,6 +95,8 @@ include_directories (dependencies/Paracabs/Paracabs      )
 if (PYTHON_BINDINGS OR PYTHON_IO)
     add_subdirectory (dependencies/pybind11 pybind11)
 endif ()
+
+add_subdirectory (dependencies/voro++ voro++)
 
 # Add source directory
 add_subdirectory (src)

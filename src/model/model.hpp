@@ -12,11 +12,15 @@
 #include "radiation/radiation.hpp"
 #include <set>
 #include "image/image.hpp"
+#include "mgController/mgControllerHelper.hpp"
 
 /// The main structure, which has a reference to most of the other structures
 /////////////////////////////////////////////////////////////////////////////
 struct Model
 {
+    const Size MIN_INTERPOLATION_POINTS=16;   ///< Minimum number of points used during interpolation (~=average nb neighors in voronoi grid)
+
+    const Size MAX_INTERPOLATION_POINTS=16;   ///< Maximum number of points used during interpolation (~=average nb neighors in voronoi grid)
 
     Size iteration_to_start_from=0;           ///< Number to start the iterations from (can be non-zero when loading the level populations)
 
@@ -27,6 +31,10 @@ struct Model
     Lines          lines;
     Radiation      radiation;
     vector<Image>  images;
+    MgControllerHelper mgControllerHelper;
+
+
+    vector<vector<VectorXr>> computed_level_populations;///< Vector of computed level populations, used for multigrid purposes. (coarsening level, line species, lineProducingSpecies.index(point, level))
 
     enum SpectralDiscretisation {None, SD_Lines, SD_Image}
          spectralDiscretisation = None;
@@ -40,6 +48,24 @@ struct Model
 
     void read  (const Io& io);
     void write (const Io& io) const;
+
+    inline double calc_diff_abundance_with_point(Size point1, Size point2);
+
+    inline bool points_are_similar(Size point1, Size point2, double tolerance);
+
+    inline double calc_distance2(Size point1,Size point2);
+
+    inline void coarsen (double tol, Size new_coars_lvl);
+
+    inline bool can_be_coarsened (const Size p, std::set<Size>& points_coarsened_around, double tol, Size new_coars_lvl);
+
+    inline void coarsen_around_point (const Size p, Size new_coars_lvl);
+
+    inline void interpolate_relative_differences_local(Size coarser_lvl, vector<VectorXr> &relative_difference_levelpopulations);
+
+    inline void interpolate_levelpops_local(Size coarser_lvl);
+
+    inline int setup_multigrid(Size max_coars_lvl, double tol, Size mgImplementation, Size max_n_iterations, Size finest_lvl);
 
     void read  ()       {read  (IoPython ("hdf5", parameters.model_name()));};
     void write () const {write (IoPython ("hdf5", parameters.model_name()));};
@@ -59,7 +85,9 @@ struct Model
     int compute_level_populations_from_stateq     ();
     int compute_level_populations                 (
         const bool  use_Ng_acceleration,
-        const long  max_niterations     );
+        const long  max_niterations);
+    int compute_level_populations_multigrid       (
+        const bool  use_Ng_acceleration);
     int compute_image                             (const Size ray_nr);
 
     int restart_from_iteration(Size iteration, Size lvl);
@@ -118,3 +146,5 @@ struct Model
     int set_eta_and_chi       ();
     int set_boundary_condition();
 };
+
+#include "model.tpp"

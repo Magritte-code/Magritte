@@ -4,6 +4,7 @@ include_directories (../dependencies)
 include_directories (../dependencies/eigen)
 include_directories (../dependencies/pybind11)
 include_directories (../dependencies/pybind11/include)
+include_directories (../dependencies/voro++/src)
 
 # Add Python package separately
 find_package (PythonLibs REQUIRED)
@@ -80,6 +81,8 @@ endif (OMP_PARALLEL)
 if    (GPU_ACCELERATION)
     set_source_files_properties(${SOURCE_FILES} PROPERTIES LANGUAGE CUDA)
 endif (GPU_ACCELERATION)
+
+target_link_libraries(Magritte voro++)
 
 add_executable        (test_raytracer test_raytracer.cpp)
 target_link_libraries (test_raytracer Magritte)
