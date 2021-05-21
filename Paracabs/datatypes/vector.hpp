@@ -147,6 +147,13 @@ namespace paracabs
                     copy_vec_to_ptr ();
                     set_dat ();
                 }
+                
+                ///  Getter for the size (similar to std::vector)
+                /////////////////////////////////////////////////
+                inline size_t size () const
+                {
+                    return vec.size();
+                }
 
                 ///  Access operators
                 accel inline type  operator[] (const size_t id) const {return dat[id];}

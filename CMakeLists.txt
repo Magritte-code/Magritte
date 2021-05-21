@@ -1,7 +1,9 @@
 # Set minimun required CMake version
 cmake_minimum_required (VERSION 3.18)
+
 # Set CMake version policy
 cmake_policy (SET CMP0048 NEW)
+
 # Set project title, version, description, and url
 project (
     "Paracabs"
@@ -41,7 +43,7 @@ if (PARACABS_USE_OPENMP)
         set(OpenMP_libgomp_LIBRARY  ${OpenMP_C_LIB_NAMES})
         set(OpenMP_libiomp5_LIBRARY ${OpenMP_C_LIB_NAMES})
         set(CMAKE_C_FLAGS          "${CMAKE_C_FLAGS} -fopenmp")
-        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lpthread")
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lpthread -latomic")
     else ()
         find_package (OpenMP REQUIRED)
         # Set compiler and linker flags
@@ -56,7 +58,7 @@ if (PARACABS_USE_OPENMP)
         set(OpenMP_libgomp_LIBRARY  ${OpenMP_CXX_LIB_NAMES})
         set(OpenMP_libiomp5_LIBRARY ${OpenMP_CXX_LIB_NAMES})
         set(CMAKE_CXX_FLAGS        "${CMAKE_CXX_FLAGS} -fopenmp")
-        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lpthread")
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lpthread -latomic")
     else ()
         find_package (OpenMP REQUIRED)
         # Set compiler and linker flags
