@@ -54,8 +54,8 @@ mesher.create_mesh_from_function(
 mesh = mesher.Mesh(meshName)
 
 npoints = len(mesh.points)
-# nbs     = [n for sublist in mesh.neighbors for n in sublist]
-# n_nbs   = [len(sublist) for sublist in mesh.neighbors]
+nbs     = [n for sublist in mesh.neighbors for n in sublist]
+n_nbs   = [len(sublist) for sublist in mesh.neighbors]
 
 rs = np.linalg.norm(mesh.points, axis=1)
 
@@ -91,6 +91,7 @@ def create_model (a_or_b):
     model.geometry.points.position.set(mesh.points)
     model.geometry.points.velocity.set(np.zeros((npoints, 3)))
 
+    model.geometry.points.multiscale.set_all_neighbors(n_nbs,nbs)
 #     model.geometry.points.  neighbors.set(  nbs)
 #     model.geometry.points.n_neighbors.set(n_nbs)
 
