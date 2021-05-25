@@ -145,13 +145,13 @@ def run_model (a_or_b, nosave=False):
     model.compute_inverse_line_widths     ()
     model.compute_LTE_level_populations   ()
     nlevels=1;#number of coarser levels
-    #nlevels multigrid levels, 0.1 as tolerance, mgImplementation=1 (Naive=1,Vcycle=2,Wcycle=3), finest level=0
-    model.setup_multigrid(nlevels,0.1,1,1000,0);
+    #nlevels multiresolution levels, 0.1 as tolerance, mgImplementation=1 (Naive=1,Vcycle=2,Wcycle=3), finest level=0
+    model.setup_multiresolution(nlevels,0.1,1,1000,0);
     timer2.stop()
 
     timer3 = tools.Timer('running model')
     timer3.start()
-    model.compute_level_populations_multigrid(True)
+    model.compute_level_populations_multiresolution(True)
     timer3.stop()
 
     pops = np.array(model.lines.lineProducingSpecies[0].population).reshape((model.parameters.npoints(), 2))
@@ -194,7 +194,7 @@ def run_model (a_or_b, nosave=False):
     print(result)
 
     if not nosave:
-        with open(f'{resdir}{modelName}-{timestamp}_multigrid_{nlevels}_lvls.log' ,'w') as log:
+        with open(f'{resdir}{modelName}-{timestamp}_multiresolution_{nlevels}_lvls.log' ,'w') as log:
             log.write(result)
 
         plt.title(modelName)

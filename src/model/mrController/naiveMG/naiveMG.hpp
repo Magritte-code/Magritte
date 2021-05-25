@@ -1,16 +1,16 @@
 #pragma once
 
-#include "model/mgController/mgController.hpp"
-//The Multigrid controller structure
-// for getting where we currently are in the multigrid sequence
-struct NaiveMG : virtual public MgController
+#include "model/mrController/mrController.hpp"
+//The multiresolution controller structure
+// for getting where we currently are in the multiresolution sequence
+struct NaiveMG : virtual public MrController
 {
     private:
     //The maximum number of iterations per level
     Size max_n_iterations;
 
     Size current_n_iterations=0;
-    Size finest_lvl=0;//Debug variable, denotes the finest level the multigrid sequence should go to TODO DEPRECATE THIS
+    Size finest_lvl=0;//Debug variable, denotes the finest level the multiresolution sequence should go to TODO DEPRECATE THIS
     Size max_level=0;//number of levels going from 0 (finest grid) to n_levels-1 (coarsest grid)
     Size current_level=0;//the current level
 
@@ -21,20 +21,20 @@ struct NaiveMG : virtual public MgController
 
     public:
 
-    // Inherited from mgController
+    // Inherited from mrController
     // enum class Actions {
     //   interpolate_levelpops,  //interpolating the levelpopulations
     //   interpolate_corrections,//interpolating the relative corrections
     //   restrict,               //restricting the levelpops and residuals
     //   stay,                   //remain on the same grid level; keep iterating
-    //   finish,                 //the entire multigrid procedure is finished
+    //   finish,                 //the entire multiresolution procedure is finished
     //   goto_coarsest           //signals that we start iterating at the coarsest grid//also possible after reset()
     //     }
 
-    //Default necessary for mgControllerHelper
+    //Default necessary for mrControllerHelper
     // inline NaiveMG()=default;
 
-    //Initializes the NaiveMG mgController
+    //Initializes the NaiveMG mrController
     inline NaiveMG(Size n_levels, Size finest_lvl, Size max_n_iterations);
 
     //returns the next action and updates what to do next

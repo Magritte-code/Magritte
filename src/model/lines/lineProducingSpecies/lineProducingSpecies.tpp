@@ -132,7 +132,7 @@ inline void LineProducingSpecies :: check_for_convergence (const Real pop_prec, 
             {
                 Real relative_change = 2.0;
 
-                //note: with multigrid, the population at points not in the grid does not get updated quickly enough, making the relative change always 0
+                //note: with multiresolution, the population at points not in the grid does not get updated quickly enough, making the relative change always 0
                 relative_change *= fabs (population (ind) - population_prev1 (ind));
                 relative_change /=      (population (ind) + population_prev1 (ind));
 

@@ -2,42 +2,42 @@
 
 
 #include <memory>
-#include "model/mgController/mgController.hpp"
-#include "model/mgController/naiveMG/naiveMG.hpp"
-#include "model/mgController/vCycle/vCycle.hpp"
-#include "model/mgController/wCycle/wCycle.hpp"
+#include "model/mrController/mrController.hpp"
+#include "model/mrController/naiveMG/naiveMG.hpp"
+#include "model/mrController/vCycle/vCycle.hpp"
+#include "model/mrController/wCycle/wCycle.hpp"
 
 
 
-//The Multigrid controller helper structure
+//The multiresolution controller helper structure
 //just for the practical implementation
-//  for getting where we currently are in the multigrid sequence
-struct MgControllerHelper : virtual public MgController
+//  for getting where we currently are in the multiresolution sequence
+struct MrControllerHelper : virtual public MrController
 {
   private:
 
-    std::shared_ptr<MgController> implementation_instance_ptr=std::shared_ptr<MgController>(nullptr);
+    std::shared_ptr<MrController> implementation_instance_ptr=std::shared_ptr<MrController>(nullptr);
 
   public:
 
-    //Inherited from mgController
+    //Inherited from mrController
     // enum class Actions {
     //   interpolate_levelpops,  //interpolating the levelpopulations
     //   interpolate_corrections,//interpolating the relative corrections
     //   restrict,               //restricting the levelpops and residuals
     //   stay,                   //remain on the same grid level; keep iterating
-    //   finish,                 //the entire multigrid procedure is finished
+    //   finish,                 //the entire multiresolution procedure is finished
     //   goto_coarsest           //signals that we start iterating at the coarsest grid//also possible after reset()
     // };
 
     //DO NOT USE THE DEFAULT IMPLEMENTATION!!!
     //FIXME: THROW ERROR WHEN TRYING TO USE DEFAULT IMPLEMENTATION
-    MgControllerHelper()=default;
+    MrControllerHelper()=default;
 
-    //initializes the mgController
-    //MgController(Size n_levels, Size n_pre_interpolation_steps);//TODO add much more
-    // inline MgControllerHelper(MgController* implementation_instance_ptr);
-    inline MgControllerHelper(std::shared_ptr<MgController> implementation_instance_ptr);
+    //initializes the mrController
+    //mrController(Size n_levels, Size n_pre_interpolation_steps);//TODO add much more
+    // inline mrControllerHelper(mrController* implementation_instance_ptr);
+    inline MrControllerHelper(std::shared_ptr<MrController> implementation_instance_ptr);
 
     //returns the next action and updates what to do next
     inline Actions get_next_action() override;
@@ -49,8 +49,8 @@ struct MgControllerHelper : virtual public MgController
     //Sets the state such that the next action will be something else than stay (skips the following 'stay's)
     inline void converged_on_current_grid() override;
 
-    //resets the mgController TODO: maybe implment this (or just create a new one instead)
+    //resets the mrController TODO: maybe implment this (or just create a new one instead)
     //inline void reset();
 };
 
-#include "mgControllerHelper.tpp"
+#include "mrControllerHelper.tpp"

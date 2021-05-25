@@ -2,7 +2,7 @@
 
 #include<cmath>
 
-///  Initializes the multigrid controller
+///  Initializes the multiresolution controller
 ///    @param[in] n_levels: the number of level in the multi-resolution procedure; this includes the coarsest level
 ///    @param[in] finest_level: the finest level we consider for the multi-resolution procedure; might be useful
 ///  when only wanting the solution on a coarser level (for lesser computation time)
@@ -33,7 +33,7 @@ inline Size WCycle::get_current_level()
 
 
 ///  Returns the next action and updates what to do next
-inline MgController::Actions WCycle::get_next_action()
+inline MrController::Actions WCycle::get_next_action()
 {
     //When done enough iterations, just stop
     if ((current_n_iterations>=max_n_iterations)&&(!not_yet_iterated))
@@ -133,7 +133,7 @@ inline void WCycle::converged_on_current_grid()
         next_action=Actions::finish;
         //TODO also return error
         std::cout<<"Somehow, you are currently on a level finer than the finest level you allowed"<<std::endl;
-        std::cout<<"Finishing the multigrid computation either way"<<std::endl;
+        std::cout<<"Finishing the multiresolution computation either way"<<std::endl;
         std::cout<<"Finest level: "<<finest_lvl<<"Current level: "<<current_level<<std::endl;
         return;
     }
@@ -145,13 +145,13 @@ inline void WCycle::initialize_w_cycle(Size n_level_diff)
 { //FIXME: throw warning when n_level_diff=0
     if (n_level_diff==0)
     {
-        vector<MgController::Actions> temp_action_order{MgController::Actions::do_nothing};
+        vector<MrController::Actions> temp_action_order{MrController::Actions::do_nothing};
         action_order=temp_action_order;
         return;
     }
     Size curr_n_levels=1;
     //start with mini V-cycle
-    vector<MgController::Actions> temp_action_order{MgController::Actions::restrict, MgController::Actions::interpolate_corrections};
+    vector<MrController::Actions> temp_action_order{MrController::Actions::restrict, MrController::Actions::interpolate_corrections};
     //calculate order by copying and adding a single action to the front and the back
 
     //calculating the total size to reserve (always '*2+2') always copy and then add to front and back
@@ -167,9 +167,9 @@ inline void WCycle::initialize_w_cycle(Size n_level_diff)
         // by reserving enough space, we ignore this issue
         std::copy(temp_action_order.begin(), temp_action_order.end(), std::back_inserter(temp_action_order));
         //an additional restrict in front
-        temp_action_order.insert(temp_action_order.begin(), MgController::Actions::restrict);
+        temp_action_order.insert(temp_action_order.begin(), MrController::Actions::restrict);
         //and an additional interpolate_corrections to the back
-        temp_action_order.push_back(MgController::Actions::interpolate_corrections);
+        temp_action_order.push_back(MrController::Actions::interpolate_corrections);
         curr_n_levels++;
     }
     action_order=temp_action_order;

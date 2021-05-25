@@ -1,9 +1,9 @@
 #pragma once
 
-#include "model/mgController/mgController.hpp"
-//The Multigrid controller structure
-// for getting where we currently are in the multigrid sequence
-struct WCycle : virtual public MgController
+#include "model/mrController/mrController.hpp"
+//The multiresolution controller structure
+// for getting where we currently are in the multiresolution sequence
+struct WCycle : virtual public MrController
 {
     private:
     bool going_coarser;// true when currently going to coarser grids
@@ -16,7 +16,7 @@ struct WCycle : virtual public MgController
     //Size min_level_visited=0;
     Size n_pre_interpolation_steps=1;//number of iterations on the current grid before interpolating/coarsening
 
-    Size max_n_iterations;//the maximum number of cycles allowed for this multigrid scheme
+    Size max_n_iterations;//the maximum number of cycles allowed for this multiresolution scheme
     Size current_n_iterations=0;
 
     bool is_next_action_set=false;//checks whether the next action has been set
@@ -24,26 +24,26 @@ struct WCycle : virtual public MgController
     //for now, I implement the V-cycle
 
     vector<Actions> action_order;//contains the order of the actions (interpolate_corrections and restrict) in the w-cycle
-    //the state for the multigrid cycle was already getting complicated for the v-cycle, ergo this helps alleviate it
+    //the state for the multiresolution cycle was already getting complicated for the v-cycle, ergo this helps alleviate it
     Size curr_action_nb=0;// the index at which we currently are in the action_order
 
 
     public:
 
-    // Inherited from mgController
+    // Inherited from mrController
     // enum class Actions {
     //   interpolate_levelpops,  //interpolating the levelpopulations
     //   interpolate_corrections,//interpolating the relative corrections
     //   restrict,               //restricting the levelpops and residuals
     //   stay,                   //remain on the same grid level; keep iterating
-    //   finish,                 //the entire multigrid procedure is finished
+    //   finish,                 //the entire multiresolution procedure is finished
     //   goto_coarsest           //signals that we start iterating at the coarsest grid//also possible after reset()
     //     }
 
-    //Default necessary for mgControllerHelper
+    //Default necessary for mrControllerHelper
     // inline VCycle()=default;
 
-    //initializes the mgController
+    //initializes the mrController
     inline WCycle(Size n_levels, Size finest_lvl, Size n_pre_interpolation_steps, Size max_n_iterations);//TODO add much more
 
     //returns the next action and updates what to do next

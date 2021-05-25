@@ -296,11 +296,11 @@ inline void Model::coarsen_around_point (const Size p, Size new_coars_lvl)
 ///                 options: 1) NaiveMG
 ///                          2) VCycle
 ///                          3) WCycle
-///    @param[in]:  max_n_iterations: The maximum number of iterations the multigrid scheme is allowed to do
-///    @param[in]:  finest_lvl: The finest level the multigrid procedure will use. If not set to zero (i.e. just using all levels),
+///    @param[in]:  max_n_iterations: The maximum number of iterations the multiresolution scheme is allowed to do
+///    @param[in]:  finest_lvl: The finest level the multiresolution procedure will use. If not set to zero (i.e. just using all levels),
 ///    the resulting converged level populations will be those corresponding to the chosen 'finest_lvl'. This means one has to interpolate these level populations themselves. (using interpolate_levelpops_local)
 /////////////////////////////////////////////////////////////////////////////////
-inline int Model::setup_multigrid(Size max_coars_lvl, double tol, Size mgImplementation, Size max_n_iterations, Size finest_lvl)//, string MgImplementation
+inline int Model::setup_multiresolution(Size max_coars_lvl, double tol, Size mgImplementation, Size max_n_iterations, Size finest_lvl)//, string MgImplementation
 {
     //Preparing the masks for each level
     geometry.points.multiscale.mask.resize(max_coars_lvl+1);
@@ -332,25 +332,25 @@ inline int Model::setup_multigrid(Size max_coars_lvl, double tol, Size mgImpleme
     switch (mgImplementation) {
         case 1://"NaiveMG":
         {
-            std::shared_ptr<MgController> tempImplement_ptr=std::make_shared<NaiveMG>(geometry.points.multiscale.get_max_coars_lvl()+1,finest_lvl,max_n_iterations);
-            mgControllerHelper=MgControllerHelper(tempImplement_ptr);
+            std::shared_ptr<MrController> tempImplement_ptr=std::make_shared<NaiveMG>(geometry.points.multiscale.get_max_coars_lvl()+1,finest_lvl,max_n_iterations);
+            mrControllerHelper=MrControllerHelper(tempImplement_ptr);
         }
         break;
         case 2://"VCycle":
         {
-            std::shared_ptr<MgController> tempImplement_ptr=std::make_shared<VCycle>(geometry.points.multiscale.get_max_coars_lvl()+1,finest_lvl,1,max_n_iterations);
-            mgControllerHelper=MgControllerHelper(tempImplement_ptr);
+            std::shared_ptr<MrController> tempImplement_ptr=std::make_shared<VCycle>(geometry.points.multiscale.get_max_coars_lvl()+1,finest_lvl,1,max_n_iterations);
+            mrControllerHelper=MrControllerHelper(tempImplement_ptr);
         }
         break;
         case 3://"WCycle":
         {
-            std::shared_ptr<MgController> tempImplement_ptr=std::make_shared<WCycle>(geometry.points.multiscale.get_max_coars_lvl()+1,finest_lvl,1,max_n_iterations);
-            mgControllerHelper=MgControllerHelper(tempImplement_ptr);
+            std::shared_ptr<MrController> tempImplement_ptr=std::make_shared<WCycle>(geometry.points.multiscale.get_max_coars_lvl()+1,finest_lvl,1,max_n_iterations);
+            mrControllerHelper=MrControllerHelper(tempImplement_ptr);
         }
         break;
         default:
-            std::cout<<"The value entered for mgImplementation: "<<mgImplementation<<" does not refer to a valid multigrid implementation."<<std::endl;
-            throw std::runtime_error("Error: " + std::to_string(mgImplementation) +" is not a valid multigrid implementation argument.");
+            std::cout<<"The value entered for mgImplementation: "<<mgImplementation<<" does not refer to a valid multiresolution implementation."<<std::endl;
+            throw std::runtime_error("Error: " + std::to_string(mgImplementation) +" is not a valid multiresolution implementation argument.");
         break;
     }
     //Initialize structure for previously computed level populations at each level
@@ -429,7 +429,7 @@ inline void Model::interpolate_relative_differences_local(Size coarser_lvl, vect
             }
         }
 
-        // Note: using the current multigrid creation method, the number of neighbors in the coarse grid is almost always at least 1
+        // Note: using the current multiresolution creation method, the number of neighbors in the coarse grid is almost always at least 1
         if (neighbors_coarser_grid.size()==0)//this happens very rarely
         {
             // std::cout<<"No neighbors for the current point! Using point which deleted it instead as neighbor."<<std::endl;
@@ -605,7 +605,7 @@ inline void Model::interpolate_levelpops_local(Size coarser_lvl)
             }
         }
 
-        // Note: using the current multigrid creation method, the number of neighbors in the coarse grid is almost always at least 1
+        // Note: using the current multiresolution creation method, the number of neighbors in the coarse grid is almost always at least 1
         if (neighbors_coarser_grid.size()==0)//this happens very rarely
         {
             // std::cout<<"No neighbors for the current point! Using point which deleted it instead as neighbor."<<std::endl;

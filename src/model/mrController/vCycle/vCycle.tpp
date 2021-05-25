@@ -1,7 +1,7 @@
 #pragma once
 
 
-///  Initializes the multigrid controller
+///  Initializes the multiresolution controller
 ///    @param[in] n_levels: the number of level in the multi-resolution procedure; this includes the coarsest level
 ///    @param[in] finest_level: the finest level we consider for the multi-resolution procedure; might be useful
 ///  when only wanting the solution on a coarser level (for lesser computation time)
@@ -32,7 +32,7 @@ inline Size VCycle::get_current_level()
 
 
 ///  Returns the next action and updates what to do next
-inline MgController::Actions VCycle::get_next_action()
+inline MrController::Actions VCycle::get_next_action()
 {
     //If the max number of iterations is reached, stop//TODO: think about whether this part is still useful
     if ((current_n_iterations>=max_n_iterations)&&(!not_yet_iterated))
@@ -127,7 +127,7 @@ inline void VCycle::converged_on_current_grid()
         next_action=Actions::finish;
         //TODO also return error
         std::cout<<"Somehow, you are currently on a level finer than the finest level you allowed"<<std::endl;
-        std::cout<<"Finishing the multigrid computation either way"<<std::endl;
+        std::cout<<"Finishing the multiresolution computation either way"<<std::endl;
         std::cout<<"Finest level: "<<finest_lvl<<"Current level: "<<current_level<<std::endl;
         return;
     }
