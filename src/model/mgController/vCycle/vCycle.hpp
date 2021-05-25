@@ -5,7 +5,7 @@
 // for getting where we currently are in the multigrid sequence
 struct VCycle : virtual public MgController
 {
-  private:
+    private:
     bool going_coarser;// true when currently going to coarser grids
     bool first_upward=true;//first time going up should use standard interpolation of the level populations
     bool not_yet_iterated=true;//checks whether we have already done a single iteration on the grid
@@ -23,7 +23,7 @@ struct VCycle : virtual public MgController
     //for now, I implement the V-cycle
 
 
-  public:
+    public:
 
     // Inherited from mgController
     // enum class Actions {

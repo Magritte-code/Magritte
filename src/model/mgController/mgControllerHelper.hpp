@@ -11,7 +11,7 @@
 
 //The Multigrid controller helper structure
 //just for the practical implementation
-// for getting where we currently are in the multigrid sequence
+//  for getting where we currently are in the multigrid sequence
 struct MgControllerHelper : virtual public MgController
 {
   private:
@@ -39,9 +39,6 @@ struct MgControllerHelper : virtual public MgController
     // inline MgControllerHelper(MgController* implementation_instance_ptr);
     inline MgControllerHelper(std::shared_ptr<MgController> implementation_instance_ptr);
 
-    //Because we cannot change constructor names, we use the default constructor just need to 'construct' using some regular functions
-    // inline void UseNaiveMG(Size n_levels, Size finest_lvl);
-
     //returns the next action and updates what to do next
     inline Actions get_next_action() override;
 
@@ -52,11 +49,7 @@ struct MgControllerHelper : virtual public MgController
     //Sets the state such that the next action will be something else than stay (skips the following 'stay's)
     inline void converged_on_current_grid() override;
 
-    //Call when the solution has directly converged on the current grid.
-    // In this case, we no longer need to use this and the coarser grid
-    //inline void disable_current_and_coarser_grids();
-
-    //resets the mgController
+    //resets the mgController TODO: maybe implment this (or just create a new one instead)
     //inline void reset();
 };
 
