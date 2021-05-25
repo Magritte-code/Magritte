@@ -18,7 +18,6 @@ namespace py = pybind11;
 
 PYBIND11_MAKE_OPAQUE (vector<LineProducingSpecies>);
 PYBIND11_MAKE_OPAQUE (vector<CollisionPartner>);
-// PYBIND11_MAKE_OPAQUE (vector<Matrix<Real>>);
 
 
 PYBIND11_MODULE (core, module)
@@ -26,8 +25,14 @@ PYBIND11_MODULE (core, module)
     // Module docstring
     module.doc() = "Core module of Magritte: a modern software library for 3D radiative transfer.";
 
-    module.def(    "n_threads_avail", &paracabs::multi_threading::    n_threads_avail);
-    module.def("set_n_threads_avail", &paracabs::multi_threading::set_n_threads_avail);
+    // Paracabs
+    module.def("pcmt_n_threads_avail",     &paracabs::multi_threading::    n_threads_avail);
+    module.def("pcmt_set_n_threads_avail", &paracabs::multi_threading::set_n_threads_avail);
+    module.def("pcmp_comm_rank",           &paracabs::message_passing::comm_rank          );
+    module.def("pcmp_comm_size",           &paracabs::message_passing::comm_size          );
+    module.def("pcmp_length",              &paracabs::message_passing::length             );
+    module.def("pcmp_start",               &paracabs::message_passing::start              );
+    module.def("pcmp_stop",                &paracabs::message_passing::stop               );
 
     // Define vector types
     py::bind_vector<vector<LineProducingSpecies>> (module, "vLineProducingSpecies");

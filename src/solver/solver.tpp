@@ -228,10 +228,14 @@ inline void Solver :: solve_feautrier_order_2 (Model& model)
     model.radiation.u.copy_ptr_to_vec();
     model.radiation.J.copy_ptr_to_vec();
 
+    cout << "MPI gathering J..." << endl;
     model.radiation.MPI_reduce_J();
+    cout << "Done MPI gathering J." << endl;
 
+    cout << "MPI gathering Lambda..." << endl;
     // Gather contributions to the ALO
     for (auto &lspec : model.lines.lineProducingSpecies) {lspec.lambda.MPI_gather();}
+    cout << "Done MPI gathering Lambda." << endl;
 }
 
 

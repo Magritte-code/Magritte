@@ -41,12 +41,16 @@ void Model :: read (const Io& io)
 
 void Model :: write (const Io& io) const
 {
-    parameters    .write (io);
-    geometry      .write (io);
-    chemistry     .write (io);
-    thermodynamics.write (io);
-    lines         .write (io);
-    radiation     .write (io);
+    // Let only root (rank 0) process write output
+    if (pc::message_passing::comm_rank() == 0)
+    {
+        parameters    .write (io);
+        geometry      .write (io);
+        chemistry     .write (io);
+        thermodynamics.write (io);
+        lines         .write (io);
+        radiation     .write (io);
+    }
 }
 
 

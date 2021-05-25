@@ -74,6 +74,55 @@ def set_Delaunay_neighbor_lists (model):
     return model
 
 
+def load_balance_directions(directions, comm_size):
+    """
+    Basic attempt to imporved load balancing between different MPI
+    processes by reordering the rays such that each process gets a
+    similar set of direcitons.
+    """
+    # Initialize
+    Rs = directions
+    
+    # Precompute distances between all directions
+    distances = np.arccos(np.matmul(Rs, Rs.T))
+
+    # Get antipode for each direction
+    antipodes = np.argmax(distances, axis=0)
+
+    # Restrict to one hemisphere (antipodes will follow)
+    Rs = Rs[:len(Rs)//2]
+
+    # Precompute distances between all directions
+    distances = np.arccos(np.matmul(Rs, Rs.T))
+
+    # Initialize index lists
+    inds   = list(range(len(Rs)))
+    inds_o = [[] for _ in range(comm_size)]
+
+    while len(inds) >= comm_size:
+        # Take the next index
+        id0 = inds[0]
+        inds     .remove(id0)
+        inds_o[0].append(id0)
+        # Append indices of close directions to other processes
+        for i in range(1, comm_size):
+            idi = inds[np.argmin(distances[id0][inds])]
+            inds     .remove(idi)
+            inds_o[i].append(idi)
+
+    # Append final indices
+    for i, idx in enumerate(inds):
+        inds_o[i].append(idx)
+        
+    # Unravel
+    inds_o = [j for sl in inds_o for j in sl]
+
+    # Add antipodes
+    inds_o.extend(antipodes[inds_o].tolist())
+    
+    return directions[inds_o]
+
+
 def set_uniform_rays(model, randomize=False):
     """
     Setter for rays to uniformly distributed directions.

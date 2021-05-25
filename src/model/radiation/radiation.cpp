@@ -99,7 +99,7 @@ void Radiation :: MPI_reduce_J ()
                   MPI_IN_PLACE,      // pointer to data to be reduced -> here in place
                   J.dat,             // pointer to data to be received
                   J.size(),          // size of data to be received
-                  MPI_DOUBLE,        // type of reduced data
+                  MPI_TYPE_REAL,     // type of reduced data
                   MPI_SUM,           // reduction operation
                   MPI_COMM_WORLD);
     assert (ierr == 0);

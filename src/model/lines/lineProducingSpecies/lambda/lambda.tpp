@@ -159,7 +159,6 @@ inline void Lambda :: linearize_data ()
 inline void Lambda :: MPI_gather ()
 
 #if (MPI_PARALLEL)
-
 {
     // Linearize the Lambda operator data
     linearize_data ();
@@ -202,25 +201,25 @@ inline void Lambda :: MPI_gather ()
 
 
     int ierr_ls = MPI_Allgatherv (
-                      Lss.data(),              // pointer to data to be send
-                      size_total,              // number of elements in the send buffer
-                      MPI_DOUBLE,              // type of the send data
-                      Lss_total.data(),        // pointer to the data to be received
-                      buffer_lengths.data(),   // list of numbers of elements in receive buffer
-                      displacements.data(),    // displacements between data blocks
-  	                  MPI_DOUBLE,              // type of the received data
+                      Lss.data(),                // pointer to data to be send
+                      size_total,                // number of elements in the send buffer
+                      MPI_TYPE_REAL,             // type of the send data
+                      Lss_total.data(),          // pointer to the data to be received
+                      buffer_lengths.data(),     // list of numbers of elements in receive buffer
+                      displacements.data(),      // displacements between data blocks
+  	                  MPI_TYPE_REAL,             // type of the received data
                       MPI_COMM_WORLD);
     assert (ierr_ls == 0);
 
 
     int ierr_nr = MPI_Allgatherv (
-                      nrs.data(),              // pointer to data to be send
-                      size_total,              // number of elements in the send buffer
-                      MPI_LONG,                // type of the send data
-                      nrs_total.data(),        // pointer to the data to be received
-                      buffer_lengths.data(),   // list of numbers of elements in receive buffer
-                      displacements.data(),    // displacements between data blocks
-  	                  MPI_LONG,                // type of the received data
+                      nrs.data(),                // pointer to data to be send
+                      size_total,                // number of elements in the send buffer
+                      MPI_TYPE_SIZE,             // type of the send data
+                      nrs_total.data(),          // pointer to the data to be received
+                      buffer_lengths.data(),     // list of numbers of elements in receive buffer
+                      displacements.data(),      // displacements between data blocks
+  	                  MPI_TYPE_SIZE,             // type of the received data
                       MPI_COMM_WORLD);
     assert (ierr_nr == 0);
 
@@ -228,10 +227,10 @@ inline void Lambda :: MPI_gather ()
     int ierr_sz = MPI_Allgather (
                       size.data(),               // pointer to data to be send
                       parameters.npoints()*nrad, // number of elements in the send buffer
-                      MPI_LONG,                  // type of the send data
+                      MPI_TYPE_SIZE,             // type of the send data
                       szs_total.data(),          // pointer to the data to be received
                       parameters.npoints()*nrad, // number of elements in receive buffer
-                      MPI_LONG,                  // type of the received data
+                      MPI_TYPE_SIZE,             // type of the received data
                       MPI_COMM_WORLD);
     assert (ierr_sz == 0);
 
