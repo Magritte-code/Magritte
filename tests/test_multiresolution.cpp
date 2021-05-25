@@ -32,7 +32,7 @@ using std::endl;
 
 int main (int argc, char **argv)
 {
-    cout << "Running test_multigrid..." << endl;
+    cout << "Running test_multiresolution..." << endl;
 
     /// Store model name
     const string modelName = argv[1];
@@ -67,12 +67,12 @@ int main (int argc, char **argv)
 
 
 
-    // cout <<"solving without multigrid"<<endl;
+    // cout <<"solving without multiresolution"<<endl;
     // model.compute_level_populations(true,100);
     //NOTE TO SELF: do NOT every try to use a ridiculous amount of coarsening: if only boundary points are left, the interpolation part will probably be hell
     //mgImplementation choices: 1:"NaiveMG", 2:"VCycle", 3:"WCycle"
-    model.setup_multigrid(2, 0.1, 2, 20,0);
-    cout << "setup multigrid" << endl;
+    model.setup_multiresolution(2, 0.1, 2, 20,0);
+    cout << "setup multiresolution" << endl;
 
     std::cout<<"checking symmetry of neighbors"<<std::endl;
     vector<Size> current_points_in_grid=model.geometry.points.multiscale.get_current_points_in_grid();
@@ -105,7 +105,7 @@ int main (int argc, char **argv)
 
     model.parameters.writing_populations_to_disk=true;
 
-    model.compute_level_populations_multigrid(true);
+    model.compute_level_populations_multiresolution(true);
     // vector<Size> current_points_in_grid=model.geometry.points.multiscale.get_current_points_in_grid();
     // for (Size idx=0;idx<current_points_in_grid.size();idx++)
     // {
@@ -198,7 +198,7 @@ int main (int argc, char **argv)
 
     // model.compute_level_populations (true,100);
 
-    // model.compute_level_populations_multigrid(true, 100);
+    // model.compute_level_populations_multiresolution(true, 100);
 
 
     // auto fun_to_del=model.points_are_similar(0.1);
@@ -225,7 +225,7 @@ int main (int argc, char **argv)
     // model.geometry.points.multiscale.set_comparison_fun(fun_to_del);
     // model.geometry.points.multiscale.coarsen();
     //
-    // Timer timer2("solver: multigrid implementation");
+    // Timer timer2("solver: multiresolution implementation");
     // timer2.start();
     // model.compute_radiation_field_feautrier_order_2();
     // timer2.stop();

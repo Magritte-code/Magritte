@@ -294,9 +294,9 @@ int Model :: compute_LTE_level_populations ()
 ///    @param[in] lvl : The coarsening level to start from
 //////////////////////////////////////////////////////////////////////////////////
 ///  Note: when the level populations cannot be read, starts from LTE instead without warning
-///  Note: currently no state of where we are in any multilevel operation is stored, so unless changed, please use this only without multigrid or just naive multigrid (then the number of iterations done that is reported will be incorrect (because it doesnt count the iterations prior to loading))
+///  Note: currently no state of where we are in any multilevel operation is stored, so unless changed, please use this only without multiresolution or just naive multiresolution (then the number of iterations done that is reported will be incorrect (because it doesnt count the iterations prior to loading))
 int Model :: restart_from_iteration(Size iteration, Size lvl)
-{// TODO: currently, the mgController information is NOT SAVED, so this is not that useful for restarting a multigrid scheme
+{// TODO: currently, the mrController information is NOT SAVED, so this is not that useful for restarting a multiresolution scheme
     compute_LTE_level_populations();
     IoPython io = IoPython ("hdf5", parameters.model_name());
     lines.read_populations_of_iteration(io, iteration, lvl);
@@ -437,13 +437,13 @@ int Model :: compute_level_populations_from_stateq ()
 }
 
 
-///  Compute level populations self-consistenly with the radiation field using multigrid
+///  Compute level populations self-consistenly with the radiation field using multiresolution
 ///  assuming statistical equilibrium (detailed balance for the levels)
 ///  @param[in] use_Ng_acceleration : true if Ng acceleration has to be used
 ///  @return Total number of iterations done
 ///////////////////////////////////////////////////////////////////////////////
-/// Assumes one has setup the multigrid beforehand see 'model.tpp' 'setup_multigrid'
-int Model :: compute_level_populations_multigrid (
+/// Assumes one has setup the multiresolution beforehand see 'model.tpp' 'setup_multiresolution'
+int Model :: compute_level_populations_multiresolution (
     const bool use_Ng_acceleration)
 {
     // Check spectral discretisation setting
@@ -461,7 +461,7 @@ int Model :: compute_level_populations_multigrid (
     vector<Size> iterations_per_level;
     iterations_per_level.resize(max_coars_lvl+1);
 
-    //Timing info per multigrid level
+    //Timing info per multiresolution level
     vector<Timer> timers_per_level;
     for (Size i=0; i<=max_coars_lvl; i++)
     {
@@ -478,8 +478,8 @@ int Model :: compute_level_populations_multigrid (
     (*current_timer_pointer).start();
     totalTime.start();
 
-    bool finished=false;//whether the multigrid procedure has finished
-    bool multigrid_operation_happened=false;//denotes whether we have just done a multigrid operation: either 'restrict' or 'interpolate_corrections'
+    bool finished=false;//whether the multiresolution procedure has finished
+    bool multiresolution_operation_happened=false;//denotes whether we have just done a multiresolution operation: either 'restrict' or 'interpolate_corrections'
     //neccessary because we should calculate convergence compared to previous iteration on SAME GRID LEVEL (when possible).
 
     // Initialize the number of iterations
@@ -500,10 +500,10 @@ int Model :: compute_level_populations_multigrid (
     {
 
         // Iterate as long as some levels are not converged
-        switch (mgControllerHelper.get_next_action()) {
+        switch (mrControllerHelper.get_next_action()) {
 
         //Signal to go to the coarsest level
-        case MgController::Actions::goto_coarsest:
+        case MrController::Actions::goto_coarsest:
         {//Not much is happening here, so no timer adjustements
             std::cout<<"Action goto_coarsest"<<std::endl;
             geometry.points.multiscale.set_curr_coars_lvl(geometry.points.multiscale.get_max_coars_lvl());
@@ -513,7 +513,7 @@ int Model :: compute_level_populations_multigrid (
         }
 
         //Signal to do one iteration the current level
-        case MgController::Actions::stay:
+        case MrController::Actions::stay:
         {
             //Stopping current timer and replace with timer at current level
             (*current_timer_pointer).stop();
@@ -528,10 +528,10 @@ int Model :: compute_level_populations_multigrid (
             cout << "Starting iteration " << iterations_per_level[geometry.points.multiscale.get_curr_coars_lvl()] << " for coarsening level: " << geometry.points.multiscale.get_curr_coars_lvl() << endl;
 
 
-            // If a multigrid operation has happened, just put the previous level populations here to compare against
-            if (multigrid_operation_happened)
+            // If a multiresolution operation has happened, just put the previous level populations here to compare against
+            if (multiresolution_operation_happened)
             {
-                multigrid_operation_happened=false;
+                multiresolution_operation_happened=false;
                 lines.set_all_level_pops(computed_level_populations[geometry.points.multiscale.get_curr_coars_lvl()]);
             }
 
@@ -591,13 +591,13 @@ int Model :: compute_level_populations_multigrid (
                 cout << "Already " << 100 * (1.0 - fnc) << " % converged!" << endl;
             }
 
-            //If all level populations have converged, let it know to the mgController
+            //If all level populations have converged, let it know to the mrController
             if (!some_not_converged)
             {
                 iteration_sum+=iteration;
                 iteration=0;
                 //signal convergence on current grid
-                mgControllerHelper.converged_on_current_grid();
+                mrControllerHelper.converged_on_current_grid();
                 std::cout<<"Signaling convergence"<<std::endl;
             }
 
@@ -605,7 +605,7 @@ int Model :: compute_level_populations_multigrid (
         }
 
         //Signal when one has to interpolate the level populations
-        case MgController::Actions::interpolate_levelpops:
+        case MrController::Actions::interpolate_levelpops:
         {
             //Stopping current timer and replace with interpolation timer
             (*current_timer_pointer).stop();
@@ -645,11 +645,11 @@ int Model :: compute_level_populations_multigrid (
         //Signals the restriction operator
         //It turns out that, because of the choice of our restriction operator, (mere insertion at points still in grid)
         // that nothing particularly interesting happens to the right-hand side with this restriction operator.
-        case MgController::Actions::restrict:
+        case MrController::Actions::restrict:
         {
             //Not much is happening here, so no timer stuff
             std::cout<<"Action restrict"<<std::endl;
-            multigrid_operation_happened=true;
+            multiresolution_operation_happened=true;
 
             //Saving the current level populations
             computed_level_populations[geometry.points.multiscale.get_curr_coars_lvl()]=lines.get_all_level_pops();
@@ -683,14 +683,14 @@ int Model :: compute_level_populations_multigrid (
         //  I will also need to restrict and then interpolate an older solution on the finer grid. Then we take the difference of this result and add it to the previous solution (on the finer grid)
         //  For points on the coarser grid, there is will be no difference compared to merely interpolating the coarser level populations;
         //  However, for points in the difference between the two grid, there might be a difference due to the interpolation
-        case::MgController::Actions::interpolate_corrections:
+        case MrController::Actions::interpolate_corrections:
         {
             //Stopping current timer and replace with interpolation timer
             (*current_timer_pointer).stop();
             interpolation_timer.start();
             current_timer_pointer=&interpolation_timer;
 
-            multigrid_operation_happened=true;
+            multiresolution_operation_happened=true;
             std::cout<<"Action interpolate corrections"<<std::endl;
 
             //In order to make it a bit simpler to implement, we will interpolate the current solution and the restricted solution on the finer grid independently
@@ -795,8 +795,8 @@ int Model :: compute_level_populations_multigrid (
             break;
         }
 
-        //Signals that the multigrid procedure has finished
-        case MgController::Actions::finish:
+        //Signals that the multiresolution procedure has finished
+        case MrController::Actions::finish:
         {
             //Stop the timers
             (*current_timer_pointer).stop();
@@ -805,7 +805,7 @@ int Model :: compute_level_populations_multigrid (
             //And print some statistics
             std::cout<<"Action finish"<<std::endl;
             finished=true;
-            std::cout<<"Multigrid sequence is finished"<<std::endl;
+            std::cout<<"multiresolution sequence is finished"<<std::endl;
             std::cout<<"Nb iterations per level:"<<std::endl;
             for (Size levelidx=0;levelidx<iterations_per_level.size();levelidx++)
             {
@@ -823,8 +823,8 @@ int Model :: compute_level_populations_multigrid (
             break;
         }
 
-        //Signals to do nothing, can help with simplifying the multigrid controller
-        case MgController::Actions::do_nothing:
+        //Signals to do nothing, can help with simplifying the multiresolution controller
+        case MrController::Actions::do_nothing:
         {
             std::cout<<"Action do nothing"<<std::endl;
             break;
