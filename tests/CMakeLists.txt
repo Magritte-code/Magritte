@@ -82,7 +82,6 @@ if    (GPU_ACCELERATION)
     set_source_files_properties(${SOURCE_FILES} PROPERTIES LANGUAGE CUDA)
 endif (GPU_ACCELERATION)
 
-target_link_libraries(Magritte voro++)
 
 add_executable        (test_raytracer test_raytracer.cpp)
 target_link_libraries (test_raytracer Magritte)
