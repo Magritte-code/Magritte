@@ -5,7 +5,7 @@
 // for getting where we currently are in the multigrid sequence
 struct NaiveMG : virtual public MgController
 {
-  private:
+    private:
     //The maximum number of iterations per level
     Size max_n_iterations;
 
@@ -19,7 +19,7 @@ struct NaiveMG : virtual public MgController
     //for now, I implement the V-cycle
 
 
-  public:
+    public:
 
     // Inherited from mgController
     // enum class Actions {

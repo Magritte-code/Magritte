@@ -5,12 +5,11 @@
 // for getting where we currently are in the multigrid sequence
 struct WCycle : virtual public MgController
 {
-  private:
+    private:
     bool going_coarser;// true when currently going to coarser grids
     bool first_upward=true;//first time going up should use standard interpolation of the level populations
     bool not_yet_iterated=true;//checks whether we have already done a single iteration on the grid
 
-    // Size n_iterations_on_current_grid_remaining;// number of iterations remaining on current grid
     Size finest_lvl=0;
     Size max_level=0;//number of levels going from 0 (finest grid) to n_levels-1 (coarsest grid)
     Size current_level=0;//the current level
@@ -29,7 +28,7 @@ struct WCycle : virtual public MgController
     Size curr_action_nb=0;// the index at which we currently are in the action_order
 
 
-  public:
+    public:
 
     // Inherited from mgController
     // enum class Actions {

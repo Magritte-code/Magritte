@@ -1,8 +1,8 @@
 #pragma once
 
 //The abstract Multigrid controller structure
-// for getting where we currently are in the multigrid sequence
-// For practical usage, use the mgControllerHelper class: that class is an implementation that implements all current multigrid variants
+//  for getting where we currently are in the multigrid sequence
+//  For practical usage, use the mgControllerHelper class: that class is an implementation that implements all current multigrid variants
 struct MgController
 {
   public:
@@ -22,9 +22,7 @@ struct MgController
     //returns the next action and updates what to do next
     virtual Actions get_next_action() = 0;
 
-    //TODO think about deleting this// i cannot guarantee that this is consistent
     //returns the current level
-    //DEPRECATED: DO NOT USE ANYMORE
     virtual Size get_current_level() = 0;
 
     //Call this when the solution is converged on the current grid.
