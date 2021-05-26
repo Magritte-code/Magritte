@@ -124,14 +124,14 @@ class Solver
             const Size   f  );
 
 
-        accel inline void solve_shortchar_order_0 (Model& model);
+              inline void solve_shortchar_order_0 (Model& model);
         accel inline void solve_shortchar_order_0 (
                   Model& model,
             const Size   o,
             const Size   r,
             const double dshift_max );
 
-        accel inline void solve_feautrier_order_2 (Model& model);
+              inline void solve_feautrier_order_2 (Model& model);
         accel inline void solve_feautrier_order_2 (
                   Model& model,
             const Size   o,
@@ -139,7 +139,7 @@ class Solver
             const Size   ar,
             const Size   f  );
 
-        accel inline void image_feautrier_order_2 (Model& model, const Size rr);
+              inline void image_feautrier_order_2 (Model& model, const Size rr);
         accel inline void image_feautrier_order_2 (
                   Model& model,
             const Size   o,

@@ -8,9 +8,6 @@ using std::list;
 #include <string>
 using std::string;
 using std::to_string;
-#include <Eigen/Core>
-using Eigen::VectorXd;
-using Eigen::MatrixXd;
 
 #include "paracabs.hpp"
 namespace pc = paracabs;
@@ -29,9 +26,9 @@ template <typename type>
 using Tensor = pc::datatypes::Tensor <type>;
 
 
-const Real one  = 1.0;
-const Real two  = 2.0;
-const Real half = 0.5;
+const Real ONE  = 1.0;
+const Real TWO  = 2.0;
+const Real HALF = 0.5;
 
 
 // Vectors of Size
@@ -85,27 +82,3 @@ typedef vector<string>   String1;
 typedef vector<String1>  String2;
 typedef vector<String2>  String3;
 
-//// Vectors of Eigen::Vector3d
-//typedef vector<Vector3d>   Vector3d1;
-//typedef vector<Vector3d1>  Vector3d2;
-//typedef vector<Vector3d2>  Vector3d3;
-//
-// Vectors of Eigen::VectorXd
-typedef vector<VectorXd>   VectorXd1;
-typedef vector<VectorXd1>  VectorXd2;
-typedef vector<VectorXd2>  VectorXd3;
-
-typedef Eigen::Matrix<Real, Eigen::Dynamic, 1> VectorXr;
-typedef vector<VectorXr>  VectorXr1;
-typedef vector<VectorXr1> VectorXr2;
-typedef vector<VectorXr2> VectorXr3;
-
-// Vectors of Eigen::MatrixXd
-typedef vector<MatrixXd>   MatrixXd1;
-typedef vector<MatrixXd1>  MatrixXd2;
-typedef vector<MatrixXd2>  MatrixXd3;
-
-typedef Eigen::Matrix<Real, Eigen::Dynamic, Eigen::Dynamic> MatrixXr;
-typedef vector<VectorXr>  MatrixXr1;
-typedef vector<VectorXr1> MatrixXr2;
-typedef vector<VectorXr2> MatrixXr3;

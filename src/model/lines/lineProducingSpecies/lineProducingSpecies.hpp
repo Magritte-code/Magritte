@@ -1,5 +1,10 @@
 #pragma once
 
+#include <Eigen/Dense>
+#include <Eigen/Core>
+using Eigen::VectorXd;
+using Eigen::MatrixXd;
+
 #include <Eigen/SparseLU>
 using Eigen::SparseLU;
 #include <Eigen/SparseCore>
@@ -15,6 +20,32 @@ using Eigen::COLAMDOrdering;
 #include "linedata/linedata.hpp"
 #include "quadrature/quadrature.hpp"
 #include "lambda/lambda.hpp"
+
+
+//// Vectors of Eigen::Vector3d
+//typedef vector<Vector3d>   Vector3d1;
+//typedef vector<Vector3d1>  Vector3d2;
+//typedef vector<Vector3d2>  Vector3d3;
+//
+// Vectors of Eigen::VectorXd
+typedef vector<VectorXd>   VectorXd1;
+typedef vector<VectorXd1>  VectorXd2;
+typedef vector<VectorXd2>  VectorXd3;
+
+typedef Eigen::Matrix<Real, Eigen::Dynamic, 1> VectorXr;
+typedef vector<VectorXr>  VectorXr1;
+typedef vector<VectorXr1> VectorXr2;
+typedef vector<VectorXr2> VectorXr3;
+
+// Vectors of Eigen::MatrixXd
+// typedef vector<MatrixXd>   MatrixXd1;
+// typedef vector<MatrixXd1>  MatrixXd2;
+// typedef vector<MatrixXd2>  MatrixXd3;
+
+// typedef Eigen::Matrix<Real, Eigen::Dynamic, Eigen::Dynamic> MatrixXr;
+// typedef vector<MatrixXr>  MatrixXr1;
+// typedef vector<MatrixXr1> MatrixXr2;
+// typedef vector<MatrixXr2> MatrixXr3;
 
 
 struct LineProducingSpecies
@@ -37,8 +68,9 @@ struct LineProducingSpecies
     VectorXr population;             ///< level population (most recent)
     Real1    population_tot;         ///< total level population (sum over levels)
 
-    vector<VectorXr> populations;    ///< list of populations in previous iterations
-    vector<VectorXr> residuals;      ///< list of residuals in the populations
+    // CHECK IF THIS BREAKS COMPILATION WITH NVCC WHEN PUTTING THIS BACK
+    // vector<VectorXr> populations;    ///< list of populations in previous iterations
+    // vector<VectorXr> residuals;      ///< list of residuals in the populations
 
 
     VectorXr population_prev1;       ///< level populations 1 iteration  back
@@ -46,8 +78,8 @@ struct LineProducingSpecies
     VectorXr population_prev3;       ///< level populations 3 iterations back
 
     SparseMatrix<Real> RT;
-    SparseMatrix<Real> LambdaTest;
-    SparseMatrix<Real> LambdaStar;
+    // SparseMatrix<Real> LambdaTest;
+    // SparseMatrix<Real> LambdaStar;
 
     void read  (const Io& io, const Size l);
     void write (const Io& io, const Size l) const;

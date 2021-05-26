@@ -19,8 +19,8 @@ set (SOURCE_FILES
     model/thermodynamics/temperature/temperature.cpp
     model/thermodynamics/turbulence/turbulence.cpp
     model/lines/lines.cpp
-    model/lines/lineProducingSpecies/lineProducingSpecies.cpp
     model/lines/lineProducingSpecies/linedata/linedata.cpp
+    model/lines/lineProducingSpecies/lineProducingSpecies.cpp
     model/lines/lineProducingSpecies/linedata/collisionPartner/collisionPartner.cpp
     model/lines/lineProducingSpecies/quadrature/quadrature.cpp
     model/radiation/radiation.cpp

@@ -99,7 +99,7 @@ inline Size Lambda :: get_size (const Size p, const Size k) const
 ///    @param[in] nr_new : index of the emitting cell
 ///    @param[in] Ls_new : new element of the ALO
 ///////////////////////////////////////////////////////
-inline void Lambda :: add_element (const Size p, const Size k, const Size nr_new, const Real Ls_new)
+accel inline void Lambda :: add_element (const Size p, const Size k, const Size nr_new, const Real Ls_new)
 {
     for (Size index = 0; index < nr[p][k].size(); index++)
     {

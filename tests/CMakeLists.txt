@@ -33,17 +33,13 @@ macro(package_add_test TESTNAME)
 endmacro()
 
 
-# set (SOURCE_FILES
-#     test_raytracer.cpp
-#     test_multigrid.cpp
-#     test_levelpops.cpp
-#     test_shortchar_order_0.cpp
-#     test_feautrier_order_2.cpp
-#     test_solver_lambda.cpp
-#     test_imager.cpp
-# )
-
-set (SOURCE_FILES test_*.cpp)
+set (SOURCE_FILES
+    test_levelpops.cpp
+    test_shortchar_order_0.cpp
+    test_feautrier_order_2.cpp
+    test_imager.cpp
+    test_solver_lambda.cpp
+)
 
 
 if (OMP_PARALLEL)
@@ -81,11 +77,8 @@ if    (GPU_ACCELERATION)
     set_source_files_properties(${SOURCE_FILES} PROPERTIES LANGUAGE CUDA)
 endif (GPU_ACCELERATION)
 
-add_executable        (test_raytracer test_raytracer.cpp)
-target_link_libraries (test_raytracer Magritte)
-
-add_executable        (test_multigrid test_multigrid.cpp)
-target_link_libraries (test_multigrid Magritte)
+# add_executable        (test_raytracer test_raytracer.cpp)
+# target_link_libraries (test_raytracer Magritte)
 
 add_executable        (test_levelpops test_levelpops.cpp)
 target_link_libraries (test_levelpops Magritte)
@@ -99,35 +92,32 @@ target_link_libraries (test_feautrier_order_2 Magritte)
 add_executable        (test_imager test_imager.cpp)
 target_link_libraries (test_imager Magritte)
 
-package_add_test      (test_solver_lambda test_solver_lambda.cpp)
-target_link_libraries (test_solver_lambda Magritte)
+# package_add_test      (test_solver_lambda test_solver_lambda.cpp)
+# target_link_libraries (test_solver_lambda Magritte)
 
 if (OpenMP_CXX_FOUND)
-    target_link_libraries (test_raytracer         OpenMP::OpenMP_CXX)
-    target_link_libraries (test_multigrid         OpenMP::OpenMP_CXX)
+    # target_link_libraries (test_raytracer         OpenMP::OpenMP_CXX)
     target_link_libraries (test_levelpops         OpenMP::OpenMP_CXX)
     target_link_libraries (test_shortchar_order_0 OpenMP::OpenMP_CXX)
     target_link_libraries (test_feautrier_order_2 OpenMP::OpenMP_CXX)
-    target_link_libraries (test_solver_lambda     OpenMP::OpenMP_CXX)
+    # target_link_libraries (test_solver_lambda     OpenMP::OpenMP_CXX)
     target_link_libraries (test_imager            OpenMP::OpenMP_CXX)
 endif()
 
 if (OMP_PARALLEL)
     if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-        target_link_libraries (test_raytracer         atomic)
-        target_link_libraries (test_multigrid         atomic)
+        # target_link_libraries (test_raytracer         atomic)
         target_link_libraries (test_levelpops         atomic)
         target_link_libraries (test_shortchar_order_0 atomic)
         target_link_libraries (test_feautrier_order_2 atomic)
-        target_link_libraries (test_solver_lambda     atomic)
+        # target_link_libraries (test_solver_lambda     atomic)
         target_link_libraries (test_imager            atomic)
     else ()
-        target_link_libraries (test_raytracer         OpenMP::OpenMP_CXX)
-        target_link_libraries (test_multigrid         OpenMP::OpenMP_CXX)
+        # target_link_libraries (test_raytracer         OpenMP::OpenMP_CXX)
         target_link_libraries (test_levelpops         OpenMP::OpenMP_CXX)
         target_link_libraries (test_shortchar_order_0 OpenMP::OpenMP_CXX)
         target_link_libraries (test_feautrier_order_2 OpenMP::OpenMP_CXX)
-        target_link_libraries (test_solver_lambda     OpenMP::OpenMP_CXX)
+        # target_link_libraries (test_solver_lambda     OpenMP::OpenMP_CXX)
         target_link_libraries (test_imager            OpenMP::OpenMP_CXX)
     endif ()
 endif ()

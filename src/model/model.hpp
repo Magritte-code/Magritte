@@ -11,6 +11,7 @@
 #include "lines/lines.hpp"
 #include "radiation/radiation.hpp"
 #include "image/image.hpp"
+#include "paracabs.hpp"
 
 
 struct Model
@@ -68,37 +69,37 @@ struct Model
 
     int set()
     {
-       for (Size i = 0; i < pc::multi_threading::n_threads_avail(); i++)
-       {
-           const Size N = 1000000;
+    //   for (Size i = 0; i < pc::multi_threading::n_threads_avail(); i++)
+    //   {
+    //       const Size N = 1000000;
 
-           cout << "Setting thread " << i << endl;
+    //       cout << "Setting thread " << i << endl;
 
-           a(i).resize(N);
-           b(i).resize(N);
-           c(i).resize(N);
+    //       a(i).resize(N);
+    //       b(i).resize(N);
+    //       c(i).resize(N);
 
-           for (Size n = 0; n < N; n++)
-           {
-               a(i)[n] = 1.0;
-               b(i)[n] = 2.0;
-               c(i)[n] = 5.0;
-           }
-       }
+    //       for (Size n = 0; n < N; n++)
+    //       {
+    //           a(i)[n] = 1.0;
+    //           b(i)[n] = 2.0;
+    //           c(i)[n] = 5.0;
+    //       }
+    //   }
 
        return (0);
     }
 
     Vector<Real> add ()
     {
-        cout << "c.size() = " << c().vec.size() << endl;
+    //    cout << "c.size() = " << c().vec.size() << endl;
 
-        accelerated_for (i, c().vec.size(), nblocks, nthreads,
-        {
-            c()[i] = a()[i] + b()[i];
+    //    accelerated_for (i, c().vec.size(), nblocks, nthreads,
+    //    {
+    //        c()[i] = a()[i] + b()[i];
 
-            // cout << "c[" << i << "] = " << c()[i] << endl;
-        })
+    //        // cout << "c[" << i << "] = " << c()[i] << endl;
+    //    })
 
         return c().vec;
     }

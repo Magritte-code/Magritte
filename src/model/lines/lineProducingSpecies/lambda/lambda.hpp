@@ -31,7 +31,7 @@ struct Lambda
     inline Size get_nr   (const Size p, const Size k, const Size index) const;
     inline Size get_size (const Size p, const Size k) const;
 
-    inline void add_element (const Size p, const Size k, const Size nr, const Real Ls);
+    accel inline void add_element (const Size p, const Size k, const Size nr, const Real Ls);
 };
 
 

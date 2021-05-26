@@ -1,8 +1,6 @@
 #pragma once
 
 
-#include <Eigen/Core>
-
 #include "io/io.hpp"
 #include "model/parameters/parameters.hpp"
 #include "tools/types.hpp"

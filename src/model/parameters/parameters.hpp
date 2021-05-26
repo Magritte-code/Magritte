@@ -7,8 +7,6 @@
 #include "tools/setOnce.hpp"
 
 
-
-
 ///  Create for each parameter "x":
 ///    - a (private) local variable "x__",
 ///    - a (private) Meyers' singleton for isSet "x_isSet()",
@@ -18,16 +16,16 @@
 ///  ensure that the local variables are up to date, i.e.
 ///  ensure that their values equal the global values.
 
-#define CREATE_PARAMETER(type, x)                                                           \
+#define CREATE_PARAMETER(type, x, acc)                                                      \
     private:                                                                                \
         SetOnce<type> x##__;                     /* Local (SetOnce) variable           */   \
-        accel inline bool& x##_isSet () const    /* Meyers' singleton for global isSet */   \
+        acc inline bool& x##_isSet () const      /* Meyers' singleton for global isSet */   \
         {                                                                                   \
             static bool isSet = false;           /* Global isSet                       */   \
             return isSet;                        /* Return global isSet                */   \
         }                                                                                   \
     public:                                                                                 \
-        accel inline type& x () const            /* Meyers' singleton for global value */   \
+        acc inline type& x () const              /* Meyers' singleton for global value */   \
         {                                                                                   \
             static type x##_value;               /* Global value                       */   \
             if (!x##_isSet())                    /* If global value is not set         */   \
@@ -135,29 +133,30 @@ struct Parameters
     void read (const Io &io);
     void write(const Io &io) const;
 
-    CREATE_PARAMETER (string, model_name);
+    CREATE_PARAMETER (string, model_name, );
 
-    CREATE_PARAMETER (Size, dimension );
-    CREATE_PARAMETER (Size, npoints   );
-    CREATE_PARAMETER (Size, totnnbs   );
-    CREATE_PARAMETER (Size, nrays     );
-    CREATE_PARAMETER (Size, hnrays    );
-    CREATE_PARAMETER (Size, nrays_red );
-    CREATE_PARAMETER (Size, order_min );
-    CREATE_PARAMETER (Size, order_max );
-    CREATE_PARAMETER (Size, nboundary );
-    CREATE_PARAMETER (Size, nfreqs    );
-    CREATE_PARAMETER (Size, nspecs    );
-    CREATE_PARAMETER (Size, nlspecs   );
-    CREATE_PARAMETER (Size, nlines    );
-    CREATE_PARAMETER (Size, nquads    );
+    CREATE_PARAMETER (Size, dimension, accel);
+    CREATE_PARAMETER (Size, npoints,   accel);
+    CREATE_PARAMETER (Size, totnnbs,   accel);
+    CREATE_PARAMETER (Size, nrays    , accel);
+    CREATE_PARAMETER (Size, hnrays   , accel);
+    CREATE_PARAMETER (Size, nrays_red, accel);
+    CREATE_PARAMETER (Size, order_min, accel);
+    CREATE_PARAMETER (Size, order_max, accel);
+    CREATE_PARAMETER (Size, nboundary, accel);
+    CREATE_PARAMETER (Size, nfreqs   , accel);
+    CREATE_PARAMETER (Size, nspecs   , accel);
+    CREATE_PARAMETER (Size, nlspecs  , accel);
+    CREATE_PARAMETER (Size, nlines   , accel);
+    CREATE_PARAMETER (Size, nquads   , accel);
 
-    CREATE_PARAMETER (Real, pop_prec);
+    CREATE_PARAMETER (Real, pop_prec,  accel);
 
-    CREATE_PARAMETER (bool, use_scattering      );
-    CREATE_PARAMETER (bool, use_Ng_acceleration );
-    CREATE_PARAMETER (bool, spherical_symmetry  );
-    CREATE_PARAMETER (bool, adaptive_ray_tracing);
+    CREATE_PARAMETER (bool, use_scattering,       accel);
+    CREATE_PARAMETER (bool, use_Ng_acceleration,  accel);
+    CREATE_PARAMETER (bool, spherical_symmetry,   accel);
+    CREATE_PARAMETER (bool, adaptive_ray_tracing, accel);
+
 
     Parameters ()
     {
@@ -185,6 +184,7 @@ struct Parameters
         CONSTRUCT_PARAMETER (bool, spherical_symmetry  );
         CONSTRUCT_PARAMETER (bool, adaptive_ray_tracing);
     }
+
 
     Parameters (const Parameters& parameters)
     {
