@@ -41,21 +41,23 @@ set (CMAKE_BUILD_TYPE Release)
 #set (CMAKE_CUDA_FLAGS " -g -G -x cu -O5") WARNING -G cfr issue:#112
 #set (CMAKE_CUDA_FLAGS " -g")
 #set (CMAKE_CUDA_FLAGS "-O5 -use_fast_math")
-set (CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --extended-lambda --use_fast_math --expt-relaxed-constexpr")
+set (CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -w --extended-lambda --use_fast_math --expt-relaxed-constexpr")
 
 # Setting to test for
 set (PARACABS_USE_MESSAGE_PASSING false)
 set (PARACABS_USE_MPI             false)
 set (PARACABS_USE_MULTI_THREADING true)
 set (PARACABS_USE_OPENMP          true)
-set (PARACABS_USE_ACCELERATOR     false)
-set (PARACABS_USE_CUDA            false)
+set (PARACABS_USE_ACCELERATOR     true)
+set (PARACABS_USE_CUDA            true)
 set (PARACABS_USE_SYCL            false)
 set (PARACABS_USE_SIMD            false)
 
 
 set (SOURCE_FILES
-        test_datatypes.cpp
+    test.cpp  
+    test_datatypes.cpp
+    test_multi_threading.cpp
 )
 
 
@@ -76,13 +78,12 @@ include_directories (../Paracabs      )
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY tests)
 
 package_add_test (test_multi_threading test_multi_threading.cpp)
-package_add_test (test_datatypes       test_datatypes.cpp      )
+# package_add_test (test_datatypes       test_datatypes.cpp      )
 
 # Create executables
 #      add_executable (test_message_passing test_message_passing.cpp)
-     # add_executable (test_multi_threading test_multi_threading.cpp
 #      add_executable (test_datatypes       test_datatypes.cpp      )
-#cuda_add_executable(test test.cpp)
+add_executable(test_accelerated_loops test.cpp)
 
 #cuda_add_executable (test_accelerator test_accelerator.cu)
 #cuda_add_executable (test_allocator   test_allocator.cu  )

@@ -83,7 +83,7 @@ namespace paracabs
 
             ///  Destructor
             ///////////////
-            inline ~Vector () {deallocate();}
+            accel inline ~Vector () {deallocate();}
 
             ///  Memory allocator
             ///    @param[in] size : number of elements
