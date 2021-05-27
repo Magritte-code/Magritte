@@ -24,14 +24,14 @@ struct Model
 
     Size iteration_to_start_from=0;           ///< Number to start the iterations from (can be non-zero when loading the level populations)
 
-    Parameters     parameters;
-    Geometry       geometry;
-    Chemistry      chemistry;
-    Thermodynamics thermodynamics;
-    Lines          lines;
-    Radiation      radiation;
-    vector<Image>  images;
-    MrControllerHelper mrControllerHelper;
+    Parameters          parameters;
+    Geometry            geometry;
+    Chemistry           chemistry;
+    Thermodynamics      thermodynamics;
+    Lines               lines;
+    Radiation           radiation;
+    vector<Image>       images;
+    MrControllerHelper  mrControllerHelper;
 
 
     vector<vector<VectorXr>> computed_level_populations;///< Vector of computed level populations, used for multiresolution purposes. (coarsening level, line species, lineProducingSpecies.index(point, level))
