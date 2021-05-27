@@ -5,10 +5,9 @@ cmake_minimum_required (VERSION 3.18)
 cmake_policy (SET CMP0048 NEW)
 
 # Set project title, version, description, and url
-project (
-    "Paracabs"
-    VERSION 0.0.1
-    DESCRIPTION "Parallelisation and Acceleration abstractions."
+project ("Paracabs"
+    VERSION      0.0.1
+    DESCRIPTION  "Parallelisation and Acceleration abstractions."
     HOMEPAGE_URL "https://github.com/Magritte-code/Paracabs"
 )
 

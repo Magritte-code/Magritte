@@ -9,6 +9,8 @@ using std::vector;
 using namespace paracabs;
 
 
+/// Test the setter for the available threads
+/////////////////////////////////////////////
 TEST (multi_threading, set_n_threads_avail)
 {
     multi_threading::set_n_threads_avail (1);
@@ -22,6 +24,8 @@ TEST (multi_threading, set_n_threads_avail)
 }
 
 
+/// Test the start and stop values
+//////////////////////////////////
 TEST (multi_threading, start_stop)
 {
     const size_t n_threads =    4;
@@ -48,6 +52,8 @@ TEST (multi_threading, start_stop)
 }
 
 
+/// Test the threaded_for loop
+//////////////////////////////
 TEST (multi_threading, threaded_for)
 {
     const size_t n_threads =    4;
@@ -71,6 +77,8 @@ TEST (multi_threading, threaded_for)
 }
 
 
+/// Test ThreadPrivate variable
+///////////////////////////////
 TEST (multi_threading, ThreadPrivate)
 {
     const size_t n_threads =    4;
@@ -98,6 +106,8 @@ TEST (multi_threading, ThreadPrivate)
 }
 
 
+/// Main function for GoogleTest
+////////////////////////////////
 int main (int argc, char **argv)
 {
     ::testing::InitGoogleTest(&argc, argv);

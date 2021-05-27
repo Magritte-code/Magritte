@@ -82,7 +82,7 @@ include_directories (../Paracabs      )
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY tests)
 
 package_add_test (test_multi_threading test_multi_threading.cpp)
-# package_add_test (test_datatypes test_datatypes.cpp)
+package_add_test (test_datatypes       test_datatypes.cpp      )
 
 # Create executables
 #      add_executable (test_message_passing test_message_passing.cpp)
@@ -92,7 +92,6 @@ package_add_test (test_multi_threading test_multi_threading.cpp)
 
 #cuda_add_executable (test_accelerator test_accelerator.cu)
 #cuda_add_executable (test_allocator   test_allocator.cu  )
-# add_executable (test_datatypes   test_datatypes.cpp  )
 #cuda_add_executable (test             test.cu            )
 
 if    (PARACABS_USE_MPI)
