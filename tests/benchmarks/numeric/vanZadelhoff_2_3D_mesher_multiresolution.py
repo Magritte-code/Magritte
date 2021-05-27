@@ -82,9 +82,6 @@ def create_model (a_or_b):
     position = mesh.points
 
     npoints = len(mesh.points)
-    print(npoints)
-#     nbs     = [n for sublist in mesh.neighbors for n in sublist]
-#     n_nbs   = [len(sublist) for sublist in mesh.neighbors]
 
     rs = np.linalg.norm(mesh.points, axis=1)
 
@@ -103,9 +100,6 @@ def create_model (a_or_b):
 
     model.geometry.points.position.set(position)
     model.geometry.points.velocity.set(velocity)
-
-#     model.geometry.points.  neighbors.set(  nbs)
-#     model.geometry.points.n_neighbors.set(n_nbs)
 
     model.chemistry.species.abundance = [[     0.0, X_mol_int(r)*nH2_int(r), nH2_int(r),  0.0,      1.0] for r in rs]
     model.chemistry.species.symbol    =  ['dummy0',                  'HCO+',       'H2', 'e-', 'dummy1']

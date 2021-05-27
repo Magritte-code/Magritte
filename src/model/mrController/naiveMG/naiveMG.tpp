@@ -35,20 +35,26 @@ inline MrController::Actions NaiveMG::get_next_action()
         is_next_action_set=false;
         std::cout<<"Returning next action set"<<std::endl;
         return next_action;
-    }else{//otherwise just remain on the current grid, iterating until convergence/max_n_iterations reached
+    }
+    else
+    {//otherwise just remain on the current grid, iterating until convergence/max_n_iterations reached
         if (current_n_iterations<max_n_iterations)
         {
             std::cout<<"Returning stay"<<std::endl;
             current_n_iterations++;
             return Actions::stay;
-        }else{
+        }
+        else
+        {
             if (current_level>finest_lvl)
             {
                 std::cout<<"Returning interpolate_levelpops"<<std::endl;
                 current_level--;
                 current_n_iterations=0;
                 return Actions::interpolate_levelpops;
-            }else{
+            }
+            else
+            {
                 std::cout<<"Returning finish"<<std::endl;
                 return Actions::finish;
             }
@@ -67,7 +73,7 @@ inline void NaiveMG::converged_on_current_grid()
         return;
     }
     else if (current_level>finest_lvl)
-        {
+    {
         //reset current_n_iterations, as we interpolate to the finer grid
         current_n_iterations=0;
         next_action=Actions::interpolate_levelpops;
@@ -76,7 +82,7 @@ inline void NaiveMG::converged_on_current_grid()
         current_level--;
         std::cout<<"finest level: "<<finest_lvl<<std::endl;
         return;
-        }
+    }
     else
     {
         next_action=Actions::finish;

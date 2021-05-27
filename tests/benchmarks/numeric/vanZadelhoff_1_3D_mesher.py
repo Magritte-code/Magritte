@@ -54,8 +54,6 @@ mesher.create_mesh_from_function(
 mesh = mesher.Mesh(meshName)
 
 npoints = len(mesh.points)
-nbs     = [n for sublist in mesh.neighbors for n in sublist]
-n_nbs   = [len(sublist) for sublist in mesh.neighbors]
 
 rs = np.linalg.norm(mesh.points, axis=1)
 
@@ -91,10 +89,6 @@ def create_model (a_or_b):
     model.geometry.points.position.set(mesh.points)
     model.geometry.points.velocity.set(np.zeros((npoints, 3)))
 
-    model.geometry.points.multiscale.set_all_neighbors(n_nbs,nbs)
-#     model.geometry.points.  neighbors.set(  nbs)
-#     model.geometry.points.n_neighbors.set(n_nbs)
-
     model.chemistry.species.abundance = [[     0.0, nTT(r), nH2(r),  0.0,      1.0] for r in rs]
     model.chemistry.species.symbol    =  ['dummy0', 'test',   'H2', 'e-', 'dummy1']
 
@@ -102,10 +96,11 @@ def create_model (a_or_b):
     model.thermodynamics.turbulence.vturb2.set((turb/magritte.CC)**2 * np.ones(npoints))
 
     model = setup.set_Delaunay_neighbor_lists (model)
-    
+
     model.parameters.set_nboundary(len(mesh.boundary))
     model.geometry.boundary.boundary2point.set(mesh.boundary)
 
+    model = setup.set_Delaunay_neighbor_lists (model)
     model = setup.set_boundary_condition_CMB  (model)
     model = setup.set_uniform_rays            (model)
     model = setup.set_linedata_from_LAMDA_file(model, lamdaFile)
@@ -136,7 +131,7 @@ def run_model (a_or_b, nosave=False):
 
     timer3 = tools.Timer('running model')
     timer3.start()
-    model.compute_level_populations (True, 100)
+    model.compute_level_populations (True, 1000)
     timer3.stop()
 
     pops = np.array(model.lines.lineProducingSpecies[0].population).reshape((model.parameters.npoints(), 2))
