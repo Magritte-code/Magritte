@@ -10,7 +10,6 @@ namespace py = pybind11;
 #include "accelerator/accelerator.hpp"
 
 
-
 namespace paracabs
 {
     namespace datatypes

@@ -36,10 +36,6 @@ macro(package_add_test TESTNAME)
 endmacro()
 
 
-
-
-
-
 set (CMAKE_BUILD_TYPE Release)
 # set (CMAKE_BUILD_TYPE Debug)
 #set (CMAKE_CUDA_FLAGS " -g -G -x cu -O5") WARNING -G cfr issue:#112
@@ -47,16 +43,14 @@ set (CMAKE_BUILD_TYPE Release)
 #set (CMAKE_CUDA_FLAGS "-O5 -use_fast_math")
 set (CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --extended-lambda --use_fast_math --expt-relaxed-constexpr")
 
+# Setting to test for
 set (PARACABS_USE_MESSAGE_PASSING false)
 set (PARACABS_USE_MPI             false)
-
 set (PARACABS_USE_MULTI_THREADING true)
 set (PARACABS_USE_OPENMP          true)
-
 set (PARACABS_USE_ACCELERATOR     false)
 set (PARACABS_USE_CUDA            false)
 set (PARACABS_USE_SYCL            false)
-
 set (PARACABS_USE_SIMD            false)
 
 

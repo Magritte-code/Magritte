@@ -8,7 +8,6 @@ inline bool& copyContextAccelerator()
 
 #include "configure.hpp"
 #include "simd/simd.hpp"
-#include "datatypes/allocator.hpp"
 #include "datatypes/datatypes.hpp"
 #include "accelerator/accelerator.hpp"
 #include "message_passing/message_passing.hpp"
