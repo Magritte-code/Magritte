@@ -91,12 +91,6 @@ namespace paracabs
         }
 
 
-//        inline void memcpy (void* dst, const void* src, const size_t size)
-//        {
-//            handle_cuda_error (cudaMemcpy (dst, src, size, cudaMemcpyDeviceToDevice));
-//        }
-
-
         inline void memcpy_to_accelerator (void* dst, const void* src, const size_t size)
         {
             handle_cuda_error (cudaMemcpy (dst, src, size, cudaMemcpyHostToDevice));

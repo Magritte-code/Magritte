@@ -74,12 +74,12 @@ namespace paracabs
             inline size_t size() const {return data.size();}
 
             // Accessors to thread private copies
-            inline type  operator() () const {return data[thread_id()];}
-            inline type &operator() ()       {return data[thread_id()];}
+            accel inline type  operator() () const {return data[thread_id()];}
+            accel inline type &operator() ()       {return data[thread_id()];}
 
             // Accessors to copy i
-            inline type  operator() (const size_t i) const {return data[i];}
-            inline type &operator() (const size_t i)       {return data[i];}
+            accel inline type  operator() (const size_t i) const {return data[i];}
+            accel inline type &operator() (const size_t i)       {return data[i];}
         };
     }
 }

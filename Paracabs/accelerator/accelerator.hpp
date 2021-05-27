@@ -17,7 +17,9 @@ using std::string;
 
 #else
 
-#include "multi_threading/multi_threading.hpp"
+    #define accel
+
+    #include "multi_threading/multi_threading.hpp"
 
     namespace paracabs
     {
@@ -74,10 +76,6 @@ using std::string;
                 std::free (ptr);
             }
 
-//        inline void memcpy (void* dst, const void* src, const size_t size)
-//        {
-//            handle_cuda_error (cudaMemcpy (dst, src, size, cudaMemcpyDeviceToDevice));
-//        }
 
             inline void memcpy_to_accelerator (void* dst, const void* src, const size_t size)
             {
@@ -92,22 +90,6 @@ using std::string;
         }
     }
 
-
-    #define accel
-
-//    #define accelerated_for(i, total, nblocks, nthreads, ... )   \
-//    {                                                            \
-//        copyContextAccelerator() = true;                         \
-//        auto lambda = [=] (size_t i) mutable                     \
-//        {		                                                 \
-//            __VA_ARGS__;						                 \
-//        };									                     \
-//        for (size_t i = 0; i < total; i++)                       \
-//        {                                                        \
-//            lambda(i);                                           \
-//        }                                                        \
-//        copyContextAccelerator() = false;                        \
-//    }
 
 #define accelerated_for(i, total, nblocks, nthreads, ... )   \
     {                                                        \
