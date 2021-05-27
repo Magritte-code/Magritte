@@ -28,15 +28,15 @@ def create_model (a_or_b):
     lamdaFile = f'{datdir}hco+.txt'
 
     # Read input file
-    r_shell, nH2, X_mol, temp, vs, turb = np.loadtxt(f'vanZadelhoff_2{a_or_b}.in', skiprows=7, unpack=True)
+    r_shell, nH2, X_mol, temp, vs, turb = np.loadtxt(f'{curdir}/vanZadelhoff_2{a_or_b}.in', skiprows=7, unpack=True)
 
     # Parameters
     dimension = 3
     nshells   = len(r_shell)
-    nrays     = 12 * 3**2
+    nrays     = 12 * 2**2#originally 12 * 3**2
     nspecs    = 5
     nlspecs   = 1
-    nquads    = 7
+    nquads    = 5#originally 7
 
     # Convert units to SI
     r_shell = r_shell * 1.0E-2
@@ -51,16 +51,16 @@ def create_model (a_or_b):
     temp    = np.flip (temp,    axis=0)
     vs      = np.flip (vs,      axis=0)
     turb    = np.flip (turb,    axis=0)
-    
+
     nH2_int   = interp1d(r_shell, nH2,  fill_value='extrapolate')
     X_mol_int = interp1d(r_shell, X_mol,fill_value='extrapolate')
     temp_int  = interp1d(r_shell, temp, fill_value='extrapolate')
     vs_int    = interp1d(r_shell, vs,   fill_value='extrapolate')
     turb_int  = interp1d(r_shell, turb, fill_value='extrapolate')
-    
+
     r_in  = min(r_shell)
     r_out = max(r_shell)
-    
+
     scale_max = 0.1 * r_out
     scale_min = 0.1 * r_in
     scale_cte = 0.1 * r_in
@@ -78,18 +78,15 @@ def create_model (a_or_b):
         scale_function = scale_fun )
 
     mesh = mesher.Mesh(meshName)
-    
+
     position = mesh.points
-    
+
     npoints = len(mesh.points)
-    print(npoints)
-#     nbs     = [n for sublist in mesh.neighbors for n in sublist]
-#     n_nbs   = [len(sublist) for sublist in mesh.neighbors]
 
     rs = np.linalg.norm(mesh.points, axis=1)
 
     velocity = (vs_int(rs) / rs * position.T).T
-    
+
     model = magritte.Model ()
     model.parameters.set_spherical_symmetry(False)
     model.parameters.set_pop_prec          (1.0e-6)
@@ -104,15 +101,12 @@ def create_model (a_or_b):
     model.geometry.points.position.set(position)
     model.geometry.points.velocity.set(velocity)
 
-#     model.geometry.points.  neighbors.set(  nbs)
-#     model.geometry.points.n_neighbors.set(n_nbs)
-
     model.chemistry.species.abundance = [[     0.0, X_mol_int(r)*nH2_int(r), nH2_int(r),  0.0,      1.0] for r in rs]
     model.chemistry.species.symbol    =  ['dummy0',                  'HCO+',       'H2', 'e-', 'dummy1']
 
     model.thermodynamics.temperature.gas  .set([temp_int(r)    for r in rs])
     model.thermodynamics.turbulence.vturb2.set([turb_int(r)**2 for r in rs])
-    
+
     model = setup.set_Delaunay_neighbor_lists (model)
 
     model.parameters.set_nboundary(len(mesh.boundary))
@@ -148,14 +142,14 @@ def run_model (a_or_b, nosave=False):
 
     timer3 = tools.Timer('running model')
     timer3.start()
-    model.compute_level_populations (True, 100)
+    model.compute_level_populations (True, 1000)
     timer3.stop()
 
-    pops = np.array(model.lines.lineProducingSpecies[0].population).reshape((model.parameters.npoints(), 2))
+    pops = np.array(model.lines.lineProducingSpecies[0].population).reshape((model.parameters.npoints(), 21))
     abun = np.array(model.chemistry.species.abundance)[:,1]
     rs   = np.linalg.norm(np.array(model.geometry.points.position), axis=1)
 
-    (i,ra,rb,nh,tk,nm,vr,db,td,lp0,lp1,lp2,lp3,lp4) = np.loadtxt (f'Ratran_results/vanZadelhoff_2{a_or_b}.out', skiprows=14, unpack=True, usecols=range(14))
+    (i,ra,rb,nh,tk,nm,vr,db,td,lp0,lp1,lp2,lp3,lp4) = np.loadtxt (f'{curdir}/Ratran_results/vanZadelhoff_2{a_or_b}.out', skiprows=14, unpack=True, usecols=range(14))
 
     interp_0 = interp1d(0.5*(ra+rb), lp0, fill_value='extrapolate')
     interp_1 = interp1d(0.5*(ra+rb), lp1, fill_value='extrapolate')

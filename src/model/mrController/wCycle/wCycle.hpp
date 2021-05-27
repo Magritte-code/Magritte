@@ -6,26 +6,25 @@
 struct WCycle : virtual public MrController
 {
     private:
-    bool going_coarser;// true when currently going to coarser grids
-    bool first_upward=true;//first time going up should use standard interpolation of the level populations
-    bool not_yet_iterated=true;//checks whether we have already done a single iteration on the grid
+    bool going_coarser;           // true when currently going to coarser grids
+    bool first_upward     = true; //first time going up should use standard interpolation of the level populations
+    bool not_yet_iterated = true; //checks whether we have already done a single iteration on the grid
 
-    Size finest_lvl=0;
-    Size max_level=0;//number of levels going from 0 (finest grid) to n_levels-1 (coarsest grid)
-    Size current_level=0;//the current level
-    //Size min_level_visited=0;
-    Size n_pre_interpolation_steps=1;//number of iterations on the current grid before interpolating/coarsening
+    Size finest_lvl     = 0;  //Denotes the finest level the multiresolution sequence should go to
+    Size max_level      = 0;  //number of levels going from 0 (finest grid) to n_levels-1 (coarsest grid)
+    Size current_level  = 0;  //the current level
 
-    Size max_n_iterations;//the maximum number of cycles allowed for this multiresolution scheme
-    Size current_n_iterations=0;
+    Size n_pre_interpolation_steps  = 1;  //number of iterations on the current grid before interpolating/coarsening
 
-    bool is_next_action_set=false;//checks whether the next action has been set
-    Actions next_action;//the next action (if it has been set)
-    //for now, I implement the V-cycle
+    Size max_n_iterations;          //the maximum number of cycles allowed for this multiresolution scheme
+    Size current_n_iterations = 0;  //the current number of full cycles done
 
-    vector<Actions> action_order;//contains the order of the actions (interpolate_corrections and restrict) in the w-cycle
+    bool is_next_action_set = false;  //checks whether the next action has been set
+    Actions next_action;              //the next action (if it has been set)
+
+    vector<Actions> action_order; //contains the order of the actions (interpolate_corrections and restrict) in the w-cycle
     //the state for the multiresolution cycle was already getting complicated for the v-cycle, ergo this helps alleviate it
-    Size curr_action_nb=0;// the index at which we currently are in the action_order
+    Size curr_action_nb = 0;  //the index at which we currently are in the action_order
 
 
     public:
@@ -49,7 +48,7 @@ struct WCycle : virtual public MrController
     //returns the next action and updates what to do next
     inline Actions get_next_action() override;
 
-    //returns the current level TODO DEPRECATE THIS
+    //returns the current level
     inline Size get_current_level() override;
 
     //Call this when the solution is converged on the current grid.

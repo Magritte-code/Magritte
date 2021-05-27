@@ -6,17 +6,16 @@
 struct NaiveMG : virtual public MrController
 {
     private:
-    //The maximum number of iterations per level
-    Size max_n_iterations;
 
-    Size current_n_iterations=0;
-    Size finest_lvl=0;//Debug variable, denotes the finest level the multiresolution sequence should go to TODO DEPRECATE THIS
-    Size max_level=0;//number of levels going from 0 (finest grid) to n_levels-1 (coarsest grid)
-    Size current_level=0;//the current level
+    Size max_n_iterations;          //the maximum number of iterations per level
+    Size current_n_iterations = 0;  //the number of iterations done on the current grid
 
-    bool is_next_action_set;//checks whether the next action has been set
-    Actions next_action;//the next action (if it has been set)
-    //for now, I implement the V-cycle
+    Size finest_lvl           = 0;  //denotes the finest level the multiresolution sequence should go to
+    Size max_level            = 0;  //number of levels going from 0 (finest grid) to n_levels-1 (coarsest grid)
+    Size current_level        = 0;  //the current level
+
+    bool is_next_action_set;        //checks whether the next action has been set
+    Actions next_action;            //the next action (if it has been set)
 
 
     public:
@@ -40,7 +39,7 @@ struct NaiveMG : virtual public MrController
     //returns the next action and updates what to do next
     inline Actions get_next_action() override;
 
-    //returns the current level // TODO: DEPRECATE THIS
+    //returns the current level
     inline Size get_current_level() override;
 
     //Call this when the solution is converged on the current grid.

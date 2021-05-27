@@ -46,7 +46,9 @@ inline MrController::Actions WCycle::get_next_action()
     {
         is_next_action_set=false;
         return next_action;
-    }else{//otherwise alternate between staying on the grid and going to the next finer/coarser grid as determined by the action_order
+    }
+    else
+    {//otherwise alternate between staying on the grid and going to the next finer/coarser grid as determined by the action_order
         if (n_pre_interpolation_steps==0)
         {
             if (not_yet_iterated)
@@ -80,9 +82,13 @@ inline MrController::Actions WCycle::get_next_action()
 
             //Note: this if-statement is just for the internal level variable
             if (current_action==Actions::interpolate_corrections)
-            {current_level--;}
+            {
+                current_level--;
+            }
             else if (current_action==Actions::restrict)//restriction
-            {current_level++;}
+            {
+                current_level++;
+            }
             else {;}//? this shouldn't happen ? -> do nothing
             return current_action;
 
@@ -94,7 +100,6 @@ inline MrController::Actions WCycle::get_next_action()
             return Actions::stay;
         }
     }
-
 }
 
 
@@ -114,7 +119,9 @@ inline void WCycle::converged_on_current_grid()
         if (first_upward)//note:convergence during the first time going upward should not be practically possible, but hey, it could happen...
         {
             next_action=Actions::interpolate_levelpops;
-        }else{
+        }
+        else
+        {
             next_action=Actions::interpolate_corrections;
         }
         is_next_action_set=true;

@@ -45,7 +45,9 @@ inline MrController::Actions VCycle::get_next_action()
     {
         is_next_action_set=false;
         return next_action;
-    }else{
+    }
+    else
+    {
         if (n_pre_interpolation_steps==0)//if the initial pre-interpolation steps on the coarsest grid are already done
         {//then change grid, depending on the direction
             if (not_yet_iterated)
@@ -53,9 +55,12 @@ inline MrController::Actions VCycle::get_next_action()
                 not_yet_iterated=false;
                 return Actions::stay;
             }
-            if (current_level<=finest_lvl){
+            if (current_level<=finest_lvl)
+            {
                 if (first_upward)
-                {first_upward=false;}
+                {
+                    first_upward=false;
+                }
                 else//increasing the counter of number iterations every time the finest grid is reached (except the first time)
                 {
                     current_n_iterations++;
@@ -65,13 +70,17 @@ inline MrController::Actions VCycle::get_next_action()
                     }
                 }
                 going_coarser=true;
-            } else if (current_level>=max_level) {
+            }
+            else if (current_level>=max_level)
+            {
                 going_coarser=false;
             }
-            if (max_level==finest_lvl){//there is only a single level left, so staying is the only option (except from finishing)
+            if (max_level==finest_lvl)
+            {//there is only a single level left, so staying is the only option (except from finishing)
                 return Actions::stay;
             }
-            if (going_coarser){
+            if (going_coarser)
+            {
                 current_level++;
                 not_yet_iterated=true;
                 return Actions::restrict;
@@ -82,7 +91,9 @@ inline MrController::Actions VCycle::get_next_action()
                 if (first_upward)
                 {
                     return Actions::interpolate_levelpops;
-                }else{//if it is not the first time upward, interpolate the corrections instead
+                }
+                else
+                {//if it is not the first time upward, interpolate the corrections instead
                     return Actions::interpolate_corrections;
                 }
             }
@@ -114,8 +125,10 @@ inline void VCycle::converged_on_current_grid()
         if (first_upward)//note:convergence during the first time going upward should not be practically possible, but hey, it could happen...
         {
             next_action=Actions::interpolate_levelpops;
-        }else{
-        next_action=Actions::interpolate_corrections;
+        }
+        else
+        {
+            next_action=Actions::interpolate_corrections;
         }
     is_next_action_set=true;
     current_level--;
