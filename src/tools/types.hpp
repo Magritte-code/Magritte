@@ -8,13 +8,16 @@ using std::list;
 #include <string>
 using std::string;
 using std::to_string;
+#include <iostream>
+using std::cout;
+using std::endl;
 
 #include "paracabs.hpp"
 namespace pc = paracabs;
 
 // Default Real and Size types
 typedef long double Real;
-typedef uint32_t   Size;
+typedef uint32_t    Size;
 
 using Vector3D = pc::datatypes::Vector3D <double>;
 
@@ -81,4 +84,3 @@ typedef vector<Double4> Double5;
 typedef vector<string>   String1;
 typedef vector<String1>  String2;
 typedef vector<String2>  String3;
-

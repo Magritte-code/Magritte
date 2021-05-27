@@ -295,11 +295,6 @@ int Model :: compute_radiation_field_shortchar_order_0 ()
 {
     cout << "Computing radiation field..." << endl;
 
-    // const Size length_max = 4*parameters.npoints() + 1;
-    // const Size  width_max =   parameters.nfreqs ();
-
-    // Solver solver (length_max, width_max, parameters.n_off_diag);
-
     Solver solver;
     solver.setup <CoMoving>        (*this);
     solver.solve_shortchar_order_0 (*this);
@@ -314,13 +309,11 @@ int Model :: compute_radiation_field_feautrier_order_2 ()
 {
     cout << "Computing radiation field..." << endl;
 
-    // const Size length_max = 4*parameters.npoints() + 1;
-    // const Size  width_max =   parameters.nfreqs ();
-
-    // Solver solver (length_max, width_max, parameters.n_off_diag);
-
+    cout << "Creating solver" << endl;
     Solver solver;
+    cout << "Setting up solver" << endl;
     solver.setup <CoMoving>        (*this);
+    cout << "Running solver" << endl;
     solver.solve_feautrier_order_2 (*this);
 
     return (0);

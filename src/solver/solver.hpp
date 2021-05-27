@@ -52,8 +52,8 @@ class Solver
         // SparseMatrix<Real> covariance;
         // Matrix<Real> L2_kernel_p;
 
-        Size nblocks  = 512;
-        Size nthreads = 512;
+        Size nblocks  = 1; //512;
+        Size nthreads = 1; //512;
 
         // Solver () {};
         // Solver (const Size l, const Size w, const Size n_o_d);

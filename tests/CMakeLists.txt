@@ -39,6 +39,7 @@ set (SOURCE_FILES
     test_feautrier_order_2.cpp
     test_imager.cpp
     test_solver_lambda.cpp
+    test_accel.cpp
 )
 
 
@@ -88,36 +89,43 @@ target_link_libraries (test_shortchar_order_0 Magritte)
 
 add_executable        (test_feautrier_order_2 test_feautrier_order_2.cpp)
 target_link_libraries (test_feautrier_order_2 Magritte)
-
+ 
 add_executable        (test_imager test_imager.cpp)
 target_link_libraries (test_imager Magritte)
+
+add_executable        (test_accel test_accel.cpp)
+target_link_libraries (test_accel Magritte)
+
 
 # package_add_test      (test_solver_lambda test_solver_lambda.cpp)
 # target_link_libraries (test_solver_lambda Magritte)
 
 if (OpenMP_CXX_FOUND)
     # target_link_libraries (test_raytracer         OpenMP::OpenMP_CXX)
+    # target_link_libraries (test_solver_lambda     OpenMP::OpenMP_CXX)
     target_link_libraries (test_levelpops         OpenMP::OpenMP_CXX)
     target_link_libraries (test_shortchar_order_0 OpenMP::OpenMP_CXX)
     target_link_libraries (test_feautrier_order_2 OpenMP::OpenMP_CXX)
-    # target_link_libraries (test_solver_lambda     OpenMP::OpenMP_CXX)
     target_link_libraries (test_imager            OpenMP::OpenMP_CXX)
+    target_link_libraries (test_accel             OpenMP::OpenMP_CXX)
 endif()
 
 if (OMP_PARALLEL)
     if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         # target_link_libraries (test_raytracer         atomic)
+        # target_link_libraries (test_solver_lambda     atomic)
         target_link_libraries (test_levelpops         atomic)
         target_link_libraries (test_shortchar_order_0 atomic)
         target_link_libraries (test_feautrier_order_2 atomic)
-        # target_link_libraries (test_solver_lambda     atomic)
         target_link_libraries (test_imager            atomic)
+        target_link_libraries (test_accel             atomic)
     else ()
         # target_link_libraries (test_raytracer         OpenMP::OpenMP_CXX)
+        # target_link_libraries (test_solver_lambda     OpenMP::OpenMP_CXX)
         target_link_libraries (test_levelpops         OpenMP::OpenMP_CXX)
         target_link_libraries (test_shortchar_order_0 OpenMP::OpenMP_CXX)
         target_link_libraries (test_feautrier_order_2 OpenMP::OpenMP_CXX)
-        # target_link_libraries (test_solver_lambda     OpenMP::OpenMP_CXX)
         target_link_libraries (test_imager            OpenMP::OpenMP_CXX)
+        target_link_libraries (test_accel             OpenMP::OpenMP_CXX)
     endif ()
 endif ()

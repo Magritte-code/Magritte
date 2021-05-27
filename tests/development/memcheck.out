@@ -1,0 +1,1485 @@
+                                           
+-------------------------------------------
+  Reading Model...                         
+-------------------------------------------
+ model file = ../models/density_distribution_VZa_single_ray.hdf5
+-------------------------------------------
+Reading parameters...
+Reading points...
+Reading rays...
+Reading boundary...
+Reading chemistry...
+Reading species...
+Reading thermodynamics...
+Reading temperature...
+Reading turbulence...
+Reading lines...
+Reading lineProducingSpecies...
+Reading linedata...
+read num 1
+read sym test
+nlev = 2
+nrad = 1
+Reading collisionPartner...
+Reading quadrature...
+Reading radiation...
+Reading frequencies...
+npoints = 200
+nlines  = 1
+nquads  = 1
+Not using scattering!
+                                           
+-------------------------------------------
+  Model read, parameters:                  
+-------------------------------------------
+  npoints    = 200
+  nrays      = 2
+  nrays_red  = 1
+  nboundary  = 2
+  nfreqs     = 1
+  nspecs     = 5
+  nlspecs    = 1
+  nlines     = 1
+  nquads     = 1
+-------------------------------------------
+                                           
+NVIDIA GeForce GTX 1050
+c.size() = 0
+CUDA ERROR : unspecified launch failure
+x[0] = 1
+========= CUDA-MEMCHECK
+========= Invalid __global__ read of size 8
+=========     at 0x00000138 in _Z12apply_lambdaIZN5Model3addEvEUlmE_EvmPT_
+=========     by thread (0,0,0) in block (0,0,0)
+=========     Address 0x55eeb0ab3f70 is out of bounds
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x25428a]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x11f1cb]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x1728f0]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN5Model3addEv + 0x407) [0xb4387]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x85197]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x8896b]
+=========     Host Frame:python (_PyCFunction_FastCallDict + 0x281) [0x109d21]
+=========     Host Frame:python [0x1431d5]
+=========     Host Frame:python (_PyEval_EvalFrameDefault + 0x424) [0x1a3e84]
+=========     Host Frame:python [0xea8f5]
+=========     Host Frame:python (PyEval_EvalCodeEx + 0x39) [0xebd79]
+=========     Host Frame:python (PyEval_EvalCode + 0x1b) [0x1bc6eb]
+=========     Host Frame:python [0x2240e3]
+=========     Host Frame:python (PyRun_FileExFlags + 0x97) [0x2246c7]
+=========     Host Frame:python (PyRun_SimpleFileExFlags + 0x19c) [0x22489c]
+=========     Host Frame:python (Py_Main + 0x6a7) [0x229cc7]
+=========     Host Frame:python (main + 0xe7) [0xccf77]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf3) [0x270b3]
+=========     Host Frame:python [0x1ab031]
+=========
+========= Program hit cudaErrorLaunchFailure (error 719) due to "unspecified launch failure" on CUDA API call to cudaDeviceSynchronize.
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x355b43]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x1524c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN5Model3addEv + 0x1c3) [0xb4143]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x85197]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x8896b]
+=========     Host Frame:python (_PyCFunction_FastCallDict + 0x281) [0x109d21]
+=========     Host Frame:python [0x1431d5]
+=========     Host Frame:python (_PyEval_EvalFrameDefault + 0x424) [0x1a3e84]
+=========     Host Frame:python [0xea8f5]
+=========     Host Frame:python (PyEval_EvalCodeEx + 0x39) [0xebd79]
+=========     Host Frame:python (PyEval_EvalCode + 0x1b) [0x1bc6eb]
+=========     Host Frame:python [0x2240e3]
+=========     Host Frame:python (PyRun_FileExFlags + 0x97) [0x2246c7]
+=========     Host Frame:python (PyRun_SimpleFileExFlags + 0x19c) [0x22489c]
+=========     Host Frame:python (Py_Main + 0x6a7) [0x229cc7]
+=====x[1] = 1
+x[2] = 1
+x[3] = 1
+x[4] = 1
+x[5] = 1
+x[6] = 1
+x[7] = 1
+x[8] = 1
+x[9] = 1
+x[10] = 1
+x[11] = 1
+x[12] = 1
+x[13] = 1
+x[14] = 1
+x[15] = 1
+x[16] = 1
+x[17] = 1
+x[18] = 1
+x[19] = 1
+x[20] = 1
+x[21] = 1
+x[22] = 1
+x[23] = 1
+x[24] = 1
+x[25] = 1
+x[26] = 1
+x[27] = 1
+x[28] = 1
+x[29] = 1
+x[30] = 1
+x[31] = 1
+x[32] = 1
+x[33] = 1
+x[34] = 1
+x[35] = 1
+x[36] = 1
+x[37] = 1
+x[38] = 1
+x[39] = 1
+x[40] = 1
+x[41] = 1
+x[42] = 1
+x[43] = 1
+x[44] = 1
+x[45] = 1
+x[46] = 1
+x[47] = 1
+x[48] = 1
+x[49] = 1
+x[50] = 1
+x[51] = 1
+x[52] = 1
+x[53] = 1
+x[54] = 1
+x[55] = 1
+x[56] = 1
+x[57] = 1
+x[58] = 1
+x[59] = 1
+x[60] = 1
+x[61] = 1
+x[62] = 1
+x[63] = 1
+x[64] = 1
+x[65] = 1
+x[66] = 1
+x[67] = 1
+x[68] = 1
+x[69] = 1
+x[70] = 1
+x[71] = 1
+x[72] = 1
+x[73] = 1
+x[74] = 1
+x[75] = 1
+x[76] = 1
+x[77] = 1
+x[78] = 1
+x[79] = 1
+x[80] = 1
+x[81] = 1
+x[82] = 1
+x[83] = 1
+x[84] = 1
+x[85] = 1
+x[86] = 1
+x[87] = 1
+x[88] = 1
+x[89] = 1
+x[90] = 1
+x[91] = 1
+x[92] = 1
+x[93] = 1
+x[94] = 1
+x[95] = 1
+x[96] = 1
+x[97] = 1
+x[98] = 1
+x[99] = 1
+====     Host Frame:python (main + 0xe7) [0xccf77]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf3) [0x270b3]
+=========     Host Frame:python [0x1ab031]
+=========
+========= Program hit cudaErrorLaunchFailure (error 719) due to "unspecified launch failure" on CUDA API call to cudaMalloc.
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x355b43]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x15b5c2]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN5Model3addEv + 0x501) [0xb4481]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x85197]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x8896b]
+=========     Host Frame:python (_PyCFunction_FastCallDict + 0x281) [0x109d21]
+=========     Host Frame:python [0x1431d5]
+=========     Host Frame:python (_PyEval_EvalFrameDefault + 0x424) [0x1a3e84]
+=========     Host Frame:python [0xea8f5]
+=========     Host Frame:python (PyEval_EvalCodeEx + 0x39) [0xebd79]
+=========     Host Frame:python (PyEval_EvalCode + 0x1b) [0x1bc6eb]
+=========     Host Frame:python [0x2240e3]
+=========     Host Frame:python (PyRun_FileExFlags + 0x97) [0x2246c7]
+=========     Host Frame:python (PyRun_SimpleFileExFlags + 0x19c) [0x22489c]
+=========     Host Frame:python (Py_Main + 0x6a7) [0x229cc7]
+=========     Host Frame:python (main + 0xe7) [0xccf77]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf3) [0x270b3]
+=========     Host Frame:python [0x1ab031]
+=========
+========= Program hit cudaErrorLaunchFailure (error 719) due to "unspecified launch failure" on CUDA API call to cudaDeviceSynchronize.
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x355b43]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x1524c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN5Model3addEv + 0x50e) [0xb448e]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x85197]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x8896b]
+=========     Host Frame:python (_PyCFunction_FastCallDict + 0x281) [0x109d21]
+=========     Host Frame:python [0x1431d5]
+=========     Host Frame:python (_PyEval_EvalFrameDefault + 0x424) [0x1a3e84]
+=========     Host Frame:python [0xea8f5]
+=========     Host Frame:python (PyEval_EvalCodeEx + 0x39) [0xebd79]
+=========     Host Frame:python (PyEval_EvalCode + 0x1b) [0x1bc6eb]
+=========     Host Frame:python [0x2240e3]
+=========     Host Frame:python (PyRun_FileExFlags + 0x97) [0x2246c7]
+=========     Host Frame:python (PyRun_SimpleFileExFlags + 0x19c) [0x22489c]
+=========     Host Frame:python (Py_Main + 0x6a7) [0x229cc7]
+=========     Host Frame:python (main + 0xe7) [0xccf77]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf3) [0x270b3]
+=========     Host Frame:python [0x1ab031]
+=========
+========= Program hit cudaErrorLaunchFailure (error 719) due to "unspecified launch failure" on CUDA API call to cudaMemcpy.
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x355b43]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x16e1fd]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN5Model3addEv + 0x558) [0xb44d8]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x85197]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x8896b]
+=========     Host Frame:python (_PyCFunction_FastCallDict + 0x281) [0x109d21]
+=========     Host Frame:python [0x1431d5]
+=========     Host Frame:python (_PyEval_EvalFrameDefault + 0x424) [0x1a3e84]
+=========     Host Frame:python [0xea8f5]
+=========     Host Frame:python (PyEval_EvalCodeEx + 0x39) [0xebd79]
+=========     Host Frame:python (PyEval_EvalCode + 0x1b) [0x1bc6eb]
+=========     Host Frame:python [0x2240e3]
+=========     Host Frame:python (PyRun_FileExFlags + 0x97) [0x2246c7]
+=========     Host Frame:python (PyRun_SimpleFileExFlags + 0x19c) [0x22489c]
+=========     Host Frame:python (Py_Main + 0x6a7) [0x229cc7]
+=========     Host Frame:python (main + 0xe7) [0xccf77]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf3) [0x270b3]
+=========     Host Frame:python [0x1ab031]
+=========
+========= Program hit cudaErrorLaunchFailure (error 719) due to "unspecified launch failure" on CUDA API call to cudaDeviceSynchronize.
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x355b43]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x1524c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x8523c]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x8896b]
+=========     Host Frame:python (_PyCFunction_FastCallDict + 0x281) [0x109d21]
+=========     Host Frame:python [0x1431d5]
+=========     Host Frame:python (_PyEval_EvalFrameDefault + 0x424) [0x1a3e84]
+=========     Host Frame:python [0xea8f5]
+=========     Host Frame:python (PyEval_EvalCodeEx + 0x39) [0xebd79]
+=========     Host Frame:python (PyEval_EvalCode + 0x1b) [0x1bc6eb]
+=========     Host Frame:python [0x2240e3]
+=========     Host Frame:python (PyRun_FileExFlags + 0x97) [0x2246c7]
+=========     Host Frame:python (PyRun_SimpleFileExFlags + 0x19c) [0x22489c]
+=========     Host Frame:python (Py_Main + 0x6a7) [0x229cc7]
+=========     Host Frame:python (main + 0xe7) [0xccf77]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf3) [0x270b3]
+=========     Host Frame:python [0x1ab031]
+=========
+========= Program hit cudaErrorLaunchFailure (error 719) due to "unspecified launch failure" on CUDA API call to cudaFree.
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x355b43]
+=========     Host Frame:/home/frederik/software/Anaconda3/instal[]
+lation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x15bc25]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x85248]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x8896b]
+=========     Host Frame:python (_PyCFunction_FastCallDict + 0x281) [0x109d21]
+=========     Host Frame:python [0x1431d5]
+=========     Host Frame:python (_PyEval_EvalFrameDefault + 0x424) [0x1a3e84]
+=========     Host Frame:python [0xea8f5]
+=========     Host Frame:python (PyEval_EvalCodeEx + 0x39) [0xebd79]
+=========     Host Frame:python (PyEval_EvalCode + 0x1b) [0x1bc6eb]
+=========     Host Frame:python [0x2240e3]
+=========     Host Frame:python (PyRun_FileExFlags + 0x97) [0x2246c7]
+=========     Host Frame:python (PyRun_SimpleFileExFlags + 0x19c) [0x22489c]
+=========     Host Frame:python (Py_Main + 0x6a7) [0x229cc7]
+=========     Host Frame:python (main + 0xe7) [0xccf77]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf3) [0x270b3]
+=========     Host Frame:python [0x1ab031]
+=========
+========= Program hit cudaErrorLaunchFailure (error 719) due to "unspecified launch failure" on CUDA API call to cudaDeviceSynchronize.
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x355b43]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x1524c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN5ModelD1Ev + 0x9fc) [0x4648c]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x469f6]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x749c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x75823]
+=========     Host Frame:python [0xda5cf]
+=========     Host Frame:python [0x2004c3]
+=========     Host Frame:python (PyDict_SetItem + 0x285) [0x1281c5]
+=========     Host Frame:python (PyImport_Cleanup + 0x1f1) [0x21c851]
+=========     Host Frame:python (Py_FinalizeEx + 0x5f) [0x21cacf]
+=========     Host Frame:python (Py_Main + 0x394) [0x2299b4]
+=========     Host Frame:python (main + 0xe7) [0xccf77]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf3) [0x270b3]
+=========     Host Frame:python [0x1ab031]
+=========
+========= Program hit cudaErrorLaunchFailure (error 719) due to "unspecified launch failure" on CUDA API call to cudaFree.
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x355b43]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x15bc25]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN5ModelD1Ev + 0xa0c) [0x4649c]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x469f6]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x749c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x75823]
+=========     Host Frame:python [0xda5cf]
+=========     Host Frame:python [0x2004c3]
+=========     Host Frame:python (PyDict_SetItem + 0x285) [0x1281c5]
+=========     Host Frame:python (PyImport_Cleanup + 0x1f1) [0x21c851]
+=========     Host Frame:python (Py_FinalizeEx + 0x5f) [0x21cacf]
+=========     Host Frame:python (Py_Main + 0x394) [0x2299b4]
+=========     Host Frame:python (main + 0xe7) [0xccf77]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf3) [0x270b3]
+=========     Host Frame:python [0x1ab031]
+=========
+========= Program hit cudaErrorLaunchFailure (error 719) due to "unspecified launch failure" on CUDA API call to cudaDeviceSynchronize.
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x355b43]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x1524c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN5ModelD1Ev + 0x9bc) [0x4644c]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x469f6]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x749c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x75823]
+=========     Host Frame:python [0xda5cf]
+=========     Host Frame:python [0x2004c3]
+=========     Host Frame:python (PyDict_SetItem + 0x285) [0x1281c5]
+=========     Host Frame:python (PyImport_Cleanup + 0x1f1) [0x21c851]
+=========     Host Frame:python (Py_FinalizeEx + 0x5f) [0x21cacf]
+=========     Host Frame:python (Py_Main + 0x394) [0x2299b4]
+=========     Host Frame:python (main + 0xe7) [0xccf77]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf3) [0x270b3]
+=========     Host Frame:python [0x1ab031]
+=========
+========= Program hit cudaErrorLaunchFailure (error 719) due to "unspecified launch failure" on CUDA API call to cudaFree.
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x355b43]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x15bc25]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN5ModelD1Ev + 0x9cc) [0x4645c]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x469f6]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x749c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x75823]
+=========     Host Frame:python [0xda5cf]
+=========     Host Frame:python [0x2004c3]
+=========     Host Frame:python (PyDict_SetItem + 0x285) [0x1281c5]
+=========     Host Frame:python (PyImport_Cleanup + 0x1f1) [0x21c851]
+=========     Host Frame:python (Py_FinalizeEx + 0x5f) [0x21cacf]
+=========     Host Frame:python (Py_Main + 0x394) [0x2299b4]
+=========     Host Frame:python (main + 0xe7) [0xccf77]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf3) [0x270b3]
+=========     Host Frame:python [0x1ab031]
+=========
+========= Program hit cudaErrorLaunchFailure (error 719) due to "unspecified launch failure" on CUDA API call to cudaDeviceSynchronize.
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x355b43]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x1524c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN5ModelD1Ev + 0x97c) [0x4640c]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x469f6]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x749c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x75823]
+=========     Host Frame:python [0xda5cf]
+=========     Host Frame:python [0x2004c3]
+=========     Host Frame:python (PyDict_SetItem + 0x285) [0x1281c5]
+=========     Host Frame:python (PyImport_Cleanup + 0x1f1) [0x21c851]
+=========     Host Frame:python (Py_FinalizeEx + 0x5f) [0x21cacf]
+=========     Host Frame:python (Py_Main + 0x394) [0x2299b4]
+=========     Host Frame:python (main + 0xe7) [0xccf77]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf3) [0x270b3]
+=========     Host Frame:python [0x1ab031]
+=========
+========= Program hit cudaErrorLaunchFailure (error 719) due to "unspecified launch failure" on CUDA API call to cudaFree.
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x355b43]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x15bc25]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN5ModelD1Ev + 0x98c) [0x4641c]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x469f6]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x749c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x75823]
+=========     Host Frame:python [0xda5cf]
+=========     Host Frame:python [0x2004c3]
+=========     Host Frame:python (PyDict_SetItem + 0x285) [0x1281c5]
+=========     Host Frame:python (PyImport_Cleanup + 0x1f1) [0x21c851]
+=========     Host Frame:python (Py_FinalizeEx + 0x5f) [0x21cacf]
+=========     Host Frame:python (Py_Main + 0x394) [0x2299b4]
+=========     Host Frame:python (main + 0xe7) [0xccf77]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf3) [0x270b3]
+=========     Host Frame:python [0x1ab031]
+=========
+========= Program hit cudaErrorLaunchFailure (error 719) due to "unspecified launch failure" on CUDA API call to cudaDeviceSynchronize.
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x355b43]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x1524c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN9RadiationD2Ev + 0x394) [0x3eb84]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN5ModelD1Ev + 0x26c) [0x45cfc]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x469f6]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x749c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x75823]
+=========     Host Frame:python [0xda5cf]
+=========     Host Frame:python [0x2004c3]
+=========     Host Frame:python (PyDict_SetItem + 0x285) [0x1281c5]
+=========     Host Frame:python (PyImport_Cleanup + 0x1f1) [0x21c851]
+=========     Host Frame:python (Py_FinalizeEx + 0x5f) [0x21cacf]
+=========     Host Frame:python (Py_Main + 0x394) [0x2299b4]
+=========     Host Frame:python (main + 0xe7) [0xccf77]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf3) [0x270b3]
+=========     Host Frame:python [0x1ab031]
+=========
+========= Program hit cudaErrorLaunchFailure (error 719) due to "unspecified launch failure" on CUDA API call to cudaFree.
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x355b43]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x15bc25]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN9RadiationD2Ev + 0x3a4) [0x3eb94]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN5ModelD1Ev + 0x26c) [0x45cfc]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x469f6]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x749c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x75823]
+=========     Host Frame:python [0xda5cf]
+=========     Host Frame:python [0x2004c3]
+=========     Host Frame:python (PyDict_SetItem + 0x285) [0x1281c5]
+=========     Host Frame:python (PyImport_Cleanup + 0x1f1) [0x21c851]
+=========     Host Frame:python (Py_FinalizeEx + 0x5f) [0x21cacf]
+=========     Host Frame:python (Py_Main + 0x394) [0x2299b4]
+=========     Host Frame:python (main + 0xe7) [0xccf77]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf3) [0x270b3]
+=========     Host Frame:python [0x1ab031]
+=========
+========= Program hit cudaErrorLaunchFailure (error 719) due to "unspecified launch failure" on CUDA API call to cudaDeviceSynchronize.
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x355b43]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x1524c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN9RadiationD2Ev + 0x354) [0x3eb44]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN5ModelD1Ev + 0x26c) [0x45cfc]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x469f6]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x749c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x75823]
+=========     Host Frame:python [0xda5cf]
+=========     Host Frame:python [0x2004c3]
+=========     Host Frame:python (PyDict_SetItem + 0x285) [0x1281c5]
+=========     Host Frame:python (PyImport_Cleanup + 0x1f1) [0x21c851]
+=========     Host Frame:python (Py_FinalizeEx + 0x5f) [0x21cacf]
+=========     Host Frame:python (Py_Main + 0x394) [0x2299b4]
+=========     Host Frame:python (main + 0xe7) [0xccf77]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf3) [0x270b3]
+=========     Host Frame:python [0x1ab031]
+=========
+========= Program hit cudaErrorLaunchFailure (error 719) due to "unspecified launch failure" on CUDA API call to cudaFree.
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x355b43]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x15bc25]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN9RadiationD2Ev + 0x364) [0x3eb54]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN5ModelD1Ev + 0x26c) [0x45cfc]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x469f6]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x749c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x75823]
+=========     Host Frame:python [0xda5cf]
+=========     Host Frame:python [0x2004c3]
+=========     Host Frame:python (PyDict_SetItem + 0x285) [0x1281c5]
+=========     Host Frame:python (PyImport_Cleanup + 0x1f1) [0x21c851]
+=========     Host Frame:python (Py_FinalizeEx + 0x5f) [0x21cacf]
+=========     Host Frame:python (Py_Main + 0x394) [0x2299b4]
+=========     Host Frame:python (main + 0xe7) [0xccf77]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf3) [0x270b3]
+=========     Host Frame:python [0x1ab031]
+=========
+========= Program hit cudaErrorLaunchFailure (error 719) due to "unspecified launch failure" on CUDA API call to cudaDeviceSynchronize.
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x355b43]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x1524c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN9RadiationD2Ev + 0x314) [0x3eb04]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN5ModelD1Ev + 0x26c) [0x45cfc]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x469f6]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x749c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x75823]
+=========     Host Frame:python [0xda5cf]
+=========     Host Frame:python [0x2004c3]
+=========     Host Frame:python (PyDict_SetItem + 0x285) [0x1281c5]
+=========     Host Frame:python (PyImport_Cleanup + 0x1f1) [0x21c851]
+=========     Host Frame:python (Py_FinalizeEx + 0x5f) [0x21cacf]
+=========     Host Frame:python (Py_Main + 0x394) [0x2299b4]
+=========     Host Frame:python (main + 0xe7) [0xccf77]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf3) [0x270b3]
+=========     Host Frame:python [0x1ab031]
+=========
+========= Program hit cudaErrorLaunchFailure (error 719) due to "unspecified launch failure" on CUDA API call to cudaFree.
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x355b43]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x15bc25]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN9RadiationD2Ev + 0x324) [0x3eb14]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN5ModelD1Ev + 0x26c) [0x45cfc]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x469f6]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x749c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x75823]
+=========     Host Frame:python [0xda5cf]
+=========     Host Frame:python [0x2004c3]
+=========     Host Frame:python (PyDict_SetItem + 0x285) [0x1281c5]
+=========     Host Frame:python (PyImport_Cleanup + 0x1f1) [0x21c851]
+=========     Host Frame:python (Py_FinalizeEx + 0x5f) [0x21cacf]
+=========     Host Frame:python (Py_Main + 0x394) [0x2299b4]
+=========     Host Frame:python (main + 0xe7) [0xccf77]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf3) [0x270b3]
+=========     Host Frame:python [0x1ab031]
+=========
+========= Program hit cudaErrorLaunchFailure (error 719) due to "unspecified launch failure" on CUDA API call to cudaDeviceSynchronize.
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x355b43]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x1524c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN9RadiationD2Ev + 0x2d4) [0x3eac4]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN5ModelD1Ev + 0x26c) [0x45cfc]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x469f6]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x749c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x75823]
+=========     Host Frame:python [0xda5cf]
+=========     Host Frame:python [0x2004c3]
+=========     Host Frame:python (PyDict_SetItem + 0x285) [0x1281c5]
+=========     Host Frame:python (PyImport_Cleanup + 0x1f1) [0x21c851]
+=========     Host Frame:python (Py_FinalizeEx + 0x5f) [0x21cacf]
+=========     Host Frame:python (Py_Main + 0x394) [0x2299b4]
+=========     Host Frame:python (main + 0xe7) [0xccf77]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf3) [0x270b3]
+=========     Host Frame:python [0x1ab031]
+=========
+========= Program hit cudaErrorLaunchFailure (error 719) due to "unspecified launch failure" on CUDA API call to cudaFree.
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x355b43]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x15bc25]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN9RadiationD2Ev + 0x2e4) [0x3ead4]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN5ModelD1Ev + 0x26c) [0x45cfc]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x469f6]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x749c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x75823]
+=========     Host Frame:python [0xda5cf]
+=========     Host Frame:python [0x2004c3]
+=========     Host Frame:python (PyDict_SetItem + 0x285) [0x1281c5]
+=========     Host Frame:python (PyImport_Cleanup + 0x1f1) [0x21c851]
+=========     Host Frame:python (Py_FinalizeEx + 0x5f) [0x21cacf]
+=========     Host Frame:python (Py_Main + 0x394) [0x2299b4]
+=========     Host Frame:python (main + 0xe7) [0xccf77]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf3) [0x270b3]
+=========     Host Frame:python [0x1ab031]
+=========
+========= Program hit cudaErrorLaunchFailure (error 719) due to "unspecified launch failure" on CUDA API call to cudaDeviceSynchronize.
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x355b43]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x1524c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN9RadiationD2Ev + 0x294) [0x3ea84]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN5ModelD1Ev + 0x26c) [0x45cfc]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x469f6]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x749c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x75823]
+=========     Host Frame:python [0xda5cf]
+=========     Host Frame:python [0x2004c3]
+=========     Host Frame:python (PyDict_SetItem + 0x285) [0x1281c5]
+=========     Host Frame:python (PyImport_Cleanup + 0x1f1) [0x21c851]
+=========     Host Frame:python (Py_FinalizeEx + 0x5f) [0x21cacf]
+=========     Host Frame:python (Py_Main + 0x394) [0x2299b4]
+=========     Host Frame:python (main + 0xe7) [0xccf77]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf3) [0x270b3]
+=========     Host Frame:python [0x1ab031]
+=========
+========= Program hit cudaErrorLaunchFailure (error 719) due to "unspecified launch failure" on CUDA API call to cudaFree.
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x355b43]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x15bc25]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN9RadiationD2Ev + 0x3e5) [0x3ebd5]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN5ModelD1Ev + 0x26c) [0x45cfc]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x469f6]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x749c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x75823]
+=========     Host Frame:python [0xda5cf]
+=========     Host Frame:python [0x2004c3]
+=========     Host Frame:python (PyDict_SetItem + 0x285) [0x1281c5]
+=========     Host Frame:python (PyImport_Cleanup + 0x1f1) [0x21c851]
+=========     Host Frame:python (Py_FinalizeEx + 0x5f) [0x21cacf]
+=========     Host Frame:python (Py_Main + 0x394) [0x2299b4]
+=========     Host Frame:python (main + 0xe7) [0xccf77]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf3) [0x270b3]
+=========     Host Frame:python [0x1ab031]
+=========
+========= Program hit cudaErrorLaunchFailure (error 719) due to "unspecified launch failure" on CUDA API call to cudaDeviceSynchronize.
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x355b43]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x1524c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN5ModelD1Ev + 0x93c) [0x463cc]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x469f6]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x749c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x75823]
+=========     Host Frame:python [0xda5cf]
+=========     Host Frame:python [0x2004c3]
+=========     Host Frame:python (PyDict_SetItem + 0x285) [0x1281c5]
+=========     Host Frame:python (PyImport_Cleanup + 0x1f1) [0x21c851]
+=========     Host Frame:python (Py_FinalizeEx + 0x5f) [0x21cacf]
+=========     Host Frame:python (Py_Main + 0x394) [0x2299b4]
+=========     Host Frame:python (main + 0xe7) [0xccf77]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf3) [0x270b3]
+=========     Host Frame:python [0x1ab031]
+=========
+========= Program hit cudaErrorLaunchFailure (error 719) due to "unspecified launch failure" on CUDA API call to cudaFree.
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x355b43]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x15bc25]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN5ModelD1Ev + 0x94c) [0x463dc]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x469f6]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x749c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x75823]
+=========     Host Frame:python [0xda5cf]
+=========     Host Frame:python [0x2004c3]
+=========     Host Frame:python (PyDict_SetItem + 0x285) [0x1281c5]
+=========     Host Frame:python (PyImport_Cleanup + 0x1f1) [0x21c851]
+=========     Host Frame:python (Py_FinalizeEx + 0x5f) [0x21cacf]
+=========     Host Frame:python (Py_Main + 0x394) [0x2299b4]
+=========     Host Frame:python (main + 0xe7) [0xccf77]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf3) [0x270b3]
+=========     Host Frame:python [0x1ab031]
+=========
+========= Program hit cudaErrorLaunchFailure (error 719) due to "unspecified launch failure" on CUDA API call to cudaDeviceSynchronize.
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x355b43]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x1524c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN5ModelD1Ev + 0x8fc) [0x4638c]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x469f6]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x749c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x75823]
+=========     Host Frame:python [0xda5cf]
+=========     Host Frame:python [0x2004c3]
+=========     Host Frame:python (PyDict_SetItem + 0x285) [0x1281c5]
+=========     Host Frame:python (PyImport_Cleanup + 0x1f1) [0x21c851]
+=========     Host Frame:python (Py_FinalizeEx + 0x5f) [0x21cacf]
+=========     Host Frame:python (Py_Main + 0x394) [0x2299b4]
+=========     Host Frame:python (main + 0xe7) [0xccf77]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf3) [0x270b3]
+=========     Host Frame:python [0x1ab031]
+=========
+========= Program hit cudaErrorLaunchFailure (error 719) due to "unspecified launch failure" on CUDA API call to cudaFree.
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x355b43]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x15bc25]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN5ModelD1Ev + 0x90c) [0x4639c]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x469f6]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x749c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x75823]
+=========     Host Frame:python [0xda5cf]
+=========     Host Frame:python [0x2004c3]
+=========     Host Frame:python (PyDict_SetItem + 0x285) [0x1281c5]
+=========     Host Frame:python (PyImport_Cleanup + 0x1f1) [0x21c851]
+=========     Host Frame:python (Py_FinalizeEx + 0x5f) [0x21cacf]
+=========     Host Frame:python (Py_Main + 0x394) [0x2299b4]
+=========     Host Frame:python (main + 0xe7) [0xccf77]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf3) [0x270b3]
+=========     Host Frame:python [0x1ab031]
+=========
+========= Program hit cudaErrorLaunchFailure (error 719) due to "unspecified launch failure" on CUDA API call to cudaDeviceSynchronize.
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x355b43]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x1524c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN5ModelD1Ev + 0x8bc) [0x4634c]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x469f6]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x749c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x75823]
+=========     Host Frame:python [0xda5cf]
+=========     Host Frame:python [0x2004c3]
+=========     Host Frame:python (PyDict_SetItem + 0x285) [0x1281c5]
+=========     Host Frame:python (PyImport_Cleanup + 0x1f1) [0x21c851]
+=========     Host Frame:python (Py_FinalizeEx + 0x5f) [0x21cacf]
+=========     Host Frame:python (Py_Main + 0x394) [0x2299b4]
+=========     Host Frame:python (main + 0xe7) [0xccf77]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf3) [0x270b3]
+=========     Host Frame:python [0x1ab031]
+=========
+========= Program hit cudaErrorLaunchFailure (error 719) due to "unspecified launch failure" on CUDA API call to cudaFree.
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x355b43]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x15bc25]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN5ModelD1Ev + 0x8cc) [0x4635c]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x469f6]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x749c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x75823]
+=========     Host Frame:python [0xda5cf]
+=========     Host Frame:python [0x2004c3]
+=========     Host Frame:python (PyDict_SetItem + 0x285) [0x1281c5]
+=========     Host Frame:python (PyImport_Cleanup + 0x1f1) [0x21c851]
+=========     Host Frame:python (Py_FinalizeEx + 0x5f) [0x21cacf]
+=========     Host Frame:python (Py_Main + 0x394) [0x2299b4]
+=========     Host Frame:python (main + 0xe7) [0xccf77]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf3) [0x270b3]
+=========     Host Frame:python [0x1ab031]
+=========
+========= Program hit cudaErrorLaunchFailure (error 719) due to "unspecified launch failure" on CUDA API call to cudaDeviceSynchronize.
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x355b43]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x1524c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN5ModelD1Ev + 0x87c) [0x4630c]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x469f6]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x749c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x75823]
+=========     Host Frame:python [0xda5cf]
+=========     Host Frame:python [0x2004c3]
+=========     Host Frame:python (PyDict_SetItem + 0x285) [0x1281c5]
+=========     Host Frame:python (PyImport_Cleanup + 0x1f1) [0x21c851]
+=========     Host Frame:python (Py_FinalizeEx + 0x5f) [0x21cacf]
+=========     Host Frame:python (Py_Main + 0x394) [0x2299b4]
+=========     Host Frame:python (main + 0xe7) [0xccf77]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf3) [0x270b3]
+=========     Host Frame:python [0x1ab031]
+=========
+========= Program hit cudaErrorLaunchFailure (error 719) due to "unspecified launch failure" on CUDA API call to cudaFree.
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x355b43]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x15bc25]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN5ModelD1Ev + 0x88c) [0x4631c]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x469f6]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x749c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x75823]
+=========     Host Frame:python [0xda5cf]
+=========     Host Frame:python [0x2004c3]
+=========     Host Frame:python (PyDict_SetItem + 0x285) [0x1281c5]
+=========     Host Frame:python (PyImport_Cleanup + 0x1f1) [0x21c851]
+=========     Host Frame:python (Py_FinalizeEx + 0x5f) [0x21cacf]
+=========     Host Frame:python (Py_Main + 0x394) [0x2299b4]
+=========     Host Frame:python (main + 0xe7) [0xccf77]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf3) [0x270b3]
+=========     Host Frame:python [0x1ab031]
+=========
+========= Program hit cudaErrorLaunchFailure (error 719) due to "unspecified launch failure" on CUDA API call to cudaDeviceSynchronize.
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x355b43]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x1524c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN5ModelD1Ev + 0x83c) [0x462cc]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x469f6]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x749c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x75823]
+=========     Host Frame:python [0xda5cf]
+=========     Host Frame:python [0x2004c3]
+=========     Host Frame:python (PyDict_SetItem + 0x285) [0x1281c5]
+=========     Host Frame:python (PyImport_Cleanup + 0x1f1) [0x21c851]
+=========     Host Frame:python (Py_FinalizeEx + 0x5f) [0x21cacf]
+=========     Host Frame:python (Py_Main + 0x394) [0x2299b4]
+=========     Host Frame:python (main + 0xe7) [0xccf77]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf3) [0x270b3]
+=========     Host Frame:python [0x1ab031]
+=========
+========= Program hit cudaErrorLaunchFailure (error 719) due to "unspecified launch failure" on CUDA API call to cudaFree.
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x355b43]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x15bc25]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN5ModelD1Ev + 0x84c) [0x462dc]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x469f6]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x749c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x75823]
+=========     Host Frame:python [0xda5cf]
+=========     Host Frame:python [0x2004c3]
+=========     Host Frame:python (PyDict_SetItem + 0x285) [0x1281c5]
+=========     Host Frame:python (PyImport_Cleanup + 0x1f1) [0x21c851]
+=========     Host Frame:python (Py_FinalizeEx + 0x5f) [0x21cacf]
+=========     Host Frame:python (Py_Main + 0x394) [0x2299b4]
+=========     Host Frame:python (main + 0xe7) [0xccf77]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf3) [0x270b3]
+=========     Host Frame:python [0x1ab031]
+=========
+========= Program hit cudaErrorLaunchFailure (error 719) due to "unspecified launch failure" on CUDA API call to cudaDeviceSynchronize.
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x355b43]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x1524c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN20LineProducingSpeciesD1Ev + 0x6b4) [0x452a4]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN5ModelD1Ev + 0x327) [0x45db7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x469f6]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x749c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x75823]
+=========     Host Frame:python [0xda5cf]
+=========     Host Frame:python [0x2004c3]
+=========     Host Frame:python (PyDict_SetItem + 0x285) [0x1281c5]
+=========     Host Frame:python (PyImport_Cleanup + 0x1f1) [0x21c851]
+=========     Host Frame:python (Py_FinalizeEx + 0x5f) [0x21cacf]
+=========     Host Frame:python (Py_Main + 0x394) [0x2299b4]
+=========     Host Frame:python (main + 0xe7) [0xccf77]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf3) [0x270b3]
+=========     Host Frame:python [0x1ab031]
+=========
+========= Program hit cudaErrorLaunchFailure (error 719) due to "unspecified launch failure" on CUDA API call to cudaFree.
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x355b43]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x15bc25]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN20LineProducingSpeciesD1Ev + 0x6c4) [0x452b4]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN5ModelD1Ev + 0x327) [0x45db7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x469f6]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x749c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x75823]
+=========     Host Frame:python [0xda5cf]
+=========     Host Frame:python [0x2004c3]
+=========     Host Frame:python (PyDict_SetItem + 0x285) [0x1281c5]
+=========     Host Frame:python (PyImport_Cleanup + 0x1f1) [0x21c851]
+=========     Host Frame:python (Py_FinalizeEx + 0x5f) [0x21cacf]
+=========     Host Frame:python (Py_Main + 0x394) [0x2299b4]
+=========     Host Frame:python (main + 0xe7) [0xccf77]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf3) [0x270b3]
+=========     Host Frame:python [0x1ab031]
+=========
+========= Program hit cudaErrorLaunchFailure (error 719) due to "unspecified launch failure" on CUDA API call to cudaDeviceSynchronize.
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x355b43]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x1524c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN20LineProducingSpeciesD1Ev + 0x67c) [0x4526c]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN5ModelD1Ev + 0x327) [0x45db7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x469f6]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x749c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x75823]
+=========     Host Frame:python [0xda5cf]
+=========     Host Frame:python [0x2004c3]
+=========     Host Frame:python (PyDict_SetItem + 0x285) [0x1281c5]
+=========     Host Frame:python (PyImport_Cleanup + 0x1f1) [0x21c851]
+=========     Host Frame:python (Py_FinalizeEx + 0x5f) [0x21cacf]
+=========     Host Frame:python (Py_Main + 0x394) [0x2299b4]
+=========     Host Frame:python (main + 0xe7) [0xccf77]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf3) [0x270b3]
+=========     Host Frame:python [0x1ab031]
+=========
+========= Program hit cudaErrorLaunchFailure (error 719) due to "unspecified launch failure" on CUDA API call to cudaFree.
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x355b43]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x15bc25]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN20LineProducingSpeciesD1Ev + 0x705) [0x452f5]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN5ModelD1Ev + 0x327) [0x45db7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x469f6]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x749c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x75823]
+=========     Host Frame:python [0xda5cf]
+=========     Host Frame:python [0x2004c3]
+=========     Host Frame:python (PyDict_SetItem + 0x285) [0x1281c5]
+=========     Host Frame:python (PyImport_Cleanup + 0x1f1) [0x21c851]
+=========     Host Frame:python (Py_FinalizeEx + 0x5f) [0x21cacf]
+=========     Host Frame:python (Py_Main + 0x394) [0x2299b4]
+=========     Host Frame:python (main + 0xe7) [0xccf77]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf3) [0x270b3]
+=========     Host Frame:python [0x1ab031]
+=========
+========= Program hit cudaErrorLaunchFailure (error 719) due to "unspecified launch failure" on CUDA API call to cudaDeviceSynchronize.
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x355b43]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x1524c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN5ModelD1Ev + 0x7fc) [0x4628c]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x469f6]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x749c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x75823]
+=========     Host Frame:python [0xda5cf]
+=========     Host Frame:python [0x2004c3]
+=========     Host Frame:python (PyDict_SetItem + 0x285) [0x1281c5]
+=========     Host Frame:python (PyImport_Cleanup + 0x1f1) [0x21c851]
+=========     Host Frame:python (Py_FinalizeEx + 0x5f) [0x21cacf]
+=========     Host Frame:python (Py_Main + 0x394) [0x2299b4]
+=========     Host Frame:python (main + 0xe7) [0xccf77]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf3) [0x270b3]
+=========     Host Frame:python [0x1ab031]
+=========
+========= Program hit cudaErrorLaunchFailure (error 719) due to "unspecified launch failure" on CUDA API call to cudaFree.
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x355b43]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x15bc25]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN5ModelD1Ev + 0x80c) [0x4629c]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x469f6]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x749c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x75823]
+=========     Host Frame:python [0xda5cf]
+=========     Host Frame:python [0x2004c3]
+=========     Host Frame:python (PyDict_SetItem + 0x285) [0x1281c5]
+=========     Host Frame:python (PyImport_Cleanup + 0x1f1) [0x21c851]
+=========     Host Frame:python (Py_FinalizeEx + 0x5f) [0x21cacf]
+=========     Host Frame:python (Py_Main + 0x394) [0x2299b4]
+=========     Host Frame:python (main + 0xe7) [0xccf77]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf3) [0x270b3]
+=========     Host Frame:python [0x1ab031]
+=========
+========= Program hit cudaErrorLaunchFailure (error 719) due to "unspecified launch failure" on CUDA API call to cudaDeviceSynchronize.
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x355b43]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x1524c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN5ModelD1Ev + 0x7bc) [0x4624c]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x469f6]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x749c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x75823]
+=========     Host Frame:python [0xda5cf]
+=========     Host Frame:python [0x2004c3]
+=========     Host Frame:python (PyDict_SetItem + 0x285) [0x1281c5]
+=========     Host Frame:python (PyImport_Cleanup + 0x1f1) [0x21c851]
+=========     Host Frame:python (Py_FinalizeEx + 0x5f) [0x21cacf]
+=========     Host Frame:python (Py_Main + 0x394) [0x2299b4]
+=========     Host Frame:python (main + 0xe7) [0xccf77]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf3) [0x270b3]
+=========     Host Frame:python [0x1ab031]
+=========
+========= Program hit cudaErrorLaunchFailure (error 719) due to "unspecified launch failure" on CUDA API call to cudaFree.
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x355b43]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x15bc25]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN5ModelD1Ev + 0xb15) [0x465a5]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x469f6]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x749c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x75823]
+=========     Host Frame:python [0xda5cf]
+=========     Host Frame:python [0x2004c3]
+=========     Host Frame:python (PyDict_SetItem + 0x285) [0x1281c5]
+=========     Host Frame:python (PyImport_Cleanup + 0x1f1) [0x21c851]
+=========     Host Frame:python (Py_FinalizeEx + 0x5f) [0x21cacf]
+=========     Host Frame:python (Py_Main + 0x394) [0x2299b4]
+=========     Host Frame:python (main + 0xe7) [0xccf77]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf3) [0x270b3]
+=========     Host Frame:python [0x1ab031]
+=========
+========= Program hit cudaErrorLaunchFailure (error 719) due to "unspecified launch failure" on CUDA API call to cudaDeviceSynchronize.
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x355b43]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x1524c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN8GeometryD1Ev + 0x50c) [0x3d8dc]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN5ModelD1Ev + 0x4f3) [0x45f83]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x469f6]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x749c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x75823]
+=========     Host Frame:python [0xda5cf]
+=========     Host Frame:python [0x2004c3]
+=========     Host Frame:python (PyDict_SetItem + 0x285) [0x1281c5]
+=========     Host Frame:python (PyImport_Cleanup + 0x1f1) [0x21c851]
+=========     Host Frame:python (Py_FinalizeEx + 0x5f) [0x21cacf]
+=========     Host Frame:python (Py_Main + 0x394) [0x2299b4]
+=========     Host Frame:python (main + 0xe7) [0xccf77]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf3) [0x270b3]
+=========     Host Frame:python [0x1ab031]
+=========
+========= Program hit cudaErrorLaunchFailure (error 719) due to "unspecified launch failure" on CUDA API call to cudaFree.
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x355b43]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x15bc25]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN8GeometryD1Ev + 0x51c) [0x3d8ec]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN5ModelD1Ev + 0x4f3) [0x45f83]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x469f6]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x749c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x75823]
+=========     Host Frame:python [0xda5cf]
+=========     Host Frame:python [0x2004c3]
+=========     Host Frame:python (PyDict_SetItem + 0x285) [0x1281c5]
+=========     Host Frame:python (PyImport_Cleanup + 0x1f1) [0x21c851]
+=========     Host Frame:python (Py_FinalizeEx + 0x5f) [0x21cacf]
+=========     Host Frame:python (Py_Main + 0x394) [0x2299b4]
+=========     Host Frame:python (main + 0xe7) [0xccf77]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf3) [0x270b3]
+=========     Host Frame:python [0x1ab031]
+=========
+========= Program hit cudaErrorLaunchFailure (error 719) due to "unspecified launch failure" on CUDA API call to cudaDeviceSynchronize.
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x355b43]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x1524c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN8GeometryD1Ev + 0x4cc) [0x3d89c]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN5ModelD1Ev + 0x4f3) [0x45f83]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x469f6]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x749c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x75823]
+=========     Host Frame:python [0xda5cf]
+=========     Host Frame:python [0x2004c3]
+=========     Host Frame:python (PyDict_SetItem + 0x285) [0x1281c5]
+=========     Host Frame:python (PyImport_Cleanup + 0x1f1) [0x21c851]
+=========     Host Frame:python (Py_FinalizeEx + 0x5f) [0x21cacf]
+=========     Host Frame:python (Py_Main + 0x394) [0x2299b4]
+=========     Host Frame:python (main + 0xe7) [0xccf77]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf3) [0x270b3]
+=========     Host Frame:python [0x1ab031]
+=========
+========= Program hit cudaErrorLaunchFailure (error 719) due to "unspecified launch failure" on CUDA API call to cudaFree.
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x355b43]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x15bc25]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN8GeometryD1Ev + 0x4dc) [0x3d8ac]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN5ModelD1Ev + 0x4f3) [0x45f83]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x469f6]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x749c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x75823]
+=========     Host Frame:python [0xda5cf]
+=========     Host Frame:python [0x2004c3]
+=========     Host Frame:python (PyDict_SetItem + 0x285) [0x1281c5]
+=========     Host Frame:python (PyImport_Cleanup + 0x1f1) [0x21c851]
+=========     Host Frame:python (Py_FinalizeEx + 0x5f) [0x21cacf]
+=========     Host Frame:python (Py_Main + 0x394) [0x2299b4]
+=========     Host Frame:python (main + 0xe7) [0xccf77]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf3) [0x270b3]
+=========     Host Frame:python [0x1ab031]
+=========
+========= Program hit cudaErrorLaunchFailure (error 719) due to "unspecified launch failure" on CUDA API call to cudaDeviceSynchronize.
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x355b43]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x1524c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN8GeometryD1Ev + 0x48c) [0x3d85c]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN5ModelD1Ev + 0x4f3) [0x45f83]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x469f6]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x749c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x75823]
+=========     Host Frame:python [0xda5cf]
+=========     Host Frame:python [0x2004c3]
+=========     Host Frame:python (PyDict_SetItem + 0x285) [0x1281c5]
+=========     Host Frame:python (PyImport_Cleanup + 0x1f1) [0x21c851]
+=========     Host Frame:python (Py_FinalizeEx + 0x5f) [0x21cacf]
+=========     Host Frame:python (Py_Main + 0x394) [0x2299b4]
+=========     Host Frame:python (main + 0xe7) [0xccf77]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf3) [0x270b3]
+=========     Host Frame:python [0x1ab031]
+=========
+========= Program hit cudaErrorLaunchFailure (error 719) due to "unspecified launch failure" on CUDA API call to cudaFree.
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x355b43]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x15bc25]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN8GeometryD1Ev + 0x49c) [0x3d86c]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN5ModelD1Ev + 0x4f3) [0x45f83]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x469f6]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x749c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x75823]
+=========     Host Frame:python [0xda5cf]
+=========     Host Frame:python [0x2004c3]
+=========     Host Frame:python (PyDict_SetItem + 0x285) [0x1281c5]
+=========     Host Frame:python (PyImport_Cleanup + 0x1f1) [0x21c851]
+=========     Host Frame:python (Py_FinalizeEx + 0x5f) [0x21cacf]
+=========     Host Frame:python (Py_Main + 0x394) [0x2299b4]
+=========     Host Frame:python (main + 0xe7) [0xccf77]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf3) [0x270b3]
+=========     Host Frame:python [0x1ab031]
+=========
+========= Program hit cudaErrorLaunchFailure (error 719) due to "unspecified launch failure" on CUDA API call to cudaDeviceSynchronize.
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x355b43]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x1524c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN8GeometryD1Ev + 0x44c) [0x3d81c]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN5ModelD1Ev + 0x4f3) [0x45f83]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x469f6]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x749c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x75823]
+=========     Host Frame:python [0xda5cf]
+=========     Host Frame:python [0x2004c3]
+=========     Host Frame:python (PyDict_SetItem + 0x285) [0x1281c5]
+=========     Host Frame:python (PyImport_Cleanup + 0x1f1) [0x21c851]
+=========     Host Frame:python (Py_FinalizeEx + 0x5f) [0x21cacf]
+=========     Host Frame:python (Py_Main + 0x394) [0x2299b4]
+=========     Host Frame:python (main + 0xe7) [0xccf77]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf3) [0x270b3]
+=========     Host Frame:python [0x1ab031]
+=========
+========= Program hit cudaErrorLaunchFailure (error 719) due to "unspecified launch failure" on CUDA API call to cudaFree.
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x355b43]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x15bc25]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN8GeometryD1Ev + 0x45c) [0x3d82c]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN5ModelD1Ev + 0x4f3) [0x45f83]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x469f6]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x749c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x75823]
+=========     Host Frame:python [0xda5cf]
+=========     Host Frame:python [0x2004c3]
+=========     Host Frame:python (PyDict_SetItem + 0x285) [0x1281c5]
+=========     Host Frame:python (PyImport_Cleanup + 0x1f1) [0x21c851]
+=========     Host Frame:python (Py_FinalizeEx + 0x5f) [0x21cacf]
+=========     Host Frame:python (Py_Main + 0x394) [0x2299b4]
+=========     Host Frame:python (main + 0xe7) [0xccf77]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf3) [0x270b3]
+=========     Host Frame:python [0x1ab031]
+=========
+========= Program hit cudaErrorLaunchFailure (error 719) due to "unspecified launch failure" on CUDA API call to cudaDeviceSynchronize.
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x355b43]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x1524c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN8GeometryD1Ev + 0x40c) [0x3d7dc]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN5ModelD1Ev + 0x4f3) [0x45f83]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x469f6]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x749c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x75823]
+=========     Host Frame:python [0xda5cf]
+=========     Host Frame:python [0x2004c3]
+=========     Host Frame:python (PyDict_SetItem + 0x285) [0x1281c5]
+=========     Host Frame:python (PyImport_Cleanup + 0x1f1) [0x21c851]
+=========     Host Frame:python (Py_FinalizeEx + 0x5f) [0x21cacf]
+=========     Host Frame:python (Py_Main + 0x394) [0x2299b4]
+=========     Host Frame:python (main + 0xe7) [0xccf77]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf3) [0x270b3]
+=========     Host Frame:python [0x1ab031]
+=========
+========= Program hit cudaErrorLaunchFailure (error 719) due to "unspecified launch failure" on CUDA API call to cudaFree.
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x355b43]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x15bc25]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN8GeometryD1Ev + 0x41c) [0x3d7ec]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN5ModelD1Ev + 0x4f3) [0x45f83]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x469f6]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x749c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x75823]
+=========     Host Frame:python [0xda5cf]
+=========     Host Frame:python [0x2004c3]
+=========     Host Frame:python (PyDict_SetItem + 0x285) [0x1281c5]
+=========     Host Frame:python (PyImport_Cleanup + 0x1f1) [0x21c851]
+=========     Host Frame:python (Py_FinalizeEx + 0x5f) [0x21cacf]
+=========     Host Frame:python (Py_Main + 0x394) [0x2299b4]
+=========     Host Frame:python (main + 0xe7) [0xccf77]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf3) [0x270b3]
+=========     Host Frame:python [0x1ab031]
+=========
+========= Program hit cudaErrorLaunchFailure (error 719) due to "unspecified launch failure" on CUDA API call to cudaDeviceSynchronize.
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x355b43]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x1524c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN8GeometryD1Ev + 0x3cc) [0x3d79c]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN5ModelD1Ev + 0x4f3) [0x45f83]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x469f6]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x749c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x75823]
+=========     Host Frame:python [0xda5cf]
+=========     Host Frame:python [0x2004c3]
+=========     Host Frame:python (PyDict_SetItem + 0x285) [0x1281c5]
+=========     Host Frame:python (PyImport_Cleanup + 0x1f1) [0x21c851]
+=========     Host Frame:python (Py_FinalizeEx + 0x5f) [0x21cacf]
+=========     Host Frame:python (Py_Main + 0x394) [0x2299b4]
+=========     Host Frame:python (main + 0xe7) [0xccf77]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf3) [0x270b3]
+=========     Host Frame:python [0x1ab031]
+=========
+========= Program hit cudaErrorLaunchFailure (error 719) due to "unspecified launch failure" on CUDA API call to cudaFree.
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x355b43]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x15bc25]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN8GeometryD1Ev + 0x3dc) [0x3d7ac]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN5ModelD1Ev + 0x4f3) [0x45f83]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x469f6]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x749c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x75823]
+=========     Host Frame:python [0xda5cf]
+=========     Host Frame:python [0x2004c3]
+=========     Host Frame:python (PyDict_SetItem + 0x285) [0x1281c5]
+=========     Host Frame:python (PyImport_Cleanup + 0x1f1) [0x21c851]
+=========     Host Frame:python (Py_FinalizeEx + 0x5f) [0x21cacf]
+=========     Host Frame:python (Py_Main + 0x394) [0x2299b4]
+=========     Host Frame:python (main + 0xe7) [0xccf77]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf3) [0x270b3]
+=========     Host Frame:python [0x1ab031]
+=========
+========= Program hit cudaErrorLaunchFailure (error 719) due to "unspecified launch failure" on CUDA API call to cudaDeviceSynchronize.
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x355b43]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x1524c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN8GeometryD1Ev + 0x38c) [0x3d75c]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN5ModelD1Ev + 0x4f3) [0x45f83]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x469f6]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x749c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x75823]
+=========     Host Frame:python [0xda5cf]
+=========     Host Frame:python [0x2004c3]
+=========     Host Frame:python (PyDict_SetItem + 0x285) [0x1281c5]
+=========     Host Frame:python (PyImport_Cleanup + 0x1f1) [0x21c851]
+=========     Host Frame:python (Py_FinalizeEx + 0x5f) [0x21cacf]
+=========     Host Frame:python (Py_Main + 0x394) [0x2299b4]
+=========     Host Frame:python (main + 0xe7) [0xccf77]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf3) [0x270b3]
+=========     Host Frame:python [0x1ab031]
+=========
+========= Program hit cudaErrorLaunchFailure (error 719) due to "unspecified launch failure" on CUDA API call to cudaFree.
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x355b43]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x15bc25]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN8GeometryD1Ev + 0x39c) [0x3d76c]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN5ModelD1Ev + 0x4f3) [0x45f83]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x469f6]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x749c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x75823]
+=========     Host Frame:python [0xda5cf]
+=========     Host Frame:python [0x2004c3]
+=========     Host Frame:python (PyDict_SetItem + 0x285) [0x1281c5]
+=========     Host Frame:python (PyImport_Cleanup + 0x1f1) [0x21c851]
+=========     Host Frame:python (Py_FinalizeEx + 0x5f) [0x21cacf]
+=========     Host Frame:python (Py_Main + 0x394) [0x2299b4]
+=========     Host Frame:python (main + 0xe7) [0xccf77]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf3) [0x270b3]
+=========     Host Frame:python [0x1ab031]
+=========
+========= Program hit cudaErrorLaunchFailure (error 719) due to "unspecified launch failure" on CUDA API call to cudaDeviceSynchronize.
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x355b43]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x1524c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN8GeometryD1Ev + 0x34c) [0x3d71c]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN5ModelD1Ev + 0x4f3) [0x45f83]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x469f6]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x749c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x75823]
+=========     Host Frame:python [0xda5cf]
+=========     Host Frame:python [0x2004c3]
+=========     Host Frame:python (PyDict_SetItem + 0x285) [0x1281c5]
+=========     Host Frame:python (PyImport_Cleanup + 0x1f1) [0x21c851]
+=========     Host Frame:python (Py_FinalizeEx + 0x5f) [0x21cacf]
+=========     Host Frame:python (Py_Main + 0x394) [0x2299b4]
+=========     Host Frame:python (main + 0xe7) [0xccf77]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf3) [0x270b3]
+=========     Host Frame:python [0x1ab031]
+=========
+========= Program hit cudaErrorLaunchFailure (error 719) due to "unspecified launch failure" on CUDA API call to cudaFree.
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x355b43]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x15bc25]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN8GeometryD1Ev + 0x35c) [0x3d72c]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN5ModelD1Ev + 0x4f3) [0x45f83]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x469f6]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x749c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x75823]
+=========     Host Frame:python [0xda5cf]
+=========     Host Frame:python [0x2004c3]
+=========     Host Frame:python (PyDict_SetItem + 0x285) [0x1281c5]
+=========     Host Frame:python (PyImport_Cleanup + 0x1f1) [0x21c851]
+=========     Host Frame:python (Py_FinalizeEx + 0x5f) [0x21cacf]
+=========     Host Frame:python (Py_Main + 0x394) [0x2299b4]
+=========     Host Frame:python (main + 0xe7) [0xccf77]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf3) [0x270b3]
+=========     Host Frame:python [0x1ab031]
+=========
+========= Program hit cudaErrorLaunchFailure (error 719) due to "unspecified launch failure" on CUDA API call to cudaDeviceSynchronize.
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x355b43]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x1524c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN8GeometryD1Ev + 0x30c) [0x3d6dc]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN5ModelD1Ev + 0x4f3) [0x45f83]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x469f6]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x749c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x75823]
+=========     Host Frame:python [0xda5cf]
+=========     Host Frame:python [0x2004c3]
+=========     Host Frame:python (PyDict_SetItem + 0x285) [0x1281c5]
+=========     Host Frame:python (PyImport_Cleanup + 0x1f1) [0x21c851]
+=========     Host Frame:python (Py_FinalizeEx + 0x5f) [0x21cacf]
+=========     Host Frame:python (Py_Main + 0x394) [0x2299b4]
+=========     Host Frame:python (main + 0xe7) [0xccf77]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf3) [0x270b3]
+=========     Host Frame:python [0x1ab031]
+=========
+========= Program hit cudaErrorLaunchFailure (error 719) due to "unspecified launch failure" on CUDA API call to cudaFree.
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x355b43]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x15bc25]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN8GeometryD1Ev + 0x31c) [0x3d6ec]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN5ModelD1Ev + 0x4f3) [0x45f83]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x469f6]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x749c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x75823]
+=========     Host Frame:python [0xda5cf]
+=========     Host Frame:python [0x2004c3]
+=========     Host Frame:python (PyDict_SetItem + 0x285) [0x1281c5]
+=========     Host Frame:python (PyImport_Cleanup + 0x1f1) [0x21c851]
+=========     Host Frame:python (Py_FinalizeEx + 0x5f) [0x21cacf]
+=========     Host Frame:python (Py_Main + 0x394) [0x2299b4]
+=========     Host Frame:python (main + 0xe7) [0xccf77]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf3) [0x270b3]
+=========     Host Frame:python [0x1ab031]
+=========
+========= Program hit cudaErrorLaunchFailure (error 719) due to "unspecified launch failure" on CUDA API call to cudaDeviceSynchronize.
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x355b43]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x1524c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN8GeometryD1Ev + 0x2cc) [0x3d69c]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN5ModelD1Ev + 0x4f3) [0x45f83]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x469f6]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x749c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x75823]
+=========     Host Frame:python [0xda5cf]
+=========     Host Frame:python [0x2004c3]
+=========     Host Frame:python (PyDict_SetItem + 0x285) [0x1281c5]
+=========     Host Frame:python (PyImport_Cleanup + 0x1f1) [0x21c851]
+=========     Host Frame:python (Py_FinalizeEx + 0x5f) [0x21cacf]
+=========     Host Frame:python (Py_Main + 0x394) [0x2299b4]
+=========     Host Frame:python (main + 0xe7) [0xccf77]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf3) [0x270b3]
+=========     Host Frame:python [0x1ab031]
+=========
+========= Program hit cudaErrorLaunchFailure (error 719) due to "unspecified launch failure" on CUDA API call to cudaFree.
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x355b43]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x15bc25]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN8GeometryD1Ev + 0x2dc) [0x3d6ac]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN5ModelD1Ev + 0x4f3) [0x45f83]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x469f6]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x749c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x75823]
+=========     Host Frame:python [0xda5cf]
+=========     Host Frame:python [0x2004c3]
+=========     Host Frame:python (PyDict_SetItem + 0x285) [0x1281c5]
+=========     Host Frame:python (PyImport_Cleanup + 0x1f1) [0x21c851]
+=========     Host Frame:python (Py_FinalizeEx + 0x5f) [0x21cacf]
+=========     Host Frame:python (Py_Main + 0x394) [0x2299b4]
+=========     Host Frame:python (main + 0xe7) [0xccf77]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf3) [0x270b3]
+=========     Host Frame:python [0x1ab031]
+=========
+========= Program hit cudaErrorLaunchFailure (error 719) due to "unspecified launch failure" on CUDA API call to cudaDeviceSynchronize.
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x355b43]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x1524c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN8GeometryD1Ev + 0x28c) [0x3d65c]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN5ModelD1Ev + 0x4f3) [0x45f83]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x469f6]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x749c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x75823]
+=========     Host Frame:python [0xda5cf]
+=========     Host Frame:python [0x2004c3]
+=========     Host Frame:python (PyDict_SetItem + 0x285) [0x1281c5]
+=========     Host Frame:python (PyImport_Cleanup + 0x1f1) [0x21c851]
+=========     Host Frame:python (Py_FinalizeEx + 0x5f) [0x21cacf]
+=========     Host Frame:python (Py_Main + 0x394) [0x2299b4]
+=========     Host Frame:python (main + 0xe7) [0xccf77]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf3) [0x270b3]
+=========     Host Frame:python [0x1ab031]
+=========
+========= Program hit cudaErrorLaunchFailure (error 719) due to "unspecified launch failure" on CUDA API call to cudaFree.
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x355b43]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x15bc25]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN8GeometryD1Ev + 0x29c) [0x3d66c]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN5ModelD1Ev + 0x4f3) [0x45f83]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x469f6]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x749c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x75823]
+=========     Host Frame:python [0xda5cf]
+=========     Host Frame:python [0x2004c3]
+=========     Host Frame:python (PyDict_SetItem + 0x285) [0x1281c5]
+=========     Host Frame:python (PyImport_Cleanup + 0x1f1) [0x21c851]
+=========     Host Frame:python (Py_FinalizeEx + 0x5f) [0x21cacf]
+=========     Host Frame:python (Py_Main + 0x394) [0x2299b4]
+=========     Host Frame:python (main + 0xe7) [0xccf77]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf3) [0x270b3]
+=========     Host Frame:python [0x1ab031]
+=========
+========= Program hit cudaErrorLaunchFailure (error 719) due to "unspecified launch failure" on CUDA API call to cudaDeviceSynchronize.
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x355b43]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x1524c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN8GeometryD1Ev + 0x24c) [0x3d61c]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN5ModelD1Ev + 0x4f3) [0x45f83]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x469f6]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x749c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x75823]
+=========     Host Frame:python [0xda5cf]
+=========     Host Frame:python [0x2004c3]
+=========     Host Frame:python (PyDict_SetItem + 0x285) [0x1281c5]
+=========     Host Frame:python (PyImport_Cleanup + 0x1f1) [0x21c851]
+=========     Host Frame:python (Py_FinalizeEx + 0x5f) [0x21cacf]
+=========     Host Frame:python (Py_Main + 0x394) [0x2299b4]
+=========     Host Frame:python (main + 0xe7) [0xccf77]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf3) [0x270b3]
+=========     Host Frame:python [0x1ab031]
+=========
+========= Program hit cudaErrorLaunchFailure (error 719) due to "unspecified launch failure" on CUDA API call to cudaFree.
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x355b43]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x15bc25]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN8GeometryD1Ev + 0x25c) [0x3d62c]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN5ModelD1Ev + 0x4f3) [0x45f83]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x469f6]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x749c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x75823]
+=========     Host Frame:python [0xda5cf]
+=========     Host Frame:python [0x2004c3]
+=========     Host Frame:python (PyDict_SetItem + 0x285) [0x1281c5]
+=========     Host Frame:python (PyImport_Cleanup + 0x1f1) [0x21c851]
+=========     Host Frame:python (Py_FinalizeEx + 0x5f) [0x21cacf]
+=========     Host Frame:python (Py_Main + 0x394) [0x2299b4]
+=========     Host Frame:python (main + 0xe7) [0xccf77]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf3) [0x270b3]
+=========     Host Frame:python [0x1ab031]
+=========
+========= Program hit cudaErrorLaunchFailure (error 719) due to "unspecified launch failure" on CUDA API call to cudaDeviceSynchronize.
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x355b43]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x1524c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN8GeometryD1Ev + 0x20c) [0x3d5dc]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN5ModelD1Ev + 0x4f3) [0x45f83]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x469f6]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x749c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x75823]
+=========     Host Frame:python [0xda5cf]
+=========     Host Frame:python [0x2004c3]
+=========     Host Frame:python (PyDict_SetItem + 0x285) [0x1281c5]
+=========     Host Frame:python (PyImport_Cleanup + 0x1f1) [0x21c851]
+=========     Host Frame:python (Py_FinalizeEx + 0x5f) [0x21cacf]
+=========     Host Frame:python (Py_Main + 0x394) [0x2299b4]
+=========     Host Frame:python (main + 0xe7) [0xccf77]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf3) [0x270b3]
+=========     Host Frame:python [0CUDA ERROR : unspecified launch failure
+CUDA ERROR : unspecified launch failure
+CUDA ERROR : unspecified launch failure
+CUDA ERROR : unspecified launch failure
+CUDA ERROR : unspecified launch failure
+CUDA ERROR : unspecified launch failure
+CUDA ERROR : unspecified launch failure
+CUDA ERROR : unspecified launch failure
+CUDA ERROR : unspecified launch failure
+CUDA ERROR : unspecified launch failure
+CUDA ERROR : unspecified launch failure
+CUDA ERROR : unspecified launch failure
+CUDA ERROR : unspecified launch failure
+CUDA ERROR : unspecified launch failure
+CUDA ERROR : unspecified launch failure
+CUDA ERROR : unspecified launch failure
+CUDA ERROR : unspecified launch failure
+CUDA ERROR : unspecified launch failure
+CUDA ERROR : unspecified launch failure
+CUDA ERROR : unspecified launch failure
+CUDA ERROR : unspecified launch failure
+CUDA ERROR : unspecified launch failure
+CUDA ERROR : unspecified launch failure
+CUDA ERROR : unspecified launch failure
+CUDA ERROR : unspecified launch failure
+CUDA ERROR : unspecified launch failure
+CUDA ERROR : unspecified launch failure
+CUDA ERROR : unspecified launch failure
+CUDA ERROR : unspecified launch failure
+CUDA ERROR : unspecified launch failure
+CUDA ERROR : unspecified launch failure
+CUDA ERROR : unspecified launch failure
+CUDA ERROR : unspecified launch failure
+CUDA ERROR : unspecified launch failure
+CUDA ERROR : unspecified launch failure
+CUDA ERROR : unspecified launch failure
+CUDA ERROR : unspecified launch failure
+CUDA ERROR : unspecified launch failure
+CUDA ERROR : unspecified launch failure
+CUDA ERROR : unspecified launch failure
+CUDA ERROR : unspecified launch failure
+CUDA ERROR : unspecified launch failure
+CUDA ERROR : unspecified launch failure
+CUDA ERROR : unspecified launch failure
+CUDA ERROR : unspecified launch failure
+CUDA ERROR : unspecified launch failure
+CUDA ERROR : unspecified launch failure
+CUDA ERROR : unspecified launch failure
+CUDA ERROR : unspecified launch failure
+CUDA ERROR : unspecified launch failure
+CUDA ERROR : unspecified launch failure
+CUDA ERROR : unspecified launch failure
+CUDA ERROR : unspecified launch failure
+CUDA ERROR : unspecified launch failure
+CUDA ERROR : unspecified launch failure
+CUDA ERROR : unspecified launch failure
+CUDA ERROR : unspecified launch failure
+CUDA ERROR : unspecified launch failure
+CUDA ERROR : unspecified launch failure
+CUDA ERROR : unspecified launch failure
+CUDA ERROR : unspecified launch failure
+CUDA ERROR : unspecified launch failure
+CUDA ERROR : unspecified launch failure
+CUDA ERROR : unspecified launch failure
+CUDA ERROR : unspecified launch failure
+x1ab031]
+=========
+========= Program hit cudaErrorLaunchFailure (error 719) due to "unspecified launch failure" on CUDA API call to cudaFree.
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x355b43]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x15bc25]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN8GeometryD1Ev + 0x565) [0x3d935]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so (_ZN5ModelD1Ev + 0x4f3) [0x45f83]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x469f6]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x749c7]
+=========     Host Frame:/home/frederik/software/Anaconda3/installation/envs/magritte_2/lib/python3.6/site-packages/magritte-0.0.1-py3.6-linux-x86_64.egg/magritte/core.cpython-36m-x86_64-linux-gnu.so [0x75823]
+=========     Host Frame:python [0xda5cf]
+=========     Host Frame:python [0x2004c3]
+=========     Host Frame:python (PyDict_SetItem + 0x285) [0x1281c5]
+=========     Host Frame:python (PyImport_Cleanup + 0x1f1) [0x21c851]
+=========     Host Frame:python (Py_FinalizeEx + 0x5f) [0x21cacf]
+=========     Host Frame:python (Py_Main + 0x394) [0x2299b4]
+=========     Host Frame:python (main + 0xe7) [0xccf77]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf3) [0x270b3]
+=========     Host Frame:python [0x1ab031]
+=========
+========= ERROR SUMMARY: 67 errors

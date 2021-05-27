@@ -87,7 +87,7 @@ inline void Solver :: get_ray_lengths (Model& model)
     {
         const Size ar = model.geometry.rays.antipod[rr];
 
-        accelerated_for (o, model.parameters.npoints(), nblocks, nthreads,
+        threaded_for (o, model.parameters.npoints(),
         {
             const Real dshift_max = get_dshift_max (model, o);
 
@@ -95,11 +95,7 @@ inline void Solver :: get_ray_lengths (Model& model)
                 model.geometry.get_ray_length <frame> (o, rr, dshift_max)
               + model.geometry.get_ray_length <frame> (o, ar, dshift_max);
         })
-
-        pc::accelerator::synchronize();
     }
-
-    model.geometry.lengths.copy_ptr_to_vec();
 }
 
 
@@ -108,12 +104,12 @@ inline Size Solver :: get_ray_lengths_max (Model& model)
 {
     get_ray_lengths <frame> (model);
 
-    Geometry& geo = model.geometry;
+    model.geometry.lengths_max = *std::max_element(
+        model.geometry.lengths.vec.begin(),
+        model.geometry.lengths.vec.end()
+    );
 
-    geo.lengths_max = *std::max_element(geo.lengths.vec.begin(),
-                                        geo.lengths.vec.end()   );
-
-    return geo.lengths_max;
+    return model.geometry.lengths_max;
 }
 
 
@@ -180,6 +176,8 @@ inline void Solver :: solve_shortchar_order_0 (Model& model)
 
 inline void Solver :: solve_feautrier_order_2 (Model& model)
 {
+    cout << "In Solver" << endl;
+    cout << "centre = " << centre << endl;
 
     // Clear the approximate LAMBDA operator
     for (auto &lspec : model.lines.lineProducingSpecies) {lspec.lambda.clear();}
@@ -206,6 +204,7 @@ inline void Solver :: solve_feautrier_order_2 (Model& model)
 
             if (n_tot_() > 1)
             {
+                cout << "Im here" << endl;
                 //for (Size f = 0; f < model.parameters.nfreqs(); f++)
                 accelerated_for (f, model.parameters.nfreqs(), nblocks, nthreads,
                 {
@@ -214,8 +213,9 @@ inline void Solver :: solve_feautrier_order_2 (Model& model)
                     model.radiation.u(rr,o,f)  = Su_()[centre];
                     model.radiation.J(   o,f) += Su_()[centre] * TWO * model.geometry.rays.weight[rr];
 
-                    update_Lambda (model, rr, f);
+                    //update_Lambda (model, rr, f);
                 })
+                //}
             }
             else
             {
@@ -232,6 +232,7 @@ inline void Solver :: solve_feautrier_order_2 (Model& model)
 
     model.radiation.u.copy_ptr_to_vec();
     model.radiation.J.copy_ptr_to_vec();
+    cout << "Got here..." << endl;
 }
 
 
@@ -289,6 +290,10 @@ accel inline Size Solver :: trace_ray (
           Size      id1,
           Size      id2 )
 {
+    printf("id1 = %ld\n", id1);
+    printf("id2 = %ld\n", id2);
+
+
     double  Z = 0.0;   // distance from origin (o)
     double dZ = 0.0;   // last increment in Z
 
@@ -598,7 +603,9 @@ accel inline void Solver :: update_Lambda (Model &model, const Size rr, const Si
 
         LineProducingSpecies &lspec = model.lines.lineProducingSpecies[l];
 
+        printf("k = %ld", k);
         const Real freq_line = lspec.linedata.frequency[k];
+        printf("----------");
         const Real invr_mass = lspec.linedata.inverse_mass;
         const Real constante = lspec.linedata.A[k] * lspec.quadrature.weights[z] * w_ang;
 

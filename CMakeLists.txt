@@ -14,7 +14,7 @@ project ("Magritte"
 
 # Set build type
 set (CMAKE_BUILD_TYPE Release)
-# set (CMAKE_BUILD_TYPE Debug)
+#set (CMAKE_BUILD_TYPE Debug)
 
 # Write all binary files to the bin directory
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
@@ -85,7 +85,8 @@ if (GPU_ACCELERATION)
     enable_language (CUDA)
     # Specify the accelerator architecture (currently we don't)
 	set (CMAKE_CUDA_ARCHITECTURES OFF)
-    set (CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --extended-lambda --use_fast_math --expt-relaxed-constexpr")
+    # NOTE that we suppress CUDA warnings (with -w)
+    set (CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -w --extended-lambda --use_fast_math --expt-relaxed-constexpr")
 endif ()
 
 # Include Paracabs directory
