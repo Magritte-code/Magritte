@@ -47,7 +47,7 @@ namespace paracabs
 
             ///  Constructor (double argument)
             //////////////////////////////////
-            inline Tensor (const size_t nr, const size_t nc)
+            inline MatrixTP (const size_t nr, const size_t nc)
             {
                 MatrixTP<type>::resize (nr, nc);
             }
