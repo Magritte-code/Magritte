@@ -7,5 +7,6 @@
 #include "vector.hpp"
 #include "vector_tp.hpp"
 #include "matrix.hpp"
+#include "matrix_tp.hpp"
 #include "tensor.hpp"
 
