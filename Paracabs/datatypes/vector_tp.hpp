@@ -1,16 +1,9 @@
 #pragma once
 
 
-#include "pybind11/pybind11.h"
-#include "pybind11/numpy.h"
-namespace py = pybind11;
-
-
-#include <vector>
+#include "datatypes/vector.hpp"
 #include "accelerator/accelerator.hpp"
 #include "multi_threading/multi_threading.hpp"
-#include "matrix.hpp"
-#include "vector3d.hpp"
 
 
 namespace paracabs
@@ -50,7 +43,7 @@ namespace paracabs
             //////////////////////////////////
             inline VectorTP (const size_t s)
             {
-                Vector<type>::resize (s);
+                VectorTP<type>::resize (s);
             }
 
             ///  Resizing both the std::vector and the allocated memory
