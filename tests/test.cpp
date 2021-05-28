@@ -5,7 +5,7 @@ using std::endl;
 #include "paracabs.hpp"
 using namespace paracabs;
 
-struct Model
+struct Model_Vector
 {
     const size_t n = 10;
 
@@ -64,11 +64,70 @@ struct Model
 };
 
 
+// struct Model_TPVector
+// {
+//     const size_t n = 10;
+// 
+//     multi_threading::ThreadPrivate<datatypes::Vector<double>> a;
+//     multi_threading::ThreadPrivate<datatypes::Vector<double>> b;
+//     multi_threading::ThreadPrivate<datatypes::Vector<double>> c;
+// 
+//     int fun ()
+//     {
+//         a.resize(n);
+//         b.resize(n);
+//         c.resize(n);
+// 
+//         for (size_t i = 0; i < n; i++)
+//         {
+//             a[i] = 0.5;
+//             b[i] = 1.5;
+//             c[i] = 0.0;
+// 
+//             printf("a[i] = %lf\n", a[i]);
+//             printf("b[i] = %lf\n", b[i]);
+//             printf("c[i] = %lf\n", c[i]);
+//         }
+// 
+//         a.copy_vec_to_ptr();
+//         b.copy_vec_to_ptr();
+// 
+//         const size_t nblocks  = 1;
+//         const size_t nthreads = 1;
+//         
+//         accelerated_for (i, n, nblocks, nthreads,
+//         {
+//             c[i] = a[i] + b[i];
+// 
+//             printf("a[i] = %lf\n", a[i]);
+//             printf("b[i] = %lf\n", b[i]);
+//             printf("c[i] = %lf\n", c[i]);
+//         })
+// 
+//         accelerator::synchronize();
+// 
+//         c.copy_ptr_to_vec();
+// 
+//         for (size_t i = 0; i < n; i++)
+//         {
+//             cout << i << "  " << c[i] << endl;
+// 
+//             if (c[i] != 2.0)
+//             {
+//                 //throw std::runtime_error("ERROR: c[i] != 2.0");
+//             }
+//         }
+// 
+//         return (0);
+//     }
+// };
+
+
 int test_accelerated_for ()
 {
     accelerator::list_accelerators();
 
-    Model model;
+    Model_Vector model;
     model.fun();
 
     cout << "Done" << endl;
@@ -121,6 +180,9 @@ int main ()
     test_accelerated_for();
 
     test_accelerated_for_outside_class();
+
+    multi_threading::set_n_threads_avail(2);
+    cout << multi_threading::n_threads_avail() << endl;
 
     return (0);
 }

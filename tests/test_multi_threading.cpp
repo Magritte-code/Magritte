@@ -106,6 +106,37 @@ TEST (multi_threading, ThreadPrivate)
 }
 
 
+/// Test ThreadPrivate variable
+///////////////////////////////
+TEST (multi_threading, VectorTP)
+{
+    const size_t n_threads =    4;
+    const size_t n         = 1000;
+
+    multi_threading::set_n_threads_avail (n_threads);
+
+    datatypes::VectorTP<double> a;
+
+    a.resize(n);
+
+    PRAGMA_PARALLEL
+    {
+        for (size_t i = 0; i < n; i++)
+        {
+            a[i] = multi_threading::thread_id();
+        }
+    }
+
+    for (size_t t = 0; t < n_threads; t++)
+    {
+        for (size_t i = 0; i < n; i++)
+        {
+            EXPECT_EQ (t, a(t,i));
+        }
+    }
+}
+
+
 /// Main function for GoogleTest
 ////////////////////////////////
 int main (int argc, char **argv)

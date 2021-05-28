@@ -2,6 +2,7 @@
 
 
 #include <omp.h>
+#include <iostream>
 
 
 namespace paracabs
@@ -46,6 +47,12 @@ namespace paracabs
         {
             omp_set_dynamic    (0);
             omp_set_num_threads(n);
+
+            #pragma omp parallel
+            {
+            std::cout << "SETTING THEM to: " << n << std::endl;
+            }
+
         }
     }
 }

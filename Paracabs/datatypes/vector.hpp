@@ -15,6 +15,8 @@ namespace paracabs
 {
     namespace datatypes
     {
+        /// Vector: a 1-index data structure
+        ////////////////////////////////////
         template <typename type>
         struct Vector
         {

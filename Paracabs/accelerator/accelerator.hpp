@@ -97,5 +97,12 @@ using std::string;
         threaded_for(i, total, __VA_ARGS__);                 \
     }
 
+
+#define accelerated_for_outside_class(i, total, nblocks, nthreads, ... )   \
+    {                                                                      \
+        threaded_for(i, total, __VA_ARGS__);                               \
+    }
+
+
 #endif
 

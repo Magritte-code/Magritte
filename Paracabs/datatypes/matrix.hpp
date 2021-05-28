@@ -14,12 +14,13 @@ namespace paracabs
 {
     namespace datatypes
     {
+        /// Matrix: a 2-index data structure
+        ////////////////////////////////////
         template <typename type>
         struct Matrix : public Vector<type>
         {
             size_t nrows = 0;
             size_t ncols = 0;
-            size_t nwarp = ncols;
 
 
             ///  Constructor (no argument)
@@ -35,7 +36,6 @@ namespace paracabs
             {
                 nrows = m.nrows;
                 ncols = m.ncols;
-                nwarp = m.nwarp;
 
                 Vector<type>::ptr            = m.ptr;
                 Vector<type>::allocated      = false;
@@ -57,22 +57,27 @@ namespace paracabs
             {
                 nrows = nr;
                 ncols = nc;
-                nwarp = ncols;
 
                 Vector<type>::vec.resize (nrows*ncols);
                 Vector<type>::copy_vec_to_ptr ();
                 Vector<type>::set_dat ();
             }
 
+            /// Determines whether column or row major, currently row-major
+            accel inline size_t nwarp () const
+            {
+                return ncols;
+            }
+
             ///  Access operators
             accel inline type  operator() (const size_t id_r, const size_t id_c) const
             {
-                return Vector<type>::dat[id_c + nwarp*id_r];
+                return Vector<type>::dat[id_c + nwarp()*id_r];
             }
 
             accel inline type &operator() (const size_t id_r, const size_t id_c)
             {
-                return Vector<type>::dat[id_c + nwarp*id_r];
+                return Vector<type>::dat[id_c + nwarp()*id_r];
             }
 
             /// Setters for Python
@@ -89,7 +94,6 @@ namespace paracabs
 
                 nrows = buf.shape[0];
                 ncols = buf.shape[1];
-                nwarp = ncols;
 
                 Vector<type>::vec.resize (nrows*ncols);
 

@@ -14,13 +14,14 @@ namespace paracabs
 {
     namespace datatypes
     {
+        /// Tensor: 3-index data structure
+        //////////////////////////////////
         template <typename type>
         struct Tensor : public Vector<type>
         {
             size_t nrows = 0;
             size_t ncols = 0;
             size_t depth = 0;
-            size_t nwarp = ncols;
 
 
             ///  Constructor (no argument)
@@ -37,7 +38,6 @@ namespace paracabs
                 nrows = t.nrows;
                 ncols = t.ncols;
                 depth = t.depth;
-                nwarp = t.nwarp;
 
                 Vector<type>::ptr            = t.ptr;
                 Vector<type>::allocated      = false;
@@ -60,22 +60,27 @@ namespace paracabs
                 nrows = nr;
                 ncols = nc;
                 depth = nd;
-                nwarp = ncols;
 
                 Vector<type>::vec.resize (nrows*ncols*depth);
                 Vector<type>::copy_vec_to_ptr ();
                 Vector<type>::set_dat ();
             }
 
+            /// Determines whether column or row major, currently row-major
+            accel inline size_t nwarp () const
+            {
+                return ncols;
+            }
+
             ///  Access operators
             accel inline type  operator() (const size_t id_r, const size_t id_c, const size_t id_d) const
             {
-                return Vector<type>::dat[id_d + depth*(id_c + nwarp*id_r)];
+                return Vector<type>::dat[id_d + depth*(id_c + nwarp()*id_r)];
             }
 
             accel inline type &operator() (const size_t id_r, const size_t id_c, const size_t id_d)
             {
-                return Vector<type>::dat[id_d + depth*(id_c + nwarp*id_r)];
+                return Vector<type>::dat[id_d + depth*(id_c + nwarp()*id_r)];
             }
 
             /// Setters for Python
@@ -93,7 +98,6 @@ namespace paracabs
                 nrows = buf.shape[0];
                 ncols = buf.shape[1];
                 depth = buf.shape[2];
-                nwarp = ncols;
 
                 Vector<type>::vec.resize (nrows*ncols*depth);
 

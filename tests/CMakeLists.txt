@@ -53,6 +53,39 @@ set (PARACABS_USE_CUDA            true)
 set (PARACABS_USE_SYCL            false)
 set (PARACABS_USE_SIMD            false)
 
+if (PARACABS_USE_OPENMP)
+    if (CMAKE_C_COMPILER_ID MATCHES "Clang")
+        set(OpenMP_C                "${CMAKE_C_COMPILER}")
+        set(OpenMP_C_FLAGS          "-fopenmp=libomp -Wno-unused-command-line-argument")
+        set(OpenMP_C_LIB_NAMES      "libomp" "libgomp" "libiomp5")
+        set(OpenMP_libomp_LIBRARY   ${OpenMP_C_LIB_NAMES})
+        set(OpenMP_libgomp_LIBRARY  ${OpenMP_C_LIB_NAMES})
+        set(OpenMP_libiomp5_LIBRARY ${OpenMP_C_LIB_NAMES})
+        set(CMAKE_C_FLAGS          "${CMAKE_C_FLAGS} -fopenmp")
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lpthread -latomic")
+    else ()
+        find_package (OpenMP REQUIRED)
+        # Set compiler and linker flags
+        set (CMAKE_C_FLAGS          "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+        set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+    endif ()
+    if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        set(OpenMP_CXX             "${CMAKE_CXX_COMPILER}")
+        set(OpenMP_CXX_FLAGS       "-fopenmp=libomp -Wno-unused-command-line-argument")
+        set(OpenMP_CXX_LIB_NAMES   "libomp" "libgomp" "libiomp5")
+        set(OpenMP_libomp_LIBRARY   ${OpenMP_CXX_LIB_NAMES})
+        set(OpenMP_libgomp_LIBRARY  ${OpenMP_CXX_LIB_NAMES})
+        set(OpenMP_libiomp5_LIBRARY ${OpenMP_CXX_LIB_NAMES})
+        set(CMAKE_CXX_FLAGS        "${CMAKE_CXX_FLAGS} -fopenmp")
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lpthread -latomic")
+    else ()
+        find_package (OpenMP REQUIRED)
+        # Set compiler and linker flags
+        set (CMAKE_CXX_FLAGS        "${CMAKE_CXX_FLAGS}        ${OpenMP_CXX_FLAGS}")
+        set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+    endif ()
+endif ()
+
 
 set (SOURCE_FILES
     test.cpp  
@@ -95,3 +128,9 @@ if    (PARACABS_USE_MPI)
 #    target_link_libraries (test_accelerator     ${MPI_C_LIBRARIES})
 #    target_link_libraries (test_datatypes       ${MPI_C_LIBRARIES})
 endif (PARACABS_USE_MPI)
+
+if    (OPENMP_CXX_FOUND)
+    target_link_libraries (test_accelerated_loops OpenMP::OpenMP_CXX)
+endif (OPENMP_CXX_FOUND)
+
+
