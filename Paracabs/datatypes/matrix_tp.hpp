@@ -49,7 +49,7 @@ namespace paracabs
             //////////////////////////////////
             inline Tensor (const size_t nr, const size_t nc)
             {
-                MatrixTP::resize (nr, nc);
+                MatrixTP<type>::resize (nr, nc);
             }
 
             ///  Resizing both the std::vector and the allocated memory
