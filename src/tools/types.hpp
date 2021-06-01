@@ -16,17 +16,23 @@ using std::endl;
 namespace pc = paracabs;
 
 // Default Real and Size types
-typedef long double Real;
-typedef uint32_t    Size;
+typedef double   Real;
+typedef uint32_t Size;
 
 using Vector3D = pc::datatypes::Vector3D <double>;
 
 template <typename type>
-using Vector = pc::datatypes::Vector <type>;
+using Vector = pc::datatypes::Vector<type>;
 template <typename type>
-using Matrix = pc::datatypes::Matrix <type>;
+using Matrix = pc::datatypes::Matrix<type>;
 template <typename type>
-using Tensor = pc::datatypes::Tensor <type>;
+using Tensor = pc::datatypes::Tensor<type>;
+template <typename type>
+using TP = pc::datatypes::TP<type>;
+template <typename type>
+using VectorTP = pc::datatypes::VectorTP<type>;
+template <typename type>
+using MatrixTP = pc::datatypes::MatrixTP<type>;
 
 
 const Real ONE  = 1.0;

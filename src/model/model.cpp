@@ -29,7 +29,6 @@ void Model :: read (const Io& io)
     cout << "  nrays_red  = " << parameters.nrays_red  () << endl;
     cout << "  nboundary  = " << parameters.nboundary  () << endl;
     cout << "  nfreqs     = " << parameters.nfreqs     () << endl;
-    // cout << "  nfreqs_red = " << parameters.nfreqs_red () << endl;
     cout << "  nspecs     = " << parameters.nspecs     () << endl;
     cout << "  nlspecs    = " << parameters.nlspecs    () << endl;
     cout << "  nlines     = " << parameters.nlines     () << endl;
@@ -309,11 +308,8 @@ int Model :: compute_radiation_field_feautrier_order_2 ()
 {
     cout << "Computing radiation field..." << endl;
 
-    cout << "Creating solver" << endl;
     Solver solver;
-    cout << "Setting up solver" << endl;
     solver.setup <CoMoving>        (*this);
-    cout << "Running solver" << endl;
     solver.solve_feautrier_order_2 (*this);
 
     return (0);

@@ -86,7 +86,7 @@ if (GPU_ACCELERATION)
     # Specify the accelerator architecture (currently we don't)
 	set (CMAKE_CUDA_ARCHITECTURES OFF)
     # NOTE that we suppress CUDA warnings (with -w)
-    set (CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -w --extended-lambda --use_fast_math --expt-relaxed-constexpr")
+    set (CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -g -G -w --extended-lambda --use_fast_math --expt-relaxed-constexpr")
 endif ()
 
 # Include Paracabs directory

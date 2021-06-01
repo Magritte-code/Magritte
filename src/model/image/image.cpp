@@ -37,7 +37,6 @@ Image :: Image (const Image& image) : ray_nr (image.ray_nr)
     // Deep copy of I
     I.nrows = image.I.nrows;
     I.ncols = image.I.ncols;
-    I.nwarp = image.I.nwarp;
 
     I.vec            = image.I.vec;
     I.allocated      = false;

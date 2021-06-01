@@ -16,41 +16,38 @@ inline void Solver :: setup (const Size l, const Size w, const Size n_o_d)
     width      = w;
     n_off_diag = n_o_d;
 
-    for (Size i = 0; i < pc::multi_threading::n_threads_avail(); i++)
-    {
-        dZ_          (i).resize (length);
-        nr_          (i).resize (length);
-        shift_       (i).resize (length);
+    dZ         .resize (length);
+    nr         .resize (length);
+    shift      .resize (length);
 
-        eta_c_       (i).resize (width);
-        eta_n_       (i).resize (width);
+    eta_c      .resize (width);
+    eta_n      .resize (width);
 
-        chi_c_       (i).resize (width);
-        chi_n_       (i).resize (width);
+    chi_c      .resize (width);
+    chi_n      .resize (width);
 
-        inverse_chi_ (i).resize (length);
+    inverse_chi.resize (length);
 
-        tau_         (i).resize (width);
+    tau        .resize (width);
 
-        Su_          (i).resize (length);
-        Sv_          (i).resize (length);
+    Su         .resize (length);
+    Sv         .resize (length);
 
-        A_           (i).resize (length);
-        C_           (i).resize (length);
-        inverse_A_   (i).resize (length);
-        inverse_C_   (i).resize (length);
+    A          .resize (length);
+    C          .resize (length);
+    inverse_A  .resize (length);
+    inverse_C  .resize (length);
 
-        FF_          (i).resize (length);
-        FI_          (i).resize (length);
-        GG_          (i).resize (length);
-        GI_          (i).resize (length);
-        GP_          (i).resize (length);
+    FF         .resize (length);
+    FI         .resize (length);
+    GG         .resize (length);
+    GI         .resize (length);
+    GP         .resize (length);
 
-        L_diag_      (i).resize (length);
+    L_diag     .resize (length);
 
-        L_upper_     (i).resize (n_off_diag, length);
-        L_lower_     (i).resize (n_off_diag, length);
-    }
+    L_upper    .resize (n_off_diag, length);
+    L_lower    .resize (n_off_diag, length);
 }
 
 
@@ -58,9 +55,7 @@ inline void Solver :: setup (const Size l, const Size w, const Size n_o_d)
 // /    @param[in] o : number of point under consideration
 // /    @retrun maximum allowed shift value determined by the smallest line
 // /////////////////////////////////////////////////////////////////////////////
-accel inline Real Solver :: get_dshift_max (
-    const Model& model,
-    const Size   o     )
+accel inline Real Solver :: get_dshift_max (const Model& model, const Size o)
 {
     Real dshift_max = std::numeric_limits<Real>::max();
 
@@ -190,32 +185,32 @@ inline void Solver :: solve_feautrier_order_2 (Model& model)
 
         cout << "--- rr = " << rr << endl;
 
-        //accelerated_for (o, model.parameters.npoints(), nblocks, nthreads,
-        for (Size o = 0; o < model.parameters.npoints(); o++)
+        //for (Size o = 0; o < model.parameters.npoints(); o++)
+        accelerated_for (o, model.parameters.npoints(), nblocks, nthreads,
         {
             const Real dshift_max = get_dshift_max (model, o);
 
-            nr_   ()[centre] = o;
-            shift_()[centre] = 1.0;
+            nr   [centre] = o;
+            shift[centre] = 1.0;
 
-            first_() = trace_ray <CoMoving> (model.geometry, o, rr, dshift_max, -1, centre-1, centre-1) + 1;
-            last_ () = trace_ray <CoMoving> (model.geometry, o, ar, dshift_max, +1, centre+1, centre  ) - 1;
-            n_tot_() = (last_()+1) - first_();
+            first() = trace_ray <CoMoving> (model.geometry, o, rr, dshift_max, -1, centre-1, centre-1) + 1;
+            last () = trace_ray <CoMoving> (model.geometry, o, ar, dshift_max, +1, centre+1, centre  ) - 1;
+            n_tot() = (last()+1) - first();
 
-            if (n_tot_() > 1)
+            if (n_tot() > 1)
             {
-                cout << "Im here" << endl;
-                //for (Size f = 0; f < model.parameters.nfreqs(); f++)
-                accelerated_for (f, model.parameters.nfreqs(), nblocks, nthreads,
+                //cout << "Im here" << endl;
+                //accelerated_for (f, model.parameters.nfreqs(), nblocks, nthreads,
+                for (Size f = 0; f < model.parameters.nfreqs(); f++)
                 {
                     solve_feautrier_order_2 (model, o, rr, ar, f);
 
-                    model.radiation.u(rr,o,f)  = Su_()[centre];
-                    model.radiation.J(   o,f) += Su_()[centre] * TWO * model.geometry.rays.weight[rr];
+                    model.radiation.u(rr,o,f)  = Su[centre];
+                    model.radiation.J(   o,f) += Su[centre] * TWO * model.geometry.rays.weight[rr];
 
-                    //update_Lambda (model, rr, f);
-                })
-                //}
+                    update_Lambda (model, rr, f);
+                }
+                //})
             }
             else
             {
@@ -225,14 +220,14 @@ inline void Solver :: solve_feautrier_order_2 (Model& model)
                     model.radiation.J(   o,f) += TWO * model.geometry.rays.weight[rr] * model.radiation.u(rr,o,f);
                 }
             }
-        }
+        )}
 
         pc::accelerator::synchronize();
     }
 
     model.radiation.u.copy_ptr_to_vec();
     model.radiation.J.copy_ptr_to_vec();
-    cout << "Got here..." << endl;
+    //cout << "Got here..." << endl;
 }
 
 
@@ -249,20 +244,20 @@ inline void Solver :: image_feautrier_order_2 (Model& model, const Size rr)
     {
         const Real dshift_max = get_dshift_max (model, o);
 
-        nr_   ()[centre] = o;
-        shift_()[centre] = 1.0;
+        nr   [centre] = o;
+        shift[centre] = 1.0;
 
-        first_() = trace_ray <Rest> (model.geometry, o, rr, dshift_max, -1, centre-1, centre-1) + 1;
-        last_ () = trace_ray <Rest> (model.geometry, o, ar, dshift_max, +1, centre+1, centre  ) - 1;
-        n_tot_() = (last_()+1) - first_();
+        first() = trace_ray <Rest> (model.geometry, o, rr, dshift_max, -1, centre-1, centre-1) + 1;
+        last () = trace_ray <Rest> (model.geometry, o, ar, dshift_max, +1, centre+1, centre  ) - 1;
+        n_tot() = (last()+1) - first();
 
-        if (n_tot_() > 1)
+        if (n_tot() > 1)
         {
             for (Size f = 0; f < model.parameters.nfreqs(); f++)
             {
                 image_feautrier_order_2 (model, o, rr, ar, f);
 
-                image.I(o,f) = TWO*Su_()[first_()] - boundary_intensity(model, nr_()[first_()], model.radiation.frequencies.nu(o, f));
+                image.I(o,f) = TWO*Su[first()] - boundary_intensity(model, nr[first()], model.radiation.frequencies.nu(o, f));
             }
         }
         else
@@ -290,10 +285,6 @@ accel inline Size Solver :: trace_ray (
           Size      id1,
           Size      id2 )
 {
-    printf("id1 = %ld\n", id1);
-    printf("id2 = %ld\n", id2);
-
-
     double  Z = 0.0;   // distance from origin (o)
     double dZ = 0.0;   // last increment in Z
 
@@ -334,10 +325,6 @@ accel inline void Solver :: set_data (
           Size&  id1,
           Size&  id2 )
 {
-    Vector<double>& dZ    = dZ_   ();
-    Vector<Size  >& nr    = nr_   ();
-    Vector<double>& shift = shift_();
-
     const double dshift     = shift_nxt - shift_crt;
     const double dshift_abs = fabs (dshift);
 
@@ -498,15 +485,6 @@ accel inline void Solver :: solve_shortchar_order_0 (
     const Size   r,
     const double dshift_max)
 {
-    Vector<Real>& eta_c = eta_c_();
-    Vector<Real>& eta_n = eta_n_();
-
-    Vector<Real>& chi_c = chi_c_();
-    Vector<Real>& chi_n = chi_n_();
-
-    Vector<Real>& tau = tau_();
-
-
     double  Z = 0.0;   // distance along ray
     double dZ = 0.0;   // last distance increment
 
@@ -584,17 +562,6 @@ accel inline void Solver :: update_Lambda (Model &model, const Size rr, const Si
 
     if (freqs.appears_in_line_integral[f])
     {
-        const Size first = first_();
-        const Size last  = last_ ();
-        const Size n_tot = n_tot_();
-
-        Vector<Size  >& nr          = nr_         ();
-        Vector<double>& shift       = shift_      ();
-        Vector<Real  >& L_diag      = L_diag_     ();
-        Matrix<Real  >& L_upper     = L_upper_    ();
-        Matrix<Real  >& L_lower     = L_lower_    ();
-        Vector<Real  >& inverse_chi = inverse_chi_();
-
         const Real w_ang = TWO * model.geometry.rays.weight[rr];
 
         const Size l = freqs.corresponding_l_for_spec[f];   // index of species
@@ -603,9 +570,7 @@ accel inline void Solver :: update_Lambda (Model &model, const Size rr, const Si
 
         LineProducingSpecies &lspec = model.lines.lineProducingSpecies[l];
 
-        printf("k = %ld", k);
         const Real freq_line = lspec.linedata.frequency[k];
-        printf("----------");
         const Real invr_mass = lspec.linedata.inverse_mass;
         const Real constante = lspec.linedata.A[k] * lspec.quadrature.weights[z] * w_ang;
 
@@ -615,9 +580,9 @@ accel inline void Solver :: update_Lambda (Model &model, const Size rr, const Si
 
         lspec.lambda.add_element(nr[centre], k, nr[centre], L);
 
-        for (long m = 0; (m < n_off_diag) && (m+1 < n_tot); m++)
+        for (long m = 0; (m < n_off_diag) && (m+1 < n_tot()); m++)
         {
-            if (centre >= first+m+1) // centre-m-1 >= first
+            if (centre >= first()+m+1) // centre-m-1 >= first()
             {
                 const long n = centre-m-1;
 
@@ -628,7 +593,7 @@ accel inline void Solver :: update_Lambda (Model &model, const Size rr, const Si
                 lspec.lambda.add_element(nr[centre], k, nr[n], L);
             }
 
-            if (centre+m+1 <= last) // centre+m+1 < last
+            if (centre+m+1 <= last()) // centre+m+1 < last()
             {
                 const long n = centre+m+1;
 
@@ -659,66 +624,37 @@ accel inline void Solver :: solve_feautrier_order_2 (
     Real eta_c, chi_c, dtau_c, term_c;
     Real eta_n, chi_n, dtau_n, term_n;
 
-    const Size first = first_();
-    const Size last  = last_ ();
-    const Size n_tot = n_tot_();
-
-    Vector<double>& dZ    = dZ_   ();
-    Vector<Size  >& nr    = nr_   ();
-    Vector<double>& shift = shift_();
-
-    Vector<Real>& inverse_chi = inverse_chi_();
-
-    Vector<Real>& Su = Su_();
-    Vector<Real>& Sv = Sv_();
-
-    Vector<Real>& A         = A_        ();
-    Vector<Real>& C         = C_        ();
-    Vector<Real>& inverse_A = inverse_A_();
-    Vector<Real>& inverse_C = inverse_C_();
-
-    Vector<Real>& FF = FF_();
-    Vector<Real>& FI = FI_();
-    Vector<Real>& GG = GG_();
-    Vector<Real>& GI = GI_();
-    Vector<Real>& GP = GP_();
-
-    Vector<Real>& L_diag  = L_diag_ ();
-    Matrix<Real>& L_upper = L_upper_();
-    Matrix<Real>& L_lower = L_lower_();
-
-
     // Get optical properties for first two elements
-    get_eta_and_chi (model, nr[first  ], freq*shift[first  ], eta_c, chi_c);
-    get_eta_and_chi (model, nr[first+1], freq*shift[first+1], eta_n, chi_n);
+    get_eta_and_chi (model, nr[first()  ], freq*shift[first()  ], eta_c, chi_c);
+    get_eta_and_chi (model, nr[first()+1], freq*shift[first()+1], eta_n, chi_n);
 
-    inverse_chi[first  ] = 1.0 / chi_c;
-    inverse_chi[first+1] = 1.0 / chi_n;
+    inverse_chi[first()  ] = 1.0 / chi_c;
+    inverse_chi[first()+1] = 1.0 / chi_n;
 
-    term_c = eta_c * inverse_chi[first  ];
-    term_n = eta_n * inverse_chi[first+1];
-    dtau_n = HALF * (chi_c + chi_n) * dZ[first];
+    term_c = eta_c * inverse_chi[first()  ];
+    term_n = eta_n * inverse_chi[first()+1];
+    dtau_n = HALF * (chi_c + chi_n) * dZ[first()];
 
     // Set boundary conditions
     const Real inverse_dtau_f = ONE / dtau_n;
 
-            C[first] = TWO * inverse_dtau_f * inverse_dtau_f;
-    inverse_C[first] = 1.0 / C[first];   // Required for Lambda_diag
+            C[first()] = TWO * inverse_dtau_f * inverse_dtau_f;
+    inverse_C[first()] = 1.0 / C[first()];   // Required for Lambda_diag
 
     const Real Bf_min_Cf = ONE + TWO * inverse_dtau_f;
-    const Real Bf        = Bf_min_Cf + C[first];
-    const Real I_bdy_f   = boundary_intensity (model, nr[first], freq*shift[first]);
+    const Real Bf        = Bf_min_Cf + C[first()];
+    const Real I_bdy_f   = boundary_intensity (model, nr[first()], freq*shift[first()]);
 
-    Su[first]  = term_c + TWO * I_bdy_f * inverse_dtau_f;
-    Su[first] /= Bf;
+    Su[first()]  = term_c + TWO * I_bdy_f * inverse_dtau_f;
+    Su[first()] /= Bf;
 
-    /// Write economically: F[first] = (B[first] - C[first]) / C[first];
-    FF[first] = HALF * Bf_min_Cf * dtau_n * dtau_n;
-    FI[first] = ONE / (ONE + FF[first]);
+    /// Write economically: F[first()] = (B[first()] - C[first()]) / C[first()];
+    FF[first()] = HALF * Bf_min_Cf * dtau_n * dtau_n;
+    FI[first()] = ONE / (ONE + FF[first()]);
 
 
     /// Set body of Feautrier matrix
-    for (Size n = first+1; n < last; n++)
+    for (Size n = first()+1; n < last(); n++)
     {
         term_c = term_n;
         dtau_c = dtau_n;
@@ -752,27 +688,27 @@ accel inline void Solver :: solve_feautrier_order_2 (
     /// Set boundary conditions
     const Real inverse_dtau_l = ONE / dtau_n;
 
-    A[last] = TWO * inverse_dtau_l * inverse_dtau_l;
+    A[last()] = TWO * inverse_dtau_l * inverse_dtau_l;
 
     const Real Bl_min_Al = ONE + TWO * inverse_dtau_l;
-    const Real Bl        = Bl_min_Al + A[last];
+    const Real Bl        = Bl_min_Al + A[last()];
 
-    const Real denominator = ONE / (Bl * FF[last-1] + Bl_min_Al);
+    const Real denominator = ONE / (Bl * FF[last()-1] + Bl_min_Al);
 
-    const Real I_bdy_l = boundary_intensity (model, nr[last], freq*shift[last]);
+    const Real I_bdy_l = boundary_intensity (model, nr[last()], freq*shift[last()]);
 
-    Su[last] = term_n + TWO * I_bdy_l * inverse_dtau_l;
-    Su[last] = (A[last] * Su[last-1] + Su[last]) * (ONE + FF[last-1]) * denominator;
+    Su[last()] = term_n + TWO * I_bdy_l * inverse_dtau_l;
+    Su[last()] = (A[last()] * Su[last()-1] + Su[last()]) * (ONE + FF[last()-1]) * denominator;
 
     if (n_off_diag == 0)
     {
-        if (centre < last)
+        if (centre < last())
         {
-            /// Write economically: G[last] = (B[last] - A[last]) / A[last];
-            GG[last] = HALF * Bl_min_Al * dtau_n * dtau_n;
-            GP[last] = GG[last] / (ONE + GG[last]);
+            /// Write economically: G[last()] = (B[last()] - A[last()]) / A[last()];
+            GG[last()] = HALF * Bl_min_Al * dtau_n * dtau_n;
+            GP[last()] = GG[last()] / (ONE + GG[last()]);
 
-            for (long n = last-1; n > centre; n--) // use long in reverse loops!
+            for (long n = last()-1; n > centre; n--) // use long in reverse loops!
             {
                 Su[n] += Su[n+1] * FI[n];
 
@@ -790,14 +726,14 @@ accel inline void Solver :: solve_feautrier_order_2 (
     }
     else
     {
-        /// Write economically: G[last] = (B[last] - A[last]) / A[last];
-        GG[last] = HALF * Bl_min_Al * dtau_n * dtau_n;
-        GI[last] = ONE / (ONE + GG[last]);
-        GP[last] = GG[last] * GI[last];
+        /// Write economically: G[last()] = (B[last()] - A[last()]) / A[last()];
+        GG[last()] = HALF * Bl_min_Al * dtau_n * dtau_n;
+        GI[last()] = ONE / (ONE + GG[last()]);
+        GP[last()] = GG[last()] * GI[last()];
 
-        L_diag[last] = (ONE + FF[last-1]) / (Bl_min_Al + Bl*FF[last-1]);
+        L_diag[last()] = (ONE + FF[last()-1]) / (Bl_min_Al + Bl*FF[last()-1]);
 
-        for (long n = last-1; n > first; n--) // use long in reverse loops!
+        for (long n = last()-1; n > first(); n--) // use long in reverse loops!
         {
             Su[n] += Su[n+1] * FI[n];
 
@@ -808,18 +744,18 @@ accel inline void Solver :: solve_feautrier_order_2 (
             L_diag[n] = inverse_C[n] / (FF[n] + GP[n+1]);
         }
 
-        Su    [first] += Su[first+1] * FI[first];
-        L_diag[first]  = (ONE + GG[first+1]) / (Bf_min_Cf + Bf*GG[first+1]);
+        Su    [first()] += Su[first()+1] * FI[first()];
+        L_diag[first()]  = (ONE + GG[first()+1]) / (Bf_min_Cf + Bf*GG[first()+1]);
 
-        for (long n = last-1; n >= first; n--) // use long in reverse loops!
+        for (long n = last()-1; n >= first(); n--) // use long in reverse loops!
         {
             L_upper(0,n+1) = L_diag[n+1] * FI[n  ];
             L_lower(0,n  ) = L_diag[n  ] * GI[n+1];
         }
 
-        for (Size m = 1; (m < n_off_diag) && (m < n_tot-1); m++)
+        for (Size m = 1; (m < n_off_diag) && (m < n_tot()-1); m++)
         {
-            for (long n = last-1-m; n >= first; n--) // use long in reverse loops!
+            for (long n = last()-1-m; n >= first(); n--) // use long in reverse loops!
             {
                 L_upper(m,n+m+1) = L_upper(m-1,n+m+1) * FI[n    ];
                 L_lower(m,n    ) = L_lower(m-1,n    ) * GI[n+m+1];
@@ -847,66 +783,37 @@ accel inline void Solver :: image_feautrier_order_2 (
     Real eta_c, chi_c, dtau_c, term_c;
     Real eta_n, chi_n, dtau_n, term_n;
 
-    const Size first = first_();
-    const Size last  = last_ ();
-    const Size n_tot = n_tot_();
-
-    Vector<double>& dZ    = dZ_   ();
-    Vector<Size  >& nr    = nr_   ();
-    Vector<double>& shift = shift_();
-
-    Vector<Real>& inverse_chi = inverse_chi_();
-
-    Vector<Real>& Su = Su_();
-    Vector<Real>& Sv = Sv_();
-
-    Vector<Real>& A         = A_        ();
-    Vector<Real>& C         = C_        ();
-    Vector<Real>& inverse_A = inverse_A_();
-    Vector<Real>& inverse_C = inverse_C_();
-
-    Vector<Real>& FF = FF_();
-    Vector<Real>& FI = FI_();
-    Vector<Real>& GG = GG_();
-    Vector<Real>& GI = GI_();
-    Vector<Real>& GP = GP_();
-
-    Vector<Real>& L_diag  = L_diag_ ();
-    Matrix<Real>& L_upper = L_upper_();
-    Matrix<Real>& L_lower = L_lower_();
-
-
     // Get optical properties for first two elements
-    get_eta_and_chi (model, nr[first  ], freq*shift[first  ], eta_c, chi_c);
-    get_eta_and_chi (model, nr[first+1], freq*shift[first+1], eta_n, chi_n);
+    get_eta_and_chi (model, nr[first()  ], freq*shift[first()  ], eta_c, chi_c);
+    get_eta_and_chi (model, nr[first()+1], freq*shift[first()+1], eta_n, chi_n);
 
-    inverse_chi[first  ] = 1.0 / chi_c;
-    inverse_chi[first+1] = 1.0 / chi_n;
+    inverse_chi[first()  ] = 1.0 / chi_c;
+    inverse_chi[first()+1] = 1.0 / chi_n;
 
-    term_c = eta_c * inverse_chi[first  ];
-    term_n = eta_n * inverse_chi[first+1];
-    dtau_n = HALF * (chi_c + chi_n) * dZ[first];
+    term_c = eta_c * inverse_chi[first()  ];
+    term_n = eta_n * inverse_chi[first()+1];
+    dtau_n = HALF * (chi_c + chi_n) * dZ[first()];
 
     // Set boundary conditions
     const Real inverse_dtau_f = ONE / dtau_n;
 
-    C[first] = TWO * inverse_dtau_f * inverse_dtau_f;
+    C[first()] = TWO * inverse_dtau_f * inverse_dtau_f;
 
     const Real Bf_min_Cf = ONE + TWO * inverse_dtau_f;
-    const Real Bf        = Bf_min_Cf + C[first];
-    const Real I_bdy_f   = boundary_intensity (model, nr[first], freq*shift[first]);
+    const Real Bf        = Bf_min_Cf + C[first()];
+    const Real I_bdy_f   = boundary_intensity (model, nr[first()], freq*shift[first()]);
 
-    Su[first]  = term_c + TWO * I_bdy_f * inverse_dtau_f;
-    Su[first] /= Bf;
+    Su[first()]  = term_c + TWO * I_bdy_f * inverse_dtau_f;
+    Su[first()] /= Bf;
 
-    /// Write economically: F[first] = (B[first] - C[first]) / C[first];
-    FF[first] = HALF * Bf_min_Cf * dtau_n * dtau_n;
-    FI[first] = ONE / (ONE + FF[first]);
+    /// Write economically: F[first()] = (B[first()] - C[first()]) / C[first()];
+    FF[first()] = HALF * Bf_min_Cf * dtau_n * dtau_n;
+    FI[first()] = ONE / (ONE + FF[first()]);
 
-    // cout << "FF[first] = " << FF[first] << "  dtau_n = " << dtau_n << "   chi_n = " << chi_n << "   chi_c = " << chi_c <<  endl;
+    // cout << "FF[first()] = " << FF[first()] << "  dtau_n = " << dtau_n << "   chi_n = " << chi_n << "   chi_c = " << chi_c <<  endl;
 
     /// Set body of Feautrier matrix
-    for (Size n = first+1; n < last; n++)
+    for (Size n = first()+1; n < last(); n++)
     {
         term_c = term_n;
         dtau_c = dtau_n;
@@ -944,26 +851,26 @@ accel inline void Solver :: image_feautrier_order_2 (
     /// Set boundary conditions
     const Real inverse_dtau_l = ONE / dtau_n;
 
-    A[last] = TWO * inverse_dtau_l * inverse_dtau_l;
+    A[last()] = TWO * inverse_dtau_l * inverse_dtau_l;
 
     const Real Bl_min_Al = ONE + TWO * inverse_dtau_l;
-    const Real Bl        = Bl_min_Al + A[last];
+    const Real Bl        = Bl_min_Al + A[last()];
 
-    const Real denominator = ONE / (Bl * FF[last-1] + Bl_min_Al);
+    const Real denominator = ONE / (Bl * FF[last()-1] + Bl_min_Al);
 
-    // cout << "Bl = " << Bl << "   FF[last-1] = " << FF[last-1] << "   Bl_min_Al = " << Bl_min_Al << endl;
+    // cout << "Bl = " << Bl << "   FF[last()-1] = " << FF[last()-1] << "   Bl_min_Al = " << Bl_min_Al << endl;
 
-    const Real I_bdy_l = boundary_intensity (model, nr[last], freq*shift[last]);
+    const Real I_bdy_l = boundary_intensity (model, nr[last()], freq*shift[last()]);
 
-    Su[last] = term_n + TWO * I_bdy_l * inverse_dtau_l;
-    Su[last] = (A[last] * Su[last-1] + Su[last]) * (ONE + FF[last-1]) * denominator;
+    Su[last()] = term_n + TWO * I_bdy_l * inverse_dtau_l;
+    Su[last()] = (A[last()] * Su[last()-1] + Su[last()]) * (ONE + FF[last()-1]) * denominator;
 
-    for (long n = last-1; n > first; n--) // use long in reverse loops!
+    for (long n = last()-1; n > first(); n--) // use long in reverse loops!
     {
         Su[n] += Su[n+1] * FI[n];
     }
 
-    Su[first] += Su[first+1] * FI[first];
+    Su[first()] += Su[first()+1] * FI[first()];
 }
 
 

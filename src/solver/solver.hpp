@@ -8,41 +8,41 @@
 class Solver
 {
     public:
-        pc::multi_threading::ThreadPrivate<Vector<double>> dZ_;      ///< distance increments along the ray
-        pc::multi_threading::ThreadPrivate<Vector<Size>>   nr_;      ///< corresponding point number on the ray
-        pc::multi_threading::ThreadPrivate<Vector<double>> shift_;   ///< Doppler shift along the ray
+        VectorTP<double> dZ;      ///< distance increments along the ray
+        VectorTP<Size>   nr;      ///< corresponding point number on the ray
+        VectorTP<double> shift;   ///< Doppler shift along the ray
 
-        pc::multi_threading::ThreadPrivate<Vector<Real>> eta_c_;
-        pc::multi_threading::ThreadPrivate<Vector<Real>> eta_n_;
+        VectorTP<Real> eta_c;
+        VectorTP<Real> eta_n;
 
-        pc::multi_threading::ThreadPrivate<Vector<Real>> chi_c_;
-        pc::multi_threading::ThreadPrivate<Vector<Real>> chi_n_;
+        VectorTP<Real> chi_c;
+        VectorTP<Real> chi_n;
 
-        pc::multi_threading::ThreadPrivate<Vector<Real>> inverse_chi_;
+        VectorTP<Real> inverse_chi;
 
-        pc::multi_threading::ThreadPrivate<Vector<Real>> tau_;
+        VectorTP<Real> tau;
 
-        pc::multi_threading::ThreadPrivate<Size> first_;
-        pc::multi_threading::ThreadPrivate<Size> last_;
-        pc::multi_threading::ThreadPrivate<Size> n_tot_;
+        TP<Size> first;
+        TP<Size> last;
+        TP<Size> n_tot;
 
-        pc::multi_threading::ThreadPrivate<Vector<Real>> Su_;
-        pc::multi_threading::ThreadPrivate<Vector<Real>> Sv_;
+        VectorTP<Real> Su;
+        VectorTP<Real> Sv;
 
-        pc::multi_threading::ThreadPrivate<Vector<Real>> A_;
-        pc::multi_threading::ThreadPrivate<Vector<Real>> C_;
-        pc::multi_threading::ThreadPrivate<Vector<Real>> inverse_A_;
-        pc::multi_threading::ThreadPrivate<Vector<Real>> inverse_C_;
+        VectorTP<Real> A;
+        VectorTP<Real> C;
+        VectorTP<Real> inverse_A;
+        VectorTP<Real> inverse_C;
 
-        pc::multi_threading::ThreadPrivate<Vector<Real>> FF_;
-        pc::multi_threading::ThreadPrivate<Vector<Real>> FI_;
-        pc::multi_threading::ThreadPrivate<Vector<Real>> GG_;
-        pc::multi_threading::ThreadPrivate<Vector<Real>> GI_;
-        pc::multi_threading::ThreadPrivate<Vector<Real>> GP_;
+        VectorTP<Real> FF;
+        VectorTP<Real> FI;
+        VectorTP<Real> GG;
+        VectorTP<Real> GI;
+        VectorTP<Real> GP;
 
-        pc::multi_threading::ThreadPrivate<Vector<Real>> L_diag_;
-        pc::multi_threading::ThreadPrivate<Matrix<Real>> L_upper_;
-        pc::multi_threading::ThreadPrivate<Matrix<Real>> L_lower_;
+        VectorTP<Real> L_diag;
+        MatrixTP<Real> L_upper;
+        MatrixTP<Real> L_lower;
 
 
         // Kernel approach
