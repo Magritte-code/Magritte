@@ -46,7 +46,8 @@ namespace paracabs
             }
 
             ///  Copy constructor (shallow copy)
-            ////////////////////////////////////
+            ///  PROBABLY ONLY USEFUL FOR THE CAPTURING LAMBDAS
+            ///////////////////////////////////////////////////
             inline Vector (const Vector& v)
             {
                 ptr            = v.ptr;

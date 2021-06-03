@@ -18,14 +18,14 @@ TEST (acceleratpr, accelerator_list)
 
 
 
-/// Test the threaded_for loop
+/// Test the accelerated_for loop
 //////////////////////////////
 TEST (multi_threading, threaded_for)
 {
     const size_t n = 100;
 
-    const size_t nblocks  = 1;
-    const size_t nthreads = 1;
+    accelerator::nblocks  = 1;
+    accelerator::nthreads = 1;
 
     datatypes::Vector<double> a (n, 0.5);
     datatypes::Vector<double> b (n, 1.5);
@@ -33,7 +33,7 @@ TEST (multi_threading, threaded_for)
 
     accelerator::list_accelerators();
 
-    accelerated_for_outside_class (i, n, nblocks, nthreads,
+    accelerated_for_outside_class (i, n,
     {
         c[i] = a[i] + b[i];
     })

@@ -16,12 +16,11 @@ namespace paracabs
     {
         /// MatrixTP: a thread private 2-index data structure
         /////////////////////////////////////////////////////
-        template <typename type>
-        struct MatrixTP : public Vector<type>
+        template <typename type, typename XThreads>
+        struct MatrixTP : public Vector<type>, XThreads
         {
             size_t nrows = 0;
             size_t ncols = 0;
-            size_t nthreads = paracabs::multi_threading::n_threads_avail();
 
 
             ///  Constructor (no argument)
@@ -37,7 +36,6 @@ namespace paracabs
             {
                 nrows    = m.nrows;
                 ncols    = m.ncols;
-                nthreads = m.nthreads;
 
                 Vector<type>::ptr            = m.ptr;
                 Vector<type>::allocated      = false;
@@ -49,7 +47,7 @@ namespace paracabs
             //////////////////////////////////
             inline MatrixTP (const size_t nr, const size_t nc)
             {
-                MatrixTP<type>::resize (nr, nc);
+                MatrixTP<type, XThreads>::resize (nr, nc);
             }
 
             ///  Resizing both the std::vector and the allocated memory
@@ -60,30 +58,37 @@ namespace paracabs
                 nrows = nr;
                 ncols = nc;
 
-                Vector<type>::vec.resize (nrows*ncols*nthreads);
+                Vector<type>::vec.resize (nrows*ncols*XThreads::tot_nthreads());
                 Vector<type>::copy_vec_to_ptr ();
                 Vector<type>::set_dat ();
+            }
+
+            ///  Row major indexing function
+            ////////////////////////////////
+            accel inline size_t index (const size_t t, const size_t id_r, const size_t id_c) const
+            {
+                return id_c + ncols*(id_r + nrows*t);
             }
 
             ///  Access operators
             accel inline type  operator() (const size_t id_r, const size_t id_c) const
             {
-                return Vector<type>::dat[id_c + ncols*(id_r + nrows*paracabs::multi_threading::thread_id())];
+                return Vector<type>::dat[index(XThreads::thread_id(), id_r, id_c)];
             }
 
             accel inline type &operator() (const size_t id_r, const size_t id_c)
             {
-                return Vector<type>::dat[id_c + ncols*(id_r + nrows*paracabs::multi_threading::thread_id())];
+                return Vector<type>::dat[index(XThreads::thread_id(), id_r, id_c)];
             }
 
             accel inline type  operator() (const size_t t, const size_t id_r, const size_t id_c) const
             {
-                return Vector<type>::dat[id_c + ncols*(id_r + nrows*t)];
+                return Vector<type>::dat[index(t, id_r, id_c)];
             }
 
             accel inline type &operator() (const size_t t, const size_t id_r, const size_t id_c)
             {
-                return Vector<type>::dat[id_c + ncols*(id_r + nrows*t)];
+                return Vector<type>::dat[index(t, id_r, id_c)];
             }
         };
     }

@@ -12,17 +12,14 @@ namespace paracabs
     {
         /// TP: a thread private 0-index data structure
         ///////////////////////////////////////////////
-        template <typename type>
-        struct TP : public Vector<type>
+        template <typename type, typename XThreads>
+        struct TP : public Vector<type>, XThreads
         {
-            size_t nthreads = paracabs::multi_threading::n_threads_avail();
-
-
             ///  Constructor (no argument)
             //////////////////////////////
             inline TP ()
             {
-                Vector<type>::vec.resize (nthreads);
+                Vector<type>::vec.resize (XThreads::tot_nthreads());
                 Vector<type>::copy_vec_to_ptr ();
                 Vector<type>::set_dat ();
             }
@@ -31,8 +28,6 @@ namespace paracabs
             ////////////////////////////////////
             inline TP (const TP& v)
             {
-                nthreads = v.nthreads;
-
                 Vector<type>::ptr            = v.ptr;
                 Vector<type>::allocated      = false;
                 Vector<type>::allocated_size = 0;
@@ -42,12 +37,12 @@ namespace paracabs
             ///  Access operators
             accel inline type  operator() () const
             {
-                return Vector<type>::dat[paracabs::multi_threading::thread_id()];
+                return Vector<type>::dat[XThreads::thread_id()];
             }
 
             accel inline type &operator() ()
             {
-                return Vector<type>::dat[paracabs::multi_threading::thread_id()];
+                return Vector<type>::dat[XThreads::thread_id()];
             }
 
             accel inline type  operator() (const size_t t) const

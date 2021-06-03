@@ -106,8 +106,32 @@ TEST (multi_threading, ThreadPrivate)
 }
 
 
-/// Test ThreadPrivate variable
-///////////////////////////////
+/// Test thread private variable
+////////////////////////////////
+TEST (multi_threading, TP)
+{
+    const size_t n_threads = 8;
+
+    multi_threading::set_n_threads_avail (n_threads);
+
+    datatypes::TP<double, multi_threading::HostThreads> a;
+
+    PRAGMA_PARALLEL
+    {
+        a() = multi_threading::thread_id();
+    }
+
+    for (size_t t = 0; t < n_threads; t++)
+    {
+        EXPECT_EQ (t, a(t));
+
+        cout << a(t) << endl;
+    }
+}
+
+
+/// Test thread private vector
+//////////////////////////////
 TEST (multi_threading, VectorTP)
 {
     const size_t n_threads =    4;
@@ -115,7 +139,7 @@ TEST (multi_threading, VectorTP)
 
     multi_threading::set_n_threads_avail (n_threads);
 
-    datatypes::VectorTP<double> a;
+    datatypes::VectorTP<double, multi_threading::HostThreads> a;
 
     a.resize(n);
 

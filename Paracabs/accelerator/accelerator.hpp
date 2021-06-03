@@ -88,20 +88,25 @@ using std::string;
             {
                 std::memcpy (dst, src, size);
             }
+
+            
+            /// Accelerator thread functionality: fall back to host
+            ///////////////////////////////////////////////////////
+            using AcceleratorThreads = paracabs::multi_threading::HostThreads;
         }
     }
 
 
-#define accelerated_for(i, total, nblocks, nthreads, ... )   \
-    {                                                        \
-        threaded_for(i, total, __VA_ARGS__);                 \
-    }
+#define accelerated_for(i, total, ... )    \
+{                                          \
+    threaded_for(i, total, __VA_ARGS__);   \
+}
 
 
-#define accelerated_for_outside_class(i, total, nblocks, nthreads, ... )   \
-    {                                                                      \
-        threaded_for(i, total, __VA_ARGS__);                               \
-    }
+#define accelerated_for_outside_class(i, total, ... )   \
+{                                                       \
+    threaded_for(i, total, __VA_ARGS__);                \
+}
 
 
 #endif

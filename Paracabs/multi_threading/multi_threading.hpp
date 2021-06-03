@@ -50,6 +50,21 @@ namespace paracabs
 {
     namespace multi_threading
     {
+        
+        struct HostThreads
+        {
+            inline size_t thread_id ()
+            {
+                return paracabs::multi_threading::thread_id();
+            }
+
+            inline size_t tot_nthreads ()
+            {
+                return paracabs::multi_threading::n_threads_avail();
+            }
+        };
+
+
         /// Thread private data structure
         /////////////////////////////////
         template <typename type>

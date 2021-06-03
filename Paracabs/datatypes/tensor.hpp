@@ -72,15 +72,22 @@ namespace paracabs
                 return ncols;
             }
 
+            ///  Indexing
+            /////////////
+            accel inline size_t index (const size_t id_r, const size_t id_c, const size_t id_d) const
+            {
+                return id_d + depth*(id_c + nwarp()*id_r);
+            }
+
             ///  Access operators
             accel inline type  operator() (const size_t id_r, const size_t id_c, const size_t id_d) const
             {
-                return Vector<type>::dat[id_d + depth*(id_c + nwarp()*id_r)];
+                return Vector<type>::dat[index(id_r, id_c, id_d)];
             }
 
             accel inline type &operator() (const size_t id_r, const size_t id_c, const size_t id_d)
             {
-                return Vector<type>::dat[id_d + depth*(id_c + nwarp()*id_r)];
+                return Vector<type>::dat[index(id_r, id_c, id_d)];
             }
 
             /// Setters for Python

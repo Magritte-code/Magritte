@@ -12,11 +12,10 @@ namespace paracabs
     {
         /// VectorTP: a thread private 1-index data structure
         /////////////////////////////////////////////////////
-        template <typename type>
-        struct VectorTP : public Vector<type>
+        template <typename type, typename XThreads>
+        struct VectorTP : public Vector<type>, XThreads
         {
-            size_t size     = 0;
-            size_t nthreads = paracabs::multi_threading::n_threads_avail();
+            size_t vec_size = 0;
 
 
             ///  Constructor (no argument)
@@ -30,8 +29,7 @@ namespace paracabs
             ////////////////////////////////////
             inline VectorTP (const VectorTP& v)
             {
-                size     = v.size;
-                nthreads = v.nthreads;
+                vec_size = v.vec_size;
 
                 Vector<type>::ptr            = v.ptr;
                 Vector<type>::allocated      = false;
@@ -43,7 +41,7 @@ namespace paracabs
             //////////////////////////////////
             inline VectorTP (const size_t s)
             {
-                VectorTP<type>::resize (s);
+                VectorTP<type, XThreads>::resize (s);
             }
 
             ///  Resizing both the std::vector and the allocated memory
@@ -51,32 +49,39 @@ namespace paracabs
             ///////////////////////////////////////////////////////////
             inline void resize (const size_t s)
             {
-                size = s;
+                vec_size = s;
 
-                Vector<type>::vec.resize (size*nthreads);
+                Vector<type>::vec.resize (vec_size*XThreads::tot_nthreads());
                 Vector<type>::copy_vec_to_ptr ();
                 Vector<type>::set_dat ();
+            }
+
+            ///  Indexing
+            /////////////
+            accel inline size_t index (const size_t t, const size_t id) const
+            {
+                return id + vec_size*t;
             }
 
             ///  Access operators
             accel inline type  operator[] (const size_t id) const
             {
-                return Vector<type>::dat[id + size*paracabs::multi_threading::thread_id()];
+                return Vector<type>::dat[index(XThreads::thread_id(), id)];
             }
 
             accel inline type &operator[] (const size_t id)
             {
-                return Vector<type>::dat[id + size*paracabs::multi_threading::thread_id()];
+                return Vector<type>::dat[index(XThreads::thread_id(), id)];
             }
 
             accel inline type  operator() (const size_t t, const size_t id) const
             {
-                return Vector<type>::dat[id + size*t];
+                return Vector<type>::dat[index(t, id)];
             }
 
             accel inline type &operator() (const size_t t, const size_t id)
             {
-                return Vector<type>::dat[id + size*t];
+                return Vector<type>::dat[index(t, id)];
             }
         };
     }

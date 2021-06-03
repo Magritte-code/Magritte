@@ -26,6 +26,10 @@ namespace paracabs
 {
     namespace accelerator
     {
+        size_t nblocks  = 1;
+        size_t nthreads = 1;
+
+
         ///  Getter for the number of available GPUs
         ///    @returns number of available GPUs
         ////////////////////////////////////////////
@@ -101,14 +105,29 @@ namespace paracabs
         {
             handle_cuda_error (cudaMemcpy (dst, src, size, cudaMemcpyDeviceToHost));
         }
+
+
+        /// Accelerator thread functionality
+        ////////////////////////////////////
+        struct AcceleratorThreads
+        {
+            __device__ inline size_t thread_id ()
+            {
+                return blockIdx.x * blockDim.x + threadIdx.x;
+            }
+
+            __host__   inline size_t tot_nthreads ()
+            {
+                return nblocks * nthreads;
+            }
+        };
     }
 }
 
 
 /// Assumes to be used within a class!
 
-
-#define accelerated_for(i, total, nblocks, nthreads, ... )                    \
+#define accelerated_for(i, total, ... )                                       \
 {							                                                  \
     copyContextAccelerator() = true;                                          \
     auto lambda = [=, *this] __device__ (size_t i) mutable                    \
@@ -119,12 +138,14 @@ namespace paracabs
         (decltype(lambda)*) paracabs::accelerator::malloc (sizeof(lambda));   \
     paracabs::accelerator::memcpy_to_accelerator                              \
         (lambda_ptr, &lambda, sizeof(lambda));                                \
-    apply_lambda <<<nblocks, nthreads>>> (total, lambda_ptr);                 \
+    dim3 cuda_nblocks  = paracabs::accelerator::nblocks;                      \
+    dim3 cuda_nthreads = paracabs::accelerator::nthreads;                     \
+    apply_lambda <<<cuda_nblocks, cuda_nthreads>>> (total, lambda_ptr);       \
     copyContextAccelerator() = false;                                         \
 }
 
 
-#define accelerated_for_outside_class(i, total, nblocks, nthreads, ... )      \
+#define accelerated_for_outside_class(i, total, ... )                         \
 {							                                                  \
     copyContextAccelerator() = true;                                          \
     auto lambda = [=] __device__ (size_t i) mutable                           \
@@ -135,7 +156,9 @@ namespace paracabs
         (decltype(lambda)*) paracabs::accelerator::malloc (sizeof(lambda));   \
     paracabs::accelerator::memcpy_to_accelerator                              \
         (lambda_ptr, &lambda, sizeof(lambda));                                \
-    apply_lambda <<<nblocks, nthreads>>> (total, lambda_ptr);                 \
+    dim3 cuda_nblocks  = paracabs::accelerator::nblocks;                      \
+    dim3 cuda_nthreads = paracabs::accelerator::nthreads;                     \
+    apply_lambda <<<cuda_nblocks, cuda_nthreads>>> (total, lambda_ptr);       \
     copyContextAccelerator() = false;                                         \
 }
 
