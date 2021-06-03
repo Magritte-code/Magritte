@@ -26,6 +26,22 @@ using std::string;
     {
         namespace accelerator
         {
+            ///  Meyers' singleton for nblocks
+            //////////////////////////////////
+            inline size_t& nblocks()
+            {
+                static size_t value = 1;
+                return value;
+            }
+
+            ///  Meyers' singleton for nthreads
+            ///////////////////////////////////
+            inline size_t& nthreads()
+            {
+                static size_t value = 1;
+                return value;
+            }
+
             ///  Getter for the number of available GPUs
             ///    @returns number of available GPUs
             ////////////////////////////////////////////
@@ -77,18 +93,25 @@ using std::string;
                 std::free (ptr);
             }
 
-
+            ///  Copy memory from the host to the accelerator
+            ///    @param[in] dst  : pointer to destination
+            ///    @param[in] src  : pointer to source
+            ///    @param[in] size : size of the memory block
+            /////////////////////////////////////////////////
             inline void memcpy_to_accelerator (void* dst, const void* src, const size_t size)
             {
                 std::memcpy (dst, src, size);
             }
 
-
+            ///  Copy memory from the host to the accelerator
+            ///    @param[in] dst  : pointer to destination
+            ///    @param[in] src  : pointer to source
+            ///    @param[in] size : size of the memory block
+            /////////////////////////////////////////////////
             inline void memcpy_from_accelerator (void* dst, const void* src, const size_t size)
             {
                 std::memcpy (dst, src, size);
             }
-
             
             /// Accelerator thread functionality: fall back to host
             ///////////////////////////////////////////////////////

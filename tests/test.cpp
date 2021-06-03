@@ -15,8 +15,8 @@ struct Model_Vector
 
     int fun ()
     {
-        accelerator::nblocks  = 1;
-        accelerator::nthreads = 1;
+        accelerator::nthreads() = 1;
+        accelerator::nblocks()  = 1;
         
         a.resize(n);
         b.resize(n);
@@ -74,8 +74,8 @@ struct Model_VectorTP
 
     int fun ()
     {
-        accelerator::nthreads = 1;
-        accelerator::nblocks  = 2;
+        accelerator::nthreads() = 1;
+        accelerator::nblocks()  = 2;
 
         a.resize(n);
         b.resize(n);
@@ -161,8 +161,8 @@ int test_accelerated_for_outside_class ()
 {
     const size_t n = 100;
 
-    accelerator::nblocks  = 1;
-    accelerator::nthreads = 1;
+    accelerator::nthreads() = 1;
+    accelerator::nblocks()  = 1;
 
     datatypes::Vector<double> a (n, 0.5);
     datatypes::Vector<double> b (n, 1.5);

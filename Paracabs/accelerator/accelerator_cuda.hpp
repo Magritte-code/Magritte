@@ -26,8 +26,21 @@ namespace paracabs
 {
     namespace accelerator
     {
-        size_t nblocks  = 1;
-        size_t nthreads = 1;
+        ///  Meyers' singleton for nblocks
+        //////////////////////////////////
+        inline size_t& nblocks()
+        {
+            static size_t value = 1;
+            return value;
+        }
+
+        ///  Meyers' singleton for nthreads
+        ///////////////////////////////////
+        inline size_t& nthreads()
+        {
+            static size_t value = 1;
+            return value;
+        }
 
 
         ///  Getter for the number of available GPUs
@@ -94,18 +107,25 @@ namespace paracabs
             handle_cuda_error (cudaFree (ptr));
         }
 
-
+        ///  Copy memory from the host to the accelerator
+        ///    @param[in] dst  : pointer to destination
+        ///    @param[in] src  : pointer to source
+        ///    @param[in] size : size of the memory block
+        /////////////////////////////////////////////////
         inline void memcpy_to_accelerator (void* dst, const void* src, const size_t size)
         {
             handle_cuda_error (cudaMemcpy (dst, src, size, cudaMemcpyHostToDevice));
         }
 
-
+        ///  Copy memory from the host to the accelerator
+        ///    @param[in] dst  : pointer to destination
+        ///    @param[in] src  : pointer to source
+        ///    @param[in] size : size of the memory block
+        /////////////////////////////////////////////////
         inline void memcpy_from_accelerator (void* dst, const void* src, const size_t size)
         {
             handle_cuda_error (cudaMemcpy (dst, src, size, cudaMemcpyDeviceToHost));
         }
-
 
         /// Accelerator thread functionality
         ////////////////////////////////////
@@ -118,7 +138,7 @@ namespace paracabs
 
             __host__   inline size_t tot_nthreads ()
             {
-                return nblocks * nthreads;
+                return nblocks() * nthreads();
             }
         };
     }
@@ -138,8 +158,8 @@ namespace paracabs
         (decltype(lambda)*) paracabs::accelerator::malloc (sizeof(lambda));   \
     paracabs::accelerator::memcpy_to_accelerator                              \
         (lambda_ptr, &lambda, sizeof(lambda));                                \
-    dim3 cuda_nblocks  = paracabs::accelerator::nblocks;                      \
-    dim3 cuda_nthreads = paracabs::accelerator::nthreads;                     \
+    dim3 cuda_nblocks  = paracabs::accelerator::nblocks();                    \
+    dim3 cuda_nthreads = paracabs::accelerator::nthreads();                   \
     apply_lambda <<<cuda_nblocks, cuda_nthreads>>> (total, lambda_ptr);       \
     copyContextAccelerator() = false;                                         \
 }
@@ -156,8 +176,8 @@ namespace paracabs
         (decltype(lambda)*) paracabs::accelerator::malloc (sizeof(lambda));   \
     paracabs::accelerator::memcpy_to_accelerator                              \
         (lambda_ptr, &lambda, sizeof(lambda));                                \
-    dim3 cuda_nblocks  = paracabs::accelerator::nblocks;                      \
-    dim3 cuda_nthreads = paracabs::accelerator::nthreads;                     \
+    dim3 cuda_nblocks  = paracabs::accelerator::nblocks();                    \
+    dim3 cuda_nthreads = paracabs::accelerator::nthreads();                   \
     apply_lambda <<<cuda_nblocks, cuda_nthreads>>> (total, lambda_ptr);       \
     copyContextAccelerator() = false;                                         \
 }
