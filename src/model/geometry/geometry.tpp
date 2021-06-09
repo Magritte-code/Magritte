@@ -253,7 +253,7 @@ accel inline Size Geometry :: get_ray_length (
 ///    @param[in] p : point index
 ///    @returns true if p is a valid index
 //////////////////////////////////////////
-inline bool Geometry :: valid_point (const Size p) const
+accel inline bool Geometry :: valid_point (const Size p) const
 {
     return (p < parameters.npoints());
 }
@@ -263,7 +263,7 @@ inline bool Geometry :: valid_point (const Size p) const
 ///    @param[in] p : point index
 ///    @returns true if p is not on the boundary
 /////////////////////////////////////////////////
-inline bool Geometry :: not_on_boundary (const Size p) const
+accel inline bool Geometry :: not_on_boundary (const Size p) const
 {
     return (boundary.point2boundary[p] == parameters.npoints());
 }

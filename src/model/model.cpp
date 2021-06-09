@@ -116,7 +116,7 @@ int Model :: compute_spectral_discretisation ()
         {
             nmbrs_inverted[nmbrs[fl]] = fl;
 
-            radiation.frequencies.appears_in_line_integral[fl] = false;;
+            radiation.frequencies.appears_in_line_integral[fl] = 0;  // false
             radiation.frequencies.corresponding_l_for_spec[fl] = parameters.nfreqs();
             radiation.frequencies.corresponding_k_for_tran[fl] = parameters.nfreqs();
             radiation.frequencies.corresponding_z_for_line[fl] = parameters.nfreqs();
@@ -132,7 +132,7 @@ int Model :: compute_spectral_discretisation ()
                 {
                     lines.lineProducingSpecies[l].nr_line[p][k][z] = nmbrs_inverted[index2];
 
-                    radiation.frequencies.appears_in_line_integral[index2] = true;
+                    radiation.frequencies.appears_in_line_integral[index2] = 1;  // true
                     radiation.frequencies.corresponding_l_for_spec[index2] = l;
                     radiation.frequencies.corresponding_k_for_tran[index2] = k;
                     radiation.frequencies.corresponding_z_for_line[index2] = z;
@@ -142,6 +142,13 @@ int Model :: compute_spectral_discretisation ()
             }
         }
     })
+
+    // Move data to gpu
+    radiation.frequencies.nu.                      copy_vec_to_ptr();
+    radiation.frequencies.appears_in_line_integral.copy_vec_to_ptr();
+    radiation.frequencies.corresponding_l_for_spec.copy_vec_to_ptr();
+    radiation.frequencies.corresponding_k_for_tran.copy_vec_to_ptr();
+    radiation.frequencies.corresponding_z_for_line.copy_vec_to_ptr();
 
     // Set spectral discretisation setting
     spectralDiscretisation = SD_Lines;
@@ -208,7 +215,7 @@ int Model :: compute_spectral_discretisation (const Real width)
         {
             nmbrs_inverted[nmbrs[fl]] = fl;
 
-            radiation.frequencies.appears_in_line_integral[fl] = false;;
+            radiation.frequencies.appears_in_line_integral[fl] = 0;  // false
             radiation.frequencies.corresponding_l_for_spec[fl] = parameters.nfreqs();
             radiation.frequencies.corresponding_k_for_tran[fl] = parameters.nfreqs();
             radiation.frequencies.corresponding_z_for_line[fl] = parameters.nfreqs();
@@ -224,7 +231,7 @@ int Model :: compute_spectral_discretisation (const Real width)
                 {
                     lines.lineProducingSpecies[l].nr_line[p][k][z] = nmbrs_inverted[index2];
 
-                    radiation.frequencies.appears_in_line_integral[index2] = true;
+                    radiation.frequencies.appears_in_line_integral[index2] = 1;  // true
                     radiation.frequencies.corresponding_l_for_spec[index2] = l;
                     radiation.frequencies.corresponding_k_for_tran[index2] = k;
                     radiation.frequencies.corresponding_z_for_line[index2] = z;
@@ -234,6 +241,13 @@ int Model :: compute_spectral_discretisation (const Real width)
             }
         }
     })
+
+    // Move data to gpu
+    radiation.frequencies.nu.                      copy_vec_to_ptr();
+    radiation.frequencies.appears_in_line_integral.copy_vec_to_ptr();
+    radiation.frequencies.corresponding_l_for_spec.copy_vec_to_ptr();
+    radiation.frequencies.corresponding_k_for_tran.copy_vec_to_ptr();
+    radiation.frequencies.corresponding_z_for_line.copy_vec_to_ptr();
 
     // Set spectral discretisation setting
     spectralDiscretisation = SD_Image;
@@ -261,12 +275,19 @@ int Model :: compute_spectral_discretisation (
         {
             radiation.frequencies.nu(p, f) = (Real) (nu_min + f*dnu);
 
-            radiation.frequencies.appears_in_line_integral[f] = false;;
+            radiation.frequencies.appears_in_line_integral[f] = 0;  // false
             radiation.frequencies.corresponding_l_for_spec[f] = parameters.nfreqs();
             radiation.frequencies.corresponding_k_for_tran[f] = parameters.nfreqs();
             radiation.frequencies.corresponding_z_for_line[f] = parameters.nfreqs();
         }
     })
+
+    // Move data to gpu
+    radiation.frequencies.nu.                      copy_vec_to_ptr();
+    radiation.frequencies.appears_in_line_integral.copy_vec_to_ptr();
+    radiation.frequencies.corresponding_l_for_spec.copy_vec_to_ptr();
+    radiation.frequencies.corresponding_k_for_tran.copy_vec_to_ptr();
+    radiation.frequencies.corresponding_z_for_line.copy_vec_to_ptr();
 
     // Set spectral discretisation setting
     spectralDiscretisation = SD_Image;

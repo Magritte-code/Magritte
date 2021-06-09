@@ -89,7 +89,7 @@ def run_model (nosave=False):
 
     timer3 = tools.Timer('shortchar 0  ')
     timer3.start()
-    model.compute_radiation_field_shortchar_order_0 ()
+    #model.compute_radiation_field_shortchar_order_0 ()
     timer3.stop()
     u_0s = np.array(model.radiation.u)
 

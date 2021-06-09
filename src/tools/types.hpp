@@ -21,18 +21,21 @@ typedef uint32_t Size;
 
 using Vector3D = pc::datatypes::Vector3D <double>;
 
+using AcceleratorThreads = pc::accelerator::AcceleratorThreads;
+using        HostThreads = pc::multi_threading::HostThreads;
+
 template <typename type>
 using Vector = pc::datatypes::Vector<type>;
 template <typename type>
 using Matrix = pc::datatypes::Matrix<type>;
 template <typename type>
 using Tensor = pc::datatypes::Tensor<type>;
-template <typename type>
-using TP = pc::datatypes::TP<type>;
-template <typename type>
-using VectorTP = pc::datatypes::VectorTP<type>;
-template <typename type>
-using MatrixTP = pc::datatypes::MatrixTP<type>;
+template <typename type, typename XThreads>
+using TP = pc::datatypes::TP<type, XThreads>;
+template <typename type, typename XThreads>
+using VectorTP = pc::datatypes::VectorTP<type, XThreads>;
+template <typename type, typename XThreads>
+using MatrixTP = pc::datatypes::MatrixTP<type, XThreads>;
 
 
 const Real ONE  = 1.0;

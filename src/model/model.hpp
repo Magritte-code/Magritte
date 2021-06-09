@@ -117,7 +117,7 @@ struct Model
 
     Vector<double> add ()
     {
-        accelerated_for (i, N, 1, 1,
+        accelerated_for (i, N,
         {
             c()[i] = a()[i] + b()[i];
             // x[i] = y[i] + z[i];

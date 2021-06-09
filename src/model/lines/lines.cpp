@@ -24,6 +24,17 @@ void Lines :: read (const Io& io)
         lineProducingSpecies[l].read (io, l);
     }
 
+    /// Determine the maximum number of radiative transitions
+    Size nrad_max = 0;
+
+    for (const LineProducingSpecies &lspec : lineProducingSpecies)
+    {
+        if (nrad_max < lspec.linedata.nrad)
+        {
+            nrad_max = lspec.linedata.nrad;
+        }
+    }
+
     /// Set nrad_cum, a helper variable for determining indices
     nrad_cum.resize (parameters.nlspecs());
     nrad_cum[0] = 0;
@@ -43,28 +54,42 @@ void Lines :: read (const Io& io)
 
     parameters.set_nlines (nlines);
 
-    /// Set and sort lines and their indices
-    line      .resize (parameters.nlines());
-    // line_index.resize (parameters.nlines());
+
+    /// Set line parameters
+    line                  .resize (parameters.nlines());
+    line_frequency        .resize (parameters.nlspecs(), nrad_max);
+    line_inverse_mass     .resize (parameters.nlspecs());
+    line_A                .resize (parameters.nlspecs(), nrad_max);
+    line_quadrature_weight.resize (parameters.nlspecs(), parameters.nquads());
 
     Size index = 0;
 
-    for (const LineProducingSpecies &lspec : lineProducingSpecies)
+    for (Size l = 0; l < parameters.nlspecs(); l++)
     {
+        const LineProducingSpecies &lspec = lineProducingSpecies[l];
+
+        line_inverse_mass[l] = lspec.linedata.inverse_mass;
+        
         for (Size k = 0; k < lspec.linedata.nrad; k++)
         {
-            line      [index] = lspec.linedata.frequency[k];
-            // line_index[index] = index;
+            line[index]         = lspec.linedata.frequency[k];
+            line_frequency(l,k) = lspec.linedata.frequency[k];
+            line_A        (l,k) = lspec.linedata.A        [k];
             index++;
+        }
+
+        for (Size z = 0; z < parameters.nquads(); z++)
+        {
+            line_quadrature_weight (l,z) = lspec.quadrature.weights[z];
         }
     }
 
-
-    // heapsort (line, line_index);
-
-
-    // emissivity.resize (parameters.npoints()*parameters.nlines());
-    // opacity   .resize (parameters.npoints()*parameters.nlines());
+    line                  .copy_vec_to_ptr();
+    line_frequency        .copy_vec_to_ptr();
+    line_inverse_mass     .copy_vec_to_ptr();
+    line_A                .copy_vec_to_ptr();
+    line_quadrature_weight.copy_vec_to_ptr();
+    nrad_cum              .copy_vec_to_ptr();
 
     emissivity   .resize (parameters.npoints(), parameters.nlines());
     opacity      .resize (parameters.npoints(), parameters.nlines());

@@ -36,10 +36,10 @@ void CollisionPartner :: read (const Io& io, const Size l, const Size c)
     {
         Ce[t].resize (ncol);
         Cd[t].resize (ncol);
-
-        io.read_array (prefix_lc+"Ce", Ce);
-        io.read_array (prefix_lc+"Cd", Cd);
     }
+
+    io.read_array (prefix_lc+"Ce", Ce);
+    io.read_array (prefix_lc+"Cd", Cd);
 
     Ce_intpld.resize (ncol);
     Cd_intpld.resize (ncol);

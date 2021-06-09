@@ -13,10 +13,10 @@ struct Frequencies
 
     Matrix<Real> nu;                         ///< [Hz] frequencies (ordered in f) (p,f)
 
-    Bool1 appears_in_line_integral;   ///< True if the frequency appears in line integral
-    Size1 corresponding_l_for_spec;   ///< number of line species corresponding to frequency
-    Size1 corresponding_k_for_tran;   ///< number of transition corresponding to frequency
-    Size1 corresponding_z_for_line;   ///< number of line number corresponding to frequency
+    Vector<Size> appears_in_line_integral;   ///< True if the frequency appears in line integral
+    Vector<Size> corresponding_l_for_spec;   ///< number of line species corresponding to frequency
+    Vector<Size> corresponding_k_for_tran;   ///< number of transition corresponding to frequency
+    Vector<Size> corresponding_z_for_line;   ///< number of line number corresponding to frequency
 
     void read  (const Io& io);
     void write (const Io& io) const;

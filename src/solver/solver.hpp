@@ -8,41 +8,44 @@
 class Solver
 {
     public:
-        VectorTP<double> dZ;      ///< distance increments along the ray
-        VectorTP<Size>   nr;      ///< corresponding point number on the ray
-        VectorTP<double> shift;   ///< Doppler shift along the ray
+        VectorTP <double, AcceleratorThreads> dZ;      ///< distance increments along the ray
+        VectorTP <Size,   AcceleratorThreads> nr;      ///< corresponding point number on the ray
+        VectorTP <double, AcceleratorThreads> shift;   ///< Doppler shift along the ray
 
-        VectorTP<Real> eta_c;
-        VectorTP<Real> eta_n;
+        VectorTP <Real,   AcceleratorThreads> eta_c;
+        VectorTP <Real,   AcceleratorThreads> eta_n;
 
-        VectorTP<Real> chi_c;
-        VectorTP<Real> chi_n;
+        VectorTP <Real,   AcceleratorThreads> chi_c;
+        VectorTP <Real,   AcceleratorThreads> chi_n;
 
-        VectorTP<Real> inverse_chi;
+        VectorTP <Real,   AcceleratorThreads> inverse_chi;
 
-        VectorTP<Real> tau;
+        VectorTP <Real,   AcceleratorThreads> tau;
 
-        TP<Size> first;
-        TP<Size> last;
-        TP<Size> n_tot;
+        TP       <Size,   AcceleratorThreads> first;
+        TP       <Size,   AcceleratorThreads> last;
+        TP       <Size,   AcceleratorThreads> n_tot;
 
-        VectorTP<Real> Su;
-        VectorTP<Real> Sv;
+        VectorTP <Real,   AcceleratorThreads> Su;
+        VectorTP <Real,   AcceleratorThreads> Sv;
 
-        VectorTP<Real> A;
-        VectorTP<Real> C;
-        VectorTP<Real> inverse_A;
-        VectorTP<Real> inverse_C;
+        VectorTP <Real,   AcceleratorThreads> A;
+        VectorTP <Real,   AcceleratorThreads> C;
+        VectorTP <Real,   AcceleratorThreads> inverse_A;
+        VectorTP <Real,   AcceleratorThreads> inverse_C;
 
-        VectorTP<Real> FF;
-        VectorTP<Real> FI;
-        VectorTP<Real> GG;
-        VectorTP<Real> GI;
-        VectorTP<Real> GP;
+        VectorTP <Real,   AcceleratorThreads> FF;
+        VectorTP <Real,   AcceleratorThreads> FI;
+        VectorTP <Real,   AcceleratorThreads> GG;
+        VectorTP <Real,   AcceleratorThreads> GI;
+        VectorTP <Real,   AcceleratorThreads> GP;
 
-        VectorTP<Real> L_diag;
-        MatrixTP<Real> L_upper;
-        MatrixTP<Real> L_lower;
+        VectorTP <Real,   AcceleratorThreads> L_diag;
+        MatrixTP <Real,   AcceleratorThreads> L_upper;
+        MatrixTP <Real,   AcceleratorThreads> L_lower;
+
+
+        Vector <Real> dshift_max;
 
 
         // Kernel approach
@@ -62,9 +65,7 @@ class Solver
         void setup (Model& model);
         void setup (const Size l, const Size w, const Size n_o_d);
 
-        accel inline Real get_dshift_max (
-            const Model& model,
-            const Size   o     );
+        inline void set_dshift_max (const Model& model);
 
         template <Frame frame>
         inline void get_ray_lengths     (Model& model);

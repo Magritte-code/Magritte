@@ -266,7 +266,6 @@ PYBIND11_MODULE (core, module)
     py::class_<Temperature> (module, "Temperature")
         // attributes
         .def_readwrite ("gas", &Temperature::gas)
-        .def ("print",         &Temperature::print)
         // functions
         .def ("read",          &Temperature::read)
         .def ("write",         &Temperature::write)

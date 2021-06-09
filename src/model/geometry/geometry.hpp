@@ -93,8 +93,8 @@ struct Geometry
     // template <Frame frame>
     // inline void get_ray_lengths (const double dshift_max);
 
-    inline bool valid_point     (const Size p) const;
-    inline bool not_on_boundary (const Size p) const;
+    accel inline bool valid_point     (const Size p) const;
+    accel inline bool not_on_boundary (const Size p) const;
 };
 
 

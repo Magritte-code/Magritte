@@ -50,6 +50,9 @@ inline void Lines :: set_emissivity_and_opacity ()
             }
         }
     })
+
+    emissivity.copy_vec_to_ptr();
+       opacity.copy_vec_to_ptr();
 }
 
 
@@ -73,4 +76,6 @@ inline void Lines :: set_inverse_width (const Thermodynamics& thermodynamics)
             }
         }
     })
+
+    inverse_width.copy_vec_to_ptr();
 }

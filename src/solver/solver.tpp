@@ -1,6 +1,11 @@
 template <Frame frame>
 inline void Solver :: setup (Model& model)
 {
+    pc::accelerator::nblocks () = 1;
+    pc::accelerator::nthreads() = 8;
+
+    set_dshift_max (model);
+
     const Size length = 2 * get_ray_lengths_max <frame> (model) + 1;
     const Size  width = model.parameters.nfreqs();
     const Size  n_o_d = model.parameters.n_off_diag;
@@ -51,27 +56,29 @@ inline void Solver :: setup (const Size l, const Size w, const Size n_o_d)
 }
 
 
-// /  Getter for the maximum allowed shift value determined by the smallest line
-// /    @param[in] o : number of point under consideration
-// /    @retrun maximum allowed shift value determined by the smallest line
-// /////////////////////////////////////////////////////////////////////////////
-accel inline Real Solver :: get_dshift_max (const Model& model, const Size o)
+///  Sets for each point the maximum allowed shift value determined by the smallest line
+///    @param[in] model : model object
+////////////////////////////////////////////////////////////////////////////////////////
+inline void Solver :: set_dshift_max (const Model& model)
 {
-    Real dshift_max = std::numeric_limits<Real>::max();
+    dshift_max.resize(model.parameters.npoints());
 
-    for (const LineProducingSpecies &lspec : model.lines.lineProducingSpecies)
+    threaded_for (o, model.parameters.npoints(),
     {
-        const Real inverse_mass   = lspec.linedata.inverse_mass;
-        const Real new_dshift_max = model.parameters.max_width_fraction
-                                    * model.thermodynamics.profile_width (inverse_mass, o);
+        dshift_max[o] = std::numeric_limits<Real>::max();
 
-        if (dshift_max > new_dshift_max)
+        for (const LineProducingSpecies &lspec : model.lines.lineProducingSpecies)
         {
-            dshift_max = new_dshift_max;
-        }
-    }
+            const Real inverse_mass = lspec.linedata.inverse_mass;
+            const Real new_dsm      = model.parameters.max_width_fraction
+                                      * model.thermodynamics.profile_width (inverse_mass, o);
 
-    return dshift_max;
+            if (dshift_max[o] > new_dsm)
+            {
+                dshift_max[o] = new_dsm;
+            }
+        }
+    })
 }
 
 
@@ -84,11 +91,9 @@ inline void Solver :: get_ray_lengths (Model& model)
 
         threaded_for (o, model.parameters.npoints(),
         {
-            const Real dshift_max = get_dshift_max (model, o);
-
             model.geometry.lengths(rr,o) =
-                model.geometry.get_ray_length <frame> (o, rr, dshift_max)
-              + model.geometry.get_ray_length <frame> (o, ar, dshift_max);
+                model.geometry.get_ray_length <frame> (o, rr, dshift_max[o])
+              + model.geometry.get_ray_length <frame> (o, ar, dshift_max[o]);
         })
     }
 }
@@ -116,14 +121,11 @@ inline Size Solver :: get_ray_lengths_max (Model& model)
 //
 //         cout << "rr = " << rr << endl;
 //
-//         accelerated_for (o, model.parameters.npoints(), nblocks, nthreads,
+//         accelerated_for (o, model.parameters.npoints(),
 //         {
-//             const Real dshift_max = get_dshift_max (model, o);
-//             // const Real dshift_max = 1.0e+99;
-//
 //             model.geometry.lengths[model.parameters.npoints()*rr+o] =
-//                 trace_ray <CoMoving> (model.geometry, o, rr, dshift_max, +1, centre+1, centre+1) + 1
-//               - trace_ray <CoMoving> (model.geometry, o, ar, dshift_max, -1, centre+1, centre  );
+//                 trace_ray <CoMoving> (model.geometry, o, rr, dshift_max[o], +1, centre+1, centre+1) + 1
+//               - trace_ray <CoMoving> (model.geometry, o, ar, dshift_max[o], -1, centre+1, centre  );
 //         })
 //
 //         pc::accelerator::synchronize();
@@ -145,14 +147,13 @@ inline void Solver :: solve_shortchar_order_0 (Model& model)
 
         cout << "--- rr = " << rr << endl;
 
-        //accelerated_for (o, model.parameters.npoints(), nblocks, nthreads,
+        //accelerated_for (o, model.parameters.npoints(),
         for (Size o = 0; o < model.parameters.npoints(); o++)
         {
-            // const Real dshift_max = get_dshift_max (o);
-            const Real dshift_max = 1.0e+99;
+            const Real dsm = 1.0e+99;
 
-            solve_shortchar_order_0 (model, o, rr, dshift_max);
-            solve_shortchar_order_0 (model, o, ar, dshift_max);
+            solve_shortchar_order_0 (model, o, rr, dsm);
+            solve_shortchar_order_0 (model, o, ar, dsm);
 
             for (Size f = 0; f < model.parameters.nfreqs(); f++)
             {
@@ -171,9 +172,6 @@ inline void Solver :: solve_shortchar_order_0 (Model& model)
 
 inline void Solver :: solve_feautrier_order_2 (Model& model)
 {
-    cout << "In Solver" << endl;
-    cout << "centre = " << centre << endl;
-
     // Clear the approximate LAMBDA operator
     for (auto &lspec : model.lines.lineProducingSpecies) {lspec.lambda.clear();}
 
@@ -186,21 +184,18 @@ inline void Solver :: solve_feautrier_order_2 (Model& model)
         cout << "--- rr = " << rr << endl;
 
         //for (Size o = 0; o < model.parameters.npoints(); o++)
-        accelerated_for (o, model.parameters.npoints(), nblocks, nthreads,
+        accelerated_for (o, model.parameters.npoints(),
         {
-            const Real dshift_max = get_dshift_max (model, o);
-
             nr   [centre] = o;
             shift[centre] = 1.0;
 
-            first() = trace_ray <CoMoving> (model.geometry, o, rr, dshift_max, -1, centre-1, centre-1) + 1;
-            last () = trace_ray <CoMoving> (model.geometry, o, ar, dshift_max, +1, centre+1, centre  ) - 1;
+            first() = trace_ray <CoMoving> (model.geometry, o, rr, dshift_max[o], -1, centre-1, centre-1) + 1;
+            last () = trace_ray <CoMoving> (model.geometry, o, ar, dshift_max[o], +1, centre+1, centre  ) - 1;
             n_tot() = (last()+1) - first();
 
             if (n_tot() > 1)
             {
-                //cout << "Im here" << endl;
-                //accelerated_for (f, model.parameters.nfreqs(), nblocks, nthreads,
+                //accelerated_for (f, model.parameters.nfreqs(),
                 for (Size f = 0; f < model.parameters.nfreqs(); f++)
                 {
                     solve_feautrier_order_2 (model, o, rr, ar, f);
@@ -208,7 +203,7 @@ inline void Solver :: solve_feautrier_order_2 (Model& model)
                     model.radiation.u(rr,o,f)  = Su[centre];
                     model.radiation.J(   o,f) += Su[centre] * TWO * model.geometry.rays.weight[rr];
 
-                    update_Lambda (model, rr, f);
+                    //update_Lambda (model, rr, f);
                 }
                 //})
             }
@@ -220,14 +215,13 @@ inline void Solver :: solve_feautrier_order_2 (Model& model)
                     model.radiation.J(   o,f) += TWO * model.geometry.rays.weight[rr] * model.radiation.u(rr,o,f);
                 }
             }
-        )}
+        })
 
         pc::accelerator::synchronize();
     }
 
     model.radiation.u.copy_ptr_to_vec();
     model.radiation.J.copy_ptr_to_vec();
-    //cout << "Got here..." << endl;
 }
 
 
@@ -240,15 +234,13 @@ inline void Solver :: image_feautrier_order_2 (Model& model, const Size rr)
 
     const Size ar = model.geometry.rays.antipod[rr];
 
-    accelerated_for (o, model.parameters.npoints(), nblocks, nthreads,
+    accelerated_for (o, model.parameters.npoints(),
     {
-        const Real dshift_max = get_dshift_max (model, o);
-
         nr   [centre] = o;
         shift[centre] = 1.0;
 
-        first() = trace_ray <Rest> (model.geometry, o, rr, dshift_max, -1, centre-1, centre-1) + 1;
-        last () = trace_ray <Rest> (model.geometry, o, ar, dshift_max, +1, centre+1, centre  ) - 1;
+        first() = trace_ray <Rest> (model.geometry, o, rr, dshift_max[o], -1, centre-1, centre-1) + 1;
+        last () = trace_ray <Rest> (model.geometry, o, ar, dshift_max[o], +1, centre+1, centre  ) - 1;
         n_tot() = (last()+1) - first();
 
         if (n_tot() > 1)
@@ -280,7 +272,7 @@ accel inline Size Solver :: trace_ray (
     const Geometry& geometry,
     const Size      o,
     const Size      r,
-    const double    dshift_max,
+    const double    dsm,
     const int       increment,
           Size      id1,
           Size      id2 )
@@ -296,7 +288,7 @@ accel inline Size Solver :: trace_ray (
         double shift_crt = geometry.get_shift <frame> (o, r, crt, 0.0);
         double shift_nxt = geometry.get_shift <frame> (o, r, nxt, Z  );
 
-        set_data (crt, nxt, shift_crt, shift_nxt, dZ, dshift_max, increment, id1, id2);
+        set_data (crt, nxt, shift_crt, shift_nxt, dZ, dsm, increment, id1, id2);
 
         while (geometry.not_on_boundary(nxt))
         {
@@ -306,7 +298,7 @@ accel inline Size Solver :: trace_ray (
                   nxt = geometry.get_next          (o, r, nxt, Z, dZ);
             shift_nxt = geometry.get_shift <frame> (o, r, nxt, Z    );
 
-            set_data (crt, nxt, shift_crt, shift_nxt, dZ, dshift_max, increment, id1, id2);
+            set_data (crt, nxt, shift_crt, shift_nxt, dZ, dsm, increment, id1, id2);
         }
     }
 
@@ -320,7 +312,7 @@ accel inline void Solver :: set_data (
     const double shift_crt,
     const double shift_nxt,
     const double dZ_loc,
-    const double dshift_max,
+    const double dsm,
     const int    increment,
           Size&  id1,
           Size&  id2 )
@@ -328,10 +320,10 @@ accel inline void Solver :: set_data (
     const double dshift     = shift_nxt - shift_crt;
     const double dshift_abs = fabs (dshift);
 
-    if (dshift_abs > dshift_max) // If velocity gradient is not well-sampled enough
+    if (dshift_abs > dsm) // If velocity gradient is not well-sampled enough
     {
         // Interpolate velocity gradient field
-        const Size        n_interpl = dshift_abs / dshift_max + 1;
+        const Size        n_interpl = dshift_abs / dsm + 1;
         const Size   half_n_interpl = 0.5 * n_interpl;
         const double     dZ_interpl =     dZ_loc / n_interpl;
         const double dshift_interpl =     dshift / n_interpl;
@@ -446,21 +438,9 @@ accel inline void Solver :: get_eta_and_chi (
         eta += prof * model.lines.emissivity(p, l);
         chi += prof * model.lines.opacity   (p, l);
 
-        // cout << "prof = " << prof << "     diff = " << diff  << "     width = " << width << endl;
-        // printf("prof = %le,   diff = %le,   freq = %le,   line = %le\n", prof, diff, freq, model.lines.line[l]);
-
-
-        // if (isnan(eta) || isnan(chi))
-        // {
-        //     cout << "emmi = " << model.lines.emissivity(p, l) << "   p = " << p << "   l = " << l << endl;
-        //     cout << "opac = " << model.lines.opacity   (p, l) << "   p = " << p << "   l = " << l << endl;
-        //     cout << "widt = " << model.lines.inverse_width (p, l) << "   p = " << p << "   l = " << l << endl;
-        //     cout << "prof = " << prof << "   freq = " << freq << "   diff = " << diff << endl;
-        // }
+        //printf("eta = %le, chi = %le\n", eta, chi);
+        //printf("prof = %le,   diff = %le,   freq = %le,   line = %le\n", prof, diff, freq, model.lines.line[l]);
     }
-
-
-    // cout << "eta, chi = " << eta << "  " << chi << endl;
 }
 
 
@@ -483,7 +463,7 @@ accel inline void Solver :: solve_shortchar_order_0 (
           Model& model,
     const Size   o,
     const Size   r,
-    const double dshift_max)
+    const double dsm)
 {
     double  Z = 0.0;   // distance along ray
     double dZ = 0.0;   // last distance increment
@@ -560,7 +540,7 @@ accel inline void Solver :: update_Lambda (Model &model, const Size rr, const Si
     const Frequencies    &freqs     = model.radiation.frequencies;
     const Thermodynamics &thermodyn = model.thermodynamics;
 
-    if (freqs.appears_in_line_integral[f])
+    if (freqs.appears_in_line_integral[f] > 0) 
     {
         const Real w_ang = TWO * model.geometry.rays.weight[rr];
 
@@ -573,6 +553,10 @@ accel inline void Solver :: update_Lambda (Model &model, const Size rr, const Si
         const Real freq_line = lspec.linedata.frequency[k];
         const Real invr_mass = lspec.linedata.inverse_mass;
         const Real constante = lspec.linedata.A[k] * lspec.quadrature.weights[z] * w_ang;
+
+        // const Real freq_line = line_frequency(l,k);
+        // const Real invr_mass = line_inverse_mass[l];
+        // const Real constante = line_A(l,k) * line_quadrature(l,z) * w_ang;
 
         Real frq = freqs.nu(nr[centre], f) * shift[centre];
         Real phi = thermodyn.profile(invr_mass, nr[centre], freq_line, frq);

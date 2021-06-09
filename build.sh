@@ -21,8 +21,8 @@ CXX=$COMPILER_CXX                                   \
 cmake                                               \
   -DPYTHON_EXECUTABLE:FILEPATH=$PYTHON_EXECUTABLE   \
   -DOMP_PARALLEL=ON                                 \
-  -DGPU_ACCELERATION=OFF                            \
-  -DGPU_CUDA=OFF                                    \
+  -DGPU_ACCELERATION=ON                             \
+  -DGPU_CUDA=ON                                    \
   $DIR
 
 # Run make
