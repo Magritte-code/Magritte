@@ -128,7 +128,7 @@ struct Parameters
 //        accel inline bool adaptive_ray_tracing() const {return adaptive_ray_tracing_.get();}
 
 
-    long n_off_diag = 0;
+    long n_off_diag = 0; ///< Number of off-diagonal elements used for ALI
 
     Size max_matrix_size=100*1024*1024;///< Max temp matrix size when solving for the level populations (do this times 3 for the actual max size) //standard hundred megabyte
 

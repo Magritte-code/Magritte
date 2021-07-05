@@ -18,14 +18,14 @@ struct MrController
       error                   //Somehow, we have an error
     };
 
-    //returns the next action and updates what to do next
+    ///Returns the next action and updates what to do next
     virtual Actions get_next_action() = 0;
 
-    //returns the current level
+    ///Returns the current level
     virtual Size get_current_level() = 0;
 
-    //Call this when the solution is converged on the current grid.
-    //Sets the state such that the next action will be something else than stay (skips the following 'stay's)
+    ///Call this when the solution is converged on the current grid.
+    ///Sets the state such that the next action will be something else than stay (skips the following 'stay's)
     virtual void converged_on_current_grid() = 0;
 
 };
