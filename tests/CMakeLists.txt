@@ -4,6 +4,7 @@ include_directories (../dependencies)
 include_directories (../dependencies/eigen)
 include_directories (../dependencies/pybind11)
 include_directories (../dependencies/pybind11/include)
+include_directories (../dependencies/voro++/src)
 
 # Add Python package separately
 find_package (PythonLibs REQUIRED)
@@ -35,7 +36,7 @@ endmacro()
 
 # set (SOURCE_FILES
 #     test_raytracer.cpp
-#     test_multigrid.cpp
+#     test_multiresolution.cpp
 #     test_levelpops.cpp
 #     test_shortchar_order_0.cpp
 #     test_feautrier_order_2.cpp
@@ -81,11 +82,12 @@ if    (GPU_ACCELERATION)
     set_source_files_properties(${SOURCE_FILES} PROPERTIES LANGUAGE CUDA)
 endif (GPU_ACCELERATION)
 
+
 add_executable        (test_raytracer test_raytracer.cpp)
 target_link_libraries (test_raytracer Magritte)
 
-add_executable        (test_multigrid test_multigrid.cpp)
-target_link_libraries (test_multigrid Magritte)
+add_executable        (test_multiresolution test_multiresolution.cpp)
+target_link_libraries (test_multiresolution Magritte)
 
 add_executable        (test_levelpops test_levelpops.cpp)
 target_link_libraries (test_levelpops Magritte)
@@ -104,7 +106,7 @@ target_link_libraries (test_solver_lambda Magritte)
 
 if (OpenMP_CXX_FOUND)
     target_link_libraries (test_raytracer         OpenMP::OpenMP_CXX)
-    target_link_libraries (test_multigrid         OpenMP::OpenMP_CXX)
+    target_link_libraries (test_multiresolution   OpenMP::OpenMP_CXX)
     target_link_libraries (test_levelpops         OpenMP::OpenMP_CXX)
     target_link_libraries (test_shortchar_order_0 OpenMP::OpenMP_CXX)
     target_link_libraries (test_feautrier_order_2 OpenMP::OpenMP_CXX)
@@ -115,7 +117,7 @@ endif()
 if (OMP_PARALLEL)
     if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         target_link_libraries (test_raytracer         atomic)
-        target_link_libraries (test_multigrid         atomic)
+        target_link_libraries (test_multiresolution   atomic)
         target_link_libraries (test_levelpops         atomic)
         target_link_libraries (test_shortchar_order_0 atomic)
         target_link_libraries (test_feautrier_order_2 atomic)
@@ -123,7 +125,7 @@ if (OMP_PARALLEL)
         target_link_libraries (test_imager            atomic)
     else ()
         target_link_libraries (test_raytracer         OpenMP::OpenMP_CXX)
-        target_link_libraries (test_multigrid         OpenMP::OpenMP_CXX)
+        target_link_libraries (test_multiresolution   OpenMP::OpenMP_CXX)
         target_link_libraries (test_levelpops         OpenMP::OpenMP_CXX)
         target_link_libraries (test_shortchar_order_0 OpenMP::OpenMP_CXX)
         target_link_libraries (test_feautrier_order_2 OpenMP::OpenMP_CXX)

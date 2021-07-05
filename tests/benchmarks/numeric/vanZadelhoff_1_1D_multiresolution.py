@@ -8,18 +8,17 @@ resdir = f'{curdir}/../../results/'
 
 import numpy             as np
 import scipy             as sp
-import healpy            as hp
 import matplotlib.pyplot as plt
 import magritte.tools    as tools
 import magritte.setup    as setup
-import magritte.mesher   as mesher
 import magritte.core     as magritte
 
 from scipy.interpolate import interp1d
 
 
-dimension = 3
-nrays     = 12*3**2
+dimension = 1
+npoints   = 250
+nrays     = 200
 nspecs    = 5
 nlspecs   = 1
 nquads    = 11
@@ -27,7 +26,7 @@ nquads    = 11
 r_in   = 1.0E13   # [m]
 r_out  = 7.8E16   # [m]
 nH2_in = 2.0E13   # [m^-3]
-temp   = 20.0     # [K]
+temp   =  20.00   # [K]
 turb   = 150.00   # [.]
 
 get_X_mol = {
@@ -35,35 +34,15 @@ get_X_mol = {
     'b' : 1.0E-6
 }
 
-scale_max = 0.05 * r_out
-scale_min = 0.05 * r_in
-scale_cte = 0.05 * r_in
-scale_fun = f'{scale_cte / r_in**2} * (x*x + y*y + z*z)'
-
-meshName = f'{moddir}/vanZadelhoff_1_3D_mesher.vtk'
-
-mesher.create_mesh_from_function(
-    meshName       = meshName,
-    boundary       = mesher.boundary_sphere_in_sphere(
-                         radius_in  = r_in,
-                         radius_out = r_out),
-    scale_min      = scale_min,
-    scale_max      = scale_max,
-    scale_function = scale_fun )
-
-mesh = mesher.Mesh(meshName)
-
-npoints = len(mesh.points)
-
-rs = np.linalg.norm(mesh.points, axis=1)
+rs = np.logspace (np.log10(r_in), np.log10(r_out), npoints, endpoint=True)
 
 
 def create_model (a_or_b):
     """
-    Create a model file for the van Zadelhoff 1 benchmark in 3D.
+    Create a model file for the van Zadelhoff 1 benchmark in 1D.
     """
 
-    modelName = f'vanZadelhoff_1{a_or_b}_3D_mesher'
+    modelName = f'vanZadelhoff_1{a_or_b}_1D'
     modelFile = f'{moddir}{modelName}.hdf5'
     lamdaFile = f'{datdir}test.txt'
 
@@ -73,10 +52,10 @@ def create_model (a_or_b):
         return nH2_in * np.power(r_in/r, 2.0)
 
     def nTT (r):
-        return X_mol * nH2(r)
+        return X_mol  * nH2(r)
 
     model = magritte.Model ()
-    model.parameters.set_spherical_symmetry(False)
+    model.parameters.set_spherical_symmetry(True)
     model.parameters.set_pop_prec          (1.0e-6)
     model.parameters.set_model_name        (modelFile)
     model.parameters.set_dimension         (dimension)
@@ -86,7 +65,7 @@ def create_model (a_or_b):
     model.parameters.set_nlspecs           (nlspecs)
     model.parameters.set_nquads            (nquads)
 
-    model.geometry.points.position.set(mesh.points)
+    model.geometry.points.position.set([[r, 0, 0] for r in rs])
     model.geometry.points.velocity.set(np.zeros((npoints, 3)))
 
     model.chemistry.species.abundance = [[     0.0, nTT(r), nH2(r),  0.0,      1.0] for r in rs]
@@ -96,13 +75,9 @@ def create_model (a_or_b):
     model.thermodynamics.turbulence.vturb2.set((turb/magritte.CC)**2 * np.ones(npoints))
 
     model = setup.set_Delaunay_neighbor_lists (model)
-
-    model.parameters.set_nboundary(len(mesh.boundary))
-    model.geometry.boundary.boundary2point.set(mesh.boundary)
-
-    model = setup.set_Delaunay_neighbor_lists (model)
+    model = setup.set_Delaunay_boundary       (model)
     model = setup.set_boundary_condition_CMB  (model)
-    model = setup.set_uniform_rays            (model)
+    model = setup.set_rays_spherical_symmetry (model)
     model = setup.set_linedata_from_LAMDA_file(model, lamdaFile)
     model = setup.set_quadrature              (model)
 
@@ -113,7 +88,7 @@ def create_model (a_or_b):
 
 def run_model (a_or_b, nosave=False):
 
-    modelName = f'vanZadelhoff_1{a_or_b}_3D_mesher'
+    modelName = f'vanZadelhoff_1{a_or_b}_1D'
     modelFile = f'{moddir}{modelName}.hdf5'
     timestamp = tools.timestamp()
 
@@ -127,11 +102,14 @@ def run_model (a_or_b, nosave=False):
     model.compute_spectral_discretisation ()
     model.compute_inverse_line_widths     ()
     model.compute_LTE_level_populations   ()
+    nlevels=1;#number of coarser levels
+    #nlevels multiresolution levels, 0.1 as tolerance, mgImplementation=1 (Naive=1,Vcycle=2,Wcycle=3), finest level=0
+    model.setup_multiresolution(nlevels,0.1,1,1000,0);
     timer2.stop()
 
     timer3 = tools.Timer('running model')
     timer3.start()
-    model.compute_level_populations (True, 1000)
+    model.compute_level_populations_multiresolution(True)
     timer3.stop()
 
     pops = np.array(model.lines.lineProducingSpecies[0].population).reshape((model.parameters.npoints(), 2))
@@ -165,9 +143,10 @@ def run_model (a_or_b, nosave=False):
     print(result)
 
     if not nosave:
-        with open(f'{resdir}{modelName}-{timestamp}.log' ,'w') as log:
+        with open(f'{resdir}{modelName}-{timestamp}_multiresolution_{nlevels}_lvls.log' ,'w') as log:
             log.write(result)
 
+        plt.figure(dpi=150)
         plt.title(modelName)
         plt.scatter(rs, pops[:,0]/abun, s=0.5, label='i=0', zorder=1)
         plt.scatter(rs, pops[:,1]/abun, s=0.5, label='i=1', zorder=1)

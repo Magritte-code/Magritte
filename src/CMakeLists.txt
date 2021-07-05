@@ -4,6 +4,7 @@ include_directories (../dependencies)
 include_directories (../dependencies/eigen)
 include_directories (../dependencies/pybind11)
 include_directories (../dependencies/pybind11/include)
+include_directories (../dependencies/voro++/src)
 
 set (SOURCE_FILES
     io/cpp/io_cpp_text.cpp
@@ -77,6 +78,8 @@ add_library (Magritte ${SOURCE_FILES})
 if    (MPI_PARALLEL)
     target_link_libraries (Magritte ${MPI_C_LIBRARIES})
 endif (MPI_PARALLEL)
+
+target_link_libraries(Magritte voro++)
 
 if    (PYTHON_IO)
     # Create library for python io
