@@ -78,10 +78,10 @@ formed by these outflows `[@Decin2020]`, necessitating the use of 3D hydrodynami
 models `[@ElMellah:2020; @Bolte:2021; @Maes:2021; @Malfait:2021]`.
 Currently Magritte is mainly being used for post-processing these hydrodynamical/chemical
 simulations by creating synthetic observations of the models such that they can be
-compared with actual observations (see figure \autoref{fig:example}). In future work
+compared with actual observations (see \autoref{fig:example}). In future work
 we aim to clear the path for on-the-fly radiative transfer in those simulations.
 
-![Example of synthetic observation made with Magritte at three different inclinations for a hydro-chemical model of an asymptotic giant branch (AGB) star, is it is perturbed by a companion. \label{fig:example}](example.png)
+![Example of synthetic observation made with Magritte at three different inclinations for a hydro-chemical model of an asymptotic giant branch (AGB) star, as it is perturbed by a companion. \label{fig:example}](example.png)
 
 
 # Future work
