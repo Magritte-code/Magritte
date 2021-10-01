@@ -43,6 +43,7 @@ configure.hpp
 !*model_*.ipynb
 *.geo
 *.vtk
+*.npy
 
 # dependencies
 ##############
