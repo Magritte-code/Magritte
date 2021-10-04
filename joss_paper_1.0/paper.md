@@ -95,14 +95,15 @@ by creating synthetic observations with Magritte (see e.g.\ \autoref{fig:example
 
 Currently Magritte is mainly being used for post-processing hydrodynamics
 simulations by creating synthetic observations, such that the models can be
-compared with real observations . However, Magritte is still under active development.
-In future work, we aim to clear the path for on-the-fly radiative transfer in those
-simulations. Aside from being a practical research tool, Magritte also aims to be a
-starting point for further research in computational radiative transfer. Current
-active research topics include: efficient parallelisation and acceleration strategies
-on modern high-performance computing systems, acceleration of convergence in the
-non-linear coupling between radiation field and medium, and uncertainty quantification
-in radiative transfer through probabilistic numerical methods.
+compared with real observations. However, Magritte is still under active development.
+In future work, we aim to  improve on the computational speed, to clear the path for
+on-the-fly radiative transfer in those simulations. Furtherore, aside from being a
+practical research tool, we also aim for Magritte to be the starting point for
+further research in computational radiative transfer. Current active research topics
+include: efficient parallelisation and acceleration strategies on modern
+high-performance computing systems, acceleration of convergence in the non-linear
+coupling between radiation field and medium, and uncertainty quantification in
+radiative transfer through probabilistic numerical methods [see e.g. @DeCeuster:2021].
 
 
 # Acknowledgements
