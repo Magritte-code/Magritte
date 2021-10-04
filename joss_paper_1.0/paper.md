@@ -60,13 +60,13 @@ which currently focusses on atomic and molecular line transfer.
 It is mainly written in C++ and can either be used as a Python package or
 as a C++ library. To compute the radiation field, a deterministic ray-tracer
 and a formal solver are employed, i.e. rays are traced through the model after which the
-radiative transfer equation is solved along those rays `[@DeCeuster:2019]`. This
+radiative transfer equation is solved along those rays [@DeCeuster:2019]. This
 is in contrast to most radiative transfer solvers which employ (probabilistic)
-Monte Carlo techniques `[@Noebauer:2019]`. By vitrue of minimal assumptions about
+Monte Carlo techniques [@Noebauer:2019]. By vitrue of minimal assumptions about
 the underlying geometric structure of a model, Magritte can handle structured and
 unstructured input meshes, as well as smoothed-particle hydrodynamics (SPH) data, and,
 futhermore, provides tools to optimize different input meshes for radiative transfer
-`[@DeCeuster:2020]`.
+[@DeCeuster:2020].
 
 
 # Statement of need
@@ -77,17 +77,17 @@ pressure, efficient heating and cooling mechanisms, and opens up a range of new
 chemical pathways due to photo-reactions. Magritte can be used as a
 general-purpose radiative transfer solver, but was particularly designed for
 line radiative transfer in complex 3D morphologies, such as, for instance,
-encountered in the stellar winds around evolved stars `[see @Decin:2021]`.
+encountered in the stellar winds around evolved stars [see @Decin:2021].
 Recent high-resolution observations exposed the intricate and intrinsically 3D
-morphologies of these objects `[@Decin:2020]`. The sheer amount of complexity that is
+morphologies of these objects [@Decin:2020]. The sheer amount of complexity that is
 observed, makes it difficult to interpret the observations and necessitates the use of
-3D hydrodynamical/chemical models to study their origin and evolution `[@ElMellah:2020;
-@Bolte:2021; @Maes:2021; @Malfait:2021]`. Their intricate morpho-kinematics, moreover,
+3D hydrodynamical/chemical models to study their origin and evolution [@ElMellah:2020;
+@Bolte:2021; @Maes:2021; @Malfait:2021]. Their intricate morpho-kinematics, moreover,
 makes their appearance in observations far from trivial. Therefore, it is essential to
 understand how these models would appear in observations. This can be achieved, by
 making synthetic observations with Magritte (see e.g. \autoref{fig:example}).
 
-![Example of a synthetic observation of the CO($v=0$, $J=1-0$)-transition, made with Magritte for a hydrodynamics model of an asymptotic giant branch (AGB) star, as it is perturbed by a companion. This is model \textsc{v10e50} in `[@Malfait:2021]` \label{fig:example}](example.png)
+![Example of a synthetic observation of the CO($v=0$, $J=1-0$)-transition, made with Magritte for a hydrodynamics model of an asymptotic giant branch (AGB) star, as it is perturbed by a companion. This is model \textsc{v10e50} in [@Malfait:2021] \label{fig:example}](example.png)
 
 
 # Future work
