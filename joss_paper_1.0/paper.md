@@ -65,7 +65,7 @@ is in contrast to most radiative transfer solvers which employ (probabilistic)
 Monte Carlo techniques [@Noebauer:2019]. By vitrue of minimal assumptions about
 the underlying geometric structure of a model, Magritte can handle structured and
 unstructured input meshes, as well as smoothed-particle hydrodynamics (SPH) data.
-Futhermore, tools are provided to optimize different input meshes for radiative transfer
+Futhermore, tools are provided to optimise different input meshes for radiative transfer
 [@DeCeuster:2020].
 
 
@@ -83,17 +83,18 @@ morphologies of these objects [@Decin:2020]. The sheer amount of complexity that
 observed, makes it difficult to interpret the observations and necessitates the use of
 3D hydrodynamics, chemistry and radiative trnsfer models to study their origin and
 evolution [@ElMellah:2020; @Bolte:2021; @Maes:2021; @Malfait:2021]. Their intricate
-morpho-kinematics, moreover, makes their appearance in observations far from trivial.
-Therefore, to study these and other complex morpho-kinematical objects, it is essential
-to understand how their models would appear in observations. This can be achieved,
-by creating synthetic observations with Magritte (see e.g.\ \autoref{fig:example}).
+morpho-kinematics, moreover, makes their appearance in observations far from evident
+(see e.g.\ \autoref{fig:example}). Therefore, to study these and other complex
+morpho-kinematical objects, it is essential to understand how their models would
+appear in observations. This can be achieved, by creating synthetic observations
+with Magritte .
 
-![Example of a synthetic observation of the CO($v=0$, $J=1-0$)-transition, created with Magritte for a hydrodynamics model of an asymptotic giant branch (AGB) star, as it is perturbed by a companion [model \textsc{v10e50} in @Malfait:2021]. \label{fig:example}](example.png)
+![Example of a synthetic observation of the CO($v=0$, $J=1-0$)-transition, created with Magritte for a hydrodynamics model of an asymptotic giant branch (AGB) star, as it is perturbed by a companion [this is model \textsc{v10e50} in @Malfait:2021]. \label{fig:example}](example.png)
 
 
 # Future work
 
-Currently Magritte is mainly being used for post-processing hydrodynamics
+Currently, Magritte is mainly being used for post-processing hydrodynamics
 simulations by creating synthetic observations, such that the models can be
 compared with real observations. However, Magritte is still under active development.
 In future work, we aim to  improve on the computational speed, to clear the path for
@@ -103,7 +104,7 @@ further research in computational radiative transfer. Current active research to
 include: efficient parallelisation and acceleration strategies on modern
 high-performance computing systems, acceleration of convergence in the non-linear
 coupling between radiation field and medium, and uncertainty quantification in
-radiative transfer through probabilistic numerical methods [see e.g. @DeCeuster:2021].
+radiative transfer through probabilistic numerical methods [see e.g.\ @DeCeuster:2021].
 
 
 # Acknowledgements
