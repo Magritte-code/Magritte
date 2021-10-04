@@ -9,18 +9,18 @@ authors:
   - name: Frederik De Ceuster^[Corresponding author.]
     orcid: 0000-0001-5887-8498
     affiliation: "1, 2" # (Multiple affiliations must be quoted)
-  - name: Thomas Ceulemans
-    #orcid: 0000-0001-5887-8498
-    affiliation: "2"
-  - name: Atulit Srivastava
-    #orcid: 0000-0003-3997-9642
-    affiliation: "2"
   - name: Jeremy Yates
     orcid: 0000-0003-1954-8749
     affiliation: "2"
   - name: Leen Decin
     orcid: 0000-0002-5342-8612
     affiliation: "1, 3"
+  - name: Thomas Ceulemans
+    #orcid: 0000-0001-5887-8498
+    affiliation: "2"
+  - name: Atulit Srivastava
+    #orcid: 0000-0003-3997-9642
+    affiliation: "2"
   - name: Peter Boyle
     orcid: 0000-0002-8960-1587
     affiliation: "4, 5"
@@ -28,7 +28,7 @@ authors:
     orcid: 0000-0001-6993-0319
     affiliation: "6, 7"
 affiliations:
- - name: Department of Physics & Astronomy, University College London, London, UK
+ - name: Dept. of Physics & Astronomy, University College London, London, UK
    index: 1
  - name: Institute of Astronomy, KU Leuven, Leuven, Belgium
    index: 2
@@ -38,7 +38,7 @@ affiliations:
    index: 4
  - name: Brookhaven National Laboratory, NY, USA
    index: 5
- - name: Department of Computer Science, University College London, London, UK
+ - name: Dept. of Computer Science, University College London, London, UK
    index: 6
  - name: The Alan Turing Institute, London, UK
    index: 7
@@ -56,7 +56,7 @@ bibliography: paper.bib
 # Summary
 
 \textsc{Magritte} is a software library for 3D radiative transfer and synthetic observations,
-which currently focusses on atomic and molecular lines.
+which currently focusses on atomic and molecular line transfer.
 It is mainly written in C++ and can either be used as a Python package or
 as a C++ library. To compute the radiation field, a deterministic ray-tracer
 and a formal solver are employed, i.e. rays are traced through the model after which the
@@ -79,10 +79,10 @@ general-purpose radiative transfer solver, but was particularly designed for
 line radiative transfer in complex 3D morphologies, such as, for instance,
 encountered in the stellar winds around evolved stars `[see @Decin:2021]`.
 Recent high-resolution observations exposed the intricate and intrinsically 3D
-morphologies of these objects `[@Decin2020]`. The sheer amount of complexity that is
+morphologies of these objects `[@Decin:2020]`. The sheer amount of complexity that is
 observed, makes it difficult to interpret the observations and necessitates the use of
 3D hydrodynamical/chemical models to study their origin and evolution `[@ElMellah:2020;
-@Bolte2021; @Maes2021; @Malfait2021]`. Their intricate morpho-kinematics, moreover,
+@Bolte:2021; @Maes:2021; @Malfait:2021]`. Their intricate morpho-kinematics, moreover,
 makes their appearance in observations far from trivial. Therefore, it is essential to
 understand how these models would appear in observations. This can be achieved, by
 making synthetic observations with Magritte (see e.g. \autoref{fig:example}).
