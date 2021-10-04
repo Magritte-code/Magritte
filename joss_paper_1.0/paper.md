@@ -9,38 +9,38 @@ authors:
   - name: Frederik De Ceuster^[Corresponding author.]
     orcid: 0000-0001-5887-8498
     affiliation: "1, 2" # (Multiple affiliations must be quoted)
-  - name: Jeremy Yates
-    orcid: 0000-0003-1954-8749
-    affiliation: "2"
-  - name: Leen Decin
-    orcid: 0000-0002-5342-8612
-    affiliation: "1, 3"
   - name: Thomas Ceulemans
     #orcid: 0000-0001-5887-8498
     affiliation: "2"
   - name: Atulit Srivastava
     #orcid: 0000-0003-3997-9642
     affiliation: "2"
-  - name: Peter Boyle
-    orcid: 0000-0002-8960-1587
-    affiliation: "4, 5"
+  - name: Jeremy Yates
+    orcid: 0000-0003-1954-8749
+    affiliation: "2"
+  - name: Leen Decin
+    orcid: 0000-0002-5342-8612
+    affiliation: "1, 3"
   - name: James Hetherington
     orcid: 0000-0001-6993-0319
+    affiliation: "4, 5"
+  - name: Peter Boyle
+    orcid: 0000-0002-8960-1587
     affiliation: "6, 7"
 affiliations:
- - name: Dept. of Physics & Astronomy, University College London, London, UK
+ - name: Department of Physics & Astronomy, University College London, London, UK
    index: 1
  - name: Institute of Astronomy, KU Leuven, Leuven, Belgium
    index: 2
  - name: School of Chemistry, University of Leeds, Leeds, UK
    index: 3
- - name: School of Physics & Astronomy, The University of Edinburgh, Edinburgh, UK
+ - name: Department of Computer Science, University College London, London, UK
    index: 4
- - name: Brookhaven National Laboratory, NY, USA
-   index: 5
- - name: Dept. of Computer Science, University College London, London, UK
-   index: 6
  - name: The Alan Turing Institute, London, UK
+   index: 5
+ - name: School of Physics & Astronomy, The University of Edinburgh, Edinburgh, UK
+   index: 6
+ - name: Brookhaven National Laboratory, NY, USA
    index: 7
 date: 1 October 2021
 bibliography: paper.bib
