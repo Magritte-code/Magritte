@@ -1,5 +1,5 @@
 ---
-title: 'Magritte: 3D Line Radiative Transfer & Synthetic Observations'
+title: '3D Line Radiative Transfer & Synthetic Observations with \textsc{Magritte}'
 tags:
   - Python
   - C++
@@ -28,19 +28,19 @@ authors:
     orcid: 0000-0001-6993-0319
     affiliation: "6, 7"
 affiliations:
- - name: Department of Physics & Astronomy, University College London, London WC1E 6BT, UK
+ - name: Department of Physics & Astronomy, University College London, London, UK
    index: 1
- - name: Institute of Astronomy, KU Leuven, 3001 Leuven, Belgium
+ - name: Institute of Astronomy, KU Leuven, Leuven, Belgium
    index: 2
- - name: School of Chemistry, University of Leeds, Leeds LS2 9JT, UK
+ - name: School of Chemistry, University of Leeds, Leeds, UK
    index: 3
- - name: School of Physics & Astronomy, The University of Edinburgh, Edinburgh EH9 3FD, UK
+ - name: School of Physics & Astronomy, The University of Edinburgh, Edinburgh, UK
    index: 4
- - name: Brookhaven National Laboratory, New York 11973, USA
+ - name: Brookhaven National Laboratory, NY, USA
    index: 5
- - name: Department of Computer Science, University College London, London WC1E 6EA, UK
+ - name: Department of Computer Science, University College London, London, UK
    index: 6
- - name: The Alan Turing Institute, London NW1 2DB, UK
+ - name: The Alan Turing Institute, London, UK
    index: 7
 date: 1 October 2021
 bibliography: paper.bib
@@ -55,7 +55,7 @@ bibliography: paper.bib
 
 # Summary
 
-Magritte is a software library for 3D radiative transfer and synthetic observations,
+\textsc{Magritte} is a software library for 3D radiative transfer and synthetic observations,
 which currently focusses on atomic and molecular lines.
 It is mainly written in C++ and can either be used as a Python package or
 as a C++ library. To compute the radiation field, a deterministic ray-tracer
