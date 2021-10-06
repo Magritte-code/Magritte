@@ -1,4 +1,4 @@
-juimport numpy as np
+import numpy as np
 import scipy as sp
 import healpy
 import re
