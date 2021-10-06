@@ -1,4 +1,4 @@
-import numpy as np
+juimport numpy as np
 import scipy as sp
 import healpy
 import re
@@ -196,6 +196,22 @@ def set_boundary_condition_CMB (model):
     for b in range(model.parameters.nboundary()):
         model.geometry.boundary.set_boundary_condition (b, BoundaryCondition.CMB)
     model.geometry.boundary.boundary_temperature.set([T_CMB for _ in range(model.parameters.nboundary())])
+    # Done
+    return model
+
+
+def set_boundary_condition_1D (model, T_in=T_CMB, T_out=T_CMB):
+    """
+    Setter for incoming CMB boundary condition at each boundary point.
+    """
+    if not (model.parameters.dimension() == 1):
+        raise ValueError ('These boundary conditions only work for a 1D model.')
+    else:
+        # Set all boundary conditions to Thermal
+        for b in range(model.parameters.nboundary()):
+            model.geometry.boundary.set_boundary_condition (b, BoundaryCondition.Thermal)
+        # Set inner and outer temperature
+        model.geometry.boundary.boundary_temperature.set([T_in, T_out])
     # Done
     return model
 
