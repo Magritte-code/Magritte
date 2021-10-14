@@ -44,7 +44,7 @@ void Linedata :: read (const Io& io, const Size l)
     io.read_list (prefix_l+"energy", energy);
     io.read_list (prefix_l+"weight", weight);
 
-    frequency.resize (nrad);
+    frequency.resize(nrad);
 
     io.read_list (prefix_l+"frequency", frequency);
 

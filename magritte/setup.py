@@ -1,4 +1,4 @@
-juimport numpy as np
+import numpy as np
 import scipy as sp
 import healpy
 import re
@@ -120,9 +120,9 @@ def set_rays_spherical_symmetry(model, nextra=0, uniform=True):
     Rz = [0.0]
 
     for j, rj in enumerate(rs):
-       Rx.append(ri / np.sqrt(ri**2 + rj**2))
-       Ry.append(rj / np.sqrt(ri**2 + rj**2))
-       Rz.append(0.0)
+        Rx.append(ri / np.sqrt(ri**2 + rj**2))
+        Ry.append(rj / np.sqrt(ri**2 + rj**2))
+        Rz.append(0.0)
 
     angle_max   = np.arctan(Ry[-1] / Rx[-1])
     angle_extra = (0.5*np.pi - angle_max) / nextra
@@ -441,5 +441,14 @@ def set_linedata_from_LAMDA_file (model, fileNames, config={}):
         model.lines.lineProducingSpecies[lspec].linedata.Bs        = Bs
         model.lines.lineProducingSpecies[lspec].linedata.Ba        = Ba
         model.lines.lineProducingSpecies[lspec].linedata.frequency = frequency
+    # Done
+    return model
+
+
+def set_dust_data (model, fileName):
+    """
+    Set dust data by reading it from a data file.
+    DOES NOTHING!
+    """    
     # Done
     return model

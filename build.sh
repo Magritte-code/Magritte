@@ -32,7 +32,7 @@ make -j4
 cd $DIR
 
 # echo "Trying to uninstall magritte (to avoid duplication)..."
-pip uninstall magritte
+pip uninstall magritte-rt
 
 # echo "Installing magritte python package..."
 python setup.py install

@@ -27,7 +27,7 @@ class my_build_ext(build_ext):
 
 
 setup(
-    name         ="magritte",
+    name         ="magritte-rt",
     version      =__version__,
     author       ="Frederik De Ceuster",
     author_email ="frederik.deceuster@gmail.com",

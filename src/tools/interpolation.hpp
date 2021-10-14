@@ -30,6 +30,32 @@ inline Size search (const Real1 &x, const Real value)
 }
 
 
+///  Binary search for the index of a value right above a value in a list
+///  @param[in] x: vector of tabulated argument values
+///  @param[in] value: value to search for
+///  @return index of x table just above value
+/////////////////////////////////////////////////////////////////////////
+inline Size search (const Vector<Real> &x, const Real value)
+{
+    Size start = 0;
+    Size stop  = x.size()-1;
+
+    if      (value >= x[stop ]){return stop; }
+    else if (value <= x[start]){return start;}
+
+    while (stop > start+1)
+    {
+        const Size middle = (stop + start) / 2;
+
+        if      (value > x[middle]) {start = middle;}
+        else if (value < x[middle]) {stop  = middle;}
+        else                        {return  middle;}
+    }
+
+    return stop;
+}
+
+
 ///  Linear search for value in ordered list vec
 ///    @param[in] vec: vectorized (and ordered) list in which to search value
 ///    @param[in/out] notch: start for search, increase until higher than value

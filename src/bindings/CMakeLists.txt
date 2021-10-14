@@ -25,6 +25,7 @@ set (SOURCE_FILES
     ../model/lines/lineProducingSpecies/linedata/linedata.cpp
     ../model/lines/lineProducingSpecies/linedata/collisionPartner/collisionPartner.cpp
     ../model/lines/lineProducingSpecies/quadrature/quadrature.cpp
+    ../model/dust/dust.cpp
     ../model/radiation/radiation.cpp
     ../model/radiation/frequencies/frequencies.cpp
     ../model/image/image.cpp

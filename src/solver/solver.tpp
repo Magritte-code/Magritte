@@ -448,22 +448,20 @@ accel inline void Solver :: get_eta_and_chi (
 
         eta += prof * model.lines.emissivity(p, l);
         chi += prof * model.lines.opacity   (p, l);
-
-        // cout << "prof = " << prof << "     diff = " << diff  << "     width = " << width << endl;
-        // printf("prof = %le,   diff = %le,   freq = %le,   line = %le\n", prof, diff, freq, model.lines.line[l]);
-
-
-        // if (isnan(eta) || isnan(chi))
-        // {
-        //     cout << "emmi = " << model.lines.emissivity(p, l) << "   p = " << p << "   l = " << l << endl;
-        //     cout << "opac = " << model.lines.opacity   (p, l) << "   p = " << p << "   l = " << l << endl;
-        //     cout << "widt = " << model.lines.inverse_width (p, l) << "   p = " << p << "   l = " << l << endl;
-        //     cout << "prof = " << prof << "   freq = " << freq << "   diff = " << diff << endl;
-        // }
     }
 
+    // Add dust emissivity and opacity
+    const Real opacity_dust = model.dust.get_opacity(p, freq);
 
-    // cout << "eta, chi = " << eta << "  " << chi << endl;
+    const Real eta_dust = opacity_dust * planck(model.thermodynamics.temperature.dust[p], freq);
+    const Real chi_dust = opacity_dust; 
+
+    //printf("p %d,   freq %Le,   eta_dust = %Le,   eta_line = %Le\n", p, freq, eta_dust, eta);
+    //printf("p %d,   freq %Le,   chi_dust = %Le,   chi_line = %Le\n", p, freq, chi_dust, chi);
+
+    eta += eta_dust;
+    chi += chi_dust;
+
 }
 
 

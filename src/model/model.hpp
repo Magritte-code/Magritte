@@ -9,6 +9,7 @@
 #include "chemistry/chemistry.hpp"
 #include "thermodynamics/thermodynamics.hpp"
 #include "lines/lines.hpp"
+#include "dust/dust.hpp"
 #include "radiation/radiation.hpp"
 #include "image/image.hpp"
 
@@ -20,6 +21,7 @@ struct Model
     Chemistry      chemistry;
     Thermodynamics thermodynamics;
     Lines          lines;
+    Dust           dust;
     Radiation      radiation;
     vector<Image>  images;
 

@@ -18,6 +18,7 @@ void Model :: read (const Io& io)
     chemistry     .read (io);
     thermodynamics.read (io);
     lines         .read (io);
+    dust          .read (io);
     radiation     .read (io);
 
     cout << "                                           " << endl;
@@ -46,6 +47,7 @@ void Model :: write (const Io& io) const
     chemistry     .write (io);
     thermodynamics.write (io);
     lines         .write (io);
+    dust          .write (io);
     radiation     .write (io);
 }
 
@@ -58,7 +60,6 @@ int Model :: compute_inverse_line_widths ()
 
     return (0);
 }
-
 
 
 ///  Compute spectral (=frequency) discretisation

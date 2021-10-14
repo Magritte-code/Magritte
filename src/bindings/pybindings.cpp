@@ -89,6 +89,7 @@ PYBIND11_MODULE (core, module)
         .def_readwrite ("geometry",       &Model::geometry)
         .def_readwrite ("chemistry",      &Model::chemistry)
         .def_readwrite ("lines",          &Model::lines)
+        .def_readwrite ("dust",           &Model::dust)
         .def_readwrite ("a",          &Model::a)
         .def_readwrite ("b",          &Model::b)
         .def_readwrite ("c",          &Model::c)
@@ -262,8 +263,8 @@ PYBIND11_MODULE (core, module)
     // Temperature
     py::class_<Temperature> (module, "Temperature")
         // attributes
-        .def_readwrite ("gas", &Temperature::gas)
-        .def ("print",         &Temperature::print)
+        .def_readwrite ("gas",  &Temperature::gas)
+        .def_readwrite ("dust", &Temperature::dust)
         // functions
         .def ("read",          &Temperature::read)
         .def ("write",         &Temperature::write)
@@ -317,6 +318,20 @@ PYBIND11_MODULE (core, module)
         .def ("read",                           &Lines::read)
         .def ("write",                          &Lines::write)
         .def ("set_emissivity_and_opacity",     &Lines::set_emissivity_and_opacity)
+        // constructor
+        .def (py::init<>());
+    
+
+    // Dust
+    py::class_<Dust> (module, "Dust")
+        // attributes
+        .def_readwrite ("freqs",   &Dust::freqs)
+        .def_readwrite ("kappa",   &Dust::kappa)
+        .def_readwrite ("density", &Dust::density)
+        // functions
+        .def ("read",              &Dust::read)
+        .def ("write",             &Dust::write)
+        .def ("get_opacity",       &Dust::get_opacity)
         // constructor
         .def (py::init<>());
 

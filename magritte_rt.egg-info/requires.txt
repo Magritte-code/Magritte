@@ -1,0 +1,13 @@
+h5py
+numpy
+scipy
+astropy
+numba
+meshio
+healpy
+yt
+mpi4py
+tqdm
+ipywidgets
+palettable
+plotly
