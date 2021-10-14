@@ -60,5 +60,7 @@ perf.data*
 ##############
 tests/results/*
 
-magritte.egg-info/*
+# Python distribution
+# ###################
+*.egg-info/*
 dist/*
