@@ -20,8 +20,8 @@ Magritte has to be compiled from its source code, which can be cloned using:
 
 from our `GitHub <https://github.com/Magritte-code/Magritte>`_ repository. This
 creates the directory, :literal:`Magritte`, which will be refered to as the
-Magritte root directory. Please make sure to include the :literal:`--recursive`
-option to also clone the required submodules.
+Magritte root directory. Ensure to include the :literal:`--recursive` to also
+clone the required submodules.
 
 
 Dependencies
@@ -42,11 +42,13 @@ Magritte has several dependencies, some of which are optional.
 
 **Required**
 
-* `CMake <https://cmake.org/>`_, version :literal:`3.18.0` or later, for building the library;
+* `GCC <https://gcc.gnu.org/>`_, version :literal:`5.0.0` or later, to compile the C++ part of Magritte;
+* `CMake <https://cmake.org/>`_, version :literal:`3.18.0` or later, for building the library, organising compilation and linking;
 
 
 **Optional**
 
+* `Anaconda <https://www.anaconda.com/blog/individual-edition-2020-11>`_, for managing the required Python packages;
 * `Gmsh <https://gmsh.info/>`_, version :literal:`4.6.0` or later, for meshing model geometries.
 
 
@@ -66,9 +68,23 @@ the model files.
 
 * :mod:`numpy`, to bind the Magritte data;
 * :mod:`h5py`, to read and write HDF5 data files;
-* :mod:`scipy`,
+* :mod:`scipy`, for interpolation and spatial functions such as nearest neighbour calculations;
 * :mod:`healpy`, to sample directions from a discretized unit sphere;
-* :mod:`astropy`,
+* :mod:`astropy`, for unit conversions and physical constants;
+* :mod:`meshio`, for reading and writing several types of mesh data structures;
+* :mod:`vtk`, for reading and writing vtk files;
+* :mod:`pyyaml`, for reading and writing yaml files;
+* :mod:`mpi4py`, for MPI (Message Passing Interface) functionality in Python;
+* :mod:`tqdm`, for progress bars;
+* :mod:`numba`, for just-in-time compilation of some Python functions;
+* :mod:`palettable`, for nice colourmaps;
+* :mod:`matplotlib`, for basic plotting;
+* :mod:`plotly`, for advanced plotting;
+* :mod:`nodejs`, for interactivity in some advanced plots;
+* :mod:`ipywidgets`, for interactive plotting;
+* :mod:`jupyterlab`, for convenient use of the jupyter notebooks;
+
+All of these packages can also be found in the `conda environment file <https://github.com/Magritte-code/Magritte/blob/stable/dependencies/conda_env.yml>`_.
 
 .. hint::
 
@@ -94,7 +110,7 @@ the model files.
 
     Magritte uses plotly for some interactive plots. Plotly requires additional
     extensions to be able to render plots in a jupyter notebook or in jupyter lab. Please
-    see their `intstallation notes <https://plotly.com/python/getting-started/>`_ to get
+    consult their `intstallation notes <https://plotly.com/python/getting-started/>`_ to get
     plotly working with jupyter.
 
 
@@ -128,15 +144,22 @@ See :ref:`advanced compilation <link-advanced_compilation>` for further options.
 Advanced compilation
 ********************
 
+Compilers
+=========
+
+Corrently only the GNU gcc compiler is fully supported.
+We are currently further investigating Clang and Intel compiler (:literal:`icc`) support.
+
+
+Vectorisation
+=============
+
+🧑‍💻 Comming soon!
+
 
 GPU acceleration
 ================
 
-Compilers
-=========
+🧑‍💻 Comming soon!
 
-Only :literal:`gcc` so far.
 
-Intel compiler (:literal:`icc`) support comming.
-
-Attempting to add :literal:`clang` support.

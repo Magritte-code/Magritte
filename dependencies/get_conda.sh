@@ -32,7 +32,13 @@ hash -r
 conda config --set always_yes yes --set changeps1 no
 conda update --yes conda
 
-# Create conda environment
-conda env create -f conda_env.yml
-# Activate the magritte conda environment
-source activate magritte
+# Get absolute path to binary folder
+thisPath=`pwd`"/miniconda3/bin/"
+
+# Prompt user with the relevant path
+echo ""
+echo "Don't forget to add the following path to your shell's PATH variable:"
+echo $thisPath 
+echo ""
+echo "This can be done e.g. with:"
+echo "export PATH=\""$thisPath"\":\${PATH}"

@@ -4,6 +4,9 @@ Quickstart
 ##########
 
 .. Warning::
+    Please ensure that the :ref:`prerequisites <link-prerequisites>` are in place before continuing with the installation.
+
+.. Warning::
     This is the (too) quick intallation guide. For details, see our
     :ref:`comprehensive installation <link-installation>` guide.
 
@@ -38,6 +41,13 @@ environment, and can be activated with:
     conda activate magritte
 
 This environment has to be active whenever Magritte is compiled or used!
+
+.. Note::
+    If you didn't configure your shell with the Anaconda installation, the above command won't work, but the same result can be achieved with:
+
+    .. code-block:: shell
+
+        source activate magritte
 
 
 Build

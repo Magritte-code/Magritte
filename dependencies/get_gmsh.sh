@@ -31,3 +31,14 @@ case "`uname -s`" in
         echo "Could not recognize OS. Aborting."
         return
 esac
+
+# Get absolute path to binary folder
+thisPath=`pwd`"/gmsh/bin/"
+
+# Prompt user with the relevant path
+echo ""
+echo "Don't forget to add the following path to your shell's PATH variable:"
+echo $thisPath 
+echo ""
+echo "This can be done e.g. with:"
+echo "export PATH=\""$thisPath"\":\${PATH}"

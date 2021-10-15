@@ -1,20 +1,31 @@
 name: magritte
 channels:
-  - conda-forge
   - defaults
+  - conda-forge
 dependencies:
-  - python=3.6
-  - meshio
-  - h5py
-  - healpy
   - jupyterlab
-  - vtk
   - yt
   - scipy
-  - numba
+  - vtk
   - mpi4py
-  - pyyaml
-  - tqdm
-  - ipywidgets
-  - palettable
   - plotly
+  - pyyaml
+  - ipywidgets
+  - meshio
+  - tqdm
+  - python=3.6
+  - palettable
+  - h5py
+  - numba
+  - healpy
+  - jupyterlab-plotly-extension
+  - nbdime
+  - jupyterlab-git
+  - pandas
+  - nodejs
+  - twine
+  - sphinx
+  - breathe
+  - sphinx-copybutton
+  - nbsphinx
+  - sphinx_rtd_theme
