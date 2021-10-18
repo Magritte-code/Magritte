@@ -392,7 +392,37 @@ def get_weights(pos, nbs, nns, tracer, threshold=0.21, fmin=1.0, ftarget=2.15):
 
     return weights
 
+
+def create(
+        meshName,
+        delaunay,
+        tracer,
+        boundary,
+        scale_max = 1.0e+99,  # Maximum value of the scale parameter
+        scale_min = 0.0e+00,  # Minimum value of the scale parameter
+    ):
     
+    # Remove extension from meshName
+    meshName, extension = os.path.splitext(meshName)
+    
+    # Create the background mesh (in .mesh format)
+    meshio.write_points_cells(
+        filename   = meshName,
+        points     = delaunay.points,
+        cells      = {'tetra'  : delaunay.simplices},
+        point_data = {'weights': weights.ravel()} )
+    
+    # Convert .msh to .pos mesh for Gmsh
+    convert_msh_to_pos (meshName=meshName, replace=True)
+    
+    # Create a new mesh from the background mesh
+    create_mesh_from_background(
+        meshName  = meshName,
+        boundary  = boundary,
+        scale_min = scale_min,
+        scale_max = scale_max    
+    
+        
 def reduce(
         meshName,
         delaunay,
