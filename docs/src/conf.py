@@ -51,7 +51,7 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'sphinx_rtd_theme'
+html_theme = 'alabaster'
 html_logo  = 'images/Magritte_logo_white_plain.svg'
 html_theme_options = {'logo_only': True}
 
@@ -91,6 +91,7 @@ def remove_jquery_and_underscore(app):
     if hasattr(app.builder, 'script_files'):
         app.builder.script_files = [x for x in app.builder.script_files
                                     if remove(x)]
+
 
 def setup(app):
     app.connect('builder-inited', remove_jquery_and_underscore)
