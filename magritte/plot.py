@@ -53,7 +53,8 @@ def image_mpl(
         npix_x   = 300,
         npix_y   = 300,
         x_unit   = units.au,
-        v_unit   = units.km/units.s
+        v_unit   = units.km/units.s,
+        method   = 'nearest'
     ):
     """
     Plot channel maps of synthetic observation (image) with matplotlib.
@@ -104,7 +105,7 @@ def image_mpl(
             (imx, imy),
             imI[:,f],
             (xs[None,:], ys[:,None]),
-            method='nearest'
+            method=method
         )
         Is[f] = np.sum(zs[f])
     Is = Is / np.max(Is)
@@ -160,6 +161,7 @@ def image_plotly(
         npix_y   = 300,
         x_unit   = units.au,
         v_unit   = units.km/units.s,
+        method   = 'nearest',
         width    = 620,   # Yields approx square channel map
         height   = 540,   # Yields approx square channel map
     ):
@@ -212,7 +214,7 @@ def image_plotly(
             (imx, imy),
             imI[:,f],
             (xs[None,:], ys[:,None]),
-            method='nearest'
+            method=method
         )
         Is[f] = np.sum(zs[f])
     Is = Is / np.max(Is)

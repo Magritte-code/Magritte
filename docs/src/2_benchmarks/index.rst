@@ -10,4 +10,3 @@ To demonstrate the validity of Magritte we present some banchmark results.
    0_analytic_benchmarks
    1_numeric_benchmarks
    2_performance_scaling
-   3_performance_portability

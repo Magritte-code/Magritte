@@ -420,7 +420,8 @@ def create(
         meshName  = meshName,
         boundary  = boundary,
         scale_min = scale_min,
-        scale_max = scale_max    
+        scale_max = scale_max
+    )
     
         
 def reduce(

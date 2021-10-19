@@ -25,6 +25,9 @@ The parallelisation in Magritte is an hybrid between MPI and OpenMP.
 The outer loop over the directions is parallelised with MPI,
 while the middle loop over the points is parallelised with OpenMP.
 The inner loop over the frequencies is ideally suited for vectorisation.
+The MPI and OpenMP parall for loops are implemented using the
+:literal:`distributed_for` and :literal:`threaded_for` loop respectively
+in `Paracabs <https://github.com/Magritte-code/Paracabs>`_.
 
 Multi-threading (OpenMP)
 ************************
