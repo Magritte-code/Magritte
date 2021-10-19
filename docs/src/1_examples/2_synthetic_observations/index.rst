@@ -17,7 +17,8 @@ The following examples show how to create synthetic observations with Magritte.
    
    0_image_1D_AMRVAC.ipynb
    1_image_3D_AMRVAC.ipynb
-   2_image_3D_AMRVAC_red.ipynb
-   3_image_3D_Phantom.ipynb
-   4_image_3D_Phantom_red.ipynb
+
+..   2_image_3D_AMRVAC_red.ipynb
+..   3_image_3D_Phantom.ipynb
+..   4_image_3D_Phantom_red.ipynb
 

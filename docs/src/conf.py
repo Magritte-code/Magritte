@@ -70,3 +70,15 @@ html_static_path = ['_static']
 from subprocess import call
 # read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
 call('doxygen Doxyfile', shell=True)
+
+
+# Fix to show plotly figures
+# https://github.com/readthedocs/sphinx_rtd_theme/issues/788#issuecomment-585785027
+nbsphinx_prolog = r"""
+.. raw:: html
+
+    <script src='http://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js'></script>
+    <script>require=requirejs;</script>
+
+
+"""
