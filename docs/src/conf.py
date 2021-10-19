@@ -82,3 +82,15 @@ nbsphinx_prolog = r"""
 
 
 """
+
+
+def remove_jquery_and_underscore(app):
+    # We need to remove the jquery and underscore file that are
+    # added by default because we already add it in the <head> tag.
+    remove = lambda x: not any(js in x for js in ['jquery', 'underscore'])
+    if hasattr(app.builder, 'script_files'):
+        app.builder.script_files = [x for x in app.builder.script_files
+                                    if remove(x)]
+
+def setup(app):
+    app.connect('builder-inited', remove_jquery_and_underscore)
