@@ -31,7 +31,7 @@ master_doc = 'index'
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = [ "breathe", 'sphinx_copybutton', 'nbsphinx' ]
+extensions = [ "breathe", 'sphinx_copybutton', 'nbsphinx']
 
 breathe_default_project = "Magritte"
 breathe_projects = {'Magritte' : 'doxygen/xml'}
@@ -51,7 +51,7 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'alabaster'
+html_theme = 'sphinx_rtd_theme'
 html_logo  = 'images/Magritte_logo_white_plain.svg'
 html_theme_options = {'logo_only': True}
 
@@ -70,28 +70,3 @@ html_static_path = ['_static']
 from subprocess import call
 # read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
 call('doxygen Doxyfile', shell=True)
-
-
-# Fix to show plotly figures
-# https://github.com/readthedocs/sphinx_rtd_theme/issues/788#issuecomment-585785027
-nbsphinx_prolog = r"""
-.. raw:: html
-
-    <script src='http://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js'></script>
-    <script>require=requirejs;</script>
-
-
-"""
-
-
-def remove_jquery_and_underscore(app):
-    # We need to remove the jquery and underscore file that are
-    # added by default because we already add it in the <head> tag.
-    remove = lambda x: not any(js in x for js in ['jquery', 'underscore'])
-    if hasattr(app.builder, 'script_files'):
-        app.builder.script_files = [x for x in app.builder.script_files
-                                    if remove(x)]
-
-
-def setup(app):
-    app.connect('builder-inited', remove_jquery_and_underscore)

@@ -14,6 +14,7 @@ from scipy.interpolate    import griddata           # Grid interpolation
 from palettable.cubehelix import cubehelix2_16      # Nice colormap
 from tqdm                 import tqdm               # Progress bars
 from ipywidgets           import interact           # Interactive plots
+from ipywidgets.embed     import embed_minimal_html # Store interactive plots
 
 
 # Port matplotlib colormaps to plotly
@@ -149,8 +150,11 @@ def image_mpl(
         figs.append(fig)
     
         plt.close()
+    
+    # Create a widget for plots
+    widget = interact(lambda v: figs[v], v=(0, len(figs)-1))
         
-    return interact(lambda v: figs[v], v=(0, len(figs)-1))
+    return widget
 
 
 def image_plotly(
