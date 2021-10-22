@@ -1,3 +1,6 @@
+#include <cmath>
+
+
 ///  Getter for the dust opacity
 ///    @param[in] p: point index
 ///    @param[in] freq: frequency
@@ -6,21 +9,22 @@ inline Real Dust :: get_opacity (const Size p, const Real freq) const
 {
     Real opacity = density[p];
 
-    const Size f = search (freqs, freq);
-
-    if (f == 0)
+    if      (freq <= freqs[0])
     {
         opacity *= kappa[0];
     }
-    else if (f == freqs.size()-1)
+    else if (freq >= freqs[N])
     {
-        opacity *= kappa[freqs.size()-1];
+        opacity *= kappa[N];
     }
     else
     {
-        const Real step = (freq - freqs[f-1]) / (freqs[f] - freqs[f-1]);
+        // Interpolate, assuming constant spacing in freqs
+        const Real index = (freq - freqs[0]) * inverse_delta_f;
+        const Size f     = trunc(index);
+        const Real step  = index - f;
 
-        opacity *= kappa[f-1] + (kappa[f] - kappa[f-1]) * step;
+        opacity *= kappa[f] + (kappa[f+1] - kappa[f]) * step;
     }
 
     return opacity;

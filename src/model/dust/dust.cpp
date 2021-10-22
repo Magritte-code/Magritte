@@ -16,8 +16,6 @@ void Dust :: read (const Io& io)
     Size num_f = 0;
     io.read_number (prefix+".num_f", num_f);
 
-    cout << "read num_f " << num_f << endl;
-
     freqs.resize (num_f);
     kappa.resize (num_f);
 
@@ -27,6 +25,11 @@ void Dust :: read (const Io& io)
     density.resize (parameters.npoints());
 
     io.read_list (prefix+"density", density);
+
+    // Extract necessary constants
+    N               = freqs.size() - 1;
+            delta_f = (freqs[N] - freqs[0]) / N;
+    inverse_delta_f = 1.0 / delta_f;
 }
 
 

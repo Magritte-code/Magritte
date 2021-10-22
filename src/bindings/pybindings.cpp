@@ -18,7 +18,6 @@ namespace py = pybind11;
 
 PYBIND11_MAKE_OPAQUE (vector<LineProducingSpecies>);
 PYBIND11_MAKE_OPAQUE (vector<CollisionPartner>);
-// PYBIND11_MAKE_OPAQUE (vector<Matrix<Real>>);
 
 
 PYBIND11_MODULE (core, module)
@@ -325,13 +324,16 @@ PYBIND11_MODULE (core, module)
     // Dust
     py::class_<Dust> (module, "Dust")
         // attributes
-        .def_readwrite ("freqs",   &Dust::freqs)
-        .def_readwrite ("kappa",   &Dust::kappa)
-        .def_readwrite ("density", &Dust::density)
+        .def_readwrite ("freqs",           &Dust::freqs)
+        .def_readwrite ("kappa",           &Dust::kappa)
+        .def_readwrite ("density",         &Dust::density)
+        .def_readwrite ("N",               &Dust::N)
+        .def_readwrite ("delta_f",         &Dust::delta_f)
+        .def_readwrite ("inverse_delta_f", &Dust::inverse_delta_f)
         // functions
-        .def ("read",              &Dust::read)
-        .def ("write",             &Dust::write)
-        .def ("get_opacity",       &Dust::get_opacity)
+        .def ("read",                      &Dust::read)
+        .def ("write",                     &Dust::write)
+        .def ("get_opacity",               &Dust::get_opacity)
         // constructor
         .def (py::init<>());
 

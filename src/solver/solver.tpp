@@ -188,6 +188,8 @@ inline void Solver :: solve_feautrier_order_2 (Model& model)
         const Size ar = model.geometry.rays.antipod[rr];
 
         cout << "--- rr = " << rr << endl;
+        printf("test!\n");
+        
 
         accelerated_for (o, model.parameters.npoints(),
         {
@@ -456,8 +458,8 @@ accel inline void Solver :: get_eta_and_chi (
     const Real eta_dust = opacity_dust * planck(model.thermodynamics.temperature.dust[p], freq);
     const Real chi_dust = opacity_dust; 
 
-    //printf("p %d,   freq %Le,   eta_dust = %Le,   eta_line = %Le\n", p, freq, eta_dust, eta);
-    //printf("p %d,   freq %Le,   chi_dust = %Le,   chi_line = %Le\n", p, freq, chi_dust, chi);
+    printf("p %d,   freq %Le,   eta_dust = %Le,   eta_line = %Le\n", p, freq, eta_dust, eta);
+    printf("p %d,   freq %Le,   chi_dust = %Le,   chi_line = %Le\n", p, freq, chi_dust, chi);
 
     eta += eta_dust;
     chi += chi_dust;
