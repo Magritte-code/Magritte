@@ -31,7 +31,7 @@ master_doc = 'index'
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = [ "breathe", 'sphinx_copybutton', 'nbsphinx' ]
+extensions = [ "breathe", 'sphinx_copybutton', 'nbsphinx']
 
 breathe_default_project = "Magritte"
 breathe_projects = {'Magritte' : 'doxygen/xml'}

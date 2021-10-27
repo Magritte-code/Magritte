@@ -93,7 +93,7 @@ struct Model
     {
         cout << "c.size() = " << c().vec.size() << endl;
 
-        accelerated_for (i, c().vec.size(), nblocks, nthreads,
+        accelerated_for (i, c().vec.size(), 
         {
             c()[i] = a()[i] + b()[i];
 

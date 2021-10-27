@@ -11,10 +11,10 @@ The following examples show how to create Magritte models from analytic or tabul
     or Phantom hydrodynamics simulations, please refer to the :ref:`post-processing
     examples <link-post-processing>`.
 
-..
- .. toctree::
+
+.. toctree::
    :maxdepth: 1
    :caption: Contents:
    
-   mpc.ipynb
+   0_create_analytic_spiral.ipynb
 

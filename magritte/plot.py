@@ -14,6 +14,7 @@ from scipy.interpolate    import griddata           # Grid interpolation
 from palettable.cubehelix import cubehelix2_16      # Nice colormap
 from tqdm                 import tqdm               # Progress bars
 from ipywidgets           import interact           # Interactive plots
+from ipywidgets.embed     import embed_minimal_html # Store interactive plots
 
 
 # Port matplotlib colormaps to plotly
@@ -53,7 +54,8 @@ def image_mpl(
         npix_x   = 300,
         npix_y   = 300,
         x_unit   = units.au,
-        v_unit   = units.km/units.s
+        v_unit   = units.km/units.s,
+        method   = 'nearest'
     ):
     """
     Plot channel maps of synthetic observation (image) with matplotlib.
@@ -104,7 +106,7 @@ def image_mpl(
             (imx, imy),
             imI[:,f],
             (xs[None,:], ys[:,None]),
-            method='nearest'
+            method=method
         )
         Is[f] = np.sum(zs[f])
     Is = Is / np.max(Is)
@@ -148,8 +150,11 @@ def image_mpl(
         figs.append(fig)
     
         plt.close()
+    
+    # Create a widget for plots
+    widget = interact(lambda v: figs[v], v=(0, len(figs)-1))
         
-    return interact(lambda v: figs[v], v=(0, len(figs)-1))
+    return widget
 
 
 def image_plotly(
@@ -160,6 +165,7 @@ def image_plotly(
         npix_y   = 300,
         x_unit   = units.au,
         v_unit   = units.km/units.s,
+        method   = 'nearest',
         width    = 620,   # Yields approx square channel map
         height   = 540,   # Yields approx square channel map
     ):
@@ -212,7 +218,7 @@ def image_plotly(
             (imx, imy),
             imI[:,f],
             (xs[None,:], ys[:,None]),
-            method='nearest'
+            method=method
         )
         Is[f] = np.sum(zs[f])
     Is = Is / np.max(Is)

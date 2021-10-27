@@ -236,7 +236,7 @@ accel inline Size Geometry :: get_ray_length (
 //     {
 //         const Size ar = rays.antipod[rr];
 //
-//         accelerated_for (o, parameters.npoints(), nblocks, nthreads,
+//         accelerated_for (o, parameters.npoints(),
 //         {
 //             lengths(rr,o) =  get_ray_length <frame> (o, rr, dshift_max)
 //                            + get_ray_length <frame> (o, ar, dshift_max);

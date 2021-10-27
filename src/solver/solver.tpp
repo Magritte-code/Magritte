@@ -87,7 +87,7 @@ inline void Solver :: get_ray_lengths (Model& model)
     {
         const Size ar = model.geometry.rays.antipod[rr];
 
-        accelerated_for (o, model.parameters.npoints(), nblocks, nthreads,
+        accelerated_for (o, model.parameters.npoints(),
         {
             const Real dshift_max = get_dshift_max (model, o);
 
@@ -125,7 +125,7 @@ inline Size Solver :: get_ray_lengths_max (Model& model)
 //
 //         cout << "rr = " << rr << endl;
 //
-//         accelerated_for (o, model.parameters.npoints(), nblocks, nthreads,
+//         accelerated_for (o, model.parameters.npoints(),
 //         {
 //             const Real dshift_max = get_dshift_max (model, o);
 //             // const Real dshift_max = 1.0e+99;
@@ -154,7 +154,7 @@ inline void Solver :: solve_shortchar_order_0 (Model& model)
 
         cout << "--- rr = " << rr << endl;
 
-        accelerated_for (o, model.parameters.npoints(), nblocks, nthreads,
+        accelerated_for (o, model.parameters.npoints(),
         {
             // const Real dshift_max = get_dshift_max (o);
             const Real dshift_max = 1.0e+99;
@@ -189,7 +189,7 @@ inline void Solver :: solve_feautrier_order_2 (Model& model)
 
         cout << "--- rr = " << rr << endl;
 
-        accelerated_for (o, model.parameters.npoints(), nblocks, nthreads,
+        accelerated_for (o, model.parameters.npoints(),
         {
             const Real dshift_max = get_dshift_max (model, o);
 
@@ -239,7 +239,7 @@ inline void Solver :: image_feautrier_order_2 (Model& model, const Size rr)
 
     const Size ar = model.geometry.rays.antipod[rr];
 
-    accelerated_for (o, model.parameters.npoints(), nblocks, nthreads,
+    accelerated_for (o, model.parameters.npoints(),
     {
         const Real dshift_max = get_dshift_max (model, o);
 
