@@ -9,15 +9,32 @@ const string prefix = "image/";
 //////////////////////////
 Image :: Image (const Geometry& geometry, const Size rr) : ray_nr (rr)
 {
-    if (geometry.parameters.dimension() == 1)
+    // Test consistency of ray
+    const Vector3D dir0 = geometry.rays.get_direction(0,ray_nr);
+
+    threaded_for (o, geometry.parameters.npoints(),
     {
-        if ((geometry.rays.direction[ray_nr].x() != 0.0) ||
-            (geometry.rays.direction[ray_nr].y() != 1.0) ||
-            (geometry.rays.direction[ray_nr].z() != 0.0)   )
+        const Vector3D dir = geometry.rays.get_direction(o,ray_nr);
+
+        if ((dir0.x() != dir.x()) ||
+            (dir0.y() != dir.y()) ||
+            (dir0.z() != dir.z())   )
         {
-            throw std::runtime_error ("In 1D, the image ray has to be (0,1,0)");
+            throw std::runtime_error ("The provided ray changes thoughout the model \
+                                       and hece cannot be used for imaging.");
         }
-    }
+
+        if (geometry.parameters.dimension() == 1)
+        {
+            if ((dir.x() != 0.0) ||
+                (dir.y() != 1.0) ||
+                (dir.z() != 0.0)   )
+            {
+                throw std::runtime_error ("In 1D, the image ray has to be (0,1,0)");
+            }
+        }
+    })
+
 
     ImX.resize (geometry.parameters.npoints());
     ImY.resize (geometry.parameters.npoints());
@@ -90,9 +107,9 @@ void Image :: set_coordinates (const Geometry& geometry)
 
     if (geometry.parameters.dimension() == 3)
     {
-        const double rx = geometry.rays.direction[ray_nr].x();
-        const double ry = geometry.rays.direction[ray_nr].y();
-        const double rz = geometry.rays.direction[ray_nr].z();
+        const double rx = geometry.rays.get_direction(0,ray_nr).x();
+        const double ry = geometry.rays.get_direction(0,ray_nr).y();
+        const double rz = geometry.rays.get_direction(0,ray_nr).z();
 
         const double         denominator = sqrt (rx*rx + ry*ry);
         const double inverse_denominator = 1.0 / denominator;
@@ -114,10 +131,6 @@ void Image :: set_coordinates (const Geometry& geometry)
                 ImY[p] =   jx * geometry.points.position[p].x()
                          + jy * geometry.points.position[p].y()
                          + jz * geometry.points.position[p].z();
-
-                // cout << "position = " << geometry.points.position[p].x() << endl;
-                // cout << "ImX = " << ImX[p] << "  " << ix << endl;
-                // cout << "ImY = " << ImY[p] << "  " << jx << endl;
             })
         }
         else

@@ -212,13 +212,17 @@ PYBIND11_MODULE (core, module)
     // Rays
     py::class_<Rays> (module, "Rays")
         // attributes
-        .def_readwrite ("direction", &Rays::direction)
-        .def_readwrite ("antipod",   &Rays::antipod)
-        .def_readwrite ("weight",    &Rays::weight)
-        .def ("print",    &Rays::print)
+        .def_readwrite ("direction",   &Rays::direction)
+        .def_readwrite ("weight",      &Rays::weight)
+        .def_readwrite ("m_direction", &Rays::m_direction)
+        .def_readwrite ("m_weight",    &Rays::m_weight)
+        .def_readwrite ("antipod",     &Rays::antipod)
         // io
-        .def ("read",                &Rays::read)
-        .def ("write",               &Rays::write)
+        .def ("read",                  &Rays::read)
+        .def ("write",                 &Rays::write)
+        .def ("get_direction",         &Rays::get_direction)
+        .def ("get_weight",            &Rays::get_weight)
+        .def ("get_dirs",         &Rays::get_dirs)
         // constructor
         .def (py::init<>());
 

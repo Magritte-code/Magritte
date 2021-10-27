@@ -30,7 +30,6 @@ void Model :: read (const Io& io)
     cout << "  nrays_red  = " << parameters.nrays_red  () << endl;
     cout << "  nboundary  = " << parameters.nboundary  () << endl;
     cout << "  nfreqs     = " << parameters.nfreqs     () << endl;
-    // cout << "  nfreqs_red = " << parameters.nfreqs_red () << endl;
     cout << "  nspecs     = " << parameters.nspecs     () << endl;
     cout << "  nlspecs    = " << parameters.nlspecs    () << endl;
     cout << "  nlines     = " << parameters.nlines     () << endl;

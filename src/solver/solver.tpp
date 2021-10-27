@@ -189,7 +189,7 @@ inline void Solver :: solve_feautrier_order_2 (Model& model)
 
         cout << "--- rr = " << rr << endl;
         printf("test!\n");
-        
+
 
         accelerated_for (o, model.parameters.npoints(),
         {
@@ -209,7 +209,7 @@ inline void Solver :: solve_feautrier_order_2 (Model& model)
                     solve_feautrier_order_2 (model, o, rr, ar, f);
 
                     model.radiation.u(rr,o,f)  = Su_()[centre];
-                    model.radiation.J(   o,f) += Su_()[centre] * two * model.geometry.rays.weight[rr];
+                    model.radiation.J(   o,f) += Su_()[centre] * two * model.geometry.rays.get_weight(o,rr);
 
                     update_Lambda (model, rr, f);
                 }
@@ -219,7 +219,7 @@ inline void Solver :: solve_feautrier_order_2 (Model& model)
                 for (Size f = 0; f < model.parameters.nfreqs(); f++)
                 {
                     model.radiation.u(rr,o,f)  = boundary_intensity(model, o, model.radiation.frequencies.nu(o, f));
-                    model.radiation.J(   o,f) += two * model.geometry.rays.weight[rr] * model.radiation.u(rr,o,f);
+                    model.radiation.J(   o,f) += two * model.geometry.rays.get_weight(o,rr) * model.radiation.u(rr,o,f);
                 }
             }
         })
@@ -456,10 +456,10 @@ accel inline void Solver :: get_eta_and_chi (
     const Real opacity_dust = model.dust.get_opacity(p, freq);
 
     const Real eta_dust = opacity_dust * planck(model.thermodynamics.temperature.dust[p], freq);
-    const Real chi_dust = opacity_dust; 
+    const Real chi_dust = opacity_dust;
 
-    printf("p %d,   freq %Le,   eta_dust = %Le,   eta_line = %Le\n", p, freq, eta_dust, eta);
-    printf("p %d,   freq %Le,   chi_dust = %Le,   chi_line = %Le\n", p, freq, chi_dust, chi);
+    //printf("p %d,   freq %Le,   eta_dust = %Le,   eta_line = %Le\n", p, freq, eta_dust, eta);
+    //printf("p %d,   freq %Le,   chi_dust = %Le,   chi_line = %Le\n", p, freq, chi_dust, chi);
 
     eta += eta_dust;
     chi += chi_dust;
@@ -550,7 +550,7 @@ accel inline void Solver :: solve_shortchar_order_0 (
             const Real freq = model.radiation.frequencies.nu(o, f);
 
             model.radiation.I(r,o,f) += boundary_intensity(model, nxt, freq*shift_n) * expf(-tau[f]);
-            model.radiation.J(  o,f) += model.geometry.rays.weight[r] * model.radiation.I(r,o,f);
+            model.radiation.J(  o,f) += model.geometry.rays.get_weight(o,r) * model.radiation.I(r,o,f);
         }
     }
 
@@ -561,7 +561,7 @@ accel inline void Solver :: solve_shortchar_order_0 (
             const Real freq = model.radiation.frequencies.nu(o, f);
 
             model.radiation.I(r,o,f)  = boundary_intensity(model, crt, freq);
-            model.radiation.J(  o,f) += model.geometry.rays.weight[r] * model.radiation.I(r,o,f);
+            model.radiation.J(  o,f) += model.geometry.rays.get_weight(o,r) * model.radiation.I(r,o,f);
         }
     }
 }
@@ -585,7 +585,7 @@ accel inline void Solver :: update_Lambda (Model &model, const Size rr, const Si
         Matrix<Real  >& L_lower     = L_lower_    ();
         Vector<Real  >& inverse_chi = inverse_chi_();
 
-        const Real w_ang = two * model.geometry.rays.weight[rr];
+        const Real w_ang = two * model.geometry.rays.get_weight(nr[centre],rr);
 
         const Size l = freqs.corresponding_l_for_spec[f];   // index of species
         const Size k = freqs.corresponding_k_for_tran[f];   // index of transition

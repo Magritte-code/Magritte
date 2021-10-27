@@ -12,8 +12,8 @@ void Rays :: read (const Io& io)
     parameters.set_hnrays (parameters.nrays()/2);
 
     direction.resize (parameters.nrays());
-      antipod.resize (parameters.nrays());
-       weight.resize (parameters.nrays());
+    weight   .resize (parameters.nrays());
+    antipod  .resize (parameters.nrays());
 
     Double2 direction_buffer (parameters.nrays(), Double1(3));
 
@@ -41,8 +41,8 @@ void Rays :: read (const Io& io)
     }
 
     direction.copy_vec_to_ptr ();
-    antipod  .copy_vec_to_ptr ();
     weight   .copy_vec_to_ptr ();
+    antipod  .copy_vec_to_ptr ();
 }
 
 
@@ -61,4 +61,98 @@ void Rays :: write (const Io& io) const
 
     io.write_array (prefix+"direction", direction_buffer);
     io.write_list  (prefix+"weight",    weight          );
+}
+
+
+void Rays :: set_1D_adaptive_rays (const Vector<Vector3D>& position)
+{
+    // Convenience parameter
+    const Size N = parameters.npoints();
+
+    // Set nrays and half nrays
+    parameters.set_nrays  (2*(N+2));
+    parameters.set_hnrays (parameters.nrays()/2);
+
+    // Allocate memory
+    m_direction.resize (N, parameters.nrays());
+    m_weight   .resize (N, parameters.nrays());
+    antipod    .resize (   parameters.nrays());
+
+
+    // For all different radii
+    threaded_for (o, N,
+    {
+        const Real p_o = position[o].x();
+
+
+        // Set ray directions
+        /////////////////////
+
+        // First ray
+        m_direction(o,0) = Vector3D (1.0, 0.0, 0.0);
+
+        // Middle rays
+        for (Size r = 0; r < N; r++)
+        {
+            const Real p_r = position[r].x();
+
+            const Real rx = p_o / sqrt(p_o*p_o + p_r*p_r);
+            const Real ry = p_r / sqrt(p_o*p_o + p_r*p_r);
+
+            m_direction(o,r+1) = Vector3D (rx, ry, 0.0);
+        }
+
+        // Last ray
+        m_direction(o,N+1) = Vector3D (0.0, 1.0, 0.0);
+
+
+        // Set ray weights
+        //////////////////
+    
+        // First ray
+        Vector3D upper = m_direction(o,0) + m_direction(o,1);
+        Vector3D lower = m_direction(o,0);
+
+        m_weight(o,0) =   0.5*upper.y() / sqrt(upper.squaredNorm())\
+                        - 0.5*lower.y() / sqrt(lower.squaredNorm());
+
+
+        // Middle rays
+        for (Size r = 1; r < N+1; r++)
+        {
+            upper = m_direction(o,r) + m_direction(o,r+1);
+            lower = m_direction(o,r) + m_direction(o,r-1);
+
+            m_weight(o,r) =   0.5*upper.y() / sqrt(upper.squaredNorm())\
+                            - 0.5*lower.y() / sqrt(lower.squaredNorm());
+        }
+
+        // Last ray
+        upper = m_direction(o,N+1);
+        lower = m_direction(o,N+1) + m_direction(o,N);
+
+        m_weight(o,N+1) =   0.5*upper.y() / sqrt(upper.squaredNorm())\
+                          - 0.5*lower.y() / sqrt(lower.squaredNorm());
+        
+
+        // Set antipodal rays
+        /////////////////////
+        
+        for (Size r = 0; r < N+2; r++)
+        {
+            const Real rx = m_direction(o,r).x();
+            const Real ry = m_direction(o,r).y();
+
+            m_direction(o,N+2+r) = Vector3D(-rx,-ry,0.0);
+            m_weight   (o,N+2+r) = m_weight(o,r);
+
+            antipod[N+2+r] = r;
+            antipod[r] = N+2+r;
+        }
+    })
+
+
+    m_direction.copy_vec_to_ptr ();
+    m_weight   .copy_vec_to_ptr ();
+    antipod    .copy_vec_to_ptr ();
 }
