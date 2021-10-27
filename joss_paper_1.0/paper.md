@@ -20,7 +20,7 @@ authors:
     affiliation: "2"
   - name: Leen Decin
     orcid: 0000-0002-5342-8612
-    affiliation: "1, 3"
+    affiliation: "2, 3"
   - name: Peter Boyle
     orcid: 0000-0002-8960-1587
     affiliation: "4, 5"
@@ -62,7 +62,7 @@ as a C++ library. To compute the radiation field, a deterministic ray-tracer
 and a formal solver are employed, i.e. rays are traced through the model and the
 radiative transfer equation is solved along those rays [@DeCeuster:2019]. This
 is in contrast to most radiative transfer solvers which employ (probabilistic)
-Monte Carlo techniques [@Noebauer:2019]. By vitrue of minimal assumptions about
+Monte Carlo techniques [@Noebauer:2019]. By virtue of minimal assumptions about
 the underlying geometric structure of a model, Magritte can handle structured and
 unstructured input meshes, as well as smoothed-particle hydrodynamics (SPH) data.
 Futhermore, tools are provided to optimise different input meshes for radiative transfer
@@ -81,15 +81,15 @@ encountered in the stellar winds around evolved stars [see @Decin:2021].
 Recent high-resolution observations exposed the intricate and intrinsically 3D
 morphologies of these objects [@Decin:2020]. The sheer amount of complexity that is
 observed, makes it difficult to interpret the observations and necessitates the use of
-3D hydrodynamics, chemistry and radiative trnsfer models to study their origin and
-evolution [@ElMellah:2020; @Bolte:2021; @Maes:2021; @Malfait:2021]. Their intricate
+3D hydrodynamics, chemistry and radiative transfer models to study their origin and
+evolution [@ElMellah:2020; @Maes:2021; @Malfait:2021]. Their intricate
 morpho-kinematics, moreover, makes their appearance in observations far from evident
 (see e.g.\ \autoref{fig:example}). Therefore, to study these and other complex
 morpho-kinematical objects, it is essential to understand how their models would
 appear in observations. This can be achieved, by creating synthetic observations
-with Magritte .
+with Magritte.
 
-![Example of a synthetic observation of the CO($v=0$, $J=1-0$)-transition, created with Magritte for a hydrodynamics model of an asymptotic giant branch (AGB) star, as it is perturbed by a companion [this is model \textsc{v10e50} in @Malfait:2021]. \label{fig:example}](example.png)
+![Example of a synthetic observation of the CO($v=0$, $J=1-0$) transition, created with Magritte for a hydrodynamics model of an asymptotic giant branch (AGB) star, as it is perturbed by a companion [this is model \textsc{v10e50} in @Malfait:2021]. \label{fig:example}](example.png)
 
 
 # Future work
@@ -103,7 +103,7 @@ practical research tool, we also aim for Magritte to be the starting point for
 further research in computational radiative transfer. Current active research topics
 include: efficient parallelisation and acceleration strategies on modern
 high-performance computing systems, acceleration of convergence in the non-linear
-coupling between radiation field and medium, and uncertainty quantification in
+coupling between the radiation field and the medium, and uncertainty quantification in
 radiative transfer through probabilistic numerical methods [see e.g.\ @DeCeuster:2021].
 
 
