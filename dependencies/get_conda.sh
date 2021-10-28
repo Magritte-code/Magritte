@@ -9,11 +9,14 @@ cd $DIR
 case "`uname -s`" in
     Linux*)
         echo "Recognized Linux as OS (assuming x86_64), installing..."
-        wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda3.sh
+        #wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda3.sh
+        wget https://repo.anaconda.com/miniconda/Miniconda3-py37_4.10.3-Linux-x86_64.sh -O miniconda3.sh
+        
     ;;
     Darwin*)
         echo "Recognized macOS as OS (assuming x86_64), installing..."
-        wget https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O miniconda3.sh
+        #wget https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O miniconda3.sh
+        wget https://repo.anaconda.com/miniconda/Miniconda3-py37_4.10.3-MacOSX-x86_64.sh -O miniconda3.sh
     ;;
     *)
         echo "Could not recognize OS. Aborting."
