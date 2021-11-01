@@ -98,3 +98,5 @@ endif ()
 # Set library properties
 set_target_properties (core PROPERTIES PREFIX "")
 set_target_properties (core PROPERTIES SUFFIX ".so")
+
+target_link_libraries (core PRIVATE voro++)

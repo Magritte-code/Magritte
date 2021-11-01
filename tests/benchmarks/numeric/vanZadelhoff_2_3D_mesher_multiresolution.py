@@ -28,15 +28,15 @@ def create_model (a_or_b):
     lamdaFile = f'{datdir}hco+.txt'
 
     # Read input file
-    r_shell, nH2, X_mol, temp, vs, turb = np.loadtxt(f'{curdir}/vanZadelhoff_2{a_or_b}.in', skiprows=7, unpack=True)
+    r_shell, nH2, X_mol, temp, vs, turb = np.loadtxt(f'vanZadelhoff_2{a_or_b}.in', skiprows=7, unpack=True)
 
     # Parameters
     dimension = 3
     nshells   = len(r_shell)
-    nrays     = 12 * 2**2#originally 12 * 3**2
+    nrays     = 12 * 3**2
     nspecs    = 5
     nlspecs   = 1
-    nquads    = 5#originally 7
+    nquads    = 7
 
     # Convert units to SI
     r_shell = r_shell * 1.0E-2
@@ -138,18 +138,21 @@ def run_model (a_or_b, nosave=False):
     model.compute_spectral_discretisation ()
     model.compute_inverse_line_widths     ()
     model.compute_LTE_level_populations   ()
+    nlevels=1;#number of coarser levels
+    #nlevels multiresolution levels, 0.1 as tolerance, mgImplementation=1 (Naive=1,Vcycle=2,Wcycle=3), finest level=0
+    model.setup_multiresolution(nlevels,0.1,1,1000,0);
     timer2.stop()
 
     timer3 = tools.Timer('running model')
     timer3.start()
-    model.compute_level_populations (True, 1000)
+    model.compute_level_populations_multiresolution(True)
     timer3.stop()
 
-    pops = np.array(model.lines.lineProducingSpecies[0].population).reshape((model.parameters.npoints(), 21))
+    pops = np.array(model.lines.lineProducingSpecies[0].population).reshape((model.parameters.npoints(), 2))
     abun = np.array(model.chemistry.species.abundance)[:,1]
     rs   = np.linalg.norm(np.array(model.geometry.points.position), axis=1)
 
-    (i,ra,rb,nh,tk,nm,vr,db,td,lp0,lp1,lp2,lp3,lp4) = np.loadtxt (f'{curdir}/Ratran_results/vanZadelhoff_2{a_or_b}.out', skiprows=14, unpack=True, usecols=range(14))
+    (i,ra,rb,nh,tk,nm,vr,db,td,lp0,lp1,lp2,lp3,lp4) = np.loadtxt (f'Ratran_results/vanZadelhoff_2{a_or_b}.out', skiprows=14, unpack=True, usecols=range(14))
 
     interp_0 = interp1d(0.5*(ra+rb), lp0, fill_value='extrapolate')
     interp_1 = interp1d(0.5*(ra+rb), lp1, fill_value='extrapolate')
@@ -185,7 +188,7 @@ def run_model (a_or_b, nosave=False):
     print(result)
 
     if not nosave:
-        with open(f'{resdir}{modelName}-{timestamp}.log' ,'w') as log:
+        with open(f'{resdir}{modelName}-{timestamp}_multiresolution_{nlevels}_lvls.log' ,'w') as log:
             log.write(result)
 
         plt.title(modelName)
