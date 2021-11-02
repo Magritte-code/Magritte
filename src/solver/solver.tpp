@@ -183,15 +183,23 @@ inline void Solver :: solve_feautrier_order_2 (Model& model)
 
     model.radiation.initialize_J();
 
+    vector<Size> points_in_grid=model.geometry.points.multiscale.get_current_points_in_grid();
+    Size nbpoints=points_in_grid.size();
+    //only use the points currently in the grid
     for (Size rr = 0; rr < model.parameters.hnrays(); rr++)
     {
         const Size ar = model.geometry.rays.antipod[rr];
 
         cout << "--- rr = " << rr << endl;
 
-        accelerated_for (o, model.parameters.npoints(),
+        accelerated_for (idx, nbpoints, nblocks, nthreads,
         {
+            const Size o=points_in_grid[idx];
             const Real dshift_max = get_dshift_max (model, o);
+
+        // accelerated_for (o, model.parameters.npoints(), nblocks, nthreads,
+        // {
+        //     const Real dshift_max = get_dshift_max (model, o);
 
             nr_   ()[centre] = o;
             shift_()[centre] = 1.0;
