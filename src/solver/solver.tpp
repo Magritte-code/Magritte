@@ -197,7 +197,7 @@ inline void Solver :: solve_feautrier_order_2 (Model& model)
 
         cout << "--- rr = " << rr << endl;
 
-        accelerated_for (idx, nbpoints, nblocks, nthreads,
+        accelerated_for (idx, nbpoints,
         {
             const Size o=points_in_grid[idx];
             const Real dshift_max = get_dshift_max (model, o);
