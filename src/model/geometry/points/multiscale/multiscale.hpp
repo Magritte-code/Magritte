@@ -46,6 +46,10 @@ struct Multiscale
 
     // The current coarsening level
     Size curr_coarsening_lvl=0;
+    Size curr_coarsening_lvl_copy=0;//temporary copy for when temporarily returning 0 as level
+    bool temporarily_returning_0_as_lvl=false;
+    // // For allowing to temporarily return the base level as level to use
+    // bool returning_0_as_level=false;
 
 
     //returns the current max coarsening level (=size neighbors-1)
@@ -83,6 +87,12 @@ struct Multiscale
     inline Size get_total_points(const Size lvl);
     //Returns the points in the current grid
     inline Size1 get_current_points_in_grid();
+
+
+    ///Temporarily sets the level to the the original grid. Important: do not forget to call the next function when done
+    inline void temporary_set_level_to_original_grid();
+    ///Resets the level to what it should be
+    inline void reset_temporary_level();
 
 };
 

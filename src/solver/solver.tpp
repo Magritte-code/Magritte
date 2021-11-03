@@ -186,6 +186,11 @@ inline void Solver :: solve_feautrier_order_2 (Model& model)
     vector<Size> points_in_grid=model.geometry.points.multiscale.get_current_points_in_grid();
     Size nbpoints=points_in_grid.size();
     //only use the points currently in the grid
+    if(model.using_same_grid)//temporarily do as if we are using the original grid, of course only computing for the lower grid
+    {
+        model.geometry.points.multiscale.temporary_set_level_to_original_grid();
+    }
+
     for (Size rr = 0; rr < model.parameters.hnrays(); rr++)
     {
         const Size ar = model.geometry.rays.antipod[rr];
@@ -231,6 +236,12 @@ inline void Solver :: solve_feautrier_order_2 (Model& model)
         })
 
         pc::accelerator::synchronize();
+
+    }
+
+    if(model.using_same_grid)//temporarily do as if we are using the original grid, of course only computing for the lower grid
+    {
+        model.geometry.points.multiscale.reset_temporary_level();
     }
 
     model.radiation.u.copy_ptr_to_vec();

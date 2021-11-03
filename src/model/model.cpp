@@ -339,7 +339,21 @@ int Model :: compute_radiation_field_feautrier_order_2 ()
     // Solver solver (length_max, width_max, parameters.n_off_diag);
 
     Solver solver;
+
+    //ray setup stuff should also be done using the same grid as the actual calculations
+    if(using_same_grid)//temporarily do as if we are using the original grid, of course only computing for the lower grid
+    {
+        geometry.points.multiscale.temporary_set_level_to_original_grid();
+    }
+
     solver.setup <CoMoving>        (*this);
+
+    if(using_same_grid)//temporarily do as if we are using the original grid, of course only computing for the lower grid
+    {
+        geometry.points.multiscale.reset_temporary_level();
+    }
+
+
     solver.solve_feautrier_order_2 (*this);
 
     return (0);
@@ -563,8 +577,25 @@ int Model :: compute_level_populations_multiresolution (
                     parameters.pop_prec(),
                     points_in_grid);
 
-                    iteration_normal++;
+                iteration_normal++;
             }
+
+
+            if (using_same_grid)//if using the same grid, we need to interpolate for the other non-calculated points
+            {
+                Size current_lvl=mrControllerHelper.get_current_level();
+                std::cout<<"current level"<<current_lvl<<std::endl;
+                //now interpolate for all other levels
+                for (Size level_diff=0; level_diff<current_lvl; level_diff++)
+                {
+                    interpolate_levelpops_local(current_lvl-level_diff);
+                }
+
+                // Again, do not forget to set emissivity and opacity after interpolating the levelpops
+                lines.set_emissivity_and_opacity ();
+
+            }
+
 
             //If enabled, we now write the level populations to the hdf5 file
             if (parameters.writing_populations_to_disk){
@@ -837,6 +868,19 @@ int Model :: compute_level_populations_multiresolution (
         }
 
         }//end of switch statement
+
+        // std::cout<<"here1"<<std::endl;
+        // if (using_same_grid)//if using the same grid, we need to interpolate for the other non-calculated points
+        // {
+        //     Size current_lvl=mrControllerHelper.get_current_level();
+        //     std::cout<<"current level"<<current_lvl<<std::endl;
+        //     //now interpolate for all other levels
+        //     for (Size level_diff=0; level_diff<current_lvl; level_diff++)
+        //     {
+        //         interpolate_levelpops_local(current_lvl-level_diff);
+        //     }
+        // }
+
     }//end of giant while loop until finished
 
     return iteration_sum;

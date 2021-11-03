@@ -377,6 +377,86 @@ inline T rbf_local(T radius)
     return std::exp(-std::pow(radius,2));
 }
 
+
+
+///  Returns nearby points on the coarser grid
+///    @param[in] p: the point around which to find the neighboring points on the coarser grid
+///    @param[in] coarser_lvl: the level of the coarser grid
+///    @returns : The neighboring points on the coarser grid
+inline vector<Size> Model::get_coarser_neighbors(Size p, Size coarser_lvl)
+{
+  std::set<Size> curr_neighbors=geometry.points.multiscale.get_neighbors(p,coarser_lvl-1);
+  //get neighbors in coarser grid
+  vector<Size> neighbors_coarser_grid;
+  neighbors_coarser_grid.reserve(curr_neighbors.size());//i am overallocating a bit, but this variable is temporary anyway...
+  for (Size neighbor: curr_neighbors)
+  {
+      // if (coarse_mask[neighbor])
+      if (geometry.points.multiscale.mask[coarser_lvl][neighbor])
+      {
+          neighbors_coarser_grid.push_back(neighbor);
+      }
+  }
+
+  // Note: using the current multiresolution creation method, the number of neighbors in the coarse grid is almost always at least 1
+  if (neighbors_coarser_grid.size()==0)//this happens very rarely
+  {
+      // std::cout<<"No neighbors for the current point! Using point which deleted it instead as neighbor."<<std::endl;
+      // std::cout<<"Current point: "<<diff_point<<std::endl;
+      // std::cout<<"Point which replaces it: "<<geometry.points.multiscale.point_deleted_map.at(diff_point)<<std::endl;
+      // Size repl_point=geometry.points.multiscale.point_deleted_map.at(diff_point);
+
+      neighbors_coarser_grid.push_back(geometry.points.multiscale.point_deleted_map.at(p));
+  }
+
+  // In the case we do not really have enough points for a good interpolation, just add more
+  if (neighbors_coarser_grid.size()<MIN_INTERPOLATION_POINTS)
+  {
+      std::set<Size> temp_neighbors_coarser_grid;
+      for (Size neighbor_coarse: neighbors_coarser_grid)
+      {
+          for (Size neighbor_of_coarse_neighbor: geometry.points.multiscale.get_neighbors(neighbor_coarse,coarser_lvl))
+          {   //just make sure that we do not accidentally insert a point we already have (in neighbors_coarser_grid)
+              if (std::find(neighbors_coarser_grid.begin(), neighbors_coarser_grid.end(), neighbor_of_coarse_neighbor) == neighbors_coarser_grid.end())
+              {
+                  temp_neighbors_coarser_grid.insert(neighbor_of_coarse_neighbor);
+              }
+          }
+      }
+      //Finally add our new points too
+      std::copy(temp_neighbors_coarser_grid.begin(), temp_neighbors_coarser_grid.end(), std::back_inserter(neighbors_coarser_grid));
+  }
+  if (neighbors_coarser_grid.size()>MAX_INTERPOLATION_POINTS)
+  {//now this just becomes: 1) to expensive to calculate and 2)difference between distances might become too large. So we remove some points
+      Size maxnbneighbors=MAX_INTERPOLATION_POINTS;
+      Size nbneighbors=neighbors_coarser_grid.size();
+      vector<double> distances2;//stores the distances squared of the n closest points
+      distances2.resize(maxnbneighbors);
+      std::fill(distances2.begin(), distances2.end(), std::numeric_limits<double>::max());
+      vector<Size> closest_points;//stores the n closest points
+      double maxdist=std::numeric_limits<double>::max();//maximum distance of the n closest points
+      Size maxindex=0;//corresponding index
+      closest_points.resize(maxnbneighbors);
+      std::fill(closest_points.begin(), closest_points.end(), parameters.npoints());
+      for (Size idx=0;idx<nbneighbors;idx++)
+      {
+          double tempdistance=(geometry.points.position[neighbors_coarser_grid[idx]]-geometry.points.position[p]).squaredNorm();
+          if (tempdistance<maxdist)
+          {   //replace the curr max distance
+              closest_points[maxindex]=neighbors_coarser_grid[idx];
+              distances2[maxindex]=tempdistance;
+              //get new max distance and corresponding max index
+              auto tempindex = std::max_element(distances2.begin(), distances2.end());
+              maxindex=tempindex - distances2.begin();
+              maxdist=distances2[maxindex];
+          }
+      }
+      neighbors_coarser_grid=closest_points;
+  }
+  return neighbors_coarser_grid;
+}
+
+
 //
 ///  Interpolates the relative differences of level populations (linearized matrix) from the coarser level to the first finer level
 ///  The result will be stored in relative_difference_levelpopulations
@@ -416,74 +496,7 @@ inline void Model::interpolate_relative_differences_local(Size coarser_lvl, vect
     //for every points in diff_points, try to find interpolating value using rbf function
     for (Size diff_point: diff_points)
     {
-        std::set<Size> curr_neighbors=geometry.points.multiscale.get_neighbors(diff_point,coarser_lvl-1);
-        //get neighbors in coarser grid
-        vector<Size> neighbors_coarser_grid;
-        neighbors_coarser_grid.reserve(curr_neighbors.size());//i am overallocating a bit, but this variable is temporary anyway...
-        for (Size neighbor: curr_neighbors)
-        {
-            // if (coarse_mask[neighbor])
-            if (geometry.points.multiscale.mask[coarser_lvl][neighbor])
-            {
-                neighbors_coarser_grid.push_back(neighbor);
-            }
-        }
-
-        // Note: using the current multiresolution creation method, the number of neighbors in the coarse grid is almost always at least 1
-        if (neighbors_coarser_grid.size()==0)//this happens very rarely
-        {
-            // std::cout<<"No neighbors for the current point! Using point which deleted it instead as neighbor."<<std::endl;
-            // std::cout<<"Current point: "<<diff_point<<std::endl;
-            // std::cout<<"Point which replaces it: "<<geometry.points.multiscale.point_deleted_map.at(diff_point)<<std::endl;
-            // Size repl_point=geometry.points.multiscale.point_deleted_map.at(diff_point);
-
-            neighbors_coarser_grid.push_back(geometry.points.multiscale.point_deleted_map.at(diff_point));
-        }
-
-        // In the case we do not really have enough points for a good interpolation, just add more
-        if (neighbors_coarser_grid.size()<MIN_INTERPOLATION_POINTS)
-        {
-            std::set<Size> temp_neighbors_coarser_grid;
-            for (Size neighbor_coarse: neighbors_coarser_grid)
-            {
-                for (Size neighbor_of_coarse_neighbor: geometry.points.multiscale.get_neighbors(neighbor_coarse,coarser_lvl))
-                { //just make sure that we do not accidentally insert a point we already have (in neighbors_coarser_grid)
-                    if (std::find(neighbors_coarser_grid.begin(), neighbors_coarser_grid.end(), neighbor_of_coarse_neighbor) == neighbors_coarser_grid.end())
-                    {
-                        temp_neighbors_coarser_grid.insert(neighbor_of_coarse_neighbor);
-                    }
-                }
-            }
-            //Finally add our new points too
-            std::copy(temp_neighbors_coarser_grid.begin(), temp_neighbors_coarser_grid.end(), std::back_inserter(neighbors_coarser_grid));
-        }
-        if (neighbors_coarser_grid.size()>MAX_INTERPOLATION_POINTS)
-        {//now this just becomes: 1) to expensive to calculate and 2)difference between distances might become too large
-            Size maxnbneighbors=MAX_INTERPOLATION_POINTS;
-            Size nbneighbors=neighbors_coarser_grid.size();
-            vector<double> distances2;//stores the distances2 of the n closest points
-            distances2.resize(maxnbneighbors);
-            std::fill(distances2.begin(), distances2.end(), std::numeric_limits<double>::max());
-            vector<Size> closest_points;//stores the n closest points
-            double maxdist=std::numeric_limits<double>::max();//maximum distance of the n closest points
-            Size maxindex=0;//corresponding index
-            closest_points.resize(maxnbneighbors);
-            std::fill(closest_points.begin(), closest_points.end(), parameters.npoints());
-            for (Size idx=0;idx<nbneighbors;idx++)
-            {
-                double tempdistance=(geometry.points.position[neighbors_coarser_grid[idx]]-geometry.points.position[diff_point]).squaredNorm();
-                if (tempdistance<maxdist)
-                {   //replace the curr max distance
-                    closest_points[maxindex]=neighbors_coarser_grid[idx];
-                    distances2[maxindex]=tempdistance;
-                    //get new max distance and corresponding max index
-                    auto tempindex = std::max_element(distances2.begin(), distances2.end());
-                    maxindex=tempindex - distances2.begin();
-                    maxdist=distances2[maxindex];
-                }
-            }
-            neighbors_coarser_grid=closest_points;
-        }
+        vector<Size> neighbors_coarser_grid=get_coarser_neighbors(diff_point,coarser_lvl);
 
         Size n_neighbors_coarser_grid=neighbors_coarser_grid.size();
 
@@ -592,74 +605,7 @@ inline void Model::interpolate_levelpops_local(Size coarser_lvl)
     //for every points in diff_points, try to find interpolating value using rbf function
     for (Size diff_point: diff_points)
     {
-        std::set<Size> curr_neighbors=geometry.points.multiscale.get_neighbors(diff_point,coarser_lvl-1);
-        //get neighbors in coarser grid
-        vector<Size> neighbors_coarser_grid;
-        neighbors_coarser_grid.reserve(curr_neighbors.size());//i am overallocating a bit, but this variable is temporary anyway...
-        for (Size neighbor: curr_neighbors)
-        {
-            // if (coarse_mask[neighbor])
-            if (geometry.points.multiscale.mask[coarser_lvl][neighbor])
-            {
-                neighbors_coarser_grid.push_back(neighbor);
-            }
-        }
-
-        // Note: using the current multiresolution creation method, the number of neighbors in the coarse grid is almost always at least 1
-        if (neighbors_coarser_grid.size()==0)//this happens very rarely
-        {
-            // std::cout<<"No neighbors for the current point! Using point which deleted it instead as neighbor."<<std::endl;
-            // std::cout<<"Current point: "<<diff_point<<std::endl;
-            // std::cout<<"Point which replaces it: "<<geometry.points.multiscale.point_deleted_map.at(diff_point)<<std::endl;
-            // Size repl_point=geometry.points.multiscale.point_deleted_map.at(diff_point);
-
-            neighbors_coarser_grid.push_back(geometry.points.multiscale.point_deleted_map.at(diff_point));
-        }
-
-        // In the case we do not really have enough points for a good interpolation, just add more
-        if (neighbors_coarser_grid.size()<MIN_INTERPOLATION_POINTS)
-        {
-            std::set<Size> temp_neighbors_coarser_grid;
-            for (Size neighbor_coarse: neighbors_coarser_grid)
-            {
-                for (Size neighbor_of_coarse_neighbor: geometry.points.multiscale.get_neighbors(neighbor_coarse,coarser_lvl))
-                {   //just make sure that we do not accidentally insert a point we already have (in neighbors_coarser_grid)
-                    if (std::find(neighbors_coarser_grid.begin(), neighbors_coarser_grid.end(), neighbor_of_coarse_neighbor) == neighbors_coarser_grid.end())
-                    {
-                        temp_neighbors_coarser_grid.insert(neighbor_of_coarse_neighbor);
-                    }
-                }
-            }
-            //Finally add our new points too
-            std::copy(temp_neighbors_coarser_grid.begin(), temp_neighbors_coarser_grid.end(), std::back_inserter(neighbors_coarser_grid));
-        }
-        if (neighbors_coarser_grid.size()>MAX_INTERPOLATION_POINTS)
-        {//now this just becomes: 1) to expensive to calculate and 2)difference between distances might become too large. So we remove some points
-            Size maxnbneighbors=MAX_INTERPOLATION_POINTS;
-            Size nbneighbors=neighbors_coarser_grid.size();
-            vector<double> distances2;//stores the distances2 of the n closest points
-            distances2.resize(maxnbneighbors);
-            std::fill(distances2.begin(), distances2.end(), std::numeric_limits<double>::max());
-            vector<Size> closest_points;//stores the n closest points
-            double maxdist=std::numeric_limits<double>::max();//maximum distance of the n closest points
-            Size maxindex=0;//corresponding index
-            closest_points.resize(maxnbneighbors);
-            std::fill(closest_points.begin(), closest_points.end(), parameters.npoints());
-            for (Size idx=0;idx<nbneighbors;idx++)
-            {
-                double tempdistance=(geometry.points.position[neighbors_coarser_grid[idx]]-geometry.points.position[diff_point]).squaredNorm();
-                if (tempdistance<maxdist)
-                {   //replace the curr max distance
-                    closest_points[maxindex]=neighbors_coarser_grid[idx];
-                    distances2[maxindex]=tempdistance;
-                    //get new max distance and corresponding max index
-                    auto tempindex = std::max_element(distances2.begin(), distances2.end());
-                    maxindex=tempindex - distances2.begin();
-                    maxdist=distances2[maxindex];
-                }
-            }
-            neighbors_coarser_grid=closest_points;
-        }
+        vector<Size> neighbors_coarser_grid=get_coarser_neighbors(diff_point,coarser_lvl);
 
         Size n_neighbors_coarser_grid=neighbors_coarser_grid.size();
 
@@ -744,3 +690,126 @@ inline void Model::interpolate_levelpops_local(Size coarser_lvl)
         }
     }
 }
+
+
+
+
+// ///  Interpolates the averaged intensities (J_eff and J_diff) from the coarser level to the next finer level
+// ///    @param[in]: coarser_lvl: the coarsening level of the coarser grid
+// /// NOTE: with some better data structure, we can remove some duplication between the interpolation functions
+// /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// inline void Model::interpolate_intensities_local(Size coarser_lvl)
+// {
+//     //we cannot interpolate from lvl 0 to some level -1, so just return
+//     if (coarser_lvl==0)
+//     {return;}
+//     std::cout<<"Starting the interpolation"<<std::endl;
+//     Size n_points=parameters.npoints();
+//
+//     // Vector<unsigned char> coarse_mask=geometry.points.multiscale.get_mask(coarser_lvl);
+//     // Vector<unsigned char> finer_mask=geometry.points.multiscale.get_mask(coarser_lvl-1);
+//
+//     vector<Size> diff_points;
+//
+//     for (Size point=0; point<n_points; point++)
+//     {
+//         // if(finer_mask[point]&&!coarse_mask[point])
+//         if(geometry.points.multiscale.mask[coarser_lvl-1][point]&&!geometry.points.multiscale.mask[coarser_lvl][point])
+//         {
+//             diff_points.push_back(point);
+//         }
+//     }
+//
+//     Size n_diff_points=diff_points.size();
+//
+//     //if we have truly nothing to do, just do nothing
+//     if (n_diff_points==0)
+//     {return;}
+//
+//     //for every point in diff_points, try to find interpolating value using rbf function
+//     for (Size diff_point: diff_points)
+//     {
+//         vector<Size> neighbors_coarser_grid=get_coarser_neighbors(diff_point,coarser_lvl);
+//
+//         Size n_neighbors_coarser_grid=neighbors_coarser_grid.size();
+//
+//         Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic> rbf_mat(n_neighbors_coarser_grid, n_neighbors_coarser_grid);
+//         Eigen::Matrix<double,1,Eigen::Dynamic> distance_with_neighbors(1,n_neighbors_coarser_grid);
+//
+//         for (Size idx=0; idx<n_neighbors_coarser_grid; idx++)
+//         {
+//             distance_with_neighbors(idx)=std::sqrt((geometry.points.position[neighbors_coarser_grid[idx]]-geometry.points.position[diff_point]).squaredNorm());
+//             rbf_mat(idx,idx)=0;//distance between point and itself is zero
+//             for (Size idx2=0; idx2<idx; idx2++)
+//             {
+//                 //calculate radius
+//                 double radius=std::sqrt((geometry.points.position[neighbors_coarser_grid[idx]]-geometry.points.position[neighbors_coarser_grid[idx2]]).squaredNorm());
+//                 rbf_mat(idx,idx2)=radius;
+//                 rbf_mat(idx2,idx)=radius;
+//             }
+//         }
+//         //just use the mean distance for less parameter tuning
+//         double meandist=distance_with_neighbors.mean();
+//
+//         rbf_mat=rbf_mat/meandist;
+//         rbf_mat=rbf_mat.unaryExpr(std::ptr_fun(rbf_local<double>));
+//
+//         distance_with_neighbors=distance_with_neighbors/meandist;
+//         distance_with_neighbors=distance_with_neighbors.unaryExpr(std::ptr_fun(rbf_local<double>));
+//
+//         // Going with ColPivHouseholderQR for simplicity and accuracy
+//         // Eigen::LDLT<Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic>> ldltdec(rbf_mat);
+//         // Technically, when using a gaussian RBF, the matrix should be positive definite:  see e.g. Fornberg and Flyer (2015). "Solving PDEs with radial basis functions"
+//         // But numerical nonsense can always occur (and the current implementation is fast enough)
+//         Eigen::ColPivHouseholderQR<Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic>> colPivHouseholderQr(rbf_mat);
+//         //now that we have our decomposition, calculate the interpolated value
+//         for (Size specidx=0; specidx<parameters.nlspecs(); specidx++)
+//         {
+//             // For finding out which abundance corresponds to to the current species
+//             Size speciesnum=lines.lineProducingSpecies[specidx].linedata.num;
+//             // We will interpolate the Jeff for all transitions
+//             vector<Real> Jeffs;
+//             vector<Real> Jdifs;
+//             Jeffs.resize(lines.lineProducingSpecies[specidx].linedata.nrad);
+//             Jdifs.resize(lines.lineProducingSpecies[specidx].linedata.nrad);
+//             //of course, we will calculate this for all radiative transitions
+//             for (Size radidx=0; radidx<lines.lineProducingSpecies[specidx].linedata.nrad; radidx++)
+//             {
+//                 Eigen::Vector<double,Eigen::Dynamic> right_hand_side_jeff(n_neighbors_coarser_grid);
+//                 Eigen::Vector<double,Eigen::Dynamic> right_hand_side_jdif(n_neighbors_coarser_grid);
+//                 for (Size idx=0; idx<n_neighbors_coarser_grid; idx++)
+//                 {
+//                     // RHS for interpolating Jeff
+//                     right_hand_side_jeff(idx)=static_cast<double>(lines.lineProducingSpecies[specidx].Jeff[neighbors_coarser_grid[idx]][radidx]);
+//                     right_hand_side_jdif(idx)=static_cast<double>(lines.lineProducingSpecies[specidx].Jdif[neighbors_coarser_grid[idx]][radidx]);
+//                 }
+//                 Eigen::Vector<double,Eigen::Dynamic> weights_jeff=colPivHouseholderQr.solve(right_hand_side_jeff);
+//                 Eigen::Vector<double,Eigen::Dynamic> weights_jdif=colPivHouseholderQr.solve(right_hand_side_jdif);
+//
+//                 Real interpolated_value_jeff=static_cast<Real>((distance_with_neighbors*weights_jeff)(0,0));
+//                 Real interpolated_value_jdif=static_cast<Real>((distance_with_neighbors*weights_jdif)(0,0));
+//
+//                 Jeffs[radidx]=interpolated_value_jeff;
+//                 Jdifs[radidx]=interpolated_value_jdif;
+//                 if (std::isnan(interpolated_value_jeff)||std::isinf(interpolated_value_jeff)||std::isnan(interpolated_value_jdif)||std::isinf(interpolated_value_jdif))//FIXME: also check for the potential rare case of getting negative levelpops
+//                 {
+//                     std::cout<<"Something went wrong during interpolating: nan/inf value occuring"<<std::endl;
+//                     throw std::runtime_error("Nan/inf encountered during interpolation");
+//                 }
+//             }// end of iterating over radiative transitions of species
+//             //TODO remove: Now first set negative values to 0 (because we do not want negative level populations)
+//             // for (Size i=0; i<linefracs.size(); i++)
+//             // {
+//             //     if (linefracs[i]<0){linefracs[i]=0;}
+//             // }
+//
+//             //and now we finally set the values
+//             // Real diff_point_abund=chemistry.species.abundance[diff_point][speciesnum];
+//             for (Size radidx=0; radidx<lines.lineProducingSpecies[specidx].linedata.nrad; radidx++)
+//             {
+//                 lines.lineProducingSpecies[specidx].Jeff[diff_point][radidx]=Jeffs[radidx];
+//                 lines.lineProducingSpecies[specidx].Jdif[diff_point][radidx]=Jdifs[radidx];
+//             }
+//         }
+//     }
+// }
