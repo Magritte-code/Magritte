@@ -22,6 +22,8 @@ struct Model
 
     const Size MAX_INTERPOLATION_POINTS=16;   ///< Maximum number of points used during interpolation (~=average nb neighors in voronoi grid)
 
+    bool using_same_grid=false; ///< 'temporary' way of defining whether one uses the new multiresolution method
+
     Size iteration_to_start_from=0;           ///< Number to start the iterations from (can be non-zero when loading the level populations)
 
     Parameters          parameters;
@@ -61,9 +63,13 @@ struct Model
 
     inline void coarsen_around_point (const Size p, Size new_coars_lvl);
 
+    inline vector<Size> get_coarser_neighbors(const Size p, Size coarser_lvl);
+
     inline void interpolate_relative_differences_local(Size coarser_lvl, vector<VectorXr> &relative_difference_levelpopulations);
 
     inline void interpolate_levelpops_local(Size coarser_lvl);
+
+    // inline void interpolate_intensities_local(Size coarser_lvl);
 
     inline int setup_multiresolution(Size max_coars_lvl, double tol, Size mgImplementation, Size max_n_iterations, Size finest_lvl);
 

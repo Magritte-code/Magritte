@@ -279,3 +279,24 @@ inline Size1 Multiscale::get_current_points_in_grid()
     }
     return toreturn;
 }
+
+///Temporarily sets the level to the the original grid. Important: do not forget to call the next function when done
+inline void Multiscale::temporary_set_level_to_original_grid()
+{
+    if (temporarily_returning_0_as_lvl==false)
+    {
+        curr_coarsening_lvl_copy=curr_coarsening_lvl;
+        curr_coarsening_lvl=0;
+        temporarily_returning_0_as_lvl=true;
+    }
+}
+///Resets the level to what it should be
+inline void Multiscale::reset_temporary_level()
+{
+    if (temporarily_returning_0_as_lvl==true)//only able to reset when it shou
+    {
+        curr_coarsening_lvl=curr_coarsening_lvl_copy;
+        curr_coarsening_lvl_copy=0;
+        temporarily_returning_0_as_lvl=false;
+    }
+}
