@@ -10,6 +10,9 @@
 #include "voro++.hh"
 #include <memory>
 
+#include <pcl/point_cloud.h>
+#include <pcl/octree/octree_search.h>
+
 
 ///  Calculates the distance squared between two points
 ///    @param[in] point1: The index of the first point

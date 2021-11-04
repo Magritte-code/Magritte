@@ -97,6 +97,7 @@ if (PYTHON_BINDINGS OR PYTHON_IO)
 endif ()
 
 add_subdirectory (dependencies/voro++ voro++)
+add_subdirectory (dependencies/pcl PointCloudLibrary)
 
 # Add source directory
 add_subdirectory (src)

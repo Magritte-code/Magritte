@@ -13,3 +13,6 @@
 [submodule "dependencies/voro++"]
 	path = dependencies/voro++
 	url = https://github.com/Magritte-code/voro
+[submodule "dependencies/pcl"]
+	path = dependencies/pcl
+	url = https://github.com/PointCloudLibrary/pcl.git
