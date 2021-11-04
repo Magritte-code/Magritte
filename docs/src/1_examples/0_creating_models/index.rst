@@ -16,5 +16,6 @@ The following examples show how to create Magritte models from analytic or tabul
    :maxdepth: 1
    :caption: Contents:
    
-   0_create_analytic_spiral.ipynb
+   0_create_analytic_disk.ipynb
+   1_create_analytic_spiral.ipynb
 
