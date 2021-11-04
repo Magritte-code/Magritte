@@ -3,6 +3,7 @@
 #include <set>
 #include <map>
 #include <tuple>
+#include <nanoflann.hpp>
 
 /// This class is meant to easily coarsen the grid stored in it.
 struct Multiscale
@@ -22,6 +23,27 @@ struct Multiscale
     vector<Vector<Size>>     intern_cum_n_neighbors;   ///< cumulative number of neighbors (coars lvl, point)
     vector<Vector<Size>>         intern_n_neighbors;   ///< number of neighbors (coars lvl, point)
     vector<Vector<Size>>           intern_neighbors;   ///< neighbors of each point (coars lvl, point)
+
+    // // A bit long thing for constructing a kd-tree index: using an L2 norm for distance (for nn purposes), and using as standard vector of vectors
+    // typedef nanoflann::KDTreeSingleIndexAdaptor<
+    // 		nanoflann::L2_Simple_Adaptor<double, std::vector<std::vector<double>> > ,
+    // 		std::vector<std::vector<double> >,
+    // 		3 /* dim */
+    // 		> simple_kd_tree;
+    //
+    // std::vector<simple_kd_tree> kd_tree_vector; //err, default constructor does not work; probably need to instantiate some temporary thingy
+
+    // testing out whether this works  https://www.tutorialguruji.com/cpp/nearest-neighbors-search-with-nanoflann/
+    typedef Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor> RowMatX3d;
+    typedef nanoflann::KDTreeEigenMatrixAdaptor<RowMatX3d> testtree;
+
+    std::vector<testtree>* kd_tree_vector_ptr; //note: this does not work, i need a pointer to this
+
+
+
+
+    // Sets the kd tree at each level
+    inline void set_kd_trees();
 
     // Sets the neighbors compatible with gpu usage from the other neighbors
     inline void set_intern_neighbors();

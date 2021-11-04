@@ -13,3 +13,6 @@
 [submodule "dependencies/voro++"]
 	path = dependencies/voro++
 	url = https://github.com/Magritte-code/voro
+[submodule "dependencies/nanoflann"]
+	path = dependencies/nanoflann
+	url = https://github.com/Magritte-code/nanoflann.git

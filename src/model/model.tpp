@@ -9,7 +9,7 @@
 #include <algorithm>
 #include "voro++.hh"
 #include <memory>
-
+#include <nanoflann.hpp>
 
 ///  Calculates the distance squared between two points
 ///    @param[in] point1: The index of the first point

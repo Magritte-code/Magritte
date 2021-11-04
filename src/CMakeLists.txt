@@ -5,6 +5,7 @@ include_directories (../dependencies/eigen)
 include_directories (../dependencies/pybind11)
 include_directories (../dependencies/pybind11/include)
 include_directories (../dependencies/voro++/src)
+include_directories (../dependencies/nanoflann/include)
 
 set (SOURCE_FILES
     io/cpp/io_cpp_text.cpp
@@ -80,6 +81,12 @@ if    (MPI_PARALLEL)
 endif (MPI_PARALLEL)
 
 target_link_libraries(Magritte voro++)
+
+# Find nanoflannConfig.cmake:
+find_package(nanoflann)
+
+# Make sure the include path is used:
+target_link_libraries(Magritte nanoflann::nanoflann)
 
 if    (PYTHON_IO)
     # Create library for python io
