@@ -40,9 +40,9 @@ inline MrController::Actions NaiveMG::get_next_action()
     {//otherwise just remain on the current grid, iterating until convergence/max_n_iterations reached
         if (current_n_iterations<max_n_iterations)
         {
-            std::cout<<"Returning stay"<<std::endl;
+            std::cout<<"Returning stay_and_interpolate"<<std::endl;
             current_n_iterations++;
-            return Actions::stay;
+            return Actions::stay_and_interpolate;
         }
         else
         {

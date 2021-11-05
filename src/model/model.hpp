@@ -20,6 +20,10 @@ struct Model
 {
     const Size MIN_INTERPOLATION_POINTS=16;   ///< Minimum number of points used during interpolation (~=average nb neighors in voronoi grid)
 
+    const Size INTERPOLATION_POINTS_1D=4;     ///< Number of interpolation points to use for 1D computations (spherical symmetry)
+    const Size INTERPOLATION_POINTS_3D=16;    ///< Number of interpolation points to use for 3D computations (general geometry)
+
+
     const Size MAX_INTERPOLATION_POINTS=16;   ///< Maximum number of points used during interpolation (~=average nb neighors in voronoi grid)
 
     bool using_same_grid=false; ///< 'temporary' way of defining whether one uses the new multiresolution method
@@ -65,13 +69,18 @@ struct Model
 
     inline vector<Size> get_coarser_neighbors(const Size p, Size coarser_lvl);
 
+    //TODO: moved to tools/types.hpp
+    // // testing out whether this works  https://www.tutorialguruji.com/cpp/nearest-neighbors-search-with-nanoflann/
+    // typedef Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor> RowMatX3d;
+    // typedef nanoflann::KDTreeEigenMatrixAdaptor<RowMatX3d> kd_tree;
+
     inline std::tuple<Eigen::Matrix<double, Eigen::Dynamic, 3>, Size1> create_mat_for_kd_tree_of_lvl(Size lvl);
 
     inline vector<Size> get_coarser_neighbors_kd_tree(Size p, kd_tree& kdtree, Size1& index_conversion);
 
-    inline void interpolate_relative_differences_local(Size coarser_lvl, vector<VectorXr> &relative_difference_levelpopulations);
+    inline void interpolate_relative_differences_local(Size coarser_lvl, Size finer_lvl ,vector<VectorXr> &relative_difference_levelpopulations);
 
-    inline void interpolate_levelpops_local(Size coarser_lvl);
+    inline void interpolate_levelpops_local(Size coarser_lvl, Size finer_lvl);
 
     // inline void interpolate_intensities_local(Size coarser_lvl);
 

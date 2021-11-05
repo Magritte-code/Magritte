@@ -26,6 +26,7 @@ struct NaiveMG : virtual public MrController
     //   interpolate_corrections,//interpolating the relative corrections
     //   restrict,               //restricting the levelpops and residuals
     //   stay,                   //remain on the same grid level; keep iterating
+    //   stay_and_interpolate,   //remain on the same grid level, but also interpolate if necessary
     //   finish,                 //the entire multiresolution procedure is finished
     //   goto_coarsest           //signals that we start iterating at the coarsest grid//also possible after reset()
     //     }

@@ -415,6 +415,7 @@ inline std::tuple<Eigen::Matrix<double, Eigen::Dynamic, 3>, Size1> Model::create
 }
 
 
+///  DEPRECATED, replace usage by Model::get_coarser_neighbors_kd_tree
 ///  Returns nearby points on the coarser grid
 ///    @param[in] p: the point around which to find the neighboring points on the coarser grid
 ///    @param[in] coarser_lvl: the level of the coarser grid
@@ -496,6 +497,7 @@ inline vector<Size> Model::get_coarser_neighbors(Size p, Size coarser_lvl)
 ///   @param[in] p: index of point for which to find the closest neighbors in a coarser grid (?TODO? I do not know whether you are allowed to choose a point already in the coarser grid, so please refrain from doing so)
 ///   @param[in] kdtree: The kd tree generated using the coarser grid (just use Model::create_mat_for_kd_tree_of_lvl)
 ///   @param[in] index_conversion: vector for converting from 'compressed' index (corresponding to the coarser grid) to the regular index
+///   @Returns: a vector with indices corresponding to the nearest points on the coarser grid
 inline vector<Size> Model::get_coarser_neighbors_kd_tree(Size p, kd_tree& kdtree, Size1& index_conversion)
 {
     std::vector<double> query_pt(3);
@@ -503,24 +505,35 @@ inline vector<Size> Model::get_coarser_neighbors_kd_tree(Size p, kd_tree& kdtree
     query_pt[1]=geometry.points.position[p].y();
     query_pt[2]=geometry.points.position[p].z();
 
+    Size nb_neighbors_to_query;
+
+    if (parameters.spherical_symmetry())
+    {
+        nb_neighbors_to_query=INTERPOLATION_POINTS_1D;
+    }
+    else
+    {
+        nb_neighbors_to_query=INTERPOLATION_POINTS_3D;
+    }
+
     //TODO: locally define something for replacing the n usages of MIN_INTERPOLATION_POINTS
 
     // Note to self, nanoflann requires size_t (unsigned int), so that is why we do not use our Size (long unsinged int) here
-    vector<size_t> ret_indexes(MIN_INTERPOLATION_POINTS);//still need to be translated to the actual indices
-    vector<double> out_dists_sqr(MIN_INTERPOLATION_POINTS);//note: we are not really using this, but nanoflann requires it
+    vector<size_t> ret_indexes(nb_neighbors_to_query);//still need to be translated to the actual indices
+    vector<double> out_dists_sqr(nb_neighbors_to_query);//note: we are not really using this, but nanoflann requires it
 
-    nanoflann::KNNResultSet<double> resultSet(MIN_INTERPOLATION_POINTS);
+    nanoflann::KNNResultSet<double> resultSet(nb_neighbors_to_query);
 
     resultSet.init(&ret_indexes[0], &out_dists_sqr[0]);
     kdtree.index->findNeighbors(resultSet, &query_pt[0],
                                  nanoflann::SearchParams(10));
 
     vector<Size> true_indices;
-    true_indices.resize(MIN_INTERPOLATION_POINTS);
-    for (size_t i=0; i<MIN_INTERPOLATION_POINTS; i++)
+    true_indices.resize(nb_neighbors_to_query);
+    for (size_t i=0; i<nb_neighbors_to_query; i++)
     {
         true_indices[i]=index_conversion[ret_indexes[i]];
-        std::cout<<"for point "<<p<<" found neighbor: "<<true_indices[i]<<std::endl;
+        // std::cout<<"for point "<<p<<" found neighbor: "<<true_indices[i]<<std::endl;
     }
     return true_indices;
 }
@@ -533,7 +546,7 @@ inline vector<Size> Model::get_coarser_neighbors_kd_tree(Size p, kd_tree& kdtree
 ///    @param[in,out] relative_difference_levelpopulations: The relative differences for the level populations (line species, lineProducingSpecies.index(point, level))
 ///  NOTE: with some better data structure, we can remove some duplication between the interpolation functions
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-inline void Model::interpolate_relative_differences_local(Size coarser_lvl, vector<VectorXr> &relative_difference_levelpopulations)
+inline void Model::interpolate_relative_differences_local(Size coarser_lvl, Size finer_lvl, vector<VectorXr> &relative_difference_levelpopulations)
 {
     //we cannot interpolate from lvl 0 to some level -..., so just return
     if (coarser_lvl==0)
@@ -549,7 +562,7 @@ inline void Model::interpolate_relative_differences_local(Size coarser_lvl, vect
     for (Size point=0; point<n_points; point++)
     {
         // if(finer_mask[point]&&!coarse_mask[point])
-        if((geometry.points.multiscale.mask[coarser_lvl-1][point])&&!(geometry.points.multiscale.mask[coarser_lvl][point]))
+        if((geometry.points.multiscale.mask[finer_lvl][point])&&!(geometry.points.multiscale.mask[coarser_lvl][point]))
         {
             diff_points.push_back(point);
         }
@@ -574,8 +587,8 @@ inline void Model::interpolate_relative_differences_local(Size coarser_lvl, vect
     //for every points in diff_points, try to find interpolating value using rbf function
     for (Size diff_point: diff_points)
     {
-        vector<Size> neighbors_coarser_grid=get_coarser_neighbors(diff_point,coarser_lvl);
-        // vector<Size> neighbors_coarser_grid=get_coarser_neighbors_kd_tree(diff_point, mat_index, index_conversion);
+        // vector<Size> neighbors_coarser_grid=get_coarser_neighbors(diff_point,coarser_lvl);
+        vector<Size> neighbors_coarser_grid=get_coarser_neighbors_kd_tree(diff_point, mat_index, index_conversion);
 
         Size n_neighbors_coarser_grid=neighbors_coarser_grid.size();
 
@@ -653,7 +666,7 @@ inline void Model::interpolate_relative_differences_local(Size coarser_lvl, vect
 ///    @param[in]: coarser_lvl: the coarsening level of the coarser grid
 /// NOTE: with some better data structure, we can remove some duplication between the interpolation functions
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
-inline void Model::interpolate_levelpops_local(Size coarser_lvl)
+inline void Model::interpolate_levelpops_local(Size coarser_lvl, Size finer_lvl)
 {
     //we cannot interpolate from lvl 0 to some level -1, so just return
     if (coarser_lvl==0)
@@ -669,7 +682,7 @@ inline void Model::interpolate_levelpops_local(Size coarser_lvl)
     for (Size point=0; point<n_points; point++)
     {
         // if(finer_mask[point]&&!coarse_mask[point])
-        if(geometry.points.multiscale.mask[coarser_lvl-1][point]&&!geometry.points.multiscale.mask[coarser_lvl][point])
+        if(geometry.points.multiscale.mask[finer_lvl][point]&&!geometry.points.multiscale.mask[coarser_lvl][point])
         {
             diff_points.push_back(point);
         }
@@ -694,8 +707,8 @@ inline void Model::interpolate_levelpops_local(Size coarser_lvl)
     //for every points in diff_points, try to find interpolating value using rbf function
     for (Size diff_point: diff_points)
     {
-        vector<Size> neighbors_coarser_grid=get_coarser_neighbors(diff_point,coarser_lvl);
-        // vector<Size> neighbors_coarser_grid=get_coarser_neighbors_kd_tree(diff_point, mat_index, index_conversion);
+        // vector<Size> neighbors_coarser_grid=get_coarser_neighbors(diff_point,coarser_lvl);
+        vector<Size> neighbors_coarser_grid=get_coarser_neighbors_kd_tree(diff_point, mat_index, index_conversion);
 
         Size n_neighbors_coarser_grid=neighbors_coarser_grid.size();
 

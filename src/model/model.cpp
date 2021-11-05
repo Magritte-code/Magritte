@@ -583,13 +583,126 @@ int Model :: compute_level_populations_multiresolution (
 
             if (using_same_grid)//if using the same grid, we need to interpolate for the other non-calculated points
             {
-                Size current_lvl=mrControllerHelper.get_current_level();
-                std::cout<<"current level"<<current_lvl<<std::endl;
-                //now interpolate for all other levels
-                for (Size level_diff=0; level_diff<current_lvl; level_diff++)
+                interpolate_levelpops_local(mrControllerHelper.get_current_level(),0);
+            //     Size current_lvl=mrControllerHelper.get_current_level();
+            //     std::cout<<"current level"<<current_lvl<<std::endl;
+            //     //now interpolate for all other levels
+            //     for (Size level_diff=0; level_diff<current_lvl; level_diff++)
+            //     {
+            //         interpolate_levelpops_local(current_lvl-level_diff);
+            //     }
+            //
+            //     // Again, do not forget to set emissivity and opacity after interpolating the levelpops
+            //     lines.set_emissivity_and_opacity ();
+            //
+            }
+
+
+            //If enabled, we now write the level populations to the hdf5 file
+            if (parameters.writing_populations_to_disk){
+                IoPython io = IoPython ("hdf5", parameters.model_name());
+                lines.write_populations_of_iteration(io, iterations_per_level[geometry.points.multiscale.get_curr_coars_lvl()], geometry.points.multiscale.get_curr_coars_lvl());
+                std::cout<<"Wrote populations to disk"<<std::endl;
+            }
+
+            //And now we check for all species whether the level populations have already converged
+            for (int l = 0; l < parameters.nlspecs(); l++)
+            {
+                //note: this information is only based on the points currently in the grid.
+                error_mean.push_back (lines.lineProducingSpecies[l].relative_change_mean);
+                error_max .push_back (lines.lineProducingSpecies[l].relative_change_max);
+
+                if (lines.lineProducingSpecies[l].fraction_not_converged > 0.005)
                 {
-                    interpolate_levelpops_local(current_lvl-level_diff);
+                    some_not_converged = true;
                 }
+
+                const double fnc = lines.lineProducingSpecies[l].fraction_not_converged;
+                prev_it_frac_not_converged[l]=fnc;
+
+                cout << "Already " << 100 * (1.0 - fnc) << " % converged!" << endl;
+            }
+
+            //If all level populations have converged, let it know to the mrController
+            if (!some_not_converged)
+            {
+                iteration_sum+=iteration;
+                iteration=0;
+                //signal convergence on current grid
+                mrControllerHelper.converged_on_current_grid();
+                std::cout<<"Signaling convergence"<<std::endl;
+            }
+
+            break;
+        }
+
+
+        //Signal to do one iteration the current level and interpolate if using_same_grid
+        case MrController::Actions::stay_and_interpolate:
+        {
+            //Stopping current timer and replace with timer at current level
+            (*current_timer_pointer).stop();
+            timers_per_level[geometry.points.multiscale.get_curr_coars_lvl()].start();
+            current_timer_pointer=&timers_per_level[geometry.points.multiscale.get_curr_coars_lvl()];
+
+            std::cout<<"Action stay"<<std::endl;
+
+            iterations_per_level[geometry.points.multiscale.get_curr_coars_lvl()]++;
+            iteration++;
+            // logger.write ("Starting iteration ", iteration);
+            cout << "Starting iteration " << iterations_per_level[geometry.points.multiscale.get_curr_coars_lvl()] << " for coarsening level: " << geometry.points.multiscale.get_curr_coars_lvl() << endl;
+
+
+            // If a multiresolution operation has happened, just put the previous level populations here to compare against
+            if (multiresolution_operation_happened)
+            {
+                multiresolution_operation_happened=false;
+                lines.set_all_level_pops(computed_level_populations[geometry.points.multiscale.get_curr_coars_lvl()]);
+            }
+
+            // Start assuming convergence
+            some_not_converged = false;
+
+            if (use_Ng_acceleration && (iteration_normal == 4))
+            {
+                vector<Size> points_in_grid=geometry.points.multiscale.get_current_points_in_grid();
+                //In this next line, we will also calculate the convergence of the levelpops
+                lines.iteration_using_Ng_acceleration (parameters.pop_prec(), points_in_grid);
+
+                iteration_normal = 0;
+            }
+            else
+            {
+                cout << "Computing the radiation field..." << endl;
+                // calculate the radiation field on this level
+                compute_radiation_field_feautrier_order_2 ();
+
+                std::cout << "Computed feautrier" << std::endl;
+                compute_Jeff                              ();
+
+                vector<Size> points_in_grid=geometry.points.multiscale.get_current_points_in_grid();
+                //In this next line, we will also calculate the convergence of the levelpops (directly after computing the level populations)
+                lines.iteration_using_statistical_equilibrium (
+                    chemistry.species.abundance,
+                    thermodynamics.temperature.gas,
+                    parameters.pop_prec(),
+                    points_in_grid);
+
+                iteration_normal++;
+            }
+
+
+            if (using_same_grid)//if using the same grid, we need to interpolate for the other non-calculated points
+            {
+                Size current_lvl=mrControllerHelper.get_current_level();
+                interpolate_levelpops_local(current_lvl,0);
+                std::cout<<"current level"<<current_lvl<<std::endl;
+                // //now interpolate for all other levels
+                //
+                // for (Size level_diff=0; level_diff<current_lvl; level_diff++)
+                // {
+                    // interpolate_levelpops_local(current_lvl-level_diff);
+                // }
 
                 // Again, do not forget to set emissivity and opacity after interpolating the levelpops
                 lines.set_emissivity_and_opacity ();
@@ -635,6 +748,7 @@ int Model :: compute_level_populations_multiresolution (
             break;
         }
 
+
         //Signal when one has to interpolate the level populations
         case MrController::Actions::interpolate_levelpops:
         {
@@ -650,7 +764,14 @@ int Model :: compute_level_populations_multiresolution (
 
             //Now interpolating the level populations to the next finer level
             cout<<"trying to interpolate level populations; current coarsening level: "<<geometry.points.multiscale.get_curr_coars_lvl()<<endl;
-            interpolate_levelpops_local(geometry.points.multiscale.get_curr_coars_lvl());
+            if (using_same_grid)
+            {
+                interpolate_levelpops_local(geometry.points.multiscale.get_curr_coars_lvl(), 0);
+            }
+            else
+            {
+                interpolate_levelpops_local(geometry.points.multiscale.get_curr_coars_lvl(), geometry.points.multiscale.get_curr_coars_lvl()-1);
+            }
             cout<<"successfully interpolated level populations"<<endl;
             geometry.points.multiscale.set_curr_coars_lvl(geometry.points.multiscale.get_curr_coars_lvl()-1);
 
@@ -729,6 +850,8 @@ int Model :: compute_level_populations_multiresolution (
             //Saving the current level populations
             computed_level_populations[geometry.points.multiscale.get_curr_coars_lvl()]=lines.get_all_level_pops();
 
+            // if (!using_same_grid)//disabling the correction interpolation, as it might conflict with the other interpolation
+            // {
 
             //pseudocode of what will be happening
             //for all species:
@@ -763,9 +886,17 @@ int Model :: compute_level_populations_multiresolution (
 
                 rel_diff_pops[specidx]=temp_rel_diff_pops;
             }
-
+            if (using_same_grid)
+            {
+                // interpolate_relative_differences_local(geometry.points.multiscale.get_curr_coars_lvl(), geometry.points.multiscale.get_curr_coars_lvl()-1, rel_diff_pops);
+                interpolate_relative_differences_local(geometry.points.multiscale.get_curr_coars_lvl(), 0, rel_diff_pops);
+            }
+            else
+            {
+                interpolate_relative_differences_local(geometry.points.multiscale.get_curr_coars_lvl(), geometry.points.multiscale.get_curr_coars_lvl()-1, rel_diff_pops);
+            }
             //Now finally interpolate the relative differences
-            interpolate_relative_differences_local(geometry.points.multiscale.get_curr_coars_lvl(), rel_diff_pops);
+            // interpolate_relative_differences_local(geometry.points.multiscale.get_curr_coars_lvl(), rel_diff_pops);
 
             geometry.points.multiscale.set_curr_coars_lvl(geometry.points.multiscale.get_curr_coars_lvl()-1);
 
@@ -822,6 +953,8 @@ int Model :: compute_level_populations_multiresolution (
             error_max .clear ();
             // reinitialize some_not_converged
             some_not_converged = true;
+
+            // }
 
             break;
         }
