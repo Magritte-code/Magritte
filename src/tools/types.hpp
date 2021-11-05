@@ -18,6 +18,9 @@ using Eigen::MatrixXd;
 #include "paracabs.hpp"
 namespace pc = paracabs;
 
+#include <nanoflann.hpp>
+// #include "nanoflann/KDTreeVectorOfVectorsAdaptor.h"
+
 // Default Real and Size types
 typedef long double Real;
 typedef uint32_t   Size;
@@ -112,3 +115,9 @@ typedef Eigen::Matrix<Real, Eigen::Dynamic, Eigen::Dynamic> MatrixXr;
 typedef vector<VectorXr>  MatrixXr1;
 typedef vector<VectorXr1> MatrixXr2;
 typedef vector<VectorXr2> MatrixXr3;
+
+/// Kd tree types
+// typedef nanoflann::KDTreeVectorOfVectorsAdaptor< std::vector<std::vector<double>>, double > kd_tree;
+// typedef Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor> RowMatX3d;
+// typedef nanoflann::KDTreeEigenMatrixAdaptor<RowMatX3d> kd_tree;
+typedef nanoflann::KDTreeEigenMatrixAdaptor<Eigen::Matrix<double, Eigen::Dynamic, 3>> kd_tree;

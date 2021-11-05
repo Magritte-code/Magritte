@@ -65,6 +65,10 @@ struct Model
 
     inline vector<Size> get_coarser_neighbors(const Size p, Size coarser_lvl);
 
+    inline std::tuple<Eigen::Matrix<double, Eigen::Dynamic, 3>, Size1> create_mat_for_kd_tree_of_lvl(Size lvl);
+
+    inline vector<Size> get_coarser_neighbors_kd_tree(Size p, kd_tree& kdtree, Size1& index_conversion);
+
     inline void interpolate_relative_differences_local(Size coarser_lvl, vector<VectorXr> &relative_difference_levelpopulations);
 
     inline void interpolate_levelpops_local(Size coarser_lvl);

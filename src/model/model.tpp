@@ -379,6 +379,42 @@ inline T rbf_local(T radius)
 
 
 
+
+
+
+/// For now, we will create the kd tree on the fly
+/// This is due to default initialization (and anything which remotely looks like it) being impossible for these trees, i guess the data just goes out of scope
+inline std::tuple<Eigen::Matrix<double, Eigen::Dynamic, 3>, Size1> Model::create_mat_for_kd_tree_of_lvl(Size lvl)
+{
+    Eigen::Matrix<double, Eigen::Dynamic, 3> temp_mat(geometry.points.multiscale.get_total_points(lvl), 3);
+    // std::vector<std::vector<double>> positions;
+
+    Size1 points_at_lvl=geometry.points.multiscale.get_points_at_lvl(lvl);
+    // positions.resize(points_at_lvl);
+    Size i=0;//just a temporary index
+    for (auto point_to_add:points_at_lvl)
+    {//add each point to the vector of vectors
+        // add x, y and z
+        // positions[i].resize();
+
+        // positions[i][0]=geometry.points.position[point_to_add].x();
+        // positions[i][1]=geometry.points.position[point_to_add].y();
+        // positions[i][2]=geometry.points.position[point_to_add].z();
+        temp_mat(i,0)=geometry.points.position[point_to_add].x();
+        temp_mat(i,1)=geometry.points.position[point_to_add].y();
+        temp_mat(i,2)=geometry.points.position[point_to_add].z();
+        i=i+1;
+    }
+
+    // For creating the kd_tree, add
+    //Set the kd_tree
+    // kd_tree mat_index(3, create_mat_for_kd_tree_of_lvl(Size lvl), 10 /* max leaf */);
+    // mat_index.index->buildIndex();
+
+    return std::make_tuple(temp_mat,points_at_lvl);
+}
+
+
 ///  Returns nearby points on the coarser grid
 ///    @param[in] p: the point around which to find the neighboring points on the coarser grid
 ///    @param[in] coarser_lvl: the level of the coarser grid
@@ -456,6 +492,39 @@ inline vector<Size> Model::get_coarser_neighbors(Size p, Size coarser_lvl)
   return neighbors_coarser_grid;
 }
 
+/// Returns the closest points for point p on the coarser grid as defined by the matrix generationg the kd tree
+///   @param[in] p: index of point for which to find the closest neighbors in a coarser grid (?TODO? I do not know whether you are allowed to choose a point already in the coarser grid, so please refrain from doing so)
+///   @param[in] kdtree: The kd tree generated using the coarser grid (just use Model::create_mat_for_kd_tree_of_lvl)
+///   @param[in] index_conversion: vector for converting from 'compressed' index (corresponding to the coarser grid) to the regular index
+inline vector<Size> Model::get_coarser_neighbors_kd_tree(Size p, kd_tree& kdtree, Size1& index_conversion)
+{
+    std::vector<double> query_pt(3);
+    query_pt[0]=geometry.points.position[p].x();
+    query_pt[1]=geometry.points.position[p].y();
+    query_pt[2]=geometry.points.position[p].z();
+
+    //TODO: locally define something for replacing the n usages of MIN_INTERPOLATION_POINTS
+
+    // Note to self, nanoflann requires size_t (unsigned int), so that is why we do not use our Size (long unsinged int) here
+    vector<size_t> ret_indexes(MIN_INTERPOLATION_POINTS);//still need to be translated to the actual indices
+    vector<double> out_dists_sqr(MIN_INTERPOLATION_POINTS);//note: we are not really using this, but nanoflann requires it
+
+    nanoflann::KNNResultSet<double> resultSet(MIN_INTERPOLATION_POINTS);
+
+    resultSet.init(&ret_indexes[0], &out_dists_sqr[0]);
+    kdtree.index->findNeighbors(resultSet, &query_pt[0],
+                                 nanoflann::SearchParams(10));
+
+    vector<Size> true_indices;
+    true_indices.resize(MIN_INTERPOLATION_POINTS);
+    for (size_t i=0; i<MIN_INTERPOLATION_POINTS; i++)
+    {
+        true_indices[i]=index_conversion[ret_indexes[i]];
+        std::cout<<"for point "<<p<<" found neighbor: "<<true_indices[i]<<std::endl;
+    }
+    return true_indices;
+}
+
 
 //
 ///  Interpolates the relative differences of level populations (linearized matrix) from the coarser level to the first finer level
@@ -493,10 +562,20 @@ inline void Model::interpolate_relative_differences_local(Size coarser_lvl, vect
     if (n_diff_points==0)
     {return;}
 
+    //Set the kd_tree
+    Eigen::Matrix<double, Eigen::Dynamic, 3> temp_mat;
+    Size1 index_conversion;
+    auto tuple=create_mat_for_kd_tree_of_lvl(coarser_lvl);
+    temp_mat=std::get<0>(tuple);
+    index_conversion=std::get<1>(tuple);
+    kd_tree mat_index(3, temp_mat, 10 /* max leaf */);
+    mat_index.index->buildIndex();
+
     //for every points in diff_points, try to find interpolating value using rbf function
     for (Size diff_point: diff_points)
     {
         vector<Size> neighbors_coarser_grid=get_coarser_neighbors(diff_point,coarser_lvl);
+        // vector<Size> neighbors_coarser_grid=get_coarser_neighbors_kd_tree(diff_point, mat_index, index_conversion);
 
         Size n_neighbors_coarser_grid=neighbors_coarser_grid.size();
 
@@ -602,10 +681,21 @@ inline void Model::interpolate_levelpops_local(Size coarser_lvl)
     if (n_diff_points==0)
     {return;}
 
+
+    //Set the kd_tree
+    Eigen::Matrix<double, Eigen::Dynamic, 3> temp_mat;
+    Size1 index_conversion;
+    auto tuple=create_mat_for_kd_tree_of_lvl(coarser_lvl);
+    temp_mat=std::get<0>(tuple);
+    index_conversion=std::get<1>(tuple);
+    kd_tree mat_index(3, temp_mat, 10 /* max leaf */);
+    mat_index.index->buildIndex();
+
     //for every points in diff_points, try to find interpolating value using rbf function
     for (Size diff_point: diff_points)
     {
         vector<Size> neighbors_coarser_grid=get_coarser_neighbors(diff_point,coarser_lvl);
+        // vector<Size> neighbors_coarser_grid=get_coarser_neighbors_kd_tree(diff_point, mat_index, index_conversion);
 
         Size n_neighbors_coarser_grid=neighbors_coarser_grid.size();
 

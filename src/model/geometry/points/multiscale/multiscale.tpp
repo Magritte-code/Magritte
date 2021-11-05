@@ -272,13 +272,30 @@ inline Size1 Multiscale::get_current_points_in_grid()
     Size1 toreturn;
     for (Size idx=0; idx<parameters.npoints(); idx++)
     {
-        if (mask[curr_coarsening_lvl][idx])
+        if (mask[get_curr_coars_lvl()][idx])
         {
             toreturn.push_back(idx);
         }
     }
     return toreturn;
 }
+
+/// Returns the points in the current grid (ordered from low to high)
+///   @param[in] lvl: the index of the coarsening level
+/////////////////////////////////////////////////////////////////////
+inline Size1 Multiscale::get_points_at_lvl(const Size lvl)
+{
+    Size1 toreturn;
+    for (Size idx=0; idx<parameters.npoints(); idx++)
+    {
+        if (mask[lvl][idx])
+        {
+            toreturn.push_back(idx);
+        }
+    }
+    return toreturn;
+}
+
 
 ///Temporarily sets the level to the the original grid. Important: do not forget to call the next function when done
 inline void Multiscale::temporary_set_level_to_original_grid()
