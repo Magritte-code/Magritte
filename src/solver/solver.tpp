@@ -202,10 +202,6 @@ inline void Solver :: solve_feautrier_order_2 (Model& model)
             const Size o=points_in_grid[idx];
             const Real dshift_max = get_dshift_max (model, o);
 
-        // accelerated_for (o, model.parameters.npoints(), nblocks, nthreads,
-        // {
-        //     const Real dshift_max = get_dshift_max (model, o);
-
             nr_   ()[centre] = o;
             shift_()[centre] = 1.0;
 
