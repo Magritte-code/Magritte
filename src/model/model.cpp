@@ -583,7 +583,7 @@ int Model :: compute_level_populations_multiresolution (
 
             if (using_same_grid)//if using the same grid, we need to interpolate for the other non-calculated points
             {
-                interpolate_levelpops_local(mrControllerHelper.get_current_level(),0);
+                interpolate_levelpops_local(geometry.points.multiscale.get_curr_coars_lvl(),0);
             //     Size current_lvl=mrControllerHelper.get_current_level();
             //     std::cout<<"current level"<<current_lvl<<std::endl;
             //     //now interpolate for all other levels
@@ -694,7 +694,7 @@ int Model :: compute_level_populations_multiresolution (
 
             if (using_same_grid)//if using the same grid, we need to interpolate for the other non-calculated points
             {
-                Size current_lvl=mrControllerHelper.get_current_level();
+                Size current_lvl=geometry.points.multiscale.get_curr_coars_lvl();
                 interpolate_levelpops_local(current_lvl,0);
                 std::cout<<"current level"<<current_lvl<<std::endl;
                 // //now interpolate for all other levels
@@ -888,8 +888,11 @@ int Model :: compute_level_populations_multiresolution (
             }
             if (using_same_grid)
             {
-                // interpolate_relative_differences_local(geometry.points.multiscale.get_curr_coars_lvl(), geometry.points.multiscale.get_curr_coars_lvl()-1, rel_diff_pops);
-                interpolate_relative_differences_local(geometry.points.multiscale.get_curr_coars_lvl(), 0, rel_diff_pops);
+                interpolate_relative_differences_local(geometry.points.multiscale.get_curr_coars_lvl(), geometry.points.multiscale.get_curr_coars_lvl()-1, rel_diff_pops);
+                if (geometry.points.multiscale.get_curr_coars_lvl()>0)
+                {
+                    interpolate_levelpops_local(geometry.points.multiscale.get_curr_coars_lvl()-1,0);
+                }
             }
             else
             {
