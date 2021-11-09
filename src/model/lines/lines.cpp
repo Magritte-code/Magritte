@@ -69,6 +69,8 @@ void Lines :: read (const Io& io)
     emissivity   .resize (parameters.npoints(), parameters.nlines());
     opacity      .resize (parameters.npoints(), parameters.nlines());
     inverse_width.resize (parameters.npoints(), parameters.nlines());
+
+    cooling_rates.resize(parameters.npoints());
 }
 
 

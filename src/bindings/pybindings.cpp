@@ -313,10 +313,12 @@ PYBIND11_MODULE (core, module)
         .def_readwrite ("opacity",              &Lines::opacity)
         .def_readwrite ("inverse_width",        &Lines::inverse_width)
         .def_readwrite ("line",                 &Lines::line)
+        .def_readonly  ("cooling_rates",        &Lines::cooling_rates)
         // functions
         .def ("read",                           &Lines::read)
         .def ("write",                          &Lines::write)
         .def ("set_emissivity_and_opacity",     &Lines::set_emissivity_and_opacity)
+        .def ("calculate_cooling_rates",        &Lines::calculate_cooling_rates)
         // constructor
         .def (py::init<>());
 

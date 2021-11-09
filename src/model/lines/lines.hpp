@@ -23,6 +23,8 @@ struct Lines
     // Real1 opacity;      ///< line opacity    (p,l,k)
 
 
+    // Cooling rates can also be moved somewhere else, but seems logical here
+    Vector<Real> cooling_rates;   ///<the computed cooling rates
 
     Matrix<Real> emissivity;      ///< line emissivity    (p, lid)
     Matrix<Real> opacity;         ///< line opacity       (p, lid)
@@ -51,6 +53,9 @@ struct Lines
     inline void set_inverse_width (const Thermodynamics& thermodynamics);
 
     void gather_emissivities_and_opacities ();
+
+    // Calculates the cooling rates for all points, currently for all species
+    inline void calculate_cooling_rates ();
 };
 
 

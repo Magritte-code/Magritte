@@ -74,3 +74,33 @@ inline void Lines :: set_inverse_width (const Thermodynamics& thermodynamics)
         }
     })
 }
+
+
+///  Calculates the cooling rates
+///  NOTE: call this only after computing the radiation field
+///////////////////////////////////////////
+inline void Lines :: calculate_cooling_rates ()
+{
+    // Matrix<Real> partial_cooling_rates; //for each point and line species
+    // partial_cooling_rates.resize (parameters.npoints(),  parameters.nlspecs());
+    threaded_for (p, parameters.npoints(),
+    {
+        Real cooling_of_point=0;
+        // TODO: if certain species may not participate, exclude them here
+        for (Size l = 0; l < parameters.nlspecs(); l++)
+        {
+            Real cooling_of_lspec=0;
+            for (Size k = 0; k < lineProducingSpecies[l].linedata.nrad; k++)
+            {
+                const Size lid = line_index (l, k);
+
+                cooling_of_lspec+=emissivity(p, lid)*line[lid]*FOUR_PI;//emissivity*freq(->energy)*4pi(->integrate out direction)
+                cooling_of_lspec-=opacity   (p, lid)*line[lid]*FOUR_PI*lineProducingSpecies[l].Jlin[p][k];//also times averaged intensity
+            }
+            cooling_of_point+=cooling_of_lspec;
+        }
+        // //TODO: add fancy reduction operation instead of this
+        cooling_rates[p]=cooling_of_point;
+    })
+
+}
