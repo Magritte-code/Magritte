@@ -488,6 +488,16 @@ int Model :: compute_image (const Size ray_nr)
     return (0);
 }
 
+///  Simple to use wrapper around Lines::calculate_cooling_rates
+int Model :: calculate_cooling_rates()
+{
+    lines.calculate_cooling_rates(
+        chemistry.species.abundance,
+        thermodynamics.temperature.gas);
+
+    return (0);
+}
+
 
 int Model :: set_eta_and_chi ()
 {

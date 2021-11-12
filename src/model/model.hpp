@@ -93,7 +93,7 @@ struct Model
     {
         cout << "c.size() = " << c().vec.size() << endl;
 
-        accelerated_for (i, c().vec.size(), 
+        accelerated_for (i, c().vec.size(),
         {
             c()[i] = a()[i] + b()[i];
 
@@ -108,6 +108,8 @@ struct Model
     Matrix<Real> chi;
 
     Matrix<Real> boundary_condition;
+
+    int calculate_cooling_rates();
 
     int set_eta_and_chi       ();
     int set_boundary_condition();

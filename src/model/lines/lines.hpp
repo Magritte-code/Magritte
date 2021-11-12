@@ -5,6 +5,7 @@
 #include "tools/types.hpp"
 #include "lineProducingSpecies/lineProducingSpecies.hpp"
 #include "model/thermodynamics/thermodynamics.hpp"
+#include "model/chemistry/chemistry.hpp"
 
 
 struct Lines
@@ -55,7 +56,9 @@ struct Lines
     void gather_emissivities_and_opacities ();
 
     // Calculates the cooling rates for all points, currently for all species
-    inline void calculate_cooling_rates ();
+    inline void calculate_cooling_rates (
+        const Double2      &abundance,
+        const Vector<Real> &temperature);
 };
 
 

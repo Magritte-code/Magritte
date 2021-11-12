@@ -116,6 +116,7 @@ PYBIND11_MODULE (core, module)
         .def ("compute_level_populations_from_stateq",                              &Model::compute_level_populations_from_stateq)
         .def ("compute_level_populations",                                          &Model::compute_level_populations)
         .def ("compute_image",                                                      &Model::compute_image)
+        .def ("calculate_cooling_rates",        &Model::calculate_cooling_rates)
         .def ("set_eta_and_chi",                                                    &Model::set_eta_and_chi)
         .def ("set_boundary_condition",                                             &Model::set_boundary_condition)
         .def_readwrite ("eta",                &Model::eta)
@@ -318,7 +319,6 @@ PYBIND11_MODULE (core, module)
         .def ("read",                           &Lines::read)
         .def ("write",                          &Lines::write)
         .def ("set_emissivity_and_opacity",     &Lines::set_emissivity_and_opacity)
-        .def ("calculate_cooling_rates",        &Lines::calculate_cooling_rates)
         // constructor
         .def (py::init<>());
 
