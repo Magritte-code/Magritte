@@ -3,6 +3,7 @@
 
 #include "model/model.hpp"
 #include "tools/types.hpp"
+#include "solver/collocation/collocation.hpp"
 
 
 class Solver
@@ -48,6 +49,9 @@ class Solver
         // Kernel approach
         Vector<Real> eta;
         Vector<Real> chi;
+
+        // Collocation approach
+        Collocation collocation;
 
         // SparseMatrix<Real> covariance;
         // Matrix<Real> L2_kernel_p;

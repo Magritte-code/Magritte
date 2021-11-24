@@ -82,8 +82,8 @@ endif (MPI_PARALLEL)
 
 target_link_libraries(Magritte voro++)
 
-# Find nanoflannConfig.cmake:
-find_package(nanoflann)
+# Find nanoflannConfig.cmake: (only can be used when package already installed...)
+#find_package(nanoflann)
 
 # Make sure the include path is used:
 target_link_libraries(Magritte nanoflann::nanoflann)
