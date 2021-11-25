@@ -505,7 +505,7 @@ inline vector<Size> Model::get_coarser_neighbors_kd_tree(Size p, kd_tree& kdtree
     query_pt[1]=geometry.points.position[p].y();
     query_pt[2]=geometry.points.position[p].z();
 
-    Size nb_neighbors_to_query;
+    Size nb_neighbors_to_query;//TODO: maybe allow us to choose another amount of neighbors
 
     if (parameters.spherical_symmetry())
     {
