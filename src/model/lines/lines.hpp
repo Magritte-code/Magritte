@@ -26,7 +26,7 @@ struct Lines
 
     Matrix<Real> emissivity;      ///< line emissivity    (p, lid)
     Matrix<Real> opacity;         ///< line opacity       (p, lid)
-    Matrix<Real> inverse_width;   ///< inverse line width (p, lid)
+    Matrix<Real> inverse_width;   ///< inverse line width (p, lid) //includes the factor 1/sqrt(2) for convenient use in gaussians
 
     void read  (const Io& io);
     void write (const Io& io) const;
