@@ -12,7 +12,7 @@ struct Rays
 
     Vector<Vector3D> direction;
     Vector<Size>     antipod;
-    Vector<Real>     weight;
+    Vector<Real>     weight; //The weights sum to 1
 
     void read  (const Io& io);
     void write (const Io& io) const;

@@ -4,6 +4,7 @@
 #include "model/parameters/parameters.hpp"
 #include <set>
 #include <map>
+#include <Eigen/Core>
 
 // Helper class for setting up the collocation solver
 class Collocation
@@ -38,6 +39,10 @@ private:
     vector<Real> rbf_radii;
     vector<vector<Size>> other_radial_basis_interacting_with; //< contains for each rbf, the indices of the radial basis functions interacting with it (also includes itself)
     //useful for transforming from basis space to actual solution space
+
+    Eigen::SparseMatrix<Real> collocation_mat; //contains the entries of the sparse collocation matrix
+    VectorXr rhs;// The right hand side of the collocation solver
+
 
     //for the directions, the basis functions are 1, so no need to store anything
 
@@ -94,6 +99,10 @@ public:
 // and maybe some helper methods for determining what is actually zero
 
     inline void setup_basis_matrix_Eigen(Model& model);
+    inline void setup_rhs_Eigen(Model& model);//Note: assumes one has first setup the basis matrix
+
+    inline Real get_opacity(Model& model, Size rayidx, Size lineidx, Size pointidx);
+    inline Real get_emissivity(Model& model, Size rayidx, Size lineidx, Size pointidx);
 
 // Obiviously, we also need some solving methods
     inline void solve_collocation(Model& model);

@@ -439,7 +439,7 @@ accel inline Real Solver :: boundary_intensity (const Model& model, const Size p
 
 ///  Getter for the emissivity (eta) and the opacity (chi)
 ///    @param[in]  model : reference to model object
-///    @param[in]  p     : in dex of the cell
+///    @param[in]  p     : index of the cell
 ///    @param[in]  freq  : frequency (in co-moving frame)
 ///    @param[out] eta   : emissivity
 ///    @param[out] chi   : opacity

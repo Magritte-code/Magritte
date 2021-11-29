@@ -1,4 +1,5 @@
 #include <cmath>
+#include <Eigen/Core>
 
 inline void Collocation :: set_interacting_bases(Model& model)
 {
@@ -292,53 +293,188 @@ inline Size Collocation :: get_mat_index(Size rayidx, Size lineidx, Size pointid
 inline void Collocation :: setup_basis_matrix_Eigen(Model& model)
 {
     Size mat_size=parameters.nrays()*frequencies.size()*point_locations.size();
+    vector<Triplet<Real, Size>> eigen_triplets;
+    // eigen_triplets.reserve(mat_size*16*nrays());//matrix size times number of interacting points times the number of rays (scattering)
+    eigen_triplets.reserve(mat_size*16);//matrix size times number of interacting points (does not include scattering)
 
     for (Size rayidx=0; rayidx<parameters.nrays(); rayidx++)
     {
-        for (Size pointidx=0; pointidx<point_locations.size(); pointidx++)
-        {//note: frequency and point ordering switched because the frequency widths might depend on the points
+        for (Size lineidx=0; lineidx<frequencies.size(); lineidx++)
+        {
+
 
             //TODO: either store all doppler shifted frequencies or calculate some relative doppler shifts
             //The doppler shift term n.grad(n.v(x)/c)*nu does not depend on the basis functions. Thus we calculate it here
             //TODO: actually check how it's calculated in Geometry
             // Real doppler_shift_term=0;//temporary value FIXME
 
-
-            for (Size lineidx=0; lineidx<frequencies.size(); lineidx++)
+            for (Size pointidx=0; pointidx<point_locations.size(); pointidx++)
             {
                 //Now creating all the triplets, thus we need all nonzero basis triplets
                 std::set<std::vector<Size>> nonzero_triplets;
                 get_nonzero_basis_triplets(nonzero_triplets, rayidx, lineidx, pointidx);
-                for (std::vector<Size> triplet: nonzero_triplets)
+
+                const Size curr_mat_idx=get_mat_index(rayidx, lineidx, pointidx);
+
+                bool boundary_condition_required=false;
+                if (!model.geometry.not_on_boundary(pointidx))
                 {
-                    const Size mat_idx=get_mat_index(triplet[0],triplet[1],triplet[2]);
+                    double dist=0;//these two variables are actually not used, but required in the function definition get_next
+                    double ddist=0;
 
-                    Real curr_freq=frequencies[rayidx][pointidx][lineidx];// TODO: add doppler shift
-                    Vector3D curr_location=point_locations[pointidx];
-
-                    //TODO create EIGEN triple TODO
-                    //start with the directional derivative
-                    Real directional_der=basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point_der(triplet[2], curr_location, triplet[0], model.geometry);
-
-                    // Vector3D velocity_gradient=TODO;
-                    //also add doppler shift term //TODO: calculate doppler shift
-
-                    //For every scattering direction! add scattering
-                    for (Size temp_rayidx=0; temp_rayidx<parameters.nrays(); temp_rayidx++)
-                    {
-                        //TODO: add toggle to whether we are actually using scattering
-                        Real integral_scatt_redistr=0;//FIXME: add me
-                        Real scattering=-basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point(triplet[2], curr_location)*integral_scatt_redistr;
+                    const Size point_behind=model.geometry.get_next(pointidx, rayidx, pointidx, dist, ddist);
+                    if (point_behind==parameters.npoints())
+                    {//if there lies no point behind this point, we need to evaluate the boundary condition here
+                        boundary_condition_required=true;
                     }
+                }
+                if (boundary_condition_required)
+                {
+                    //Merely evaluating the intensity at the boundary
+                    for (std::vector<Size> triplet: nonzero_triplets)
+                    {
+                        const Size other_mat_idx=get_mat_index(triplet[0],triplet[1],triplet[2]);
+
+                        Real curr_freq=frequencies[rayidx][pointidx][lineidx];// TODO: add doppler shift
+                        Vector3D curr_location=point_locations[pointidx];
+
+                        //TODO create EIGEN triple TODO
+                        //start with the directional derivative
+                        Real basis_eval=basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point(triplet[2], curr_location);
+                        //add triplet (mat_idx(triplet[0],triplet[1],triplet[2]),directional_der)
+                        eigen_triplets.push_back (Triplet<Real, Size> (curr_mat_idx, other_mat_idx, basis_eval));
+
+                    }
+                }
+                else
+                {
+                    for (std::vector<Size> triplet: nonzero_triplets)
+                    {
+                        const Size other_mat_idx=get_mat_index(triplet[0],triplet[1],triplet[2]);
+
+                        Real curr_freq=frequencies[rayidx][pointidx][lineidx];
+                        Vector3D curr_location=point_locations[pointidx];
+
+                        //Start with the directional derivative
+                        Real directional_der=basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point_der(triplet[2], curr_location, triplet[0], model.geometry);
+                        //add triplet (mat_idx(triplet[0],triplet[1],triplet[2]),directional_der)
+                        Real opacity=get_opacity(model, rayidx, pointidx, lineidx)*basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point(triplet[2], curr_location);
+                        eigen_triplets.push_back (Triplet<Real, Size> (curr_mat_idx, other_mat_idx, directional_der+opacity));
+
+                        //For every scattering direction! add scattering
+                        for (Size temp_rayidx=0; temp_rayidx<parameters.nrays(); temp_rayidx++)
+                        {
+                            const Size scatt_mat_idx=get_mat_index(temp_rayidx,triplet[1],triplet[2]);
+                            //TODO: add toggle to whether we are actually using scattering
+                            Real integral_scatt_redistr=0;//FIXME: add me //in uniform scattering, this term is proportional to 4*pi/N_rays
+                            Real scattering=-basis_freq(temp_rayidx, triplet[1], triplet[2], curr_freq)*basis_point(triplet[2], curr_location)*integral_scatt_redistr;
+                            //add triplet (mat_idx(temp_rayidx,triplet[1],triplet[2]),scattering)
+                            eigen_triplets.push_back (Triplet<Real, Size> (curr_mat_idx, scatt_mat_idx, scattering));
+                        }
+
+                    }
+                }
+            }
+        }
+    }
+
+
+    //after all this, construct the matrix
+    collocation_mat.resize (mat_size, mat_size);
+
+    collocation_mat.setFromTriplets (eigen_triplets.begin(), eigen_triplets.end());
+    collocation_mat.data().squeeze();
+}
+
+
+// Returns the opacity (takes into account the gaussian line profile)
+inline Real Collocation :: get_opacity(Model& model, Size rayidx, Size lineidx, Size pointidx)
+{
+    Real toreturn=0;
+    // if using other line profile/frequency basis function than gaussian, please replace the for(...) with the following line:
+    // for (Size other_line_idx=0; other_line_idx<parameters.nlines(); other_line_idx++)
+    for (Size other_line_idx: other_frequency_basis_interacting_with[pointidx][lineidx])
+    {
+        const Real delta_freq=frequencies[rayidx][pointidx][lineidx]-frequencies[rayidx][pointidx][other_line_idx];
+        const Real inv_width=frequencies_inverse_widths[rayidx][other_line_idx][pointidx];
+        toreturn+=INVERSE_SQRT_PI*inv_width*std::exp(-std::pow(delta_freq*inv_width,2))
+                  *frequencies[rayidx][pointidx][other_line_idx]*model.lines.opacity(pointidx, other_line_idx);
+    }
+    return toreturn;
+}
+
+// Returns the emissivity (takes into account the gaussian line profile)
+inline Real Collocation :: get_emissivity(Model& model, Size rayidx, Size lineidx, Size pointidx)
+{
+    Real toreturn=0;
+    // if using other line profile/frequency basis function than gaussian, please replace the for(...) with the following line:
+    // for (Size other_line_idx=0; other_line_idx<parameters.nlines(); other_line_idx++)
+    for (Size other_line_idx: other_frequency_basis_interacting_with[pointidx][lineidx])
+    {
+        const Real delta_freq=frequencies[rayidx][pointidx][other_line_idx]-frequencies[rayidx][pointidx][lineidx];
+        const Real inv_width=frequencies_inverse_widths[rayidx][other_line_idx][pointidx];
+        toreturn+=INVERSE_SQRT_PI*inv_width*std::exp(-std::pow(delta_freq*inv_width,2))
+                  *frequencies[rayidx][pointidx][other_line_idx]*model.lines.emissivity(pointidx, other_line_idx);
+    }
+    return toreturn;
+}
+
+inline void Collocation :: setup_rhs_Eigen(Model& model)
+{
+    rhs = VectorXr::Zero (collocation_mat.cols());
+    for (Size rayidx=0; rayidx<parameters.nrays(); rayidx++)
+    {
+        for (Size lineidx=0; lineidx<frequencies.size(); lineidx++)
+        {
+            for (Size pointidx=0; pointidx<point_locations.size(); pointidx++)
+            {
+                const Size curr_mat_idx=get_mat_index(rayidx, lineidx, pointidx);
+                //FIXME: check if boundary condition needs to apply
+                bool boundary_condition_required=false;
+                if (!model.geometry.not_on_boundary(pointidx))
+                {
+                    double dist=0;//these two variables are actually not used, but required in the function definition get_next
+                    double ddist=0;
+
+                    const Size point_behind=model.geometry.get_next(pointidx, rayidx, pointidx, dist, ddist);
+                    if (point_behind==parameters.npoints())
+                    {//if there lies no point behind this point, we need to evaluate the boundary condition here
+                        boundary_condition_required=true;
+                    }
+                }
+                if (boundary_condition_required)
+                {
+                    //filling in boundary intensity
+                    rhs[curr_mat_idx]=0;
+                    // rhs[curr_mat_idx]=boundary_intensity(model, pointidx, frequencies[rayidx][pointidx][lineidx]);
+                }
+                else
+                {
+                    rhs[curr_mat_idx]=get_emissivity(model, rayidx, lineidx, pointidx);
                 }
             }
         }
     }
 }
 
-// //TODO: calculate for all quadrature points the intensity; or exactly integrate the gaussian with another gaussian
-// inline void Collocation :: compute_I(Model& model)
+
+// threaded_for (p, parameters.npoints(),
 // {
+//     for (Size l = 0; l < parameters.nlspecs(); l++)
+//     {
+//         for (Size k = 0; k < lineProducingSpecies[l].linedata.nrad; k++)
+//         {
+//             const Size lid = line_index (l, k);
+//             emissivity (p, lid) = lineProducingSpecies[l].get_emissivity (p, k);
+//                opacity (p, lid) = lineProducingSpecies[l].get_opacity    (p, k);
+//         }
+//     }
+// })
+
+// //TODO: calculate for all quadrature points the intensity; or exactly integrate the gaussian with another gaussian
+// inline void Collocation :: compute_J(Model& model)
+// {
+//   model.radiation.initialize_J();
 //   for (LineProducingSpecies &lspec : model.lines.lineProducingSpecies)
 //   {
 //       threaded_for (p, parameters.npoints(),
