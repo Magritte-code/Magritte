@@ -59,7 +59,7 @@ Magritte is a software library for 3D radiative transfer and synthetic observati
 which currently focusses on atomic and molecular line transfer.
 It is mainly written in C++ and can either be used as a Python package or
 as a C++ library. To compute the radiation field, a deterministic ray-tracer
-and a formal solver are employed, i.e. rays are traced through the model and the
+and a formal solver are employed, i.e., rays are traced through the model and the
 radiative transfer equation is solved along those rays [@DeCeuster:2019]. This
 is in contrast to most radiative transfer solvers which employ (probabilistic)
 Monte Carlo techniques [@Noebauer:2019]. By virtue of minimal assumptions about
@@ -84,7 +84,7 @@ observed, makes it difficult to interpret the observations and necessitates the 
 3D hydrodynamics, chemistry and radiative transfer models to study their origin and
 evolution [@ElMellah:2020; @Maes:2021; @Malfait:2021]. Their intricate
 morpho-kinematics, moreover, makes their appearance in observations far from evident
-(see e.g.\ \autoref{fig:example}). Therefore, to study these and other complex
+(e.g.,\ \autoref{fig:example}). Therefore, to study these and other complex
 morpho-kinematical objects, it is essential to understand how their models would
 appear in observations. This can be achieved, by creating synthetic observations
 with Magritte.
@@ -104,7 +104,7 @@ further research in computational radiative transfer. Current active research to
 include: efficient parallelisation and acceleration strategies on modern
 high-performance computing systems, acceleration of convergence in the non-linear
 coupling between the radiation field and the medium, and uncertainty quantification in
-radiative transfer through probabilistic numerical methods [see e.g.\ @DeCeuster:2021].
+radiative transfer through probabilistic numerical methods [e.g.,\ @DeCeuster:2021].
 
 
 # Acknowledgements
