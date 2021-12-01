@@ -1,19 +1,21 @@
 name: magritte
 channels:
-  - defaults
   - conda-forge
+  - defaults
+# The order of the channels above is critical!!!
 dependencies:
+  - python=3.7
+  - numpy
+  - vtk
   - jupyterlab
   - yt
   - scipy
-  - vtk
   - mpi4py
   - plotly
   - pyyaml
   - ipywidgets
   - meshio
   - tqdm
-  - python=3.6
   - palettable
   - h5py
   - numba

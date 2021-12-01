@@ -49,13 +49,13 @@ modeBarButtonsToRemove = ['select2d', 'lasso2d', 'zoomIn2d', 'zoomOut2d', 'autoS
 
 def image_mpl(
         model,
-        image_nr =  -1,
-        zoom     = 1.3,
-        npix_x   = 300,
-        npix_y   = 300,
-        x_unit   = units.au,
-        v_unit   = units.km/units.s,
-        method   = 'nearest'
+        image_nr   =  -1,
+        zoom       = 1.3,
+        npix_x     = 300,
+        npix_y     = 300,
+        x_unit     = units.au,
+        v_unit     = units.km/units.s,
+        method     = 'nearest'
     ):
     """
     Plot channel maps of synthetic observation (image) with matplotlib.
@@ -159,15 +159,15 @@ def image_mpl(
 
 def image_plotly(
         model,
-        image_nr =  -1,
-        zoom     = 1.3,
-        npix_x   = 300,
-        npix_y   = 300,
-        x_unit   = units.au,
-        v_unit   = units.km/units.s,
-        method   = 'nearest',
-        width    = 620,   # Yields approx square channel map
-        height   = 540,   # Yields approx square channel map
+        image_nr   =  -1,
+        zoom       = 1.3,
+        npix_x     = 300,
+        npix_y     = 300,
+        x_unit     = units.au,
+        v_unit     = units.km/units.s,
+        method     = 'nearest',
+        width      = 620,   # Yields approx square channel map
+        height     = 540    # Yields approx square channel map
     ):
     """
     Plot channel maps of synthetic observation (image) with plotly.
@@ -222,7 +222,7 @@ def image_plotly(
         )
         Is[f] = np.sum(zs[f])
     Is = Is / np.max(Is)
-
+    
     # Get the logarithm of the data (matplotlib has a hard time handling logarithmic data.)
     log_zs     = np.log(zs)
     log_zs_min = np.min(log_zs)

@@ -28,6 +28,26 @@ Once these prerequisites are in place, Magritte can be installed following the :
     Although we recommend to first try to install the required software in your preferred usual way, the folder `Magritte/dependencies/ <https://github.com/Magritte-code/Magritte/tree/stable/dependencies>`_ contains a set of bash scripts: :literal:`get_conda.sh`, :literal:`get_cmake.sh`,
     and :literal:`get_gmsh.sh`, to quickly obtain the appropriate versions of miniconda3 (for Anaconda), CMake, and
     Gmsh respectively. However, these scripts don't properly install the software, but rather download an executable binary, which is useful, e.g. if you don't have root access.
+    
+    To use these, first clone the Magritte `GitHub <https://github.com/Magritte-code/Magritte>`_ repository
+    
+    .. code-block:: shell
+
+        git clone --recursive https://github.com/Magritte-code/Magritte.git
+    
+    enter the newly created Magritte directory, and from there run the relevant script.
+    
+    .. code-block:: shell
+    
+        bash dependencies/get_conda.sh
+        
+    .. code-block:: shell
+    
+        bash dependencies/get_cmake.sh
+        
+    .. code-block:: shell
+    
+        bash dependencies/get_gmsh.sh
 
     ⚠️  Don't forget to include the relevant paths to your shell's :literal:`$PATH` variable!
     (For convenience, the scripts will print the relevant path.)
