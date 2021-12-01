@@ -29,7 +29,6 @@ inline void Collocation :: set_interacting_bases(Model& model)
         //currently, i am choosing the radius such that the last point lies on the boundary of the domain of the radial basis function
         //Therefore, we do not need to include it in the vector of interacting basis functions
         vector<Size> subvector={neighbors_coarser_grid.begin(),neighbors_coarser_grid.end()-1};
-        std::cout<<"subvector size should be 3/15 and is: "<<subvector.size()<<std::endl;
 
 
         //calculate the max doppler shift possible
@@ -58,7 +57,7 @@ inline void Collocation :: set_interacting_bases(Model& model)
         for (Size lineid=0; lineid<parameters.nlines(); lineid++)
         {
             //The line frequencies are not ordered, so just search the whole list...
-            for (Size other_lineid; other_lineid<parameters.nlines(); other_lineid++)
+            for (Size other_lineid=0; other_lineid<parameters.nlines(); other_lineid++)
             {
                 // Somewhat loose uniform (over direction and neighbors) estimate
                 // Start by bounding the apparent frequency nu' for the point (pointidx, lineid): nu/max_dpplr_shift<nu'<nu*max_dpplr_shift
@@ -115,6 +114,28 @@ inline Real calculate_doppler_shift_observer_frame(Vector3D velocity_of_distant_
 }
 
 
+
+// inline void Collocation :: setup_eval_matrix(Model& model)
+// {
+//     vector<Triplet<Real, Size>> eval_triplets; //triplets for the evaluation matrix
+//     for (Size rayidx=0; rayidx<parameters.nrays(); rayidx++)
+//     {
+//         for (Size lineidx=0; lineidx<parameters.nlines(); lineidx++)
+//         {
+//             for (Size pointidx=0; pointidx<point_locations.size(); pointidx++)
+//             {
+//                 //Now creating all the triplets, thus we need all nonzero basis triplets
+//                 std::set<std::vector<Size>> nonzero_triplets;
+//                 get_nonzero_basis_triplets(nonzero_triplets, rayidx, lineidx, pointidx);
+//
+//                 const Size curr_mat_idx=get_mat_index(rayidx, lineidx, pointidx);
+//
+//
+//             }
+//         }
+//     }
+// }
+
 inline void Collocation :: setup_basis(Model& model)
 {
 
@@ -154,18 +175,18 @@ inline void Collocation :: setup_basis(Model& model)
             {
                 frequencies[rayid][pointid][lineid]=doppler_shift*model.lines.line[lineid];
                 frequencies_inverse_widths[rayid][pointid][lineid]=model.lines.inverse_width(pointid,lineid)/doppler_shift;
-
             }
 
         }
     }
 
     // Also do not forget to initialize the basis coefficients // TODO: figure out which exact format (std::vector, Eigen, ...) to use
-    basis_coefficients=vector<Real>(0.0,parameters.nrays()*parameters.nlines()*parameters.npoints());
+    basis_coefficients=VectorXr::Zero(parameters.nrays()*parameters.nlines()*parameters.npoints());
 
     set_interacting_bases(model);
     //Now determine which basis's interact with eachother
 
+    // set_eval_matrix(model);
 
 
 
@@ -184,6 +205,11 @@ inline Real Collocation :: basis_direction(Size rayindex)
     return 1;
 }
 
+inline Real Collocation :: basis_direction_int(Geometry& geometry, Size rayindex)
+{
+    return FOUR_PI*geometry.rays.weight[rayindex];
+}
+
 ///  The basis function associated with each frequency, evaluated at frequency currnu
 inline Real Collocation :: basis_freq(Size rayidx, Size lineidx, Size pointidx, Real currfreq)
 {
@@ -196,9 +222,22 @@ inline Real Collocation :: basis_freq(Size rayidx, Size lineidx, Size pointidx, 
     }
     else
     {
-        return INVERSE_SQRT_PI*frequencies_inverse_widths[rayidx][lineidx][pointidx]*std::exp(-std::pow(abs_freq_diff*frequencies_inverse_widths[rayidx][lineidx][pointidx],2));
+        return INVERSE_SQRT_PI*frequencies_inverse_widths[rayidx][pointidx][lineidx]*std::exp(-std::pow(abs_freq_diff*frequencies_inverse_widths[rayidx][pointidx][lineidx],2));
     }
 }
+
+inline Real Collocation :: basis_freq_lp_int(Size rayidx, Size lineidx, Size pointidx, Real lp_freq, Real lp_freq_inv_width)
+{
+    const Real point_freq=frequencies[rayidx][pointidx][lineidx];
+    const Real point_freq_inv_width=frequencies_inverse_widths[rayidx][pointidx][lineidx];
+
+    const Real inv_variance=1/(1/std::pow(point_freq_inv_width,2)+1/std::pow(lp_freq_inv_width,2));// note: still includes the factor (1/sqrt(2)) squared (because variance)
+    const Real delta_freq=lp_freq-point_freq;
+
+    return INVERSE_SQRT_PI*std::sqrt(inv_variance)*std::exp(-(std::pow(delta_freq,2)*inv_variance));
+
+}
+
 
 // ///  The derivative of the frequency basis function
 // inline Real Collocation :: basis_freq_der(Size lineidx, Real currfreq)
@@ -244,6 +283,10 @@ inline Real Collocation :: basis_point_der(Size centerpoint, Vector3D& location,
     {
         return 0;
     }
+    else if (distance==0)
+    {
+        return 0; //derivative at r=0 is defined to be zero
+    }
     else
     {
         Real rel_dist=distance/radius;
@@ -254,8 +297,8 @@ inline Real Collocation :: basis_point_der(Size centerpoint, Vector3D& location,
         //Below, we see the simple rule for calculating the cosine
         //Note: The ray directions are normalised, so we can omit the normalization of the ray direction
         Real costheta=raydirection.dot(diff_vector)/std::sqrt(diff_vector.squaredNorm());
-
-        Real radial_derivative =  12*std::pow(rel_dist,2)/std::pow(1+std::pow(rel_dist,3),2)-12*rel_dist/std::pow((1+std::pow(rel_dist,2)),2);
+        //derivative of -4/(1+std::pow(rel_dist,3))+6/(1+std::pow(rel_dist,2))-1;
+        Real radial_derivative =  12*(std::pow(rel_dist,2))/(std::pow(1+std::pow(rel_dist,3),2))-12*rel_dist/(std::pow(1+std::pow(rel_dist,2),2));
 
         return costheta*radial_derivative;
     }
@@ -270,7 +313,7 @@ inline void Collocation :: get_nonzero_basis_triplets(std::set<std::vector<Size>
     for (Size interacting_points: other_radial_basis_interacting_with[pointidx])
     {
         for (Size interacting_freqs: other_frequency_basis_interacting_with[pointidx][lineidx])
-        {
+        {   //TODO: we are constantly allocating new memory; this might be slow; better to just compute this once...
             vector<Size> temp_triplet{rayidx, interacting_freqs, interacting_points};
             basis_triplets_to_fill.insert(temp_triplet);
         }
@@ -281,7 +324,7 @@ inline void Collocation :: get_nonzero_basis_triplets(std::set<std::vector<Size>
 ///  Returns the matrix index corresponding to the general index (rayidx, lineidx, pointidx)
 inline Size Collocation :: get_mat_index(Size rayidx, Size lineidx, Size pointidx)
 {
-    return rayidx*frequencies.size()*point_locations.size()+lineidx*point_locations.size()+pointidx;
+    return rayidx*parameters.nlines()*point_locations.size()+lineidx*point_locations.size()+pointidx;
 }
 
 // inline Real Collocation :: calculate_doppler_shift(Size pointidx, Size rayidx, Geometry& geometry)
@@ -292,14 +335,14 @@ inline Size Collocation :: get_mat_index(Size rayidx, Size lineidx, Size pointid
 
 inline void Collocation :: setup_basis_matrix_Eigen(Model& model)
 {
-    Size mat_size=parameters.nrays()*frequencies.size()*point_locations.size();
+    Size mat_size=parameters.nrays()*parameters.nlines()*point_locations.size();
     vector<Triplet<Real, Size>> eigen_triplets;
     // eigen_triplets.reserve(mat_size*16*nrays());//matrix size times number of interacting points times the number of rays (scattering)
     eigen_triplets.reserve(mat_size*16);//matrix size times number of interacting points (does not include scattering)
 
     for (Size rayidx=0; rayidx<parameters.nrays(); rayidx++)
     {
-        for (Size lineidx=0; lineidx<frequencies.size(); lineidx++)
+        for (Size lineidx=0; lineidx<parameters.nlines(); lineidx++)
         {
 
 
@@ -315,6 +358,8 @@ inline void Collocation :: setup_basis_matrix_Eigen(Model& model)
                 get_nonzero_basis_triplets(nonzero_triplets, rayidx, lineidx, pointidx);
 
                 const Size curr_mat_idx=get_mat_index(rayidx, lineidx, pointidx);
+                const Real curr_opacity=get_opacity(model, rayidx, lineidx, pointidx);
+                std::cout<<"curr_opacity: "<<curr_opacity<<std::endl;
 
                 bool boundary_condition_required=false;
                 if (!model.geometry.not_on_boundary(pointidx))
@@ -338,9 +383,11 @@ inline void Collocation :: setup_basis_matrix_Eigen(Model& model)
                         Real curr_freq=frequencies[rayidx][pointidx][lineidx];// TODO: add doppler shift
                         Vector3D curr_location=point_locations[pointidx];
 
-                        //TODO create EIGEN triple TODO
-                        //start with the directional derivative
-                        Real basis_eval=basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point(triplet[2], curr_location);
+                        //In order to make this term of the same size as the others, multiply by the opacity
+                        Real basis_eval=curr_opacity*basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point(triplet[2], curr_location);
+                        std::cout<<"basis_eval: "<<basis_eval<<std::endl;
+                        std::cout<<"basis_dir_eval: "<<basis_direction(triplet[0])<<std::endl;
+                        std::cout<<"basis_freq_eval: "<<basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)<<std::endl;
                         //add triplet (mat_idx(triplet[0],triplet[1],triplet[2]),directional_der)
                         eigen_triplets.push_back (Triplet<Real, Size> (curr_mat_idx, other_mat_idx, basis_eval));
 
@@ -358,7 +405,8 @@ inline void Collocation :: setup_basis_matrix_Eigen(Model& model)
                         //Start with the directional derivative
                         Real directional_der=basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point_der(triplet[2], curr_location, triplet[0], model.geometry);
                         //add triplet (mat_idx(triplet[0],triplet[1],triplet[2]),directional_der)
-                        Real opacity=get_opacity(model, rayidx, pointidx, lineidx)*basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point(triplet[2], curr_location);
+                        Real opacity=curr_opacity*basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point(triplet[2], curr_location);
+                        std::cout<<"opacity: "<<opacity<<std::endl;
                         eigen_triplets.push_back (Triplet<Real, Size> (curr_mat_idx, other_mat_idx, directional_der+opacity));
 
                         //For every scattering direction! add scattering
@@ -369,7 +417,7 @@ inline void Collocation :: setup_basis_matrix_Eigen(Model& model)
                             Real integral_scatt_redistr=0;//FIXME: add me //in uniform scattering, this term is proportional to 4*pi/N_rays
                             Real scattering=-basis_freq(temp_rayidx, triplet[1], triplet[2], curr_freq)*basis_point(triplet[2], curr_location)*integral_scatt_redistr;
                             //add triplet (mat_idx(temp_rayidx,triplet[1],triplet[2]),scattering)
-                            eigen_triplets.push_back (Triplet<Real, Size> (curr_mat_idx, scatt_mat_idx, scattering));
+                            // eigen_triplets.push_back (Triplet<Real, Size> (curr_mat_idx, scatt_mat_idx, scattering));
                         }
 
                     }
@@ -378,12 +426,18 @@ inline void Collocation :: setup_basis_matrix_Eigen(Model& model)
         }
     }
 
-
     //after all this, construct the matrix
     collocation_mat.resize (mat_size, mat_size);
 
     collocation_mat.setFromTriplets (eigen_triplets.begin(), eigen_triplets.end());
-    collocation_mat.data().squeeze();
+
+    Eigen::JacobiSVD<MatrixXr> svd(collocation_mat);
+    Real cond = svd.singularValues()(0)
+    / svd.singularValues()(svd.singularValues().size()-1);
+    std::cout<<"condition number: "<<cond<<std::endl;
+    // collocation_mat.data().squeeze();
+
+    // std::cout << MatrixXr(collocation_mat) << std::endl;
 }
 
 
@@ -396,7 +450,7 @@ inline Real Collocation :: get_opacity(Model& model, Size rayidx, Size lineidx, 
     for (Size other_line_idx: other_frequency_basis_interacting_with[pointidx][lineidx])
     {
         const Real delta_freq=frequencies[rayidx][pointidx][lineidx]-frequencies[rayidx][pointidx][other_line_idx];
-        const Real inv_width=frequencies_inverse_widths[rayidx][other_line_idx][pointidx];
+        const Real inv_width=frequencies_inverse_widths[rayidx][pointidx][other_line_idx];
         toreturn+=INVERSE_SQRT_PI*inv_width*std::exp(-std::pow(delta_freq*inv_width,2))
                   *frequencies[rayidx][pointidx][other_line_idx]*model.lines.opacity(pointidx, other_line_idx);
     }
@@ -411,8 +465,8 @@ inline Real Collocation :: get_emissivity(Model& model, Size rayidx, Size lineid
     // for (Size other_line_idx=0; other_line_idx<parameters.nlines(); other_line_idx++)
     for (Size other_line_idx: other_frequency_basis_interacting_with[pointidx][lineidx])
     {
-        const Real delta_freq=frequencies[rayidx][pointidx][other_line_idx]-frequencies[rayidx][pointidx][lineidx];
-        const Real inv_width=frequencies_inverse_widths[rayidx][other_line_idx][pointidx];
+        const Real delta_freq=frequencies[rayidx][pointidx][lineidx]-frequencies[rayidx][pointidx][other_line_idx];
+        const Real inv_width=frequencies_inverse_widths[rayidx][pointidx][other_line_idx];
         toreturn+=INVERSE_SQRT_PI*inv_width*std::exp(-std::pow(delta_freq*inv_width,2))
                   *frequencies[rayidx][pointidx][other_line_idx]*model.lines.emissivity(pointidx, other_line_idx);
     }
@@ -424,7 +478,7 @@ inline void Collocation :: setup_rhs_Eigen(Model& model)
     rhs = VectorXr::Zero (collocation_mat.cols());
     for (Size rayidx=0; rayidx<parameters.nrays(); rayidx++)
     {
-        for (Size lineidx=0; lineidx<frequencies.size(); lineidx++)
+        for (Size lineidx=0; lineidx<parameters.nlines(); lineidx++)
         {
             for (Size pointidx=0; pointidx<point_locations.size(); pointidx++)
             {
@@ -445,8 +499,9 @@ inline void Collocation :: setup_rhs_Eigen(Model& model)
                 if (boundary_condition_required)
                 {
                     //filling in boundary intensity
-                    rhs[curr_mat_idx]=0;
-                    // rhs[curr_mat_idx]=boundary_intensity(model, pointidx, frequencies[rayidx][pointidx][lineidx]);
+                    // rhs[curr_mat_idx]=0;
+                    //In order to make this term of the same size as the others, multiply by the opacity
+                    rhs[curr_mat_idx]=get_opacity(model, rayidx, lineidx, pointidx)*boundary_intensity(model, rayidx, lineidx, pointidx);
                 }
                 else
                 {
@@ -455,8 +510,41 @@ inline void Collocation :: setup_rhs_Eigen(Model& model)
             }
         }
     }
+    std::cout<<"rhs: "<<rhs<<std::endl;
 }
 
+///  Getter for the boundary conditions
+///    @param[in] model  : reference to model object
+///    @param[in] rayidx: ray index at which to evaluate the boundary condition
+///    @param[in] freqidx: line frequency index at which to evaluate boundary condition
+///    @param[in] pointidx: point index of the boundary point
+///    @returns incoming radiation intensity at the boundary
+////////////////////////////////////////////////////////////////////////////
+///  Copied from solver.tpp and modified a bit
+inline Real Collocation :: boundary_intensity (Model& model, Size rayidx, Size lineidx, Size pointidx)
+{
+    const Real freq=frequencies[rayidx][pointidx][lineidx];
+    const Size bdy_id = model.geometry.boundary.point2boundary[pointidx];
+
+    switch (model.geometry.boundary.boundary_condition[bdy_id])
+    {
+        case Zero    : return 0.0;
+        case Thermal : return planck (model.geometry.boundary.boundary_temperature[bdy_id], freq);
+        default      : return planck (T_CMB, freq);
+    }
+}
+
+
+///  Planck function
+///    @param[in] temp : temperature of the corresponding black body
+///    @param[in] freq : frequency at which to evaluate the function
+///    @return Planck function evaluated at this frequency
+///////////////////////////////////////////////////////////////////////////
+///  Copied from solver.tpp
+accel inline Real Collocation :: planck (Real temp, Real freq)
+{
+    return TWO_HH_OVER_CC_SQUARED * (freq*freq*freq) / expm1 (HH_OVER_KB*freq/temp);
+}
 
 // threaded_for (p, parameters.npoints(),
 // {
@@ -471,54 +559,122 @@ inline void Collocation :: setup_rhs_Eigen(Model& model)
 //     }
 // })
 
+inline void Collocation :: solve_collocation(Model& model)
+{
+    // std::cout<<"Eigen n threads: "<<Eigen::nbThreads()<<std::endl;
+    SparseLU <SparseMatrix<Real>, COLAMDOrdering<int>> solver;
+
+    // cout << "Analyzing system of rate equations..."      << endl;
+
+    solver.analyzePattern (collocation_mat);
+
+    // cout << "Factorizing system of rate equations..."    << endl;
+
+    solver.factorize (collocation_mat);
+
+    if (solver.info() != Eigen::Success)
+    {
+        cout << "Factorization failed with error message:" << endl;
+        cout << solver.lastErrorMessage()                  << endl;
+        // cout << endl << RT << endl;
+
+        throw std::runtime_error ("Eigen solver ERROR.");
+    }
+
+    // cout << "Solving rate equations for the level populations..." << endl;
+
+    basis_coefficients = solver.solve(rhs);
+
+    if (solver.info() != Eigen::Success)
+    {
+        cout << "Solving failed with error:" << endl;
+        cout << solver.lastErrorMessage()    << endl;
+        assert (false);
+    }
+
+    cout << "error: " << (collocation_mat*basis_coefficients-rhs).norm()/rhs.norm() << endl;
+
+    // if (solver.info() != Eigen::Success)
+    // {
+    //     cout << "Solving failed with error:" << endl;
+    //     cout << solver.lastErrorMessage()    << endl;
+    //     assert (false);
+    // }
+
+    Size vectorsize=collocation_mat.cols();
+    std::cout<<"computed coeffs"<<std::endl;
+    for (Size i=0; i<vectorsize; i++)
+    {
+      std::cout<<"i: "<<i<<"value: "<<basis_coefficients(i)<<std::endl;
+    }
+
+}
+
 // //TODO: calculate for all quadrature points the intensity; or exactly integrate the gaussian with another gaussian
-// inline void Collocation :: compute_J(Model& model)
-// {
-//   model.radiation.initialize_J();
-//   for (LineProducingSpecies &lspec : model.lines.lineProducingSpecies)
-//   {
-//       threaded_for (p, parameters.npoints(),
-//       {
-//           // const Size p=points_in_grid[idx];
-//
-//           for (Size k = 0; k < lspec.linedata.nrad; k++)
-//           {
-//               const Size1 freq_nrs = lspec.nr_line[p][k];
-//
-//               // Initialize values
-//               lspec.Jlin[p][k] = 0.0;
-//
-//               // Just sum for all directions over the non-zero basis functions
-//
-//
-//               //or just use a matrix-vector product
-//               for (Size rayidx=0; rayidx<parameters.nrays(); rayidx++)
-//               {
-//                   std::set<std::vector<Size>> nonzero_triplets;
-//                   get_nonzero_basis_triplets(nonzero_triplets, rayidx, lineidx, p);
-//                   lspec.Jlin[p][k]
-//               }
-//
-//               // // Integrate over the line
-//               // for (Size z = 0; z < parameters.nquads(); z++)
-//               // {
-//               //     lspec.Jlin[p][k] += lspec.quadrature.weights[z] * radiation.J(p, freq_nrs[z]);
-//               // }
-//
-//
-//               double diff = 0.0;
-//
-//               // Collect the approximated part
-//               for (Size m = 0; m < lspec.lambda.get_size(p,k); m++)
-//               {
-//                   const Size I = lspec.index(lspec.lambda.get_nr(p,k,m), lspec.linedata.irad[k]);
-//
-//                   diff += lspec.lambda.get_Ls(p,k,m) * lspec.population[I];
-//               }
-//
-//               lspec.Jeff[p][k] = lspec.Jlin[p][k] - HH_OVER_FOUR_PI * diff;
-//               lspec.Jdif[p][k] = HH_OVER_FOUR_PI * diff;
-//           }
-//       })
-//   }
-// }
+inline void Collocation :: compute_J(Model& model)
+{
+  model.radiation.initialize_J();
+  for (Size l = 0; l < parameters.nlspecs(); l++)
+  {
+      LineProducingSpecies& lspec=model.lines.lineProducingSpecies[l];
+      threaded_for (p, parameters.npoints(),
+      {
+          // const Size p=points_in_grid[idx];
+
+          for (Size k = 0; k < lspec.linedata.nrad; k++)
+          {
+              // const Size1 freq_nrs = lspec.nr_line[p][k];
+              const Size lid = model.lines.line_index(l, k);
+
+              // Initialize values
+              lspec.Jlin[p][k] = 0.0;
+
+              // // Just sum for all directions over the non-zero basis functions
+              // std::set<std::vector<Size>> nonzero_triplets;
+              // get_nonzero_basis_triplets(nonzero_triplets, rayidx, lid, pointidx);
+
+
+              //or just use a matrix-vector product
+              for (Size rayidx=0; rayidx<parameters.nrays(); rayidx++)
+              {
+                  const Real lp_freq=frequencies[rayidx][p][lid];
+                  const Real lp_freq_inv_width=frequencies_inverse_widths[rayidx][p][lid];
+
+                  std::set<std::vector<Size>> nonzero_triplets;
+                  get_nonzero_basis_triplets(nonzero_triplets, rayidx, lid, p);
+                  for (std::vector<Size> triplet: nonzero_triplets)
+                  {
+                      const Size triplet_basis_index=get_mat_index(triplet[0], triplet[1], triplet[2]);
+                      lspec.Jlin[p][k]+=basis_coefficients(triplet_basis_index)/FOUR_PI*basis_point(triplet[2], point_locations[p])*basis_direction_int(model.geometry,triplet[0])*basis_freq_lp_int(triplet[0], triplet[1], triplet[2], lp_freq, lp_freq_inv_width);
+                      // std::cout<<"please be nonzero: "<<basis_coefficients(triplet_basis_index)/FOUR_PI*basis_point(triplet[2], point_locations[p])*basis_direction_int(model.geometry,triplet[0])*basis_freq_lp_int(triplet[0], triplet[1], triplet[2], lp_freq, lp_freq_inv_width)<<std::endl;
+
+                      // lspec.Jlin[p][k]+=200000*basis_coefficients(triplet_basis_index)*basis_point(triplet[2], point_locations[p])*basis_direction_int(model.geometry,triplet[0])*basis_freq_lp_int(triplet[0], triplet[1], triplet[2], lp_freq, lp_freq_inv_width);
+
+                  }
+
+              }
+
+              // // Integrate over the line
+              // for (Size z = 0; z < parameters.nquads(); z++)
+              // {
+              //     lspec.Jlin[p][k] += lspec.quadrature.weights[z] * radiation.J(p, freq_nrs[z]);
+              // }
+
+
+              double diff = 0.0;
+
+              // // Collect the approximated part
+              // for (Size m = 0; m < lspec.lambda.get_size(p,k); m++)
+              // {
+              //     const Size I = lspec.index(lspec.lambda.get_nr(p,k,m), lspec.linedata.irad[k]);
+              //
+              //     diff += lspec.lambda.get_Ls(p,k,m) * lspec.population[I];
+              // }
+
+              lspec.Jeff[p][k] = lspec.Jlin[p][k] - HH_OVER_FOUR_PI * diff;
+              lspec.Jdif[p][k] = HH_OVER_FOUR_PI * diff;
+              // std::cout<<"Jeff: "<<lspec.Jeff[p][k]<<std::endl;
+          }
+      })
+  }
+}

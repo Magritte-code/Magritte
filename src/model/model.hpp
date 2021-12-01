@@ -105,6 +105,9 @@ struct Model
     int compute_level_populations                 (
         const bool  use_Ng_acceleration,
         const long  max_niterations);
+    int compute_level_populations_collocation (
+        const bool use_Ng_acceleration,
+        const long max_niterations     );
     int compute_level_populations_multiresolution       (
         const bool  use_Ng_acceleration);
     int compute_image                             (const Size ray_nr);

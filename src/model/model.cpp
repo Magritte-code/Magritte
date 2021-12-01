@@ -1116,6 +1116,115 @@ int Model :: compute_level_populations (
 }
 
 
+///  Compute level populations self-consistenly with the radiation field
+///  assuming statistical equilibrium (detailed balance for the levels)
+///  This version uses the new collocation solver
+///  @param[in] use_Ng_acceleration : true if Ng acceleration has to be used
+///  @param[in] max_niterations     : maximum number of iterations
+///  @return Number of iterations done
+///////////////////////////////////////////////////////////////////////////////
+int Model :: compute_level_populations_collocation (
+    const bool use_Ng_acceleration,
+    const long max_niterations     )
+{
+    // Check spectral discretisation setting
+    if (spectralDiscretisation != SD_Lines)
+    {
+        throw std::runtime_error ("Spectral discretisation was not set for Lines!");
+    }
+
+    // Initialize the number of iterations
+    int iteration        = iteration_to_start_from;
+    int iteration_normal = 0;
+
+    // Initialize errors
+    error_mean.clear ();
+    error_max .clear ();
+
+    // Initialize some_not_converged
+    bool some_not_converged = true;
+
+    // Iterate as long as some levels are not converged
+    while (some_not_converged && (iteration < max_niterations))
+    {
+        iteration++;
+
+        cout << "Starting iteration " << iteration << endl;
+
+        // Start assuming convergence
+        some_not_converged = false;
+
+        if (use_Ng_acceleration && (iteration_normal == 4))
+        {
+            vector<Size> points_in_grid=geometry.points.multiscale.get_current_points_in_grid();
+            lines.iteration_using_Ng_acceleration (parameters.pop_prec(), points_in_grid);
+
+            iteration_normal = 0;
+        }
+        else
+        {
+            cout << "Computing the radiation field..." << endl;
+
+            Collocation solver;
+
+            std::cout << "Setting up basis"<<std::endl;
+            solver.setup_basis(*this);
+            std::cout << "Setting up basis matrix"<<std::endl;
+            solver.setup_basis_matrix_Eigen(*this);
+            std::cout << "Setting up rhs"<<std::endl;
+            solver.setup_rhs_Eigen(*this);//Note: assumes one has first setup the basis matrix
+            std::cout << "Solving collocation"<<std::endl;
+            solver.solve_collocation(*this);
+            std::cout << "Computing J"<<std::endl;
+            solver.compute_J(*this);
+            std::cout << "Collocation part finished"<<std::endl;
+
+
+            // compute_radiation_field_feautrier_order_2 ();
+            // compute_Jeff                              ();
+
+            vector<Size> points_in_grid=geometry.points.multiscale.get_current_points_in_grid();
+
+            lines.iteration_using_statistical_equilibrium (
+                chemistry.species.abundance,
+                thermodynamics.temperature.gas,
+                parameters.pop_prec(),
+                points_in_grid);
+
+            iteration_normal++;
+        }
+
+        //If enabled, we now write the level populations to the hdf5 file
+        if (parameters.writing_populations_to_disk){
+            IoPython io = IoPython ("hdf5", parameters.model_name());
+            lines.write_populations_of_iteration(io, iteration, geometry.points.multiscale.get_curr_coars_lvl());
+            std::cout<<"Wrote populations to disk"<<std::endl;
+        }
+
+
+        for (int l = 0; l < parameters.nlspecs(); l++)
+        {
+            error_mean.push_back (lines.lineProducingSpecies[l].relative_change_mean);
+            error_max .push_back (lines.lineProducingSpecies[l].relative_change_max);
+
+            if (lines.lineProducingSpecies[l].fraction_not_converged > 0.005)
+            {
+                some_not_converged = true;
+            }
+
+            const double fnc = lines.lineProducingSpecies[l].fraction_not_converged;
+
+            cout << "Already " << 100 * (1.0 - fnc) << " % converged!" << endl;
+        }
+    } // end of while loop of iterations
+
+    // Print convergence stats
+    cout << "Converged after " << iteration << " iterations" << endl;
+
+    return iteration;
+}
+
+
 ///  Computer for the radiation field
 /////////////////////////////////////
 int Model :: compute_image (const Size ray_nr)

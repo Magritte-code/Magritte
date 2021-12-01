@@ -41,12 +41,13 @@ private:
     //useful for transforming from basis space to actual solution space
 
     Eigen::SparseMatrix<Real> collocation_mat; //contains the entries of the sparse collocation matrix
+    // Eigen::SparseMatrix<Real> basis_eval_matrix; //contains the entries of the sparse basis matrix for evaluating the intensity
     VectorXr rhs;// The right hand side of the collocation solver
 
 
     //for the directions, the basis functions are 1, so no need to store anything
 
-    vector<Real> basis_coefficients;
+    VectorXr basis_coefficients;
 
 
     inline void set_interacting_bases(Model& model);
@@ -73,8 +74,10 @@ public:
     // inline Real basis_freq_der(Size lineidx, Real currfreq);
     inline Real basis_point_der(Size centerpoint, Vector3D& location, Size rayindex, Geometry& geometry);
 
-    //Solution of the integral of the basis function together with the line profile function // TODO: implement
-    // inline Real basis_freq_lp_int(Size rayidx, Size lineidx, Size pointidx, Real currfreq, Real lp_freq, Real lp_width);
+    // Integral of the directional basis function over the solid angle
+    inline Real basis_direction_int(Geometry& geometry, Size rayindex);
+    //Solution of the integral of the basis function together with the line profile function
+    inline Real basis_freq_lp_int(Size rayidx, Size lineidx, Size pointidx, Real lp_freq, Real lp_freq_inv_width);
 
 // somewhere to store the sparse matrix and the decomposition TODO: figure out what we actually want
 
@@ -104,13 +107,18 @@ public:
     inline Real get_opacity(Model& model, Size rayidx, Size lineidx, Size pointidx);
     inline Real get_emissivity(Model& model, Size rayidx, Size lineidx, Size pointidx);
 
+    // Return the boundary intensity at the frequency corresponding to the indices
+    inline Real boundary_intensity (Model& model, Size rayidx, Size freqidx, Size pointidx);
+    // copied from solver
+    inline Real planck (Real temp, Real freq);
+
 // Obiviously, we also need some solving methods
     inline void solve_collocation(Model& model);
     //and maybe some variants: Eigen or h2lib
 
     // After computing the basis coefficients, we can obviously compute the intensity
     // TODO: should be calculated in comoving frame (or you may also doppler shift the line transition frequencies; doppler shifts are the same either way for the line transitions and the other frequencies (if using the same point and ray))
-    // inline void compute_I(Model& model);
+    inline void compute_J(Model& model);
 
 
 
