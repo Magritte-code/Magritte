@@ -429,6 +429,21 @@ int Model :: compute_Jeff ()
                 lspec.Jdif[p][k] = HH_OVER_FOUR_PI * diff;
             }
         })
+
+        // std::cout<<"Jeff: "<<std::endl;
+        for (Size p=0; p<parameters.npoints(); p++)
+        {
+            for (Size k = 0; k < lspec.linedata.nrad; k++)
+            {
+                const Size1 freq_nrs = lspec.nr_line[p][k];
+                for (Size z = 0; z < parameters.nquads(); z++)
+                {
+                    std::cout<<"radiation.u[0][p][z]: "<<radiation.u(0, p, freq_nrs[z]);
+                }
+
+                std::cout<<"i: "<<k<<" Jlin: "<<lspec.Jlin[p][k]<<std::endl;
+            }
+        }
     }
 
     return (0);

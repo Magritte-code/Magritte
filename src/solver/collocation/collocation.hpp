@@ -37,7 +37,7 @@ private:
     vector<Size> index_conversion; //< for transforming back to the regular point indices used in model (as we might only need a reduced set of all the points)
     std::map<Size,Size> reverse_index_conversion; //< for transforming from the regular point indices to the point indices used here
     vector<Real> rbf_radii;
-    vector<vector<Size>> other_radial_basis_interacting_with; //< contains for each rbf, the indices of the radial basis functions interacting with it (also includes itself)
+    vector<std::set<Size>> other_radial_basis_interacting_with; //< contains for each rbf, the indices of the radial basis functions interacting with it (also includes itself)
     //useful for transforming from basis space to actual solution space
 
     Eigen::SparseMatrix<Real> collocation_mat; //contains the entries of the sparse collocation matrix

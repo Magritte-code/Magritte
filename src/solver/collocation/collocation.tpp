@@ -24,11 +24,38 @@ inline void Collocation :: set_interacting_bases(Model& model)
     for (Size pointid=0; pointid<parameters.npoints(); pointid++)
     {
         vector<Size> neighbors_coarser_grid=model.get_coarser_neighbors_kd_tree(pointid, mat_index, index_conversion);
-        Vector3D temp_vector=(model.geometry.points.position[neighbors_coarser_grid.back()]-model.geometry.points.position[pointid]);
-        rbf_radii[pointid]=std::sqrt(temp_vector.squaredNorm());
+        Real max_dist=0.0;
+        Size farthest_point_idx=parameters.npoints();
+        // Size furthest_point_idx=parameters.npoints();
+        // TODO: prune furthest point from this
+        for (Size coarser_neighbor: neighbors_coarser_grid)
+        {
+            Vector3D temp_vector=(model.geometry.points.position[coarser_neighbor]-model.geometry.points.position[pointid]);
+            Real temp_dist=std::sqrt(temp_vector.squaredNorm());
+            // if (temp_dist>max_dist)
+            // {
+            max_dist=temp_dist;
+            farthest_point_idx=coarser_neighbor;
+            // }
+        }
+        // Vector3D temp_vector=(model.geometry.points.position[neighbors_coarser_grid.back()]-model.geometry.points.position[pointid]);
+        rbf_radii[pointid]=max_dist;
+        for (Size coarser_neighbor: neighbors_coarser_grid)
+        {
+            if (coarser_neighbor!=farthest_point_idx)
+            {//set for every neighbors that they have a non-zero value in the rbf of pointid
+            other_radial_basis_interacting_with[coarser_neighbor].insert(pointid);//this also includes itself
+            }
+        }
+
+    }
+
+    for (Size pointid=0; pointid<parameters.npoints(); pointid++)
+    {
+
         //currently, i am choosing the radius such that the last point lies on the boundary of the domain of the radial basis function
         //Therefore, we do not need to include it in the vector of interacting basis functions
-        vector<Size> subvector={neighbors_coarser_grid.begin(),neighbors_coarser_grid.end()-1};
+        // vector<Size> subvector={neighbors_coarser_grid.begin(),neighbors_coarser_grid.end()-1};
 
 
         //calculate the max doppler shift possible
@@ -37,21 +64,15 @@ inline void Collocation :: set_interacting_bases(Model& model)
         Vector3D velocity_curr_point=model.geometry.points.velocity[pointid];
         // for (Size rayidx=0; rayidx<parameters.nrays(); rayidx++)
         // {
-        for (Size neighbor: subvector)
+        // for (Size neighbor: subvector)
+        for (Size neighbor: other_radial_basis_interacting_with[pointid])
         {
             max_doppler_shift=std::max(max_doppler_shift,Real(
         1+std::sqrt((model.geometry.points.velocity[neighbor]-velocity_curr_point).squaredNorm())));
             // min_doppler_shift[rayidx]=std::min(max_doppler_shift,
         // 1+std::sqrt((model.geometry.points.velocity[neighbor]-velocity_curr_point).dot(model.geometry.rays.direction[rayidx])/CC);
         }
-        // }
 
-        //Now converting the subvector to the right (basis) indices
-        for (Size index=0; index<subvector.size(); index++)
-        {
-            subvector[index]=reverse_index_conversion[subvector[index]];
-        }
-        other_radial_basis_interacting_with[pointid]=subvector;//this also includes itself
 
         // For every frequency, calculate which frequencies lie nearby
         for (Size lineid=0; lineid<parameters.nlines(); lineid++)
@@ -205,6 +226,7 @@ inline Real Collocation :: basis_direction(Size rayindex)
     return 1;
 }
 
+/// The basis function associated with each direction integrated over the solid angle
 inline Real Collocation :: basis_direction_int(Geometry& geometry, Size rayindex)
 {
     return FOUR_PI*geometry.rays.weight[rayindex];
@@ -259,6 +281,8 @@ inline Real Collocation :: basis_point(Size centerpoint, Vector3D& location)
     Vector3D diff_vector=location-point_locations[centerpoint];
     Real distance=std::sqrt(diff_vector.dot(diff_vector));
     Real radius=rbf_radii[centerpoint];
+    // std::cout<<"distance: "<<distance<<std::endl;
+    // std::cout<<"radius: "<<radius<<std::endl;
     //if the location is too far from the center, the evalutation of the compact radial basis function is 0.
     if (distance>=radius)
     {
@@ -267,8 +291,10 @@ inline Real Collocation :: basis_point(Size centerpoint, Vector3D& location)
     else
     {
         Real rel_dist=distance/radius;
+        // std::cout<<"rel_dist: "<<rel_dist<<std::endl;
         //This basis function has nice continuous derivatives at r=0 and r=1 (being 0 at both places);
         return -4/(1+std::pow(rel_dist,3))+6/(1+std::pow(rel_dist,2))-1;
+        // return 1-rel_dist;
     }
 }
 
@@ -285,6 +311,8 @@ inline Real Collocation :: basis_point_der(Size centerpoint, Vector3D& location,
     }
     else if (distance==0)
     {
+        // return -2/radius;//for 1-2x+x^2 as basis function
+        // return -1/radius;//for 1-x as basis function
         return 0; //derivative at r=0 is defined to be zero
     }
     else
@@ -292,6 +320,7 @@ inline Real Collocation :: basis_point_der(Size centerpoint, Vector3D& location,
         Real rel_dist=distance/radius;
 
         Vector3D raydirection=geometry.rays.direction[rayindex];
+        // std::cout<<"raydirection=[x,y,z]: "<<raydirection.x()<<", "<<raydirection.y()<<", "<<raydirection.z()<<std::endl;
         //The derivatives in the perpendicular direction (to the radial direction) are 0, so we can calculate the derivative
         // by taking the radial derivative and multiplying it by cos(theta) in which theta is the angle between the radial and the actual direction
         //Below, we see the simple rule for calculating the cosine
@@ -299,8 +328,11 @@ inline Real Collocation :: basis_point_der(Size centerpoint, Vector3D& location,
         Real costheta=raydirection.dot(diff_vector)/std::sqrt(diff_vector.squaredNorm());
         //derivative of -4/(1+std::pow(rel_dist,3))+6/(1+std::pow(rel_dist,2))-1;
         Real radial_derivative =  12*(std::pow(rel_dist,2))/(std::pow(1+std::pow(rel_dist,3),2))-12*rel_dist/(std::pow(1+std::pow(rel_dist,2),2));
-
-        return costheta*radial_derivative;
+        //derivative of 1-rel_dist
+        // Real radial_derivative = -1;
+        //derivative of 1-2rel_dist+rel_dist^2
+        // Real radial_derivative = -2+2*rel_dist;
+        return costheta*radial_derivative/radius;
     }
 }
 
@@ -335,6 +367,9 @@ inline Size Collocation :: get_mat_index(Size rayidx, Size lineidx, Size pointid
 
 inline void Collocation :: setup_basis_matrix_Eigen(Model& model)
 {
+    //We are currently not using the lambda operator, so set to zero
+    for (auto &lspec : model.lines.lineProducingSpecies) {lspec.lambda.clear();}
+
     Size mat_size=parameters.nrays()*parameters.nlines()*point_locations.size();
     vector<Triplet<Real, Size>> eigen_triplets;
     // eigen_triplets.reserve(mat_size*16*nrays());//matrix size times number of interacting points times the number of rays (scattering)
@@ -359,7 +394,8 @@ inline void Collocation :: setup_basis_matrix_Eigen(Model& model)
 
                 const Size curr_mat_idx=get_mat_index(rayidx, lineidx, pointidx);
                 const Real curr_opacity=get_opacity(model, rayidx, lineidx, pointidx);
-                std::cout<<"curr_opacity: "<<curr_opacity<<std::endl;
+                // std::cout<<"this pointidx: "<<pointidx<<std::endl;
+                // std::cout<<"curr_opacity: "<<curr_opacity<<std::endl;
 
                 bool boundary_condition_required=false;
                 if (!model.geometry.not_on_boundary(pointidx))
@@ -373,6 +409,7 @@ inline void Collocation :: setup_basis_matrix_Eigen(Model& model)
                         boundary_condition_required=true;
                     }
                 }
+                // boundary_condition_required=false;
                 if (boundary_condition_required)
                 {
                     //Merely evaluating the intensity at the boundary
@@ -383,11 +420,12 @@ inline void Collocation :: setup_basis_matrix_Eigen(Model& model)
                         Real curr_freq=frequencies[rayidx][pointidx][lineidx];// TODO: add doppler shift
                         Vector3D curr_location=point_locations[pointidx];
 
-                        //In order to make this term of the same size as the others, multiply by the opacity
-                        Real basis_eval=curr_opacity*basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point(triplet[2], curr_location);
-                        std::cout<<"basis_eval: "<<basis_eval<<std::endl;
-                        std::cout<<"basis_dir_eval: "<<basis_direction(triplet[0])<<std::endl;
-                        std::cout<<"basis_freq_eval: "<<basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)<<std::endl;
+                        //In order to make this term of the same size as the others, multiply by the opacity (only in emissivity formulation)
+                        // Real basis_eval=curr_opacity*basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point(triplet[2], curr_location);
+                        Real basis_eval=basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point(triplet[2], curr_location);
+                        // std::cout<<"basis_eval: "<<basis_eval<<std::endl;
+                        // std::cout<<"basis_dir_eval: "<<basis_direction(triplet[0])<<std::endl;
+                        // std::cout<<"basis_freq_eval: "<<basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)<<std::endl;
                         //add triplet (mat_idx(triplet[0],triplet[1],triplet[2]),directional_der)
                         eigen_triplets.push_back (Triplet<Real, Size> (curr_mat_idx, other_mat_idx, basis_eval));
 
@@ -399,26 +437,38 @@ inline void Collocation :: setup_basis_matrix_Eigen(Model& model)
                     {
                         const Size other_mat_idx=get_mat_index(triplet[0],triplet[1],triplet[2]);
 
+                        // std::cout<<"other rayidx: "<<triplet[0]<<std::endl;
+                        // std::cout<<"other lineidx: "<<triplet[1]<<std::endl;
+                        // std::cout<<"other pointidx: "<<triplet[2]<<std::endl;
+
                         Real curr_freq=frequencies[rayidx][pointidx][lineidx];
                         Vector3D curr_location=point_locations[pointidx];
 
-                        //Start with the directional derivative
-                        Real directional_der=basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point_der(triplet[2], curr_location, triplet[0], model.geometry);
+                        //Start with the directional derivative (in source function formulation divided by the opacity)
+                        // Real directional_der=basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point_der(triplet[2], curr_location, triplet[0], model.geometry);
+                        Real directional_der=basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point_der(triplet[2], curr_location, triplet[0], model.geometry)/curr_opacity;
+                        // std::cout<<"directional_der: "<<directional_der<<std::endl;
+                        // directional_der=0;
                         //add triplet (mat_idx(triplet[0],triplet[1],triplet[2]),directional_der)
-                        Real opacity=curr_opacity*basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point(triplet[2], curr_location);
-                        std::cout<<"opacity: "<<opacity<<std::endl;
-                        eigen_triplets.push_back (Triplet<Real, Size> (curr_mat_idx, other_mat_idx, directional_der+opacity));
+                        // Real opacity=curr_opacity*basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point(triplet[2], curr_location);
+                        Real basis_eval=basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point(triplet[2], curr_location);
+                        // std::cout<<"basis_eval: "<<basis_eval<<std::endl;
+                        // std::cout<<"basis_dir_eval: "<<basis_direction(triplet[0])<<std::endl;
+                        // std::cout<<"basis_freq_eval: "<<basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)<<std::endl;
+                        // std::cout<<"basis_point_eval: "<<basis_point(triplet[2], curr_location)<<std::endl;
+                        // basis_eval=0;
+                        eigen_triplets.push_back (Triplet<Real, Size> (curr_mat_idx, other_mat_idx, directional_der+basis_eval));
 
-                        //For every scattering direction! add scattering
-                        for (Size temp_rayidx=0; temp_rayidx<parameters.nrays(); temp_rayidx++)
-                        {
-                            const Size scatt_mat_idx=get_mat_index(temp_rayidx,triplet[1],triplet[2]);
-                            //TODO: add toggle to whether we are actually using scattering
-                            Real integral_scatt_redistr=0;//FIXME: add me //in uniform scattering, this term is proportional to 4*pi/N_rays
-                            Real scattering=-basis_freq(temp_rayidx, triplet[1], triplet[2], curr_freq)*basis_point(triplet[2], curr_location)*integral_scatt_redistr;
-                            //add triplet (mat_idx(temp_rayidx,triplet[1],triplet[2]),scattering)
-                            // eigen_triplets.push_back (Triplet<Real, Size> (curr_mat_idx, scatt_mat_idx, scattering));
-                        }
+                        // //For every scattering direction! add scattering//also divide by curr_opacity
+                        // for (Size temp_rayidx=0; temp_rayidx<parameters.nrays(); temp_rayidx++)
+                        // {
+                        //     const Size scatt_mat_idx=get_mat_index(temp_rayidx,triplet[1],triplet[2]);
+                        //     //TODO: add toggle to whether we are actually using scattering
+                        //     Real integral_scatt_redistr=0;//FIXME: add me //in uniform scattering, this term is proportional to 4*pi/N_rays
+                        //     Real scattering=-basis_freq(temp_rayidx, triplet[1], triplet[2], curr_freq)*basis_point(triplet[2], curr_location)*integral_scatt_redistr;
+                        //     //add triplet (mat_idx(temp_rayidx,triplet[1],triplet[2]),scattering)
+                        //     // eigen_triplets.push_back (Triplet<Real, Size> (curr_mat_idx, scatt_mat_idx, scattering));
+                        // }
 
                     }
                 }
@@ -437,7 +487,7 @@ inline void Collocation :: setup_basis_matrix_Eigen(Model& model)
     std::cout<<"condition number: "<<cond<<std::endl;
     // collocation_mat.data().squeeze();
 
-    // std::cout << MatrixXr(collocation_mat) << std::endl;
+    std::cout << MatrixXr(collocation_mat) << std::endl;
 }
 
 
@@ -496,16 +546,18 @@ inline void Collocation :: setup_rhs_Eigen(Model& model)
                         boundary_condition_required=true;
                     }
                 }
+                // boundary_condition_required=false;
                 if (boundary_condition_required)
                 {
                     //filling in boundary intensity
                     // rhs[curr_mat_idx]=0;
-                    //In order to make this term of the same size as the others, multiply by the opacity
-                    rhs[curr_mat_idx]=get_opacity(model, rayidx, lineidx, pointidx)*boundary_intensity(model, rayidx, lineidx, pointidx);
+                    //In order to make this term of the same size as the others, multiply by the opacity (in emissivity formulation)
+                    // rhs[curr_mat_idx]=get_opacity(model, rayidx, lineidx, pointidx)*boundary_intensity(model, rayidx, lineidx, pointidx);
+                    rhs[curr_mat_idx]=boundary_intensity(model, rayidx, lineidx, pointidx);
                 }
                 else
                 {
-                    rhs[curr_mat_idx]=get_emissivity(model, rayidx, lineidx, pointidx);
+                    rhs[curr_mat_idx]=get_emissivity(model, rayidx, lineidx, pointidx)/get_opacity(model, rayidx, lineidx, pointidx);
                 }
             }
         }
@@ -562,6 +614,11 @@ accel inline Real Collocation :: planck (Real temp, Real freq)
 inline void Collocation :: solve_collocation(Model& model)
 {
     // std::cout<<"Eigen n threads: "<<Eigen::nbThreads()<<std::endl;
+    // Eigen::BiCGSTAB<SparseMatrix<Real> > solver;
+    // solver.compute(collocation_mat);
+    // basis_coefficients = solver.solve(rhs);
+    // std::cout << "#iterations:     " << solver.iterations() << std::endl;
+    // std::cout << "estimated error: " << solver.error()      << std::endl;
     SparseLU <SparseMatrix<Real>, COLAMDOrdering<int>> solver;
 
     // cout << "Analyzing system of rate equations..."      << endl;
@@ -617,7 +674,8 @@ inline void Collocation :: compute_J(Model& model)
   for (Size l = 0; l < parameters.nlspecs(); l++)
   {
       LineProducingSpecies& lspec=model.lines.lineProducingSpecies[l];
-      threaded_for (p, parameters.npoints(),
+      for (Size p=0; p<parameters.npoints(); p++)
+      // threaded_for (p, parameters.npoints(),
       {
           // const Size p=points_in_grid[idx];
 
@@ -642,15 +700,19 @@ inline void Collocation :: compute_J(Model& model)
 
                   std::set<std::vector<Size>> nonzero_triplets;
                   get_nonzero_basis_triplets(nonzero_triplets, rayidx, lid, p);
+                  Real I=0.0;
                   for (std::vector<Size> triplet: nonzero_triplets)
                   {
                       const Size triplet_basis_index=get_mat_index(triplet[0], triplet[1], triplet[2]);
-                      lspec.Jlin[p][k]+=basis_coefficients(triplet_basis_index)/FOUR_PI*basis_point(triplet[2], point_locations[p])*basis_direction_int(model.geometry,triplet[0])*basis_freq_lp_int(triplet[0], triplet[1], triplet[2], lp_freq, lp_freq_inv_width);
+                      //FIXME: figure out where the extra factor sqrt(2) should be coming from std::sqrt(2)*
+                      I+=basis_coefficients(triplet_basis_index)*basis_point(triplet[2], point_locations[p])*basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], lp_freq);
+                      lspec.Jlin[p][k]+=std::sqrt(2)*basis_coefficients(triplet_basis_index)/FOUR_PI*basis_point(triplet[2], point_locations[p])*basis_direction_int(model.geometry,triplet[0])*basis_freq_lp_int(triplet[0], triplet[1], triplet[2], lp_freq, lp_freq_inv_width);
                       // std::cout<<"please be nonzero: "<<basis_coefficients(triplet_basis_index)/FOUR_PI*basis_point(triplet[2], point_locations[p])*basis_direction_int(model.geometry,triplet[0])*basis_freq_lp_int(triplet[0], triplet[1], triplet[2], lp_freq, lp_freq_inv_width)<<std::endl;
 
                       // lspec.Jlin[p][k]+=200000*basis_coefficients(triplet_basis_index)*basis_point(triplet[2], point_locations[p])*basis_direction_int(model.geometry,triplet[0])*basis_freq_lp_int(triplet[0], triplet[1], triplet[2], lp_freq, lp_freq_inv_width);
 
                   }
+                  std::cout<<"p: "<<p<<" I: "<<I<<std::endl;
 
               }
 
@@ -673,8 +735,22 @@ inline void Collocation :: compute_J(Model& model)
 
               lspec.Jeff[p][k] = lspec.Jlin[p][k] - HH_OVER_FOUR_PI * diff;
               lspec.Jdif[p][k] = HH_OVER_FOUR_PI * diff;
+
+              // if (lspec.Jeff[p][k]<0)
+              // {
+              //     lspec.Jeff[p][k]=0;
+              // }
               // std::cout<<"Jeff: "<<lspec.Jeff[p][k]<<std::endl;
           }
-      })
+      }//)
+  }
+  //print out j for first transition
+  for (Size l = 0; l < parameters.nlspecs(); l++)
+  {
+      LineProducingSpecies& lspec=model.lines.lineProducingSpecies[l];
+      for (Size pointidx=0; pointidx<parameters.npoints(); pointidx++)
+      {
+          std::cout<<"jeff: "<<lspec.Jeff[pointidx][0]<<std::endl;
+      }
   }
 }
