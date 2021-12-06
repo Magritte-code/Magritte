@@ -68,7 +68,7 @@ public:
 // basis functions for dir, nu, pid(implicitly x,y,z)
     inline Real basis_direction(Size rayindex);
     inline Real basis_freq(Size rayidx, Size lineidx, Size pointidx, Real currfreq);
-    inline Real basis_point(Size pointid, Vector3D& location);
+    inline Real basis_point(Size pointid, Vector3D& location, Size rayindex, Geometry& geometry);
 
 // basis function derivatives for nu, position
     // inline Real basis_freq_der(Size lineidx, Real currfreq);

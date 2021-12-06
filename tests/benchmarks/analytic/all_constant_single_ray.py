@@ -99,8 +99,17 @@ def run_model (nosave=False):
     timer4.stop()
     u_2f = np.array(model.radiation.u)
 
+    timer5 = tools.Timer('collocation  ')
+    timer5.start()
+    model.compute_radiation_field_collocation ()
+    timer5.stop()
+    colf = np.array(model.lines.lineProducingSpecies[0].Jlin)
+    # u_col= np.array(model.radiation.u)
+
     x  = np.array(model.geometry.points.position)[:,0]
     nu = np.array(model.radiation.frequencies.nu)
+    print(colf[:,0])
+    print(x)
 
     ld = model.lines.lineProducingSpecies[0].linedata
 
@@ -125,6 +134,7 @@ def run_model (nosave=False):
 
     error_u_0s = tools.relative_error (u_(x), u_0s[0,:,0])
     error_u_2f = tools.relative_error (u_(x), u_2f[0,:,0])
+    error_Jcol = tools.relative_error (u_(x), colf[:,0  ])
 
     result  = f'--- Benchmark name ----------------------------\n'
     result += f'{modelName                                    }\n'
@@ -134,13 +144,15 @@ def run_model (nosave=False):
     result += f'nrays     = {model.parameters.nrays    ()     }\n'
     result += f'nquads    = {model.parameters.nquads   ()     }\n'
     result += f'--- Accuracy ----------------------------------\n'
-    result += f'max error in shortchar 0 = {np.max(error_u_0s)}\n'
-    result += f'max error in feautrier 2 = {np.max(error_u_2f)}\n'
+    result += f'max error in shortchar 0 = {np.max(abs(error_u_0s))}\n'
+    result += f'max error in feautrier 2 = {np.max(abs(error_u_2f))}\n'
+    result += f'max error in collocation = {np.max(abs(error_Jcol))}\n'
     result += f'--- Timers ------------------------------------\n'
     result += f'{timer1.print()                               }\n'
     result += f'{timer2.print()                               }\n'
     result += f'{timer3.print()                               }\n'
     result += f'{timer4.print()                               }\n'
+    result += f'{timer5.print()                               }\n'
     result += f'-----------------------------------------------\n'
 
     print(result)
@@ -153,6 +165,7 @@ def run_model (nosave=False):
         plt.title(modelName)
         plt.scatter(x, u_0s[0,:,0], s=0.5, label='0s', zorder=1)
         plt.scatter(x, u_2f[0,:,0], s=0.5, label='2f', zorder=1)
+        plt.scatter(x, colf[:,0  ], s=0.5, label='Jcol', zorder=1)
         plt.plot(x, u_(x), c='lightgray', zorder=0)
         plt.legend()
         plt.xscale('log')

@@ -359,6 +359,28 @@ int Model :: compute_radiation_field_feautrier_order_2 ()
     return (0);
 }
 
+
+int Model :: compute_radiation_field_collocation ()
+{
+    cout << "Computing the radiation field..." << endl;
+
+    Collocation solver;
+
+    std::cout << "Setting up basis"<<std::endl;
+    solver.setup_basis(*this);
+    std::cout << "Setting up basis matrix"<<std::endl;
+    solver.setup_basis_matrix_Eigen(*this);
+    std::cout << "Setting up rhs"<<std::endl;
+    solver.setup_rhs_Eigen(*this);//Note: assumes one has first setup the basis matrix
+    std::cout << "Solving collocation"<<std::endl;
+    solver.solve_collocation(*this);
+    std::cout << "Computing J"<<std::endl;
+    solver.compute_J(*this);
+    std::cout << "Collocation part finished"<<std::endl;
+
+    return (0);
+}
+
 // //// also no declaration here in .hpp file; thus commented out
 // ///  Computer for the radiation field
 // /////////////////////////////////////
@@ -1178,21 +1200,7 @@ int Model :: compute_level_populations_collocation (
         }
         else
         {
-            cout << "Computing the radiation field..." << endl;
-
-            Collocation solver;
-
-            std::cout << "Setting up basis"<<std::endl;
-            solver.setup_basis(*this);
-            std::cout << "Setting up basis matrix"<<std::endl;
-            solver.setup_basis_matrix_Eigen(*this);
-            std::cout << "Setting up rhs"<<std::endl;
-            solver.setup_rhs_Eigen(*this);//Note: assumes one has first setup the basis matrix
-            std::cout << "Solving collocation"<<std::endl;
-            solver.solve_collocation(*this);
-            std::cout << "Computing J"<<std::endl;
-            solver.compute_J(*this);
-            std::cout << "Collocation part finished"<<std::endl;
+            compute_radiation_field_collocation();
 
 
             // compute_radiation_field_feautrier_order_2 ();
