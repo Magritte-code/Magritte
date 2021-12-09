@@ -13,7 +13,7 @@ class Collocation
 private:
     //internal parameters for the basis functions
     const Real TRUNCATION_SIGMA=5.0; //< if Delta(freq)>trunc_sigma*freq_width just set the result from the gaussian basis function to zero (as it is almost zero)
-    const Real SLOPE_FACTOR=1000.0;//0.0;
+    const Real SLOPE_FACTOR=1.0;//For stabilizing the equations a bit (making them somewhat more diagonally dominant);
 
     //NOTE TO SELF: FREQUENCIES (ESPECIALLY WIDTH) MIGHT CHANGE TO ALSO BE ON THE POINT ID (DUE TO TEMPERATURE DIFFERENCES)
     vector<vector<vector<Real>>> frequencies;//For every direction, for each point, the DOPPLER SHIFTED frequencies of the line transitions

@@ -303,8 +303,8 @@ inline Real Collocation :: basis_point(Size centerpoint, Vector3D& location, Siz
         Real x=raydirection.dot(diff_vector)/radius;
         //the slope 1+x in the direction of the ray;
         Real slope=1+x/SLOPE_FACTOR;
-        // return basis*slope;
-        return basis;
+        return basis*slope;
+        // return basis;
         // return 1-rel_dist;
     }
 }
@@ -322,9 +322,13 @@ inline Real Collocation :: basis_point_der(Size centerpoint, Vector3D& location,
     }
     else if (distance==0)
     {
+        Real rel_dist=distance/radius;
         // return -2/radius;//for 1-2x+x^2 as basis function
         // return -1/radius;//for 1-x as basis function
-        return 0; //derivative at r=0 is defined to be zero
+        // return 0; //derivative at r=0 is defined to be zero
+        Real slope_derivative=1/SLOPE_FACTOR;
+        Real basis=-4/(1+std::pow(rel_dist,3))+6/(1+std::pow(rel_dist,2))-1;
+        return slope_derivative*basis/radius;
     }
     else
     {
@@ -332,6 +336,7 @@ inline Real Collocation :: basis_point_der(Size centerpoint, Vector3D& location,
 
         Vector3D raydirection=geometry.rays.direction[rayindex];
         Real x=raydirection.dot(diff_vector)/radius;
+        std::cout<<"x: "<<x<<std::endl;
         //the slope 1+x in the direction of the ray;
         Real slope=1+x/SLOPE_FACTOR;
         Real slope_derivative=1/SLOPE_FACTOR;
@@ -355,8 +360,10 @@ inline Real Collocation :: basis_point_der(Size centerpoint, Vector3D& location,
         // Because we switched the perspective of the basis and point, we need the minus sign
         // Normally you take a basis, and compute the derivative at a given point; in this case, we do the opposite:
         // we take a point and calculate the derivative at that position in some basis functions.
-        // return costheta*radial_derivative*slope/radius+slope_derivative*basis/radius;
-        return costheta*radial_derivative/radius;
+        std::cout<<"der without slope: "<<costheta*radial_derivative/radius<<std::endl;
+        std::cout<<"der with slope: "<<costheta*radial_derivative*slope/radius+slope_derivative*basis/radius<<std::endl;
+        return costheta*radial_derivative*slope/radius+slope_derivative*basis/radius;
+        // return costheta*radial_derivative/radius;
     }
 }
 
@@ -776,6 +783,7 @@ inline void Collocation :: compute_J(Model& model)
                   std::set<std::vector<Size>> nonzero_triplets;
                   get_nonzero_basis_triplets(nonzero_triplets, rayidx, lid, p);
                   Real I=0;
+                  Real temp_jlin=0;
                   for (std::vector<Size> triplet: nonzero_triplets)
                   {
                       const Size triplet_basis_index=get_mat_index(triplet[0], triplet[1], triplet[2]);
