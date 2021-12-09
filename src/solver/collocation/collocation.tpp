@@ -238,13 +238,13 @@ inline Real Collocation :: basis_freq(Size rayidx, Size lineidx, Size pointidx, 
     //TODO: figure out what to use exactly
     //also implement some logical data structure (possibly first read out all the sorted frequencies, then construct the basis functions)
     Real abs_freq_diff=std::abs(currfreq-frequencies[rayidx][pointidx][lineidx]);
-    // if (freq_cutoff_condition(abs_freq_diff,frequencies_inverse_widths[rayidx][pointidx][lineidx]))
-    // {
-    //     return 0;
-    // }
-    // else
+    if (freq_cutoff_condition(abs_freq_diff,frequencies_inverse_widths[rayidx][pointidx][lineidx]))
     {
-        std::cout<<"basis_freq: "<<INVERSE_SQRT_PI*frequencies_inverse_widths[rayidx][pointidx][lineidx]*std::exp(-std::pow(abs_freq_diff*frequencies_inverse_widths[rayidx][pointidx][lineidx],2))<<std::endl;
+        return 0;
+    }
+    else
+    {
+        // std::cout<<"basis_freq: "<<INVERSE_SQRT_PI*frequencies_inverse_widths[rayidx][pointidx][lineidx]*std::exp(-std::pow(abs_freq_diff*frequencies_inverse_widths[rayidx][pointidx][lineidx],2))<<std::endl;
         return INVERSE_SQRT_PI*frequencies_inverse_widths[rayidx][pointidx][lineidx]*std::exp(-std::pow(abs_freq_diff*frequencies_inverse_widths[rayidx][pointidx][lineidx],2));
     }
 }
@@ -257,27 +257,27 @@ inline Real Collocation :: basis_freq_lp_int(Size rayidx, Size lineidx, Size poi
     const Real inv_variance=1/(1/std::pow(point_freq_inv_width,2)+1/std::pow(lp_freq_inv_width,2));// note: still includes the factor (1/sqrt(2)) squared (because variance)
     const Real delta_freq=lp_freq-point_freq;
 
-    std::cout<<"rel_delta_freq: "<<point_freq_inv_width*delta_freq<<std::endl;
-    std::cout<<"freq int: "<<INVERSE_SQRT_PI*std::sqrt(2)*std::sqrt(inv_variance)*std::exp(-(std::pow(delta_freq,2)*inv_variance))<<std::endl;
+    // std::cout<<"rel_delta_freq: "<<point_freq_inv_width*delta_freq<<std::endl;
+    // std::cout<<"freq int: "<<INVERSE_SQRT_PI*std::sqrt(2)*std::sqrt(inv_variance)*std::exp(-(std::pow(delta_freq,2)*inv_variance))<<std::endl;
 
     return INVERSE_SQRT_PI*std::sqrt(2)*std::sqrt(inv_variance)*std::exp(-(std::pow(delta_freq,2)*inv_variance));
 
 }
 
 
-// ///  The derivative of the frequency basis function
-// inline Real Collocation :: basis_freq_der(Size lineidx, Real currfreq)
-// {
-//     Real abs_freq_diff=std::abs(currfreq-frequencies[lineidx]);
-//     if (freq_cutoff_condition(abs_freq_diff,frequencies_widths[lineidx]))
-//     {
-//         return 0;
-//     }
-//     else
-//     {
-//         return -2*(abs_freq_diff/frequencies_widths[lineidx])*std::exp(-std::pow(abs_freq_diff/frequencies_widths[lineidx],2));
-//     }
-// }
+///  The derivative of the frequency basis function
+inline Real Collocation :: basis_freq_der(Size rayidx, Size lineidx, Size pointidx, Real currfreq)
+{
+    Real abs_freq_diff=std::abs(currfreq-frequencies[rayidx][pointidx][lineidx]);
+    if (freq_cutoff_condition(abs_freq_diff,frequencies_inverse_widths[rayidx][pointidx][lineidx]))
+    {
+        return 0;
+    }
+    else
+    {
+        return INVERSE_SQRT_PI*frequencies_inverse_widths[rayidx][pointidx][lineidx]*-2*(abs_freq_diff*frequencies_inverse_widths[rayidx][pointidx][lineidx])*std::exp(-std::pow(abs_freq_diff*frequencies_inverse_widths[rayidx][pointidx][lineidx],2));
+    }
+}
 
 ///  The radial basis function for the position
 inline Real Collocation :: basis_point(Size centerpoint, Vector3D& location, Size rayindex, Geometry& geometry)
@@ -299,10 +299,10 @@ inline Real Collocation :: basis_point(Size centerpoint, Vector3D& location, Siz
         //This basis function has nice continuous derivatives at r=0 and r=1 (being 0 at both places);
         Real basis=-4/(1+std::pow(rel_dist,3))+6/(1+std::pow(rel_dist,2))-1;
         // Real basis=1-rel_dist;
-        // Vector3D raydirection=geometry.rays.direction[rayindex];
-        // Real x=raydirection.dot(diff_vector)/radius;
+        Vector3D raydirection=geometry.rays.direction[rayindex];
+        Real x=raydirection.dot(diff_vector)/radius;
         //the slope 1+x in the direction of the ray;
-        // Real slope=1+x;
+        Real slope=1+x/SLOPE_FACTOR;
         // return basis*slope;
         return basis;
         // return 1-rel_dist;
@@ -331,10 +331,11 @@ inline Real Collocation :: basis_point_der(Size centerpoint, Vector3D& location,
         Real rel_dist=distance/radius;
 
         Vector3D raydirection=geometry.rays.direction[rayindex];
-        // Real x=raydirection.dot(diff_vector)/radius;
+        Real x=raydirection.dot(diff_vector)/radius;
         //the slope 1+x in the direction of the ray;
-        // Real slope=1+x;
-        // Real basis=-4/(1+std::pow(rel_dist,3))+6/(1+std::pow(rel_dist,2))-1;
+        Real slope=1+x/SLOPE_FACTOR;
+        Real slope_derivative=1/SLOPE_FACTOR;
+        Real basis=-4/(1+std::pow(rel_dist,3))+6/(1+std::pow(rel_dist,2))-1;
 
         // std::cout<<"raydirection=[x,y,z]: "<<raydirection.x()<<", "<<raydirection.y()<<", "<<raydirection.z()<<std::endl;
         //The derivatives in the perpendicular direction (to the radial direction) are 0, so we can calculate the derivative
@@ -342,7 +343,7 @@ inline Real Collocation :: basis_point_der(Size centerpoint, Vector3D& location,
         //Below, we see the simple rule for calculating the cosine
         //Note: The ray directions are normalised, so we can omit the normalization of the ray direction
         // Minus sign because we actually need the gradient (not -1 times the gradient); this is due to the definition of the diff_vector, which is natural for RBF's but does actually not give us the angle we want
-        Real costheta=-raydirection.dot(diff_vector)/std::sqrt(diff_vector.squaredNorm());
+        Real costheta=raydirection.dot(diff_vector)/std::sqrt(diff_vector.squaredNorm());
         // Real radial_derivative=-1;
         //derivative of -4/(1+std::pow(rel_dist,3))+6/(1+std::pow(rel_dist,2))-1;
         Real radial_derivative = 12*(std::pow(rel_dist,2))/(std::pow(1+std::pow(rel_dist,3),2))-12*rel_dist/(std::pow(1+std::pow(rel_dist,2),2));
@@ -351,7 +352,10 @@ inline Real Collocation :: basis_point_der(Size centerpoint, Vector3D& location,
         // Real radial_derivative = -1;
         //derivative of 1-2rel_dist+rel_dist^2
         // Real radial_derivative = -2+2*rel_dist;
-        // return costheta*radial_derivative*slope/radius+costheta*slope_derivative*basis/radius;
+        // Because we switched the perspective of the basis and point, we need the minus sign
+        // Normally you take a basis, and compute the derivative at a given point; in this case, we do the opposite:
+        // we take a point and calculate the derivative at that position in some basis functions.
+        // return costheta*radial_derivative*slope/radius+slope_derivative*basis/radius;
         return costheta*radial_derivative/radius;
     }
 }
@@ -398,6 +402,7 @@ inline void Collocation :: setup_basis_matrix_Eigen(Model& model)
     for (Size rayidx=0; rayidx<parameters.nrays(); rayidx++)
     {
         std::cout<<"rayidx: "<<rayidx<<std::endl;
+        std::cout<<"raydirection: "<<model.geometry.rays.direction[rayidx].x()<<std::endl;
         for (Size lineidx=0; lineidx<parameters.nlines(); lineidx++)
         {
 
@@ -415,6 +420,8 @@ inline void Collocation :: setup_basis_matrix_Eigen(Model& model)
 
                 const Size curr_mat_idx=get_mat_index(rayidx, lineidx, pointidx);
                 const Real curr_opacity=get_opacity(model, rayidx, lineidx, pointidx);
+                Real curr_freq=frequencies[rayidx][pointidx][lineidx];// TODO: add doppler shift
+                Vector3D curr_location=point_locations[pointidx];
                 // std::cout<<"this pointidx: "<<pointidx<<std::endl;
                 // std::cout<<"curr_opacity: "<<curr_opacity<<std::endl;
 
@@ -424,7 +431,9 @@ inline void Collocation :: setup_basis_matrix_Eigen(Model& model)
                     double dist=0;//these two variables are actually not used, but required in the function definition get_next
                     double ddist=0;
 
-                    const Size point_behind=model.geometry.get_next(pointidx, rayidx, pointidx, dist, ddist);
+                    Size antipod=model.geometry.rays.antipod[rayidx];
+
+                    const Size point_behind=model.geometry.get_next(pointidx, antipod, pointidx, dist, ddist);
                     if (point_behind==parameters.npoints())
                     {//if there lies no point behind this point, we need to evaluate the boundary condition here
                         boundary_condition_required=true;
@@ -438,8 +447,7 @@ inline void Collocation :: setup_basis_matrix_Eigen(Model& model)
                     {
                         const Size other_mat_idx=get_mat_index(triplet[0],triplet[1],triplet[2]);
 
-                        Real curr_freq=frequencies[rayidx][pointidx][lineidx];// TODO: add doppler shift
-                        Vector3D curr_location=point_locations[pointidx];
+
 
                         //In order to make this term of the same size as the others, multiply by the opacity (only in emissivity formulation)
                         // Real basis_eval=curr_opacity*basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point(triplet[2], curr_location);
@@ -462,9 +470,6 @@ inline void Collocation :: setup_basis_matrix_Eigen(Model& model)
                         // std::cout<<"other lineidx: "<<triplet[1]<<std::endl;
                         // std::cout<<"other pointidx: "<<triplet[2]<<std::endl;
 
-                        Real curr_freq=frequencies[rayidx][pointidx][lineidx];
-                        Vector3D curr_location=point_locations[pointidx];
-
                         //Start with the directional derivative (in source function formulation divided by the opacity)
                         // Real directional_der=basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point_der(triplet[2], curr_location, triplet[0], model.geometry);
                         Real directional_der=basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point_der(triplet[2], curr_location, triplet[0], model.geometry)/curr_opacity;
@@ -478,7 +483,18 @@ inline void Collocation :: setup_basis_matrix_Eigen(Model& model)
                         // std::cout<<"basis_freq_eval: "<<basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)<<std::endl;
                         // std::cout<<"basis_point_eval: "<<basis_point(triplet[2], curr_location)<<std::endl;
                         // basis_eval=0;
-                        eigen_triplets.push_back (Triplet<Real, Size> (curr_mat_idx, other_mat_idx, directional_der+basis_eval));
+                        Real doppler_shift_term=0;
+                        // if (pointidx!=triplet[2])//doppler shift only applies when not at the same position
+                        // {
+                        //     Vector3D diff_vector=point_locations[triplet[2]]-curr_location;
+                        //     Real distance=std::sqrt(diff_vector.squaredNorm());
+                        //     Real velocity_grad=model.geometry.rays.direction[rayidx].dot(model.geometry.points.velocity[triplet[2]]-model.geometry.points.velocity[pointidx])/distance;
+                        //     //divided by the light speed
+                        //     doppler_shift_term=-velocity_grad*frequencies[rayidx][pointidx][lineidx]/curr_opacity*
+                        //       basis_direction(triplet[0])*basis_freq_der(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point(triplet[2], curr_location, triplet[0], model.geometry);
+                        // }
+
+                        eigen_triplets.push_back (Triplet<Real, Size> (curr_mat_idx, other_mat_idx, directional_der+basis_eval+doppler_shift_term));
 
                         // //For every scattering direction! add scattering//also divide by curr_opacity
                         // for (Size temp_rayidx=0; temp_rayidx<parameters.nrays(); temp_rayidx++)
@@ -527,10 +543,10 @@ inline Real Collocation :: get_opacity(Model& model, Size rayidx, Size lineidx, 
     // for (Size other_line_idx=0; other_line_idx<parameters.nlines(); other_line_idx++)
     for (Size other_line_idx: other_frequency_basis_interacting_with[pointidx][lineidx])
     {
-        const Real delta_freq=frequencies[rayidx][pointidx][lineidx]-frequencies[rayidx][pointidx][other_line_idx];
-        const Real inv_width=frequencies_inverse_widths[rayidx][pointidx][other_line_idx];
+        const Real delta_freq=frequencies[rayidx][pointidx][lineidx]-model.lines.line[other_line_idx];
+        const Real inv_width=model.lines.inverse_width(pointidx,other_line_idx);//frequencies_inverse_widths[rayidx][pointidx][other_line_idx];
         toreturn+=INVERSE_SQRT_PI*inv_width*std::exp(-std::pow(delta_freq*inv_width,2))
-                  *frequencies[rayidx][pointidx][other_line_idx]*model.lines.opacity(pointidx, other_line_idx);
+                  *model.lines.line[other_line_idx]*model.lines.opacity(pointidx, other_line_idx);
     }
     return toreturn;
 }
@@ -543,10 +559,10 @@ inline Real Collocation :: get_emissivity(Model& model, Size rayidx, Size lineid
     // for (Size other_line_idx=0; other_line_idx<parameters.nlines(); other_line_idx++)
     for (Size other_line_idx: other_frequency_basis_interacting_with[pointidx][lineidx])
     {
-        const Real delta_freq=frequencies[rayidx][pointidx][lineidx]-frequencies[rayidx][pointidx][other_line_idx];
-        const Real inv_width=frequencies_inverse_widths[rayidx][pointidx][other_line_idx];
+        const Real delta_freq=frequencies[rayidx][pointidx][lineidx]-model.lines.line[other_line_idx];
+        const Real inv_width=model.lines.inverse_width(pointidx,other_line_idx);//frequencies_inverse_widths[rayidx][pointidx][other_line_idx];
         toreturn+=INVERSE_SQRT_PI*inv_width*std::exp(-std::pow(delta_freq*inv_width,2))
-                  *frequencies[rayidx][pointidx][other_line_idx]*model.lines.emissivity(pointidx, other_line_idx);
+                  *model.lines.line[other_line_idx]*model.lines.emissivity(pointidx, other_line_idx);
     }
     return toreturn;
 }
@@ -568,7 +584,9 @@ inline void Collocation :: setup_rhs_Eigen(Model& model)
                     double dist=0;//these two variables are actually not used, but required in the function definition get_next
                     double ddist=0;
 
-                    const Size point_behind=model.geometry.get_next(pointidx, rayidx, pointidx, dist, ddist);
+                    Size antipod=model.geometry.rays.antipod[rayidx];
+
+                    const Size point_behind=model.geometry.get_next(pointidx, antipod, pointidx, dist, ddist);
                     if (point_behind==parameters.npoints())
                     {//if there lies no point behind this point, we need to evaluate the boundary condition here
                         boundary_condition_required=true;

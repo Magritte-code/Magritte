@@ -13,12 +13,14 @@ class Collocation
 private:
     //internal parameters for the basis functions
     const Real TRUNCATION_SIGMA=5.0; //< if Delta(freq)>trunc_sigma*freq_width just set the result from the gaussian basis function to zero (as it is almost zero)
+    const Real SLOPE_FACTOR=1000.0;//0.0;
 
     //NOTE TO SELF: FREQUENCIES (ESPECIALLY WIDTH) MIGHT CHANGE TO ALSO BE ON THE POINT ID (DUE TO TEMPERATURE DIFFERENCES)
     vector<vector<vector<Real>>> frequencies;//For every direction, for each point, the DOPPLER SHIFTED frequencies of the line transitions
     // THESE ARE NOT ORDERED
     vector<vector<vector<Real>>> frequencies_inverse_widths; //the corresponding inverse widths of the line transition gaussians
     // Dev note: it is defined as 1/(sqrt(2)*sigma) for use in the traditional gaussian
+    vector<Real> non_doppler_shifted_frequencies;
 
     // //TODO: this thing is of the size of the actual matrix; maybe just make an approximation with respect to the actual doppler shift compared to the neighbors...
     // // so simply calculate the max velocity difference, then the max doppler shift is bounded (multiplicatively) by ~1+||Delta v||/c
@@ -70,8 +72,8 @@ public:
     inline Real basis_freq(Size rayidx, Size lineidx, Size pointidx, Real currfreq);
     inline Real basis_point(Size pointid, Vector3D& location, Size rayindex, Geometry& geometry);
 
-// basis function derivatives for nu, position
-    // inline Real basis_freq_der(Size lineidx, Real currfreq);
+    // basis function derivatives for nu, position
+    inline Real basis_freq_der(Size rayidx, Size lineidx, Size pointidx, Real currfreq);
     inline Real basis_point_der(Size centerpoint, Vector3D& location, Size rayindex, Geometry& geometry);
 
     // Integral of the directional basis function over the solid angle
