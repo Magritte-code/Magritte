@@ -102,8 +102,7 @@ Examples and analytic as well as cross-code benchmarks can be found in the docum
 Currently, Magritte is mainly being used for post-processing hydrodynamics
 simulations by creating synthetic observations, such that the models can be
 compared with real observations. However, Magritte is still under active development.
-In future work, we aim to  improve on the computational speed, to clear the path for
-on-the-fly radiative transfer in those simulations. Furthermore, aside from being a
+In future work, we aim to explicitly include continuum radiation and improve on the computational speed to clear the path for on-the-fly radiative transfer in hydrodynamics models. Furthermore, aside from being a
 practical research tool, we also aim for Magritte to be the starting point for
 further research in computational radiative transfer. Current active research topics
 include: efficient parallelisation and acceleration strategies on modern
