@@ -1,7 +1,10 @@
 import numpy as np
+import os
 
-from datetime import datetime
-from time     import perf_counter
+from datetime          import datetime
+from time              import perf_counter
+from astropy.io        import fits
+from scipy.interpolate import griddata
 
 
 # Physical constants
@@ -128,3 +131,88 @@ def profile (linedata, k, temp, vturb2, nu):
     """
     x = (nu - linedata.frequency[k]) / dnu(linedata, k, temp, vturb2)
     return np.exp(-x**2) / (np.sqrt(np.pi) * dnu(linedata, k, temp, vturb2))
+
+
+def save_fits(
+        model,
+        filename   = None,
+        image_nr   =  -1,
+        zoom       = 1.3,
+        npix_x     = 300,
+        npix_y     = 300,
+        method     = 'nearest',
+    ):
+    """
+    Save channel maps of synthetic observation (image) as fits file.
+    """
+    
+    # Check if there are images
+    if (len(model.images) < 1):
+        print('No images in model.')
+        return
+    
+    if not filename:
+        # Get path of image directory
+        im_dir = os.path.dirname(os.path.abspath(model.parameters.model_name())) + '/images/'
+        # If no image directory exists yet
+        if not os.path.exists(im_dir):
+            # Create image directory
+            os.makedirs(im_dir)
+            print('Created image directory:', im_dir)
+        # Define filename
+        filename = f"{im_dir}image.fits"
+        
+    # Remove fits file if it already exists
+    if os.path.isfile(filename):
+        os.remove(filename)
+    
+    # Extract image data
+    imx = np.array(model.images[image_nr].ImX)
+    imy = np.array(model.images[image_nr].ImY)
+    imI = np.array(model.images[image_nr].I)
+
+    # Extract the number of frequency bins
+    nfreqs = model.parameters.nfreqs()
+    
+    # Set image boundaries
+    x_min, x_max = np.min(imx)/zoom, np.max(imx)/zoom
+    y_min, y_max = np.min(imy)/zoom, np.max(imy)/zoom
+
+    # Create image grid values
+    xs = np.linspace(x_min, x_max, npix_x)
+    ys = np.linspace(y_min, y_max, npix_y)
+    
+    # Extract the spectral / velocity data
+    freqs = np.array(model.radiation.frequencies.nu)[0]
+    f_ij  = np.mean(freqs)
+
+    dpix_x = np.mean(np.diff(xs))
+    dpix_y = np.mean(np.diff(ys))
+    dfreqs = np.diff(freqs)
+    
+    if (np.abs(relative_error(np.max(dfreqs), np.min(dfreqs))) > 1.0e-9):
+        print('WARNING: No regularly spaced frequency bins!')
+        dfreq = None
+    else:
+        dfreq = np.mean(dfreqs)
+    
+    # Interpolate the scattered data to an image (regular grid)
+    zs = np.zeros((nfreqs, npix_x, npix_y))
+    for f in range(nfreqs):
+        # Nearest neighbor interpolate scattered image data
+        zs[f] = griddata((imx, imy), imI[:,f], (xs[None,:], ys[:,None]), method=method)
+    
+    hdr = fits.Header()
+    hdr['NAXIS'   ] = 3        # dims of the cube
+    hdr['NAXIS1'  ] = nfreqs   # number of pixels along velocity-axis
+    hdr['NAXIS2'  ] = npix_x   # number of pixels along x axis (hor)
+    hdr['NAXIS3'  ] = npix_y   # number of pixels along y-axis (ver)
+    hdr['CENTFREQ'] = f_ij     # central frequency of the image [Hz]
+    hdr['DPIX_X'  ] = dpix_x   # pixel size in meter [m] along x-axis
+    hdr['DPIX_Y'  ] = dpix_y   # pixel size in meter [m] along y-axis
+    hdr['DFREQ'   ] = dfreq    # pixel size in Hertz [Hz] along frequency axis
+    hdr['IM_UNIT' ] = 'W m^-2 Hz^-1 ster^-1'
+    
+    fits.writeto(filename, data=zs, header=hdr)
+    
+    print('Written file to:', filename)
