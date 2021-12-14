@@ -11,6 +11,8 @@ class Collocation
 {
 
 private:
+    const bool USING_COMOVING_FRAME=true;//toggle for using the comoving frame
+
     //internal parameters for the basis functions
     const Real TRUNCATION_SIGMA=5.0; //< if Delta(freq)>trunc_sigma*freq_width just set the result from the gaussian basis function to zero (as it is almost zero)
     const Real SLOPE_FACTOR=1.0;//For stabilizing the equations a bit (making them somewhat more diagonally dominant);
@@ -20,7 +22,10 @@ private:
     // THESE ARE NOT ORDERED
     vector<vector<vector<Real>>> frequencies_inverse_widths; //the corresponding inverse widths of the line transition gaussians
     // Dev note: it is defined as 1/(sqrt(2)*sigma) for use in the traditional gaussian
-    vector<Real> non_doppler_shifted_frequencies;
+
+    //not the most efficient way of accessing the default frequencies and widths, but convient.
+    vector<Real> non_doppler_shifted_frequencies;//for every line, the non doppler shifted line frequencies
+    vector<vector<Real>> non_doppler_shifted_inverse_widths;//for every line, for every point, the non doppler shifted inverse line widths
 
     // //TODO: this thing is of the size of the actual matrix; maybe just make an approximation with respect to the actual doppler shift compared to the neighbors...
     // // so simply calculate the max velocity difference, then the max doppler shift is bounded (multiplicatively) by ~1+||Delta v||/c
@@ -36,6 +41,7 @@ private:
     const Size N_POINTS_IN_RADIAL_BASIS=16;
 
     vector<Vector3D> point_locations;
+    // TODO: when properly implementing these things: check everywhere to add this
     vector<Size> index_conversion; //< for transforming back to the regular point indices used in model (as we might only need a reduced set of all the points)
     std::map<Size,Size> reverse_index_conversion; //< for transforming from the regular point indices to the point indices used here
     vector<Real> rbf_radii;
@@ -106,7 +112,6 @@ public:
     inline void setup_basis_matrix_Eigen(Model& model);
     inline void setup_rhs_Eigen(Model& model);//Note: assumes one has first setup the basis matrix
 
-    inline Real get_opacity(Model& model, Size rayidx, Size lineidx, Size pointidx);
     inline Real get_emissivity(Model& model, Size rayidx, Size lineidx, Size pointidx);
 
     // Return the boundary intensity at the frequency corresponding to the indices

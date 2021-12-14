@@ -65,6 +65,7 @@ inline void Collocation :: set_interacting_bases(Model& model)
         // for (Size rayidx=0; rayidx<parameters.nrays(); rayidx++)
         // {
         // for (Size neighbor: subvector)
+        //TODO: possibly change this for the comoving frame...
         for (Size neighbor: other_radial_basis_interacting_with[pointid])
         {
             max_doppler_shift=std::max(max_doppler_shift,Real(
@@ -201,6 +202,19 @@ inline void Collocation :: setup_basis(Model& model)
         }
     }
 
+    non_doppler_shifted_frequencies.resize(parameters.nlines());
+    non_doppler_shifted_inverse_widths.resize(parameters.nlines());
+    for (Size lineid=0; lineid<parameters.nlines(); lineid++)
+    {
+        non_doppler_shifted_frequencies[lineid]=model.lines.line[lineid];
+        non_doppler_shifted_inverse_widths[lineid].resize(parameters.npoints());
+        for (Size pointid=0; pointid<parameters.npoints(); pointid++)
+        {
+            non_doppler_shifted_inverse_widths[lineid][pointid]=model.lines.inverse_width(pointid,lineid);
+        }
+    }
+
+
     // Also do not forget to initialize the basis coefficients // TODO: figure out which exact format (std::vector, Eigen, ...) to use
     basis_coefficients=VectorXr::Zero(parameters.nrays()*parameters.nlines()*parameters.npoints());
 
@@ -237,22 +251,48 @@ inline Real Collocation :: basis_freq(Size rayidx, Size lineidx, Size pointidx, 
 {
     //TODO: figure out what to use exactly
     //also implement some logical data structure (possibly first read out all the sorted frequencies, then construct the basis functions)
-    Real abs_freq_diff=std::abs(currfreq-frequencies[rayidx][pointidx][lineidx]);
-    if (freq_cutoff_condition(abs_freq_diff,frequencies_inverse_widths[rayidx][pointidx][lineidx]))
+    Real abs_freq_diff=0;
+    Real freq_inv_width=0;
+    if (USING_COMOVING_FRAME)
+    {
+        abs_freq_diff=std::abs(currfreq-non_doppler_shifted_frequencies[lineidx]);
+        freq_inv_width=non_doppler_shifted_inverse_widths[lineidx][pointidx];
+    }
+    else
+    {
+        abs_freq_diff=std::abs(currfreq-frequencies[rayidx][pointidx][lineidx]);
+        freq_inv_width=frequencies_inverse_widths[rayidx][pointidx][lineidx];
+    }
+
+    if (freq_cutoff_condition(abs_freq_diff,freq_inv_width))
     {
         return 0;
     }
     else
     {
         // std::cout<<"basis_freq: "<<INVERSE_SQRT_PI*frequencies_inverse_widths[rayidx][pointidx][lineidx]*std::exp(-std::pow(abs_freq_diff*frequencies_inverse_widths[rayidx][pointidx][lineidx],2))<<std::endl;
-        return INVERSE_SQRT_PI*frequencies_inverse_widths[rayidx][pointidx][lineidx]*std::exp(-std::pow(abs_freq_diff*frequencies_inverse_widths[rayidx][pointidx][lineidx],2));
+        return INVERSE_SQRT_PI*freq_inv_width*std::exp(-std::pow(abs_freq_diff*freq_inv_width,2));
     }
 }
 
 inline Real Collocation :: basis_freq_lp_int(Size rayidx, Size lineidx, Size pointidx, Real lp_freq, Real lp_freq_inv_width)
 {
-    const Real point_freq=frequencies[rayidx][pointidx][lineidx];
-    const Real point_freq_inv_width=frequencies_inverse_widths[rayidx][pointidx][lineidx];
+    Real point_freq=0;//frequencies[rayidx][pointidx][lineidx];
+    Real point_freq_inv_width=0;//frequencies_inverse_widths[rayidx][pointidx][lineidx];
+
+    Real abs_freq_diff=0;
+    Real freq_inv_width=0;
+    if (USING_COMOVING_FRAME)
+    {
+        point_freq=non_doppler_shifted_frequencies[lineidx];
+        point_freq_inv_width=non_doppler_shifted_inverse_widths[lineidx][pointidx];
+    }
+    else
+    {
+        point_freq=frequencies[rayidx][pointidx][lineidx];
+        point_freq_inv_width=frequencies_inverse_widths[rayidx][pointidx][lineidx];
+    }
+
 
     const Real inv_variance=1/(1/std::pow(point_freq_inv_width,2)+1/std::pow(lp_freq_inv_width,2));// note: still includes the factor (1/sqrt(2)) squared (because variance)
     const Real delta_freq=lp_freq-point_freq;
@@ -268,14 +308,25 @@ inline Real Collocation :: basis_freq_lp_int(Size rayidx, Size lineidx, Size poi
 ///  The derivative of the frequency basis function
 inline Real Collocation :: basis_freq_der(Size rayidx, Size lineidx, Size pointidx, Real currfreq)
 {
-    Real abs_freq_diff=std::abs(currfreq-frequencies[rayidx][pointidx][lineidx]);
-    if (freq_cutoff_condition(abs_freq_diff,frequencies_inverse_widths[rayidx][pointidx][lineidx]))
+    Real abs_freq_diff=0;
+    Real freq_inv_width=0;
+    if (USING_COMOVING_FRAME)
+    {
+        abs_freq_diff=std::abs(currfreq-non_doppler_shifted_frequencies[lineidx]);
+        freq_inv_width=non_doppler_shifted_inverse_widths[lineidx][pointidx];
+    }
+    else
+    {
+        abs_freq_diff=std::abs(currfreq-frequencies[rayidx][pointidx][lineidx]);
+        freq_inv_width=frequencies_inverse_widths[rayidx][pointidx][lineidx];
+    }
+    if (freq_cutoff_condition(abs_freq_diff,freq_inv_width))
     {
         return 0;
     }
     else
     {
-        return INVERSE_SQRT_PI*frequencies_inverse_widths[rayidx][pointidx][lineidx]*-2*(abs_freq_diff*frequencies_inverse_widths[rayidx][pointidx][lineidx])*std::exp(-std::pow(abs_freq_diff*frequencies_inverse_widths[rayidx][pointidx][lineidx],2));
+        return INVERSE_SQRT_PI*freq_inv_width*-2*(abs_freq_diff*freq_inv_width)*freq_inv_width*std::exp(-std::pow(abs_freq_diff*freq_inv_width,2));
     }
 }
 
@@ -336,7 +387,6 @@ inline Real Collocation :: basis_point_der(Size centerpoint, Vector3D& location,
 
         Vector3D raydirection=geometry.rays.direction[rayindex];
         Real x=raydirection.dot(diff_vector)/radius;
-        std::cout<<"x: "<<x<<std::endl;
         //the slope 1+x in the direction of the ray;
         Real slope=1+x/SLOPE_FACTOR;
         Real slope_derivative=1/SLOPE_FACTOR;
@@ -360,8 +410,8 @@ inline Real Collocation :: basis_point_der(Size centerpoint, Vector3D& location,
         // Because we switched the perspective of the basis and point, we need the minus sign
         // Normally you take a basis, and compute the derivative at a given point; in this case, we do the opposite:
         // we take a point and calculate the derivative at that position in some basis functions.
-        std::cout<<"der without slope: "<<costheta*radial_derivative/radius<<std::endl;
-        std::cout<<"der with slope: "<<costheta*radial_derivative*slope/radius+slope_derivative*basis/radius<<std::endl;
+        // std::cout<<"der without slope: "<<costheta*radial_derivative/radius<<std::endl;
+        // std::cout<<"der with slope: "<<costheta*radial_derivative*slope/radius+slope_derivative*basis/radius<<std::endl;
         return costheta*radial_derivative*slope/radius+slope_derivative*basis/radius;
         // return costheta*radial_derivative/radius;
     }
@@ -427,7 +477,17 @@ inline void Collocation :: setup_basis_matrix_Eigen(Model& model)
 
                 const Size curr_mat_idx=get_mat_index(rayidx, lineidx, pointidx);
                 const Real curr_opacity=get_opacity(model, rayidx, lineidx, pointidx);
-                Real curr_freq=frequencies[rayidx][pointidx][lineidx];// TODO: add doppler shift
+                // TODO: think about whether the frequency should be evaluated in the frame of the neighbors...//probably not
+
+                Real curr_freq=0;
+                if (USING_COMOVING_FRAME)
+                {
+                    curr_freq=non_doppler_shifted_frequencies[lineidx];
+                }
+                else
+                {
+                    curr_freq=frequencies[rayidx][pointidx][lineidx];
+                }
                 Vector3D curr_location=point_locations[pointidx];
                 // std::cout<<"this pointidx: "<<pointidx<<std::endl;
                 // std::cout<<"curr_opacity: "<<curr_opacity<<std::endl;
@@ -454,16 +514,26 @@ inline void Collocation :: setup_basis_matrix_Eigen(Model& model)
                     {
                         const Size other_mat_idx=get_mat_index(triplet[0],triplet[1],triplet[2]);
 
+                        if (USING_COMOVING_FRAME)
+                        {
+                            const Real doppler_shifted_frequency=curr_freq*calculate_doppler_shift_observer_frame(model.geometry.points.velocity[triplet[2]]-model.geometry.points.velocity[pointidx]
+                                                                                                                  , model.geometry.rays.direction[rayidx]);
+                            // Real doppler_shifted_frequency=curr_freq;//try it out non-doppler shifted
+                            Real basis_eval=basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], doppler_shifted_frequency)*basis_point(triplet[2], curr_location, triplet[0], model.geometry);
+                            eigen_triplets.push_back (Triplet<Real, Size> (curr_mat_idx, other_mat_idx, basis_eval));
+                        }
+                        else
+                        {
+                            //In order to make this term of the same size as the others, multiply by the opacity (only in emissivity formulation)
+                            // Real basis_eval=curr_opacity*basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point(triplet[2], curr_location);
+                            Real basis_eval=basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point(triplet[2], curr_location, triplet[0], model.geometry);
+                            // std::cout<<"basis_eval: "<<basis_eval<<std::endl;
+                            // std::cout<<"basis_dir_eval: "<<basis_direction(triplet[0])<<std::endl;
+                            // std::cout<<"basis_freq_eval: "<<basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)<<std::endl;
+                            //add triplet (mat_idx(triplet[0],triplet[1],triplet[2]),directional_der)
+                            eigen_triplets.push_back (Triplet<Real, Size> (curr_mat_idx, other_mat_idx, basis_eval));
+                        }
 
-
-                        //In order to make this term of the same size as the others, multiply by the opacity (only in emissivity formulation)
-                        // Real basis_eval=curr_opacity*basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point(triplet[2], curr_location);
-                        Real basis_eval=basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point(triplet[2], curr_location, triplet[0], model.geometry);
-                        // std::cout<<"basis_eval: "<<basis_eval<<std::endl;
-                        // std::cout<<"basis_dir_eval: "<<basis_direction(triplet[0])<<std::endl;
-                        // std::cout<<"basis_freq_eval: "<<basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)<<std::endl;
-                        //add triplet (mat_idx(triplet[0],triplet[1],triplet[2]),directional_der)
-                        eigen_triplets.push_back (Triplet<Real, Size> (curr_mat_idx, other_mat_idx, basis_eval));
 
                     }
                 }
@@ -473,46 +543,85 @@ inline void Collocation :: setup_basis_matrix_Eigen(Model& model)
                     {
                         const Size other_mat_idx=get_mat_index(triplet[0],triplet[1],triplet[2]);
 
-                        // std::cout<<"other rayidx: "<<triplet[0]<<std::endl;
-                        // std::cout<<"other lineidx: "<<triplet[1]<<std::endl;
-                        // std::cout<<"other pointidx: "<<triplet[2]<<std::endl;
+                        if (USING_COMOVING_FRAME)
+                        {   //TODO: give a more solid reasoning why the doppler shift should be calculated using the rayidx, instead of triplet[0]
+                            const Real doppler_shift=calculate_doppler_shift_observer_frame(model.geometry.points.velocity[triplet[2]]-model.geometry.points.velocity[pointidx]
+                                                                                            , model.geometry.rays.direction[rayidx]);
+                            const Real doppler_shifted_frequency=curr_freq*doppler_shift;
+                            // const Real doppler_shifted_opacity=get_opacity(model, rayidx, lineidx, pointidx, doppler_shift);
+                            // Real doppler_shifted_frequency=curr_freq;//try it out non-doppler shifted
+                            Real directional_der=basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], doppler_shifted_frequency)*basis_point_der(triplet[2], curr_location, triplet[0], model.geometry)/curr_opacity;///doppler_shifted_opacity;///curr_opacity;
+                            Real basis_eval=basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], doppler_shifted_frequency)*basis_point(triplet[2], curr_location, triplet[0], model.geometry);
+                            std::cout<<"basis_eval+dir_der: "<<basis_eval+directional_der<<std::endl;
+                            // std::cout<<"basis_eval: "<<basis_eval<<std::endl;
+                            // std::cout<<"dir_der: "<<directional_der<<std::endl;
+                            // std::cout<<"basis_freq: "<<basis_freq(triplet[0], triplet[1], triplet[2], doppler_shifted_frequency)<<std::endl;
+                            // std::cout<<"basis_point: "<<basis_point(triplet[2], curr_location, triplet[0], model.geometry)<<std::endl;
+                            Real doppler_shift_term=0;
+                            // if (pointidx!=triplet[2])//doppler shift only applies when not at the same position
+                            // {
+                            //     Vector3D diff_vector=point_locations[triplet[2]]-curr_location;
+                            //     Real distance=std::sqrt(diff_vector.squaredNorm());
+                            //     Real velocity_grad=model.geometry.rays.direction[rayidx].dot(model.geometry.points.velocity[triplet[2]]-model.geometry.points.velocity[pointidx])/distance;
+                            //     //divided by the light speed
+                            //     doppler_shift_term=-velocity_grad*non_doppler_shifted_frequencies[lineidx]/curr_opacity*
+                            //       basis_direction(triplet[0])*basis_freq_der(triplet[0], triplet[1], triplet[2], doppler_shifted_frequency)*basis_point(triplet[2], curr_location, triplet[0], model.geometry);
+                            // }
+                            std::cout<<"doppler_shift_term: "<<doppler_shift_term<<std::endl;
 
-                        //Start with the directional derivative (in source function formulation divided by the opacity)
-                        // Real directional_der=basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point_der(triplet[2], curr_location, triplet[0], model.geometry);
-                        Real directional_der=basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point_der(triplet[2], curr_location, triplet[0], model.geometry)/curr_opacity;
-                        // std::cout<<"directional_der: "<<directional_der<<std::endl;
-                        // directional_der=0;
-                        //add triplet (mat_idx(triplet[0],triplet[1],triplet[2]),directional_der)
-                        // Real opacity=curr_opacity*basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point(triplet[2], curr_location);
-                        Real basis_eval=basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point(triplet[2], curr_location, triplet[0], model.geometry);
-                        // std::cout<<"basis_eval: "<<basis_eval<<std::endl;
-                        // std::cout<<"basis_dir_eval: "<<basis_direction(triplet[0])<<std::endl;
-                        // std::cout<<"basis_freq_eval: "<<basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)<<std::endl;
-                        // std::cout<<"basis_point_eval: "<<basis_point(triplet[2], curr_location)<<std::endl;
-                        // basis_eval=0;
-                        Real doppler_shift_term=0;
-                        // if (pointidx!=triplet[2])//doppler shift only applies when not at the same position
-                        // {
-                        //     Vector3D diff_vector=point_locations[triplet[2]]-curr_location;
-                        //     Real distance=std::sqrt(diff_vector.squaredNorm());
-                        //     Real velocity_grad=model.geometry.rays.direction[rayidx].dot(model.geometry.points.velocity[triplet[2]]-model.geometry.points.velocity[pointidx])/distance;
-                        //     //divided by the light speed
-                        //     doppler_shift_term=-velocity_grad*frequencies[rayidx][pointidx][lineidx]/curr_opacity*
-                        //       basis_direction(triplet[0])*basis_freq_der(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point(triplet[2], curr_location, triplet[0], model.geometry);
-                        // }
+                            eigen_triplets.push_back (Triplet<Real, Size> (curr_mat_idx, other_mat_idx, directional_der+basis_eval+doppler_shift_term));
 
-                        eigen_triplets.push_back (Triplet<Real, Size> (curr_mat_idx, other_mat_idx, directional_der+basis_eval+doppler_shift_term));
+                            // //For every scattering direction! add scattering//also divide by curr_opacity
+                            // for (Size temp_rayidx=0; temp_rayidx<parameters.nrays(); temp_rayidx++)
+                            // {
+                            //     const Size scatt_mat_idx=get_mat_index(temp_rayidx,triplet[1],triplet[2]);
+                            //     //TODO: add toggle to whether we are actually using scattering
+                            //     Real integral_scatt_redistr=0;//FIXME: add me //in uniform scattering, this term is proportional to 4*pi/N_rays
+                            //     Real scattering=-basis_freq(temp_rayidx, triplet[1], triplet[2], curr_freq)*basis_point(triplet[2], curr_location)*integral_scatt_redistr;
+                            //     //add triplet (mat_idx(temp_rayidx,triplet[1],triplet[2]),scattering)
+                            //     // eigen_triplets.push_back (Triplet<Real, Size> (curr_mat_idx, scatt_mat_idx, scattering));
+                            // }
+                        }
+                        else
+                        {
+                            //Start with the directional derivative (in source function formulation divided by the opacity)
+                            // Real directional_der=basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point_der(triplet[2], curr_location, triplet[0], model.geometry);
+                            Real directional_der=basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point_der(triplet[2], curr_location, triplet[0], model.geometry)/curr_opacity;
+                            // std::cout<<"directional_der: "<<directional_der<<std::endl;
+                            // directional_der=0;
+                            //add triplet (mat_idx(triplet[0],triplet[1],triplet[2]),directional_der)
+                            // Real opacity=curr_opacity*basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point(triplet[2], curr_location);
+                            Real basis_eval=basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point(triplet[2], curr_location, triplet[0], model.geometry);
+                            // std::cout<<"basis_eval: "<<basis_eval<<std::endl;
+                            // std::cout<<"basis_dir_eval: "<<basis_direction(triplet[0])<<std::endl;
+                            // std::cout<<"basis_freq_eval: "<<basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)<<std::endl;
+                            // std::cout<<"basis_point_eval: "<<basis_point(triplet[2], curr_location)<<std::endl;
+                            // basis_eval=0;
+                            Real doppler_shift_term=0;
+                            // if (pointidx!=triplet[2])//doppler shift only applies when not at the same position
+                            // {
+                            //     Vector3D diff_vector=point_locations[triplet[2]]-curr_location;
+                            //     Real distance=std::sqrt(diff_vector.squaredNorm());
+                            //     Real velocity_grad=model.geometry.rays.direction[rayidx].dot(model.geometry.points.velocity[triplet[2]]-model.geometry.points.velocity[pointidx])/distance;
+                            //     //divided by the light speed
+                            //     doppler_shift_term=-velocity_grad*frequencies[rayidx][pointidx][lineidx]/curr_opacity*
+                            //       basis_direction(triplet[0])*basis_freq_der(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point(triplet[2], curr_location, triplet[0], model.geometry);
+                            // }
 
-                        // //For every scattering direction! add scattering//also divide by curr_opacity
-                        // for (Size temp_rayidx=0; temp_rayidx<parameters.nrays(); temp_rayidx++)
-                        // {
-                        //     const Size scatt_mat_idx=get_mat_index(temp_rayidx,triplet[1],triplet[2]);
-                        //     //TODO: add toggle to whether we are actually using scattering
-                        //     Real integral_scatt_redistr=0;//FIXME: add me //in uniform scattering, this term is proportional to 4*pi/N_rays
-                        //     Real scattering=-basis_freq(temp_rayidx, triplet[1], triplet[2], curr_freq)*basis_point(triplet[2], curr_location)*integral_scatt_redistr;
-                        //     //add triplet (mat_idx(temp_rayidx,triplet[1],triplet[2]),scattering)
-                        //     // eigen_triplets.push_back (Triplet<Real, Size> (curr_mat_idx, scatt_mat_idx, scattering));
-                        // }
+                            eigen_triplets.push_back (Triplet<Real, Size> (curr_mat_idx, other_mat_idx, directional_der+basis_eval+doppler_shift_term));
+
+                            // //For every scattering direction! add scattering//also divide by curr_opacity
+                            // for (Size temp_rayidx=0; temp_rayidx<parameters.nrays(); temp_rayidx++)
+                            // {
+                            //     const Size scatt_mat_idx=get_mat_index(temp_rayidx,triplet[1],triplet[2]);
+                            //     //TODO: add toggle to whether we are actually using scattering
+                            //     Real integral_scatt_redistr=0;//FIXME: add me //in uniform scattering, this term is proportional to 4*pi/N_rays
+                            //     Real scattering=-basis_freq(temp_rayidx, triplet[1], triplet[2], curr_freq)*basis_point(triplet[2], curr_location)*integral_scatt_redistr;
+                            //     //add triplet (mat_idx(temp_rayidx,triplet[1],triplet[2]),scattering)
+                            //     // eigen_triplets.push_back (Triplet<Real, Size> (curr_mat_idx, scatt_mat_idx, scattering));
+                            // }
+
+                        }
 
                     }
                 }
@@ -543,14 +652,22 @@ inline void Collocation :: setup_basis_matrix_Eigen(Model& model)
 
 
 // Returns the opacity (takes into account the gaussian line profile)
-inline Real Collocation :: get_opacity(Model& model, Size rayidx, Size lineidx, Size pointidx)
+inline Real Collocation :: get_opacity(Model& model, Size rayidx, Size lineidx, Size pointidx, Real shift)
 {
     Real toreturn=0;
     // if using other line profile/frequency basis function than gaussian, please replace the for(...) with the following line:
     // for (Size other_line_idx=0; other_line_idx<parameters.nlines(); other_line_idx++)
     for (Size other_line_idx: other_frequency_basis_interacting_with[pointidx][lineidx])
     {
-        const Real delta_freq=frequencies[rayidx][pointidx][lineidx]-model.lines.line[other_line_idx];
+        Real delta_freq=0;
+        if (USING_COMOVING_FRAME)
+        {
+            delta_freq=shift*non_doppler_shifted_frequencies[lineidx]-model.lines.line[other_line_idx];
+        }
+        else
+        {
+            delta_freq=frequencies[rayidx][pointidx][lineidx]-model.lines.line[other_line_idx];
+        }
         const Real inv_width=model.lines.inverse_width(pointidx,other_line_idx);//frequencies_inverse_widths[rayidx][pointidx][other_line_idx];
         toreturn+=INVERSE_SQRT_PI*inv_width*std::exp(-std::pow(delta_freq*inv_width,2))
                   *model.lines.line[other_line_idx]*model.lines.opacity(pointidx, other_line_idx);
@@ -566,7 +683,15 @@ inline Real Collocation :: get_emissivity(Model& model, Size rayidx, Size lineid
     // for (Size other_line_idx=0; other_line_idx<parameters.nlines(); other_line_idx++)
     for (Size other_line_idx: other_frequency_basis_interacting_with[pointidx][lineidx])
     {
-        const Real delta_freq=frequencies[rayidx][pointidx][lineidx]-model.lines.line[other_line_idx];
+        Real delta_freq=0;
+        if (USING_COMOVING_FRAME)
+        {
+            delta_freq=non_doppler_shifted_frequencies[lineidx]-model.lines.line[other_line_idx];
+        }
+        else
+        {
+            delta_freq=frequencies[rayidx][pointidx][lineidx]-model.lines.line[other_line_idx];
+        }
         const Real inv_width=model.lines.inverse_width(pointidx,other_line_idx);//frequencies_inverse_widths[rayidx][pointidx][other_line_idx];
         toreturn+=INVERSE_SQRT_PI*inv_width*std::exp(-std::pow(delta_freq*inv_width,2))
                   *model.lines.line[other_line_idx]*model.lines.emissivity(pointidx, other_line_idx);
@@ -610,6 +735,7 @@ inline void Collocation :: setup_rhs_Eigen(Model& model)
                 }
                 else
                 {
+                    //TODO: possibly some doppler shift required here?
                     rhs[curr_mat_idx]=get_emissivity(model, rayidx, lineidx, pointidx)/get_opacity(model, rayidx, lineidx, pointidx);
                 }
             }
@@ -628,7 +754,16 @@ inline void Collocation :: setup_rhs_Eigen(Model& model)
 ///  Copied from solver.tpp and modified a bit
 inline Real Collocation :: boundary_intensity (Model& model, Size rayidx, Size lineidx, Size pointidx)
 {
-    const Real freq=frequencies[rayidx][pointidx][lineidx];
+    Real freq=0;
+    if (USING_COMOVING_FRAME)
+    {
+        freq=non_doppler_shifted_frequencies[lineidx];
+    }
+    else
+    {
+        freq=frequencies[rayidx][pointidx][lineidx];
+    }
+
     const Size bdy_id = model.geometry.boundary.point2boundary[pointidx];
 
     switch (model.geometry.boundary.boundary_condition[bdy_id])
@@ -772,8 +907,18 @@ inline void Collocation :: compute_J(Model& model)
               //or just use a matrix-vector product
               for (Size rayidx=0; rayidx<parameters.nrays(); rayidx++)
               {
-                  const Real lp_freq=frequencies[rayidx][p][lid];
-                  const Real lp_freq_inv_width=frequencies_inverse_widths[rayidx][p][lid];
+                  Real lp_freq=0;
+                  Real lp_freq_inv_width=0;
+                  if (USING_COMOVING_FRAME)
+                  {
+                      lp_freq=non_doppler_shifted_frequencies[lid];
+                      lp_freq_inv_width=non_doppler_shifted_inverse_widths[lid][p];
+                  }
+                  else
+                  {
+                      lp_freq=frequencies[rayidx][p][lid];
+                      lp_freq_inv_width=frequencies_inverse_widths[rayidx][p][lid];
+                  }
                   // Size hrayidx=rayidx;//rayidx for u
                   // if (hrayidx>=parameters.hnrays())
                   // {
@@ -787,14 +932,25 @@ inline void Collocation :: compute_J(Model& model)
                   for (std::vector<Size> triplet: nonzero_triplets)
                   {
                       const Size triplet_basis_index=get_mat_index(triplet[0], triplet[1], triplet[2]);
-                      //TODO: figure out which values we actually want to keep...; note to self: I and u use the frequency index (nlines*nquads); so we are not able to compute it here
-                      // model.radiation.I(rayidx, p, lid) +=basis_coefficients(triplet_basis_index)*basis_point(triplet[2], point_locations[p], triplet[0], model.geometry)*basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], lp_freq);
-                      // model.radiation.u(hrayidx, p, lid)+=1.0/2*basis_coefficients(triplet_basis_index)*basis_point(triplet[2], point_locations[p], triplet[0], model.geometry)*basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], lp_freq);
-                      I+=basis_coefficients(triplet_basis_index)*basis_point(triplet[2], point_locations[p], triplet[0], model.geometry)*basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], lp_freq);
-                      lspec.Jlin[p][k]+=basis_coefficients(triplet_basis_index)/FOUR_PI*basis_point(triplet[2], point_locations[p], triplet[0], model.geometry)*basis_direction_int(model.geometry,triplet[0])*basis_freq_lp_int(triplet[0], triplet[1], triplet[2], lp_freq, lp_freq_inv_width);
-                      // std::cout<<"please be nonzero: "<<basis_coefficients(triplet_basis_index)/FOUR_PI*basis_point(triplet[2], point_locations[p])*basis_direction_int(model.geometry,triplet[0])*basis_freq_lp_int(triplet[0], triplet[1], triplet[2], lp_freq, lp_freq_inv_width)<<std::endl;
+                      if (USING_COMOVING_FRAME)
+                      {
+                          const Real doppler_shifted_frequency=lp_freq*calculate_doppler_shift_observer_frame(model.geometry.points.velocity[triplet[2]]-model.geometry.points.velocity[p]
+                                                                                                                , model.geometry.rays.direction[rayidx]);
+                          // Real doppler_shifted_frequency=lp_freq;//try it out non-doppler shifted
+                          I+=basis_coefficients(triplet_basis_index)*basis_point(triplet[2], point_locations[p], triplet[0], model.geometry)*basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], doppler_shifted_frequency);
+                          lspec.Jlin[p][k]+=basis_coefficients(triplet_basis_index)/FOUR_PI*basis_point(triplet[2], point_locations[p], triplet[0], model.geometry)*basis_direction_int(model.geometry,triplet[0])*basis_freq_lp_int(triplet[0], triplet[1], triplet[2], doppler_shifted_frequency, lp_freq_inv_width);
+                      }
+                      else
+                      {
+                          //TODO: figure out which values we actually want to keep...; note to self: I and u use the frequency index (nlines*nquads); so we are not able to compute it here
+                          // model.radiation.I(rayidx, p, lid) +=basis_coefficients(triplet_basis_index)*basis_point(triplet[2], point_locations[p], triplet[0], model.geometry)*basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], lp_freq);
+                          // model.radiation.u(hrayidx, p, lid)+=1.0/2*basis_coefficients(triplet_basis_index)*basis_point(triplet[2], point_locations[p], triplet[0], model.geometry)*basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], lp_freq);
+                          I+=basis_coefficients(triplet_basis_index)*basis_point(triplet[2], point_locations[p], triplet[0], model.geometry)*basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], lp_freq);
+                          lspec.Jlin[p][k]+=basis_coefficients(triplet_basis_index)/FOUR_PI*basis_point(triplet[2], point_locations[p], triplet[0], model.geometry)*basis_direction_int(model.geometry,triplet[0])*basis_freq_lp_int(triplet[0], triplet[1], triplet[2], lp_freq, lp_freq_inv_width);
+                          // std::cout<<"please be nonzero: "<<basis_coefficients(triplet_basis_index)/FOUR_PI*basis_point(triplet[2], point_locations[p])*basis_direction_int(model.geometry,triplet[0])*basis_freq_lp_int(triplet[0], triplet[1], triplet[2], lp_freq, lp_freq_inv_width)<<std::endl;
 
-                      // lspec.Jlin[p][k]+=200000*basis_coefficients(triplet_basis_index)*basis_point(triplet[2], point_locations[p])*basis_direction_int(model.geometry,triplet[0])*basis_freq_lp_int(triplet[0], triplet[1], triplet[2], lp_freq, lp_freq_inv_width);
+                          // lspec.Jlin[p][k]+=200000*basis_coefficients(triplet_basis_index)*basis_point(triplet[2], point_locations[p])*basis_direction_int(model.geometry,triplet[0])*basis_freq_lp_int(triplet[0], triplet[1], triplet[2], lp_freq, lp_freq_inv_width);
+                      }
 
                   }
                   std::cout<<"p: "<<p<<" I: "<<I<<std::endl;
