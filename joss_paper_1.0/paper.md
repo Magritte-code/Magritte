@@ -83,12 +83,12 @@ Futhermore, tools are provided to optimise different input meshes for radiative 
 # Statement of need
 
 Recent high-resolution observations exposed the intricate and intrinsically 3D
-morphologies of these objects [@Decin:2020]. The sheer amount of complexity that is
+morphologies of stellar winds around evolved stars [@Decin:2020]. The sheer amount of complexity that is
 observed, makes it difficult to interpret the observations and necessitates the use of
 3D hydrodynamics, chemistry and radiative transfer models to study their origin and
 evolution [@ElMellah:2020; @Maes:2021; @Malfait:2021]. Their intricate
 morpho-kinematics, moreover, makes their appearance in (synthetic) observations far from evident
-(see e.g.\ the intricate structures in \autoref{fig:example}JI). Therefore, to study these and other complex
+(see e.g.\ the intricate structures in \autoref{fig:example}). Therefore, to study these and other complex
 morpho-kinematical objects, it is essential to understand how their models would
 appear in observations. This can be achieved, by creating synthetic observations
 with Magritte.
@@ -109,7 +109,7 @@ further research in computational radiative transfer. Current active research to
 include: efficient parallelisation and acceleration strategies on modern
 high-performance computing systems, acceleration of convergence in the non-linear
 coupling between the radiation field and the medium, and uncertainty quantification in
-radiative transfer through probabilistic numerical methods [e.g.,\ @DeCeuster:2021].
+radiative transfer through probabilistic numerical methods [e.g., @DeCeuster:2021].
 
 
 # Acknowledgements
