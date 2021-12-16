@@ -9,8 +9,10 @@ simulating radiation transport, developed at
 [University College London](https://www.ucl.ac.uk/) (UCL, UK) and
 [KU Leuven](https://www.kuleuven.be/english/) (Belgium).
 
-Magritte is currently mainly used for post-processing hydrodynamical simulations by
-creating synthetic observations, but the techniques could also be applied more general.
+Magritte is currently mainly used for post-processing hydrodynamical simulations of
+astrophysical models by creating synthetic observations, but the techniques could
+in principle also be applied more general (e.g. plasma and nuclear physics).  
+
 It can either be used as a Python package or as a C++ library.
 Magritte uses a deterministic ray-tracer with a formal solver that currently focusses on
 line radiative transfer (see
@@ -50,14 +52,14 @@ and documented in the latest release of Magritte.
 Please report any issues with Magritte or its documentation
 [here](https://github.com/UCL/Magritte/issues).
 If you need any further help, please contact
-[Frederik De Ceuster](https://www.kuleuven.be/wieiswie/en/person/00101884).
+[Frederik De Ceuster](https://freddeceuster.github.io/).
 
 
 ## Cite
 Please contact the authors of the papers referenced above if you want to use
 Magritte in your research. We are currently working on documentation and
 examples to facilitate its independent use. Until then, please
-[contact us](https://www.kuleuven.be/wieiswie/en/person/00101884).
+[contact us](https://freddeceuster.github.io/).
 
 
 ## Developers & Contributors
@@ -80,5 +82,6 @@ examples to facilitate its independent use. Until then, please
 
 
 ## Acknowledgements
-FDC is supported by the EPSRC iCASE studentship programme, Intel Corporation and Cray Inc.
+FDC was for most of the development supported by the EPSRC iCASE studentship programme, Intel Corporation and Cray Inc.
 FDC, JB, WH, and LD acknowledge support from the ERC consolidator grant 646758 AEROSOL.
+TC is a PhD fellow of the Research Foundation - Flanders (FWO).
