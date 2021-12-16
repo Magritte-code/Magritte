@@ -6,8 +6,8 @@ In case you have any suggestions, questions, possible bugs, or feature requests,
 
 ## Contributing examples and use cases
 
-If you have used Magritte in a way that is different from any of [our examples](https://magritte.readthedocs.io/en/stable/1_examples/index.html), we highly encourage you to contribute to the [examples]()https://magritte.readthedocs.io/en/stable/1_examples/index.html in the documentation.
-You can do this by preparing your example as a jupyter notebook and creating a pull request (see below). I you are unsure about your example or how to add it, please contact us and we can help you.
+If you have used Magritte in a way that is different from any of [our examples](https://magritte.readthedocs.io/en/stable/1_examples/index.html), we highly encourage you to contribute to the [examples](https://magritte.readthedocs.io/en/stable/1_examples/index.html) in the documentation.
+You can do this by preparing your example as a jupyter notebook and creating a pull request (see below). If you are unsure about your example or how to add it, please contact us and we can help you.
 
 
 ## Contributing new functionality
@@ -30,5 +30,6 @@ The advised procedure for creating pull requests for Magritte goes as follows:
 - Open a pull request for your branch on Github.
 
 Also, have a look at [this guide](https://docs.github.com/en/get-started/quickstart/contributing-to-projects) on forking in Github.
+
 
 _Thank you for contributing to Magritte!_
