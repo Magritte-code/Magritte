@@ -15,7 +15,9 @@ private:
 
     //internal parameters for the basis functions
     const Real TRUNCATION_SIGMA=5.0; //< if Delta(freq)>trunc_sigma*freq_width just set the result from the gaussian basis function to zero (as it is almost zero)
-    const Real SLOPE_FACTOR=1.0;//For stabilizing the equations a bit (making them somewhat more diagonally dominant);
+    const Real SLOPE_FACTOR=1.0;//1.0;//For stabilizing the equations a bit (making them somewhat more diagonally dominant);
+    //TODO: adaptively define this such that diagonal remains somewhat ?constant...?
+    //ideas: should drastically reduce ill-conditionedness of a matrix, so should (implicitly) depend on the number of points/distance of the closest point/...
 
     //NOTE TO SELF: FREQUENCIES (ESPECIALLY WIDTH) MIGHT CHANGE TO ALSO BE ON THE POINT ID (DUE TO TEMPERATURE DIFFERENCES)
     vector<vector<vector<Real>>> frequencies;//For every direction, for each point, the DOPPLER SHIFTED frequencies of the line transitions
@@ -75,17 +77,17 @@ public:
 // The complete radial basis function at an index (dir, nu, pid) is a product of the ones defined below
 // basis functions for dir, nu, pid(implicitly x,y,z)
     inline Real basis_direction(Size rayindex);
-    inline Real basis_freq(Size rayidx, Size lineidx, Size pointidx, Real currfreq);
+    inline Real basis_freq(Size rayidx, Size freqidx, Size pointidx, Real currfreq);
     inline Real basis_point(Size pointid, Vector3D& location, Size rayindex, Geometry& geometry);
 
     // basis function derivatives for nu, position
-    inline Real basis_freq_der(Size rayidx, Size lineidx, Size pointidx, Real currfreq);
+    inline Real basis_freq_der(Size rayidx, Size freqidx, Size pointidx, Real currfreq);
     inline Real basis_point_der(Size centerpoint, Vector3D& location, Size rayindex, Geometry& geometry);
 
     // Integral of the directional basis function over the solid angle
     inline Real basis_direction_int(Geometry& geometry, Size rayindex);
     //Solution of the integral of the basis function together with the line profile function
-    inline Real basis_freq_lp_int(Size rayidx, Size lineidx, Size pointidx, Real lp_freq, Real lp_freq_inv_width);
+    inline Real basis_freq_lp_int(Size rayidx, Size freqidx, Size pointidx, Real lp_freq, Real lp_freq_inv_width);
 
 // somewhere to store the sparse matrix and the decomposition TODO: figure out what we actually want
 
@@ -103,16 +105,17 @@ public:
 //
 
     // fills the basis triplets with the nonzeros triplets associated with the given point (rayidx, lineidx, pointidx)
-    inline void get_nonzero_basis_triplets(std::set<std::vector<Size>>& basis_triplets_to_fill, Size rayidx, Size lineidx, Size pointidx);
+    inline void get_nonzero_basis_triplets(std::set<std::vector<Size>>& basis_triplets_to_fill, Size rayidx, Size freqidx, Size pointidx);
 
     // converts (rayidx, lineidx, pointidx) to the 1D matrix index
-    inline Size get_mat_index(Size rayidx, Size lineidx, Size pointidx);
+    inline Size get_mat_index(Size rayidx, Size freqidx, Size pointidx);
 // and maybe some helper methods for determining what is actually zero
 
     inline void setup_basis_matrix_Eigen(Model& model);
     inline void setup_rhs_Eigen(Model& model);//Note: assumes one has first setup the basis matrix
 
-    inline Real get_emissivity(Model& model, Size rayidx, Size lineidx, Size pointidx);
+    inline Real get_opacity(Model& model, Size rayidx, Size freqidx, Size pointidx);
+    inline Real get_emissivity(Model& model, Size rayidx, Size freqidx, Size pointidx);
 
     // Return the boundary intensity at the frequency corresponding to the indices
     inline Real boundary_intensity (Model& model, Size rayidx, Size freqidx, Size pointidx);
