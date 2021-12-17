@@ -328,7 +328,7 @@ def set_quadrature(model):
 
 def getProperName(name):
     '''
-    Return the standard name for the species
+    Return the standard name for the species.
     '''
     if name in ['e']:
         return 'e-'

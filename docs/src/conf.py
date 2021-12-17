@@ -75,40 +75,43 @@ html_static_path = ['_static']
 # -- Run doxygen on READTHEDOCS server ---------------------------------------
 
 from subprocess import call
-# read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
 call('doxygen Doxyfile', shell=True)
 
 
 # -- Sphinx Python API docs --------------------------------------------------
 
-def run_apidoc(_):
-    try:
-        from sphinx.ext.apidoc import main
-    except ImportError:
-        from sphinx.apidoc     import main
+read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
 
-    sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-    cur_dir = os.path.abspath(os.path.dirname(__file__))
 
-    api_doc_dir = os.path.join(cur_dir, "3_python_api_documentation")
-    module = os.path.join(cur_dir, "../..", "magritte")
-    ignore = []
-
-    os.environ["SPHINX_APIDOC_OPTIONS"] = "members, show-inheritance"
+if not read_the_docs_build:
     
-    # (Temporarily) make a symlink to core.so in the magritte module directory.
-    os.symlink(
-        os.path.join(cur_dir, "../..",      "bin/core.so"),
-        os.path.join(cur_dir, "../..", "magritte/core.so")
-    )
+    def run_apidoc(_):
+        try:
+            from sphinx.ext.apidoc import main
+        except ImportError:
+            from sphinx.apidoc     import main
     
-    main(["-M", "-f", "-e", "-T", "-d 0", "-o", api_doc_dir, module, *ignore])
-
-    # Remove the symlink to the core.so file
-    os.unlink(
-        os.path.join(cur_dir, "../..", "magritte/core.so")
-    )
+        sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+        cur_dir = os.path.abspath(os.path.dirname(__file__))
     
+        api_doc_dir = os.path.join(cur_dir, "3_python_api_documentation")
+        module = os.path.join(cur_dir, "../..", "magritte")
+        ignore = []
     
-def setup(app):
-    app.connect("builder-inited", run_apidoc)
+        os.environ["SPHINX_APIDOC_OPTIONS"] = "members, show-inheritance"
+        
+        # (Temporarily) make a symlink to core.so in the magritte module directory.
+        os.symlink(
+            os.path.join(cur_dir, "../..",      "bin/core.so"),
+            os.path.join(cur_dir, "../..", "magritte/core.so")
+        )
+        
+        main(["-M", "-f", "-e", "-T", "-d 0", "-o", api_doc_dir, module, *ignore])
+    
+        # Remove the symlink to the core.so file
+        os.unlink(
+            os.path.join(cur_dir, "../..", "magritte/core.so")
+        )
+        
+    def setup(app):
+        app.connect("builder-inited", run_apidoc)
