@@ -58,9 +58,31 @@ def image_mpl(
         method     = 'nearest'
     ):
     """
-    Plot channel maps of synthetic observation (image) with matplotlib.
-    """
+    Create plots of the channel maps of a synthetic observation (image) with matplotlib.
     
+    Parameters
+    ----------
+    model : object
+        Magritte model object.
+    image_nr : int
+        Number of the synthetic observation to plot. (Use -1 to indicate the last one.)
+    zoom : float
+        Factor with which to zoom in on the middel of the image.
+    npix_x : int
+        Number of pixels in the image in the horizontal (x) direction.
+    npix_y : int
+        Number of pixels in the image in the vertical (y) direction.
+    x_unit : astropy.units object
+        Unit of length for the horixontal (x) axis.
+    y_unit : astropy.units object
+        Unit of length for the vertical (y) axis.
+    method : str
+        Method to interpolate the scattered intensity data onto a regular image grid.
+    
+    Returns
+    -------
+    None
+    """
     # Check if there are images
     if (len(model.images) < 1):
         print('No images in model.')
@@ -170,9 +192,35 @@ def image_plotly(
         height     = 540    # Yields approx square channel map
     ):
     """
-    Plot channel maps of synthetic observation (image) with plotly.
-    """
+    Create plots of the channel maps of a synthetic observation (image) with plotly.
     
+    Parameters
+    ----------
+    model : object
+        Magritte model object.
+    image_nr : int
+        Number of the synthetic observation to plot. (Use -1 to indicate the last one.)
+    zoom : float
+        Factor with which to zoom in on the middel of the image.
+    npix_x : int
+        Number of pixels in the image in the horizontal (x) direction.
+    npix_y : int
+        Number of pixels in the image in the vertical (y) direction.
+    x_unit : astropy.units object
+        Unit of length for the horixontal (x) axis.
+    y_unit : astropy.units object
+        Unit of length for the vertical (y) axis.
+    method : str
+        Method to interpolate the scattered intensity data onto a regular image grid.
+    width : float
+        Width of the resulting figure.
+    height : float
+        Height of the resulting figure.
+    
+    Returns
+    -------
+    None
+    """
     # Check if there are images
     if (len(model.images) < 1):
         print('No images in model.')

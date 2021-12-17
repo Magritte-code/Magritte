@@ -10,8 +10,13 @@ from magritte.core import LineProducingSpecies, vLineProducingSpecies,          
 
 def check_if_1D(model):
     """
-    Check if the point positions are 1D for Magritte,
-    i.e only has a non-zero x-coordinate.
+    Check if the point positions are 1D for Magritte, i.e only have a non-zero x-coordinate,
+    raises a ValueError if not.
+    
+    Parameters
+    ----------
+    model : Magritte model object
+        Magritte model object of which to check the dimension.
     """
     for (x,y,z) in np.array(model.geometry.points.position):
         if (y != 0.0) or (z != 0.0):
@@ -20,6 +25,14 @@ def check_if_1D(model):
 
 
 def check_if_ordered(arr):
+    """
+    Check if an array is ordered, raise a ValueError if not.
+    
+    Parameters
+    ----------
+    arr : array_like
+        1D array to check for ordering.
+    """
     if np.all(-arr == np.sort(-arr)) or np.all(arr == np.sort(arr)):
         pass
     else:
@@ -29,8 +42,17 @@ def check_if_ordered(arr):
 
 def set_Delaunay_neighbor_lists (model):
     """
-    Setter for the neighbor lists for each point, assuming
-    they are the cell centers of a Voronoi tesselation.
+    Setter for the neighbor lists for each point, assuming they are the cell centers of a Voronoi tesselation.
+    
+    Parameters
+    ----------
+    model : Magritte model object
+        Magritte model object to set.
+        
+    Returns
+    -------
+    out : Magritte model object
+        Updated Magritte object.
     """
     if (model.parameters.dimension() == 1):
         check_if_1D     (model)
@@ -77,6 +99,18 @@ def set_Delaunay_neighbor_lists (model):
 def set_uniform_rays(model, randomize=False):
     """
     Setter for rays to uniformly distributed directions.
+    
+    Parameters
+    ----------
+    model : Magritte model object
+        Magritte model object to set.
+    randomized : bool
+        Whether or not to randomize the directions of the rays.
+        
+    Returns
+    -------
+    out : Magritte model object
+        Updated Magritte object.
     """
     # Define nrays for convenience
     nrays = model.parameters.nrays()
@@ -104,7 +138,24 @@ def set_uniform_rays(model, randomize=False):
 
 
 def set_rays_spherical_symmetry(model, nextra=0, uniform=True):
-
+    """
+    Setter for rays in a 1D spherically symmetric model.
+    
+    Parameters
+    ----------
+    model : Magritte model object
+        Magritte model object to set.
+    nextra : int
+        Number of extra rays to add.
+    uniform : bool
+        Whether or not to use uniformly distributed rays.
+        
+    Returns
+    -------
+    out : Magritte model object
+        Updated Magritte object.
+    """
+    
     if uniform:
         nrays  = model.parameters.nrays()
         nextra = nrays//2-1
@@ -171,8 +222,17 @@ def set_rays_spherical_symmetry(model, nextra=0, uniform=True):
 
 def set_Delaunay_boundary (model):
     """
-    Setter for the boundary, assuming all points points
-    the cell centers of a Voronoi tesselation.
+    Setter for the boundary, assuming all points are the cell centers of a Voronoi tesselation.
+    
+    Parameters
+    ----------
+    model : Magritte model object
+        Magritte model object to set.
+        
+    Returns
+    -------
+    out : Magritte model object
+        Updated Magritte object.
     """
     if (model.parameters.dimension() == 1):
         check_if_1D     (model)
@@ -192,6 +252,16 @@ def set_Delaunay_boundary (model):
 def set_boundary_condition_CMB (model):
     """
     Setter for incoming CMB boundary condition at each boundary point.
+    
+    Parameters
+    ----------
+    model : Magritte model object
+        Magritte model object to set.
+        
+    Returns
+    -------
+    out : Magritte model object
+        Updated Magritte object.
     """
     for b in range(model.parameters.nboundary()):
         model.geometry.boundary.set_boundary_condition (b, BoundaryCondition.CMB)
@@ -203,6 +273,20 @@ def set_boundary_condition_CMB (model):
 def set_boundary_condition_1D (model, T_in=T_CMB, T_out=T_CMB):
     """
     Setter for incoming CMB boundary condition at each boundary point.
+    
+    Parameters
+    ----------
+    model : Magritte model object
+        Magritte model object to set.
+    T_in : float
+        Boundary temperature at the inner boundary.
+    T_out : float
+        Boundary temperature at the outer boundary.
+        
+    Returns
+    -------
+    out : Magritte model object
+        Updated Magritte object.
     """
     if not (model.parameters.dimension() == 1):
         raise ValueError ('These boundary conditions only work for a 1D model.')
@@ -220,6 +304,16 @@ def set_quadrature(model):
     """
     Setter for the quadrature roots and weights for the Gauss-Hermite
     quadrature, used for integrating over (Gaussian) line profiles.
+    
+    Parameters
+    ----------
+    model : Magritte model object
+        Magritte model object to set.
+        
+    Returns
+    -------
+    out : Magritte model object
+        Updated Magritte object.
     """
     # Get (Gauss-Hermite) quadrature roots and weights
     (roots, weights) = np.polynomial.hermite.hermgauss(model.parameters.nquads())
@@ -275,10 +369,18 @@ def extractCollisionPartner (fileName, line, species, elem):
 
 
 class LamdaFileReader ():
+    """
+    Reader for LAMDA line data files.
+    """
 
     def __init__ (self ,fileName):
         """
-        Constructor
+        Set the file name of the LAMDA file.
+        
+        Parameters
+        ----------
+        fileName : str
+            Name of the LAMDA line data file.
         """
         self.fileName = fileName
 
@@ -320,7 +422,24 @@ class LamdaFileReader ():
 def set_linedata_from_LAMDA_file (model, fileNames, config={}):
     """
     Set line data by reading it from a data file in LAMDA format.
-    Note: Do not use the Magritte objects linedata etc. this will kill performance. Hence, the copies.
+    
+    Parameters
+    ----------
+    model : Magritte model object
+        Magritte model object to set.
+    fileNames : list of strings
+        List of file names for the LAMDA line data files.
+    config : dict
+        Optionally specify specific radiative transitions to consider.
+        
+    Returns
+    -------
+    out : Magritte model object
+        Updated Magritte object.
+    
+    Note
+    ----
+    Do not use the Magritte objects linedata etc. this will kill performance. Hence, the copies.
     """
     # Make sure fileNames is a list
     if not type(fileNames) is list:
