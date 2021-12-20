@@ -26,6 +26,8 @@ struct Model
 
     const Size MAX_INTERPOLATION_POINTS=16;   ///< Maximum number of points used during interpolation (~=average nb neighors in voronoi grid)
 
+    bool COMPUTING_SVD_AND_CONDITION_NUMBER=false; //debug stuff for the collocation solver
+
     bool using_same_grid=false; ///< 'temporary' way of defining whether one uses the new multiresolution method
 
     Size iteration_to_start_from=0;           ///< Number to start the iterations from (can be non-zero when loading the level populations)

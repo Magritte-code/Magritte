@@ -111,6 +111,8 @@ public:
     inline Size get_mat_index(Size rayidx, Size freqidx, Size pointidx);
 // and maybe some helper methods for determining what is actually zero
 
+    inline Real compute_balancing_factor_boundary(Size rayidx, Size freqidx, Size pointidx, Model& model);
+
     inline void setup_basis_matrix_Eigen(Model& model);
     inline void setup_rhs_Eigen(Model& model);//Note: assumes one has first setup the basis matrix
 

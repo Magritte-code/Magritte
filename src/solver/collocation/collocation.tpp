@@ -496,6 +496,19 @@ inline Size Collocation :: get_mat_index(Size rayidx, Size freqidx, Size pointid
 //     return 1+std::sqrt(raydirection.dot())
 // }
 
+//Computes the balancing factor needed in order to make the boundary condition equation the same magnitude as the other nearby equations in the matrix
+//maybe TODO: also take the scattering stuff into account (when implemented)
+inline Real Collocation :: compute_balancing_factor_boundary(Size rayidx, Size freqidx, Size pointidx, Model& model)
+{
+    const Real numerator=basis_point_der(pointidx, point_locations[pointidx], rayidx, model.geometry);
+    const Real denominator=basis_point(pointidx, point_locations[pointidx], rayidx, model.geometry)*get_opacity(model, rayidx, freqidx, pointidx);
+    // std::cout<<"numerator/denominator: "<<numerator/denominator<<std::endl;
+
+    return 1 + numerator/denominator;
+}
+
+
+//
 inline void Collocation :: setup_basis_matrix_Eigen(Model& model)
 {
     //We are currently not using the lambda operator, so set to zero
@@ -582,6 +595,8 @@ inline void Collocation :: setup_basis_matrix_Eigen(Model& model)
                 // boundary_condition_required=false;
                 if (boundary_condition_required)
                 {
+                    //This term makes sure that the magnitude of the matrix terms corresponding to this boundary condition is similar to the other nearby terms
+                    const Real balancing_factor=compute_balancing_factor_boundary(rayidx, freqidx, pointidx, model);
                     //Merely evaluating the intensity at the boundary
                     for (std::vector<Size> triplet: nonzero_triplets)
                     {
@@ -593,14 +608,14 @@ inline void Collocation :: setup_basis_matrix_Eigen(Model& model)
                             //                                                                                       , model.geometry.rays.direction[rayidx]);
                             // Real doppler_shifted_frequency=curr_freq;//try it out non-doppler shifted
                             // Real basis_eval=basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], doppler_shifted_frequency)*basis_point(triplet[2], curr_location, triplet[0], model.geometry);
-                            Real basis_eval=basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point(triplet[2], curr_location, triplet[0], model.geometry);
+                            Real basis_eval=balancing_factor*basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point(triplet[2], curr_location, triplet[0], model.geometry);
                             eigen_triplets.push_back (Triplet<Real, Size> (curr_mat_idx, other_mat_idx, basis_eval));
                         }
                         else
                         {
                             //In order to make this term of the same size as the others, multiply by the opacity (only in emissivity formulation)
                             // Real basis_eval=curr_opacity*basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point(triplet[2], curr_location);
-                            Real basis_eval=basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point(triplet[2], curr_location, triplet[0], model.geometry);
+                            Real basis_eval=balancing_factor*basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point(triplet[2], curr_location, triplet[0], model.geometry);
                             // std::cout<<"basis_eval: "<<basis_eval<<std::endl;
                             // std::cout<<"basis_dir_eval: "<<basis_direction(triplet[0])<<std::endl;
                             // std::cout<<"basis_freq_eval: "<<basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)<<std::endl;
@@ -720,14 +735,15 @@ inline void Collocation :: setup_basis_matrix_Eigen(Model& model)
     collocation_mat.setFromTriplets (eigen_triplets.begin(), eigen_triplets.end());
 
     //TODO: add toggle for computing svd and condition number
-    Eigen::JacobiSVD<MatrixXr> svd(collocation_mat);
-    Real cond = svd.singularValues()(0)
-    / svd.singularValues()(svd.singularValues().size()-1);
-    std::cout<<"condition number: "<<cond<<std::endl;
-
-    // collocation_mat.data().squeeze();
-
-    std::cout << MatrixXr(collocation_mat) << std::endl;
+    if (model.COMPUTING_SVD_AND_CONDITION_NUMBER)
+    {
+        Eigen::JacobiSVD<MatrixXr> svd(collocation_mat);
+        Real cond = svd.singularValues()(0)
+        / svd.singularValues()(svd.singularValues().size()-1);
+        std::cout<<"condition number: "<<cond<<std::endl;
+        // collocation_mat.data().squeeze();
+        std::cout << MatrixXr(collocation_mat) << std::endl;
+    }
 }
 
 
@@ -809,11 +825,9 @@ inline void Collocation :: setup_rhs_Eigen(Model& model)
                 // boundary_condition_required=false;
                 if (boundary_condition_required)
                 {
-                    //filling in boundary intensity
-                    // rhs[curr_mat_idx]=0;
-                    //In order to make this term of the same size as the others, multiply by the opacity (in emissivity formulation)
-                    // rhs[curr_mat_idx]=get_opacity(model, rayidx, lineidx, pointidx)*boundary_intensity(model, rayidx, lineidx, pointidx);
-                    rhs[curr_mat_idx]=boundary_intensity(model, rayidx, freqidx, pointidx);
+                    //This term makes sure that the magnitude of the matrix terms corresponding to this boundary condition is similar to the other nearby terms
+                    const Real balancing_factor=compute_balancing_factor_boundary(rayidx, freqidx, pointidx, model);
+                    rhs[curr_mat_idx]=balancing_factor*boundary_intensity(model, rayidx, freqidx, pointidx);
                 }
                 else
                 {
