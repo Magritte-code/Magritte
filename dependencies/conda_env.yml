@@ -1,10 +1,12 @@
 name: magritte
 channels:
   - conda-forge
+  - anaconda
   - defaults
 # The order of the channels above is critical!!!
 dependencies:
   - python=3.7
+  - cmake
   - numpy
   - vtk
   - jupyterlab
