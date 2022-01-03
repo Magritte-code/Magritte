@@ -84,5 +84,5 @@ autosummary_generate = True
 # if read_the_docs_build:
 
 # Build Magritte to allow sphinx to extract the documentation.
-call('conda activate magritte', shell=True)
+call('conda env list',          shell=True)
 call('bash ../../build.sh',     shell=True)
