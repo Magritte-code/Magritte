@@ -29,7 +29,7 @@ class my_build_ext(build_ext):
         # Compile module
         call('bash ./compile.sh', shell=True)
         # Copy the already-compiled core.so file.
-        shutil.copyfile('./bin/core.so'), self.get_ext_fullpath(ext.name))
+        shutil.copyfile('./bin/core.so', self.get_ext_fullpath(ext.name))
 
 
 setup(
