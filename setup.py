@@ -7,12 +7,13 @@ from setuptools import setup, Extension, find_packages
 from setuptools.command.build_ext import build_ext
 from subprocess import call
 
+this_dir = os.path.dirname(os.path.realpath(__file__))
 
-with open("README.md", "r") as file:
+with open(os.path.join(this_dir, "README.md"), "r") as file:
     long_description = file.read()
 
 
-with open("src/configure.hpp", "r") as file:
+with open(os.path.join(this_dir, "src", "configure.hpp"), "r") as file:
     for line in file.readlines():
         if 'MAGRITTE_VERSION' in line:
             # Get the version, which is between quotes ("")
@@ -26,9 +27,9 @@ class my_build_ext(build_ext):
         Build magritte C++ core module.
         '''
         # Compile module
-        call('bash compile.sh', shell=True)
+        call(f'bash {os.path.join(this_dir, "compile.sh")}', shell=True)
         # Copy the already-compiled core.so file.
-        shutil.copyfile('bin/core.so', self.get_ext_fullpath(ext.name))
+        shutil.copyfile(os.path.join(this_dir, 'bin', 'core.so'), self.get_ext_fullpath(ext.name))
 
 
 setup(

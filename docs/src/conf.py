@@ -76,13 +76,7 @@ call('doxygen Doxyfile', shell=True)
 
 
 # -- Sphinx Python API docs --------------------------------------------------
+
 autodoc_member_order = "bysource"
 autodoc_default_flags = ["members"]
 autosummary_generate = True
-
-# read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
-# if read_the_docs_build:
-
-# # Build Magritte to allow sphinx to extract the documentation.
-# call('conda env list',          shell=True)
-# call('bash ../../build.sh',     shell=True)
