@@ -5,6 +5,7 @@ import shutil
 
 from setuptools import setup, Extension, find_packages
 from setuptools.command.build_ext import build_ext
+from subprocess import call
 
 
 with open("README.md", "r") as file:
@@ -19,10 +20,14 @@ with open("src/configure.hpp", "r") as file:
 
 
 class my_build_ext(build_ext):
+
     def build_extension(self, ext):
         '''
-        Copy the already-compiled core.so file.
+        Build magritte C++ core module.
         '''
+        # Compile module
+        call('bash compile.sh', shell=True)
+        # Copy the already-compiled core.so file.
         shutil.copyfile('bin/core.so', self.get_ext_fullpath(ext.name))
 
 
