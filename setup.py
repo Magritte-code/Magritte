@@ -8,17 +8,16 @@ from setuptools.command.build_ext import build_ext
 from subprocess import call
 
 this_dir = os.path.dirname(os.path.realpath(__file__))
-print('ls curdir', os.listdir(os.getcwd()))
-print('ls curdir/src', os.listdir(f'{os.getcwd()}/src'))
 
-with open(os.path.join(this_dir, "./README.md"), "r") as file:
+with open(os.path.join(this_dir, "README.md"), "r") as file:
     long_description = file.read()
 
-with open("src/configure.hpp", "r") as file:
-    for line in file.readlines():
-        if 'MAGRITTE_VERSION' in line:
-            # Get the version, which is between quotes ("")
-            __version__ = re.findall('"(.*?)"', line)[0]
+
+with open(os.path.join(this_dir, "CMakeLists.txt"), "r") as file:
+    # Extract the lines containing the project description
+    lines = re.findall('project.*\([^\)]*\)', file.read())[0]
+    # Extract the version nuber form those lines
+    __version__ = re.findall('\d*\.\d*\.\d*', lines)[0]
 
 
 class my_build_ext(build_ext):
@@ -28,9 +27,9 @@ class my_build_ext(build_ext):
         Build magritte C++ core module.
         '''
         # Compile module
-        call('bash compile.sh', shell=True)
+        call(f'bash {os.path.join(this_dir, "compile.sh")}', shell=True)
         # Copy the already-compiled core.so file.
-        shutil.copyfile('bin/core.so', self.get_ext_fullpath(ext.name))
+        shutil.copyfile(os.path.join(this_dir, 'bin', 'core.so'), self.get_ext_fullpath(ext.name))
 
 
 setup(
