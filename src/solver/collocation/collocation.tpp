@@ -244,6 +244,7 @@ inline void Collocation :: setup_basis(Model& model)
     for (Size freqid=0; freqid<parameters.nfreqs(); freqid++)
     {
         non_doppler_shifted_frequencies[freqid]=model.radiation.frequencies.nu[freqid];
+        std::cout<<"non doppler shifted frequencies: "<<non_doppler_shifted_frequencies[freqid]<<std::endl;
         non_doppler_shifted_inverse_widths[freqid].resize(parameters.npoints());
         for (Size pointid=0; pointid<parameters.npoints(); pointid++)
         {
@@ -275,6 +276,7 @@ inline void Collocation :: setup_basis(Model& model)
 
 inline bool Collocation :: freq_cutoff_condition(Real abs_freq_diff, Real freq_basis_inverse_width)
 {
+    return false;//debug
     return (abs_freq_diff*freq_basis_inverse_width>TRUNCATION_SIGMA);
 }
 
@@ -300,9 +302,11 @@ inline Real Collocation :: basis_freq(Size rayidx, Size freqidx, Size pointidx, 
     Real freq_inv_width=0;
     if (USING_COMOVING_FRAME)
     {
-        abs_freq_diff=std::abs(currfreq-non_doppler_shifted_frequencies[freqidx]);
         freq_inv_width=non_doppler_shifted_inverse_widths[freqidx][pointidx];
+        abs_freq_diff=std::abs(currfreq-non_doppler_shifted_frequencies[freqidx]-FREQ_OFFSET/freq_inv_width);
         // std::cout<<"freq inverse width: "<<freq_inv_width<<std::endl;
+        // std::cout<<"shift: "<<FREQ_OFFSET/freq_inv_width<<std::endl;
+        // std::cout<<"base freq: "<<non_doppler_shifted_frequencies[freqidx]<<std::endl;
         // std::cout<<"abs_freq_diff: "<<abs_freq_diff<<std::endl;
         // std::cout<<"freqidx: "<<freqidx<<std::endl;
     }
@@ -312,6 +316,7 @@ inline Real Collocation :: basis_freq(Size rayidx, Size freqidx, Size pointidx, 
         freq_inv_width=frequencies_inverse_widths[rayidx][pointidx][freqidx];
     }
 
+    //FIXME: freq offset somewhat makes the cutoff condition a bit nonsymmetrical
     if (freq_cutoff_condition(abs_freq_diff,freq_inv_width))
     {
         return 0;
@@ -328,19 +333,18 @@ inline Real Collocation :: basis_freq_lp_int(Size rayidx, Size freqidx, Size poi
     Real point_freq=0;//frequencies[rayidx][pointidx][lineidx];
     Real point_freq_inv_width=0;//frequencies_inverse_widths[rayidx][pointidx][lineidx];
 
-    Real abs_freq_diff=0;
-    Real freq_inv_width=0;
+    // Real abs_freq_diff=0;
+    // Real freq_inv_width=0;
     if (USING_COMOVING_FRAME)
     {
-        point_freq=non_doppler_shifted_frequencies[freqidx];
         point_freq_inv_width=non_doppler_shifted_inverse_widths[freqidx][pointidx];
+        point_freq=non_doppler_shifted_frequencies[freqidx]+FREQ_OFFSET/point_freq_inv_width;
     }
     else
     {
         point_freq=frequencies[rayidx][pointidx][freqidx];
         point_freq_inv_width=frequencies_inverse_widths[rayidx][pointidx][freqidx];
     }
-
 
     const Real inv_variance=1/(1/std::pow(point_freq_inv_width,2)+1/std::pow(lp_freq_inv_width,2));// note: still includes the factor (1/sqrt(2)) squared (because variance)
     const Real delta_freq=lp_freq-point_freq;
@@ -353,30 +357,70 @@ inline Real Collocation :: basis_freq_lp_int(Size rayidx, Size freqidx, Size poi
 }
 
 
+
+
 ///  The derivative of the frequency basis function
 inline Real Collocation :: basis_freq_der(Size rayidx, Size freqidx, Size pointidx, Real currfreq)
 {
     Real abs_freq_diff=0;
+    Real freq_diff=0;
     Real freq_inv_width=0;
     if (USING_COMOVING_FRAME)
     {
-        abs_freq_diff=std::abs(currfreq-non_doppler_shifted_frequencies[freqidx]);
         freq_inv_width=non_doppler_shifted_inverse_widths[freqidx][pointidx];
+        freq_diff=currfreq-non_doppler_shifted_frequencies[freqidx]-FREQ_OFFSET/freq_inv_width;
+        // abs_freq_diff=std::abs(currfreq-non_doppler_shifted_frequencies[freqidx]-FREQ_OFFSET/freq_inv_width);
     }
     else
     {
-        abs_freq_diff=std::abs(currfreq-frequencies[rayidx][pointidx][freqidx]);
+        freq_diff=currfreq-frequencies[rayidx][pointidx][freqidx];
+        // abs_freq_diff=std::abs(currfreq-frequencies[rayidx][pointidx][freqidx]);
         freq_inv_width=frequencies_inverse_widths[rayidx][pointidx][freqidx];
     }
+    abs_freq_diff=std::abs(freq_diff);//TODO: maybe replace def of freq_cutoff_condition by accepting the freq diff instead of the abs freq diff
+
     if (freq_cutoff_condition(abs_freq_diff,freq_inv_width))
     {
         return 0;
     }
     else
     {
-        return INVERSE_SQRT_PI*freq_inv_width*-2*(abs_freq_diff*freq_inv_width)*freq_inv_width*std::exp(-std::pow(abs_freq_diff*freq_inv_width,2));
+        return INVERSE_SQRT_PI*freq_inv_width*-2*(freq_diff*freq_inv_width)*freq_inv_width*std::exp(-std::pow(abs_freq_diff*freq_inv_width,2));
     }
 }
+
+//DEPRECATED
+// ///  Function to manipulate the (already scaled) distance
+// inline Real Collocation :: distance_manip(Size pointid, Real original_distance)
+// {
+//     //test option to check that everything works correctly7
+//     // return original_distance;
+//     //option to scale by using the n-th root
+//     // return std::pow(original_distance, DISTANCE_EXPONENT);
+//     //option to scale by using a truncated logarithm TODO: define eps for each point, (look at closest distance)
+//     // if (original_distance<DISTANCE_EPS)
+//     // {return 0;}
+//     // else
+//     // {return 1-std::log(original_distance)/std::log(DISTANCE_EPS);}
+//     //truncated logarithm fitted exactly into the domain and range [0,1]
+//     return (1-std::log(original_distance+DISTANCE_EPS)/std::log(DISTANCE_EPS))/(1-std::log(1+DISTANCE_EPS)/std::log(DISTANCE_EPS));
+// }
+//
+// inline Real Collocation :: distance_manip_der(Size pointid, Real original_distance)
+// {
+//     //test option to check that everything works correctly
+//     // return 1;
+//     //option to scale by using the n-th root
+//     // return DISTANCE_EXPONENT*std::pow(original_distance, DISTANCE_EXPONENT-1);//TODO: check if nans occur if using pow in this way (negative exponent)
+//     //option to scale by using a truncated logarithm TODO: define eps for each point, (look at closest distance)
+//     //if (original_distance<eps)
+//     //{return 0;}
+//     //else
+//     //{return -1/(original_distance*std::log(eps);}
+//     //truncated logarithm fitted exactly into the domain and range [0,1]
+//     return -1/(original_distance+DISTANCE_EPS)/std::log(DISTANCE_EPS)/(1-std::log(1+DISTANCE_EPS)/std::log(DISTANCE_EPS));
+//
+// }
 
 ///  The radial basis function for the position
 inline Real Collocation :: basis_point(Size centerpoint, Vector3D& location, Size rayindex, Geometry& geometry)
@@ -394,14 +438,26 @@ inline Real Collocation :: basis_point(Size centerpoint, Vector3D& location, Siz
     else
     {
         Real rel_dist=distance/radius;
+        // Real manip_rel_dist=distance_manip(centerpoint, rel_dist);
         // std::cout<<"rel_dist: "<<rel_dist<<std::endl;
         //This basis function has nice continuous derivatives at r=0 and r=1 (being 0 at both places);
         Real basis=-4/(1+std::pow(rel_dist,3))+6/(1+std::pow(rel_dist,2))-1;
         // Real basis=1-rel_dist;
+        // Real basis=std::exp(-std::pow(rel_dist*TRUNCATION_SIGMA,2));
         Vector3D raydirection=geometry.rays.direction[rayindex];
+
+        // Real x=0;
+        // if (rel_dist>0)
+        // {
+        //     Real costheta=raydirection.dot(diff_vector)/std::sqrt(diff_vector.squaredNorm());
+        //     Real x=costheta*manip_rel_dist;
+        // }
         Real x=raydirection.dot(diff_vector)/radius;
         //the slope 1+x in the direction of the ray;
-        Real slope=1+x/SLOPE_FACTOR;
+        // Real slope=1+x/SLOPE_FACTOR;
+        //the slope 1/2+1/(1+e^(-kx))
+        Real slope=1/2+1/(1+std::exp(-SLOPE_STEEPNESS*x));
+        // Real slope=1;
         return basis*slope;
         // return basis;
         // return 1-rel_dist;
@@ -413,6 +469,8 @@ inline Real Collocation :: basis_point_der(Size centerpoint, Vector3D& location,
 {
     Vector3D diff_vector=location-point_locations[centerpoint];
     Real distance=std::sqrt(diff_vector.dot(diff_vector));
+    // Real distance=distance_manip(centerpoint, std::sqrt(diff_vector.dot(diff_vector)));
+    // Real manip_der_factor=distance_manip_der(centerpoint, std::sqrt(diff_vector.dot(diff_vector)));
     Real radius=rbf_radii[centerpoint];
     //if the location is too far from the center, the evalutation of the compact radial basis function is 0.
     if (distance>=radius)
@@ -422,23 +480,52 @@ inline Real Collocation :: basis_point_der(Size centerpoint, Vector3D& location,
     else if (distance==0)
     {
         Real rel_dist=distance/radius;
+        // std::cout<<"manip der factor: "<<manip_der_factor<<std::endl;
+        // Real manip_rel_dist=distance_manip(centerpoint, rel_dist);
+        // Real manip_der_factor=distance_manip_der(centerpoint, 0);
+
         // return -2/radius;//for 1-2x+x^2 as basis function
-        // return -1/radius;//for 1-x as basis function
+        // Real basis=1-rel_dist;//for 1-x as basis function
         // return 0; //derivative at r=0 is defined to be zero
-        Real slope_derivative=1/SLOPE_FACTOR;
+
+        // the slope 1+x/SLOPE_FACTOR
+        // Real slope_derivative=1/SLOPE_FACTOR;
+
+        // the slope 1/2+1/(1+e^(-kx))
+        // Real exp_factor=std::exp(-SLOPE_STEEPNESS*x);
+        // Real slope_derivative=SLOPE_STEEPNESS*std::exp(-SLOPE_STEEPNESS*x)/std::pow(1+std::exp(-SLOPE_STEEPNESS*x),2);
+        //evaluated at x=0
+        Real slope_derivative=SLOPE_STEEPNESS/4;
+        // Real slope_derivative=0;
         Real basis=-4/(1+std::pow(rel_dist,3))+6/(1+std::pow(rel_dist,2))-1;
+        // Real basis=std::exp(-std::pow(rel_dist*TRUNCATION_SIGMA,2));
         return slope_derivative*basis/radius;
+        // return manip_der_factor*slope_derivative*basis/radius;
     }
     else
     {
         Real rel_dist=distance/radius;
+        // Real manip_der_factor=distance_manip_der(centerpoint, rel_dist);
+        // std::cout<<"manip der factor: "<<manip_der_factor<<std::endl;
+        // Real manip_rel_dist=distance_manip(centerpoint, rel_dist);
 
         Vector3D raydirection=geometry.rays.direction[rayindex];
-        Real x=raydirection.dot(diff_vector)/radius;
+        Real costheta=raydirection.dot(diff_vector)/std::sqrt(diff_vector.squaredNorm());
+        // Real x=raydirection.dot(diff_vector)/radius;
+        Real x=costheta*rel_dist;
         //the slope 1+x in the direction of the ray;
-        Real slope=1+x/SLOPE_FACTOR;
-        Real slope_derivative=1/SLOPE_FACTOR;
+        // Real slope=1+x/SLOPE_FACTOR;
+        // Real slope_derivative=1/SLOPE_FACTOR;
+        //the slope 1/2+1/(1+e^(-kx)) in direction of the ray
+        Real slope=1/2+1/(1+std::exp(-SLOPE_STEEPNESS*x));
+        Real exp_factor=std::exp(-SLOPE_STEEPNESS*x);
+        Real slope_derivative=SLOPE_STEEPNESS*exp_factor/std::pow(1+exp_factor,2);
+
+        // Real slope=1;
+        // Real slope_derivative=0;
         Real basis=-4/(1+std::pow(rel_dist,3))+6/(1+std::pow(rel_dist,2))-1;
+        // Real basis=1-rel_dist;
+        // Real basis=std::exp(-std::pow(rel_dist*TRUNCATION_SIGMA,2));
 
         // std::cout<<"raydirection=[x,y,z]: "<<raydirection.x()<<", "<<raydirection.y()<<", "<<raydirection.z()<<std::endl;
         //The derivatives in the perpendicular direction (to the radial direction) are 0, so we can calculate the derivative
@@ -446,8 +533,7 @@ inline Real Collocation :: basis_point_der(Size centerpoint, Vector3D& location,
         //Below, we see the simple rule for calculating the cosine
         //Note: The ray directions are normalised, so we can omit the normalization of the ray direction
         // Minus sign because we actually need the gradient (not -1 times the gradient); this is due to the definition of the diff_vector, which is natural for RBF's but does actually not give us the angle we want
-        Real costheta=raydirection.dot(diff_vector)/std::sqrt(diff_vector.squaredNorm());
-        // Real radial_derivative=-1;
+
         //derivative of -4/(1+std::pow(rel_dist,3))+6/(1+std::pow(rel_dist,2))-1;
         Real radial_derivative = 12*(std::pow(rel_dist,2))/(std::pow(1+std::pow(rel_dist,3),2))-12*rel_dist/(std::pow(1+std::pow(rel_dist,2),2));
         // Real slope_derivative = 1;
@@ -455,11 +541,14 @@ inline Real Collocation :: basis_point_der(Size centerpoint, Vector3D& location,
         // Real radial_derivative = -1;
         //derivative of 1-2rel_dist+rel_dist^2
         // Real radial_derivative = -2+2*rel_dist;
+        //derivative of e^-(x*trunc)^2
+        // Real radial_derivative = -std::pow(TRUNCATION_SIGMA,2)*2*rel_dist*std::exp(-std::pow(rel_dist*TRUNCATION_SIGMA,2));
         // Because we switched the perspective of the basis and point, we need the minus sign
         // Normally you take a basis, and compute the derivative at a given point; in this case, we do the opposite:
         // we take a point and calculate the derivative at that position in some basis functions.
         // std::cout<<"der without slope: "<<costheta*radial_derivative/radius<<std::endl;
         // std::cout<<"der with slope: "<<costheta*radial_derivative*slope/radius+slope_derivative*basis/radius<<std::endl;
+        //currently, the slope uses the default distance, not the manipulated one
         return costheta*radial_derivative*slope/radius+slope_derivative*basis/radius;
         // return costheta*radial_derivative/radius;
     }
@@ -498,10 +587,10 @@ inline Size Collocation :: get_mat_index(Size rayidx, Size freqidx, Size pointid
 
 //Computes the balancing factor needed in order to make the boundary condition equation the same magnitude as the other nearby equations in the matrix
 //maybe TODO: also take the scattering stuff into account (when implemented)
-inline Real Collocation :: compute_balancing_factor_boundary(Size rayidx, Size freqidx, Size pointidx, Model& model)
+inline Real Collocation :: compute_balancing_factor_boundary(Size rayidx, Size freqidx, Size pointidx, Real local_velocity_gradient, Model& model)
 {
-    const Real numerator=basis_point_der(pointidx, point_locations[pointidx], rayidx, model.geometry);
-    const Real denominator=basis_point(pointidx, point_locations[pointidx], rayidx, model.geometry)*get_opacity(model, rayidx, freqidx, pointidx);
+    const Real numerator=basis_point_der(pointidx, point_locations[pointidx], rayidx, model.geometry)*basis_freq(rayidx, freqidx, pointidx, non_doppler_shifted_frequencies[freqidx])-local_velocity_gradient*non_doppler_shifted_frequencies[freqidx]*basis_point(pointidx, point_locations[pointidx], rayidx, model.geometry)*basis_freq_der(rayidx, freqidx, pointidx, non_doppler_shifted_frequencies[freqidx]);
+    const Real denominator=basis_point(pointidx, point_locations[pointidx], rayidx, model.geometry)*get_opacity(model, rayidx, freqidx, pointidx)*basis_freq(rayidx, freqidx, pointidx, non_doppler_shifted_frequencies[freqidx]);
     // std::cout<<"numerator/denominator: "<<numerator/denominator<<std::endl;
 
     return 1 + numerator/denominator;
@@ -550,7 +639,9 @@ inline void Collocation :: setup_basis_matrix_Eigen(Model& model)
                 Size next_point=model.geometry.get_next(pointidx, rayidx, pointidx, dist, ddist);
                 if (next_point!=parameters.npoints())//if there actually exists a next point
                 {
+                    std::cout<<"dist: "<<dist<<std::endl;
                     local_velocity_gradient=model.geometry.rays.direction[rayidx].dot(model.geometry.points.velocity[next_point]-model.geometry.points.velocity[pointidx])/dist;
+                    std::cout<<"local velocity grad: "<<local_velocity_gradient<<std::endl;
                 }
                 else
                 {
@@ -596,7 +687,7 @@ inline void Collocation :: setup_basis_matrix_Eigen(Model& model)
                 if (boundary_condition_required)
                 {
                     //This term makes sure that the magnitude of the matrix terms corresponding to this boundary condition is similar to the other nearby terms
-                    const Real balancing_factor=compute_balancing_factor_boundary(rayidx, freqidx, pointidx, model);
+                    const Real balancing_factor=compute_balancing_factor_boundary(rayidx, freqidx, pointidx, local_velocity_gradient, model);
                     //Merely evaluating the intensity at the boundary
                     for (std::vector<Size> triplet: nonzero_triplets)
                     {
@@ -652,16 +743,23 @@ inline void Collocation :: setup_basis_matrix_Eigen(Model& model)
                             // std::cout<<"basis_freq: "<<basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)<<std::endl;
                             // std::cout<<"basis_point: "<<basis_point(triplet[2], curr_location, triplet[0], model.geometry)<<std::endl;
                             Real doppler_shift_term=0;//TODO: add frequency quadrature;; TODO: think about approximating velocity gradient somehow at the point itself?
-                            if (freqidx!=triplet[1])//doppler shift only applies when not at the same frequency
-                            {//FIXME: freqidx!=triplet[1] and compute the velocity gradient somehow
+                            // if (freqidx!=triplet[1])//doppler shift only applies when not at the same frequency
+                            // {//FIXME: freqidx!=triplet[1] and compute the velocity gradient somehow
                                 // Vector3D diff_vector=point_locations[triplet[2]]-curr_location;
                                 // Real distance=std::sqrt(diff_vector.squaredNorm());
                                 // Real velocity_grad=model.geometry.rays.direction[rayidx].dot(model.geometry.points.velocity[triplet[2]]-model.geometry.points.velocity[pointidx])/distance;
                                 //divided by the light speed
-                                doppler_shift_term=-local_velocity_gradient*non_doppler_shifted_frequencies[freqidx]/curr_opacity*
+                            doppler_shift_term=-local_velocity_gradient*curr_freq/curr_opacity*
                                   basis_direction(triplet[0])*basis_freq_der(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point(triplet[2], curr_location, triplet[0], model.geometry);
-                            }
-                            std::cout<<"doppler_shift_term: "<<doppler_shift_term<<std::endl;
+                            // }
+                            std::cout<<"velocity grad: "<<local_velocity_gradient<<std::endl;
+                            std::cout<<"freq: "<<non_doppler_shifted_frequencies[freqidx]<<std::endl;
+                            std::cout<<"1/opacity: "<<1.0/curr_opacity<<std::endl;
+                            std::cout<<"doppler_shift_spat_der_ratio"<<local_velocity_gradient*non_doppler_shifted_frequencies[freqidx]*basis_freq_der(triplet[0], triplet[1], triplet[2], curr_freq)/basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point(triplet[2], curr_location, triplet[0], model.geometry)/basis_point_der(triplet[2], curr_location, triplet[0], model.geometry);
+
+                            // std::cout<<"doppler_shift_term: "<<doppler_shift_term<<std::endl;
+                            std::cout<<"doppler_shift_basis_ratio: "<<-local_velocity_gradient*non_doppler_shifted_frequencies[freqidx]/curr_opacity*basis_freq_der(triplet[0], triplet[1], triplet[2], curr_freq)/basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)<<std::endl;
+                            std::cout<<"basis_freq: "<<basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)<<std::endl;
                             // doppler_shift_term=0;
 
                             eigen_triplets.push_back (Triplet<Real, Size> (curr_mat_idx, other_mat_idx, directional_der+basis_eval+doppler_shift_term));
@@ -808,6 +906,7 @@ inline void Collocation :: setup_rhs_Eigen(Model& model)
             {
                 const Size curr_mat_idx=get_mat_index(rayidx, freqidx, pointidx);
                 //FIXME: check if boundary condition needs to apply
+                Real local_velocity_gradient=0;
                 bool boundary_condition_required=false;
                 if (!model.geometry.not_on_boundary(pointidx))
                 {
@@ -817,16 +916,29 @@ inline void Collocation :: setup_rhs_Eigen(Model& model)
                     Size antipod=model.geometry.rays.antipod[rayidx];
 
                     const Size point_behind=model.geometry.get_next(pointidx, antipod, pointidx, dist, ddist);
+                    const Size next_point=model.geometry.get_next(pointidx, rayidx, pointidx, dist, ddist);
                     if (point_behind==parameters.npoints())
                     {//if there lies no point behind this point, we need to evaluate the boundary condition here
                         boundary_condition_required=true;
+
+                        dist=0;//these two variables are actually not used, but required in the function definition get_next
+                        ddist=0;
+                        //also compute velocity gradient for the balancing factor
+                        Size next_point=model.geometry.get_next(pointidx, rayidx, pointidx, dist, ddist);
+                        std::cout<<"next point: "<<next_point<<std::endl;
+                        if (next_point!=parameters.npoints())//if there actually exists a next point
+                        {
+                            std::cout<<"computing velocity grad"<<std::endl;
+                            local_velocity_gradient=model.geometry.rays.direction[rayidx].dot(model.geometry.points.velocity[next_point]-model.geometry.points.velocity[pointidx])/dist;
+                        }
                     }
                 }
                 // boundary_condition_required=false;
                 if (boundary_condition_required)
                 {
+                    // std::cout<<"local velocity grad: "<<local_velocity_gradient<<std::endl;
                     //This term makes sure that the magnitude of the matrix terms corresponding to this boundary condition is similar to the other nearby terms
-                    const Real balancing_factor=compute_balancing_factor_boundary(rayidx, freqidx, pointidx, model);
+                    const Real balancing_factor=compute_balancing_factor_boundary(rayidx, freqidx, pointidx, local_velocity_gradient, model);
                     rhs[curr_mat_idx]=balancing_factor*boundary_intensity(model, rayidx, freqidx, pointidx);
                 }
                 else

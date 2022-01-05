@@ -16,6 +16,15 @@ private:
     //internal parameters for the basis functions
     const Real TRUNCATION_SIGMA=5.0; //< if Delta(freq)>trunc_sigma*freq_width just set the result from the gaussian basis function to zero (as it is almost zero)
     const Real SLOPE_FACTOR=1.0;//1.0;//For stabilizing the equations a bit (making them somewhat more diagonally dominant);
+    const Real SLOPE_STEEPNESS=4.0;//slope steepness, also for stabilizing the equations; will practically be divided by 4 at x=0.
+    const Real FREQ_OFFSET=-0.1;//offset for the frequency basis functions (in terms of the inverse line width (mind the sqrt(2)))-in comoving frame
+    //FIXME: freq offset makes the freq cutoff condition a bit nonsymmetrical
+
+    // DEPRECATED: makes that the basis functions are too peaked for my liking
+    // const Real DISTANCE_EXPONENT=1.0/5.0; //Exponent for redistributing the distances
+    // const Real DISTANCE_EPS=0.1;//TODO: should actually be chosen adaptively (depending on how close the closest point lies)
+    // vector<Real> half_min_dist; //Half the distance for
+
     //TODO: adaptively define this such that diagonal remains somewhat ?constant...?
     //ideas: should drastically reduce ill-conditionedness of a matrix, so should (implicitly) depend on the number of points/distance of the closest point/...
 
@@ -26,7 +35,7 @@ private:
     // Dev note: it is defined as 1/(sqrt(2)*sigma) for use in the traditional gaussian
 
     //not the most efficient way of accessing the default frequencies and widths, but convient.
-    vector<Real> non_doppler_shifted_frequencies;//for every line, the non doppler shifted line frequencies
+    vector<Real> non_doppler_shifted_frequencies;//for every line, the non doppler shifted line frequency
     vector<vector<Real>> non_doppler_shifted_inverse_widths;//for every line, for every point, the non doppler shifted inverse line widths
 
     // //TODO: this thing is of the size of the actual matrix; maybe just make an approximation with respect to the actual doppler shift compared to the neighbors...
@@ -89,6 +98,9 @@ public:
     //Solution of the integral of the basis function together with the line profile function
     inline Real basis_freq_lp_int(Size rayidx, Size freqidx, Size pointidx, Real lp_freq, Real lp_freq_inv_width);
 
+    //DEPRECATED
+    // inline Real distance_manip(Size pointid, Real original_distance);
+    // inline Real distance_manip_der(Size pointid, Real original_distance);
 // somewhere to store the sparse matrix and the decomposition TODO: figure out what we actually want
 
 
@@ -111,7 +123,7 @@ public:
     inline Size get_mat_index(Size rayidx, Size freqidx, Size pointidx);
 // and maybe some helper methods for determining what is actually zero
 
-    inline Real compute_balancing_factor_boundary(Size rayidx, Size freqidx, Size pointidx, Model& model);
+    inline Real compute_balancing_factor_boundary(Size rayidx, Size freqidx, Size pointidx, Real local_velocity_gradient, Model& model);
 
     inline void setup_basis_matrix_Eigen(Model& model);
     inline void setup_rhs_Eigen(Model& model);//Note: assumes one has first setup the basis matrix
