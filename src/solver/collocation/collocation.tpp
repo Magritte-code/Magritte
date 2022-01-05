@@ -300,9 +300,11 @@ inline Real Collocation :: basis_freq(Size rayidx, Size freqidx, Size pointidx, 
     //also implement some logical data structure (possibly first read out all the sorted frequencies, then construct the basis functions)
     Real abs_freq_diff=0;
     Real freq_inv_width=0;
+
+    // Real background=boundary_intensity(Model& model, Size rayidx, Size freqidx, Size pointidx);
     if (USING_COMOVING_FRAME)
     {
-        freq_inv_width=non_doppler_shifted_inverse_widths[freqidx][pointidx];
+        freq_inv_width=non_doppler_shifted_inverse_widths[freqidx][pointidx];//TEST:/2 for testing wider function
         abs_freq_diff=std::abs(currfreq-non_doppler_shifted_frequencies[freqidx]-FREQ_OFFSET/freq_inv_width);
         // std::cout<<"freq inverse width: "<<freq_inv_width<<std::endl;
         // std::cout<<"shift: "<<FREQ_OFFSET/freq_inv_width<<std::endl;
@@ -337,7 +339,7 @@ inline Real Collocation :: basis_freq_lp_int(Size rayidx, Size freqidx, Size poi
     // Real freq_inv_width=0;
     if (USING_COMOVING_FRAME)
     {
-        point_freq_inv_width=non_doppler_shifted_inverse_widths[freqidx][pointidx];
+        point_freq_inv_width=non_doppler_shifted_inverse_widths[freqidx][pointidx];//TEST:/2 for testing wider function
         point_freq=non_doppler_shifted_frequencies[freqidx]+FREQ_OFFSET/point_freq_inv_width;
     }
     else
@@ -367,7 +369,7 @@ inline Real Collocation :: basis_freq_der(Size rayidx, Size freqidx, Size pointi
     Real freq_inv_width=0;
     if (USING_COMOVING_FRAME)
     {
-        freq_inv_width=non_doppler_shifted_inverse_widths[freqidx][pointidx];
+        freq_inv_width=non_doppler_shifted_inverse_widths[freqidx][pointidx];//TEST:/2 for testing wider function
         freq_diff=currfreq-non_doppler_shifted_frequencies[freqidx]-FREQ_OFFSET/freq_inv_width;
         // abs_freq_diff=std::abs(currfreq-non_doppler_shifted_frequencies[freqidx]-FREQ_OFFSET/freq_inv_width);
     }
@@ -639,9 +641,9 @@ inline void Collocation :: setup_basis_matrix_Eigen(Model& model)
                 Size next_point=model.geometry.get_next(pointidx, rayidx, pointidx, dist, ddist);
                 if (next_point!=parameters.npoints())//if there actually exists a next point
                 {
-                    std::cout<<"dist: "<<dist<<std::endl;
+                    // std::cout<<"dist: "<<dist<<std::endl;
                     local_velocity_gradient=model.geometry.rays.direction[rayidx].dot(model.geometry.points.velocity[next_point]-model.geometry.points.velocity[pointidx])/dist;
-                    std::cout<<"local velocity grad: "<<local_velocity_gradient<<std::endl;
+                    // std::cout<<"local velocity grad: "<<local_velocity_gradient<<std::endl;
                 }
                 else
                 {
@@ -755,8 +757,8 @@ inline void Collocation :: setup_basis_matrix_Eigen(Model& model)
                             std::cout<<"velocity grad: "<<local_velocity_gradient<<std::endl;
                             std::cout<<"freq: "<<non_doppler_shifted_frequencies[freqidx]<<std::endl;
                             std::cout<<"1/opacity: "<<1.0/curr_opacity<<std::endl;
-                            std::cout<<"doppler_shift_spat_der_ratio"<<local_velocity_gradient*non_doppler_shifted_frequencies[freqidx]*basis_freq_der(triplet[0], triplet[1], triplet[2], curr_freq)/basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point(triplet[2], curr_location, triplet[0], model.geometry)/basis_point_der(triplet[2], curr_location, triplet[0], model.geometry);
-
+                            std::cout<<"doppler_shift_spat_der_ratio"<<local_velocity_gradient*non_doppler_shifted_frequencies[freqidx]*basis_freq_der(triplet[0], triplet[1], triplet[2], curr_freq)/basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point(triplet[2], curr_location, triplet[0], model.geometry)/basis_point_der(triplet[2], curr_location, triplet[0], model.geometry)<<std::endl;
+                            std::cout<<"inverse width: "<<non_doppler_shifted_inverse_widths[triplet[1]][triplet[2]]<<std::endl;
                             // std::cout<<"doppler_shift_term: "<<doppler_shift_term<<std::endl;
                             std::cout<<"doppler_shift_basis_ratio: "<<-local_velocity_gradient*non_doppler_shifted_frequencies[freqidx]/curr_opacity*basis_freq_der(triplet[0], triplet[1], triplet[2], curr_freq)/basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)<<std::endl;
                             std::cout<<"basis_freq: "<<basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)<<std::endl;
@@ -950,6 +952,34 @@ inline void Collocation :: setup_rhs_Eigen(Model& model)
         }
     }
     std::cout<<"rhs: "<<rhs<<std::endl;
+
+    rescale_matrix_and_rhs_Eigen();
+
+    std::cout<<"rescaled rhs: "<<rhs<<std::endl;
+}
+
+// Rescale the matrix rows such that there are ones on the diagonal
+// Practically, this is the same as applying a the inverse of the diagonal as left preconditioner
+// TODO: the explicit multiplication factor for the boundary conditions might be a bit useless now
+//Assumes that both the eigen matrix and rhs have already been constructed
+inline void Collocation :: rescale_matrix_and_rhs_Eigen()
+{
+    //get inverse of diagonal as diagonal matrix
+    const auto diagonal_inverse=collocation_mat.diagonal().asDiagonal().inverse();
+    rhs=diagonal_inverse*rhs;
+    collocation_mat=diagonal_inverse*collocation_mat;
+
+    //also printing out the rescaled version
+    // if (model.COMPUTING_SVD_AND_CONDITION_NUMBER)
+    // {
+        Eigen::JacobiSVD<MatrixXr> svd(collocation_mat);
+        Real cond = svd.singularValues()(0)
+        / svd.singularValues()(svd.singularValues().size()-1);
+        std::cout<<"condition number: "<<cond<<std::endl;
+        // collocation_mat.data().squeeze();
+        std::cout << MatrixXr(collocation_mat) << std::endl;
+    // }
+
 }
 
 ///  Getter for the boundary conditions

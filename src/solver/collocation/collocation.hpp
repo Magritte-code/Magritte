@@ -17,7 +17,7 @@ private:
     const Real TRUNCATION_SIGMA=5.0; //< if Delta(freq)>trunc_sigma*freq_width just set the result from the gaussian basis function to zero (as it is almost zero)
     const Real SLOPE_FACTOR=1.0;//1.0;//For stabilizing the equations a bit (making them somewhat more diagonally dominant);
     const Real SLOPE_STEEPNESS=4.0;//slope steepness, also for stabilizing the equations; will practically be divided by 4 at x=0.
-    const Real FREQ_OFFSET=-0.1;//offset for the frequency basis functions (in terms of the inverse line width (mind the sqrt(2)))-in comoving frame
+    const Real FREQ_OFFSET=-0.2;//offset for the frequency basis functions (in terms of the inverse line width (mind the sqrt(2)))-in comoving frame
     //FIXME: freq offset makes the freq cutoff condition a bit nonsymmetrical
 
     // DEPRECATED: makes that the basis functions are too peaked for my liking
@@ -127,6 +127,8 @@ public:
 
     inline void setup_basis_matrix_Eigen(Model& model);
     inline void setup_rhs_Eigen(Model& model);//Note: assumes one has first setup the basis matrix
+
+    inline void rescale_matrix_and_rhs_Eigen();
 
     inline Real get_opacity(Model& model, Size rayidx, Size freqidx, Size pointidx);
     inline Real get_emissivity(Model& model, Size rayidx, Size freqidx, Size pointidx);
