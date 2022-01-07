@@ -20,8 +20,8 @@ struct Model
 {
     const Size MIN_INTERPOLATION_POINTS=16;   ///< Minimum number of points used during interpolation (~=average nb neighors in voronoi grid)
 
-    const Size INTERPOLATION_POINTS_1D=6;     ///< Number of interpolation points to use for 1D computations (spherical symmetry)
-    const Size INTERPOLATION_POINTS_3D=16;    ///< Number of interpolation points to use for 3D computations (general geometry)
+    const Size INTERPOLATION_POINTS_1D=8;     ///< Number of interpolation points to use for 1D computations (spherical symmetry)
+    const Size INTERPOLATION_POINTS_3D=8;    ///< Number of interpolation points to use for 3D computations (general geometry)
 
 
     const Size MAX_INTERPOLATION_POINTS=16;   ///< Maximum number of points used during interpolation (~=average nb neighors in voronoi grid)
