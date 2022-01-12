@@ -97,10 +97,24 @@ inline void Collocation :: set_interacting_bases(Model& model)
                 // if ((model.lines.line[lineid]/max_doppler_shift<model.lines.line[other_lineid]+1/model.lines.inverse_width(pointid,other_lineid)*TRUNCATION_SIGMA*max_doppler_shift)
                 // &&  (model.lines.line[lineid]*max_doppler_shift>model.lines.line[other_lineid]-1/model.lines.inverse_width(pointid,other_lineid)*TRUNCATION_SIGMA*max_doppler_shift))
                 //TODO: other possibility is to use non_doppler_shifted_inverse_widths instead of lines.inverse_width
-                if ((model.radiation.frequencies.nu(pointid,freqid)/max_doppler_shift<model.radiation.frequencies.nu(pointid,other_freqid)+1/model.lines.inverse_width(pointid,corresp_other_lineid)*TRUNCATION_SIGMA*max_doppler_shift)
-                &&  (model.radiation.frequencies.nu(pointid,freqid)*max_doppler_shift>model.radiation.frequencies.nu(pointid,other_freqid)-1/model.lines.inverse_width(pointid,corresp_other_lineid)*TRUNCATION_SIGMA*max_doppler_shift))
+                //FIXME: use the frequency quadrature
+                // if ((model.radiation.frequencies.nu(pointid,freqid)/max_doppler_shift<model.radiation.frequencies.nu(pointid,other_freqid)+1/model.lines.inverse_width(pointid,corresp_other_lineid)*TRUNCATION_SIGMA*max_doppler_shift)
+                // &&  (model.radiation.frequencies.nu(pointid,freqid)*max_doppler_shift>model.radiation.frequencies.nu(pointid,other_freqid)-1/model.lines.inverse_width(pointid,corresp_other_lineid)*TRUNCATION_SIGMA*max_doppler_shift))
+                if (parameters.nquads()==1)//we have no other relevant inverse width than the inverse line width, so use the old formulation
                 {
-                    other_frequency_basis_interacting_with[pointid][freqid].insert(other_freqid);
+                    if ((model.radiation.frequencies.nu(pointid,freqid)/max_doppler_shift<model.radiation.frequencies.nu(pointid,other_freqid)+1/model.lines.inverse_width(pointid,corresp_other_lineid)*TRUNCATION_SIGMA*max_doppler_shift)
+                    &&  (model.radiation.frequencies.nu(pointid,freqid)*max_doppler_shift>model.radiation.frequencies.nu(pointid,other_freqid)-1/model.lines.inverse_width(pointid,corresp_other_lineid)*TRUNCATION_SIGMA*max_doppler_shift))
+                    {
+                        other_frequency_basis_interacting_with[pointid][freqid].insert(other_freqid);
+                    }
+                }
+                else
+                {
+                    if ((frequency_quadrature[freqid]/max_doppler_shift<frequency_quadrature[other_freqid]+1/frequency_inverse_width_quadrature[other_freqid]*TRUNCATION_SIGMA*max_doppler_shift)
+                    &&  (frequency_quadrature[freqid]*max_doppler_shift>frequency_quadrature[other_freqid]-1/frequency_inverse_width_quadrature[other_freqid]*TRUNCATION_SIGMA*max_doppler_shift))
+                    {
+                        other_frequency_basis_interacting_with[pointid][freqid].insert(other_freqid);
+                    }
                 }
             }
         }
@@ -195,6 +209,152 @@ inline void Collocation :: setup_basis(Model& model)
     // We need the inverse line widths, so we might as well make sure that they are calculated now//TODO: remove this here and just say that we need them before
     model.compute_inverse_line_widths();
 
+    frequency_quadrature.resize(parameters.nfreqs());
+    frequency_inverse_width_quadrature.resize(parameters.nfreqs());
+
+    if (parameters.nquads()==1)
+    {//in this case, nfreqs=nlines
+        for (Size lineid=0; lineid<parameters.nlines(); lineid++)
+        {
+            frequency_quadrature[lineid]=model.lines.line[lineid];
+            //frequency_inverse_width_quadrature[lineid]=TODO (just the the default for every point)
+        }
+    }
+    else
+    {
+        // frequency_quadrature[rayid].resize(parameters.nfreqs());
+        Size freq_idx_counter=0;
+        for (Size lineid=0; lineid<parameters.nlines(); lineid++)
+        {
+            const Real line_freq=model.lines.line[lineid];
+
+            //compute min and max quadrature frequencies for this line frequency
+            Real min_freq_quad=line_freq;
+            Real max_freq_quad=line_freq;
+
+            //For every direction, for every point, compute the quadrature bounds.
+            for (Size rayid=0; rayid<parameters.nrays(); rayid++)
+            {
+                for (Size pointid=0; pointid<parameters.npoints(); pointid++)
+                {
+                    const Real line_freq_inv_width=model.lines.inverse_width(pointid,lineid);
+                    //TODO: it might be faster to first compute all doppler shifts and then take min and max
+                    const Real temp_doppler_shift=calculate_doppler_shift_observer_frame(model.geometry.points.velocity[pointid],model.geometry.rays.direction[rayid]);
+                    //compute what the min and max frequency quadratures would be for this point
+                    const Real temp_min_freq_quad=1/temp_doppler_shift*(line_freq-FREQ_QUADRATURE_EDGE/line_freq_inv_width);
+                    const Real temp_max_freq_quad=1/temp_doppler_shift*(line_freq+FREQ_QUADRATURE_EDGE/line_freq_inv_width);
+
+                    min_freq_quad=std::min(min_freq_quad,temp_min_freq_quad);
+                    max_freq_quad=std::max(max_freq_quad,temp_max_freq_quad);
+                }
+            }
+
+            //and now properly distribute the quadrature points within the bounds of min and max
+            const Real freq_quad_delta=max_freq_quad-min_freq_quad;
+            std::cout<<"freq_quad_delta: "<<freq_quad_delta<<std::endl;
+            for (Size quadid=0; quadid<parameters.nquads(); quadid++)
+            {
+                Real frac=((Real)quadid)/(parameters.nquads()-1);//number between 0 and 1 (inclusive)
+                frequency_quadrature[freq_idx_counter]=min_freq_quad+freq_quad_delta*frac;
+                frequency_inverse_width_quadrature[freq_idx_counter]=SQRT_MIN_LN_RATIO*(parameters.nquads()-1)/freq_quad_delta;
+
+                std::cout<<"frac: "<<frac<<std::endl;
+
+                freq_idx_counter++;
+            }
+        }
+    }
+
+    // frequency_quadrature.resize(parameters.nrays());
+
+    //if we only have a single quadrature, we might as well just place it on the line frequency (without doing any fancy calculations)
+    // if (parameters.nquads()==1)
+    // {
+    //     for (Size rayid=0; rayid<parameters.nrays(); rayid++)
+    //     {
+    //         frequency_quadrature[rayid].resize(parameters.nlines());
+    //         for (Size lineid=0; lineid<parameters.nlines(); lineid++)
+    //         {
+    //             frequency_quadrature[rayid][lineid]=model.lines.line[lineid];
+    //         }
+    //     }
+    // }
+    // else
+    // {
+    //     //For every direction, for every line, compute the quadrature.
+    //     for (Size rayid=0; rayid<parameters.nrays(); rayid++)
+    //     {
+    //         frequency_quadrature[rayid].resize(parameters.nfreqs());
+    //         Size freq_idx_counter=0;
+    //         for (Size lineid=0; lineid<parameters.nlines(); lineid++)
+    //         {
+    //             const Real line_freq=model.lines.line[lineid];
+    //             //compute min and max doppler shifts for the rays direction
+    //
+    //             //use point 0 as as starting guess; otherwise the min or max could be never reached might be under/overestimates
+    //             const Real pt0_doppler_shift=calculate_doppler_shift_observer_frame(model.geometry.points.velocity[0],model.geometry.rays.direction[rayid]);
+    //
+    //             Real min_freq_quad=pt0_doppler_shift*line_freq;
+    //             Real max_freq_quad=pt0_doppler_shift*line_freq;
+    //
+    //             // Real min_raydir_doppler_shift=0.0;
+    //             // Real max_raydir_doppler_shift=0.0;
+    //             for (Size pointid=0; pointid<parameters.npoints(); pointid++)
+    //             {
+    //                 const Real line_freq_inv_width=model.lines.inverse_width(pointid,lineid);
+    //                 //TODO: it might be faster to first compute all doppler shifts and then take min and max
+    //                 const Real temp_doppler_shift=calculate_doppler_shift_observer_frame(model.geometry.points.velocity[pointid],model.geometry.rays.direction[rayid]);
+    //                 //compute what the min and max frequency quadratures would be for this point
+    //                 const Real temp_min_freq_quad=1/temp_doppler_shift*(line_freq-FREQ_QUADRATURE_EDGE/line_freq_inv_width);
+    //                 const Real temp_max_freq_quad=1/temp_doppler_shift*(line_freq+FREQ_QUADRATURE_EDGE/line_freq_inv_width);
+    //                 // const Real temp_min_freq_quad=temp_doppler_shift*line_freq-FREQ_QUADRATURE_EDGE/line_freq_inv_width;
+    //                 // const Real temp_max_freq_quad=temp_doppler_shift*line_freq+FREQ_QUADRATURE_EDGE/line_freq_inv_width;
+    //                 // max_raydir_doppler_shift=std::max(max_raydir_doppler_shift, temp_doppler_shift);
+    //                 // min_raydir_doppler_shift=std::min(min_raydir_doppler_shift, temp_doppler_shift);
+    //                 min_freq_quad=std::min(min_freq_quad,temp_min_freq_quad);
+    //                 max_freq_quad=std::max(max_freq_quad,temp_max_freq_quad);
+    //             }
+    //
+    //             //and now properly distribute the quadrature points within the bounds of min and max
+    //             const Real freq_quad_delta=max_freq_quad-min_freq_quad;
+    //             std::cout<<"freq_quad_delta: "<<freq_quad_delta<<std::endl;
+    //             for (Size quadid=0; quadid<parameters.nquads(); quadid++)
+    //             {
+    //                 Real frac=((Real)quadid)/(parameters.nquads()-1);//number between 0 and 1 (inclusive)
+    //                 frequency_quadrature[rayid][freq_idx_counter]=min_freq_quad+freq_quad_delta*frac;
+    //                 std::cout<<"frac: "<<frac<<std::endl;
+    //
+    //                 freq_idx_counter++;
+    //             }
+    //
+    //         }
+    //
+    //         // frequency_quadrature[rayid].resize(parameters.npoints());
+    //         // for (Size pointid=0; pointid<parameters.npoints(); pointid++)
+    //         // {
+    //
+    //
+    //         // Size freq_idx_counter=0;
+    //         // for (Size lineid=0; lineid<parameters.nlines(); lineid++)
+    //         // {
+    //         //     const Real line_freq=model.lines.line[lineid];
+    //         //     const Real line_freq_inv_width=model.lines.inverse_width(pointid,lineid);
+    //         //
+    //         //     const Real min_freq_quad=min_raydir_doppler_shift*line_freq-FREQ_QUADRATURE_EDGE/line_freq_inv_width;
+    //         //     const Real max_freq_quad=max_raydir_doppler_shift*line_freq+FREQ_QUADRATURE_EDGE/line_freq_inv_width;
+    //         //     const Real freq_quad_delta=max_freq_quad-min_freq_quad;
+    //         //     for (Size quadid=0; quadid<paramters.nquads(); quadid++)
+    //         //     {
+    //         //         Real frac=quadid/(parameters.nquads()-1);//number between 0 and 1 (inclusive)
+    //         //         frequency_quadrature[rayid][pointid][freq_idx_counter]=min_freq_quad+freq_quad_delta*frac;
+    //         //
+    //         //         freq_idx_counter++;
+    //         //     }
+    //         // }
+    //     }
+    // }
+
+
     for (Size rayid=0; rayid<parameters.nrays(); rayid++)
     {
         frequencies[rayid].resize(parameters.npoints());
@@ -214,7 +374,10 @@ inline void Collocation :: setup_basis(Model& model)
             for (Size freqid=0; freqid<parameters.nfreqs(); freqid++)
             {
                 // frequencies[rayid][pointid][lineid]=doppler_shift*model.lines.line[lineid];
-                frequencies[rayid][pointid][freqid]=doppler_shift*model.radiation.frequencies.nu[freqid];
+                frequencies[rayid][pointid][freqid]=doppler_shift*frequency_quadrature[freqid];
+                std::cout<<"frequencies: "<<frequencies[rayid][pointid][freqid]<<std::endl;
+                // frequencies[rayid][pointid][freqid]=doppler_shift*model.radiation.frequencies.nu[freqid];
+
                 Size l=model.radiation.frequencies.corresponding_l_for_spec[freqid];   ///< number of line species corresponding to frequency
                 Size k=model.radiation.frequencies.corresponding_k_for_tran[freqid];   ///< number of transition corresponding to frequency
                 Size z=model.radiation.frequencies.corresponding_z_for_line[freqid];   ///< number of line number corresponding to frequency
@@ -222,7 +385,17 @@ inline void Collocation :: setup_basis(Model& model)
                 Size corresp_lineid=model.lines.line_index(l, k);
                 // model.lines.lineProducingSpecies[l].nr_line[pointid][k][z];
                 // std::cout<<"corresp lineid: "<<corresp_lineid<<std::endl;
-                frequencies_inverse_widths[rayid][pointid][freqid]=model.lines.inverse_width(pointid,corresp_lineid)/doppler_shift;
+                if (parameters.nquads()==1)
+                {//no better estimate availabe, so just using the default inverse width
+                    frequencies_inverse_widths[rayid][pointid][freqid]=model.lines.inverse_width(pointid,corresp_lineid)/doppler_shift;
+                }
+                else
+                {
+                    frequencies_inverse_widths[rayid][pointid][freqid]=frequency_inverse_width_quadrature[corresp_lineid]/doppler_shift;
+                    std::cout<<"frequencies_inverse_widths: "<<frequencies_inverse_widths[rayid][pointid][freqid]<<std::endl;
+                    std::cout<<"comparison inverse width:"<<model.lines.inverse_width(pointid,corresp_lineid)/doppler_shift<<std::endl;
+                }
+                // frequencies_inverse_widths[rayid][pointid][freqid]=model.lines.inverse_width(pointid,corresp_lineid)/doppler_shift;
             }
 
         }
@@ -241,11 +414,18 @@ inline void Collocation :: setup_basis(Model& model)
     // }
 
     non_doppler_shifted_frequencies.resize(parameters.nfreqs());
+    for (Size freqid=0; freqid<parameters.nfreqs(); freqid++)
+    {
+        non_doppler_shifted_frequencies[freqid]=frequency_quadrature[freqid];
+        std::cout<<"non doppler shifted frequencies: "<<non_doppler_shifted_frequencies[freqid]<<std::endl;
+    }
+    // }
+
     non_doppler_shifted_inverse_widths.resize(parameters.nfreqs());
     for (Size freqid=0; freqid<parameters.nfreqs(); freqid++)
     {
-        non_doppler_shifted_frequencies[freqid]=model.radiation.frequencies.nu[freqid];
-        std::cout<<"non doppler shifted frequencies: "<<non_doppler_shifted_frequencies[freqid]<<std::endl;
+        // non_doppler_shifted_frequencies[freqid]=model.radiation.frequencies.nu[freqid];
+        // std::cout<<"non doppler shifted frequencies: "<<non_doppler_shifted_frequencies[freqid]<<std::endl;
         non_doppler_shifted_inverse_widths[freqid].resize(parameters.npoints());
         for (Size pointid=0; pointid<parameters.npoints(); pointid++)
         {
@@ -253,7 +433,7 @@ inline void Collocation :: setup_basis(Model& model)
             Size k=model.radiation.frequencies.corresponding_k_for_tran[freqid];   ///< number of transition corresponding to frequency
             Size z=model.radiation.frequencies.corresponding_z_for_line[freqid];   ///< number of line number corresponding to frequency
             // std::cout<<"l, k, z: "<<l<<", "<<k<<", "<<z<<std::endl;
-              Size corresp_lineid=model.lines.line_index(l, k);
+            Size corresp_lineid=model.lines.line_index(l, k);
             // std::cout<<"corresp lineid: "<<corresp_lineid<<std::endl;
             non_doppler_shifted_inverse_widths[freqid][pointid]=model.lines.inverse_width(pointid,corresp_lineid);
             // std::cout<<"inverse_width: "<<non_doppler_shifted_inverse_widths[freqid][pointid]<<std::endl;
@@ -460,10 +640,16 @@ inline Real Collocation :: get_slope(Real x, Real rayidx, Real pointidx, Real fr
 {
    if (!rbf_using_slope[rayidx][pointidx][freqidx])
    {
+      // std::cout<<"not using slope"<<std::endl;
       return 1;
    }
    else
    {
+      // A sinus as slope
+      // Real slope=1+std::sin(PI*x);
+      // The slope 1+x/SLOPE_FACTOR
+      // Real slope=1+x/SLOPE_FACTOR;
+      // The sigmoid-inspired slope
       Real slope=1.0/2.0+1.0/(1.0+std::exp(-SLOPE_STEEPNESS*x));
       return slope;
    }
@@ -477,10 +663,16 @@ inline Real Collocation :: get_slope_derivative(Real x, Real rayidx, Real pointi
 {
     if (!rbf_using_slope[rayidx][pointidx][freqidx])
     {
+        // std::cout<<"not using slope"<<std::endl;
         return 0;
     }
     else
     {
+        // A sinus as slope
+        // Real slope_derivative=PI*std::cos(PI*x);
+        // the slope 1+x/SLOPE_FACTOR
+        // Real slope_derivative=1/SLOPE_FACTOR;
+        // The sigmoid-inspired slope
         Real exp_factor=std::exp(-SLOPE_STEEPNESS*x);
         Real slope_derivative=SLOPE_STEEPNESS*exp_factor/std::pow(1+exp_factor,2);
         return slope_derivative;
@@ -548,6 +740,7 @@ inline Real Collocation :: basis_point_der(Size centerpoint, Vector3D& location,
     }
     else if (distance==0)
     {
+        std::cout<<"distance is zero"<<std::endl;
         Real rel_dist=distance/radius;
         // std::cout<<"manip der factor: "<<manip_der_factor<<std::endl;
         // Real manip_rel_dist=distance_manip(centerpoint, rel_dist);
@@ -575,6 +768,7 @@ inline Real Collocation :: basis_point_der(Size centerpoint, Vector3D& location,
     else
     {
         Real rel_dist=distance/radius;
+        std::cout<<"rel_distance: "<<rel_dist<<std::endl;
         // Real manip_der_factor=distance_manip_der(centerpoint, rel_dist);
         // std::cout<<"manip der factor: "<<manip_der_factor<<std::endl;
         // Real manip_rel_dist=distance_manip(centerpoint, rel_dist);
@@ -657,18 +851,18 @@ inline Size Collocation :: get_mat_index(Size rayidx, Size freqidx, Size pointid
 //     return 1+std::sqrt(raydirection.dot())
 // }
 
-//FIXME: reomve this, as its function is already improved upon by dividing by the diagonal.
+//DEPRECATED
 //Computes the balancing factor needed in order to make the boundary condition equation the same magnitude as the other nearby equations in the matrix
 //maybe TODO: also take the scattering stuff into account (when implemented)
-inline Real Collocation :: compute_balancing_factor_boundary(Size rayidx, Size freqidx, Size pointidx, Real local_velocity_gradient, Model& model)
-{
-    return 1;
-    // const Real numerator=basis_point_der(pointidx, point_locations[pointidx], rayidx, freqidx, model.geometry)*basis_freq(rayidx, freqidx, pointidx, non_doppler_shifted_frequencies[freqidx])-local_velocity_gradient*non_doppler_shifted_frequencies[freqidx]*basis_point(pointidx, point_locations[pointidx], rayidx, freqidx, model.geometry)*basis_freq_der(rayidx, freqidx, pointidx, non_doppler_shifted_frequencies[freqidx]);
-    // const Real denominator=basis_point(pointidx, point_locations[pointidx], rayidx, freqidx, model.geometry)*get_opacity(model, rayidx, freqidx, pointidx)*basis_freq(rayidx, freqidx, pointidx, non_doppler_shifted_frequencies[freqidx]);
-    // // std::cout<<"numerator/denominator: "<<numerator/denominator<<std::endl;
-    //
-    // return 1 + numerator/denominator;
-}
+// inline Real Collocation :: compute_balancing_factor_boundary(Size rayidx, Size freqidx, Size pointidx, Real local_velocity_gradient, Model& model)
+// {
+//     return 1;
+//     // const Real numerator=basis_point_der(pointidx, point_locations[pointidx], rayidx, freqidx, model.geometry)*basis_freq(rayidx, freqidx, pointidx, non_doppler_shifted_frequencies[freqidx])-local_velocity_gradient*non_doppler_shifted_frequencies[freqidx]*basis_point(pointidx, point_locations[pointidx], rayidx, freqidx, model.geometry)*basis_freq_der(rayidx, freqidx, pointidx, non_doppler_shifted_frequencies[freqidx]);
+//     // const Real denominator=basis_point(pointidx, point_locations[pointidx], rayidx, freqidx, model.geometry)*get_opacity(model, rayidx, freqidx, pointidx)*basis_freq(rayidx, freqidx, pointidx, non_doppler_shifted_frequencies[freqidx]);
+//     // // std::cout<<"numerator/denominator: "<<numerator/denominator<<std::endl;
+//     //
+//     // return 1 + numerator/denominator;
+// }
 
 
 //
@@ -761,7 +955,7 @@ inline void Collocation :: setup_basis_matrix_Eigen(Model& model)
                 if (boundary_condition_required)
                 {
                     //This term makes sure that the magnitude of the matrix terms corresponding to this boundary condition is similar to the other nearby terms
-                    const Real balancing_factor=compute_balancing_factor_boundary(rayidx, freqidx, pointidx, local_velocity_gradient, model);
+                    // const Real balancing_factor=compute_balancing_factor_boundary(rayidx, freqidx, pointidx, local_velocity_gradient, model);
                     //Merely evaluating the intensity at the boundary
                     for (std::vector<Size> triplet: nonzero_triplets)
                     {
@@ -773,23 +967,23 @@ inline void Collocation :: setup_basis_matrix_Eigen(Model& model)
                             //                                                                                       , model.geometry.rays.direction[rayidx]);
                             // Real doppler_shifted_frequency=curr_freq;//try it out non-doppler shifted
                             // Real basis_eval=basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], doppler_shifted_frequency)*basis_point(triplet[2], curr_location, triplet[0], model.geometry);
-                            Real basis_eval=balancing_factor*basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point(triplet[2], curr_location, triplet[0], triplet[1], model.geometry);
+                            Real basis_eval=basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point(triplet[2], curr_location, triplet[0], triplet[1], model.geometry);
                             eigen_triplets.push_back (Triplet<Real, Size> (curr_mat_idx, other_mat_idx, basis_eval));
                         }
                         else
                         {
                             //In order to make this term of the same size as the others, multiply by the opacity (only in emissivity formulation)
                             // Real basis_eval=curr_opacity*basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point(triplet[2], curr_location);
-                            Real basis_eval=balancing_factor*basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point(triplet[2], curr_location, triplet[0], triplet[1], model.geometry);
+                            Real basis_eval=basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point(triplet[2], curr_location, triplet[0], triplet[1], model.geometry);
                             // std::cout<<"basis_eval: "<<basis_eval<<std::endl;
                             // std::cout<<"basis_dir_eval: "<<basis_direction(triplet[0])<<std::endl;
                             // std::cout<<"basis_freq_eval: "<<basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)<<std::endl;
                             //add triplet (mat_idx(triplet[0],triplet[1],triplet[2]),directional_der)
                             eigen_triplets.push_back (Triplet<Real, Size> (curr_mat_idx, other_mat_idx, basis_eval));
                         }
-                        std::cout<<"bdy condition triplets: "<<triplet[0]<<", "<<triplet[1]<<", "<<triplet[2]<<std::endl;
-                        std::cout<<"basis_freq: "<<basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)<<std::endl;
-                        std::cout<<"basis_point: "<<basis_point(triplet[2], curr_location, triplet[0], triplet[1], model.geometry)<<std::endl;
+                        // std::cout<<"bdy condition triplets: "<<triplet[0]<<", "<<triplet[1]<<", "<<triplet[2]<<std::endl;
+                        // std::cout<<"basis_freq: "<<basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)<<std::endl;
+                        // std::cout<<"basis_point: "<<basis_point(triplet[2], curr_location, triplet[0], triplet[1], model.geometry)<<std::endl;
 
                     }
                 }
@@ -878,6 +1072,8 @@ inline void Collocation :: setup_basis_matrix_Eigen(Model& model)
                             //       basis_direction(triplet[0])*basis_freq_der(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point(triplet[2], curr_location, triplet[0], model.geometry);
                             // }
 
+                            std::cout<<"basis/(grad/opacity): "<<basis_eval/directional_der<<std::endl;
+
                             eigen_triplets.push_back (Triplet<Real, Size> (curr_mat_idx, other_mat_idx, directional_der+basis_eval+doppler_shift_term));
 
                             // //For every scattering direction! add scattering//also divide by curr_opacity
@@ -932,22 +1128,27 @@ inline Real Collocation :: get_opacity(Model& model, Size rayidx, Size freqidx, 
     for (Size lineidx=0; lineidx<parameters.nlines(); lineidx++)
     {
         Real delta_freq=0;
+        // Real inv_width=0;
         if (USING_COMOVING_FRAME)
         {
+            // inv_width=model.lines.inverse_width(pointidx,lineidx);
             delta_freq=non_doppler_shifted_frequencies[freqidx]-model.lines.line[lineidx];
         }
         else
         {
+            // Real doppler_shift_factor=calculate_doppler_shift_observer_frame(model.geometry.points.velocity[pointidx],model.geometry.rays.direction[rayidx]);
             //local opacity should use the local frequencies, not the global ones...; otherwise it goes very quickly to zero if we have a minor doppler shift during the ray
-            // I just don't feel like doppler shifting everything -> only very minor correction in the inv_width factor in front
+            // I just don't feel like doppler shifting everything -> only minor correction in the inv_width factor in front is countered by the doppler shifted line frequency
             delta_freq=non_doppler_shifted_frequencies[freqidx]-model.lines.line[lineidx];
-            // delta_freq=frequencies[rayidx][pointidx][freqidx]-model.lines.line[lineidx];
+            // delta_freq=frequencies[rayidx][pointidx][freqidx]-model.lines.line[lineidx]*doppler_shift_factor;
+            // inv_width=model.lines.inverse_width(pointidx,lineidx)/doppler_shift_factor;
         }
         const Real inv_width=model.lines.inverse_width(pointidx,lineidx);
         toreturn+=INVERSE_SQRT_PI*inv_width*std::exp(-std::pow(delta_freq*inv_width,2))
                   *model.lines.line[lineidx]*model.lines.opacity(pointidx, lineidx);
     }
-    return toreturn;
+    //with a too low minimum opacity, the intensity gets completely ignored compared to the derivative
+    return std::max(toreturn,MIN_OPACITY);
 }
 
 // Returns the emissivity (takes into account the gaussian line profile)
@@ -960,15 +1161,20 @@ inline Real Collocation :: get_emissivity(Model& model, Size rayidx, Size freqid
     for (Size lineidx=0; lineidx<parameters.nlines(); lineidx++)
     {
         Real delta_freq=0;
+        // Real inv_width=0;
         if (USING_COMOVING_FRAME)
         {
+            // inv_width=model.lines.inverse_width(pointidx,lineidx);
             delta_freq=non_doppler_shifted_frequencies[freqidx]-model.lines.line[lineidx];
         }
         else
         {
-            //local opacity should use the local frequencies, not the global ones...
-            delta_freq=non_doppler_shifted_frequencies[freqidx]-model.lines.line[lineidx];
-            // delta_freq=frequencies[rayidx][pointidx][freqidx]-model.lines.line[lineidx];
+          // Real doppler_shift_factor=calculate_doppler_shift_observer_frame(model.geometry.points.velocity[pointidx],model.geometry.rays.direction[rayidx]);
+          //local opacity should use the local frequencies, not the global ones...; otherwise it goes very quickly to zero if we have a minor doppler shift during the ray
+          // I just don't feel like doppler shifting everything -> only minor correction in the inv_width factor in front is countered by the doppler shifted line frequency
+          delta_freq=non_doppler_shifted_frequencies[freqidx]-model.lines.line[lineidx];
+          // delta_freq=frequencies[rayidx][pointidx][freqidx]-model.lines.line[lineidx]*doppler_shift_factor;
+          // inv_width=model.lines.inverse_width(pointidx,lineidx)/doppler_shift_factor;
         }
         const Real inv_width=model.lines.inverse_width(pointidx,lineidx);
         toreturn+=INVERSE_SQRT_PI*inv_width*std::exp(-std::pow(delta_freq*inv_width,2))
@@ -1003,16 +1209,16 @@ inline void Collocation :: setup_rhs_Eigen(Model& model)
                     {//if there lies no point behind this point, we need to evaluate the boundary condition here
                         boundary_condition_required=true;
 
-                        dist=0;//these two variables are actually not used, but required in the function definition get_next
-                        ddist=0;
-                        //also compute velocity gradient for the balancing factor
-                        Size next_point=model.geometry.get_next(pointidx, rayidx, pointidx, dist, ddist);
-                        std::cout<<"next point: "<<next_point<<std::endl;
-                        if (next_point!=parameters.npoints())//if there actually exists a next point
-                        {
-                            std::cout<<"computing velocity grad"<<std::endl;
-                            local_velocity_gradient=model.geometry.rays.direction[rayidx].dot(model.geometry.points.velocity[next_point]-model.geometry.points.velocity[pointidx])/dist;
-                        }
+                        // dist=0;//these two variables are actually not used, but required in the function definition get_next
+                        // ddist=0;
+                        // //also compute velocity gradient for the balancing factor
+                        // Size next_point=model.geometry.get_next(pointidx, rayidx, pointidx, dist, ddist);
+                        // std::cout<<"next point: "<<next_point<<std::endl;
+                        // if (next_point!=parameters.npoints())//if there actually exists a next point
+                        // {
+                        //     std::cout<<"computing velocity grad"<<std::endl;
+                        //     local_velocity_gradient=model.geometry.rays.direction[rayidx].dot(model.geometry.points.velocity[next_point]-model.geometry.points.velocity[pointidx])/dist;
+                        // }
                     }
                 }
                 // boundary_condition_required=false;
@@ -1020,8 +1226,8 @@ inline void Collocation :: setup_rhs_Eigen(Model& model)
                 {
                     // std::cout<<"local velocity grad: "<<local_velocity_gradient<<std::endl;
                     //This term makes sure that the magnitude of the matrix terms corresponding to this boundary condition is similar to the other nearby terms
-                    const Real balancing_factor=compute_balancing_factor_boundary(rayidx, freqidx, pointidx, local_velocity_gradient, model);
-                    rhs[curr_mat_idx]=balancing_factor*boundary_intensity(model, rayidx, freqidx, pointidx);
+                    // const Real balancing_factor=compute_balancing_factor_boundary(rayidx, freqidx, pointidx, local_velocity_gradient, model);
+                    rhs[curr_mat_idx]=boundary_intensity(model, rayidx, freqidx, pointidx);
                 }
                 else
                 {
@@ -1240,10 +1446,7 @@ inline void Collocation :: compute_J(Model& model)
                   else
                   {
                       const Real doppler_shift_factor=calculate_doppler_shift_observer_frame(model.geometry.points.velocity[p],model.geometry.rays.direction[rayidx]);
-                      std::cout<<"doppler shift factor: "<<doppler_shift_factor<<std::endl;
-                      //FIXME (or delete the non-comoving version): add doppler shifts to line frequencies (and inverse widths)
-                      // lp_freq=frequencies[rayidx][p][lid];
-                      // lp_freq_inv_width=frequencies_inverse_widths[rayidx][p][lid];
+                      // std::cout<<"doppler shift factor: "<<doppler_shift_factor<<std::endl;
                       lp_freq=model.lines.line[lid]*doppler_shift_factor;
                       lp_freq_inv_width=model.lines.inverse_width(lid,p)/doppler_shift_factor;
                   }

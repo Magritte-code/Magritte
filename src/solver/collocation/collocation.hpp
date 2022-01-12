@@ -20,12 +20,18 @@ private:
     const Real SLOPE_STEEPNESS=4.0;//4.0;//slope steepness, also for stabilizing the equations; will practically be divided by 4 at x=0.
     const Real FREQ_OFFSET=0.0;//-0.2;//offset for the frequency basis functions (in terms of the inverse line width (mind the sqrt(2)))-in comoving frame
     //FIXME: freq offset makes the freq cutoff condition a bit nonsymmetrical
+    const Real MAX_FREQ_QUAD_RATIO=0.7;//gives the maximum ratio between evaluation in the neighboring freq basis versus the evaluation in local frequency basis
+    const Real SQRT_MIN_LN_RATIO=std::sqrt(std::log(1.0/MAX_FREQ_QUAD_RATIO));//assuming a gaussian frequency basis function, this is a useful coonstant for determining the inverse width
+
     const Real SLOPE_THRESHOLD=7.0*2.0;//The threshold for determining whether we need to add a slope to the radial basis function
     //should be related to the max derivative of the rbf, the number of neighbors (for diagonal dominance reasons). Note: this comes from a global bound
     //if opacity*typical radius>SLOPE_THRESHOLD, then do not add the slope.
     // const Real QUADRATURE_MIN=-0.5;
     // const Real QUADRATURE_MAX=0.5;
     // TODO: define quadratures such that we can probe the entire space... abs max doppler shift-1 should not exceed the quadrature bounds
+    const Real MIN_OPACITY=1.0*std::pow(10,-28);//FIXME: use instead some adaptive measure based on rbf_der/(opacity*rbf). of diagonal element
+
+
 
     vector<vector<vector<bool>>> rbf_using_slope; //For every ray, for every point, for every frequency, denotes whether radial basis functions at a given point need to include the slope
     //currently using some global bound; MAYBE TODO: use the exact formulation for each basis function; this will need some code duplication (explicit rbf derivative without slope), and will obviously also depend on the exact direction (hatn dot grad)
@@ -35,6 +41,12 @@ private:
     // const Real DISTANCE_EXPONENT=1.0/5.0; //Exponent for redistributing the distances
     // const Real DISTANCE_EPS=0.1;//TODO: should actually be chosen adaptively (depending on how close the closest point lies)
     // vector<Real> half_min_dist; //Half the distance for
+
+    const Real FREQ_QUADRATURE_EDGE=2.0;//In order to make sure to sample the boundary condition well for all points, a safety param is included (enlarges the bounds for the frequency quadrature respectively subtracting and adding this to the min and max doppler shifts)
+    // vector<Real> min_raydir_doppler_shift;//for every direction, contains the minimum doppler shift in that direction
+    // vector<Real> max_raydir_doppler_shift;//for every direction, contains the maximum doppler shift in that direction
+    vector<Real> frequency_quadrature;//for every line frequency, contians the frequency quadrature
+    vector<Real> frequency_inverse_width_quadrature;//for every line frequency, contains the typical inverse width
 
     //TODO: adaptively define this such that diagonal remains somewhat ?constant...?
     //ideas: should drastically reduce ill-conditionedness of a matrix, so should (implicitly) depend on the number of points/distance of the closest point/...
@@ -46,7 +58,7 @@ private:
     // Dev note: it is defined as 1/(sqrt(2)*sigma) for use in the traditional gaussian
 
     //not the most efficient way of accessing the default frequencies and widths, but convient.
-    vector<Real> non_doppler_shifted_frequencies;//for every line, the non doppler shifted line frequency
+    vector<Real> non_doppler_shifted_frequencies;//for every line, the non doppler shifted line frequency//currently equal to the frequency_quadrature
     vector<vector<Real>> non_doppler_shifted_inverse_widths;//for every line, for every point, the non doppler shifted inverse line widths
 
     // //TODO: this thing is of the size of the actual matrix; maybe just make an approximation with respect to the actual doppler shift compared to the neighbors...
@@ -137,7 +149,8 @@ public:
     inline Size get_mat_index(Size rayidx, Size freqidx, Size pointidx);
 // and maybe some helper methods for determining what is actually zero
 
-    inline Real compute_balancing_factor_boundary(Size rayidx, Size freqidx, Size pointidx, Real local_velocity_gradient, Model& model);
+    //DEPRECATED
+    // inline Real compute_balancing_factor_boundary(Size rayidx, Size freqidx, Size pointidx, Real local_velocity_gradient, Model& model);
 
     inline void setup_basis_matrix_Eigen(Model& model);
     inline void setup_rhs_Eigen(Model& model);//Note: assumes one has first setup the basis matrix
