@@ -680,9 +680,115 @@ inline Real Collocation :: get_slope_derivative(Real x, Real rayidx, Real pointi
 
 }
 
+// Multiplies a Vector3D with a Real
+inline Vector3D multiply_vector3D_real(Vector3D vector3d, Real real)
+{
+    Vector3D toreturn=Vector3D(real*vector3d.x(), real*vector3d.y(), real*vector3d.z());
+    return toreturn;
+}
+
+///  The radial basis function for the position (perpendicular to the ray)
+inline Real Collocation :: basis_point_perp(Size centerpoint, Vector3D& location, Size rayindex, Size freqidx, Geometry& geometry)
+{
+    Vector3D diff_vector=location-point_locations[centerpoint];
+    Vector3D raydirection=geometry.rays.direction[rayindex];
+    Vector3D ray_component=multiply_vector3D_real(raydirection, raydirection.dot(diff_vector));
+    Vector3D diff_vector_minus_ray_component=diff_vector-ray_component;
+    Real radius=rbf_radii[centerpoint];
+    Real perp_distance=std::sqrt(diff_vector_minus_ray_component.dot(diff_vector_minus_ray_component))/radius;
+
+    //TODO: add basis function, fill in perp_distance (normed to 1)
+
+    return 1;//TODO: add better basis function (lazy as it doesn't matter in 1D), in 3D it definitely does ()
+}
+
+///  The radial basis function for the position (symmetric to the ray)
+inline Real Collocation :: basis_point_symm(Size centerpoint, Vector3D& location, Size rayindex, Size freqidx, Geometry& geometry)
+{
+    Vector3D diff_vector=location-point_locations[centerpoint];
+    Vector3D raydirection=geometry.rays.direction[rayindex];
+    // std::cout<<"diff vector.x: "<<diff_vector.x()<<std::endl;
+    // std::cout<<"raydirection.x: "<<raydirection.x()<<std::endl;
+    // Vector3D ray_component=multiply_vector3D_real(raydirection, raydirection.dot(diff_vector));
+    Real radius=rbf_radii[centerpoint];
+    // Real ray_distance=std::sqrt(ray_component.dot(ray_component))/radius;
+    Real ray_distance=raydirection.dot(diff_vector)/radius;
+    Real abs_ray_distance=std::abs(ray_distance);
+
+    // std::cout<<"ray_distance: "<<ray_distance<<std::endl;
+    // std::cout<<"abs_ray_distance: "<<abs_ray_distance<<std::endl;
+
+    bool switch_sign=false;//true if ray_distance negative, false if positive; just for switching the sign of the integral
+    if (ray_distance<0)
+    {
+        switch_sign=true;
+    }
+
+    //TODO: add basis function, fill in ray_distance
+
+    //Integral of: Wendland basis function (3,1), but made symmetric around 0
+    Real mid_value=1.0/3.0;//actually double, to shift the integral
+    Real integral=-(4.0*abs_ray_distance+1.0)/5.0*std::pow(1.0-abs_ray_distance,5)-2.0/15.0*std::pow(1.0-abs_ray_distance,6)+1.0/3.0;//with constant to make zero at x=0
+    if (switch_sign)//in this case, maybe using std::copysign makes sense...
+    {
+        integral=-integral;
+    }
+    std::cout<<"integral: "<<integral<<std::endl;
+    std::cout<<"switch_sign: "<<switch_sign<<std::endl;
+    std::cout<<"sum: "<<mid_value+integral<<std::endl;
+
+    return mid_value+integral;
+
+    // //Wendland basis function (3,1), but made symmetric around 0
+    // Real basis_wend=std::pow(1.0-abs_ray_distance,4)*(1.0+4.0*abs_ray_distance);
+    // //Some polynomial function such that the derivative is nonzero at 0
+    // Real basis_pol=-3.0*std::pow(abs_ray_distance,5)+8.0*std::pow(abs_ray_distance,4)-6.0*std::pow(abs_ray_distance,3)+abs_ray_distance;
+    // if (ray_distance<0)
+    // {
+    //     basis_pol=-basis_pol;
+    // }
+    //
+    // return 0.02*basis_wend+basis_pol;
+
+    // Real slope=get_slope(ray_distance, rayindex, centerpoint, freqidx);
+    // return slope*basis;
+}
+
+///  The derivative of the radial basis function for the position (symmetric to the ray)
+inline Real Collocation :: basis_point_symm_der(Size centerpoint, Vector3D& location, Size rayindex, Size freqidx, Geometry& geometry)
+{
+    Vector3D diff_vector=location-point_locations[centerpoint];
+    Vector3D raydirection=geometry.rays.direction[rayindex];
+    // Vector3D ray_component=multiply_vector3D_real(raydirection, raydirection.dot(diff_vector));
+    Real radius=rbf_radii[centerpoint];
+    Real ray_distance=raydirection.dot(diff_vector)/radius;
+    Real abs_ray_distance=std::abs(ray_distance);
+
+    //Wendland basis function (3,1), but made symmetric around 0
+    Real basis=std::pow(1.0-abs_ray_distance,4)*(1.0+4.0*abs_ray_distance);
+
+    return basis/radius;
+
+    // // Real basis=std::pow(1.0-abs_ray_distance,4)*(1.0+4.0*abs_ray_distance);
+    // Real basis_wend_der=-4*std::pow(1.0-abs_ray_distance,3)*(1.0+4.0*abs_ray_distance)+4.0*std::pow(1.0-abs_ray_distance,4);
+    // Real basis_pol_der=-15*std::pow(abs_ray_distance,4)+32.0*std::pow(abs_ray_distance,3)-18.0*std::pow(abs_ray_distance,2)+1;
+    // if (ray_distance<0)//switch sign due to symmetrizing the basis
+    // {
+    //    basis_wend_der=-basis_wend_der;
+    // }
+    // return (0.02*basis_wend_der+basis_pol_der)/radius;
+
+    // Real slope=get_slope(ray_distance, rayindex, centerpoint, freqidx);
+    // Real slope_der=get_slope_derivative(ray_distance, rayindex, centerpoint, freqidx);
+    // return (slope*basis_der+slope_der*basis)/radius;
+}
+
+
 ///  The radial basis function for the position
 inline Real Collocation :: basis_point(Size centerpoint, Vector3D& location, Size rayindex, Size freqidx, Geometry& geometry)
 {
+    // return basis_point_symm(centerpoint, location, rayindex, freqidx, geometry)*basis_point_perp(centerpoint, location, rayindex, freqidx, geometry);
+
     Vector3D diff_vector=location-point_locations[centerpoint];
     Real distance=std::sqrt(diff_vector.dot(diff_vector));
     Real radius=rbf_radii[centerpoint];
@@ -728,6 +834,8 @@ inline Real Collocation :: basis_point(Size centerpoint, Vector3D& location, Siz
 ///  The directional derivative of the position basis function
 inline Real Collocation :: basis_point_der(Size centerpoint, Vector3D& location, Size rayindex, Size freqidx, Geometry& geometry)
 {
+    // return basis_point_symm_der(centerpoint, location, rayindex, freqidx, geometry)*basis_point_perp(centerpoint, location, rayindex, freqidx, geometry);
+
     Vector3D diff_vector=location-point_locations[centerpoint];
     Real distance=std::sqrt(diff_vector.dot(diff_vector));
     // Real distance=distance_manip(centerpoint, std::sqrt(diff_vector.dot(diff_vector)));
@@ -819,6 +927,11 @@ inline Real Collocation :: basis_point_der(Size centerpoint, Vector3D& location,
         // return costheta*radial_derivative/radius;
     }
 }
+
+///Second order derivative (no slope)
+///TODO: make proper function
+///radial_der2=TODO COMPUTE
+
 
 /// Fills the triplets which correspond to the nonzero basis function products at a given triplet location
 ///   @param[in/out] basis_triplets_to_fill: An empty set which will contain the basis triplets after execution
@@ -981,9 +1094,9 @@ inline void Collocation :: setup_basis_matrix_Eigen(Model& model)
                             //add triplet (mat_idx(triplet[0],triplet[1],triplet[2]),directional_der)
                             eigen_triplets.push_back (Triplet<Real, Size> (curr_mat_idx, other_mat_idx, basis_eval));
                         }
-                        // std::cout<<"bdy condition triplets: "<<triplet[0]<<", "<<triplet[1]<<", "<<triplet[2]<<std::endl;
-                        // std::cout<<"basis_freq: "<<basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)<<std::endl;
-                        // std::cout<<"basis_point: "<<basis_point(triplet[2], curr_location, triplet[0], triplet[1], model.geometry)<<std::endl;
+                        std::cout<<"bdy condition triplets: "<<triplet[0]<<", "<<triplet[1]<<", "<<triplet[2]<<std::endl;
+                        std::cout<<"basis_freq: "<<basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)<<std::endl;
+                        std::cout<<"basis_point: "<<basis_point(triplet[2], curr_location, triplet[0], triplet[1], model.geometry)<<std::endl;
 
                     }
                 }
@@ -1233,6 +1346,8 @@ inline void Collocation :: setup_rhs_Eigen(Model& model)
                 {
                     //TODO: possibly some doppler shift required here? //no, we do not interpolate these values
                     rhs[curr_mat_idx]=get_emissivity(model, rayidx, freqidx, pointidx)/get_opacity(model, rayidx, freqidx, pointidx);
+                    // std::cout<<"emissivity: "<<get_emissivity(model, rayidx, freqidx, pointidx)<<std::endl;
+                    // std::cout<<"opacity: "<<get_opacity(model, rayidx, freqidx, pointidx)<<std::endl;
                 }
             }
         }

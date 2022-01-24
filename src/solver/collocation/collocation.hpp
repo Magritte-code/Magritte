@@ -114,10 +114,12 @@ public:
     inline Real basis_direction(Size rayindex);
     inline Real basis_freq(Size rayidx, Size freqidx, Size pointidx, Real currfreq);
     inline Real basis_point(Size pointid, Vector3D& location, Size rayindex, Size freqidx, Geometry& geometry);
-
+    inline Real basis_point_perp(Size centerpoint, Vector3D& location, Size rayindex, Size freqidx, Geometry& geometry);
+    inline Real basis_point_symm(Size centerpoint, Vector3D& location, Size rayindex, Size freqidx, Geometry& geometry);
     // basis function derivatives for nu, position
     inline Real basis_freq_der(Size rayidx, Size freqidx, Size pointidx, Real currfreq);
     inline Real basis_point_der(Size centerpoint, Vector3D& location, Size rayindex, Size freqidx, Geometry& geometry);
+    inline Real basis_point_symm_der(Size centerpoint, Vector3D& location, Size rayindex, Size freqidx, Geometry& geometry);
 
     // Integral of the directional basis function over the solid angle
     inline Real basis_direction_int(Geometry& geometry, Size rayindex);
