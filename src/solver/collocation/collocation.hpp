@@ -119,6 +119,7 @@ public:
     // basis function derivatives for nu, position
     inline Real basis_freq_der(Size rayidx, Size freqidx, Size pointidx, Real currfreq);
     inline Real basis_point_der(Size centerpoint, Vector3D& location, Size rayindex, Size freqidx, Geometry& geometry);
+    inline Real basis_point_der2(Size centerpoint, Vector3D& location, Size rayindex, Size freqidx, Geometry& geometry);
     inline Real basis_point_symm_der(Size centerpoint, Vector3D& location, Size rayindex, Size freqidx, Geometry& geometry);
 
     // Integral of the directional basis function over the solid angle
@@ -148,7 +149,13 @@ public:
     inline void get_nonzero_basis_triplets(std::set<std::vector<Size>>& basis_triplets_to_fill, Size rayidx, Size freqidx, Size pointidx);
 
     // converts (rayidx, lineidx, pointidx) to the 1D matrix index
-    inline Size get_mat_index(Size rayidx, Size freqidx, Size pointidx);
+    // inline Size get_mat_index(Size rayidx, Size freqidx, Size pointidx);
+    inline Size get_mat_row_index(Size rayidx, Size freqidx, Size eval_pointidx);
+    inline Size get_mat_col_index(Size rayidx, Size freqidx, Size pointidx);
+    inline Size get_mat_row_index_2nd_feautrier(Size rayidx, Size freqidx, Size pointidx, bool is_v_eq);
+    inline Size get_mat_col_index_2nd_feautrier(Size rayidx, Size freqidx, Size pointidx, bool using_v);
+
+
 // and maybe some helper methods for determining what is actually zero
 
     //DEPRECATED
@@ -160,6 +167,7 @@ public:
     inline void rescale_matrix_and_rhs_Eigen(Model& model);
 
     inline Real get_opacity(Model& model, Size rayidx, Size freqidx, Size pointidx);
+    inline Real get_opacity_grad(Model& model, Size rayidx, Size freqidx, Size pointidx);
     inline Real get_emissivity(Model& model, Size rayidx, Size freqidx, Size pointidx);
 
     // Return the boundary intensity at the frequency corresponding to the indices
