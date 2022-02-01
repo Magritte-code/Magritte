@@ -61,4 +61,5 @@ perf.data*
 tests/results/*
 
 magritte.egg-info/*
+magritte_rt.egg-info/*
 dist/*
