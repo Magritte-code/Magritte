@@ -26,12 +26,25 @@ PYBIND11_MODULE (core, module)
     // Module docstring
     module.doc() = "Core module of Magritte: a modern software library for 3D radiative transfer.";
 
-    module.def(    "n_threads_avail", &paracabs::multi_threading::    n_threads_avail);
-    module.def("set_n_threads_avail", &paracabs::multi_threading::set_n_threads_avail);
+
+    module.def(
+        "n_threads_avail",
+        &paracabs::multi_threading::n_threads_avail,
+        "Get the number of available threads (using OpenMP)."
+    );
+
+
+    module.def(
+        "set_n_threads_avail",
+        &paracabs::multi_threading::set_n_threads_avail,
+        "Set the number of available threads (using OpenMP)."
+    );
+
 
     // Define vector types
     py::bind_vector<vector<LineProducingSpecies>> (module, "vLineProducingSpecies");
     py::bind_vector<vector<CollisionPartner>>     (module, "vCollisionPartner");
+
 
     // Constants
     module.attr("CC")    = CC;
@@ -40,151 +53,229 @@ PYBIND11_MODULE (core, module)
     module.attr("AMU")   = AMU;
     module.attr("T_CMB") = T_CMB;
 
+
     // Io, base class
-    py::class_<Io> (module, "Io");
+    py::class_<Io> (module, "Io", "Abstract input/output base class.");
 
 
     // IoText
-    py::class_<IoText, Io> (module, "IoText")
+    py::class_<IoText, Io> (module, "IoText", "Intput/output class for text-based io, implemented in C++.")
         // attributes
-        .def_readonly ("io_file", &IoText::io_file)
+        .def_readonly (
+            "io_file",
+            &IoText::io_file,
+            "Name of the folder or file to read from or write to."
+        )
         // constructor
         .def (py::init<const string &>());
 
 
     #if (PYTHON_IO)
         // IoPython
-        py::class_<IoPython, Io> (module, "IoPython")
+        py::class_<IoPython, Io> (module, "IoPython", "Input/output class for io, implemented in Python.")
             // attributes
-            .def_readonly ("implementation", &IoPython::implementation)
-            .def_readonly ("io_file",        &IoPython::io_file)
+            .def_readonly (
+                "implementation",
+                &IoPython::implementation,
+                "Type of input/output. Either \"hdf5\" or \"text\"."
+            )
+            .def_readonly (
+                "io_file",
+                &IoPython::io_file,
+                "Name of the folder or file to read from or write to."
+            )
             // constructor
             .def (py::init<const string &, const string &>());
     #endif
 
+
     // Solver
     py::class_<Solver> (module, "Solver")
-        // attributes
-        // functions
-        // .def ("trace", &Solver::trace)
         // constructor
-        // .def (py::init<const Size&, const Size&, const Size&>());
         .def (py::init<>());
 
+
     // Image
-    py::class_<Image> (module, "Image")
+    py::class_<Image> (module, "Image", "Image class, 2D point cloud of intensities for each frequency bin.")
         // attributes
-        // functions
-        .def_readonly  ("ray_nr", &Image::ray_nr)
-        .def_readonly  ("ImX",    &Image::ImX)
-        .def_readonly  ("ImY",    &Image::ImY)
-        .def_readonly  ("I",      &Image::I)
+        .def_readonly  ("ray_nr", &Image::ray_nr, "Number of the ray along which the image is taken.")
+        .def_readonly  ("ImX",    &Image::ImX,    "X-coordinates of the points in the image plane.")
+        .def_readonly  ("ImY",    &Image::ImY,    "Y-coordinates of the points in the image plane.")
+        .def_readonly  ("I",      &Image::I,      "Intensity of the points in the image (for each frequency bin).")
         // constructor
         .def (py::init<const Geometry&, const Size&>());
 
+
     // Model
-    py::class_<Model> (module, "Model")
+    py::class_<Model> (module, "Model", "Class containing the Magritte model.")
         // attributes
         .def_readwrite ("parameters",     &Model::parameters)
         .def_readwrite ("geometry",       &Model::geometry)
         .def_readwrite ("chemistry",      &Model::chemistry)
         .def_readwrite ("lines",          &Model::lines)
-        .def_readwrite ("a",          &Model::a)
-        .def_readwrite ("b",          &Model::b)
-        .def_readwrite ("c",          &Model::c)
-        .def ("set",                  &Model::set)
-        .def ("add",                  &Model::add)
         .def_readwrite ("thermodynamics", &Model::thermodynamics)
         .def_readwrite ("radiation",      &Model::radiation)
-        .def_readonly  ("error_mean",     &Model::error_mean)
-        .def_readonly  ("error_max",      &Model::error_max)
         .def_readonly  ("images",         &Model::images)
-        // io (void (Pet::*)(int))
-        .def ("read",  (void (Model::*)(void))            &Model::read )
-        .def ("write", (void (Model::*)(void) const)      &Model::write)
-        .def ("read",  (void (Model::*)(const Io&))       &Model::read )
-        .def ("write", (void (Model::*)(const Io&) const) &Model::write)
-        .def ("compute_inverse_line_widths",                                        &Model::compute_inverse_line_widths)
-        .def ("compute_spectral_discretisation", (int (Model::*)(void            )) &Model::compute_spectral_discretisation)
-        .def ("compute_spectral_discretisation", (int (Model::*)(const Real width)) &Model::compute_spectral_discretisation)
-        .def ("compute_spectral_discretisation", (int (Model::*)(const long double nu_min, const long double nu_max)) &Model::compute_spectral_discretisation)
-        .def ("compute_LTE_level_populations",                                      &Model::compute_LTE_level_populations)
-        // .def ("compute_radiation_field",                                            &Model::compute_radiation_field)
-        .def ("compute_radiation_field_feautrier_order_2",                          &Model::compute_radiation_field_feautrier_order_2)
-        .def ("compute_radiation_field_shortchar_order_0",                          &Model::compute_radiation_field_shortchar_order_0)
-        .def ("compute_Jeff",                                                       &Model::compute_Jeff)
-        .def ("compute_level_populations_from_stateq",                              &Model::compute_level_populations_from_stateq)
-        .def ("compute_level_populations",                                          &Model::compute_level_populations)
-        .def ("compute_image",                                                      &Model::compute_image)
-        .def ("set_eta_and_chi",                                                    &Model::set_eta_and_chi)
-        .def ("set_boundary_condition",                                             &Model::set_boundary_condition)
         .def_readwrite ("eta",                &Model::eta)
         .def_readwrite ("chi",                &Model::chi)
         .def_readwrite ("boundary_condition", &Model::boundary_condition)
+        .def_readonly  (
+            "error_mean",
+            &Model::error_mean,
+            "Mean relative error in the level populations."
+        )
+        .def_readonly  (
+            "error_max",
+            &Model::error_max,
+            "Max relative error in the level populaitons."
+        )
+        // functions
+        .def (
+            "read",
+            (void (Model::*)(void)) &Model::read,
+            "Read model file (using the hdf5 implementation of IoPython and using the model name specified in parameters.)"
+        )
+        .def (
+            "write",
+            (void (Model::*)(void) const) &Model::write,
+            "Write model file (using the hdf5 implementation of IoPython and using the model name specified in parameters.)"
+        )
+        .def (
+           "read",
+           (void (Model::*)(const Io&)) &Model::read,
+           "Read model file using the given Io object."
+        )
+        .def (
+            "write",
+            (void (Model::*)(const Io&) const) &Model::write,
+           "Write model file using the given Io object."
+        )
+        .def (
+            "compute_inverse_line_widths",
+            &Model::compute_inverse_line_widths,
+            "Compute the inverse line widths for the model. (Needs to be recomputed whenever the temperature of turbulence changes.)"
+        )
+        .def (
+            "compute_spectral_discretisation",
+            (int (Model::*)(void)) &Model::compute_spectral_discretisation,
+            "Compute the spectral discretisation for the model tailored for line (Gauss-Hermite) quadrature."
+        )
+        .def (
+            "compute_spectral_discretisation",
+            (int (Model::*)(const Real width)) &Model::compute_spectral_discretisation,
+            "Compute the spectral discretisation for the model tailored for images with the given spectral width."
+        )
+        .def (
+            "compute_spectral_discretisation",
+            (int (Model::*)(const long double nu_min, const long double nu_max)) &Model::compute_spectral_discretisation,
+            "Compute the spectral discretisation for the model tailored for images with the given min and max frequency."
+        )
+        .def (
+            "compute_LTE_level_populations",
+            &Model::compute_LTE_level_populations,
+            "Compute the level populations for the model assuming local thermodynamic equilibrium (LTE)."
+        )
+        .def (
+            "compute_radiation_field_feautrier_order_2",
+            &Model::compute_radiation_field_feautrier_order_2,
+            "Compute the radiation field for the modle using the 2nd-order Feautrier solver."
+        )
+        .def (
+            "compute_radiation_field_shortchar_order_0",
+            &Model::compute_radiation_field_shortchar_order_0,
+            "Compute the radiation field for the modle using the 0th-order short-characteristics methods."
+        )
+        .def (
+            "compute_Jeff",
+            &Model::compute_Jeff,
+            "Compute the effective mean intensity in the line."
+        )
+        .def (
+            "compute_level_populations_from_stateq",
+            &Model::compute_level_populations_from_stateq,
+            "Compute the level populations for the model assuming statistical equilibrium."
+        )
+        .def (
+            "compute_level_populations",
+            &Model::compute_level_populations,
+            "Compute the level populations for the model assuming statistical equilibrium until convergence, optionally using Ng-acceleration, and for the given maximum number of iterations."
+        )
+        .def (
+            "compute_image",
+            &Model::compute_image,
+            "Compute an image for the model along the given ray."
+        )
+        .def (
+            "set_eta_and_chi",
+            &Model::set_eta_and_chi,
+            "Set latest emissivity and opacity for the model in the eta and chi variables respectively."
+        )
+        .def (
+            "set_boundary_condition",
+            &Model::set_boundary_condition,
+            "Set boundary condition (internally)."
+        )
         // constructor
         .def (py::init<const string>())
         .def (py::init<>());
 
+
     // Parameters
-    py::class_<Parameters> (module, "Parameters")
+    py::class_<Parameters> (module, "Parameters", "Class containing the model parameters.")
         // io
-        .def_readwrite ("n_off_diag",         &Parameters::n_off_diag)
-        .def_readwrite ("max_width_fraction", &Parameters::max_width_fraction)
+        .def_readwrite ("n_off_diag",         &Parameters::n_off_diag              , "Bandwidth of the ALO (0=diagonal, 1=tri-diaginal, 2=penta-diagonal, ...)")
+        .def_readwrite ("max_width_fraction", &Parameters::max_width_fraction      , "Max tolerated Doppler shift as fraction of line width (default=0.5).")
         // setters
-        .def ("set_model_name",               &Parameters::set_model_name          )
-        .def ("set_dimension",                &Parameters::set_dimension           )
-        .def ("set_npoints",                  &Parameters::set_npoints             )
-        .def ("set_nrays",                    &Parameters::set_nrays               )
-        .def ("set_hnrays",                   &Parameters::set_hnrays              )
-        .def ("set_nrays_red",                &Parameters::set_nrays_red           )
-        .def ("set_order_min",                &Parameters::set_order_min           )
-        .def ("set_order_max",                &Parameters::set_order_max           )
-        .def ("set_nboundary",                &Parameters::set_nboundary           )
-        .def ("set_nfreqs",                   &Parameters::set_nfreqs              )
-        .def ("set_nspecs",                   &Parameters::set_nspecs              )
-        .def ("set_nlspecs",                  &Parameters::set_nlspecs             )
-        .def ("set_nlines",                   &Parameters::set_nlines              )
-        .def ("set_nquads",                   &Parameters::set_nquads              )
-        .def ("set_pop_prec",                 &Parameters::set_pop_prec            )
-        .def ("set_use_scattering",           &Parameters::set_use_scattering      )
-        .def ("set_spherical_symmetry",       &Parameters::set_spherical_symmetry  )
-        .def ("set_adaptive_ray_tracing",     &Parameters::set_adaptive_ray_tracing)
+        .def ("set_model_name",               &Parameters::set_model_name          , "Set model name.")
+        .def ("set_dimension",                &Parameters::set_dimension           , "Set spatial dimension of the model.")
+        .def ("set_npoints",                  &Parameters::set_npoints             , "Set number of points.")
+        .def ("set_nrays",                    &Parameters::set_nrays               , "Set number of rays.")
+        .def ("set_hnrays",                   &Parameters::set_hnrays              , "Set the half of the number of rays.")
+        .def ("set_nrays_red",                &Parameters::set_nrays_red           , "Set the reduced number of rays.")
+        .def ("set_nboundary",                &Parameters::set_nboundary           , "Set number of boundary points.")
+        .def ("set_nfreqs",                   &Parameters::set_nfreqs              , "Set number of frequency bins.")
+        .def ("set_nspecs",                   &Parameters::set_nspecs              , "Set number of species.")
+        .def ("set_nlspecs",                  &Parameters::set_nlspecs             , "Set number of line producing species.")
+        .def ("set_nlines",                   &Parameters::set_nlines              , "Set number of lines.")
+        .def ("set_nquads",                   &Parameters::set_nquads              , "Set number of quadrature points.")
+        .def ("set_pop_prec",                 &Parameters::set_pop_prec            , "Set required precision for ALI.")
+        .def ("set_use_scattering",           &Parameters::set_use_scattering      , "Set whether or not to use scattering.")
+        .def ("set_spherical_symmetry",       &Parameters::set_spherical_symmetry  , "Set whether or not to use spherical symmetry")
+        .def ("set_adaptive_ray_tracing",     &Parameters::set_adaptive_ray_tracing, "Set whether or not to use adaptive ray tracing.")
         // getters
-		.def ("model_name",                   &Parameters::model_name          )
-        .def ("dimension",                    &Parameters::dimension           )
-        .def ("npoints",                      &Parameters::npoints             )
-        .def ("nrays",                        &Parameters::nrays               )
-        .def ("hnrays",                       &Parameters::hnrays              )
-        .def ("nrays_red",                    &Parameters::nrays_red           )
-        .def ("order_min",                    &Parameters::order_min           )
-        .def ("order_max",                    &Parameters::order_max           )
-        .def ("nboundary",                    &Parameters::nboundary           )
-        .def ("nfreqs",                       &Parameters::nfreqs              )
-        .def ("nspecs",                       &Parameters::nspecs              )
-        .def ("nlspecs",                      &Parameters::nlspecs             )
-        .def ("nlines",                       &Parameters::nlines              )
-        .def ("nquads",                       &Parameters::nquads              )
-        .def ("pop_prec",                     &Parameters::pop_prec            )
-        .def ("use_scattering",               &Parameters::use_scattering      )
-        .def ("spherical_symmetry",           &Parameters::spherical_symmetry  )
-        .def ("adaptive_ray_tracing",         &Parameters::adaptive_ray_tracing)
+		.def ("model_name",                   &Parameters::model_name              , "Model name.")
+        .def ("dimension",                    &Parameters::dimension               , "Spatial dimension of the model.")
+        .def ("npoints",                      &Parameters::npoints                 , "Number of points.")
+        .def ("nrays",                        &Parameters::nrays                   , "Number of rays.")
+        .def ("hnrays",                       &Parameters::hnrays                  , "Half the number of rays.")
+        .def ("nrays_red",                    &Parameters::nrays_red               , "Reduced number of rays.")
+        .def ("nboundary",                    &Parameters::nboundary               , "Number of boundary points.")
+        .def ("nfreqs",                       &Parameters::nfreqs                  , "Number of frequency bins.")
+        .def ("nspecs",                       &Parameters::nspecs                  , "Number of species.")
+        .def ("nlspecs",                      &Parameters::nlspecs                 , "Number of line producing species.")
+        .def ("nlines",                       &Parameters::nlines                  , "Number of lines.")
+        .def ("nquads",                       &Parameters::nquads                  , "Number of quadrature points.")
+        .def ("pop_prec",                     &Parameters::pop_prec                , "Required precision for ALI.")
+        .def ("use_scattering",               &Parameters::use_scattering          , "Whether or not to use scattering.")
+        .def ("spherical_symmetry",           &Parameters::spherical_symmetry      , "Whether or not to use spherical symmetry.")
+        .def ("adaptive_ray_tracing",         &Parameters::adaptive_ray_tracing    , "Whether or not to use adaptive ray tracing.")
         // functions
-        .def ("read",                         &Parameters::read                )
-        .def ("write",                        &Parameters::write               )
+        .def ("read",                         &Parameters::read                    , "Rread object from file.")
+        .def ("write",                        &Parameters::write                   , "Write object to file.")
         // constructor
         .def (py::init());
 
 
     // Geometry
-    py::class_<Geometry> (module, "Geometry")
+    py::class_<Geometry> (module, "Geometry", "Class containing the model geometry.")
         // attributes
-        .def_readwrite ("points",   &Geometry::points)
-        .def_readwrite ("rays",     &Geometry::rays)
-        .def_readwrite ("boundary", &Geometry::boundary)
-        .def_readwrite ("lengths",  &Geometry::lengths)
+        .def_readwrite ("points",   &Geometry::points,   "Points object.")
+        .def_readwrite ("rays",     &Geometry::rays,     "Rays object.")
+        .def_readwrite ("boundary", &Geometry::boundary, "Boundary object")
+        .def_readwrite ("lengths",  &Geometry::lengths,  "Array containing the lengths of the rays for each direction and point.")
         // io
-        .def ("read",               &Geometry::read)
-        .def ("write",              &Geometry::write)
+        .def ("read",               &Geometry::read, "Read object from file.")
+        .def ("write",              &Geometry::write, "Write object to file.")
         // functions
         // .def ("get_ray_lengths",     &Geometry::get_ray_lengths)
         // .def ("get_ray_lengths_gpu", &Geometry::get_ray_lengths_gpu)
@@ -193,32 +284,32 @@ PYBIND11_MODULE (core, module)
 
 
     // Points
-    py::class_<Points> (module, "Points")
+    py::class_<Points> (module, "Points", "Class containing the spatial points.")
         // attributes
-        .def_readwrite ("position",        &Points::position)
-        .def_readwrite ("velocity",        &Points::velocity)
-        .def_readwrite ("neighbors",       &Points::neighbors)
-        .def_readwrite ("n_neighbors",     &Points::n_neighbors)
-        .def_readwrite ("cum_n_neighbors", &Points::cum_n_neighbors)
+        .def_readwrite ("position",        &Points::position, "Array with position vectors of the points.")
+        .def_readwrite ("velocity",        &Points::velocity, "Array with velocity vectors of the points (as a fraction of the speed of light).")
+        .def_readwrite ("neighbors",       &Points::neighbors, "Linearised array of neighbours of each point.")
+        .def_readwrite ("n_neighbors",     &Points::n_neighbors, "Number of neighbours of each point.")
+        .def_readwrite ("cum_n_neighbors", &Points::cum_n_neighbors, "Cumulative number of neighbours of each point.")
         // .def_readwrite ("nbs",             &Points::nbs)
-        .def ("print",                     &Points::print)
+        // .def ("print",                     &Points::print)
         // io
-        .def ("read",                      &Points::read)
-        .def ("write",                     &Points::write)
+        .def ("read",                      &Points::read, "Read object from file.")
+        .def ("write",                     &Points::write, "Write object to file.")
         // constructor
         .def (py::init<>());
 
 
     // Rays
-    py::class_<Rays> (module, "Rays")
+    py::class_<Rays> (module, "Rays", "Class containing the (light) rays (directional discretisation).")
         // attributes
-        .def_readwrite ("direction", &Rays::direction)
-        .def_readwrite ("antipod",   &Rays::antipod)
-        .def_readwrite ("weight",    &Rays::weight)
-        .def ("print",    &Rays::print)
+        .def_readwrite ("direction", &Rays::direction, "Array with direction vector of each ray.")
+        .def_readwrite ("antipod",   &Rays::antipod, "Array with the number of the antipodal ray for each ray.")
+        .def_readwrite ("weight",    &Rays::weight, "Array with the weights that each ray contributes in integrals over directions.")
+        // .def ("print",    &Rays::print)
         // io
-        .def ("read",                &Rays::read)
-        .def ("write",               &Rays::write)
+        .def ("read",                &Rays::read, "Read object from file.")
+        .def ("write",               &Rays::write, "Write object to file.")
         // constructor
         .def (py::init<>());
 
@@ -232,107 +323,106 @@ PYBIND11_MODULE (core, module)
 
 
     // Boundary
-    py::class_<Boundary> (module, "Boundary")
+    py::class_<Boundary> (module, "Boundary", "Class containing the model boundary.")
         // attributes
-        .def_readwrite ("boundary2point",       &Boundary::boundary2point)
-        .def_readwrite ("point2boundary",       &Boundary::point2boundary)
-        .def_readwrite ("boundary_temperature", &Boundary::boundary_temperature)
+        .def_readwrite ("boundary2point",       &Boundary::boundary2point, "Array with point index for each boundary point.")
+        .def_readwrite ("point2boundary",       &Boundary::point2boundary, "Array with boundary index for each point.")
+        .def_readwrite ("boundary_temperature", &Boundary::boundary_temperature, "Array with radiative temperature for each boundary point (only relevant for thermal boundary conditions).")
         // functions
-        .def ("set_boundary_condition",         &Boundary::set_boundary_condition)
-        .def ("get_boundary_condition",         &Boundary::get_boundary_condition)
+        .def ("set_boundary_condition",         &Boundary::set_boundary_condition, "Setter for the boundary condition.")
+        .def ("get_boundary_condition",         &Boundary::get_boundary_condition, "Getter for the boundary condition.")
         // io
-        .def ("read",                           &Boundary::read)
-        .def ("write",                          &Boundary::write)
+        .def ("read",                           &Boundary::read, "Read object from file.")
+        .def ("write",                          &Boundary::write, "Write object to file.")
         // constructor
         .def (py::init<>());
 
 
     // Thermodynamics
-    py::class_<Thermodynamics> (module, "Thermodynamics")
+    py::class_<Thermodynamics> (module, "Thermodynamics", "Class containing the thermodynamics.")
         // attributes
-        .def_readwrite ("temperature", &Thermodynamics::temperature)
-        .def_readwrite ("turbulence",  &Thermodynamics::turbulence)
+        .def_readwrite ("temperature", &Thermodynamics::temperature, "Temperature object.")
+        .def_readwrite ("turbulence",  &Thermodynamics::turbulence, "Turbulence object.")
         // io
-        .def ("read",                  &Thermodynamics::read)
-        .def ("write",                 &Thermodynamics::write)
+        .def ("read",                  &Thermodynamics::read, "Read object from file.")
+        .def ("write",                 &Thermodynamics::write, "Write object to file.")
         // constructor
         .def (py::init());
 
 
     // Temperature
-    py::class_<Temperature> (module, "Temperature")
+    py::class_<Temperature> (module, "Temperature", "Class containing the temperature.")
         // attributes
-        .def_readwrite ("gas", &Temperature::gas)
-        .def ("print",         &Temperature::print)
+        .def_readwrite ("gas", &Temperature::gas, "Kinetic temperature of the gas.")
         // functions
-        .def ("read",          &Temperature::read)
-        .def ("write",         &Temperature::write)
+        .def ("read",          &Temperature::read, "Read object from file.")
+        .def ("write",         &Temperature::write, "Write object to file.")
         // constructor
         .def (py::init());
 
 
     // Turbulence
-    py::class_<Turbulence> (module, "Turbulence")
+    py::class_<Turbulence> (module, "Turbulence", "Class containing the (micro) turbulence.")
         // attributes
-        .def_readwrite ("vturb2", &Turbulence::vturb2)
+        .def_readwrite ("vturb2", &Turbulence::vturb2, "Square of the micro turbulence as a fraction of the speed of light.")
         // functions
-        .def ("read",             &Turbulence::read)
-        .def ("write",            &Turbulence::write)
+        .def ("read",             &Turbulence::read, "Read object from file.")
+        .def ("write",            &Turbulence::write, "Write object to file.")
         // constructor
         .def (py::init());
 
 
     // Chemistry
-    py::class_<Chemistry> (module, "Chemistry")
+    py::class_<Chemistry> (module, "Chemistry", "Class containing the chemistry.")
         // attributes
-        .def_readwrite ("species", &Chemistry::species)
+        .def_readwrite ("species", &Chemistry::species, "Species object.")
         // functions
-        .def ("read",              &Chemistry::read)
-        .def ("write",             &Chemistry::write)
+        .def ("read",              &Chemistry::read, "Read object from file.")
+        .def ("write",             &Chemistry::write, "Write object to file.")
         // constructor
         .def (py::init());
 
 
     // Species
-    py::class_<Species> (module, "Species")
+    py::class_<Species> (module, "Species", "Class containing the chemical species.")
         // attributes
-        .def_readwrite ("symbol",    &Species::symbol)
-        .def_readwrite ("abundance", &Species::abundance)
+        .def_readwrite ("symbol",    &Species::symbol, "Symbol of the species.")
+        .def_readwrite ("abundance", &Species::abundance, "Array with the abundances at each point.")
         // functions
-        .def ("read",                &Species::read)
-        .def ("write",               &Species::write)
+        .def ("read",                &Species::read, "Read object from file.")
+        .def ("write",               &Species::write, "Write object to file.")
         // constructor
         .def (py::init());
 
 
     // Lines
-    py::class_<Lines> (module, "Lines")
+    py::class_<Lines> (module, "Lines", "Class containing the lines and their data.")
         // attributes
-        .def_readwrite ("lineProducingSpecies", &Lines::lineProducingSpecies)
-        .def_readwrite ("emissivity",           &Lines::emissivity)
-        .def_readwrite ("opacity",              &Lines::opacity)
-        .def_readwrite ("inverse_width",        &Lines::inverse_width)
-        .def_readwrite ("line",                 &Lines::line)
+        .def_readwrite ("lineProducingSpecies", &Lines::lineProducingSpecies, "Vector of LineProducingSpecies.")
+        .def_readwrite ("emissivity",           &Lines::emissivity, "Array with emissivities for each point and frequency bin.")
+        .def_readwrite ("opacity",              &Lines::opacity, "Array with opacities for each point and frequency bin.")
+        .def_readwrite ("inverse_width",        &Lines::inverse_width, "Array with the inverse widths for each line at each point.")
+        .def_readwrite ("line",                 &Lines::line, "Array with the line (centre) frequencies.")
         // functions
-        .def ("read",                           &Lines::read)
-        .def ("write",                          &Lines::write)
-        .def ("set_emissivity_and_opacity",     &Lines::set_emissivity_and_opacity)
+        .def ("read",                           &Lines::read, "Read object from file.")
+        .def ("write",                          &Lines::write, "Write object to file.")
+        .def ("set_emissivity_and_opacity",     &Lines::set_emissivity_and_opacity, "Set the emissivity and opacity arrays.")
         // constructor
         .def (py::init<>());
 
 
     // LineProducingSpecies
-    py::class_<LineProducingSpecies> (module, "LineProducingSpecies")
+    py::class_<LineProducingSpecies> (module, "LineProducingSpecies", "Class containing a line producing species.")
         // attributes
-        .def_readwrite ("linedata",         &LineProducingSpecies::linedata)
-        .def_readwrite ("quadrature",       &LineProducingSpecies::quadrature)
+        .def_readwrite ("linedata",         &LineProducingSpecies::linedata, "Linedata object.")
+        .def_readwrite ("quadrature",       &LineProducingSpecies::quadrature, "Quadrature object.")
         .def_readwrite ("Lambda",           &LineProducingSpecies::lambda) // "lambda" is invalid in Python, use "Lambda"
-        .def_readwrite ("Jeff",             &LineProducingSpecies::Jeff)
+        .def_readwrite ("Jeff",             &LineProducingSpecies::Jeff, "Array with effective mean intensities in the lines.")
         .def_readwrite ("Jdif",             &LineProducingSpecies::Jdif)
         .def_readwrite ("Jlin",             &LineProducingSpecies::Jlin)
         .def_readwrite ("nr_line",          &LineProducingSpecies::nr_line)
-        .def_readwrite ("population",       &LineProducingSpecies::population)
-        .def_readwrite ("population_tot",   &LineProducingSpecies::population_tot)
+        .def_readwrite ("population",       &LineProducingSpecies::population, "Array with level populations for each point.")
+        .def_readwrite ("population_tot",   &LineProducingSpecies::population_tot, "Array with the sum of all level populations at each point. (Should be equal to the abundance of the species.)")
         .def_readwrite ("population_prev1", &LineProducingSpecies::population_prev1)
         .def_readwrite ("population_prev2", &LineProducingSpecies::population_prev2)
         .def_readwrite ("population_prev3", &LineProducingSpecies::population_prev3)
@@ -341,8 +431,8 @@ PYBIND11_MODULE (core, module)
         .def_readwrite ("LambdaStar",       &LineProducingSpecies::LambdaStar)
         .def_readwrite ("LambdaTest",       &LineProducingSpecies::LambdaTest)
         // functions
-        .def ("read",                       &LineProducingSpecies::read)
-        .def ("write",                      &LineProducingSpecies::write)
+        .def ("read",                       &LineProducingSpecies::read, "Read object from file.")
+        .def ("write",                      &LineProducingSpecies::write, "Write object to file.")
         .def ("index",                      &LineProducingSpecies::index)
         // constructor
         .def (py::init<>());
@@ -365,86 +455,83 @@ PYBIND11_MODULE (core, module)
 
 
     // Quadrature
-    py::class_<Quadrature> (module, "Quadrature")
+    py::class_<Quadrature> (module, "Quadrature", "Class containing the data for Gauss-Hermite quadrature.")
         // attributes
-        .def_readwrite ("roots",   &Quadrature::roots)
-        .def_readwrite ("weights", &Quadrature::weights)
+        .def_readwrite ("roots",   &Quadrature::roots, "Array containing the roots for the Gauss-Hermite quadrature.")
+        .def_readwrite ("weights", &Quadrature::weights, "Array containing the weights for the Gauss-Hermite quadrature.")
         // functions
-        .def ("read",              &Quadrature::read)
-        .def ("write",             &Quadrature::write)
+        .def ("read",              &Quadrature::read, "Read object from file.")
+        .def ("write",             &Quadrature::write, "Write object to file.")
         // constructor
         .def (py::init<>());
 
 
     // Linedata
-    py::class_<Linedata> (module, "Linedata")
+    py::class_<Linedata> (module, "Linedata", "Class containing line data.")
         // attributes
-        .def_readwrite ("num",          &Linedata::num)
-        .def_readwrite ("sym",          &Linedata::sym)
-        .def_readwrite ("inverse_mass", &Linedata::inverse_mass)
-        .def_readwrite ("nlev",         &Linedata::nlev)
-        .def_readwrite ("nrad",         &Linedata::nrad)
-        .def_readwrite ("irad",         &Linedata::irad)
-        .def_readwrite ("jrad",         &Linedata::jrad)
-        .def_readwrite ("energy",       &Linedata::energy)
-        .def_readwrite ("weight",       &Linedata::weight)
-        .def_readwrite ("frequency",    &Linedata::frequency)
-        .def_readwrite ("A",            &Linedata::A)
-        .def_readwrite ("Ba",           &Linedata::Ba)
-        .def_readwrite ("Bs",           &Linedata::Bs)
-        .def_readwrite ("ncolpar",      &Linedata::ncolpar)
-        .def_readwrite ("colpar",       &Linedata::colpar)
+        .def_readwrite ("num",          &Linedata::num, "Number of the species corresponding the line data.")
+        .def_readwrite ("sym",          &Linedata::sym, "Chemical symbol of the species.")
+        .def_readwrite ("inverse_mass", &Linedata::inverse_mass, "Inverse mass (1/mass) of the species.")
+        .def_readwrite ("nlev",         &Linedata::nlev, "Number of energy levels.")
+        .def_readwrite ("nrad",         &Linedata::nrad, "Number of radiative transitions.")
+        .def_readwrite ("irad",         &Linedata::irad, "Array with upper levels of the radiative transitions.")
+        .def_readwrite ("jrad",         &Linedata::jrad, "Array with lower levels of the radiative transitions.")
+        .def_readwrite ("energy",       &Linedata::energy, "Array with the energy for each level.")
+        .def_readwrite ("weight",       &Linedata::weight, "Array with the statistical weight for each level.")
+        .def_readwrite ("frequency",    &Linedata::frequency, "Array with frequencies of the line transitions.")
+        .def_readwrite ("A",            &Linedata::A, "Array with Einstein A coefficients.")
+        .def_readwrite ("Ba",           &Linedata::Ba, "Array with Einstein B (absorption) coeficients.")
+        .def_readwrite ("Bs",           &Linedata::Bs, "Array with Einstsin B (stimulated emission) coefficients.")
+        .def_readwrite ("ncolpar",      &Linedata::ncolpar, "Number of collision partners.")
+        .def_readwrite ("colpar",       &Linedata::colpar, "Vector of collision partner objects.")
         // functions
-        .def ("read",                   &Linedata::read)
-        .def ("write",                  &Linedata::write)
+        .def ("read",                   &Linedata::read, "Read object from file.")
+        .def ("write",                  &Linedata::write, "Write object to file.")
         // constructor
         .def (py::init<>());
 
 
     // Colpartner
-    py::class_<CollisionPartner> (module, "CollisionPartner")
+    py::class_<CollisionPartner> (module, "CollisionPartner", "Class containing collision partner data.")
         // attributes
-        .def_readwrite ("num_col_partner", &CollisionPartner::num_col_partner)
-        .def_readwrite ("orth_or_para_H2", &CollisionPartner::orth_or_para_H2)
-        .def_readwrite ("ntmp",            &CollisionPartner::ntmp)
-        .def_readwrite ("ncol",            &CollisionPartner::ncol)
-        .def_readwrite ("icol",            &CollisionPartner::icol)
-        .def_readwrite ("jcol",            &CollisionPartner::jcol)
-        .def_readwrite ("tmp",             &CollisionPartner::tmp)
-        .def_readwrite ("Ce",              &CollisionPartner::Ce)
-        .def_readwrite ("Cd",              &CollisionPartner::Cd)
+        .def_readwrite ("num_col_partner", &CollisionPartner::num_col_partner, "Number of the species corresponding to the collision partner.")
+        .def_readwrite ("orth_or_para_H2", &CollisionPartner::orth_or_para_H2, "In case the collision partner is H2, this indicates whether it is ortho (o) or para (p).")
+        .def_readwrite ("ntmp",            &CollisionPartner::ntmp, "Number of temperatures at which data is given.")
+        .def_readwrite ("ncol",            &CollisionPartner::ncol, "Number of collisional transitions.")
+        .def_readwrite ("icol",            &CollisionPartner::icol, "Array with upper levels of the collisional transitions.")
+        .def_readwrite ("jcol",            &CollisionPartner::jcol, "Array with lower levels of the collisional transitions.")
+        .def_readwrite ("tmp",             &CollisionPartner::tmp, "Array with temperatures corresponding to the collisional data.")
+        .def_readwrite ("Ce",              &CollisionPartner::Ce, "Array with collisional excitation rates.")
+        .def_readwrite ("Cd",              &CollisionPartner::Cd, "Array with collisional de-excitation rates.")
         // functions
-        .def ("read",                      &CollisionPartner::read)
-        .def ("write",                     &CollisionPartner::write)
+        .def ("read",                      &CollisionPartner::read, "Read object from file.")
+        .def ("write",                     &CollisionPartner::write, "Write object to file.")
         // constructor
         .def (py::init<>());
 
 
     // Radiation
-    py::class_<Radiation> (module, "Radiation")
+    py::class_<Radiation> (module, "Radiation", "Class containing the radiation field.")
         // attributes
-        .def_readwrite ("frequencies", &Radiation::frequencies)
-        // .def_readwrite ("u",           &Radiation::u)
-        // .def_readwrite ("v",           &Radiation::v)
-        .def_readwrite ("I_bdy",       &Radiation::I_bdy)
-        .def_readwrite ("I",           &Radiation::I)
-        .def_readwrite ("u",           &Radiation::u)
-        .def_readwrite ("v",           &Radiation::v)
-        .def_readwrite ("J",           &Radiation::J)
+        .def_readwrite ("frequencies", &Radiation::frequencies, "Frequencies object.")
+        .def_readwrite ("I",           &Radiation::I, "Array containing the intensity for each ray, point, and frequency bin.")
+        .def_readwrite ("u",           &Radiation::u, "Array containing the mean intensity up and down a ray for each ray pair, point, and frequency bin.")
+        .def_readwrite ("v",           &Radiation::v, "Array containing the flux up and down a ray for each ray pair, point, and frequency bin.")
+        .def_readwrite ("J",           &Radiation::J, "Array containing the mean intensity for each point and frequency bin.")
         // functions
-        .def ("read",                  &Radiation::read)
-        .def ("write",                 &Radiation::write)
+        .def ("read",                  &Radiation::read, "Read object from file.")
+        .def ("write",                 &Radiation::write, "Write object to file.")
         // constructor
         .def (py::init());
 
 
     // Frequencies
-    py::class_<Frequencies> (module, "Frequencies")
+    py::class_<Frequencies> (module, "Frequencies", "Class containing the (local) frequency bins.")
         // attributes
-        .def_readwrite ("nu", &Frequencies::nu)
+        .def_readwrite ("nu", &Frequencies::nu, "Array of frequency bins for each point in the model.")
         // functions
-        .def ("read",         &Frequencies::read)
-        .def ("write",        &Frequencies::write)
+        .def ("read",         &Frequencies::read, "Read object from file.")
+        .def ("write",        &Frequencies::write, "Write object to file.")
         // constructor
         .def (py::init());
 

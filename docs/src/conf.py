@@ -77,6 +77,6 @@ call('doxygen Doxyfile', shell=True)
 
 # -- Sphinx Python API docs --------------------------------------------------
 
-autodoc_member_order = "bysource"
+autodoc_member_order = "groupwise"
 autodoc_default_flags = ["members"]
 autosummary_generate = True

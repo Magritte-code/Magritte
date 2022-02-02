@@ -132,6 +132,9 @@ def image_mpl(
         )
         Is[f] = np.sum(zs[f])
     Is = Is / np.max(Is)
+    
+    # Put zero-values to the smallest non-zero value
+    zs[zs==0.0] = np.min(zs[zs!=0.0])
 
     # Get the logarithm of the data (matplotlib has a hard time handling logarithmic data.)
     log_zs     = np.log(zs)
@@ -270,6 +273,9 @@ def image_plotly(
         )
         Is[f] = np.sum(zs[f])
     Is = Is / np.max(Is)
+    
+    # Put zero-values to the smallest non-zero value
+    zs[zs==0.0] = np.min(zs[zs!=0.0])
     
     # Get the logarithm of the data (matplotlib has a hard time handling logarithmic data.)
     log_zs     = np.log(zs)

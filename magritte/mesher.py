@@ -21,16 +21,11 @@ def relocate_indices(arr, p):
 
 class Mesh:
     """
-    Magritte custom mesh class.
-    
-    Methods
-    -------
-    get_edges(self)
-        Returns a list with all the edges as index pairs of the points the edges connect.
+    Magritte custom mesh class (that ignores unconnected points).
     """
     def __init__(self, meshFile):
         """
-        Read the meshFile.
+        Read the meshFile using meshio and remove unconnected points.
         
         Parameters
         ----------

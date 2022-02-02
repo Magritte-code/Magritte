@@ -3,5 +3,5 @@ magritte.plot module
 
 .. automodule:: magritte.plot
    :members:
-   :undoc-members:
+   :exclude-members: matplotlib_to_plotly
    :show-inheritance:

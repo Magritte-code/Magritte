@@ -1,3 +1,7 @@
+##########################################
+# python -m pip install . --no-compile -vv
+##########################################
+
 #! /bin/bash
 
 # Get directory this script is in
@@ -7,7 +11,9 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 cd $DIR
 
 # echo "Trying to uninstall magritte (to avoid duplication)..."
-pip uninstall magritte
+python -m pip uninstall magritte
 
 # echo "Installing magritte python package..."
-python setup.py install
+# python setup.py install
+
+python -m pip install . -vv
