@@ -35,7 +35,7 @@ with Magritte.
    1_examples/index
    2_benchmarks/index
    3_python_api_documentation/index
-   4_cpp_api_documentation/index
+..   4_cpp_api_documentation/index
 
 
 Papers about Magritte

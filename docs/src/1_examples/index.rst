@@ -4,9 +4,10 @@
 Examples
 ########
 
-The following examples demonstrate how to use Magritte as a Python library. Please
-refer to the :ref:`C++ API documentation <link-cpp_api_documentation>` to see how
-Magritte can be used as a C++ library.
+The following examples demonstrate how to use Magritte as a Python library.
+
+.. Please refer to the :ref:`C++ API documentation <link-cpp_api_documentation>`
+.. to see how Magritte can be used as a C++ library.
 
 
 .. toctree::
