@@ -18,24 +18,49 @@ T_CMB = 2.72548000E+00   # [K] CMB temperature
 def timestamp():
     """
     Returns a time stamp for the current date and time.
+    
+    Returns
+    -------
+    out : str
+        A string containing the current date and time.
     """
     return datetime.now().strftime('%y%m%d-%H%M%S')
 
 
 class Timer ():
+    """
+    A simple timer class.
+    """
     def __init__ (self, name):
+        """
+        Set a name for the times.
+        
+        Parameters
+        ---
+        name : str
+            Name of the timer.
+        """
         self.name      = name
         self.starts    = []
         self.stops     = []
         self.intervals = []
         self.total     = 0.0
     def start (self):
+        """
+        Start the timer.
+        """
         self.starts.append(perf_counter())
     def stop (self):
+        """
+        Stop the timer.
+        """
         self.stops.append(perf_counter())
         self.intervals.append(self.stops[-1]-self.starts[-1])
         self.total += self.intervals[-1]
     def print (self):
+        """
+        Print the elapsed time.
+        """
         return f'timer: {self.name} = {self.total}'
 
 
@@ -48,7 +73,19 @@ def relative_error (a,b):
 
 def LTEpop (linedata, temperature):
     '''
-    Return the LTE level populations give the temperature.
+    Returns the LTE level populations give the temperature.
+    
+    Parameters
+    ----------
+    linedata : Magritte Linedata object
+        Magritte linedata object of the of the relevant species.
+    temperature : float
+        Temperature for which to evaluate the LTE level populations.
+    
+    Returns
+    -------
+    out : array_like
+        Array containing the LTE level populations for the given temperature.
     '''
     pop = np.zeros(linedata.nlev)
     # Calculate the LTE populations
@@ -62,7 +99,19 @@ def LTEpop (linedata, temperature):
 
 def lineEmissivity (linedata, pop):
     '''
-    Return the line emissivity for each radiative transition.
+    Returns the line emissivity for each radiative transition.
+    
+    Parameters
+    ----------
+    linedata : Magritte Linedata object
+        Magritte linedata object of the of the relevant species.
+    pop : array_like
+        Populations of the levels.
+    
+    Returns
+    -------
+    out : array_like
+        Array containing the line emissivity function for each radiative transition.
     '''
     eta = np.zeros(linedata.nrad)
     for k in range(linedata.nrad):
@@ -75,7 +124,19 @@ def lineEmissivity (linedata, pop):
 
 def lineOpacity (linedata, pop):
     '''
-    Return the line opacity for each radiative transition.
+    Returns the line opacity for each radiative transition.
+    
+    Parameters
+    ----------
+    linedata : Magritte Linedata object
+        Magritte linedata object of the of the relevant species.
+    pop : array_like
+        Populations of the levels.
+    
+    Returns
+    -------
+    out : array_like
+        Array containing the line opacity function for each radiative transition.
     '''
     chi = np.zeros(linedata.nrad)
     for k in range(linedata.nrad):
@@ -88,7 +149,19 @@ def lineOpacity (linedata, pop):
 
 def lineSource (linedata, pop):
     '''
-    Return the line source function for each radiative transition.
+    Returns the line source function for each radiative transition.
+    
+    Parameters
+    ----------
+    linedata : Magritte Linedata object
+        Magritte linedata object of the of the relevant species.
+    pop : array_like
+        Populations of the levels.
+    
+    Returns
+    -------
+    out : array_like
+        Array containing the line source function for each radiative transition.
     '''
     S = lineEmissivity (linedata, pop) / lineOpacity (linedata, pop)
     # Done
@@ -98,6 +171,18 @@ def lineSource (linedata, pop):
 def planck (temperature, frequency):
     '''
     Planck function for thermal radiation.
+    
+    Parameters
+    ----------
+    temperature : float
+        Temperature at which to evaluate the intensity.
+    frequency : float
+        Frequency at which to evaluate the intensity.
+        
+    Returns
+    -------
+    out : float
+        Planck function evaluated at the frequency for the given temperature.
     '''
     return 2.0*h/c**2 * np.power(frequency,3) / np.expm1(h*frequency/(kb*temperature))
 
@@ -105,29 +190,64 @@ def planck (temperature, frequency):
 def I_CMB (frequency):
     """
     Intensity of the cosmic microwave background.
+    
+    Parameters
+    ----------
+    frequency : float
+        Frequency at which to evaluate the intensity.
+        
+    Returns
+    -------
+    out : float
+        Intensity of the cosmic microwave background evaluated at the frequency.
     """
     return planck (T_CMB, frequency)
 
 
 def dnu (linedata, k, temp, vturb2):
     """
-    :param linedata: Magritte linedata object
-    :param k: transition number
-    :param temp: temperature
-    :param turb: turbulent velocity
-    :return: line width of the line profile function.
+    Spectral line width.
+    
+    Parameters
+    ----------
+    linedata : Magritte Linedata object
+        Magritte linedata object of the of the relevant species.
+    k : int
+        Transition number of the line.
+    temp : float
+        Local temperature [K].
+    vturb2 : float
+        Square of the turbulent velocity as fraction of the speed of light.
+    
+    Returns
+    -------
+    out : float
+        Line width of the line profile function.
     """
     return linedata.frequency[k] * np.sqrt(2.0*kb*temp/(amu*c**2)*linedata.inverse_mass + vturb2)
 
 
 def profile (linedata, k, temp, vturb2, nu):
     """
-    :param linedata: Magritte linedata object
-    :param k: transition number
-    :param temp: temperature
-    :param turb: turbulent velocity
-    :param nu: frequency at which to evaluate
-    :return: Gaussian profile function evaluated at frequency nu.
+    Gaussian line profile function.
+    
+    Parameters
+    ----------
+    linedata : Magritte Linedata object
+        Magritte linedata object of the of the relevant species.
+    k : int
+        Transition number of the line.
+    temp : float
+        Local temperature [K].
+    vturb2 : float
+        Square of the turbulent velocity as fraction of the speed of light.
+    nu : float
+        Frequency at which to evaluate the line profile function.
+        
+    Returns
+    -------
+    out : float
+        Gaussian profile function evaluated at frequency nu.
     """
     x = (nu - linedata.frequency[k]) / dnu(linedata, k, temp, vturb2)
     return np.exp(-x**2) / (np.sqrt(np.pi) * dnu(linedata, k, temp, vturb2))
@@ -143,9 +263,27 @@ def save_fits(
         method     = 'nearest',
     ):
     """
-    Save channel maps of synthetic observation (image) as fits file.
-    """
+    Save channel maps of synthetic observation (image) as a fits file.
     
+    Parameters
+    ----------
+    model : object
+        Magritte model object.
+    image_nr : int
+        Number of the synthetic observation to plot. (Use -1 to indicate the last one.)
+    zoom : float
+        Factor with which to zoom in on the middel of the image.
+    npix_x : int
+        Number of pixels in the image in the horizontal (x) direction.
+    npix_y : int
+        Number of pixels in the image in the vertical (y) direction.
+    method : str
+        Method to interpolate the scattered intensity data onto a regular image grid.
+    
+    Returns
+    -------
+    None
+    """
     # Check if there are images
     if (len(model.images) < 1):
         print('No images in model.')
@@ -216,3 +354,5 @@ def save_fits(
     fits.writeto(filename, data=zs, header=hdr)
     
     print('Written file to:', filename)
+    
+    return

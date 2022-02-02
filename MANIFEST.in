@@ -1,1 +1,5 @@
-include magritte/templates/*
+graft dependencies
+graft src
+graft tests
+graft magritte/templates
+include build.sh CMakeLists.txt compile.sh CONTRIBUTION LICENSE

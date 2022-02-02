@@ -31,7 +31,14 @@ master_doc = 'index'
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = [ "breathe", 'sphinx_copybutton', 'nbsphinx']
+extensions = [
+    "sphinx.ext.autodoc",
+    "sphinx.ext.autosummary",
+    "sphinx.ext.napoleon",
+    "breathe",
+    'sphinx_copybutton',
+    'nbsphinx'
+]
 
 breathe_default_project = "Magritte"
 breathe_projects = {'Magritte' : 'doxygen/xml'}
@@ -62,11 +69,14 @@ html_theme_options = {'logo_only': True}
 html_static_path = ['_static']
 
 
-
-
-
 # -- Run doxygen on READTHEDOCS server ---------------------------------------
 
 from subprocess import call
-# read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
 call('doxygen Doxyfile', shell=True)
+
+
+# -- Sphinx Python API docs --------------------------------------------------
+
+autodoc_member_order = "groupwise"
+autodoc_default_flags = ["members"]
+autosummary_generate = True

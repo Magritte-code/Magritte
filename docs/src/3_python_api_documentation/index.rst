@@ -1,8 +1,7 @@
 Python API documentation
 ########################
 
-All source code for Magritte is available on `GitHub
-<https://github.com/Magritte-code/Magritte>`_.
+.. toctree::
+   :maxdepth: 3
 
-.. Warning::
-    These docs are far from complete.
+   magritte

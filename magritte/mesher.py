@@ -21,22 +21,34 @@ def relocate_indices(arr, p):
 
 class Mesh:
     """
-    Magritte custom mesh class.
+    Magritte custom mesh class (that ignores unconnected points).
     """
     def __init__(self, meshFile):
+        """
+        Read the meshFile using meshio and remove unconnected points.
+        
+        Parameters
+        ----------
+        meshFile : str
+            File name of the mesh file.
+        """
         self.mesh      = meshio.read(meshFile)
         self.points    = self.mesh.points
         self.tetras    = self.mesh.cells_dict['tetra']
         self.edges     = self.get_edges()
         self.neighbors = self.get_neighbors()
         self.boundary  = self.get_boundary()
+        
         # Remove non-connected points
         non_point = self.get_non_point()
         while not (non_point is None):
             print(non_point)
             self.del_non_point(non_point)
             non_point = self.get_non_point()
+            
+        return
 
+    
     def get_edges(self):
         edges = set([])
         for tetra in self.tetras:
@@ -121,10 +133,15 @@ class Mesh:
 def run(command):
     """
     Run command in shell and continuously print its output.
-    :param command: the command to run in the shell.
+    
+    Parameters
+    ----------
+    command : str
+        The command to run in the shell.
     """
     # Run command pipe output
     process = Popen(command, stdout=PIPE, shell=True)
+    
     # Continuously read output and print
     while True:
         # Extract output
@@ -134,44 +151,74 @@ def run(command):
             break
         else:
             print(line.decode("utf-8"))
+    
+    return
 
 
-def convert_msh_to_pos(meshName, replace: bool = False):
+def convert_msh_to_pos(meshName, replace:bool=False):
     """
-    Convert .msh to .pos background  mesh file.
-    :param modelName: path to the .msh file to convert.
-    :param replace: remove the original .msh file if True.
+    Convert a .msh file to a .pos file.
+    
+    Parameters
+    ----------
+    modelName : str
+        Path to the .msh file to convert.
+    replace : bool
+        Whether or not to remove (and thus replace) the original .msh file.
     """
     # Remove extension from meshName
     meshName, extension = os.path.splitext(meshName)
+    
     # create the converision gmsh script file
     conversion_script = f'{meshName}_convert_to_pos.geo'
+    
     # Get the path to this folder
     thisFolder = os.path.dirname(os.path.abspath(__file__))
+    
+    # Extract the template
     with open(f'{thisFolder}/templates/convert_to_pos.template', 'r') as file:
         template = Template(file.read())
+    
+    # Fill out the template and write the conversion script
     with open(conversion_script,                                 'w') as file:
         file.write(template.substitute(FILE_NAME=meshName))
-    # run gmsh in a subprocess to convert the background mesh to the .pos format
+    
+    # Run gmsh in a subprocess to convert the background mesh to the .pos format
     run(f'gmsh -0 {conversion_script}')
+    
     # Remove the auxiliary file that is created (geo_unrolled) and the script file
     os.remove(f'{meshName}_convert_to_pos.geo_unrolled')
     os.remove(conversion_script)
     if replace:
         os.remove(f"{meshName}.msh")
+        
+    return
 
 
 def boundary_cuboid (minVec, maxVec):
     """
-    Create the gmsh script for a cuboid element.
-    :param minVec: lower cuboid vector.
-    :param maxVec: upper cuboid vector.
-    :return: gmsh script string.
+    Retuns the gmsh script for a cuboid element that can be used as boundary.
+    
+    Parameters
+    ----------
+    minVec : array_like
+        (x_min, y_min, z_min) vector defining the cuboid.
+    maxVec : array_like
+        (x_max, y_max, z_max) vector defining the cuboid.
+        
+    Returns
+    -------
+    out : str
+        A string containing the gmsh script defining the cuboid.
     """
     # Get the path to this folder
     thisFolder = os.path.dirname(os.path.abspath(__file__))
+    
+    # Extract the template
     with open(f'{thisFolder}/templates/cuboid.template', 'r') as file:
         cuboid = Template(file.read())
+        
+    # Return the filled out template
     return cuboid.substitute(
                I     = 1,
                X_MIN = minVec[0],
@@ -184,15 +231,28 @@ def boundary_cuboid (minVec, maxVec):
 
 def boundary_sphere (centre=np.zeros(3), radius=1.0):
     """
-    Create the gmsh script for a sphere element.
-    :param centre: centre of the sphere.
-    :param radius: radius of the sphere.
-    :return: gmsh script string.
+    Returns the gmsh script for a sphere element that can be used as boundary.
+    
+    Parameters
+    ----------
+    centre : array_like
+        (x, y, z) coordinates of the centre of the sphere.
+    radius : float
+        Radius of the sphere.
+    
+    Returns
+    -------
+    out : str
+        A string containing the gmsh script defining the sphere.
     """
     # Get the path to this folder
     thisFolder = os.path.dirname(os.path.abspath(__file__))
+    
+    # Extract the template
     with open(f'{thisFolder}/templates/sphere.template', 'r') as file:
         sphere = Template(file.read())
+        
+    # Return the filled out template
     return sphere.substitute(
                I      = 1,
                CX     = centre[0],
@@ -204,17 +264,32 @@ def boundary_sphere (centre=np.zeros(3), radius=1.0):
 def boundary_sphere_in_sphere (centre_in =np.zeros(3), radius_in =1.0,
                                centre_out=np.zeros(3), radius_out=1.0 ):
     """
-    Create the gmsh script for a cuboid element.
-    :param centre_in  : centre of the inner sphere.
-    :param radius_in  : radius of the inner sphere.
-    :param centre_out : centre of the outer sphere.
-    :param radius_out : radius of the outer sphere.
-    :return: gmsh script string.
+    Returns the gmsh script for a sphere inside a sphere that can be used as boundary.
+    
+    Parameters
+    ----------
+    centre_in : array_like
+        (x, y, z) coordinates of the centre of the inner sphere.
+    radius_in : float
+        Radius of the inner sphere.
+    centre_out : array_like
+        (x, y, z) coordinates of the centre of the outer sphere.
+    radius_out : float
+        Radius of the outer sphere.
+        
+    Returns
+    -------
+    out : str
+        A string containing the gmsh script defining the sphere in sphere.
     """
     # Get the path to this folder
     thisFolder = os.path.dirname(os.path.abspath(__file__))
+    
+    # Extract the template
     with open(f'{thisFolder}/templates/sphere_in_sphere.template', 'r') as file:
         sphere = Template(file.read())
+        
+    # Return the filled out template
     return sphere.substitute(
                CX_IN      = centre_in[0],
                CY_IN      = centre_in[1],
@@ -229,17 +304,32 @@ def boundary_sphere_in_sphere (centre_in =np.zeros(3), radius_in =1.0,
 def boundary_sphere_in_cuboid (centre_in=np.zeros(3), radius_in=1.0,
                                minVec   =np.zeros(3), maxVec   =np.ones(3)):
     """
-    Create the gmsh script for a cuboid element.
-    :param centre_in : centre of the inner sphere.
-    :param radius_in : radius of the inner sphere.
-    :param minVec    : lower cuboid vector.
-    :param maxVec    : upper cuboid vector.
-    :return: gmsh script string.
+    Returns the gmsh script for a sphere inside a cuboid that can be used as boundary.
+    
+    Parameters
+    ----------
+    centre_in : array_like
+        (x, y, z) coordinates of the centre of the sphere.
+    radius_in : float
+        Radius of the sphere.
+    minVec : array_like
+        (x_min, y_min, z_min) vector defining the cuboid.
+    maxVec : array_like
+        (x_max, y_max, z_max) vector defining the cuboid.
+        
+    Returns
+    -------
+    out : str
+        A string containing the gmsh script defining the sphere in cuboid.
     """
     # Get the path to this folder
     thisFolder = os.path.dirname(os.path.abspath(__file__))
+    
+    # Extrace the template
     with open(f'{thisFolder}/templates/sphere_in_cuboid.template', 'r') as file:
         sphere = Template(file.read())
+        
+    # Return the filled out template
     return sphere.substitute(
         CX_IN      = centre_in[0],
         CY_IN      = centre_in[1],
@@ -254,67 +344,130 @@ def boundary_sphere_in_cuboid (centre_in=np.zeros(3), radius_in=1.0,
 
 
 def create_mesh_from_background(meshName, boundary, scale_min, scale_max):
+    """
+    Creates a mesh with element sizes defined on a background mesh.
+    
+    Parameters
+    ----------
+    meshName : str
+        File name of the mesh file.
+    boundary : str
+        Gmsh script containing the definition of the boundary.
+    scale_min : float
+        Minimum desired element size of the mesh.
+    scale_max : float
+        Maximum desired element size of the mesh.
+    """
     # Remove extension from meshName
     meshName, extension = os.path.splitext(meshName)
+    
     # create the mesh generating gmsh script file
     meshing_script = f'{meshName}.geo'
     background     = f'{meshName}.pos'
     resulting_mesh = f'{meshName}.vtk'
+    
     # Get the path to this folder
     thisFolder = os.path.dirname(os.path.abspath(__file__))
+    
+    # Extract the template
     with open(f'{thisFolder}/templates/mesh_from_background.template', 'r') as file:
         template = Template(file.read())
-    with open(meshing_script,                                          'w') as file:
+    
+    # Write the gmsh script
+    with open(meshing_script, 'w') as file:
         file.write(template.substitute(
             BOUNDARY   = boundary,
             SCALE_MIN  = scale_min,
             SCALE_MAX  = scale_max,
             BACKGROUND = background   ))
+    
     # run gmsh in a subprocess to generate the mesh from the background
     run(f'gmsh {meshing_script} -3 -saveall -o {resulting_mesh}')
+    
     # Remove the script file
-    # os.remove(meshing_script)
+    os.remove(meshing_script)
+    
+    return
 
 
 def create_mesh_from_function(meshName, boundary, scale_min, scale_max, scale_function):
+    """
+    Creates a mesh with element sizes defined by a scale function.
+    
+    Parameters
+    ----------
+    meshName : str
+        File name of the mesh file.
+    boundary : str
+        Gmsh script containing the definition of the boundary.
+    scale_min : float
+        Minimum desired element size of the mesh.
+    scale_max : float
+        Maximum desired element size of the mesh.
+    scale_function : str
+        Formula for the function describing the desired mesh element sizes.
+    """
     # Remove extension from meshName
     meshName, extension = os.path.splitext(meshName)
+    
     # create the mesh generating gmsh script file
     meshing_script = f'{meshName}.geo'
     resulting_mesh = f'{meshName}.vtk'
+    
     # Get the path to this folder
     thisFolder = os.path.dirname(os.path.abspath(__file__))
+    
+    # Extract the template
     with open(f'{thisFolder}/templates/mesh_from_function.template', 'r') as file:
         template = Template(file.read())
-    with open(meshing_script,                                        'w') as file:
+    
+    # Write the gmsh script
+    with open(meshing_script, 'w') as file:
         file.write(template.substitute(
             BOUNDARY       = boundary,
             SCALE_MIN      = scale_min,
             SCALE_MAX      = scale_max,
             SCALE_FUNCTION = scale_function ))
-    # run gmsh in a subprocess to generate the mesh from the background
+    
+    # Run gmsh in a subprocess to generate the mesh from the background
     run(f'gmsh {meshing_script} -3 -saveall -o {resulting_mesh}')
+    
     # Remove the script file
-    # os.remove(meshing_script)
+    os.remove(meshing_script)
+    
+    return
 
 
 def generate_background_from_1D_data(meshName, R, data):
-
+    """
+    Generate a background mesh from 1D (radial) data.
+    
+    Parameters
+    ----------
+    meshName : str
+        File name of the mesh file.
+    R : array_type
+        Array containing the radial positions at which the data is given.
+    data : array_type
+        Array containing the data to put a background.
+    """
     # Remove extension from meshName
     meshName, extension = os.path.splitext(meshName)
 
+    # Map the data to a set of concentric HEALPix spheres
     nsides = 8
     sphere = np.array(pixelfunc.pix2vec(nsides, range(12*nsides**2))).transpose()
     points = []
     data_s = []
-
     for (i,r) in enumerate(R):
         for s in Rotation.random().apply(sphere):
             points.append(r*s)
             data_s.append(data[i])
-
+    
+    # Delaunay tetrahedralise the point set
     delaunay = Delaunay(points)
 
+    # Write the mesh
     meshio.write_points_cells(
         filename   = f'{meshName}.msh',
         points     =             delaunay.points,
@@ -392,37 +545,6 @@ def get_weights(pos, nbs, nns, tracer, threshold=0.21, fmin=1.0, ftarget=2.15):
 
     return weights
 
-
-def create(
-        meshName,
-        delaunay,
-        tracer,
-        boundary,
-        scale_max = 1.0e+99,  # Maximum value of the scale parameter
-        scale_min = 0.0e+00,  # Minimum value of the scale parameter
-    ):
-    
-    # Remove extension from meshName
-    meshName, extension = os.path.splitext(meshName)
-    
-    # Create the background mesh (in .mesh format)
-    meshio.write_points_cells(
-        filename   = meshName,
-        points     = delaunay.points,
-        cells      = {'tetra'  : delaunay.simplices},
-        point_data = {'weights': weights.ravel()} )
-    
-    # Convert .msh to .pos mesh for Gmsh
-    convert_msh_to_pos (meshName=meshName, replace=True)
-    
-    # Create a new mesh from the background mesh
-    create_mesh_from_background(
-        meshName  = meshName,
-        boundary  = boundary,
-        scale_min = scale_min,
-        scale_max = scale_max
-    )
-    
         
 def reduce(
         meshName,
@@ -435,7 +557,30 @@ def reduce(
         fmin      = 1.0,      # Don't allow refinenment 
         ftarget   = 2.15      # Approx 10^(-1/3) for approx 10 times fewer points
     ):
+    """
+    Reduce a model mesh for a given tracer function.
     
+    Parameters
+    ----------
+    meshName : str
+        File name of the mesh file.
+    delaunay :
+        scipy.spatial.Delaunay object for the given mesh.
+    tracer : array_like
+        1D array containing the tabulated tracer function.
+    boundary : str
+        Gmsh script containing the definition of the boundary.
+    scale_max : float
+        Maximum desired element size of the mesh.
+    scale_min : float
+        Minimum desired element size of the mesh.
+    threshold : float
+        Threashold value for relative difference below which we coarsen.
+    fmin : float
+        Multiplication factor of the mesh element size where the relative difference is below the threashold.
+    ftarget : float
+        Multiplication factor of the mesh element size where the relative difference is below the threashold.
+    """
     # Remove extension from meshName
     meshName, extension = os.path.splitext(meshName)
 
@@ -470,3 +615,5 @@ def reduce(
         scale_min = scale_min,
         scale_max = scale_max
     )
+    
+    return

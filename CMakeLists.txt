@@ -89,12 +89,12 @@ if (GPU_ACCELERATION)
 endif ()
 
 # Include Paracabs directory
-include             (dependencies/Paracabs/CMakeLists.txt)
-include_directories (dependencies/Paracabs/Paracabs      )
+include             (${CMAKE_SOURCE_DIR}/dependencies/Paracabs/CMakeLists.txt)
+include_directories (${CMAKE_SOURCE_DIR}/dependencies/Paracabs/Paracabs      )
 
 # Link to pybind11 directory if required
 if (PYTHON_BINDINGS OR PYTHON_IO)
-    add_subdirectory (dependencies/pybind11 pybind11)
+    add_subdirectory (${CMAKE_SOURCE_DIR}/dependencies/pybind11 pybind11)
 endif ()
 
 # Add source directory

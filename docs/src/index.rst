@@ -35,7 +35,7 @@ with Magritte.
    1_examples/index
    2_benchmarks/index
    3_python_api_documentation/index
-   4_cpp_api_documentation/index
+..   4_cpp_api_documentation/index
 
 
 Papers about Magritte
@@ -97,3 +97,4 @@ Acknowledgements
 
 FDC is supported by the EPSRC iCASE studentship programme, Intel Corporation and Cray Inc.
 FDC, JB, WH, and LD acknowledge support from the ERC consolidator grant 646758 AEROSOL.
+TC is a PhD fellow of the Research Foundation - Flanders (FWO).

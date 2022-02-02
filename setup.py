@@ -5,25 +5,31 @@ import shutil
 
 from setuptools import setup, Extension, find_packages
 from setuptools.command.build_ext import build_ext
+from subprocess import call
 
+this_dir = os.path.dirname(os.path.realpath(__file__))
 
-with open("README.md", "r") as file:
+with open(os.path.join(this_dir, "README.md"), "r") as file:
     long_description = file.read()
 
 
-with open("src/configure.hpp", "r") as file:
-    for line in file.readlines():
-        if 'MAGRITTE_VERSION' in line:
-            # Get the version, which is between quotes ("")
-            __version__ = re.findall('"(.*?)"', line)[0]
+with open(os.path.join(this_dir, "CMakeLists.txt"), "r") as file:
+    # Extract the lines containing the project description
+    lines = re.findall('project.*\([^\)]*\)', file.read())[0]
+    # Extract the version nuber form those lines
+    __version__ = re.findall('\d*\.\d*\.\d*', lines)[0]
 
 
 class my_build_ext(build_ext):
+
     def build_extension(self, ext):
         '''
-        Copy the already-compiled core.so file.
+        Build magritte C++ core module.
         '''
-        shutil.copyfile('bin/core.so', self.get_ext_fullpath(ext.name))
+        # Compile module
+        call(f'bash {os.path.join(this_dir, "compile.sh")}', shell=True)
+        # Copy the already-compiled core.so file.
+        shutil.copyfile(os.path.join(this_dir, 'bin', 'core.so'), self.get_ext_fullpath(ext.name))
 
 
 setup(

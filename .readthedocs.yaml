@@ -1,0 +1,32 @@
+# .readthedocs.yaml
+# Read the Docs configuration file
+# See https://docs.readthedocs.io/en/stable/config-file/v2.html for details
+
+# Required
+version: 2
+
+# Include submodules
+submodules:
+  include: all
+  recursive: true
+
+# Set the version of Python and other tools you might need
+build:
+  os: ubuntu-20.04
+  tools:
+    python: "mambaforge-4.10"
+
+# Set conda environment
+conda:
+  environment: dependencies/conda_env.yml
+
+# Install Magritte in conda environment
+python:
+  install:
+    - method: setuptools
+      path: .
+
+# Build documentation in the docs/ directory with Sphinx
+sphinx:
+  configuration: docs/src/conf.py
+
