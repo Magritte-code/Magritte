@@ -14,6 +14,4 @@ cd $DIR
 python -m pip uninstall magritte
 
 # echo "Installing magritte python package..."
-# python setup.py install
-
-python -m pip install . -vv
+python setup.py install
