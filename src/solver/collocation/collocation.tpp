@@ -471,7 +471,8 @@ inline void Collocation :: setup_basis(Model& model)
                 }
                 else
                 {
-                    rbf_using_slope[rayid][pointid][freqid]=true;
+                    // rbf_using_slope[rayid][pointid][freqid]=true; //disabling the slope
+                    rbf_using_slope[rayid][pointid][freqid]=false;
                 }
                 std::cout<<"rid, pid, fid: "<<rayid<<", "<<pointid<<", "<<freqid<<std::endl;
                 std::cout<<"using slope: "<<rbf_using_slope[rayid][pointid][freqid]<<std::endl;
@@ -928,9 +929,69 @@ inline Real Collocation :: basis_point_der(Size centerpoint, Vector3D& location,
     }
 }
 
-///Second order derivative (no slope)
-///TODO: make proper function
-///radial_der2=TODO COMPUTE
+///Second order derivative (does not support a slope)
+///  The directional derivative of the position basis function
+inline Real Collocation :: basis_point_der2(Size centerpoint, Vector3D& location, Size rayindex, Size freqidx, Geometry& geometry)
+{
+    // return basis_point_symm_der(centerpoint, location, rayindex, freqidx, geometry)*basis_point_perp(centerpoint, location, rayindex, freqidx, geometry);
+
+    Vector3D diff_vector=location-point_locations[centerpoint];
+    Real distance=std::sqrt(diff_vector.dot(diff_vector));
+    // Real distance=distance_manip(centerpoint, std::sqrt(diff_vector.dot(diff_vector)));
+    // Real manip_der_factor=distance_manip_der(centerpoint, std::sqrt(diff_vector.dot(diff_vector)));
+    Real radius=rbf_radii[centerpoint];
+    //if the location is too far from the center, the evalutation of the compact radial basis function is 0.
+    if (distance>=radius)
+    {
+        return 0;
+    }
+    else if (distance==0)//TODO: think about removing this, and instead setting costheta to 1... (same effect, less branching?)
+    {
+        std::cout<<"distance is zero"<<std::endl;
+        // basis -4.0/(1.0+std::pow(rel_dist,3))+6.0/(1.0+std::pow(rel_dist,2))-1;
+        return -12/std::pow(radius,2);
+
+        // Real rel_dist=distance/radius;
+
+        // Real slope_derivative=get_slope_derivative(0, rayindex, centerpoint, freqidx);
+        // // Real slope_derivative=0;
+        // Real basis=-4/(1+std::pow(rel_dist,3))+6/(1+std::pow(rel_dist,2))-1;
+        // // Real basis=std::exp(-std::pow(rel_dist*TRUNCATION_SIGMA,2));
+        // return slope_derivative*basis/std::pow(radius,2);
+    }
+    else
+    {
+        Real rel_dist=distance/radius;
+        // std::cout<<"rel_distance: "<<rel_dist<<std::endl;
+        // Real manip_der_factor=distance_manip_der(centerpoint, rel_dist);
+        // std::cout<<"manip der factor: "<<manip_der_factor<<std::endl;
+        // Real manip_rel_dist=distance_manip(centerpoint, rel_dist);
+
+        Vector3D raydirection=geometry.rays.direction[rayindex];
+        Real costheta=raydirection.dot(diff_vector)/std::sqrt(diff_vector.squaredNorm());
+        // Real x=raydirection.dot(diff_vector)/radius;
+        Real x=costheta*rel_dist;
+
+        // Real slope=get_slope(x, rayindex, centerpoint, freqidx);
+        // Real slope_derivative=get_slope_derivative(x, rayindex, centerpoint, freqidx);
+
+        // std::cout<<"raydirection=[x,y,z]: "<<raydirection.x()<<", "<<raydirection.y()<<", "<<raydirection.z()<<std::endl;
+        //The derivatives in the perpendicular direction (to the radial direction) are 0, so we can calculate the derivative
+        // by taking the radial derivative and multiplying it by cos(theta) in which theta is the angle between the radial and the actual direction
+
+        //2nd derivative of -4/(1+std::pow(rel_dist,3))+6/(1+std::pow(rel_dist,2))-1;
+        const Real oneplusr2=1.0+std::pow(rel_dist,2);
+        const Real oneplusr3=1.0+std::pow(rel_dist,3);
+        Real radial_derivative = 12*(std::pow(rel_dist,2))/(std::pow(oneplusr3,2))-12*rel_dist/(std::pow(oneplusr2,2));
+        Real radial_derivative2 = 24.0*rel_dist/std::pow(oneplusr3,2)-72.0*std::pow(rel_dist,4)/std::pow(oneplusr3,3)
+                                 -12.0/std::pow(oneplusr2,2)+48.0*std::pow(rel_dist,2)/std::pow(oneplusr2,3);
+
+        return std::pow(costheta,2)*radial_derivative2/std::pow(radius,2)+radial_derivative*((1.0-std::pow(costheta,2))/rel_dist)/std::pow(radius,2);
+        // TODO: if you do multiply with some function, recompute the second derivative
+        // return std::pow(costheta,2)*radial_derivative*slope/radius+slope_derivative*basis/radius;
+        // return costheta*radial_derivative/radius;
+    }
+}
 
 
 /// Fills the triplets which correspond to the nonzero basis function products at a given triplet location
@@ -1028,8 +1089,58 @@ inline Size Collocation :: get_mat_row_index_2nd_feautrier(Size rayidx, Size fre
 //     // return 1 + numerator/denominator;
 // }
 
+///  Returns whether the boundary condition of the raditive transfer equation is need for a specific direction on a boundary point
+inline bool Collocation :: is_boundary_condition_needed_for_direction_on_boundary(Model& model, Size rayidx, Size point_on_boundary)
+{
+    //For all neighboring boundary points, vote whether the direction is appropriate for the boundary condition
+    bool has_boundary_neighbor=false;
+    Size same_direction_votes=0;//if same_direction_votes*2>total_votes, then it is appropriate
+    Size total_votes=0;
 
-//
+    const Vector3D curr_position=model.geometry.points.position[point_on_boundary];
+    const Vector3D raydirection=model.geometry.rays.direction[rayidx];
+
+    std::tuple<Size*,Size> temp_tuple=model.geometry.points.multiscale.get_intern_neighbors(point_on_boundary);
+    Size* start_neighbors=std::get<0>(temp_tuple);
+    Size n_neighbors=std::get<1>(temp_tuple);
+    // for (Size n:temp_neighbors)
+    for (Size i = 0; i < n_neighbors; i++)
+    {
+        const Size n=*(start_neighbors+i);
+        if (!model.geometry.not_on_boundary(n))
+        {
+            has_boundary_neighbor=true;
+            const Vector3D relative_diff_vector=model.geometry.points.position[n]-curr_position;//this needs not be normalized, as we only check whether inner product is positive/negative
+            if (raydirection.dot(relative_diff_vector)>0.0)
+            {
+                same_direction_votes+=1;
+            }
+            total_votes+=1;
+        }
+
+    }
+    std::cout<<"total_votes: "<<total_votes<<std::endl;
+    std::cout<<"same_direction_votes: "<<same_direction_votes<<std::endl;
+    //If no neighboring boundary points (e.g. in 1D), instead just check whether some point exists behind the boundary point
+    if (!has_boundary_neighbor)
+    {
+        double dist=0;//these two variables are actually not used, but required in the function definition get_next
+        double ddist=0;
+
+        Size antipod=model.geometry.rays.antipod[rayidx];
+
+        const Size point_behind=model.geometry.get_next(point_on_boundary, antipod, point_on_boundary, dist, ddist);
+        std::cout<<"point_behind: "<<point_behind<<std::endl;
+        //if there lies no point behind this point, we need to evaluate the boundary condition here
+        return (point_behind==parameters.npoints());
+    }
+    else
+    {
+        return ((2*same_direction_votes)>=total_votes);//if at least half of the votes agree, we may put the boundary condition in this direction (in case of a tie, it is ambiguous whether we may use the boundary condition or not)
+    }
+}
+
+/// Sets up the basis matrix for the default radiative transfer equation
 inline void Collocation :: setup_basis_matrix_Eigen(Model& model)
 {
     //We are currently not using the lambda operator, so set to zero
@@ -1047,12 +1158,6 @@ inline void Collocation :: setup_basis_matrix_Eigen(Model& model)
         for (Size freqidx=0; freqidx<parameters.nfreqs(); freqidx++)
         {
 
-
-            //TODO: either store all doppler shifted frequencies or calculate some relative doppler shifts
-            //The doppler shift term n.grad(n.v(x)/c)*nu does not depend on the basis functions. Thus we calculate it here
-            //TODO: actually check how it's calculated in Geometry
-            // Real doppler_shift_term=0;//temporary value FIXME
-
             for (Size pointidx=0; pointidx<point_locations.size(); pointidx++)
             {
                 //Now creating all the triplets, thus we need all nonzero basis triplets
@@ -1062,6 +1167,7 @@ inline void Collocation :: setup_basis_matrix_Eigen(Model& model)
                 // const Size curr_mat_idx=get_mat_index(rayidx, freqidx, pointidx);
                 const Size mat_row_idx=get_mat_row_index(rayidx, freqidx, pointidx);
                 const Real curr_opacity=get_opacity(model, rayidx, freqidx, pointidx);
+                std::cout<<"curr_opacity: "<<curr_opacity<<std::endl;
                 // TODO: think about whether the frequency should be evaluated in the frame of the neighbors...//no, as we evaluate it at a single point each time (no interpolation stuff required)
 
                 //TODO: maybe refactor this part
@@ -1099,28 +1205,16 @@ inline void Collocation :: setup_basis_matrix_Eigen(Model& model)
                     curr_freq=frequencies[rayidx][pointidx][freqidx];
                 }
                 Vector3D curr_location=point_locations[pointidx];
-                // std::cout<<"this pointidx: "<<pointidx<<std::endl;
-                // std::cout<<"curr_opacity: "<<curr_opacity<<std::endl;
 
                 bool boundary_condition_required=false;
                 if (!model.geometry.not_on_boundary(pointidx))
                 {
-                    double dist=0;//these two variables are actually not used, but required in the function definition get_next
-                    double ddist=0;
-
-                    Size antipod=model.geometry.rays.antipod[rayidx];
-
-                    const Size point_behind=model.geometry.get_next(pointidx, antipod, pointidx, dist, ddist);
-                    if (point_behind==parameters.npoints())
-                    {//if there lies no point behind this point, we need to evaluate the boundary condition here
-                        boundary_condition_required=true;
-                    }
+                    const bool bdy_condition_req_in_direction=is_boundary_condition_needed_for_direction_on_boundary(model, rayidx, pointidx);
+                    boundary_condition_required=bdy_condition_req_in_direction;
                 }
-                // boundary_condition_required=false;
+
                 if (boundary_condition_required)
                 {
-                    //This term makes sure that the magnitude of the matrix terms corresponding to this boundary condition is similar to the other nearby terms
-                    // const Real balancing_factor=compute_balancing_factor_boundary(rayidx, freqidx, pointidx, local_velocity_gradient, model);
                     //Merely evaluating the intensity at the boundary
                     for (std::vector<Size> triplet: nonzero_triplets)
                     {
@@ -1176,15 +1270,10 @@ inline void Collocation :: setup_basis_matrix_Eigen(Model& model)
                             // std::cout<<"basis_freq: "<<basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)<<std::endl;
                             // std::cout<<"basis_point: "<<basis_point(triplet[2], curr_location, triplet[0], model.geometry)<<std::endl;
                             Real doppler_shift_term=0;//TODO: add frequency quadrature;; TODO: think about approximating velocity gradient somehow at the point itself?
-                            // if (freqidx!=triplet[1])//doppler shift only applies when not at the same frequency
-                            // {//FIXME: freqidx!=triplet[1] and compute the velocity gradient somehow
-                                // Vector3D diff_vector=point_locations[triplet[2]]-curr_location;
-                                // Real distance=std::sqrt(diff_vector.squaredNorm());
-                                // Real velocity_grad=model.geometry.rays.direction[rayidx].dot(model.geometry.points.velocity[triplet[2]]-model.geometry.points.velocity[pointidx])/distance;
-                                //divided by the light speed
+
                             doppler_shift_term=-local_velocity_gradient*curr_freq/curr_opacity*
                                   basis_direction(triplet[0])*basis_freq_der(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point(triplet[2], curr_location, triplet[0], triplet[1], model.geometry);
-                            // }
+
                             // std::cout<<"velocity grad: "<<local_velocity_gradient<<std::endl;
                             // std::cout<<"freq: "<<non_doppler_shifted_frequencies[freqidx]<<std::endl;
                             // std::cout<<"1/opacity: "<<1.0/curr_opacity<<std::endl;
@@ -1222,24 +1311,9 @@ inline void Collocation :: setup_basis_matrix_Eigen(Model& model)
                             // std::cout<<"basis_dir_eval: "<<basis_direction(triplet[0])<<std::endl;
                             // std::cout<<"basis_freq_eval: "<<basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)<<std::endl;
                             // std::cout<<"basis_point_eval: "<<basis_point(triplet[2], curr_location)<<std::endl;
-                            // basis_eval=0;
-                            Real doppler_shift_term=0;
-                            // doppler_shift_term=-local_velocity_gradient*curr_freq/curr_opacity*
-                            //       basis_direction(triplet[0])*basis_freq_der(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point(triplet[2], curr_location, triplet[0], triplet[1], model.geometry);
+                            // basis_eval*=0.01;
 
-                            // if (pointidx!=triplet[2])//doppler shift only applies when not at the same position
-                            // {
-                            //     Vector3D diff_vector=point_locations[triplet[2]]-curr_location;
-                            //     Real distance=std::sqrt(diff_vector.squaredNorm());
-                            //     Real velocity_grad=model.geometry.rays.direction[rayidx].dot(model.geometry.points.velocity[triplet[2]]-model.geometry.points.velocity[pointidx])/distance;
-                            //     //divided by the light speed
-                            //     doppler_shift_term=-velocity_grad*frequencies[rayidx][pointidx][lineidx]/curr_opacity*
-                            //       basis_direction(triplet[0])*basis_freq_der(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point(triplet[2], curr_location, triplet[0], model.geometry);
-                            // }
-
-                            // std::cout<<"basis/(grad/opacity): "<<basis_eval/directional_der<<std::endl;
-
-                            eigen_triplets.push_back (Triplet<Real, Size> (mat_row_idx, mat_col_idx, directional_der+basis_eval+doppler_shift_term));
+                            eigen_triplets.push_back (Triplet<Real, Size> (mat_row_idx, mat_col_idx, directional_der+basis_eval));
 
                             // //For every scattering direction! add scattering//also divide by curr_opacity
                             // for (Size temp_rayidx=0; temp_rayidx<parameters.nrays(); temp_rayidx++)
@@ -1266,8 +1340,6 @@ inline void Collocation :: setup_basis_matrix_Eigen(Model& model)
     collocation_mat.resize (mat_size, mat_size);
 
     // std::cout<<"setting collocation mat"<<std::endl;
-
-
     collocation_mat.setFromTriplets (eigen_triplets.begin(), eigen_triplets.end());
 
     //TODO: add toggle for computing svd and condition number
@@ -1281,6 +1353,185 @@ inline void Collocation :: setup_basis_matrix_Eigen(Model& model)
         std::cout << MatrixXr(collocation_mat) << std::endl;
     }
 }
+
+
+/// Sets up the basis matrix for the second order feautrier version of the radiative transfer equation
+/// Only defined for the static frame
+inline void Collocation :: setup_basis_matrix_Eigen_2nd_feautrier(Model& model)
+{
+
+    if (USING_COMOVING_FRAME)//In the comoving frame, the equations will get way too complicated
+    {
+        throw std::runtime_error("Second order feautrier collocation method only defined for the non-comoving frame");
+    }
+
+    //We are currently not using the lambda operator, so set to zero
+    for (auto &lspec : model.lines.lineProducingSpecies) {lspec.lambda.clear();}
+
+
+    Size mat_size=parameters.nrays()*parameters.nfreqs()*point_locations.size();//half the matrix size
+    vector<Triplet<Real, Size>> eigen_triplets;//will first contain all triplets corresponding to the u equations (and the boundary conditions). At the end, the v_eigen_triplets will be apprended
+    vector<Triplet<Real, Size>> v_eigen_triplets;//Temporary container for all triplets corresponding to the v equations.
+    //TODO: in the Eigen docs is stated that the triplets vector does not necessarilly need to be ordered. So I could use a single vector instead
+    // eigen_triplets.reserve(mat_size*16*nrays());//matrix size times number of interacting points times the number of rays (scattering)
+    eigen_triplets.reserve(mat_size*16);//matrix size times number of interacting points (does not include scattering)
+    v_eigen_triplets.reserve(mat_size*8);//only stores half, so half the space needs to be reserved
+
+    for (Size rayidx=0; rayidx<parameters.hnrays(); rayidx++)
+    {
+        std::cout<<"rayidx: "<<rayidx<<std::endl;
+        // std::cout<<"raydirection: "<<model.geometry.rays.direction[rayidx].x()<<std::endl;
+
+        for (Size freqidx=0; freqidx<parameters.nfreqs(); freqidx++)
+        {
+
+            for (Size pointidx=0; pointidx<point_locations.size(); pointidx++)
+            {
+                //Now creating all the triplets, thus we need all nonzero basis triplets
+                std::set<std::vector<Size>> nonzero_triplets;
+                get_nonzero_basis_triplets(nonzero_triplets, rayidx, freqidx, pointidx);
+
+                // const Size curr_mat_idx=get_mat_index(rayidx, freqidx, pointidx);
+                // const Size mat_row_idx=get_mat_row_index(rayidx, freqidx, pointidx);
+                const Size u_eq_mat_row_idx=get_mat_row_index_2nd_feautrier(rayidx, freqidx, pointidx, false);
+                const Size v_eq_mat_row_idx=get_mat_row_index_2nd_feautrier(rayidx, freqidx, pointidx, true);
+                const Real curr_opacity=get_opacity(model, rayidx, freqidx, pointidx);
+                std::cout<<"curr_opacity: "<<curr_opacity<<std::endl;
+
+                const Real rel_opacity_grad=get_opacity_grad(model, rayidx, freqidx, pointidx)/curr_opacity;//relative opacity gradient
+                std::cout<<"rel_opacity_grad: "<<rel_opacity_grad<<std::endl;
+                const Real curr_freq=frequencies[rayidx][pointidx][freqidx];
+                Vector3D curr_location=point_locations[pointidx];
+
+                bool boundary_condition_required=false;
+                bool bdy_condition_req_in_direction=false;
+                if (!model.geometry.not_on_boundary(pointidx))
+                {
+                    bdy_condition_req_in_direction=is_boundary_condition_needed_for_direction_on_boundary(model, rayidx, pointidx);
+                    boundary_condition_required=true;
+                    //on all boundary points, we need a boundary condition (far simpler than the default approach)
+                    //But we still need to determine in which direction the boundary condition lies
+                }
+
+                if (boundary_condition_required)
+                {
+                    //Merely evaluating the intensity at the boundary in u (+-v) (replacing 2nd order equation for u) and using the 2nd order equation for v
+                    for (std::vector<Size> triplet: nonzero_triplets)
+                    {
+                        // const Size mat_col_idx=get_mat_col_index(triplet[0],triplet[1],triplet[2]);
+                        const Size u_mat_col_idx=get_mat_col_index_2nd_feautrier(triplet[0], triplet[1], triplet[2], false);
+                        const Size v_mat_col_idx=get_mat_col_index_2nd_feautrier(triplet[0], triplet[1], triplet[2], true);
+
+                        //In order to make this term of the same size as the others, multiply by the opacity (only in emissivity formulation)
+                        // Real basis_eval=curr_opacity*basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point(triplet[2], curr_location);
+                        Real basis_eval=basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point(triplet[2], curr_location, triplet[0], triplet[1], model.geometry);
+                        // std::cout<<"basis_eval: "<<basis_eval<<std::endl;
+                        // std::cout<<"basis_dir_eval: "<<basis_direction(triplet[0])<<std::endl;
+                        // std::cout<<"basis_freq_eval: "<<basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)<<std::endl;
+                        //add triplet (mat_idx(triplet[0],triplet[1],triplet[2]),directional_der)
+                        eigen_triplets.push_back (Triplet<Real, Size> (u_eq_mat_row_idx, u_mat_col_idx, basis_eval));
+
+                        Real v_mult_factor=-1.0;
+                        std::cout<<"bdy req in direction nhat: "<<bdy_condition_req_in_direction<<std::endl;
+                        if (bdy_condition_req_in_direction)//v changes sign on the different boundary conditions in different directions
+                        {
+                            v_mult_factor=1.0;
+                        }
+
+                        eigen_triplets.push_back (Triplet<Real, Size> (u_eq_mat_row_idx, v_mat_col_idx, v_mult_factor*basis_eval));
+
+                        std::cout<<"bdy condition triplets: "<<triplet[0]<<", "<<triplet[1]<<", "<<triplet[2]<<std::endl;
+                        std::cout<<"basis_freq: "<<basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)<<std::endl;
+                        std::cout<<"basis_point: "<<basis_point(triplet[2], curr_location, triplet[0], triplet[1], model.geometry)<<std::endl;
+
+
+                        //And also compute the standard second order feautrier term for the v equations
+                        //As we use the same basis functions for u and v, we do not need to make a distinction between them
+                        //TODO: check if previous sentence is true
+
+                        // Real directional_der=basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point_der(triplet[2], curr_location, triplet[0], triplet[1], model.geometry)
+                        // *rel_opacity_grad/std::pow(curr_opacity,2);
+                        // Real directional_der2=basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point_der2(triplet[2], curr_location, triplet[0], triplet[1], model.geometry)
+                        // /std::pow(curr_opacity,2);
+
+                        //only simple first order term necessary on boundary
+                        Real simple_directional_der=basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point_der(triplet[2], curr_location, triplet[0], triplet[1], model.geometry)
+                        /curr_opacity;
+                        //APPROXIMATED BOUNDARY CONDITION
+                        // simple_directional_der=0;
+
+                        // v_eigen_triplets.push_back (Triplet<Real, Size> (v_eq_mat_row_idx, v_mat_col_idx, basis_eval-directional_der2+directional_der));
+                        v_eigen_triplets.push_back (Triplet<Real, Size> (v_eq_mat_row_idx, v_mat_col_idx, basis_eval-v_mult_factor*simple_directional_der));
+                    }
+                }
+                else
+                {
+                    for (std::vector<Size> triplet: nonzero_triplets)
+                    {
+                        // const Size mat_col_idx=get_mat_col_index(triplet[0],triplet[1],triplet[2]);
+                        const Size u_mat_col_idx=get_mat_col_index_2nd_feautrier(triplet[0], triplet[1], triplet[2], false);
+                        const Size v_mat_col_idx=get_mat_col_index_2nd_feautrier(triplet[0], triplet[1], triplet[2], true);
+
+                        Real basis_eval=basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point(triplet[2], curr_location, triplet[0], triplet[1], model.geometry);
+                        Real directional_der=basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point_der(triplet[2], curr_location, triplet[0], triplet[1], model.geometry)
+                        *rel_opacity_grad/std::pow(curr_opacity,2);
+                        Real directional_der2=basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point_der2(triplet[2], curr_location, triplet[0], triplet[1], model.geometry)
+                        /std::pow(curr_opacity,2);
+                        // directional_der=0;
+                        // directional_der2*=0.0001;
+
+                        // std::cout<<"basis_eval: "<<basis_eval<<std::endl;
+                        // std::cout<<"basis_dir_eval: "<<basis_direction(triplet[0])<<std::endl;
+                        // std::cout<<"basis_freq_eval: "<<basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)<<std::endl;
+                        // std::cout<<"basis_point_eval: "<<basis_point(triplet[2], curr_location)<<std::endl;
+
+                        // std::cout<<"basis/(grad/opacity): "<<basis_eval/directional_der<<std::endl;
+
+                        eigen_triplets.push_back (Triplet<Real, Size> (u_eq_mat_row_idx, u_mat_col_idx, basis_eval-directional_der2+directional_der));
+                        v_eigen_triplets.push_back (Triplet<Real, Size> (v_eq_mat_row_idx, v_mat_col_idx, basis_eval-directional_der2+directional_der));
+
+                        // //For every scattering direction! add scattering//also divide by curr_opacity
+                        // for (Size temp_rayidx=0; temp_rayidx<parameters.nrays(); temp_rayidx++)
+                        // {
+                        //     const Size scatt_mat_idx=get_mat_index(temp_rayidx,triplet[1],triplet[2]);
+                        //     //TODO: add toggle to whether we are actually using scattering
+                        //     Real integral_scatt_redistr=0;//FIXME: add me //in uniform scattering, this term is proportional to 4*pi/N_rays
+                        //     Real scattering=-basis_freq(temp_rayidx, triplet[1], triplet[2], curr_freq)*basis_point(triplet[2], curr_location)*integral_scatt_redistr;
+                        //     //add triplet (mat_idx(temp_rayidx,triplet[1],triplet[2]),scattering)
+                        //     // eigen_triplets.push_back (Triplet<Real, Size> (curr_mat_idx, scatt_mat_idx, scattering));
+                        // }
+                    }
+                }
+            }
+        }
+    }
+    // and finally adding the triplets together
+    eigen_triplets.insert(eigen_triplets.end(), v_eigen_triplets.begin(), v_eigen_triplets.end());
+
+    // std::cout<<"resizing collocation mat"<<std::endl;
+
+    //after all this, construct the matrix
+    collocation_mat.resize (mat_size, mat_size);
+
+    // std::cout<<"setting collocation mat"<<std::endl;
+    collocation_mat.setFromTriplets (eigen_triplets.begin(), eigen_triplets.end());
+
+    //TODO: add toggle for computing svd and condition number
+    if (model.COMPUTING_SVD_AND_CONDITION_NUMBER)
+    {
+        Eigen::JacobiSVD<MatrixXr> svd(collocation_mat);
+        Real cond = svd.singularValues()(0)
+        / svd.singularValues()(svd.singularValues().size()-1);
+        std::cout<<"condition number: "<<cond<<std::endl;
+        // collocation_mat.data().squeeze();
+        std::cout << MatrixXr(collocation_mat) << std::endl;
+    }
+}
+
+
+
+
+
 
 
 // Returns the opacity (takes into account the gaussian line profile)
@@ -1316,11 +1567,12 @@ inline Real Collocation :: get_opacity(Model& model, Size rayidx, Size freqidx, 
     return std::max(toreturn,MIN_OPACITY);
 }
 
-//Computes the opacity gradient along a ray direction at a given position by using a quadrature rule
-//Warning: Only call this when you are not on the boundary (as no checking is done whether a prev and next point exists)
-inline Real Collocation :: get_opacity_grad(Model& model, Size rayidx, Size freqidx, Size pointidx)
+//Returns a vector with two nearby points on the specified ray around the specified point
+// In the fail case no two nearby points could be found, can return the oob values paramters.npoints().
+inline std::vector<Size> Collocation :: get_two_nearby_points_on_ray(Model& model, Size rayidx, Size pointidx)
 {
-
+    std::vector<Size> toreturn;
+    toreturn.reserve(2);
     double dist=0;
     double ddist=0;
     Size next_point=model.geometry.get_next(pointidx, rayidx, pointidx, dist, ddist);
@@ -1329,13 +1581,84 @@ inline Real Collocation :: get_opacity_grad(Model& model, Size rayidx, Size freq
     ddist=0;
     Size prev_point=model.geometry.get_next(pointidx, model.geometry.rays.antipod[rayidx], pointidx, dist, ddist);
 
+    if (next_point==parameters.npoints()&&prev_point==parameters.npoints())//In the case we have no neighbors, return the default value parameters.npoints() for both points
+    {
+        std::cout<<"points on both sides do not exist; therefore returing"<<std::endl;
+        toreturn=std::vector<Size>{next_point, prev_point};
+        return toreturn;
+    }
+
+    if (next_point==parameters.npoints())//if next point in direction does not exist, just replace by another point in the other direction
+    {
+        std::cout<<"next_point==npoints"<<std::endl;
+        dist=0;
+        ddist=0;
+        Size next_point=model.geometry.get_next(prev_point, model.geometry.rays.antipod[rayidx], prev_point, dist, ddist);
+        //if this does not exist, it gains the value parameters.npoints()
+    }
+    else if (prev_point==parameters.npoints())//if next point in direction does not exist, just replace by another point in the other direction
+    {
+        std::cout<<"prev_point==npoints"<<std::endl;
+        double dist=0;
+        double ddist=0;
+        Size prev_point=model.geometry.get_next(next_point, rayidx, next_point, dist, ddist);
+        //if this does not exist, it gains the value parameters.npoints()
+    }
+
+    toreturn=std::vector<Size>{next_point, prev_point};
+    return toreturn;
+
+}
+
+//Computes the opacity gradient along a ray direction at a given position by using a quadrature rule
+// Uses an implicit total derivative (TODO: ref to own derivation)
+//Warning: In the case we are on the boundary, it assumes we can find two points in a single direction
+inline Real Collocation :: get_opacity_grad(Model& model, Size rayidx, Size freqidx, Size pointidx)
+{
+    // //TODO: refactor this part of finding two near points on the ray.
+    //
+    // double dist=0;
+    // double ddist=0;
+    // Size next_point=model.geometry.get_next(pointidx, rayidx, pointidx, dist, ddist);
+    //
+    // dist=0;
+    // ddist=0;
+    // Size prev_point=model.geometry.get_next(pointidx, model.geometry.rays.antipod[rayidx], pointidx, dist, ddist);
+    //
+    // if (next_point==parameters.npoints())//if next point in direction does not exist, just replace by another point in the other direction
+    // {
+    //     dist=0;
+    //     ddist=0;
+    //     Size next_point=model.geometry.get_next(pointidx, model.geometry.rays.antipod[rayidx], prev_point, dist, ddist);
+    //     //ASSUMED to exist; naming becomes a bit non-sensical, but we just need to other points on the ray
+    // }
+    // else if (prev_point==parameters.npoints())//if next point in direction does not exist, just replace by another point in the other direction
+    // {
+    //     double dist=0;
+    //     double ddist=0;
+    //     Size prev_point=model.geometry.get_next(next_point, rayidx, pointidx, dist, ddist);
+    //     //ASSUMED to exist; naming becomes a bit non-sensical, but we just need to other points on the ray
+    // }
+    vector<Size> nearby_points=get_two_nearby_points_on_ray(model, rayidx, pointidx);
+    Size next_point=nearby_points[0];
+    Size prev_point=nearby_points[1];
+
+    if (next_point==parameters.npoints()||prev_point==parameters.npoints())//if at least one of the nearby points do no exist, then no gradient can be computed
+    {//I do not expect this to happen at all, but either way,
+        std::cout<<"A ray through a point does not go through at least 3 points"<<std::endl;
+        std::cout<<"pointidx: "<<pointidx<<std::endl;
+        std::cout<<"rayidx: "<<rayidx<<std::endl;
+        std::cout<<"next point: "<<next_point<<std::endl;
+        std::cout<<"prev point: "<<prev_point<<std::endl;
+        return 0;
+    }
+
     Vector3D raydirection=model.geometry.rays.direction[rayidx];
     Vector3D next_vector=model.geometry.points.position[next_point]-model.geometry.points.position[pointidx];
     Vector3D prev_vector=model.geometry.points.position[prev_point]-model.geometry.points.position[pointidx];
     const Real next_position=raydirection.dot(next_vector);
     const Real prev_position=raydirection.dot(prev_vector);
 
-    // const Real curr_ray_position=0;//TODO: get current position, project on ray
     const Real position_frac=next_position/prev_position;
     Real prev_coef=1.0/(prev_position*(1.0-(1.0/position_frac)));
     Real next_coef=1.0/(next_position*(1.0-position_frac));
@@ -1344,9 +1667,58 @@ inline Real Collocation :: get_opacity_grad(Model& model, Size rayidx, Size freq
     Real prev_opacity=get_opacity(model, rayidx, freqidx, prev_point);
     Real curr_opacity=get_opacity(model, rayidx, freqidx, pointidx);
     Real next_opacity=get_opacity(model, rayidx, freqidx, next_point);
-    //TODO: also get opacities//maybe just store them somewhere... Also, do we need the comoving opacities, or just the local ones...?
-    return prev_coef*prev_opacity+curr_coef*curr_opacity+next_coef*next_opacity;
+    //comoving opacities are used
+
+    return prev_coef*prev_opacity
+          +curr_coef*curr_opacity
+          +next_coef*next_opacity;
 }
+
+//Computes the gradient of the source function along a ray direction at a given position by using a quadrature rule
+// Uses an implicit total derivative (TODO: ref to own derivation)
+//Warning: In the case we are on the boundary, it assumes we can find two points in a single direction
+inline Real Collocation :: get_source_grad(Model& model, Size rayidx, Size freqidx, Size pointidx)
+{
+    vector<Size> nearby_points=get_two_nearby_points_on_ray(model, rayidx, pointidx);
+    Size next_point=nearby_points[0];
+    Size prev_point=nearby_points[1];
+
+    if (next_point==parameters.npoints()||prev_point==parameters.npoints())//if at least one of the nearby points do no exist, then no gradient can be computed
+    {//I do not expect this to happen at all, but either way,
+        std::cout<<"A ray through a point does not go through at least 3 points"<<std::endl;
+        std::cout<<"pointidx: "<<pointidx<<std::endl;
+        std::cout<<"rayidx: "<<rayidx<<std::endl;
+        std::cout<<"next point: "<<next_point<<std::endl;
+        std::cout<<"prev point: "<<prev_point<<std::endl;
+        return 0;
+    }
+
+    Vector3D raydirection=model.geometry.rays.direction[rayidx];
+    Vector3D next_vector=model.geometry.points.position[next_point]-model.geometry.points.position[pointidx];
+    Vector3D prev_vector=model.geometry.points.position[prev_point]-model.geometry.points.position[pointidx];
+    const Real next_position=raydirection.dot(next_vector);
+    const Real prev_position=raydirection.dot(prev_vector);
+
+    const Real position_frac=next_position/prev_position;
+    Real prev_coef=1.0/(prev_position*(1.0-(1.0/position_frac)));
+    Real next_coef=1.0/(next_position*(1.0-position_frac));
+    Real curr_coef=-prev_coef-next_coef;
+
+    Real prev_opacity=get_opacity(model, rayidx, freqidx, prev_point);
+    Real prev_emissivity=get_emissivity(model, rayidx, freqidx, prev_point);
+    Real curr_opacity=get_opacity(model, rayidx, freqidx, pointidx);
+    Real curr_emissivity=get_emissivity(model, rayidx, freqidx, pointidx);
+    Real next_opacity=get_opacity(model, rayidx, freqidx, next_point);
+    Real next_emissivity=get_emissivity(model, rayidx, freqidx, next_point);
+    //comoving source functions are used
+
+    return prev_coef*prev_emissivity/prev_opacity
+          +curr_coef*curr_emissivity/curr_opacity
+          +next_coef*next_emissivity/next_opacity;
+}
+
+
+
 // Returns the emissivity (takes into account the gaussian line profile)
 inline Real Collocation :: get_emissivity(Model& model, Size rayidx, Size freqidx, Size pointidx)
 {
@@ -1390,47 +1762,47 @@ inline void Collocation :: setup_rhs_Eigen(Model& model)
             {
                 const Size curr_mat_row_idx=get_mat_row_index(rayidx, freqidx, pointidx);
                 //FIXME: check if boundary condition needs to apply
-                Real local_velocity_gradient=0;
+
                 bool boundary_condition_required=false;
                 if (!model.geometry.not_on_boundary(pointidx))
                 {
-                    double dist=0;//these two variables are actually not used, but required in the function definition get_next
-                    double ddist=0;
+                    const bool bdy_condition_req_in_direction=is_boundary_condition_needed_for_direction_on_boundary(model, rayidx, pointidx);
+                    boundary_condition_required=bdy_condition_req_in_direction;
 
-                    Size antipod=model.geometry.rays.antipod[rayidx];
-
-                    const Size point_behind=model.geometry.get_next(pointidx, antipod, pointidx, dist, ddist);
-                    const Size next_point=model.geometry.get_next(pointidx, rayidx, pointidx, dist, ddist);
-                    if (point_behind==parameters.npoints())
-                    {//if there lies no point behind this point, we need to evaluate the boundary condition here
-                        boundary_condition_required=true;
-
-                        // dist=0;//these two variables are actually not used, but required in the function definition get_next
-                        // ddist=0;
-                        // //also compute velocity gradient for the balancing factor
-                        // Size next_point=model.geometry.get_next(pointidx, rayidx, pointidx, dist, ddist);
-                        // std::cout<<"next point: "<<next_point<<std::endl;
-                        // if (next_point!=parameters.npoints())//if there actually exists a next point
-                        // {
-                        //     std::cout<<"computing velocity grad"<<std::endl;
-                        //     local_velocity_gradient=model.geometry.rays.direction[rayidx].dot(model.geometry.points.velocity[next_point]-model.geometry.points.velocity[pointidx])/dist;
-                        // }
-                    }
+                    // double dist=0;//these two variables are actually not used, but required in the function definition get_next
+                    // double ddist=0;
+                    //
+                    // Size antipod=model.geometry.rays.antipod[rayidx];
+                    //
+                    // const Size point_behind=model.geometry.get_next(pointidx, antipod, pointidx, dist, ddist);
+                    // const Size next_point=model.geometry.get_next(pointidx, rayidx, pointidx, dist, ddist);
+                    // if (point_behind==parameters.npoints())
+                    // {//if there lies no point behind this point, we need to evaluate the boundary condition here
+                    //     boundary_condition_required=true;
+                    //
+                    //     // dist=0;//these two variables are actually not used, but required in the function definition get_next
+                    //     // ddist=0;
+                    //     // //also compute velocity gradient for the balancing factor
+                    //     // Size next_point=model.geometry.get_next(pointidx, rayidx, pointidx, dist, ddist);
+                    //     // std::cout<<"next point: "<<next_point<<std::endl;
+                    //     // if (next_point!=parameters.npoints())//if there actually exists a next point
+                    //     // {
+                    //     //     std::cout<<"computing velocity grad"<<std::endl;
+                    //     //     local_velocity_gradient=model.geometry.rays.direction[rayidx].dot(model.geometry.points.velocity[next_point]-model.geometry.points.velocity[pointidx])/dist;
+                    //     // }
+                    // }
                 }
                 // boundary_condition_required=false;
                 if (boundary_condition_required)
                 {
-                    // std::cout<<"local velocity grad: "<<local_velocity_gradient<<std::endl;
-                    //This term makes sure that the magnitude of the matrix terms corresponding to this boundary condition is similar to the other nearby terms
-                    // const Real balancing_factor=compute_balancing_factor_boundary(rayidx, freqidx, pointidx, local_velocity_gradient, model);
                     rhs[curr_mat_row_idx]=boundary_intensity(model, rayidx, freqidx, pointidx);
                 }
                 else
                 {
                     //TODO: possibly some doppler shift required here? //no, we do not interpolate these values
                     rhs[curr_mat_row_idx]=get_emissivity(model, rayidx, freqidx, pointidx)/get_opacity(model, rayidx, freqidx, pointidx);
-                    // std::cout<<"emissivity: "<<get_emissivity(model, rayidx, freqidx, pointidx)<<std::endl;
-                    // std::cout<<"opacity: "<<get_opacity(model, rayidx, freqidx, pointidx)<<std::endl;
+                    std::cout<<"emissivity: "<<get_emissivity(model, rayidx, freqidx, pointidx)<<std::endl;
+                    std::cout<<"opacity: "<<get_opacity(model, rayidx, freqidx, pointidx)<<std::endl;
                 }
             }
         }
@@ -1441,6 +1813,78 @@ inline void Collocation :: setup_rhs_Eigen(Model& model)
 
     std::cout<<"rescaled rhs: "<<rhs<<std::endl;
 }
+
+//Sets up the rhs correctly for the second order feautrier version of the collocation method
+inline void Collocation :: setup_rhs_Eigen_2nd_feautrier(Model& model)
+{
+    rhs = VectorXr::Zero (collocation_mat.cols());
+    for (Size rayidx=0; rayidx<parameters.hnrays(); rayidx++)//for u and v at the same time
+    {
+        for (Size freqidx=0; freqidx<parameters.nfreqs(); freqidx++)
+        {
+            for (Size pointidx=0; pointidx<point_locations.size(); pointidx++)
+            {
+                const Size u_mat_row_idx=get_mat_row_index_2nd_feautrier(rayidx, freqidx, pointidx, false);
+                const Size v_mat_row_idx=get_mat_row_index_2nd_feautrier(rayidx, freqidx, pointidx, true);
+                //FIXME: check if boundary condition needs to apply
+                Real local_velocity_gradient=0;
+                bool boundary_condition_required=false;
+                bool bdy_condition_req_in_direction=false;
+                if (!model.geometry.not_on_boundary(pointidx))//TODO: refactor this (instead of extra if-clause)
+                {
+                    bdy_condition_req_in_direction=is_boundary_condition_needed_for_direction_on_boundary(model, rayidx, pointidx);
+                    boundary_condition_required=true;
+
+                    // double dist=0;//these two variables are actually not used, but required in the function definition get_next
+                    // double ddist=0;
+                    //
+                    // Size antipod=model.geometry.rays.antipod[rayidx];
+                    //
+                    // const Size point_behind=model.geometry.get_next(pointidx, antipod, pointidx, dist, ddist);
+                    // if (point_behind==parameters.npoints())
+                    // {//if there lies no point behind this point, we need to evaluate the boundary condition here
+                    //     boundary_condition_required=true;
+                    // }
+                }
+                // boundary_condition_required=false;
+                if (boundary_condition_required)//boundary conditions only applied at the u equations, but also slightly different equation for v
+                {
+                    // std::cout<<"local velocity grad: "<<local_velocity_gradient<<std::endl;
+                    //This term makes sure that the magnitude of the matrix terms corresponding to this boundary condition is similar to the other nearby terms
+                    // const Real balancing_factor=compute_balancing_factor_boundary(rayidx, freqidx, pointidx, local_velocity_gradient, model);
+                    Real bdy_intensity=boundary_intensity(model, rayidx, freqidx, pointidx);//boundary intensity
+                    rhs[u_mat_row_idx]=bdy_intensity;
+                    Real source=get_emissivity(model, rayidx, freqidx, pointidx)/get_opacity(model, rayidx, freqidx, pointidx);//source function
+                    //TODO: refactor such that no if statement is required
+                    if (bdy_condition_req_in_direction)
+                    {
+                        rhs[v_mat_row_idx]=bdy_intensity-source;
+                    }
+                    else
+                    {
+                        rhs[v_mat_row_idx]=source-bdy_intensity;
+                    }
+                }
+                else
+                {
+                    //TODO: possibly some doppler shift required here? //no, we do not interpolate these values
+                    rhs[u_mat_row_idx]=get_emissivity(model, rayidx, freqidx, pointidx)/get_opacity(model, rayidx, freqidx, pointidx);
+                    // std::cout<<"emissivity: "<<get_emissivity(model, rayidx, freqidx, pointidx)<<std::endl;
+                    // std::cout<<"opacity: "<<get_opacity(model, rayidx, freqidx, pointidx)<<std::endl;
+                    rhs[v_mat_row_idx]=-get_source_grad(model, rayidx, freqidx, pointidx)/get_opacity(model, rayidx, freqidx, pointidx);
+                    std::cout<<"-source fun grad/opacity= "<<rhs[v_mat_row_idx]<<std::endl;
+                }
+
+            }
+        }
+    }
+    std::cout<<"rhs: "<<rhs<<std::endl;
+
+    rescale_matrix_and_rhs_Eigen(model);
+
+    std::cout<<"rescaled rhs: "<<rhs<<std::endl;
+}
+
 
 // Rescale the matrix rows such that there are ones on the diagonal
 // Practically, this is the same as applying a the inverse of the diagonal as left preconditioner
@@ -1693,12 +2137,140 @@ inline void Collocation :: compute_J(Model& model)
 
               }
 
-              // // Integrate over the line
-              // for (Size z = 0; z < parameters.nquads(); z++)
+              double diff = 0.0;
+
+              // // Collect the approximated part
+              // for (Size m = 0; m < lspec.lambda.get_size(p,k); m++)
               // {
-              //     lspec.Jlin[p][k] += lspec.quadrature.weights[z] * radiation.J(p, freq_nrs[z]);
+              //     const Size I = lspec.index(lspec.lambda.get_nr(p,k,m), lspec.linedata.irad[k]);
+              //
+              //     diff += lspec.lambda.get_Ls(p,k,m) * lspec.population[I];
               // }
 
+              lspec.Jeff[p][k] = lspec.Jlin[p][k] - HH_OVER_FOUR_PI * diff;
+              lspec.Jdif[p][k] = HH_OVER_FOUR_PI * diff;
+
+              // if (lspec.Jeff[p][k]<0)
+              // {
+              //     lspec.Jeff[p][k]=0;
+              // }
+              // std::cout<<"Jeff: "<<lspec.Jeff[p][k]<<std::endl;
+          }
+      }//)
+  }
+  //print out j for first transition
+  for (Size l = 0; l < parameters.nlspecs(); l++)
+  {
+      LineProducingSpecies& lspec=model.lines.lineProducingSpecies[l];
+      for (Size pointidx=0; pointidx<parameters.npoints(); pointidx++)
+      {
+          std::cout<<"jeff: "<<lspec.Jeff[pointidx][0]<<std::endl;
+      }
+  }
+}
+
+// //TODO: calculate for all quadrature points the intensity; or exactly integrate the gaussian with another gaussian
+inline void Collocation :: compute_J_2nd_feautrier(Model& model)
+{
+  model.radiation.initialize_J();
+
+  // //For testing purposes, initialize I too
+  // for (Size rayidx=0; rayidx<parameters.nrays(); rayidx++)
+  // {
+  //     for (Size pointidx=0; pointidx<parameters.npoints(); pointidx++)
+  //     {
+  //         for (Size lineidx=0; lineidx<parameters.nlines(); lineidx++)
+  //         {
+  //             model.radiation.I(rayidx, pointidx, lineidx)=0.0;
+  //         }
+  //     }
+  // }
+  //
+  // for (Size rayidx=0; rayidx<parameters.hnrays(); rayidx++)
+  // {
+  //     for (Size pointidx=0; pointidx<parameters.npoints(); pointidx++)
+  //     {
+  //         for (Size lineidx=0; lineidx<parameters.nlines(); lineidx++)
+  //         {
+  //             model.radiation.u(rayidx, pointidx, lineidx)=0.0;
+  //         }
+  //     }
+  // }
+
+  for (Size l = 0; l < parameters.nlspecs(); l++)
+  {
+      LineProducingSpecies& lspec=model.lines.lineProducingSpecies[l];
+      for (Size p=0; p<parameters.npoints(); p++)
+      // threaded_for (p, parameters.npoints(),
+      {
+          // const Size p=points_in_grid[idx];
+
+          for (Size k = 0; k < lspec.linedata.nrad; k++)
+          {
+              const Size lid = model.lines.line_index(l, k);
+              const Size1 freq_nrs = lspec.nr_line[p][k];
+              const Size middle_linefreqidx=freq_nrs[parameters.nquads()/2];//for determining which frequencies interact with the line frequency; FIXME: remove this hack by explicitly calculating this
+
+              // Initialize values
+              lspec.Jlin[p][k] = 0.0;
+
+              //Sum over ray indices for u
+              for (Size rayidx=0; rayidx<parameters.hnrays(); rayidx++)
+              {
+
+                  const Real doppler_shift_factor=calculate_doppler_shift_observer_frame(model.geometry.points.velocity[p],model.geometry.rays.direction[rayidx]);
+                  // std::cout<<"doppler shift factor: "<<doppler_shift_factor<<std::endl;
+                  Real lp_freq=model.lines.line[lid]*doppler_shift_factor;
+                  Real lp_freq_inv_width=model.lines.inverse_width(lid,p)/doppler_shift_factor;
+
+                  Size hrayidx=rayidx;//rayidx for u and v
+                  if (hrayidx>=parameters.hnrays())
+                  {
+                      hrayidx=model.geometry.rays.antipod[hrayidx];
+                  }
+
+                  std::set<std::vector<Size>> nonzero_triplets;
+
+                  get_nonzero_basis_triplets(nonzero_triplets, rayidx, middle_linefreqidx, p);
+                  Real Ihatn=0;
+                  Real Iminhatn=0;
+                  Real temp_jlin=0;
+                  for (std::vector<Size> triplet: nonzero_triplets)
+                  // for (Size z = 0; z < parameters.nquads(); z++)
+                  {
+                      const Size triplet_u_basis_index=get_mat_col_index_2nd_feautrier(triplet[0], triplet[1], triplet[2], false);
+                      const Size triplet_v_basis_index=get_mat_col_index_2nd_feautrier(triplet[0], triplet[1], triplet[2], true);
+                      // std::cout<<"triplet_u_basis_index: "<<triplet_u_basis_index<<std::endl;
+                      // std::cout<<"u coeff: "<<basis_coefficients(triplet_u_basis_index)<<std::endl;
+                      // std::cout<<"triplet_v_basis_index: "<<triplet_v_basis_index<<std::endl;
+                      // std::cout<<"v coeff: "<<basis_coefficients(triplet_v_basis_index)<<std::endl;
+
+
+
+                      //TODO: figure out which values we actually want to keep...; note to self: I and u use the frequency index (nlines*nquads); so we are not able to compute it here
+                      // TODO: rewrite using second order feautrier vars
+                      // model.radiation.I(rayidx, p, lid) +=basis_coefficients(triplet_basis_index)*basis_point(triplet[2], point_locations[p], triplet[0], model.geometry)*basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], lp_freq);
+                      // model.radiation.u(hrayidx, p, lid)+=1.0/2*basis_coefficients(triplet_basis_index)*basis_point(triplet[2], point_locations[p], triplet[0], model.geometry)*basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], lp_freq);
+
+                      //same bases for u and v
+                      Real basis_eval=basis_point(triplet[2], point_locations[p], triplet[0], triplet[1], model.geometry)*basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], lp_freq);
+                      Real sum_I_div_2=basis_coefficients(triplet_u_basis_index)*basis_eval;//basis_point(triplet[2], point_locations[p], triplet[0], triplet[1], model.geometry)*basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], lp_freq);
+                      Real dif_I_div_2=basis_coefficients(triplet_v_basis_index)*basis_eval;//basis_point(triplet[2], point_locations[p], triplet[0], triplet[1], model.geometry)*basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], lp_freq);
+                      Ihatn+=sum_I_div_2+dif_I_div_2;//basis_coefficients(triplet_u_basis_index)*basis_point(triplet[2], point_locations[p], triplet[0], triplet[1], model.geometry)*basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], lp_freq);
+                      Iminhatn+=sum_I_div_2-dif_I_div_2;
+
+                      Real basis_dir_int_lp_int_eval=1/FOUR_PI*basis_point(triplet[2], point_locations[p], triplet[0], triplet[1], model.geometry)*basis_direction_int(model.geometry,triplet[0])*basis_freq_lp_int(triplet[0], triplet[1], triplet[2], lp_freq, lp_freq_inv_width);
+                      lspec.Jlin[p][k]+=2*basis_coefficients(triplet_u_basis_index)*basis_dir_int_lp_int_eval;//basis_coefficients(triplet_basis_index)/FOUR_PI*basis_point(triplet[2], point_locations[p], triplet[0], triplet[1], model.geometry)*basis_direction_int(model.geometry,triplet[0])*basis_freq_lp_int(triplet[0], triplet[1], triplet[2], lp_freq, lp_freq_inv_width);
+                      //contribution from I(hatn)
+                      //lspec.Jlin[p][k]+=(basis_coefficients(triplet_u_basis_index)+basis_coefficients(triplet_v_basis_index))*basis_dir_int_lp_int_eval;
+                      //contribution from I(-hatn)
+                      //lspec.Jlin[p][k]+=(basis_coefficients(triplet_u_basis_index)-basis_coefficients(triplet_v_basis_index))*basis_dir_int_lp_int_eval;
+
+                  }
+                  std::cout<<"p: "<<p<<" Ihatn: "<<Ihatn<<std::endl;
+                  std::cout<<"p: "<<p<<" Iminhatn: "<<Iminhatn<<std::endl;
+
+              }
 
               double diff = 0.0;
 

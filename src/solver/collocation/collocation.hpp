@@ -11,8 +11,9 @@ class Collocation
 {
 
 private:
+    // Comoving frame formulation not necessary and complicates equations; therefore to be deprecated
     // const bool USING_COMOVING_FRAME=true;//toggle for using the comoving frame
-    const bool USING_COMOVING_FRAME=false;// exponent range for rhs is a bit problematic
+    const bool USING_COMOVING_FRAME=false;
 
     //internal parameters for the basis functions
     const Real TRUNCATION_SIGMA=5.0; //< if Delta(freq)>trunc_sigma*freq_width just set the result from the gaussian basis function to zero (as it is almost zero)
@@ -23,6 +24,7 @@ private:
     const Real MAX_FREQ_QUAD_RATIO=0.7;//gives the maximum ratio between evaluation in the neighboring freq basis versus the evaluation in local frequency basis
     const Real SQRT_MIN_LN_RATIO=std::sqrt(std::log(1.0/MAX_FREQ_QUAD_RATIO));//assuming a gaussian frequency basis function, this is a useful coonstant for determining the inverse width
 
+    //TODO: remove slope, as it can cause unphysical limit behaviour due to numerical inaccuracies
     const Real SLOPE_THRESHOLD=7.0*2.0;//The threshold for determining whether we need to add a slope to the radial basis function
     //should be related to the max derivative of the rbf, the number of neighbors (for diagonal dominance reasons). Note: this comes from a global bound
     //if opacity*typical radius>SLOPE_THRESHOLD, then do not add the slope.
@@ -161,14 +163,22 @@ public:
     //DEPRECATED
     // inline Real compute_balancing_factor_boundary(Size rayidx, Size freqidx, Size pointidx, Real local_velocity_gradient, Model& model);
 
+    inline bool is_boundary_condition_needed_for_direction_on_boundary(Model& model, Size rayidx, Size point_on_boundary);
+
     inline void setup_basis_matrix_Eigen(Model& model);
     inline void setup_rhs_Eigen(Model& model);//Note: assumes one has first setup the basis matrix
 
+    inline void setup_basis_matrix_Eigen_2nd_feautrier(Model& model);
+    inline void setup_rhs_Eigen_2nd_feautrier(Model& model);
+
     inline void rescale_matrix_and_rhs_Eigen(Model& model);
+
+    inline vector<Size> get_two_nearby_points_on_ray(Model& model, Size rayidx, Size pointidx);
 
     inline Real get_opacity(Model& model, Size rayidx, Size freqidx, Size pointidx);
     inline Real get_opacity_grad(Model& model, Size rayidx, Size freqidx, Size pointidx);
     inline Real get_emissivity(Model& model, Size rayidx, Size freqidx, Size pointidx);
+    inline Real get_source_grad(Model& model, Size rayidx, Size freqidx, Size pointidx);
 
     // Return the boundary intensity at the frequency corresponding to the indices
     inline Real boundary_intensity (Model& model, Size rayidx, Size freqidx, Size pointidx);
@@ -182,6 +192,7 @@ public:
     // After computing the basis coefficients, we can obviously compute the intensity
     // TODO: should be calculated in comoving frame (or you may also doppler shift the line transition frequencies; doppler shifts are the same either way for the line transitions and the other frequencies (if using the same point and ray))
     inline void compute_J(Model& model);
+    inline void compute_J_2nd_feautrier(Model& model);
 
 
 

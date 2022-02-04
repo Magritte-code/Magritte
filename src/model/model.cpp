@@ -369,14 +369,28 @@ int Model :: compute_radiation_field_collocation ()
     std::cout << "Setting up basis"<<std::endl;
     solver.setup_basis(*this);
     std::cout << "Setting up basis matrix"<<std::endl;
-    solver.setup_basis_matrix_Eigen(*this);
-    std::cout << "Setting up rhs"<<std::endl;
-    solver.setup_rhs_Eigen(*this);//Note: assumes one has first setup the basis matrix
-    std::cout << "Solving collocation"<<std::endl;
-    solver.solve_collocation(*this);
-    std::cout << "Computing J"<<std::endl;
-    solver.compute_J(*this);
-    std::cout << "Collocation part finished"<<std::endl;
+    if (USING_COLLOCATION_FEAUTRIER)
+    {
+        solver.setup_basis_matrix_Eigen_2nd_feautrier(*this);
+        std::cout << "Setting up rhs"<<std::endl;
+        solver.setup_rhs_Eigen_2nd_feautrier(*this);//Note: assumes one has first setup the basis matrix
+        std::cout << "Solving collocation"<<std::endl;
+        solver.solve_collocation(*this);
+        std::cout << "Computing J"<<std::endl;
+        solver.compute_J_2nd_feautrier(*this);
+        std::cout << "Collocation part finished"<<std::endl;
+    }
+    else
+    {
+        solver.setup_basis_matrix_Eigen(*this);
+        std::cout << "Setting up rhs"<<std::endl;
+        solver.setup_rhs_Eigen(*this);//Note: assumes one has first setup the basis matrix
+        std::cout << "Solving collocation"<<std::endl;
+        solver.solve_collocation(*this);
+        std::cout << "Computing J"<<std::endl;
+        solver.compute_J(*this);
+        std::cout << "Collocation part finished"<<std::endl;
+    }
 
     return (0);
 }

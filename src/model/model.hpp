@@ -18,6 +18,8 @@
 /////////////////////////////////////////////////////////////////////////////
 struct Model
 {
+    const bool USING_COLLOCATION_FEAUTRIER=true;   ///debug stuff for denoting whether we are using the feautrier version of the collocation solver
+
     const Size MIN_INTERPOLATION_POINTS=16;   ///< Minimum number of points used during interpolation (~=average nb neighors in voronoi grid)
 
     const Size INTERPOLATION_POINTS_1D=8;     ///< Number of interpolation points to use for 1D computations (spherical symmetry)
