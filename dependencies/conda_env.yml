@@ -16,7 +16,7 @@ dependencies:
   - plotly
   - pyyaml
   - ipywidgets
-  - meshio
+  - meshio=5.2
   - tqdm
   - palettable
   - h5py
