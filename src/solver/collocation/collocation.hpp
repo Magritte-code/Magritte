@@ -33,7 +33,10 @@ private:
     // TODO: define quadratures such that we can probe the entire space... abs max doppler shift-1 should not exceed the quadrature bounds
     const Real MIN_OPACITY=1.0*std::pow(10,-28);//FIXME: use instead some adaptive measure based on rbf_der/(opacity*rbf). of diagonal element
 
-
+    vector<vector<Size>> remaining_points_after_pruning;
+    // Size n_freq_bases=1;//denotes the number of frequency bases used
+    // // not necessary, as the size of frequency_quadrature will tell us the same
+    // // = number of evaluation frequencies
 
     vector<vector<vector<bool>>> rbf_using_slope; //For every ray, for every point, for every frequency, denotes whether radial basis functions at a given point need to include the slope
     //currently using some global bound; MAYBE TODO: use the exact formulation for each basis function; this will need some code duplication (explicit rbf derivative without slope), and will obviously also depend on the exact direction (hatn dot grad)
@@ -44,11 +47,21 @@ private:
     // const Real DISTANCE_EPS=0.1;//TODO: should actually be chosen adaptively (depending on how close the closest point lies)
     // vector<Real> half_min_dist; //Half the distance for
 
+    //FIXME: actually compute the necessary value; eval of 0.7 in nearest frequency
+    const Real FREQ_QUADRATURE_WING_DISTANCE_AMP_FACTOR=1.5;//In order to sample the line wings sufficiently in the case of doppler shifts, we increase the distance between the frequencies on the line wings.
+    const Size FREQ_QUADRATURE_CENTER_N_ELEMENTS=5;//the number of quadrature elements which should be in the line center
+    //TODO?: let this depend on parameters.nquads()?
     const Real FREQ_QUADRATURE_EDGE=2.0;//In order to make sure to sample the boundary condition well for all points, a safety param is included (enlarges the bounds for the frequency quadrature respectively subtracting and adding this to the min and max doppler shifts)
+    // const Real FREQ_QUADRATURE_CENTER_SEPARATION_DISTANCE=(2.0*FREQ_QUADRATURE_EDGE)/(FREQ_QUADRATURE_CENTER_N_ELEMENTS-1);//The separation distance of the central frequency quadrature points (in terms of line width)
+
+    Size n_freq_bases=0;//denotes the total number of frequencies we evaluate (=size frequency_quadrature=size frequency_inverse_width_quadrature)
     // vector<Real> min_raydir_doppler_shift;//for every direction, contains the minimum doppler shift in that direction
     // vector<Real> max_raydir_doppler_shift;//for every direction, contains the maximum doppler shift in that direction
-    vector<Real> frequency_quadrature;//for every line frequency, contians the frequency quadrature
+    vector<Size> center_line_freq_indices;//for every line, stores the frequency index corresponding to the center of the line.
+    vector<Real> frequency_quadrature;//for every line frequency, contains the frequency quadrature
     vector<Real> frequency_inverse_width_quadrature;//for every line frequency, contains the typical inverse width
+    // vector<Real> frequency_quadrature_in_line_widths;//for every line frequency, contains the frequency quadrature in terms of line widths compare to the center line frequency
+    //not a good idea, might be far too complex and might ruin the exact influence region of boundary conditions...
 
     //TODO: adaptively define this such that diagonal remains somewhat ?constant...?
     //ideas: should drastically reduce ill-conditionedness of a matrix, so should (implicitly) depend on the number of points/distance of the closest point/...
@@ -60,8 +73,8 @@ private:
     // Dev note: it is defined as 1/(sqrt(2)*sigma) for use in the traditional gaussian
 
     //not the most efficient way of accessing the default frequencies and widths, but convient.
-    vector<Real> non_doppler_shifted_frequencies;//for every line, the non doppler shifted line frequency//currently equal to the frequency_quadrature
-    vector<vector<Real>> non_doppler_shifted_inverse_widths;//for every line, for every point, the non doppler shifted inverse line widths
+    vector<Real> non_doppler_shifted_frequencies;//for every frequency, the non doppler shifted line frequency//currently equal to the frequency_quadrature
+    vector<Real> non_doppler_shifted_inverse_widths;//for every frequency, the non doppler shifted inverse width//currently equal to frequency_inverse_width_quadrature
 
     // //TODO: this thing is of the size of the actual matrix; maybe just make an approximation with respect to the actual doppler shift compared to the neighbors...
     // // so simply calculate the max velocity difference, then the max doppler shift is bounded (multiplicatively) by ~1+||Delta v||/c
@@ -74,16 +87,26 @@ private:
     // NOTE TO DEV: might change to be also dependent on the exact point (temperature differences)
     // Also, this (and the same thing for the rbf) could be replaced by a vector<set<>>; as we do not particularly care for the order
 
-    const Size N_POINTS_IN_RADIAL_BASIS=16;
+    const Size N_POINTS_IN_RADIAL_BASIS=8;//the number of points in each radial basis function
+    const Real MIN_OPTICAL_DEPTH_DIFF=0.001;//the minimal optical depth difference between basis functions
 
-    vector<Vector3D> point_locations;
+    vector<Size> points_in_grid;//the indices of the points we use in the grid
+    Size n_points_in_grid;
+    // std::map<Size,Size> indexmap;//maps the compacted indices [0,...,points_in_grid.size()-1] to the actual indice
+    vector<Size> n_point_bases;// For all frequencies, stores the number of point bases
+    vector<Size> cum_n_point_bases;// For all frequencies, stores the cumulative number of point bases
+    // This vector has n_basis_freq+1 elements; starts with 0 and the last element is the total number of point bases.
+    vector<vector<Size>> basis_point_idx;// For all frequencies, contains the indices of all positional basis functions
+    vector<vector<Size>> local_basis_point_idx;// For all frequencies, contains the indices of all positional basis functions in the collocation grid
+    vector<Vector3D> point_locations;// Locations of all points in the collocation grid
     // TODO: when properly implementing these things: check everywhere to add this
     vector<Size> index_conversion; //< for transforming back to the regular point indices used in model (as we might only need a reduced set of all the points)
-    std::map<Size,Size> reverse_index_conversion; //< for transforming from the regular point indices to the point indices used here
-    vector<Real> rbf_radii;
-    vector<std::set<Size>> other_radial_basis_interacting_with; //< contains for each rbf, the indices of the radial basis functions interacting with it (also includes itself)
-    //useful for transforming from basis space to actual solution space
-
+    // std::map<Size,Size> reverse_index_conversion; //< for transforming from the regular point indices to the point indices used here
+    // vector<Real> rbf_radii;//< for every basis point, the typical radius
+    vector<vector<Real>> rbf_radii; //<for every frequency, for every basis point, the typical radius
+    // vector<std::set<Size>> other_radial_basis_interacting_with; //< contains for each rbf, the indices of the radial basis functions interacting with it (also includes itself)
+    // //useful for transforming from basis space to actual solution space
+    vector<vector<std::set<Size>>> radial_basis_functions_having_evaluation_at;//< contains for each evaluation frequency, for each point, which basis functions can have a non-zero evaluation at that point
     Eigen::SparseMatrix<Real> collocation_mat; //contains the entries of the sparse collocation matrix
     // Eigen::SparseMatrix<Real> basis_eval_matrix; //contains the entries of the sparse basis matrix for evaluating the intensity
     VectorXr rhs;// The right hand side of the collocation solver
@@ -92,8 +115,9 @@ private:
     //for the directions, the basis functions are 1, so no need to store anything
 
     VectorXr basis_coefficients;
+    VectorXr basis_renorm_factor;
 
-
+    inline void prune_positional_bases(Model& model);
     inline void set_interacting_bases(Model& model);
 
     //returns whether the frequencies do not lie to far from eachother
@@ -108,26 +132,28 @@ public:
 
     inline void setup_basis(Model& model);
 
+    //FIXME: change the function definitions to be consistent with the new naming scheme
+    //ALSO: check every evaluation of these functions (as some might have their arguments switch places)
 
-    inline Real get_slope(Real x, Real rayidx, Real pointidx, Real freqidx);
-    inline Real get_slope_derivative(Real x, Real rayidx, Real pointidx, Real freqidx);
+    inline Real get_slope(Real x, Size basis_ray_id, Size basis_point_id, Size basis_freq_id);
+    inline Real get_slope_derivative(Real x, Size basis_ray_id, Size basis_point_id, Size basis_freq_id);
 // The complete radial basis function at an index (dir, nu, pid) is a product of the ones defined below
 // basis functions for dir, nu, pid(implicitly x,y,z)
-    inline Real basis_direction(Size rayindex);
-    inline Real basis_freq(Size rayidx, Size freqidx, Size pointidx, Real currfreq);
-    inline Real basis_point(Size pointid, Vector3D& location, Size rayindex, Size freqidx, Geometry& geometry);
-    inline Real basis_point_perp(Size centerpoint, Vector3D& location, Size rayindex, Size freqidx, Geometry& geometry);
-    inline Real basis_point_symm(Size centerpoint, Vector3D& location, Size rayindex, Size freqidx, Geometry& geometry);
+    inline Real basis_direction(Size basis_ray_id);
+    inline Real basis_freq(Size basis_ray_id, Size basis_freq_id, Size basis_point_id, Real currfreq);
+    inline Real basis_point(Size basis_ray_id, Size basis_freq_id, Size basis_point_id, Vector3D& location, Geometry& geometry);
+    inline Real basis_point_perp(Size basis_ray_id, Size basis_freq_id, Size basis_point_id, Vector3D& location, Geometry& geometry);
+    inline Real basis_point_symm(Size basis_ray_id, Size basis_freq_id, Size basis_point_id, Vector3D& location, Geometry& geometry);
     // basis function derivatives for nu, position
-    inline Real basis_freq_der(Size rayidx, Size freqidx, Size pointidx, Real currfreq);
-    inline Real basis_point_der(Size centerpoint, Vector3D& location, Size rayindex, Size freqidx, Geometry& geometry);
-    inline Real basis_point_der2(Size centerpoint, Vector3D& location, Size rayindex, Size freqidx, Geometry& geometry);
-    inline Real basis_point_symm_der(Size centerpoint, Vector3D& location, Size rayindex, Size freqidx, Geometry& geometry);
+    inline Real basis_freq_der(Size basis_ray_id, Size basis_freq_id, Size basis_point_id, Real currfreq);
+    inline Real basis_point_der(Size basis_ray_id, Size basis_freq_id, Size basis_point_id, Vector3D& location, Geometry& geometry);
+    inline Real basis_point_der2(Size basis_ray_id, Size basis_freq_id, Size basis_point_id, Vector3D& location, Geometry& geometry);
+    inline Real basis_point_symm_der(Size basis_ray_id, Size basis_freq_id, Size basis_point_id, Vector3D& location, Geometry& geometry);
 
     // Integral of the directional basis function over the solid angle
-    inline Real basis_direction_int(Geometry& geometry, Size rayindex);
+    inline Real basis_direction_int(Geometry& geometry, Size basis_ray_id);
     //Solution of the integral of the basis function together with the line profile function
-    inline Real basis_freq_lp_int(Size rayidx, Size freqidx, Size pointidx, Real lp_freq, Real lp_freq_inv_width);
+    inline Real basis_freq_lp_int(Size basis_ray_id, Size basis_freq_id, Size basis_point_id, Real lp_freq, Real lp_freq_inv_width);
 
     //DEPRECATED
     // inline Real distance_manip(Size pointid, Real original_distance);
@@ -148,14 +174,14 @@ public:
 //
 
     // fills the basis triplets with the nonzeros triplets associated with the given point (rayidx, lineidx, pointidx)
-    inline void get_nonzero_basis_triplets(std::set<std::vector<Size>>& basis_triplets_to_fill, Size rayidx, Size freqidx, Size pointidx);
+    inline void get_nonzero_basis_triplets(std::set<std::vector<Size>>& basis_triplets_to_fill, Size rayid, Size freqid, Size pointid);
 
     // converts (rayidx, lineidx, pointidx) to the 1D matrix index
     // inline Size get_mat_index(Size rayidx, Size freqidx, Size pointidx);
-    inline Size get_mat_row_index(Size rayidx, Size freqidx, Size eval_pointidx);
-    inline Size get_mat_col_index(Size rayidx, Size freqidx, Size pointidx);
-    inline Size get_mat_row_index_2nd_feautrier(Size rayidx, Size freqidx, Size pointidx, bool is_v_eq);
-    inline Size get_mat_col_index_2nd_feautrier(Size rayidx, Size freqidx, Size pointidx, bool using_v);
+    inline Size get_mat_row_index(Size rayid, Size freqid, Size pointid);
+    inline Size get_mat_col_index(Size basis_ray_id, Size basis_freq_id, Size basis_point_id);
+    inline Size get_mat_row_index_2nd_feautrier(Size rayid, Size freqid, Size pointid, bool is_v_eq);
+    inline Size get_mat_col_index_2nd_feautrier(Size basis_ray_id, Size basis_freq_id, Size basis_point_id, bool using_v);
 
 
 // and maybe some helper methods for determining what is actually zero
@@ -163,7 +189,7 @@ public:
     //DEPRECATED
     // inline Real compute_balancing_factor_boundary(Size rayidx, Size freqidx, Size pointidx, Real local_velocity_gradient, Model& model);
 
-    inline bool is_boundary_condition_needed_for_direction_on_boundary(Model& model, Size rayidx, Size point_on_boundary);
+    inline bool is_boundary_condition_needed_for_direction_on_boundary(Model& model, Size rayid, Size point_on_boundary);
 
     inline void setup_basis_matrix_Eigen(Model& model);
     inline void setup_rhs_Eigen(Model& model);//Note: assumes one has first setup the basis matrix
@@ -175,13 +201,13 @@ public:
 
     inline vector<Size> get_two_nearby_points_on_ray(Model& model, Size rayidx, Size pointidx);
 
-    inline Real get_opacity(Model& model, Size rayidx, Size freqidx, Size pointidx);
-    inline Real get_opacity_grad(Model& model, Size rayidx, Size freqidx, Size pointidx);
-    inline Real get_emissivity(Model& model, Size rayidx, Size freqidx, Size pointidx);
-    inline Real get_source_grad(Model& model, Size rayidx, Size freqidx, Size pointidx);
+    inline Real get_opacity(Model& model, Size rayid, Size freqid, Size pointid);
+    inline Real get_opacity_grad(Model& model, Size rayid, Size freqid, Size pointid);
+    inline Real get_emissivity(Model& model, Size rayid, Size freqid, Size pointid);
+    inline Real get_source_grad(Model& model, Size rayid, Size freqid, Size pointid);
 
     // Return the boundary intensity at the frequency corresponding to the indices
-    inline Real boundary_intensity (Model& model, Size rayidx, Size freqidx, Size pointidx);
+    inline Real boundary_intensity (Model& model, Size rayid, Size freqid, Size pointid);
     // copied from solver
     inline Real planck (Real temp, Real freq);
 
