@@ -244,7 +244,7 @@ inline void Solver :: image_feautrier_order_2 (Model& model, const Size rr)
         const Real dshift_max = get_dshift_max (model, o);
 
         nr_   ()[centre] = o;
-        shift_()[centre] = 1.0;
+        shift_()[centre] = model.geometry.get_shift <Rest> (o, rr, o, 0.0);;
 
         first_() = trace_ray <Rest> (model.geometry, o, rr, dshift_max, -1, centre-1, centre-1) + 1;
         last_ () = trace_ray <Rest> (model.geometry, o, ar, dshift_max, +1, centre+1, centre  ) - 1;
