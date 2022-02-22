@@ -115,7 +115,8 @@ private:
     //for the directions, the basis functions are 1, so no need to store anything
 
     VectorXr basis_coefficients;
-    VectorXr basis_renorm_factor;
+    Eigen :: SparseMatrix<Real> basis_renorm_factor;
+    // VectorXr basis_renorm_factor;
 
     inline void prune_positional_bases(Model& model);
     inline void set_interacting_bases(Model& model);
