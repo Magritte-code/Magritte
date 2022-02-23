@@ -49,7 +49,7 @@ private:
 
     //FIXME: actually compute the necessary value; eval of 0.7 in nearest frequency
     const Real FREQ_QUADRATURE_WING_DISTANCE_AMP_FACTOR=1.5;//In order to sample the line wings sufficiently in the case of doppler shifts, we increase the distance between the frequencies on the line wings.
-    const Size FREQ_QUADRATURE_CENTER_N_ELEMENTS=5;//the number of quadrature elements which should be in the line center
+    const Size FREQ_QUADRATURE_CENTER_N_ELEMENTS=7;//the number of quadrature elements which should be in the line center
     //TODO?: let this depend on parameters.nquads()?
     const Real FREQ_QUADRATURE_EDGE=2.0;//In order to make sure to sample the boundary condition well for all points, a safety param is included (enlarges the bounds for the frequency quadrature respectively subtracting and adding this to the min and max doppler shifts)
     // const Real FREQ_QUADRATURE_CENTER_SEPARATION_DISTANCE=(2.0*FREQ_QUADRATURE_EDGE)/(FREQ_QUADRATURE_CENTER_N_ELEMENTS-1);//The separation distance of the central frequency quadrature points (in terms of line width)

@@ -1716,8 +1716,8 @@ inline void Collocation :: setup_basis_matrix_Eigen(Model& model)
                     for (std::vector<Size> triplet: nonzero_basis_triplets)
                     {
                         const Size mat_col_idx=get_mat_col_index(triplet[0],triplet[1],triplet[2]);
-                        std::cout<<"mat col index: "<<mat_col_idx<<std::endl;
-                        std::cout<<"triplet indices: "<<triplet[0]<<","<<triplet[1]<<","<<triplet[2]<<std::endl;
+                        // std::cout<<"mat col index: "<<mat_col_idx<<std::endl;
+                        // std::cout<<"triplet indices: "<<triplet[0]<<","<<triplet[1]<<","<<triplet[2]<<std::endl;
 
                         if (USING_COMOVING_FRAME)
                         {
@@ -1750,8 +1750,8 @@ inline void Collocation :: setup_basis_matrix_Eigen(Model& model)
                     for (std::vector<Size> triplet: nonzero_basis_triplets)
                     {
                         const Size mat_col_idx=get_mat_col_index(triplet[0],triplet[1],triplet[2]);
-                        std::cout<<"mat col index: "<<mat_col_idx<<std::endl;
-                        std::cout<<"triplet indices: "<<triplet[0]<<","<<triplet[1]<<","<<triplet[2]<<std::endl;
+                        // std::cout<<"mat col index: "<<mat_col_idx<<std::endl;
+                        // std::cout<<"triplet indices: "<<triplet[0]<<","<<triplet[1]<<","<<triplet[2]<<std::endl;
 
                         if (USING_COMOVING_FRAME)
                         {   //TODO: give a more solid reasoning why the doppler shift should be calculated using the rayidx, instead of triplet[0]
@@ -2268,7 +2268,7 @@ inline Real Collocation :: get_emissivity(Model& model, Size rayid, Size freqid,
 
 inline void Collocation :: setup_rhs_Eigen(Model& model)
 {
-    rhs = VectorXr::Zero (collocation_mat.cols());
+    rhs = VectorXr::Zero (collocation_mat.rows());
     for (Size rayid=0; rayid<parameters.nrays(); rayid++)
     {
         for (Size freqid=0; freqid<n_freq_bases; freqid++)
@@ -2333,7 +2333,7 @@ inline void Collocation :: setup_rhs_Eigen(Model& model)
 //Sets up the rhs correctly for the second order feautrier version of the collocation method
 inline void Collocation :: setup_rhs_Eigen_2nd_feautrier(Model& model)
 {
-    rhs = VectorXr::Zero (collocation_mat.cols());
+    rhs = VectorXr::Zero (collocation_mat.rows());
     for (Size rayid=0; rayid<parameters.hnrays(); rayid++)//for u and v at the same time
     {
         for (Size freqid=0; freqid<n_freq_bases; freqid++)
@@ -2432,10 +2432,10 @@ inline void Collocation :: rescale_matrix_and_rhs_Eigen(Model& model)
 
     // //get inverse of diagonal as diagonal matrix
     // //FIXME: check whether we have zero on the diagonal; if yes, abort
-    const auto diagonal_inverse=collocation_mat.diagonal().asDiagonal().inverse();
-    rhs=diagonal_inverse*rhs;
-    collocation_mat=diagonal_inverse*collocation_mat;
-    
+    // const auto diagonal_inverse=collocation_mat.diagonal().asDiagonal().inverse();
+    // rhs=diagonal_inverse*rhs;
+    // collocation_mat=diagonal_inverse*collocation_mat;
+
     std::cout<<"collocation rows: "<<collocation_mat.rows()<<std::endl;
     std::cout<<"collocation cols: "<<collocation_mat.cols()<<std::endl;
     std::cout<<"nb basis renorm factors: "<<basis_renorm_factor.rows()<<", "<<basis_renorm_factor.cols()<<std::endl;
@@ -2452,6 +2452,7 @@ inline void Collocation :: rescale_matrix_and_rhs_Eigen(Model& model)
     if (model.COMPUTING_SVD_AND_CONDITION_NUMBER)
     {
         Eigen::JacobiSVD<MatrixXr> svd(collocation_mat);
+        std::cout<<"here"<<std::endl;
         Real cond = svd.singularValues()(0)
         / svd.singularValues()(svd.singularValues().size()-1);
         std::cout<<"condition number: "<<cond<<std::endl;
@@ -2532,8 +2533,22 @@ inline void Collocation :: solve_collocation(Model& model)
     // std::cout << "#iterations:     " << solver.iterations() << std::endl;
     // std::cout << "estimated error: " << solver.error()      << std::endl;
 
-    //SparseQR requires the matrix to be in compressed form.
-    collocation_mat.makeCompressed();
+    // std::cout<<"is matrix compressed before makeCompressed: "<<collocation_mat.isCompressed()<<std::endl;
+    // //SparseQR requires the matrix to be in compressed form. But set_from_triplets already puts it in compressed form
+    // collocation_mat.makeCompressed();
+    //
+    // std::cout<<"is matrix compressed after makeCompressed: "<<collocation_mat.isCompressed()<<std::endl;
+
+    std::cout<<"collocation rows: "<<collocation_mat.rows()<<std::endl;
+    std::cout<<"collocation cols: "<<collocation_mat.cols()<<std::endl;
+    std::cout<<"rhs rows: "<<rhs.size()<<std::endl;
+
+    // Eigen :: LeastSquaresConjugateGradient<SparseMatrix<Real>> solver;
+    // solver.compute(collocation_mat);
+    // basis_coefficients=solver.solve(rhs);
+    //
+    // std::cout << "#iterations:     " << solver.iterations() << std::endl;
+    // std::cout << "estimated error: " << solver.error()      << std::endl;
 
     Eigen :: SparseQR <SparseMatrix<Real>, COLAMDOrdering<int>> solver;
 
@@ -2583,6 +2598,7 @@ inline void Collocation :: solve_collocation(Model& model)
     {
       std::cout<<"i: "<<i<<"value: "<<basis_coefficients(i)<<std::endl;
     }
+
     //denormalize the coefficients
     // basis_coefficients=basis_renorm_factor.asDiagonal()*basis_coefficients;
     // basis_coefficients=basis_renorm_factor*basis_coefficients;
