@@ -14,6 +14,7 @@ private:
     // Comoving frame formulation not necessary and complicates equations; therefore to be deprecated
     // const bool USING_COMOVING_FRAME=true;//toggle for using the comoving frame
     const bool USING_COMOVING_FRAME=false;
+    const bool USING_LEAST_SQUARES=false;
 
     //internal parameters for the basis functions
     const Real TRUNCATION_SIGMA=5.0; //< if Delta(freq)>trunc_sigma*freq_width just set the result from the gaussian basis function to zero (as it is almost zero)
@@ -21,8 +22,6 @@ private:
     const Real SLOPE_STEEPNESS=4.0;//4.0;//slope steepness, also for stabilizing the equations; will practically be divided by 4 at x=0.
     const Real FREQ_OFFSET=0.0;//-0.2;//offset for the frequency basis functions (in terms of the inverse line width (mind the sqrt(2)))-in comoving frame
     //FIXME: freq offset makes the freq cutoff condition a bit nonsymmetrical
-    const Real MAX_FREQ_QUAD_RATIO=0.7;//gives the maximum ratio between evaluation in the neighboring freq basis versus the evaluation in local frequency basis
-    const Real SQRT_MIN_LN_RATIO=std::sqrt(std::log(1.0/MAX_FREQ_QUAD_RATIO));//assuming a gaussian frequency basis function, this is a useful coonstant for determining the inverse width
 
     //TODO: remove slope, as it can cause unphysical limit behaviour due to numerical inaccuracies
     const Real SLOPE_THRESHOLD=7.0*2.0;//The threshold for determining whether we need to add a slope to the radial basis function
@@ -47,11 +46,13 @@ private:
     // const Real DISTANCE_EPS=0.1;//TODO: should actually be chosen adaptively (depending on how close the closest point lies)
     // vector<Real> half_min_dist; //Half the distance for
 
+    const Real MAX_FREQ_QUAD_RATIO=0.7;//gives the maximum ratio between evaluation in the neighboring freq basis versus the evaluation in local frequency basis
+    const Real SQRT_MIN_LN_RATIO=std::sqrt(std::log(1.0/MAX_FREQ_QUAD_RATIO));//assuming a gaussian frequency basis function, this is a useful coonstant for determining the inverse width
     //FIXME: actually compute the necessary value; eval of 0.7 in nearest frequency
-    const Real FREQ_QUADRATURE_WING_DISTANCE_AMP_FACTOR=1.5;//In order to sample the line wings sufficiently in the case of doppler shifts, we increase the distance between the frequencies on the line wings.
-    const Size FREQ_QUADRATURE_CENTER_N_ELEMENTS=7;//the number of quadrature elements which should be in the line center
+    // const Real FREQ_QUADRATURE_WING_DISTANCE_AMP_FACTOR=1/MAX_FREQ_QUAD_RATIO;//In order to sample the line wings sufficiently in the case of doppler shifts, we increase the distance between the frequencies on the line wings.
+    const Size FREQ_QUADRATURE_CENTER_N_ELEMENTS=3;//the number of quadrature elements which should be in the line center
     //TODO?: let this depend on parameters.nquads()?
-    const Real FREQ_QUADRATURE_EDGE=2.0;//In order to make sure to sample the boundary condition well for all points, a safety param is included (enlarges the bounds for the frequency quadrature respectively subtracting and adding this to the min and max doppler shifts)
+    const Real FREQ_QUADRATURE_EDGE=1.0;//In order to make sure to sample the boundary condition well for all points, a safety param is included (enlarges the bounds for the frequency quadrature respectively subtracting and adding this to the min and max doppler shifts)
     // const Real FREQ_QUADRATURE_CENTER_SEPARATION_DISTANCE=(2.0*FREQ_QUADRATURE_EDGE)/(FREQ_QUADRATURE_CENTER_N_ELEMENTS-1);//The separation distance of the central frequency quadrature points (in terms of line width)
 
     Size n_freq_bases=0;//denotes the total number of frequencies we evaluate (=size frequency_quadrature=size frequency_inverse_width_quadrature)
@@ -88,7 +89,8 @@ private:
     // Also, this (and the same thing for the rbf) could be replaced by a vector<set<>>; as we do not particularly care for the order
 
     const Size N_POINTS_IN_RADIAL_BASIS=8;//the number of points in each radial basis function
-    const Real MIN_OPTICAL_DEPTH_DIFF=0.001;//the minimal optical depth difference between basis functions
+    const Real MIN_OPTICAL_DEPTH_DIFF=0.0001;//the minimal optical depth difference between basis functions
+    const Real boundary_condition_LS_importance_factor=std::pow(10,4);//
 
     vector<Size> points_in_grid;//the indices of the points we use in the grid
     Size n_points_in_grid;
@@ -194,6 +196,9 @@ public:
 
     inline void setup_basis_matrix_Eigen(Model& model);
     inline void setup_rhs_Eigen(Model& model);//Note: assumes one has first setup the basis matrix
+
+    inline void setup_basis_square_matrix_Eigen(Model& model);
+    inline void setup_rhs_square_Eigen(Model& model);//Note: assumes one has first setup the basis matrix
 
     inline void setup_basis_matrix_Eigen_2nd_feautrier(Model& model);
     inline void setup_rhs_Eigen_2nd_feautrier(Model& model);

@@ -382,10 +382,20 @@ int Model :: compute_radiation_field_collocation ()
     }
     else
     {
-        solver.setup_basis_matrix_Eigen(*this);
-        std::cout << "Setting up rhs"<<std::endl;
-        solver.setup_rhs_Eigen(*this);//Note: assumes one has first setup the basis matrix
-        std::cout << "Solving collocation"<<std::endl;
+        if (USING_LEAST_SQUARES)
+        {
+            solver.setup_basis_matrix_Eigen(*this);
+            std::cout << "Setting up rhs"<<std::endl;
+            solver.setup_rhs_Eigen(*this);//Note: assumes one has first setup the basis matrix
+            std::cout << "Solving collocation"<<std::endl;
+        }
+        else
+        {
+            solver.setup_basis_square_matrix_Eigen(*this);
+            std::cout << "Setting up rhs"<<std::endl;
+            solver.setup_rhs_square_Eigen(*this);//Note: assumes one has first setup the basis matrix
+            std::cout << "Solving collocation"<<std::endl;
+        }
         solver.solve_collocation(*this);
         std::cout << "Computing J"<<std::endl;
         solver.compute_J(*this);

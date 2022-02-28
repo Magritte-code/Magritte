@@ -19,6 +19,7 @@
 struct Model
 {
     const bool USING_COLLOCATION_FEAUTRIER=false;   ///debug stuff for denoting whether we are using the feautrier version of the collocation solver
+    const bool USING_LEAST_SQUARES=false;//TODO: demirror the same variable in collocation
 
     const Size MIN_INTERPOLATION_POINTS=16;   ///< Minimum number of points used during interpolation (~=average nb neighors in voronoi grid)
 

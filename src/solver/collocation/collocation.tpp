@@ -1,8 +1,10 @@
 #include <cmath>
 #include <Eigen/Core>
 #include <map>
+#include <limits>
 
 //Using a constructed kd tree, directly return the distance towards to farthest of the 'nb_neighbors_to_query' neighbors.
+//Warning: the number of neighbors to query must be less or equal than the number of points in the kdtree
 inline Real get_kd_tree_basis_radius(Size basis_point, kd_tree& kdtree, Size nb_neighbors_to_query, Geometry& geometry)
 {
     std::vector<double> query_pt(3);
@@ -171,8 +173,8 @@ inline void Collocation :: prune_positional_bases(Model& model)
             std::cout<<"points_within_radius size: "<<points_within_radius.size()<<std::endl;
             for (Size neighbor: points_within_radius)
             {
-                if (neighbor!=center_point)//precaution against a basis point deciding to delete itself
-                {
+                if (neighbor!=center_point && model.geometry.not_on_boundary(neighbor))//precaution against a basis point deciding to delete itself
+                {// also precaution against deleting boundary points (as the boundary condition equation might also get deleted)
                     //check if distance*opacity<threshold; if so prune the basis at the neighboring location (and remove them from the remaining_points list not yet already done)
                     Vector3D temp_vector=model.geometry.points.position[neighbor]-model.geometry.points.position[center_point];
                     const Real temp_dist=std::sqrt(temp_vector.squaredNorm());
@@ -253,6 +255,9 @@ inline void Collocation :: prune_positional_bases(Model& model)
         //for each remaining basis point, figure out the typical radius
         Size temp_counter=0;
         const Size nb_positional_basis_funs=remaining_points_after_pruning[freqid].size();//for this frequency, the number of positional basis functions left after pruning
+        // const Size nb_neighbors_to_query=N_POINTS_IN_RADIAL_BASIS;//we cannot query the radius if we use more points than there remain in the grid
+        const Size nb_neighbors_to_query=std::min(N_POINTS_IN_RADIAL_BASIS,nb_positional_basis_funs);//we cannot query the radius if we use more points than there remain in the grid
+        //FIXME: make sure that the rsulting radius is larger than 0
         n_point_bases[freqid]=nb_positional_basis_funs;
         cum_n_point_bases[freqid+1]=cum_n_point_bases[freqid]+nb_positional_basis_funs;
         basis_point_idx[freqid].resize(nb_positional_basis_funs);//maps to the original grid points
@@ -262,7 +267,7 @@ inline void Collocation :: prune_positional_bases(Model& model)
         {
             basis_point_idx[freqid][temp_counter]=basis_center;
             local_basis_point_idx[freqid][temp_counter]=indexmap.at(basis_center);
-            rbf_radii[freqid][temp_counter]=get_kd_tree_basis_radius(basis_center, mat_index, N_POINTS_IN_RADIAL_BASIS, model.geometry);
+            rbf_radii[freqid][temp_counter]=get_kd_tree_basis_radius(basis_center, mat_index, nb_neighbors_to_query, model.geometry);
             std::cout<<"rbf radius: "<<rbf_radii[freqid][temp_counter]<<std::endl;
             temp_counter++;
         }
@@ -644,9 +649,25 @@ inline void Collocation :: setup_basis(Model& model)
             //distribute the center quadrature points within the bounds of min and max
             const Real freq_quad_delta=max_freq_quad-min_freq_quad;
             std::cout<<"freq_quad_delta: "<<freq_quad_delta<<std::endl;
+            std::cout<<"inverse width: "<<model.lines.inverse_width(0,lineid)<<std::endl;
+            std::cout<<"freq_quad_delta/inverse width: "<<freq_quad_delta/model.lines.inverse_width(0,lineid)<<std::endl;
             const Real line_center_inv_width=SQRT_MIN_LN_RATIO*(FREQ_QUADRATURE_CENTER_N_ELEMENTS-1)/freq_quad_delta;
+            std::cout<<"line center freq diff:"<<line_center_freq_diff<<std::endl;
+            std::cout<<"line center inverse width: "<<line_center_inv_width<<std::endl;
 
             //factors for determining the number of wing frequency quadrature points, independent of the exact line
+            const Real freq_quad_spacing_squared=std::pow(line_center_freq_diff*line_center_inv_width,2);
+            std::cout<<"freq quad spacing squared"<<freq_quad_spacing_squared<<std::endl;
+            std::cout<<"ln (1/quad ratio)"<<std::log(1.0/MAX_FREQ_QUAD_RATIO)<<std::endl;
+
+            const Real FREQ_QUADRATURE_WING_DISTANCE_AMP_FACTOR=1.3;//1+std::sqrt(2);
+            // const Real FREQ_QUADRATURE_WING_DISTANCE_AMP_FACTOR=
+            //   (freq_quad_spacing_squared
+            //   +std::sqrt(std::log(1.0/MAX_FREQ_QUAD_RATIO)*freq_quad_spacing_squared
+            //              +std::pow(freq_quad_spacing_squared,2)))
+            //   /std::log(1.0/MAX_FREQ_QUAD_RATIO);//In order to sample the line wings sufficiently in the case of doppler shifts, we increase the distance between the frequencies on the line wings.
+            std::cout<<"FREQ_QUADRATURE_WING_DISTANCE_AMP_FACTOR: "<<FREQ_QUADRATURE_WING_DISTANCE_AMP_FACTOR<<std::endl;
+
             const Real prefactor=(FREQ_QUADRATURE_WING_DISTANCE_AMP_FACTOR-1.0)/FREQ_QUADRATURE_WING_DISTANCE_AMP_FACTOR;
             const Real div_factor=std::log(FREQ_QUADRATURE_WING_DISTANCE_AMP_FACTOR);
 
@@ -665,10 +686,14 @@ inline void Collocation :: setup_basis(Model& model)
             wing_frequency_inverse_widths.resize(number_wing_quadratures);
             for (Size idx=0; idx<number_wing_quadratures; idx++)
             {
-                //explicit non-recursive formula of repeatedly adding factor^(idx+1)
-                wing_frequency_positions[idx]=(std::pow(FREQ_QUADRATURE_WING_DISTANCE_AMP_FACTOR, idx+2)
+              //explicit non-recursive formula of repeatedly adding factor^(idx+1)
+                const Real mult_factor=(std::pow(FREQ_QUADRATURE_WING_DISTANCE_AMP_FACTOR, idx+2)
                         -FREQ_QUADRATURE_WING_DISTANCE_AMP_FACTOR)/(FREQ_QUADRATURE_WING_DISTANCE_AMP_FACTOR-1);
-                wing_frequency_inverse_widths[idx]=std::pow(FREQ_QUADRATURE_WING_DISTANCE_AMP_FACTOR, idx+1)*line_center_inv_width;
+                wing_frequency_positions[idx]=mult_factor*line_center_freq_diff;
+                wing_frequency_inverse_widths[idx]=line_center_inv_width/std::pow(FREQ_QUADRATURE_WING_DISTANCE_AMP_FACTOR, idx+1);
+                std::cout<<"wing freq positions: "<<wing_frequency_positions[idx]<<std::endl;
+                std::cout<<"wing freq inverse width: "<<wing_frequency_inverse_widths[idx]<<std::endl;
+                std::cout<<"wing freq positions*center inverse width: "<<wing_frequency_positions[idx]*model.lines.inverse_width(0,lineid)<<std::endl;
             }
 
 
@@ -707,6 +732,15 @@ inline void Collocation :: setup_basis(Model& model)
                 frequency_quadrature[freq_idx_counter]=max_freq_quad+dist_to_add;
                 frequency_inverse_width_quadrature[freq_idx_counter]=wing_frequency_inverse_widths[quadid];
                 freq_idx_counter++;
+            }
+
+
+            for (Size freqid=0; freqid<total_number_line_quadratures; freqid++)
+            {
+                std::cout<<"freq quad positions-line freq: "<<frequency_quadrature[freqid]-line_freq<<std::endl;
+                std::cout<<"(freq quad positions-line freq)*line inverse width: "<<(frequency_quadrature[freqid]-line_freq)*model.lines.inverse_width(0,lineid)<<std::endl;
+                std::cout<<"freq quad inverse widths: "<<frequency_inverse_width_quadrature[freqid]<<std::endl;
+
             }
 
         }
@@ -825,8 +859,8 @@ inline void Collocation :: setup_basis(Model& model)
                 // frequencies[rayid][pointid][lineid]=doppler_shift*model.lines.line[lineid];
                 frequencies[rayid][pointid][freqid]=doppler_shift*frequency_quadrature[freqid];
                 frequencies_inverse_widths[rayid][pointid][freqid]=frequency_inverse_width_quadrature[freqid]/doppler_shift;
-                std::cout<<"frequencies: "<<frequencies[rayid][pointid][freqid]<<std::endl;
-                std::cout<<"frequencies_inverse_widths: "<<frequencies_inverse_widths[rayid][pointid][freqid]<<std::endl;
+                // std::cout<<"frequencies: "<<frequencies[rayid][pointid][freqid]<<std::endl;
+                // std::cout<<"frequencies_inverse_widths: "<<frequencies_inverse_widths[rayid][pointid][freqid]<<std::endl;
                 // frequencies[rayid][pointid][freqid]=doppler_shift*model.radiation.frequencies.nu[freqid];
 
                 // Size l=model.radiation.frequencies.corresponding_l_for_spec[freqid];   ///< number of line species corresponding to frequency
@@ -934,7 +968,8 @@ inline void Collocation :: setup_basis(Model& model)
                 //TODO: maybe do something else than a binary choice between slope and no slope
                 if (point_opacity*basis_radius>SLOPE_THRESHOLD)
                 {
-                    rbf_using_slope[rayid][freqid][basis_point_id]=false;
+                    rbf_using_slope[rayid][freqid][basis_point_id]=true;//forcefully enabling slope
+                    // rbf_using_slope[rayid][freqid][basis_point_id]=false;
                 }
                 else
                 {
@@ -1322,7 +1357,7 @@ inline Real Collocation :: basis_point_der(Size basis_ray_id, Size basis_freq_id
     }
     else if (distance==0)
     {
-        std::cout<<"distance is zero"<<std::endl;
+        // std::cout<<"distance is zero"<<std::endl;
         Real rel_dist=distance/radius;
         // std::cout<<"manip der factor: "<<manip_der_factor<<std::endl;
         // Real manip_rel_dist=distance_manip(centerpoint, rel_dist);
@@ -1420,7 +1455,7 @@ inline Real Collocation :: basis_point_der2(Size basis_ray_id, Size basis_freq_i
     }
     else if (distance==0)//TODO: think about removing this, and instead setting costheta to 1... (same effect, less branching?)
     {
-        std::cout<<"distance is zero"<<std::endl;
+        // std::cout<<"distance is zero"<<std::endl;
         // basis -4.0/(1.0+std::pow(rel_dist,3))+6.0/(1.0+std::pow(rel_dist,2))-1;
         return -12/std::pow(radius,2);
 
@@ -1734,6 +1769,232 @@ inline void Collocation :: setup_basis_matrix_Eigen(Model& model)
                             // Real basis_eval=curr_opacity*basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point(triplet[2], curr_location);
                             Real basis_eval=basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point(triplet[0], triplet[1], triplet[2], curr_location, model.geometry);
                             std::cout<<"basis_eval: "<<basis_eval<<std::endl;
+                            Real boundary_condition_mult_factor=boundary_condition_LS_importance_factor;
+                            // std::cout<<"basis_dir_eval: "<<basis_direction(triplet[0])<<std::endl;
+                            // std::cout<<"basis_freq_eval: "<<basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)<<std::endl;
+                            //add triplet (mat_idx(triplet[0],triplet[1],triplet[2]),directional_der)
+                            eigen_triplets.push_back (Triplet<Real, Size> (mat_row_idx, mat_col_idx, basis_eval*boundary_condition_mult_factor));
+                        }
+                        std::cout<<"bdy condition triplets: "<<triplet[0]<<", "<<triplet[1]<<", "<<triplet[2]<<std::endl;
+                        std::cout<<"basis_freq: "<<basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)<<std::endl;
+                        std::cout<<"basis_point: "<<basis_point(triplet[0], triplet[1], triplet[2], curr_location, model.geometry)<<std::endl;
+
+                    }
+                }
+                else
+                {
+                    for (std::vector<Size> triplet: nonzero_basis_triplets)
+                    {
+                        const Size mat_col_idx=get_mat_col_index(triplet[0],triplet[1],triplet[2]);
+                        // std::cout<<"mat col index: "<<mat_col_idx<<std::endl;
+                        // std::cout<<"triplet indices: "<<triplet[0]<<","<<triplet[1]<<","<<triplet[2]<<std::endl;
+
+                        if (USING_COMOVING_FRAME)
+                        {   //TODO: give a more solid reasoning why the doppler shift should be calculated using the rayidx, instead of triplet[0]
+                            // const Real doppler_shift=calculate_doppler_shift_observer_frame(model.geometry.points.velocity[triplet[2]]-model.geometry.points.velocity[pointidx]
+                            //                                                                 , model.geometry.rays.direction[rayidx]);
+                            // const Real doppler_shifted_frequency=curr_freq*doppler_shift;
+                            // const Real doppler_shifted_opacity=get_opacity(model, rayidx, lineidx, pointidx, doppler_shift);
+                            // Real doppler_shifted_frequency=curr_freq;//try it out non-doppler shifted
+                            // Real directional_der=basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], doppler_shifted_frequency)*basis_point_der(triplet[2], curr_location, triplet[0], model.geometry)/curr_opacity;///doppler_shifted_opacity;///curr_opacity;
+                            // Real basis_eval=basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], doppler_shifted_frequency)*basis_point(triplet[2], curr_location, triplet[0], model.geometry);
+                            Real directional_der=basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point_der(triplet[0], triplet[1], triplet[2], curr_location, model.geometry)/curr_opacity;///doppler_shifted_opacity;///curr_opacity;
+                            Real basis_eval=basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point(triplet[0], triplet[1], triplet[2], curr_location, model.geometry);
+                            // std::cout<<"curr_opacity: "<<curr_opacity<<std::endl;
+                            // std::cout<<"basis_eval+dir_der: "<<basis_eval+directional_der<<std::endl;
+                            // std::cout<<"basis_eval: "<<basis_eval<<std::endl;
+                            // std::cout<<"dir_der: "<<directional_der<<std::endl;
+                            // std::cout<<"basis_freq: "<<basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)<<std::endl;
+                            // std::cout<<"basis_point: "<<basis_point(triplet[2], curr_location, triplet[0], model.geometry)<<std::endl;
+                            Real doppler_shift_term=0;//TODO: add frequency quadrature;; TODO: think about approximating velocity gradient somehow at the point itself?
+
+                            doppler_shift_term=-local_velocity_gradient*curr_freq/curr_opacity*
+                                  basis_direction(triplet[0])*basis_freq_der(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point(triplet[0], triplet[1], triplet[2], curr_location, model.geometry);
+
+                            // std::cout<<"velocity grad: "<<local_velocity_gradient<<std::endl;
+                            // std::cout<<"freq: "<<non_doppler_shifted_frequencies[freqidx]<<std::endl;
+                            // std::cout<<"1/opacity: "<<1.0/curr_opacity<<std::endl;
+                            // std::cout<<"doppler_shift_spat_der_ratio"<<local_velocity_gradient*non_doppler_shifted_frequencies[freqidx]*basis_freq_der(triplet[0], triplet[1], triplet[2], curr_freq)/basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point(triplet[2], curr_location, triplet[0], model.geometry)/basis_point_der(triplet[2], curr_location, triplet[0], model.geometry)<<std::endl;
+                            // std::cout<<"inverse width: "<<non_doppler_shifted_inverse_widths[triplet[1]][triplet[2]]<<std::endl;
+                            // std::cout<<"doppler_shift_term: "<<doppler_shift_term<<std::endl;
+                            // std::cout<<"doppler_shift_basis_ratio: "<<-local_velocity_gradient*non_doppler_shifted_frequencies[freqidx]/curr_opacity*basis_freq_der(triplet[0], triplet[1], triplet[2], curr_freq)/basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)<<std::endl;
+                            // std::cout<<"basis_freq: "<<basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)<<std::endl;
+                            // doppler_shift_term=0;
+
+                            eigen_triplets.push_back (Triplet<Real, Size> (mat_row_idx, mat_col_idx, directional_der+basis_eval+doppler_shift_term));
+
+                            // //For every scattering direction! add scattering//also divide by curr_opacity
+                            // for (Size temp_rayidx=0; temp_rayidx<parameters.nrays(); temp_rayidx++)
+                            // {
+                            //     const Size scatt_mat_idx=get_mat_index(temp_rayidx,triplet[1],triplet[2]);
+                            //     //TODO: add toggle to whether we are actually using scattering
+                            //     Real integral_scatt_redistr=0;//FIXME: add me //in uniform scattering, this term is proportional to 4*pi/N_rays
+                            //     Real scattering=-basis_freq(temp_rayidx, triplet[1], triplet[2], curr_freq)*basis_point(triplet[2], curr_location)*integral_scatt_redistr;
+                            //     //add triplet (mat_idx(temp_rayidx,triplet[1],triplet[2]),scattering)
+                            //     // eigen_triplets.push_back (Triplet<Real, Size> (curr_mat_idx, scatt_mat_idx, scattering));
+                            // }
+                        }
+                        else
+                        {
+                            //Start with the directional derivative (in source function formulation divided by the opacity)
+                            // Real directional_der=basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point_der(triplet[2], curr_location, triplet[0], model.geometry);
+                            Real directional_der=basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point_der(triplet[0], triplet[1], triplet[2], curr_location, model.geometry)/curr_opacity;
+                            // std::cout<<"directional_der: "<<directional_der<<std::endl;
+                            // directional_der=0;
+                            //add triplet (mat_idx(triplet[0],triplet[1],triplet[2]),directional_der)
+                            // Real opacity=curr_opacity*basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point(triplet[2], curr_location);
+                            Real basis_eval=basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point(triplet[0], triplet[1], triplet[2], curr_location, model.geometry);
+                            // std::cout<<"basis_eval: "<<basis_eval<<std::endl;
+                            // std::cout<<"basis_dir_eval: "<<basis_direction(triplet[0])<<std::endl;
+                            // std::cout<<"basis_freq_eval: "<<basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)<<std::endl;
+                            // std::cout<<"basis_point_eval: "<<basis_point(triplet[2], curr_location)<<std::endl;
+                            // basis_eval*=0.01;
+
+                            eigen_triplets.push_back (Triplet<Real, Size> (mat_row_idx, mat_col_idx, directional_der+basis_eval));
+
+                            // //For every scattering direction! add scattering//also divide by curr_opacity
+                            // for (Size temp_rayidx=0; temp_rayidx<parameters.nrays(); temp_rayidx++)
+                            // {
+                            //     const Size scatt_mat_idx=get_mat_index(temp_rayidx,triplet[1],triplet[2]);
+                            //     //TODO: add toggle to whether we are actually using scattering
+                            //     Real integral_scatt_redistr=0;//FIXME: add me //in uniform scattering, this term is proportional to 4*pi/N_rays
+                            //     Real scattering=-basis_freq(temp_rayidx, triplet[1], triplet[2], curr_freq)*basis_point(triplet[2], curr_location)*integral_scatt_redistr;
+                            //     //add triplet (mat_idx(temp_rayidx,triplet[1],triplet[2]),scattering)
+                            //     // eigen_triplets.push_back (Triplet<Real, Size> (curr_mat_idx, scatt_mat_idx, scattering));
+                            // }
+
+                        }
+
+                    }
+                }
+            }
+        }
+    }
+
+    // std::cout<<"resizing collocation mat"<<std::endl;
+
+    //after all this, construct the matrix
+    collocation_mat.resize (evaluation_size, tot_n_basis_functions);
+
+    // std::cout<<"setting collocation mat"<<std::endl;
+    collocation_mat.setFromTriplets (eigen_triplets.begin(), eigen_triplets.end());
+
+    //TODO: add toggle for computing svd and condition number
+    if (model.COMPUTING_SVD_AND_CONDITION_NUMBER)
+    {
+        Eigen::JacobiSVD<MatrixXr> svd(collocation_mat);
+        Real cond = svd.singularValues()(0)
+        / svd.singularValues()(svd.singularValues().size()-1);
+        std::cout<<"condition number: "<<cond<<std::endl;
+        // collocation_mat.data().squeeze();
+        std::cout << MatrixXr(collocation_mat) << std::endl;
+    }
+}
+
+
+/// Sets up the basis matrix for the default radiative transfer equation
+/// Using only the evaluation points at all basis locations
+inline void Collocation :: setup_basis_square_matrix_Eigen(Model& model)
+{
+    //We are currently not using the lambda operator, so set to zero
+    for (auto &lspec : model.lines.lineProducingSpecies) {lspec.lambda.clear();}
+
+    // Size mat_size=parameters.nrays()*parameters.nfreqs()*point_locations.size();
+    // const Size evaluation_size=parameters.nrays()*n_freq_bases*n_points_in_grid;//number of points at which we evaluate=is number of rows
+    const Size tot_n_basis_functions=parameters.nrays()*cum_n_point_bases[n_freq_bases];//total number of basis functions=number of columns//TODO: define somewhere in general
+    const Size evaluation_size=tot_n_basis_functions;
+    vector<Triplet<Real, Size>> eigen_triplets;
+    eigen_triplets.reserve(evaluation_size*N_POINTS_IN_RADIAL_BASIS);//matrix size times number of interacting points (does not include scattering) and frequencies
+    //TODO: also multiply by estimate of average number/upper bound of interacting frequencies; currently we will need to reallocate
+
+    for (Size rayid=0; rayid<parameters.nrays(); rayid++)
+    {
+        std::cout<<"rayid: "<<rayid<<std::endl;
+        std::cout<<"raydirection: "<<model.geometry.rays.direction[rayid].x()<<std::endl;
+        // for (Size freqidx=0; freqidx<parameters.nfreqs(); freqidx++)
+        for (Size freqid=0; freqid<n_freq_bases; freqid++)
+        {
+
+            for (Size point_basis_id=0; point_basis_id<n_point_bases[freqid]; point_basis_id++)
+            {
+                const Size pointid=local_basis_point_idx[freqid][point_basis_id];
+                const Size point_in_grid=basis_point_idx[freqid][point_basis_id];
+                //Now creating all the triplets, thus we need all nonzero basis triplets
+                std::set<std::vector<Size>> nonzero_basis_triplets;
+                get_nonzero_basis_triplets(nonzero_basis_triplets, rayid, freqid, pointid);
+
+                // const Size curr_mat_idx=get_mat_index(rayidx, freqidx, pointidx);
+                // const Size mat_row_idx=get_mat_row_index(rayid, freqid, pointid);
+                const Size mat_row_idx=get_mat_col_index(rayid, freqid, point_basis_id);//As we want to make a square matrix, we replace the row indices with column indices
+                const Real curr_opacity=get_opacity(model, rayid, freqid, pointid);
+                Vector3D curr_location=point_locations[pointid];
+
+                //TODO: maybe refactor this part
+                Real local_velocity_gradient=0;
+
+                double dist=0;
+                double ddist=0;
+                Size next_point=model.geometry.get_next(point_in_grid, rayid, point_in_grid, dist, ddist);
+                if (next_point!=parameters.npoints())//if there actually exists a next point
+                {
+                    // std::cout<<"dist: "<<dist<<std::endl;
+                    local_velocity_gradient=model.geometry.rays.direction[rayid].dot(model.geometry.points.velocity[next_point]-model.geometry.points.velocity[point_in_grid])/dist;
+                    // std::cout<<"local velocity grad: "<<local_velocity_gradient<<std::endl;
+                }
+                else
+                {
+                    double dist=0;
+                    double ddist=0;
+                    Size prev_point=model.geometry.get_next(point_in_grid, model.geometry.rays.antipod[rayid], point_in_grid, dist, ddist);
+                    if (prev_point!=parameters.npoints())
+                    {
+                        local_velocity_gradient=model.geometry.rays.direction[rayid].dot(model.geometry.points.velocity[point_in_grid]-model.geometry.points.velocity[prev_point])/dist;
+                    }//otherwise we only have a single point on the ray in this direction; so defining a non-zero velocity gradient seems silly
+                }
+                //TODO: refactor until here
+
+
+                Real curr_freq=0;
+                if (USING_COMOVING_FRAME)
+                {
+                    curr_freq=non_doppler_shifted_frequencies[freqid];
+                }
+                else
+                {
+                    curr_freq=frequencies[rayid][pointid][freqid];
+                }
+
+                bool boundary_condition_required=false;
+                if (!model.geometry.not_on_boundary(point_in_grid))
+                {
+                    const bool bdy_condition_req_in_direction=is_boundary_condition_needed_for_direction_on_boundary(model, rayid, point_in_grid);
+                    boundary_condition_required=bdy_condition_req_in_direction;
+                }
+
+                if (boundary_condition_required)
+                {
+                    //Merely evaluating the intensity at the boundary
+                    for (std::vector<Size> triplet: nonzero_basis_triplets)
+                    {
+                        const Size mat_col_idx=get_mat_col_index(triplet[0],triplet[1],triplet[2]);
+                        // std::cout<<"mat col index: "<<mat_col_idx<<std::endl;
+                        // std::cout<<"triplet indices: "<<triplet[0]<<","<<triplet[1]<<","<<triplet[2]<<std::endl;
+
+                        if (USING_COMOVING_FRAME)
+                        {
+                            // const Real doppler_shifted_frequency=curr_freq*calculate_doppler_shift_observer_frame(model.geometry.points.velocity[triplet[2]]-model.geometry.points.velocity[pointidx]
+                            //                                                                                       , model.geometry.rays.direction[rayidx]);
+                            // Real doppler_shifted_frequency=curr_freq;//try it out non-doppler shifted
+                            // Real basis_eval=basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], doppler_shifted_frequency)*basis_point(triplet[2], curr_location, triplet[0], model.geometry);
+                            Real basis_eval=basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point(triplet[0], triplet[1], triplet[2], curr_location, model.geometry);
+                            eigen_triplets.push_back (Triplet<Real, Size> (mat_row_idx, mat_col_idx, basis_eval));
+                        }
+                        else
+                        {
+                            //In order to make this term of the same size as the others, multiply by the opacity (only in emissivity formulation)
+                            // Real basis_eval=curr_opacity*basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point(triplet[2], curr_location);
+                            Real basis_eval=basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)*basis_point(triplet[0], triplet[1], triplet[2], curr_location, model.geometry);
+                            std::cout<<"basis_eval: "<<basis_eval<<std::endl;
                             // std::cout<<"basis_dir_eval: "<<basis_direction(triplet[0])<<std::endl;
                             // std::cout<<"basis_freq_eval: "<<basis_freq(triplet[0], triplet[1], triplet[2], curr_freq)<<std::endl;
                             //add triplet (mat_idx(triplet[0],triplet[1],triplet[2]),directional_der)
@@ -1854,6 +2115,8 @@ inline void Collocation :: setup_basis_matrix_Eigen(Model& model)
         std::cout << MatrixXr(collocation_mat) << std::endl;
     }
 }
+
+
 
 
 /// Sets up the basis matrix for the second order feautrier version of the radiative transfer equation
@@ -2311,6 +2574,75 @@ inline void Collocation :: setup_rhs_Eigen(Model& model)
                 // boundary_condition_required=false;
                 if (boundary_condition_required)
                 {
+                    Real boundary_condition_mult_factor=boundary_condition_LS_importance_factor;
+                    rhs[curr_mat_row_idx]=boundary_intensity(model, rayid, freqid, pointid)*boundary_condition_mult_factor;
+                }
+                else
+                {
+                    //TODO: possibly some doppler shift required here? //no, we do not interpolate these values
+                    rhs[curr_mat_row_idx]=get_emissivity(model, rayid, freqid, pointid)/get_opacity(model, rayid, freqid, pointid);
+                    std::cout<<"emissivity: "<<get_emissivity(model, rayid, freqid, pointid)<<std::endl;
+                    std::cout<<"opacity: "<<get_opacity(model, rayid, freqid, pointid)<<std::endl;
+                }
+            }
+        }
+    }
+    std::cout<<"rhs: "<<rhs<<std::endl;
+
+    rescale_matrix_and_rhs_Eigen(model);
+
+    std::cout<<"rescaled rhs: "<<rhs<<std::endl;
+}
+
+// Sets up the right-hand side for the square matrix
+inline void Collocation :: setup_rhs_square_Eigen(Model& model)
+{
+    rhs = VectorXr::Zero (collocation_mat.rows());
+    std::cout<<"nb collocation rows: "<<collocation_mat.rows()<<std::endl;
+    for (Size rayid=0; rayid<parameters.nrays(); rayid++)
+    {
+        for (Size freqid=0; freqid<n_freq_bases; freqid++)
+        {
+            for (Size point_basis_id=0; point_basis_id<n_point_bases[freqid]; point_basis_id++)
+            {
+                const Size pointid=local_basis_point_idx[freqid][point_basis_id];
+                const Size point_in_grid=basis_point_idx[freqid][point_basis_id];
+                // const Size curr_mat_row_idx=get_mat_row_index(rayid, freqid, pointid);
+                const Size curr_mat_row_idx=get_mat_col_index(rayid, freqid, point_basis_id);//As we want to make a square matrix, we replace the row indices with column indices
+                //FIXME: check if boundary condition needs to apply
+
+                bool boundary_condition_required=false;
+                if (!model.geometry.not_on_boundary(point_in_grid))
+                {
+                    const bool bdy_condition_req_in_direction=is_boundary_condition_needed_for_direction_on_boundary(model, rayid, point_in_grid);
+                    boundary_condition_required=bdy_condition_req_in_direction;
+
+                    // double dist=0;//these two variables are actually not used, but required in the function definition get_next
+                    // double ddist=0;
+                    //
+                    // Size antipod=model.geometry.rays.antipod[rayidx];
+                    //
+                    // const Size point_behind=model.geometry.get_next(pointidx, antipod, pointidx, dist, ddist);
+                    // const Size next_point=model.geometry.get_next(pointidx, rayidx, pointidx, dist, ddist);
+                    // if (point_behind==parameters.npoints())
+                    // {//if there lies no point behind this point, we need to evaluate the boundary condition here
+                    //     boundary_condition_required=true;
+                    //
+                    //     // dist=0;//these two variables are actually not used, but required in the function definition get_next
+                    //     // ddist=0;
+                    //     // //also compute velocity gradient for the balancing factor
+                    //     // Size next_point=model.geometry.get_next(pointidx, rayidx, pointidx, dist, ddist);
+                    //     // std::cout<<"next point: "<<next_point<<std::endl;
+                    //     // if (next_point!=parameters.npoints())//if there actually exists a next point
+                    //     // {
+                    //     //     std::cout<<"computing velocity grad"<<std::endl;
+                    //     //     local_velocity_gradient=model.geometry.rays.direction[rayidx].dot(model.geometry.points.velocity[next_point]-model.geometry.points.velocity[pointidx])/dist;
+                    //     // }
+                    // }
+                }
+                // boundary_condition_required=false;
+                if (boundary_condition_required)
+                {
                     rhs[curr_mat_row_idx]=boundary_intensity(model, rayid, freqid, pointid);
                 }
                 else
@@ -2412,41 +2744,47 @@ inline void Collocation :: rescale_matrix_and_rhs_Eigen(Model& model)
     //FIXME: in least squares, we need to normalize the columns instead
     //So collect all corresponding 'diagonal elements' (for each basis the evaluation centered at that basis)
     //Then only normalize the matrix, not the rhs; after computation rescale the basis coefficients
-    std::cout<<"rescaling matrix"<<std::endl;
-    for (Size basis_ray_id=0; basis_ray_id<parameters.nrays(); basis_ray_id++)//for second order feautrier, we technically need to separate the u and v bases, but their placement in the matrix follows the smae pattern
-    {
-        for (Size basis_freq_id=0; basis_freq_id<n_freq_bases; basis_freq_id++)
-        {
-            for (Size basis_point_id=0; basis_point_id<n_point_bases[basis_freq_id]; basis_point_id++)
-            {
-                Size converted_point_id=local_basis_point_idx[basis_freq_id][basis_point_id];
-                const Size mat_row_idx=get_mat_row_index(basis_ray_id, basis_freq_id, converted_point_id);
-                const Size mat_col_idx=get_mat_col_index(basis_ray_id, basis_freq_id, basis_point_id);
-                const Real centered_eval=collocation_mat.coeff(mat_row_idx,mat_col_idx);//evaluation of the basis function in the central point
-                // basis_renorm_factor(mat_col_idx)=1.0/centered_eval;
-                basis_renorm_factor.insert(mat_col_idx,mat_col_idx)=1.0/centered_eval;
-            }
-        }
-    }
-    std::cout<<"finished rescaling"<<std::endl;
+
+    // std::cout<<"rescaling matrix"<<std::endl;
+    // for (Size basis_ray_id=0; basis_ray_id<parameters.nrays(); basis_ray_id++)//for second order feautrier, we technically need to separate the u and v bases, but their placement in the matrix follows the smae pattern
+    // {
+    //     for (Size basis_freq_id=0; basis_freq_id<n_freq_bases; basis_freq_id++)
+    //     {
+    //         for (Size basis_point_id=0; basis_point_id<n_point_bases[basis_freq_id]; basis_point_id++)
+    //         {
+    //             Size converted_point_id=local_basis_point_idx[basis_freq_id][basis_point_id];
+    //             const Size mat_row_idx=get_mat_row_index(basis_ray_id, basis_freq_id, converted_point_id);
+    //             const Size mat_col_idx=get_mat_col_index(basis_ray_id, basis_freq_id, basis_point_id);
+    //             const Real centered_eval=collocation_mat.coeff(mat_row_idx,mat_col_idx);//evaluation of the basis function in the central point
+    //             // basis_renorm_factor(mat_col_idx)=1.0/centered_eval;
+    //             basis_renorm_factor.insert(mat_col_idx,mat_col_idx)=1.0/centered_eval;
+    //         }
+    //     }
+    // }
+    // std::cout<<"finished rescaling"<<std::endl;
 
     // //get inverse of diagonal as diagonal matrix
     // //FIXME: check whether we have zero on the diagonal; if yes, abort
-    // const auto diagonal_inverse=collocation_mat.diagonal().asDiagonal().inverse();
-    // rhs=diagonal_inverse*rhs;
-    // collocation_mat=diagonal_inverse*collocation_mat;
+    const auto diagonal_inverse=collocation_mat.diagonal().asDiagonal().inverse();
+    std::cout<<"diag inverse rows: "<<diagonal_inverse.rows()<<std::endl;
+    std::cout<<"diag inverse cols: "<<diagonal_inverse.cols()<<std::endl;
+    std::cout<<"diagonal: "<<diagonal_inverse.diagonal()<<std::endl;
+    rhs=diagonal_inverse*rhs;
+    std::cout<<"rhs size: "<<rhs.size()<<std::endl;
+    collocation_mat=diagonal_inverse*collocation_mat;
 
     std::cout<<"collocation rows: "<<collocation_mat.rows()<<std::endl;
     std::cout<<"collocation cols: "<<collocation_mat.cols()<<std::endl;
-    std::cout<<"nb basis renorm factors: "<<basis_renorm_factor.rows()<<", "<<basis_renorm_factor.cols()<<std::endl;
-    std::cout<<"basis renorm factor size: "<<basis_renorm_factor.size()<<std::endl;
+    // std::cout<<"nb basis renorm factors: "<<basis_renorm_factor.rows()<<", "<<basis_renorm_factor.cols()<<std::endl;
+    // std::cout<<"basis renorm factor size: "<<basis_renorm_factor.size()<<std::endl;
 
     // collocation_mat=collocation_mat*(basis_renorm_factor.asDiagonal());
     // SparseMatrix<Real> temp_collocation_mat=collocation_mat*basis_renorm_factor;
-    std::cout<<"test"<<std::endl;
+    // collocation_mat=collocation_mat*basis_renorm_factor;
+    // std::cout<<"test"<<std::endl;
     // collocation_mat=temp_collocation_mat;
 
-    std::cout<<"after rescaling mat"<<std::endl;
+    // std::cout<<"after rescaling mat"<<std::endl;
 
     //also printing out the rescaled version
     if (model.COMPUTING_SVD_AND_CONDITION_NUMBER)
@@ -2535,14 +2873,97 @@ inline void Collocation :: solve_collocation(Model& model)
 
     // std::cout<<"is matrix compressed before makeCompressed: "<<collocation_mat.isCompressed()<<std::endl;
     // //SparseQR requires the matrix to be in compressed form. But set_from_triplets already puts it in compressed form
-    // collocation_mat.makeCompressed();
+
+    Eigen :: SparseLU <SparseMatrix<Real>, COLAMDOrdering<int>> solver;
+
+    std::cout<<"flag 1"<<std::endl;
+
+    if (USING_LEAST_SQUARES)//then solve A^TA=A^Tb
+    {
+        auto col_mat_transpose=collocation_mat.transpose();
+        //for solving least squares, we can just multiply both the rhs and the matrix by the transpose (leads to pseudoinverse)
+        VectorXr rescaled_rhs=col_mat_transpose*rhs;
+        SparseMatrix<Real> symm_collocation_mat=col_mat_transpose*collocation_mat;
+
+
+        const auto diagonal_inverse=symm_collocation_mat.diagonal().asDiagonal().inverse();
+        rescaled_rhs=diagonal_inverse*rescaled_rhs;
+        symm_collocation_mat=diagonal_inverse*symm_collocation_mat;
+
+        cout << "Analyzing system..."      << endl;
+        solver.analyzePattern (symm_collocation_mat);
+
+        cout << "Factorizing system..."    << endl;
+        solver.factorize(symm_collocation_mat);
+
+        if (solver.info() != Eigen::Success)
+        {
+            cout << "Factorization failed with error message:" << endl;
+            cout << solver.lastErrorMessage()                  << endl;
+
+            throw std::runtime_error ("Eigen solver ERROR.");
+        }
+
+        cout << "Solving equations..." << endl;
+
+        basis_coefficients = solver.solve(rescaled_rhs);
+
+        if (solver.info() != Eigen::Success)
+        {
+            cout << "Solving failed with error:" << endl;
+            cout << solver.lastErrorMessage()    << endl;
+            assert (false);
+        }
+
+        cout << "error: " << (symm_collocation_mat*basis_coefficients-rescaled_rhs).norm()/rhs.norm() << endl;
+    }
+    else
+    {
+        cout << "Analyzing system..."      << endl;
+        solver.analyzePattern (collocation_mat);
+        cout << "Factorizing system..."    << endl;
+
+        solver.factorize (collocation_mat);
+
+        if (solver.info() != Eigen::Success)
+        {
+            cout << "Factorization failed with error message:" << endl;
+            cout << solver.lastErrorMessage()                  << endl;
+
+            throw std::runtime_error ("Eigen solver ERROR.");
+        }
+
+        cout << "Solving equations..." << endl;
+
+        basis_coefficients = solver.solve(rhs);
+
+        if (solver.info() != Eigen::Success)
+        {
+            cout << "Solving failed with error:" << endl;
+            cout << solver.lastErrorMessage()    << endl;
+            assert (false);
+        }
+
+        cout << "error: " << (collocation_mat*basis_coefficients-rhs).norm()/rhs.norm() << endl;
+    }
+
+
+    // if (model.COMPUTING_SVD_AND_CONDITION_NUMBER)
+    // {
+    //     Eigen::JacobiSVD<MatrixXr> svd(symm_collocation_mat);
+    //     std::cout<<"here"<<std::endl;
+    //     Real cond = svd.singularValues()(0)
+    //     / svd.singularValues()(svd.singularValues().size()-1);
+    //     std::cout<<"condition number: "<<cond<<std::endl;
+    //     // collocation_mat.data().squeeze();
+    //     std::cout << MatrixXr(symm_collocation_mat) << std::endl;
+    //     std::cout<<"basis renorm factors: "<<VectorXr(basis_renorm_factor.diagonal())<<std::endl;
+    // }
     //
-    // std::cout<<"is matrix compressed after makeCompressed: "<<collocation_mat.isCompressed()<<std::endl;
+    // symm_collocation_mat.makeCompressed();
 
-    std::cout<<"collocation rows: "<<collocation_mat.rows()<<std::endl;
-    std::cout<<"collocation cols: "<<collocation_mat.cols()<<std::endl;
-    std::cout<<"rhs rows: "<<rhs.size()<<std::endl;
 
+    // Err, it is unfortunately only reliable if we have some SPD property
     // Eigen :: LeastSquaresConjugateGradient<SparseMatrix<Real>> solver;
     // solver.compute(collocation_mat);
     // basis_coefficients=solver.solve(rhs);
@@ -2550,47 +2971,7 @@ inline void Collocation :: solve_collocation(Model& model)
     // std::cout << "#iterations:     " << solver.iterations() << std::endl;
     // std::cout << "estimated error: " << solver.error()      << std::endl;
 
-    Eigen :: SparseQR <SparseMatrix<Real>, COLAMDOrdering<int>> solver;
-
-    // SparseLU <SparseMatrix<Real>, COLAMDOrdering<int>> solver;
-
-    cout << "Analyzing system..."      << endl;
-
-    solver.analyzePattern (collocation_mat);
-
-    cout << "Factorizing system..."    << endl;
-
-    // solver.factorize (collocation_mat);
-    solver.compute(collocation_mat);
-
-    if (solver.info() != Eigen::Success)
-    {
-        cout << "Factorization failed with error message:" << endl;
-        cout << solver.lastErrorMessage()                  << endl;
-        // cout << endl << RT << endl;
-
-        throw std::runtime_error ("Eigen solver ERROR.");
-    }
-
-    cout << "Solving equations..." << endl;
-
-    basis_coefficients = solver.solve(rhs);
-
-    if (solver.info() != Eigen::Success)
-    {
-        cout << "Solving failed with error:" << endl;
-        cout << solver.lastErrorMessage()    << endl;
-        assert (false);
-    }
-
-    cout << "error: " << (collocation_mat*basis_coefficients-rhs).norm()/rhs.norm() << endl;
-
-    // if (solver.info() != Eigen::Success)
-    // {
-    //     cout << "Solving failed with error:" << endl;
-    //     cout << solver.lastErrorMessage()    << endl;
-    //     assert (false);
-    // }
+    // Eigen :: SparseQR <SparseMatrix<Real>, COLAMDOrdering<int>> solver;
 
     Size vectorsize=collocation_mat.cols();
     std::cout<<"computed coeffs"<<std::endl;
