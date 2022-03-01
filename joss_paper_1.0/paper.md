@@ -76,7 +76,7 @@ is in contrast to most radiative transfer solvers which employ (probabilistic)
 Monte Carlo techniques [@Noebauer:2019]. By virtue of minimal assumptions about
 the underlying geometric structure of a model, Magritte can handle structured and
 unstructured input meshes, as well as smoothed-particle hydrodynamics (SPH) data.
-Futhermore, tools are provided to optimise different input meshes for radiative transfer
+Furthermore, tools are provided to optimise different input meshes for radiative transfer
 [@DeCeuster:2020].
 
 
