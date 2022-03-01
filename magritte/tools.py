@@ -419,13 +419,13 @@ def save_fits(
     hdr['VELREF']   = 257         # Not sure...
 
     hdr['CTYPE1']   = 'RA---SIN'
-    hdr['CDELT1']   = -deg_dpix_x # pixel size in miliarcseconds along x-axis
+    hdr['CDELT1']   = -deg_dpix_x # pixel size in degrees along x-axis
     hdr['CRPIX1']   = npix_x/2.0  # pixel index of centre x=0
     hdr['CRVAL1']   = target_ra   # image centre coordinate (x/ra)
     hdr['CUNIT1']   = 'DEG'       # x-axis unit
     
     hdr['CTYPE2']   = 'DEC--SIN'
-    hdr['CDELT2']   = deg_dpix_y  # pixel size in miliarcseconds along y-axis
+    hdr['CDELT2']   = deg_dpix_y  # pixel size in degrees along y-axis
     hdr['CRPIX2']   = npix_y/2.0  # pixel index of centre y=0
     hdr['CRVAL2']   = target_dec  # image centre coordinate (y/dec)
     hdr['CUNIT2']   = 'DEG'       # y-axis unit
