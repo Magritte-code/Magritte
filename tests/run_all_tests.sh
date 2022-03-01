@@ -9,10 +9,10 @@ cd $DIR
 mkdir results
 
 # Unit tests
-echo "Running unit tests..."
+# echo "Running unit tests..."
 
 # Integration tests
-echo "Running integration tests..."
+# echo "Running integration tests..."
 
 cd $DIR/benchmarks/analytic
 python all_constant_single_ray.py         nosave
