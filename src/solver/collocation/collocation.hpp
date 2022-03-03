@@ -15,6 +15,7 @@ private:
     // const bool USING_COMOVING_FRAME=true;//toggle for using the comoving frame
     const bool USING_COMOVING_FRAME=false;
     const bool USING_LEAST_SQUARES=false;
+    const bool PRUNING_POSITIONAL_BASIS_FUNCTIONS=true;
 
     //internal parameters for the basis functions
     const Real TRUNCATION_SIGMA=5.0; //< if Delta(freq)>trunc_sigma*freq_width just set the result from the gaussian basis function to zero (as it is almost zero)
@@ -50,9 +51,9 @@ private:
     const Real SQRT_MIN_LN_RATIO=std::sqrt(std::log(1.0/MAX_FREQ_QUAD_RATIO));//assuming a gaussian frequency basis function, this is a useful coonstant for determining the inverse width
     //FIXME: actually compute the necessary value; eval of 0.7 in nearest frequency
     // const Real FREQ_QUADRATURE_WING_DISTANCE_AMP_FACTOR=1/MAX_FREQ_QUAD_RATIO;//In order to sample the line wings sufficiently in the case of doppler shifts, we increase the distance between the frequencies on the line wings.
-    const Size FREQ_QUADRATURE_CENTER_N_ELEMENTS=3;//the number of quadrature elements which should be in the line center
+    const Size FREQ_QUADRATURE_CENTER_N_ELEMENTS=7;//the number of quadrature elements which should be in the line center
     //TODO?: let this depend on parameters.nquads()?
-    const Real FREQ_QUADRATURE_EDGE=1.0;//In order to make sure to sample the boundary condition well for all points, a safety param is included (enlarges the bounds for the frequency quadrature respectively subtracting and adding this to the min and max doppler shifts)
+    const Real FREQ_QUADRATURE_EDGE=1.5;//In order to make sure to sample the boundary condition well for all points, a safety param is included (enlarges the bounds for the frequency quadrature respectively subtracting and adding this to the min and max doppler shifts)
     // const Real FREQ_QUADRATURE_CENTER_SEPARATION_DISTANCE=(2.0*FREQ_QUADRATURE_EDGE)/(FREQ_QUADRATURE_CENTER_N_ELEMENTS-1);//The separation distance of the central frequency quadrature points (in terms of line width)
 
     Size n_freq_bases=0;//denotes the total number of frequencies we evaluate (=size frequency_quadrature=size frequency_inverse_width_quadrature)
@@ -208,6 +209,7 @@ public:
     inline vector<Size> get_two_nearby_points_on_ray(Model& model, Size rayidx, Size pointidx);
 
     inline Real get_opacity(Model& model, Size rayid, Size freqid, Size pointid);
+    inline Real get_opacity_bound(Model& model, Size pointid, Size freqid, Size eval_pointid);
     inline Real get_opacity_grad(Model& model, Size rayid, Size freqid, Size pointid);
     inline Real get_emissivity(Model& model, Size rayid, Size freqid, Size pointid);
     inline Real get_source_grad(Model& model, Size rayid, Size freqid, Size pointid);

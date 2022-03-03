@@ -99,7 +99,6 @@ inline Eigen::Matrix<double, Eigen::Dynamic, 3> create_mat_for_points_idx(Model&
 // Assumes the point indices to be ordered in remaining points; assumes the boundary points to lie first in point indices
 // Also assumes the frequency quadrature to be already defined
 //ASSUMES: the opacity does not actually depend on the ray direction (or at least not significantly)
-//Collocation ::
 inline void Collocation :: prune_positional_bases(Model& model)
 {
     // vector<vector<Size>> remaining_points;// temporary
@@ -143,51 +142,54 @@ inline void Collocation :: prune_positional_bases(Model& model)
     {
         radial_basis_functions_having_evaluation_at[freqid].resize(n_points_in_grid);
 
-        // the opacities are computed COMOVING; as pruning is done in order to increase distance between our doppler shifted basis functions
-        //when defining static frequency basis functions, this is also valid (as the frequency not longer depends on the location); either way, this just influences some pruning condition
-        vector<Real> comoving_opacities;
-        comoving_opacities.resize(n_points_in_grid);//should be computed over all points in the current grid
-        for (Size pointid=0; pointid<n_points_in_grid; pointid++)
+        if (PRUNING_POSITIONAL_BASIS_FUNCTIONS)
         {
-            //ASSUMES: the opacity does not actually depend on the ray direction (or at least not significantly)
-            comoving_opacities[pointid]=get_opacity(model, 0, freqid, pointid);
-        }
-        //for loop get_opacity(model, rayidx, freqidx, pointidx)
-
-        std::set<Size> points_to_prune;//for this specific frequency
-        //for all bases not yet deleted, check if neighbors can be deleted
-        //for this, we merely iterate over all points, check whether the bases are already deleted, and if not,
-        // search around the point in a radius defined by the pruning condition
-        for (Size center_point_id=0; center_point_id<n_points_in_grid; center_point_id++)
-        {
-            const Size center_point=points_in_grid[center_point_id];
-            const Real center_opacity=comoving_opacities[center_point_id];
-            //if not already pruned, the basis at the point can prune others
-            if (points_to_prune.find(center_point)!=points_to_prune.end())
+            // the opacities are computed COMOVING; as pruning is done in order to increase distance between our doppler shifted basis functions
+            //when defining static frequency basis functions, this is also valid (as the frequency not longer depends on the location); either way, this just influences some pruning condition
+            vector<Real> comoving_opacities;
+            comoving_opacities.resize(n_points_in_grid);//should be computed over all points in the current grid
+            for (Size pointid=0; pointid<n_points_in_grid; pointid++)
             {
-                //do nothing if already pruned
-                continue;
+                //ASSUMES: the opacity does not actually depend on the ray direction (or at least not significantly)
+                comoving_opacities[pointid]=get_opacity(model, 0, freqid, pointid);
             }
-            const Real search_radius=MIN_OPTICAL_DEPTH_DIFF/center_opacity;
-            vector<Size> points_within_radius=get_kd_tree_basis_elements_in_radius(center_point, full_mat_index, search_radius, points_in_grid, model.geometry);//TODO: remove index conversion
-            std::cout<<"points_within_radius size: "<<points_within_radius.size()<<std::endl;
-            for (Size neighbor: points_within_radius)
+            //for loop get_opacity(model, rayidx, freqidx, pointidx)
+
+            std::set<Size> points_to_prune;//for this specific frequency
+            //for all bases not yet deleted, check if neighbors can be deleted
+            //for this, we merely iterate over all points, check whether the bases are already deleted, and if not,
+            // search around the point in a radius defined by the pruning condition
+            for (Size center_point_id=0; center_point_id<n_points_in_grid; center_point_id++)
             {
-                if (neighbor!=center_point && model.geometry.not_on_boundary(neighbor))//precaution against a basis point deciding to delete itself
-                {// also precaution against deleting boundary points (as the boundary condition equation might also get deleted)
-                    //check if distance*opacity<threshold; if so prune the basis at the neighboring location (and remove them from the remaining_points list not yet already done)
-                    Vector3D temp_vector=model.geometry.points.position[neighbor]-model.geometry.points.position[center_point];
-                    const Real temp_dist=std::sqrt(temp_vector.squaredNorm());
-                    const Real other_opacity=comoving_opacities[indexmap.at(neighbor)];
-                    const Real max_opacity=std::max(center_opacity, other_opacity);//the main disadvantage of this approach, is that the path inbetween is not included...
-                    if (max_opacity*temp_dist<MIN_OPTICAL_DEPTH_DIFF)//bound for optical depth
-                    {
-                        //TODO: delete other basis function; but do check whether it makes sense to readd in least squares sense
-                        points_to_prune.insert(neighbor);
+                const Size center_point=points_in_grid[center_point_id];
+                const Real center_opacity=comoving_opacities[center_point_id];
+                //if not already pruned, the basis at the point can prune others
+                if (points_to_prune.find(center_point)!=points_to_prune.end())
+                {
+                    //do nothing if already pruned
+                    continue;
+                }
+                const Real search_radius=MIN_OPTICAL_DEPTH_DIFF/center_opacity;
+                vector<Size> points_within_radius=get_kd_tree_basis_elements_in_radius(center_point, full_mat_index, search_radius, points_in_grid, model.geometry);//TODO: remove index conversion
+                std::cout<<"points_within_radius size: "<<points_within_radius.size()<<std::endl;
+                for (Size neighbor: points_within_radius)
+                {
+                    if (neighbor!=center_point && model.geometry.not_on_boundary(neighbor))//precaution against a basis point deciding to delete itself
+                    {// also precaution against deleting boundary points (as the boundary condition equation might also get deleted)
+                        //check if distance*opacity<threshold; if so prune the basis at the neighboring location (and remove them from the remaining_points list not yet already done)
+                        Vector3D temp_vector=model.geometry.points.position[neighbor]-model.geometry.points.position[center_point];
+                        const Real temp_dist=std::sqrt(temp_vector.squaredNorm());
+                        const Real other_opacity=get_opacity_bound(model, indexmap.at(neighbor), freqid, center_point_id);
+                        // const Real other_opacity=comoving_opacities[indexmap.at(neighbor)];//DO NOT USE THE COMOVING OPACITY FOR THE OTHER, as it results in far too few basis functions for the line wings
+                        const Real max_opacity=std::max(center_opacity, other_opacity);//the main disadvantage of this approach, is that the path inbetween is not included...
+                        if (max_opacity*temp_dist<MIN_OPTICAL_DEPTH_DIFF)//bound for optical depth
+                        {
+                            //TODO: delete other basis function; but do check whether it makes sense to readd in least squares sense
+                            points_to_prune.insert(neighbor);
+                        }
                     }
                 }
             }
-        }
 
         // bool deleted_basis=true;//whether we deleted a basis in the previous iteration
         // while (deleted_basis)//if we deleted a basis, we might still need to delete more bases
@@ -235,16 +237,18 @@ inline void Collocation :: prune_positional_bases(Model& model)
         //         }
         //     }
 
-        //and finally prune the basis functions associated to the points
-        vector<Size>::iterator it = remaining_points_after_pruning[freqid].begin();
+            //and finally prune the basis functions associated to the points
+            vector<Size>::iterator it = remaining_points_after_pruning[freqid].begin();
 
-        while(it != remaining_points_after_pruning[freqid].end())
-        {
-            if(points_to_prune.find(*it)!=points_to_prune.end())
+            while(it != remaining_points_after_pruning[freqid].end())
             {
-                it = remaining_points_after_pruning[freqid].erase(it);
+                if(points_to_prune.find(*it)!=points_to_prune.end())
+                {
+                    it = remaining_points_after_pruning[freqid].erase(it);
+                }
+                else {it++;}
             }
-            else {it++;}
+
         }
 
         //now, we have our remaining center basis points, so we can define the typical radii (using only these remaining center points)
@@ -1158,6 +1162,8 @@ inline Real Collocation :: get_slope(Real x, Size basis_ray_id, Size basis_point
       // Real slope=1+x/SLOPE_FACTOR;
       // The sigmoid-inspired slope
       Real slope=1.0/2.0+1.0/(1.0+std::exp(-SLOPE_STEEPNESS*x));
+      // A slope which has derivative 0 at the ends
+      // Real slope=1.0+3.0/2.0*x-std::pow(x,3)/2.0;
       return slope;
    }
 }
@@ -1182,6 +1188,8 @@ inline Real Collocation :: get_slope_derivative(Real x, Size basis_ray_id, Size 
         // The sigmoid-inspired slope
         Real exp_factor=std::exp(-SLOPE_STEEPNESS*x);
         Real slope_derivative=SLOPE_STEEPNESS*exp_factor/std::pow(1+exp_factor,2);
+        // A slope which has derivative 0 at the ends
+        // Real slope_derivative=3.0/2.0-3.0/2.0*std::pow(x,2);
         return slope_derivative;
     }
 
@@ -2338,7 +2346,54 @@ inline Real Collocation :: get_opacity(Model& model, Size rayid, Size freqid, Si
     }
     //with a too low minimum opacity, the intensity gets completely ignored compared to the derivative
     return std::max(toreturn,MIN_OPACITY);
+    // return toreturn;//disabling the minimal opacity, as it might wreck havoc with very off-line center frequencies; they also need to be treated correctly
 }
+
+
+// Returns the opacity (takes into account the gaussian line profile)
+// The frequency should include the doppler shift
+inline Real Collocation :: get_opacity_bound(Model& model, Size pointid, Size freqid, Size other_pointid)
+{
+    Real toreturn=0;
+    const Size point_in_grid=points_in_grid[pointid];
+    const Size other_point_in_grid=points_in_grid[other_pointid];
+    // if using other line profile/frequency basis function than gaussian, please replace the for(...) with the following line:
+    // for (Size other_line_idx=0; other_line_idx<parameters.nlines(); other_line_idx++)
+    // for (Size other_line_idx: other_frequency_basis_interacting_with[pointidx][lineidx])
+    //compute bound of opacity over all directions
+    for (Size rayid=0; rayid<parameters.nrays(); rayid++)
+    {
+        const Real doppler_shift_factor=calculate_doppler_shift_observer_frame(model.geometry.points.velocity[other_point_in_grid],model.geometry.rays.direction[rayid]);
+        Real temp_total_opacity=0;
+        for (Size lineidx=0; lineidx<parameters.nlines(); lineidx++)
+        {
+            Real delta_freq=0;
+            Real inv_width=0;
+
+            if (USING_COMOVING_FRAME)
+            {
+                delta_freq=non_doppler_shifted_frequencies[freqid]-model.lines.line[lineidx];
+                inv_width=model.lines.inverse_width(point_in_grid,lineidx);
+            }
+            else
+            {
+                //local opacity should use the local frequencies, not the global ones...; otherwise it goes very quickly to zero if we have a minor doppler shift during the ray
+                delta_freq=frequencies[rayid][freqid][pointid]-model.lines.line[lineidx]*doppler_shift_factor;
+                inv_width=model.lines.inverse_width(other_point_in_grid,lineidx)/doppler_shift_factor;
+            }
+
+            temp_total_opacity+=INVERSE_SQRT_PI*inv_width*std::exp(-std::pow(delta_freq*inv_width,2))
+                                *model.lines.line[lineidx]*model.lines.opacity(other_point_in_grid, lineidx);
+            }
+        toreturn=std::max(toreturn, temp_total_opacity);
+
+    }
+    //with a too low minimum opacity, the intensity gets completely ignored compared to the derivative
+    return std::max(toreturn,MIN_OPACITY);
+    // return toreturn;//disabling the minimal opacity, as it might wreck havoc with very off-line center frequencies; they also need to be treated correctly
+}
+
+
 
 //Returns a vector with two nearby points on the specified ray around the specified point
 // In the fail case no two nearby points could be found, can return the oob values parameters.npoints().
@@ -3047,7 +3102,9 @@ inline void Collocation :: compute_J(Model& model)
               // get_nonzero_basis_triplets(nonzero_basis_triplets, rayidx, lid, pointidx);
 
 
+              std::cout<<"Started computing a single J"<<std::endl;
               //or just use a matrix-vector product
+              Real average_I=0;
               for (Size rayid=0; rayid<parameters.nrays(); rayid++)
               {
                   Real lp_freq=0;
@@ -3066,6 +3123,8 @@ inline void Collocation :: compute_J(Model& model)
                       lp_freq=model.lines.line[lineid]*doppler_shift_factor;
                       lp_freq_inv_width=model.lines.inverse_width(lineid,point_in_grid)/doppler_shift_factor;
                   }
+                  //testing out whether the inverse width is correct//seems to be correct
+                  // lp_freq_inv_width=1.0/std::sqrt(2)*lp_freq_inv_width;
                   // Size hrayidx=rayidx;//rayidx for u
                   // if (hrayidx>=parameters.hnrays())
                   // {
@@ -3101,16 +3160,20 @@ inline void Collocation :: compute_J(Model& model)
 
                           I+=basis_coefficients(triplet_basis_index)*basis_point(triplet[0], triplet[1], triplet[2], point_locations[pointid], model.geometry)*basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], lp_freq);
                           lspec.Jlin[point_in_grid][k]+=basis_coefficients(triplet_basis_index)/FOUR_PI*basis_point(triplet[0], triplet[1], triplet[2], point_locations[pointid], model.geometry)*basis_direction_int(model.geometry,triplet[0])*basis_freq_lp_int(triplet[0], triplet[1], triplet[2], lp_freq, lp_freq_inv_width);
-                          // std::cout<<"please be nonzero: "<<basis_coefficients(triplet_basis_index)/FOUR_PI*basis_point(triplet[2], point_locations[p])*basis_direction_int(model.geometry,triplet[0])*basis_freq_lp_int(triplet[0], triplet[1], triplet[2], lp_freq, lp_freq_inv_width)<<std::endl;
+                          // std::cout<<"The summation of this is I: "<<basis_coefficients(triplet_basis_index)*basis_point(triplet[0], triplet[1], triplet[2], point_locations[pointid], model.geometry)*basis_direction(triplet[0])*basis_freq(triplet[0], triplet[1], triplet[2], lp_freq)<<std::endl;
+                          // std::cout<<"The summation of this should be J: "<<basis_coefficients(triplet_basis_index)/FOUR_PI*basis_point(triplet[0], triplet[1], triplet[2], point_locations[pointid], model.geometry)*basis_direction_int(model.geometry,triplet[0])*basis_freq_lp_int(triplet[0], triplet[1], triplet[2], lp_freq, lp_freq_inv_width)<<std::endl;
 
                           // lspec.Jlin[p][k]+=200000*basis_coefficients(triplet_basis_index)*basis_point(triplet[2], point_locations[p])*basis_direction_int(model.geometry,triplet[0])*basis_freq_lp_int(triplet[0], triplet[1], triplet[2], lp_freq, lp_freq_inv_width);
                       }
 
                   }
                   std::cout<<"pointid: "<<pointid<<" I: "<<I<<std::endl;
+                  std::cout<<"J: "<<lspec.Jlin[point_in_grid][k]<<std::endl;
+                  average_I+=I/parameters.nrays();
 
               }
 
+              std::cout<<"average I: "<<average_I<<std::endl;
               double diff = 0.0;
 
               // // Collect the approximated part
