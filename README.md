@@ -45,7 +45,7 @@ Magritte:
 ([arXiv](https://arxiv.org/abs/1912.08445),
 [MNRAS](https://doi.org/10.1093/mnras/stz3557));
 * _3D Line Radiative Transfer & Synthetic Observations with
-Magritte_ ([JOSS](https://doi.org/10.21105/joss.03905))
+Magritte_ ([JOSS](https://doi.org/10.21105/joss.03905)).
 
 Please note that some features presented in these papers might not yet be implemented
 and documented in the latest release of Magritte.
