@@ -2,6 +2,7 @@
 
 [![Build Status](https://travis-ci.com/Magritte-code/Magritte.svg?branch=master)](https://travis-ci.com/Magritte-code/Magritte)
 [![Documentation Status](https://readthedocs.org/projects/magritte/badge/?version=stable)](https://magritte.readthedocs.io/en/stable/?badge=stable)
+[![DOI](https://joss.theoj.org/papers/10.21105/joss.03905/status.svg)](https://doi.org/10.21105/joss.03905)
 ---
 
 Welcome to the Magritte repository! Magritte is a open-source software library for
@@ -42,7 +43,9 @@ Magritte:
 ([arXiv](https://arxiv.org/abs/2011.14998), [MNRAS](https://doi.org/10.1093/mnras/staa3199));
 * _Magritte I: Non-LTE atomic and molecular line modelling_
 ([arXiv](https://arxiv.org/abs/1912.08445),
-[MNRAS](https://doi.org/10.1093/mnras/stz3557)).
+[MNRAS](https://doi.org/10.1093/mnras/stz3557));
+* _3D Line Radiative Transfer & Synthetic Observations with
+Magritte_ ([JOSS](https://doi.org/10.21105/joss.03905))
 
 Please note that some features presented in these papers might not yet be implemented
 and documented in the latest release of Magritte.

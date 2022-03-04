@@ -54,6 +54,10 @@ Magritte:
   *F. De Ceuster, W. Homan, J. Yates, L. Decin, P. Boyle, J. Hetherington*, 2019
   (`arXiv <https://arxiv.org/abs/1912.08445>`_,
   `MNRAS <https://doi.org/10.1093/mnras/stz3557>`_);
+  
+* **3D Line Radiative Transfer & Synthetic Observations with Magritte**,
+  *F. De Ceuster, T. Ceulemans, A. Srivastava, W. Homan, J. Bolte, J. Yates, L. Decin, P. Boyle, J, Hetherington
+  (_`JOSS <https://doi.org/10.21105/joss.03905>`_).
 
 Please note that some features presented in these papers might not yet be implemented
 and documented in the latest release of Magritte.
