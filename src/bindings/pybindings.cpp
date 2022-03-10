@@ -119,6 +119,8 @@ PYBIND11_MODULE (core, module)
         .def_readwrite ("eta",                &Model::eta)
         .def_readwrite ("chi",                &Model::chi)
         .def_readwrite ("boundary_condition", &Model::boundary_condition)
+        .def_readwrite ("column",             &Model::column)
+        .def_readwrite ("density",            &Model::density)
         .def_readonly  (
             "error_mean",
             &Model::error_mean,
@@ -214,6 +216,11 @@ PYBIND11_MODULE (core, module)
             "set_boundary_condition",
             &Model::set_boundary_condition,
             "Set boundary condition (internally)."
+        )
+        .def (
+            "set_column",
+            &Model::set_column,
+            "Set column (internally)."
         )
         // constructor
         .def (py::init<const string>())

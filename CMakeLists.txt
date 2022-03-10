@@ -101,4 +101,4 @@ endif ()
 add_subdirectory (src)
 
 # Add tests directory
-add_subdirectory (tests)
+#add_subdirectory (tests)

@@ -111,4 +111,9 @@ struct Model
 
     int set_eta_and_chi       ();
     int set_boundary_condition();
+
+    Vector<Real> density;
+    Matrix<Real> column;
+
+    int set_column ();
 };

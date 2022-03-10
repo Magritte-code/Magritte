@@ -161,6 +161,9 @@ class Solver
 
         accel inline void set_eta_and_chi        (Model& model) const;
         accel inline void set_boundary_condition (Model& model) const;
+
+        accel inline void set_column (Model& model) const;
+        accel inline Real get_column (const Model& model, const Size o, const Size r) const;
 };
 
 
