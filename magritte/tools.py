@@ -264,7 +264,8 @@ def save_fits(
         method     = 'nearest',
         dpc        = 1.0,
         coord      = None,
-        f_rest     = 0.0
+        f_rest     = 0.0,
+        square     = False
     ):
     """
     Save channel maps of synthetic observation (image) as a fits file.
@@ -289,6 +290,8 @@ def save_fits(
         Image centre coordinates. 
     f_rest : float
         Rest frequency of the transition.
+    square : bool
+        True if square pixels are required.
     
     Returns
     -------
@@ -326,9 +329,22 @@ def save_fits(
     x_min, x_max = np.min(imx)/zoom, np.max(imx)/zoom
     y_min, y_max = np.min(imy)/zoom, np.max(imy)/zoom
 
+    # Rescale if square pixels are required
+    if square:
+        pix_size_x = (x_max - x_min) / npix_x
+        pix_size_y = (y_max - y_min) / npix_y
+        
+        if   pix_size_x > pix_size_y:
+            y_max *= pix_size_x / pix_size_y
+            y_min *= pix_size_x / pix_size_y
+            
+        elif pix_size_x < pix_size_y:
+            x_max *= pix_size_y / pix_size_x
+            x_min *= pix_size_y / pix_size_x
+    
     # Create image grid values
     xs = np.linspace(x_min, x_max, npix_x)
-    ys = np.linspace(y_min, y_max, npix_y)
+    ys = np.linspace(y_min, y_max, npix_y)        
     
     # Extract the spectral / velocity data
     freqs = np.array(model.radiation.frequencies.nu)[0]
