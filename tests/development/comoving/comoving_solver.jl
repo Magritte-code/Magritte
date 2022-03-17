@@ -315,7 +315,7 @@ function secondorderfull(previndex, data, forwardfreqdisc::Bool)
         @views currintensity[nfreqs-1:nfreqs]=bdyintensity[nfreqs-1:nfreqs, previndex+1]
     else
         @views diagonal[3:nfreqs].+=Δxdiv2.*χ[3:nfreqs, previndex+1]+Δvdiv2.*c.*lineν
-        @views offdiagonal[3:nfreqs-1]=Δvdiv2.*b.*lineν
+        @views offdiagonal[2:nfreqs-1]=Δvdiv2.*b.*lineν
         secondoffdiagonal=Δvdiv2.*a.*lineν
 
         #inefficient, as julia stores the entire matrix, but this should work
