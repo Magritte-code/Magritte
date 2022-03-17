@@ -11,24 +11,25 @@ import SpecialFunctions as sf
 ld=TestMolecule.testlinedata()
 println(ld)
 
-factor=1.0;#normally, we should adaptively determine to insert ghost points inbetween, but for simplicity, we just make a more dense discretization
+quadfactor=1
+factor=5.0;#normally, we should adaptively determine to insert ghost points inbetween, but for simplicity, we just make a more dense discretization
 #not the exact settings, but just to test
-npoints   = convert(Int, 301*factor)
+npoints   = convert(Int, 100*factor)
 nrays     = 1
-nquads    = 17
+nquads    = 121*quadfactor
 
 nH2  = 1.0E+12                 # [m^-3]
 nTT  = 1.0E+08                 # [m^-3]
 temp = 4.5E+01                 # [K]
 turb = 0.0E+00                 # [m/s]
-dx   = 1.0E+04/factor          # [m]
-dx   = 3.0e11
+dx   = 1.0E+04/factor        # [m]
+# dx   = 3.0e11
 r_in=10.0
 
 dv   = 2.5E+02 / 300_000_000   # [fraction of speed of light]
-dv   = 2.5E+02 / 300_000_000/ factor   # [fraction of speed of light]
+dv   = 2.5E+03 / 300_000_000/ factor   # [fraction of speed of light]
 # dv   = 0.015
-dv   = 1e-19
+# dv   = 1e-19
 
 L    = dx*(npoints-1)
 vmax = dv*npoints
@@ -49,7 +50,7 @@ println(ld.frequency[1])
 println(dnu)
 
 
-quad_rel_diff=0.25
+quad_rel_diff=0.25/quadfactor
 ν=ld.frequency[1].+(-(nquads-1)/2:(nquads-1)/2).*quad_rel_diff.*dnu
 println(length(ν))
 println(ν)
@@ -60,6 +61,11 @@ middleν=ld.frequency[1]
 νdoppl=reshape(collect([ν[freq]*(1.0+v[point]) for point ∈ 1:npoints for freq in 1:nquads]), nquads, npoints)#ν.*ones(Float64, nquads, npoints).*(1.0 .+v)
 middleνdoppl=reshape(middleν.*(1.0 .+v), 1, npoints)
 doppl_δν=reshape([ν[freq]-middleνdoppl[point] for point ∈ 1:npoints for freq ∈ 1:nquads], nquads, npoints)
+println("dopple freq: ",size(νdoppl))
+Icmb=bdy.(νdoppl)
+println("Icmb: ", size(Icmb))
+println(min(Icmb...))
+println(max(Icmb...))
 # println(νdoppl)
 # println(size(νdoppl))
 # println(size(middleνdoppl))
@@ -138,8 +144,9 @@ end
 
 # v=(-1.0).^(1:npoints)*dv
 
-doppler_shifts=v.*middleν./(quad_rel_diff.*dnu)
-# println(doppler_shifts)
+# doppler_shifts=v.*middleν./(quad_rel_diff.*dnu)#err was amount of bins, not amount of line widths
+doppler_shifts=v.*middleν./dnu
+println(doppler_shifts)
 
 #TODO set boundary intensity
 #set bdy intensity to 1/5 for now
@@ -147,11 +154,11 @@ bdyintensity=bdy.(ν)
 # println(bdyintensity)
 # bdyintensity=zeros(nquads)
 
-data=ComovingSolvers.data(bdyintensity,(0:npoints-1).*dx, v, χ, η, ν, middleν)
+data=ComovingSolvers.data(Icmb,(0:npoints-1).*dx, v, χ, η, ν, middleν)
 ComovingSolvers.computesinglerayfirstorderexplicit(data)
 firstorderintensities=data.allintensities
 
-data2=ComovingSolvers.data(bdyintensity,(0:npoints-1).*dx, v, χ, η, ν, middleν)
+data2=ComovingSolvers.data(Icmb,(0:npoints-1).*dx, v, χ, η, ν, middleν)
 ComovingSolvers.computesingleraysecondorder(data2)
 secondorderintensities=data2.allintensities
 
@@ -159,19 +166,24 @@ secondorderintensities=data2.allintensities
 # ComovingSolvers.computesinglerayfirstorderexplicitupwind(data3)
 # firstorderintensitiesupwind=data3.allintensities
 
-data4=ComovingSolvers.data(bdyintensity,(0:npoints-1).*dx, v, χ, η, ν, middleν)
+data4=ComovingSolvers.data(Icmb,(0:npoints-1).*dx, v, χ, η, ν, middleν)
 ComovingSolvers.computesinglerayfirstorderexplicitsecondorderfrequency(data4)
 secondorderfreq=data4.allintensities
 
 #static solver
-data5=ComovingSolvers.data(bdyintensity,(0:npoints-1).*dx, v, χstatic, ηstatic, ν, middleν)#actually the two last things are filled in wrongly
+data5=ComovingSolvers.data(Icmb,(0:npoints-1).*dx, v, χstatic, ηstatic, ν, middleν)#actually the two last things are filled in wrongly
 ComovingSolvers.computesinglerayfirstorderexplicitstatic(data5)
 staticfreq=data5.allintensities
 
 #second order static solver
-data6=ComovingSolvers.data(bdyintensity,(0:npoints-1).*dx, v, χstatic, ηstatic, ν, middleν)#actually the two last things are filled in wrongly
+data6=ComovingSolvers.data(Icmb,(0:npoints-1).*dx, v, χstatic, ηstatic, ν, middleν)#actually the two last things are filled in wrongly
 ComovingSolvers.computesingleraysecondorderstatic(data6)
 staticfreqsecond=data6.allintensities
+
+#full second order comoving solver
+data7=ComovingSolvers.data(Icmb,(0:npoints-1).*dx, v, χ, η, ν, middleν)
+ComovingSolvers.computesingleraysecondorderfull(data7)
+secondorderfull=data7.allintensities
 
 
 
@@ -182,12 +194,16 @@ println(v[end])
 Plots.plot()
 #multiplication factor because julia plots do not like very small values...
 # Plots.plot([νdoppl[:,end], νdoppl[:,end],νdoppl[:,end]],1e8.*[firstorderintensities[:, npoints], secondorderfreq[:, npoints], secondorderintensities[:,npoints]], label = ["first order" "second order freq" "second order"])
+
 # Plots.savefig("Example static eval")
 # Plots.plot!([νdoppl[:,end], ν[:], ν[:]],1e8.*[Iray, staticfreq[:, npoints], staticfreqsecond[:, npoints]], label = ["analytic" "static first order" "static second order"])
-Plots.plot!([νdoppl[:,end], ν[:]],1e8.*[Iray, staticfreqsecond[:, npoints]], label = ["analytic" "static second order"])
-Plots.vline!([middleνdoppl[end], middleνdoppl[end]-dnu*(1+v[end]), middleνdoppl[end]+dnu*(1+v[end])], label=["shifted line center ±δν" "-δν" "+δν"],legend=:right)
+Plots.plot!([νdoppl[:,end], ν[:], νdoppl[:,end]],1e8.*[Iray, staticfreqsecond[:, npoints], secondorderfull[:, npoints]], label = ["analytic" "static second order" "full second order"])
+
+# Plots.plot([νdoppl[:,end], νdoppl[:,end]],1e8.*[secondorderfreq[:, npoints], Iray], label = ["second order impl" "analytic"])
+Plots.vline!([middleνdoppl[end], middleνdoppl[end]-dnu*(1+v[end]), middleνdoppl[end]+dnu*(1+v[end])], label=["shifted line center ±δν" "-δν" "+δν"],legend=:bottom)
+
 Plots.gui()
-# Plots.savefig("Comparison static analytic")
+# Plots.savefig("Comparison static 2nd vs comoving full 2nd")
 # display(Plots.plot(10e14.*[secondorderintensities[:,npoints]], label = ["second order"]))
 # println(I_.(ν, 11.0e5, 0))
 # Plots.plot(1e5.*[firstorderintensities[:,npoints], secondorderintensities[:,npoints], Iray], label = ["first order" "second order" "analytic"])
