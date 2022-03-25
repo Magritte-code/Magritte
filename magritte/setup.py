@@ -96,7 +96,31 @@ def set_Delaunay_neighbor_lists (model):
     return model
 
 
-def set_uniform_rays(model, randomize=False):
+def create_rotation_matrix(n):
+    '''
+    Helper function to create rotation matrices.
+    Returns a 3x3 orthonormal matrix around n.
+    '''
+    
+    nx = np.array([1.0, 0.0, 0.0])
+    ny = np.array([0.0, 1.0, 0.0])
+    
+    n1  = n 
+    n1 /= np.linalg.norm(n1)
+
+    if np.linalg.norm(n1-nx) < 1.0e-16:
+        n2 = np.cross(nx, n1)
+    else:
+        n2 = np.cross(ny, n1)
+    n2 /= np.linalg.norm(n2)
+
+    n3  = np.cross(n2, n)
+    n3 /= np.linalg.norm(n3)
+
+    return np.array([n1, n2, n3]).T
+
+
+def set_uniform_rays(model, randomize=False, first_ray=np.array([1.0, 0.0, 0.0])):
     """
     Setter for rays to uniformly distributed directions.
     
@@ -106,6 +130,8 @@ def set_uniform_rays(model, randomize=False):
         Magritte model object to set.
     randomized : bool
         Whether or not to randomize the directions of the rays.
+    first_ray: array-like
+        Direction vector of the first ray in the ray list.
         
     Returns
     -------
@@ -128,6 +154,14 @@ def set_uniform_rays(model, randomize=False):
         direction  = np.array(direction).transpose()
         if randomize:
             direction = sp.spatial.transform.Rotation.random().apply(rays)
+            
+        # Rotate such that the first ray is in the given direction
+        R1 = create_rotation_matrix(direction[0])
+        R2 = create_rotation_matrix(first_ray)
+        R  = R2 @ np.linalg.inv(R1)
+        
+        direction = direction @ R.T
+        
     else:
         raise ValueError ('Dimension should be 1 or 3.')
     # Cast to numpy arrays of appropriate type and shape
