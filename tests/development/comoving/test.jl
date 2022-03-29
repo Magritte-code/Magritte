@@ -14,7 +14,7 @@ println(ld)
 quadfactor=2
 factor=1.0;#normally, we should adaptively determine to insert ghost points inbetween, but for simplicity, we just make a more dense discretization
 #not the exact settings, but just to test
-npoints   = convert(Int, 25*factor)
+npoints   = convert(Int, 30*factor)
 nrays     = 1
 nquads    = 165*quadfactor
 
@@ -23,13 +23,13 @@ nTT  = 1.0E+08                 # [m^-3]
 temp = 4.5E+01                 # [K]
 turb = 0.0E+00                 # [m/s]
 dx   = 1.0E+04/factor        # [m]
-# dx   = 3.0e9
+dx   = 1.5e11
 r_in=10.0
 
 dv   = 2.5E+02 / 300_000_000   # [fraction of speed of light]
-dv   = 2.45E+01 / 300_000_000/ factor   # [fraction of speed of light]
+dv   = 2.5E+02 / 300_000_000/ factor   # [fraction of speed of light]
 # dv   = 0.015
-dv   = 1e-19
+# dv   = 1e-19
 
 L    = dx*(npoints-1)
 vmax = dv*(npoints-1)
@@ -117,6 +117,7 @@ function I_(nu, r, theta)
     # if tau(nu, r, theta)<1e-8
     #     return bdy(nu)
     # else
+    println("optical depth increments: ", tau(nu, r, theta)./(npoints.-1))
     return src + (bdy(nu.*(1.0 .+vmax))-src)*exp(-tau(nu, r, theta))
     # end
 end
@@ -219,6 +220,10 @@ data8=ComovingSolvers.data(Icmbarbitrary,(0:npoints-1).*dx, v, χarbitrary, ηar
 ComovingSolvers.computesingleraysecondorderadaptive(data8)
 secondorderadaptive=data8.allintensities
 
+#short char static solver
+data9=ComovingSolvers.data(Icmb,(0:npoints-1).*dx, v, χstatic, ηstatic, νdoppl, middleνdoppl)#actually the two last things are filled in wrongly
+ComovingSolvers.computesinglerayshortcharstatic(data9)
+shortcharstaticfreq=data9.allintensities
 
 
 Iray=I_.(ν, L, 0.0)
@@ -235,8 +240,9 @@ Plots.plot()
 
 # Plots.plot!([νdoppl[:,end], νdoppl[:,end]],1e8.*[Iray, secondorderfull[:, npoints]], label = ["analytic" "full second order"])
 Plots.plot!([νdoppl[:,end]],1e8.*[Iray], label = "analytic")
-Plots.plot!([νarbitrary[:,end]],1e8.*[secondorderfull[:, npoints]], label = "full second order")
-Plots.plot!([νarbitrary[:,end]],1e8.*[secondorderadaptive[:, npoints]], label = "adaptive second order")
+# Plots.plot!([νarbitrary[:,end]],1e8.*[secondorderfull[:, npoints]], label = "full second order")
+# Plots.plot!([νarbitrary[:,end]],1e8.*[secondorderadaptive[:, npoints]], label = "adaptive second order")
+Plots.plot!([ν[:]],1e8.*[shortcharstaticfreq[:, npoints]], label = "short char static")
 
 
 

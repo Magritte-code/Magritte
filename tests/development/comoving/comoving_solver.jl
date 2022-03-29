@@ -508,6 +508,58 @@ function computesingleraysecondorderstatic(data::Data)
 end
 
 
+#computes intensity using second order semi implicit discretization
+function shortcharstatic(previndex, data)
+    Δx=(data.x[previndex+1]-data.x[previndex])#assumes x strictly increasing
+    # Δvdiv2=(data.v[previndex+1]-data.v[previndex])/2.0
+    #renaming stuff
+    nfreqs=data.nfreqs
+    currintensity=data.currintensity
+    bdyintensity=data.backgroundintensity
+    η=data.η
+    χ=data.χ
+    S=η./χ
+    Δτdiv2=Δx*(χ[:,previndex+1].+χ[:,previndex])./4.0
+    Δτ=Δx*(χ[:,previndex+1].+χ[:,previndex])/2.0
+    expminτdiv2=exp.(-Δτdiv2)
+    expminτ=exp.(-2.0.*Δτdiv2)
+    onemexpminτdiv2=-expm1.(-Δτdiv2)
+    onemexpminτ=-expm1.(-2.0 .*Δτdiv2)
+    ν=data.ν
+    lineν=data.lineν
+
+    #interpolation taking source function piecewise constant
+    @views currintensity[1:nfreqs]=currintensity[1:nfreqs].*expminτ.+expminτdiv2.*onemexpminτdiv2.*S[1:nfreqs, previndex].+onemexpminτdiv2.*S[1:nfreqs, previndex+1]
+    # @views currintensity[1:nfreqs]=currintensity[1:nfreqs].*expminτ.+onemexpminτ.*(S[1:nfreqs, previndex].+S[1:nfreqs, previndex+1])/2.0
+
+    # #eval source term at half of interval; linear interpolation from exp(0) to exp(Δτ), so eval S at τ=ln(exp(Δτ)+1/2.0)
+    # middleτ=log.(exp.(Δτ).+exp.(0.0)).-log(2.0)
+    # interpolatedS=S[1:nfreqs, previndex].+(middleτ.-0.0)./Δτ.*(S[1:nfreqs, previndex+1]-S[1:nfreqs, previndex])
+    # @views currintensity[1:nfreqs]=currintensity[1:nfreqs].*expminτ.+onemexpminτ.*interpolatedS
+
+    #simplest shortchar solver available
+    # @views currintensity[1:nfreqs]=currintensity[1:nfreqs].*expminτ.+onemexpminτ.*S[1:nfreqs, previndex]
+
+    println("shortchar: ",currintensity)
+
+    data.allintensities[:,previndex+1]=currintensity;
+    return
+end
+
+
+function computesinglerayshortcharstatic(data::Data)
+    #TODO analyse whether we need some extra points inbetween
+    #use data struct defined here
+    for i ∈ 1:data.npoints-1
+        #compute the next one
+        shortcharstatic(i, data)
+    end
+    # display(Plots.plot(data.currintensity)
+    return
+end
+
+
+
 
 #computes intensity using second order semi implicit discretization (also second order for the frequency derivative)
 function secondorderadaptive(previndex, data)
@@ -731,6 +783,9 @@ function computesingleraysecondorderadaptive(data::Data)
     # display(Plots.plot(data.currintensity)
     return
 end
+
+
+
 
 
 
