@@ -23,7 +23,7 @@ struct Model
     Radiation      radiation;
     vector<Image>  images;
 
-    enum SpectralDiscretisation {None, SD_Lines, SD_Image}
+    enum SpectralDiscretisation {None, SD_Lines, SD_Static, SD_Image}
          spectralDiscretisation = None;
 
     Model () {};
@@ -41,6 +41,7 @@ struct Model
 
     int compute_inverse_line_widths               ();
     int compute_spectral_discretisation           ();
+    int compute_static_spectral_discretization    ();
     int compute_spectral_discretisation           (
         const Real width );
     int compute_spectral_discretisation           (
@@ -50,6 +51,7 @@ struct Model
     int compute_radiation_field                   ();
     int compute_radiation_field_feautrier_order_2 ();
     int compute_radiation_field_shortchar_order_0 ();
+    int compute_radiation_field_shortchar_static  ();
     int compute_Jeff                              ();
     int compute_level_populations_from_stateq     ();
     int compute_level_populations                 (
@@ -93,7 +95,7 @@ struct Model
     {
         cout << "c.size() = " << c().vec.size() << endl;
 
-        accelerated_for (i, c().vec.size(), 
+        accelerated_for (i, c().vec.size(),
         {
             c()[i] = a()[i] + b()[i];
 

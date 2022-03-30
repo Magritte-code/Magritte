@@ -254,6 +254,20 @@ void Radiation :: initialize_J ()
     }
 }
 
+void Radiation :: initialize_I ()
+{
+    for (Size r = 0; r < parameters.nrays(); r++)
+    {
+        for (Size p = 0; p < parameters.npoints(); p++)
+        {
+            for (Size f = 0; f < parameters.nfreqs(); f++)
+            {
+                I(r,p,f) = 0.0;
+            }
+        }
+    }
+}
+
 
 /// calc_J: integrate mean intensity and "flux over all directions
 //////////////////////////////////////////////////////////////////

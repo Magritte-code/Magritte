@@ -3,6 +3,7 @@
 
 #include "model/model.hpp"
 #include "tools/types.hpp"
+#include <set>
 
 
 class Solver
@@ -45,6 +46,25 @@ class Solver
         pc::multi_threading::ThreadPrivate<Matrix<Real>> L_lower_;
 
 
+        //comoving approach
+        // pc::multi_threading::ThreadPrivate<Vector<Size>> n_rays_through_point_;//unsigned char might be a bit too short
+        //technically, both next vars can be threadprivate, if we could guarantee that the same ray distribution would be used? (between initialization and actually using it)
+        Vector<Vector<Size>> points_to_trace_ray_through;
+        // Vector<Size> n_points_to_trace_ray_through;
+        Matrix<Size> n_rays_through_point;//ray, point
+        // pc::multi_threading::ThreadPrivate<Size> n_rays_to_trace_;
+        //I will assume no more than 2^16-1 rays go through a specific point if choosing unsigned int
+        //However, just go with a Size for absolute safety (max upper bound on number rays traced can be assumed to be the number of points)
+        pc::multi_threading::ThreadPrivate<Matrix<Real>> J_;//for purpose of collecting J in all different threads
+        pc::multi_threading::ThreadPrivate<Vector<unsigned char>> real_pt_;
+        pc::multi_threading::ThreadPrivate<Vector<Real>> temp_intensity_;
+
+        // pc::multi_threading::ThreadPrivate<Vector<Real>> boundary_frequencies;
+        // pc::multi_threading::ThreadPrivate<Vector<Real>> boundary_frequencies;
+
+        // Real dshift_max_lower_bound;
+
+
         // Kernel approach
         Vector<Real> eta;
         Vector<Real> chi;
@@ -61,6 +81,9 @@ class Solver
         template <Frame frame>
         void setup (Model& model);
         void setup (const Size l, const Size w, const Size n_o_d);
+
+        template <Frame frame>
+        void static_setup(Model& model);
 
         accel inline Real get_dshift_max (
             const Model& model,
@@ -92,7 +115,37 @@ class Solver
                   Size      id1,
                   Size      id2 );
 
+        template <Frame frame>
+        accel inline Size trace_ray_static (
+            const Geometry& geometry,
+            const Size      o,
+            const Size      r,
+            const double    dshift_max,
+            const int       increment,
+                  Size      id1,
+                  Size      id2 );
+
+
+        accel inline void trace_ray_points (
+            const Geometry& geometry,
+            const Size      o,
+            const Size      rdir,
+            const Size      rsav);
+
+        inline void get_static_rays_to_trace (Model& model);
+
         accel inline void set_data (
+            const Size   crt,
+            const Size   nxt,
+            const double shift_crt,
+            const double shift_nxt,
+            const double dZ_loc,
+            const double dshift_max,
+            const int    increment,
+                  Size&  id1,
+                  Size&  id2 );
+
+        accel inline void set_data_static (
             const Size   crt,
             const Size   nxt,
             const double shift_crt,
@@ -130,6 +183,15 @@ class Solver
             const Size   o,
             const Size   r,
             const double dshift_max );
+
+        accel inline void solve_shortchar_static (Model& model);
+        accel inline void solve_shortchar_static (
+                  Model& model,
+            const Size   o,
+            const Size   r,
+            const double dshift_max );
+
+        // accel inline void solve_shortchar_order_0_comoving (Model& model);
 
         accel inline void solve_feautrier_order_2 (Model& model);
         accel inline void solve_feautrier_order_2 (

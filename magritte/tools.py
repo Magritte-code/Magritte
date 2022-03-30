@@ -1,5 +1,6 @@
 import numpy as np
 import os
+import math
 
 from datetime          import datetime
 from time              import perf_counter
@@ -19,7 +20,7 @@ T_CMB = 2.72548000E+00   # [K] CMB temperature
 def timestamp():
     """
     Returns a time stamp for the current date and time.
-    
+
     Returns
     -------
     out : str
@@ -35,7 +36,7 @@ class Timer ():
     def __init__ (self, name):
         """
         Set a name for the times.
-        
+
         Parameters
         ---
         name : str
@@ -75,14 +76,14 @@ def relative_error (a,b):
 def LTEpop (linedata, temperature):
     '''
     Returns the LTE level populations give the temperature.
-    
+
     Parameters
     ----------
     linedata : Magritte Linedata object
         Magritte linedata object of the of the relevant species.
     temperature : float
         Temperature for which to evaluate the LTE level populations.
-    
+
     Returns
     -------
     out : array_like
@@ -101,14 +102,14 @@ def LTEpop (linedata, temperature):
 def lineEmissivity (linedata, pop):
     '''
     Returns the line emissivity for each radiative transition.
-    
+
     Parameters
     ----------
     linedata : Magritte Linedata object
         Magritte linedata object of the of the relevant species.
     pop : array_like
         Populations of the levels.
-    
+
     Returns
     -------
     out : array_like
@@ -126,14 +127,14 @@ def lineEmissivity (linedata, pop):
 def lineOpacity (linedata, pop):
     '''
     Returns the line opacity for each radiative transition.
-    
+
     Parameters
     ----------
     linedata : Magritte Linedata object
         Magritte linedata object of the of the relevant species.
     pop : array_like
         Populations of the levels.
-    
+
     Returns
     -------
     out : array_like
@@ -151,14 +152,14 @@ def lineOpacity (linedata, pop):
 def lineSource (linedata, pop):
     '''
     Returns the line source function for each radiative transition.
-    
+
     Parameters
     ----------
     linedata : Magritte Linedata object
         Magritte linedata object of the of the relevant species.
     pop : array_like
         Populations of the levels.
-    
+
     Returns
     -------
     out : array_like
@@ -172,14 +173,14 @@ def lineSource (linedata, pop):
 def planck (temperature, frequency):
     '''
     Planck function for thermal radiation.
-    
+
     Parameters
     ----------
     temperature : float
         Temperature at which to evaluate the intensity.
     frequency : float
         Frequency at which to evaluate the intensity.
-        
+
     Returns
     -------
     out : float
@@ -191,12 +192,12 @@ def planck (temperature, frequency):
 def I_CMB (frequency):
     """
     Intensity of the cosmic microwave background.
-    
+
     Parameters
     ----------
     frequency : float
         Frequency at which to evaluate the intensity.
-        
+
     Returns
     -------
     out : float
@@ -208,7 +209,7 @@ def I_CMB (frequency):
 def dnu (linedata, k, temp, vturb2):
     """
     Spectral line width.
-    
+
     Parameters
     ----------
     linedata : Magritte Linedata object
@@ -219,7 +220,7 @@ def dnu (linedata, k, temp, vturb2):
         Local temperature [K].
     vturb2 : float
         Square of the turbulent velocity as fraction of the speed of light.
-    
+
     Returns
     -------
     out : float
@@ -228,10 +229,39 @@ def dnu (linedata, k, temp, vturb2):
     return linedata.frequency[k] * np.sqrt(2.0*kb*temp/(amu*c**2)*linedata.inverse_mass + vturb2)
 
 
+def static_solver_nquads (min_mol_weight, max_mol_weight, min_temp, max_temp, min_vturb2, max_vturb2, maxabsv):
+    """
+    Number of quadratures needed for the static solver
+
+    Parameters
+    ----------
+    min_mol_weight : float
+        Minimal molecular weight of line species [atomic mass units]
+    max_mol_weight : float
+        Maximal molecular weight of line species [atomic mass units]
+    min_temp : float
+        Minimal temperature in model [K]
+    max_temp : float
+        Maximal temperature in model [K]
+    min_vturb2 : float
+        Minimum of :square of the turbulent velocity as fraction of the speed of light: in model
+    max_vturb2 : float
+        Maximum of :square of the turbulent velocity as fraction of the speed of light: in model
+    maxabsv : float
+        Maximal absolute value of the velocity in the model as fraction of the speed of light
+    """
+    LINE_INTEGRATION_WIDTH_CONSTANT=3.0#max width of 3 around both sides of line center
+    LINE_RESOLUTION_CONSTANT=3.0#three points per line width
+    #shift due to doppler shift + maximal width needed to compute integral with line profile function
+    numerator=2.0*maxabsv+2.0*LINE_INTEGRATION_WIDTH_CONSTANT*np.sqrt(2.0*kb*min_temp/(amu*c**2)*(1/min_mol_weight) + max_vturb2)#upper bound of width of interesting region
+    denominator=np.sqrt(2.0*kb*min_temp/(amu*c**2)*(1/max_mol_weight) + min_vturb2)/LINE_RESOLUTION_CONSTANT#smallest feauture to resolves
+    return math.ceil(numerator/denominator)
+
+
 def profile (linedata, k, temp, vturb2, nu):
     """
     Gaussian line profile function.
-    
+
     Parameters
     ----------
     linedata : Magritte Linedata object
@@ -244,7 +274,7 @@ def profile (linedata, k, temp, vturb2, nu):
         Square of the turbulent velocity as fraction of the speed of light.
     nu : float
         Frequency at which to evaluate the line profile function.
-        
+
     Returns
     -------
     out : float
@@ -268,7 +298,7 @@ def save_fits(
     ):
     """
     Save channel maps of synthetic observation (image) as a fits file.
-    
+
     Parameters
     ----------
     model : object
@@ -286,10 +316,10 @@ def save_fits(
     dpc : float
         Distance of source in parsec.
     coord : str
-        Image centre coordinates. 
+        Image centre coordinates.
     f_rest : float
         Rest frequency of the transition.
-    
+
     Returns
     -------
     None
@@ -298,7 +328,7 @@ def save_fits(
     if (len(model.images) < 1):
         print('No images in model.')
         return
-    
+
     if not filename:
         # Get path of image directory
         im_dir = os.path.dirname(os.path.abspath(model.parameters.model_name())) + '/images/'
@@ -309,11 +339,11 @@ def save_fits(
             print('Created image directory:', im_dir)
         # Define filename
         filename = f"{im_dir}image.fits"
-        
+
     # Remove fits file if it already exists
     if os.path.isfile(filename):
         os.remove(filename)
-    
+
     # Extract image data
     imx = np.array(model.images[image_nr].ImX)
     imy = np.array(model.images[image_nr].ImY)
@@ -321,7 +351,7 @@ def save_fits(
 
     # Extract the number of frequency bins
     nfreqs = model.parameters.nfreqs()
-    
+
     # Set image boundaries
     x_min, x_max = np.min(imx)/zoom, np.max(imx)/zoom
     y_min, y_max = np.min(imy)/zoom, np.max(imy)/zoom
@@ -329,38 +359,38 @@ def save_fits(
     # Create image grid values
     xs = np.linspace(x_min, x_max, npix_x)
     ys = np.linspace(y_min, y_max, npix_y)
-    
+
     # Extract the spectral / velocity data
     freqs = np.array(model.radiation.frequencies.nu)[0]
     f_cen = np.mean(freqs)
-    
+
     # If no rest frequency is given,
     # default to cetral frequency in the image.
     if f_rest == 0.0:
         f_rest = f_cen
-    
+
     velos = (freqs - f_rest) / f_rest * constants.c.si.value
     v_cen = (f_cen - f_rest) / f_rest * constants.c.si.value
 
     dpix_x = np.mean(np.diff(xs))
     dpix_y = np.mean(np.diff(ys))
     dvelos = np.diff(velos)
-    
+
     if (np.abs(relative_error(np.max(dvelos), np.min(dvelos))) > 1.0e-9):
         print('WARNING: No regularly spaced frequency bins!')
         dvelo = None
     else:
         dvelo = np.mean(dvelos)
-    
+
     # Interpolate the scattered data to an image (regular grid)
     zs = np.zeros((nfreqs, npix_x, npix_y))
     for f in range(nfreqs):
         # Nearest neighbor interpolate scattered image data
         zs[f] = griddata((imx, imy), imI[:,f], (xs[None,:], ys[:,None]), method=method)
-    
+
     # Convert intensity from J/s/m/m/ster to Jy/pixel
-    zs = zs * dpix_x * dpix_y / ((dpc * units.parsec).si.value)**2 / 1.0e-26    
-            
+    zs = zs * dpix_x * dpix_y / ((dpc * units.parsec).si.value)**2 / 1.0e-26
+
     if coord is None:
         target_ra  = 0.0
         target_dec = 0.0
@@ -395,11 +425,11 @@ def save_fits(
             target_dec = (dec[0] + dec[1] / 60. + dec[2] / 3600.)
         else:
             target_dec = (dec[0] - dec[1] / 60. - dec[2] / 3600.)
-    
+
     # Convert pixel sizes to degrees
     deg_dpix_x = dpix_x / (1.0 * units.au).si.value / dpc / 3600.0
     deg_dpix_y = dpix_y / (1.0 * units.au).si.value / dpc / 3600.0
-    
+
     # Construct the fits header
     hdr = fits.Header()
     hdr['SIMPLE']   = 'T'         # (T=true) indeed a simple fits file
@@ -408,7 +438,7 @@ def save_fits(
     hdr['NAXIS1']   = npix_x      # number of pixels along x axis (hor)
     hdr['NAXIS2']   = npix_y      # number of pixels along y-axis (ver)
     hdr['NAXIS3']   = nfreqs      # number of pixels along velocity-axis
-    
+
     hdr['EXTEND']   = 'T'         # Extendible fits file (T=true for safety, though not required)
     hdr['CROTA1']   = 0.0         # Rotation of axis 1
     hdr['CROTA2']   = 0.0         # Rotation of axis 2.
@@ -423,7 +453,7 @@ def save_fits(
     hdr['CRPIX1']   = npix_x/2.0  # pixel index of centre x=0
     hdr['CRVAL1']   = target_ra   # image centre coordinate (x/ra)
     hdr['CUNIT1']   = 'DEG'       # x-axis unit
-    
+
     hdr['CTYPE2']   = 'DEC--SIN'
     hdr['CDELT2']   = deg_dpix_y  # pixel size in degrees along y-axis
     hdr['CRPIX2']   = npix_y/2.0  # pixel index of centre y=0
@@ -442,7 +472,7 @@ def save_fits(
     hdr['BUNIT']    = 'JY/PIXEL'
 
     fits.writeto(filename, data=zs, header=hdr)
-    
+
     print('Written file to:', filename)
-    
+
     return

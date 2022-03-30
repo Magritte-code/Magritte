@@ -171,6 +171,11 @@ PYBIND11_MODULE (core, module)
             "Compute the spectral discretisation for the model tailored for images with the given min and max frequency."
         )
         .def (
+            "compute_static_spectral_discretization",
+            (int (Model::*)(void)) &Model::compute_static_spectral_discretization,
+            "Compute the spectral discretisation for the model tailored for static solvers."
+        )
+        .def (
             "compute_LTE_level_populations",
             &Model::compute_LTE_level_populations,
             "Compute the level populations for the model assuming local thermodynamic equilibrium (LTE)."
@@ -178,12 +183,17 @@ PYBIND11_MODULE (core, module)
         .def (
             "compute_radiation_field_feautrier_order_2",
             &Model::compute_radiation_field_feautrier_order_2,
-            "Compute the radiation field for the modle using the 2nd-order Feautrier solver."
+            "Compute the radiation field for the model using the 2nd-order Feautrier solver."
         )
         .def (
             "compute_radiation_field_shortchar_order_0",
             &Model::compute_radiation_field_shortchar_order_0,
-            "Compute the radiation field for the modle using the 0th-order short-characteristics methods."
+            "Compute the radiation field for the model using the 0th-order short-characteristics methods."
+        )
+        .def (
+            "compute_radiation_field_shortchar_static",
+            &Model::compute_radiation_field_shortchar_static,
+            "Compute the radiation field for the model using the static short-characteristics solver"
         )
         .def (
             "compute_Jeff",

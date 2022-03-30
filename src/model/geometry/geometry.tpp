@@ -146,7 +146,7 @@ inline double Geometry :: get_shift_general_geometry <Rest> (
 
     if (r >= parameters.hnrays()) // assumes ray indices and antipodes are on opposite sites of hnrays
     {
-        r_correct = rays.antipod[r];
+        r_correct = rays.antipod[r]; // need to reverse directions, as we are tracing the other side of the ray in the opposite direction
     }
 
     return 1.0 - points.velocity[crt].dot(rays.direction[r_correct]);

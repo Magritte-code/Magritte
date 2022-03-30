@@ -48,6 +48,7 @@ struct Radiation
     inline Real get_J (const Size p, const Size f) const;
 
     void initialize_J ();
+    void initialize_I ();
     void MPI_reduce_J ();
     void calc_U_and_V ();
 };

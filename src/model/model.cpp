@@ -275,6 +275,181 @@ int Model :: compute_spectral_discretisation (
     return (0);
 }
 
+///  Computer for spectral (=frequency) discretization for static solvers
+///  Gives same frequency discretization to each point
+int Model :: compute_static_spectral_discretization ()
+{
+    // const Real LINE_WIDTH_CONSTANT=3.0;//denotes how far away (in line widths) we need frequencies for computing J
+    // Real max_velocity_sq=0;
+    // //over all points, get the max doppler shift by first computing the maximal velocity in the grid
+    // for (Size p = 0; p<parameters.npoints(); p++)
+    // {
+    //     Real velocity_sq=geometry.points.velocity[p].squaredNorm();
+    //     if (velocity_sq>max_velocity_sq)
+    //     {
+    //         max_velocity_sq=velocity_sq;
+    //     }
+    // }
+    // const Real abs_max_velocity=sqrt(max_velocity_sq);
+    //
+    // //smallest features are of order smallest line width, so in case of overlapping (or even dopplershifted onto) lines, we need to take this as smallest resolutionn parameter
+    // //uniform over all lines
+    // const Real min_line_width=1.0/(*std::max_element(lines.inverse_width.vec.begin(), lines.inverse_width.vec.end()));
+    // // Real min_line_width=std::numeric_limits<Real>::max();
+    // // for (Size l = 0; l < parameters.nlspecs(); l++)
+    // // {
+    // //     //get min_line_width
+    // //     for (Size p = 0; p<parameters.npoints()< p++)//
+    // //     {
+    // //         Real line_width=1/lines.inverse_width(p,l);
+    // //         if (line_width<min_line_width)
+    // //         {
+    // //             min_line_width=line_width;
+    // //         }
+    // //     }
+    // // }
+    //
+    // //for every line individually, set the static spectral discretisation
+    // //TODO: maybe merge overlapping line frequencies (with or without hint from user)
+    // for (Size l = 0; l < parameters.nlspecs(); l++)
+    // {
+    //     //get max line width and min_line_width
+    //     Real max_line_width=0;
+    //     // Real min_line_width=std::numeric_limits<Real>::max();
+    //     for (Size p = 0; p<parameters.npoints(); p++)//
+    //     {
+    //         Real line_width=1/lines.inverse_width(p,l);
+    //         if (line_width>max_line_width)
+    //         {
+    //             max_line_width=line_width;
+    //         }
+    //         // if (line_width<min_line_width)
+    //         // {
+    //         //     min_line_width=line_width;
+    //         // }
+    //     }
+    //
+    //     const Real line_freq=lines.line[l];
+    //
+    //     const Real min_freq=line_freq*(1-abs_max_velocity)-LINE_WIDTH_CONSTANT*max_line_width;
+    //     const Real max_freq=line_freq*(1+abs_max_velocity)+LINE_WIDTH_CONSTANT*max_line_width;
+    //     //or put these things into a list and check for overlap (first sort, then check min[i+1]<max[i]; if so, remove both)
+    //
+    //     // TODO: implement dynamic way of choosing these things
+    //     // Size nfreqs_needed=(Size) 1+(max_freq-min_freq)/min_line_width;
+    //     Real dnu=(max_freq-min_freq)/nfreqs_needed;
+    //     //ah no, we need to be able to change the total number of frequencies
+    //     accelerated_for (p, parameters.npoints(),
+    //     {
+    //         for (Size f = 0; f < parameters.nquads(); f++)
+    //         {
+    //             radiation.frequencies.nu(p, f) = (Real) (min_freq + f*dnu);
+    //
+    //             radiation.frequencies.appears_in_line_integral[f+l*parameters.nquads()] = false;
+    //             radiation.frequencies.corresponding_l_for_spec[f+l*parameters.nquads()] = parameters.nfreqs();
+    //         }
+    //     })
+    // }
+
+    const Real LINE_WIDTH_CONSTANT=3.0;//denotes how far away (in line widths) we need frequencies for computing J //TODO: move somewhere else
+    Real max_velocity_sq=0;
+    //over all points, get the max doppler shift by first computing the maximal velocity in the grid
+    for (Size p = 0; p<parameters.npoints(); p++)
+    {
+        Real velocity_sq=geometry.points.velocity[p].squaredNorm();
+        if (velocity_sq>max_velocity_sq)
+        {
+            max_velocity_sq=velocity_sq;
+        }
+    }
+    const Real abs_max_velocity=sqrt(max_velocity_sq);
+
+
+    threaded_for (p, parameters.npoints(),
+    {
+        Real1 freqs (parameters.nfreqs());
+        Size1 nmbrs (parameters.nfreqs());
+
+        Size index0 = 0;
+        Size index1 = 0;
+
+        // Add the line frequencies (over the profile)
+        for (Size l = 0; l < parameters.nlspecs(); l++)
+        {
+            const Real inverse_mass = lines.lineProducingSpecies[l].linedata.inverse_mass;
+
+            for (Size k = 0; k < lines.lineProducingSpecies[l].linedata.nrad; k++)
+            {
+                const Real freqs_line = lines.line[index0];
+                const Real max_abs_shift = freqs_line * abs_max_velocity;
+                const Real width      = freqs_line * thermodynamics.profile_width (inverse_mass, p);
+                const Real rightmost_freq = freqs_line + width * LINE_WIDTH_CONSTANT + max_abs_shift;
+                const Real leftmost_freq = freqs_line - width * LINE_WIDTH_CONSTANT - max_abs_shift;
+                const Real delta_freq = (rightmost_freq-leftmost_freq) / (parameters.nquads()-1);
+
+                for (Size z = 0; z < parameters.nquads(); z++)
+                {
+                    const Real root = lines.lineProducingSpecies[l].quadrature.roots[z];
+
+                    freqs[index1] = leftmost_freq + delta_freq * z;
+                    nmbrs[index1] = index1;
+
+                    index1++;
+                }
+
+                index0++;
+            }
+        }
+
+        // Sort frequencies
+        heapsort (freqs, nmbrs);
+
+
+        // Set all frequencies nu
+        for (Size fl = 0; fl < parameters.nfreqs(); fl++)
+        {
+            radiation.frequencies.nu(p, fl) = freqs[fl];
+        }
+
+
+        // Create lookup table for the frequency corresponding to each line
+        Size1 nmbrs_inverted (parameters.nfreqs());
+
+        for (Size fl = 0; fl < parameters.nfreqs(); fl++)
+        {
+            nmbrs_inverted[nmbrs[fl]] = fl;
+
+            radiation.frequencies.appears_in_line_integral[fl] = false;
+            radiation.frequencies.corresponding_l_for_spec[fl] = parameters.nfreqs();
+            radiation.frequencies.corresponding_k_for_tran[fl] = parameters.nfreqs();
+            radiation.frequencies.corresponding_z_for_line[fl] = parameters.nfreqs();
+        }
+
+        Size index2 = 0;
+
+        for (Size l = 0; l < parameters.nlspecs(); l++)
+        {
+            for (Size k = 0; k < lines.lineProducingSpecies[l].nr_line[p].size(); k++)
+            {
+                for (Size z = 0; z < lines.lineProducingSpecies[l].nr_line[p][k].size(); z++)
+                {
+                    lines.lineProducingSpecies[l].nr_line[p][k][z] = nmbrs_inverted[index2];
+
+                    radiation.frequencies.appears_in_line_integral[index2] = true;
+                    radiation.frequencies.corresponding_l_for_spec[index2] = l;
+                    radiation.frequencies.corresponding_k_for_tran[index2] = k;
+                    radiation.frequencies.corresponding_z_for_line[index2] = z;
+
+                    index2++;
+                }
+            }
+        }
+    })
+
+    spectralDiscretisation = SD_Static;
+    return (0);
+}
+
 
 /// Computer for the level populations, assuming LTE
 ////////////////////////////////////////////////////
@@ -303,6 +478,19 @@ int Model :: compute_radiation_field_shortchar_order_0 ()
     Solver solver;
     solver.setup <CoMoving>        (*this);
     solver.solve_shortchar_order_0 (*this);
+
+    return (0);
+}
+
+
+///  Computer for the radiation field
+int Model :: compute_radiation_field_shortchar_static  ()
+{
+    cout << "Computing radiation field..." << endl;
+
+    Solver solver;
+    solver.static_setup <Rest>    (*this);
+    solver.solve_shortchar_static (*this);
 
     return (0);
 }
