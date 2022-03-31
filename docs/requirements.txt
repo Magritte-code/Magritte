@@ -5,3 +5,4 @@ nbsphinx
 breathe
 ipython
 jupyter_sphinx
+jinja2=3.0.0
