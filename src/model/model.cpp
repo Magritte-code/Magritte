@@ -489,10 +489,10 @@ int Model :: compute_image (const Size ray_nr)
 }
 
 
-int Model :: set_eta_and_chi ()
+int Model :: set_eta_and_chi (const Size rr)
 {
     Solver solver;
-    solver.set_eta_and_chi (*this);
+    solver.set_eta_and_chi (*this, rr);
 
     return (0);
 }

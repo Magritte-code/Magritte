@@ -159,7 +159,7 @@ class Solver
             const Size   r,
             const Size   f );
 
-        accel inline void set_eta_and_chi        (Model& model) const;
+        accel inline void set_eta_and_chi        (Model& model, const Size rr) const;
         accel inline void set_boundary_condition (Model& model) const;
 };
 

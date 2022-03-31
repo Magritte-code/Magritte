@@ -103,12 +103,11 @@ struct Model
         return c().vec;
     }
 
-    // Kernel approach
     Matrix<Real> eta;
     Matrix<Real> chi;
 
     Matrix<Real> boundary_condition;
 
-    int set_eta_and_chi       ();
+    int set_eta_and_chi       (const Size rr);
     int set_boundary_condition();
 };

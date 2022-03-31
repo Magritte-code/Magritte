@@ -1152,7 +1152,8 @@ accel inline void Solver :: image_feautrier_order_2 (
 //     return;
 // }
 
-accel inline void Solver :: set_eta_and_chi (Model& model) const
+
+accel inline void Solver :: set_eta_and_chi (Model& model, const Size rr) const
 {
     model.eta.resize (model.parameters.npoints(), model.parameters.nfreqs());
     model.chi.resize (model.parameters.npoints(), model.parameters.nfreqs());
@@ -1161,9 +1162,11 @@ accel inline void Solver :: set_eta_and_chi (Model& model) const
     {
         for (Size f = 0; f < model.parameters.nfreqs(); f++)
         {
-            const Real freq = model.radiation.frequencies.nu(0, f);
+            // Extract the Doppler shift
+            const double shift = model.geometry.get_shift <Rest> (0, rr, p, 0.0);
+            const Real   freq  = model.radiation.frequencies.nu(0, f);
 
-            get_eta_and_chi (model, p, freq, model.eta(p,f), model.chi(p,f));
+            get_eta_and_chi (model, p, freq*shift, model.eta(p,f), model.chi(p,f));
         }
     }
 }
