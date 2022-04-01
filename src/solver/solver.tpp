@@ -267,15 +267,21 @@ inline void Solver :: get_static_rays_to_trace (Model& model)
 
     })
 
-    // //debug print stuff
-    // for (Size rr=0; rr<model.parameters.hnrays(); rr++)
-    // {
-    //     std::cout<<"rr: "<<rr<<" size points_to_trace_ray_through: "<<points_to_trace_ray_through[rr].size()<<std::endl;
-    //     for (Size idx=0; idx<points_to_trace_ray_through[rr].size(); idx++)
-    //     {
-    //         std::cout<<"point: "<<points_to_trace_ray_through[rr][idx]<<std::endl;
-    //     }
-    // }
+    //debug print stuff
+    for (Size rr=0; rr<model.parameters.hnrays(); rr++)
+    {
+        std::cout<<"rr: "<<rr<<" size points_to_trace_ray_through: "<<points_to_trace_ray_through[rr].size()<<std::endl;
+        for (Size idx=0; idx<points_to_trace_ray_through[rr].size(); idx++)
+        {
+            std::cout<<"point: "<<points_to_trace_ray_through[rr][idx]<<std::endl;
+        }
+        std::cout<<"number of rays per point"<<std::endl;
+        for (Size p=0; p<model.parameters.npoints(); p++)
+        {
+            std::cout<<"point: "<<p<<"#: "<<n_rays_through_point(rr, p)<<std::endl;
+        }
+
+    }
 
 
 }
@@ -347,6 +353,7 @@ inline void Solver :: solve_shortchar_static(Model& model)
 
     model.radiation.initialize_J();
     model.radiation.initialize_I();//also necessary due to averaging intensities over different rays
+    model.radiation.initialize_u();//also necessary due to partially filling in u
 
     //FIXME: also zero out all intensities
     accelerated_for (rr, model.parameters.hnrays(),
@@ -369,7 +376,7 @@ inline void Solver :: solve_shortchar_static(Model& model)
             const Real dshift_max = get_dshift_max (model, o);
 
             nr_   ()[centre] = o;
-            shift_()[centre] = model.geometry.get_shift <Rest> (o, rr, 0.0, 0.0);;
+            shift_()[centre] = model.geometry.get_shift <Rest> (o, rr, o, 0.0);;
             real_pt_()[centre]= true;
 
             first_() = trace_ray_static <Rest> (model.geometry, o, rr, dshift_max, -1, centre-1, centre-1) + 1;
@@ -417,7 +424,10 @@ inline void Solver :: solve_shortchar_static(Model& model)
         }
     // }
     })
+
+    // compute_u_static(model);
     //and now compute J and u
+    // TODO: moved to other function
     // std::cout<<"computing J and u"<<std::endl;
     for (Size o = 0; o<model.parameters.npoints(); o++)
     {
@@ -425,15 +435,125 @@ inline void Solver :: solve_shortchar_static(Model& model)
         {
             for (Size rr = 0; rr < model.parameters.hnrays(); rr++)
             {
-                const Size ar = model.geometry.rays.antipod[rr];
-                model.radiation.u(rr,o,f)  = half * (model.radiation.I(rr,o,f) + model.radiation.I(ar,o,f));
-                model.radiation.J(   o,f) += model.geometry.rays.weight[rr] * (model.radiation.I(rr,o,f) + model.radiation.I(ar,o,f));
+                // const Size ar = model.geometry.rays.antipod[rr];
+                // model.radiation.u(rr,o,f)  = half * (model.radiation.I(rr,o,f) + model.radiation.I(ar,o,f));
+                // model.radiation.J(   o,f) += model.geometry.rays.weight[rr] * (model.radiation.I(rr,o,f) + model.radiation.I(ar,o,f));
+                model.radiation.J(   o,f) += 2.0 * model.geometry.rays.weight[rr] * model.radiation.u(rr,o,f);
             }
         }
     }
     // std::cout<<"finished computing"<<std::endl;
 
 }
+
+// For the static frame formulation, we need to shift the frequency because we need to fill in the comoving intensities
+// should be computed at the end of the ray computation? No, it should be computed during computing the ray intensities
+inline void Solver :: compute_u_static(Model& model)
+{
+    //for all certainty, put u to zero
+    //first precompute vector with all frequencies
+    // .resize(parameters.nfreqs())
+    for (Size i=first_(); i<=last_(); i++)
+    {
+        Size p=nr_()[i];//point index
+        Real shift=shift_()[i];//the doppler shift
+        for (Size rr=0; rr<model.parameters.hnrays(); rr++)
+        {
+            const Size ar = model.geometry.rays.antipod[rr];
+            //TODO: replace with new definition; which is slightly different for spherically symmetric grids
+            // const Real rr_shift=2-model.geometry.get_shift <Rest> (p, rr, p, 0.0);
+            const Real rr_shift=shift;
+            // shift of other ray direction should use opposite v, so 2-(1-v)
+            const Real ar_shift=2-rr_shift;
+            // Size lower_freq_rayidx=0
+            // Size higher_freq_rayidx=
+
+            //first get the current shift
+            //For all frequencies, shift the static intensities
+            // Real temp_intensity=model.radiation.I(rr,o,f);
+            // if (shift<1)//ray rr freqs should move to the left
+            // {
+            Real leftmost_static_freq=model.radiation.frequencies.nu(p,0);
+            Real rightmost_static_freq=model.radiation.frequencies.nu(p,model.parameters.nfreqs()-1);
+            Size rr_static_freq_idx=0;
+            Size ar_static_freq_idx=0;
+
+            Real rr_interpolated_I=0;
+            Real ar_interpolated_I=0;
+            for (Size f=0; f<model.parameters.nfreqs(); f++)
+            {
+                const Real rr_shifted_freq=model.radiation.frequencies.nu(p,f)*rr_shift;
+                const Real ar_shifted_freq=model.radiation.frequencies.nu(p,f)*ar_shift;
+                //so first for the the ray with index rr
+                if (rr_shifted_freq<=leftmost_static_freq)
+                {//cant really fill in anything else except maybe the boundary value; TODO
+                    // model.radiation.u(rr,o,f)+=model.radiation.I(rr,o,0);
+                    rr_interpolated_I=model.radiation.I(rr,p,0);
+                    // continue;
+                }
+                else if (rr_shifted_freq>=rightmost_static_freq)
+                {//cant really fill in anything else except maybe the boundary value; TODO
+                  // model.radiation.u(rr,o,f)+=model.radiation.I(rr,o,model.parameters.nfreqs()-1);
+                    rr_interpolated_I=model.radiation.I(rr,p,model.parameters.nfreqs()-1);
+                    // continue;
+                }
+                else
+                {
+                    Real right_static_freq=model.radiation.frequencies.nu(p,rr_static_freq_idx+1);
+                    //otherwise we can just start iterating over the vector
+                    while (rr_shifted_freq>right_static_freq)
+                    {
+                        //iterate until next right freq is larger than shifted freq
+                        rr_static_freq_idx++;
+                        right_static_freq=model.radiation.frequencies.nu(p,rr_static_freq_idx+1);
+                    }
+                    Real left_static_freq=model.radiation.frequencies.nu(p,rr_static_freq_idx);
+                    Real left_static_intensity=model.radiation.I(rr,p,rr_static_freq_idx);
+                    Real right_static_intensity=model.radiation.I(rr,p,rr_static_freq_idx+1);
+                    //and now interpolate between the left and right static intensities
+                    rr_interpolated_I=interpolate_linear(left_static_freq, left_static_intensity, right_static_freq, right_static_intensity, rr_shifted_freq);
+                }
+
+                //and also for the antipodal ray
+                if (ar_shifted_freq<=leftmost_static_freq)
+                {//cant really fill in anything else except maybe the boundary value; TODO
+                    // model.radiation.u(rr,o,f)+=model.radiation.I(rr,o,0);
+                    ar_interpolated_I=model.radiation.I(ar,p,0);
+                    // continue;
+                }
+                else if (ar_shifted_freq>=rightmost_static_freq)
+                {//cant really fill in anything else except maybe the boundary value; TODO
+                  // model.radiation.u(rr,o,f)+=model.radiation.I(rr,o,model.parameters.nfreqs()-1);
+                    ar_interpolated_I=model.radiation.I(ar,p,model.parameters.nfreqs()-1);
+                    // continue;
+                }
+                else
+                {
+                    Real right_static_freq=model.radiation.frequencies.nu(p,ar_static_freq_idx+1);
+                    //otherwise we can just start iterating over the vector
+                    while (ar_shifted_freq>right_static_freq)
+                    {
+                        //iterate until next right freq is larger than
+                        ar_static_freq_idx++;
+                        right_static_freq=model.radiation.frequencies.nu(p,ar_static_freq_idx+1);
+                    }
+                    Real left_static_freq=model.radiation.frequencies.nu(p,ar_static_freq_idx);
+                    Real left_static_intensity=model.radiation.I(rr,p,ar_static_freq_idx);
+                    Real right_static_intensity=model.radiation.I(ar,p,ar_static_freq_idx+1);
+                    //and now interpolate between the left and right static intensities
+                    ar_interpolated_I=interpolate_linear(left_static_freq, left_static_intensity, right_static_freq, right_static_intensity, ar_shifted_freq);
+                }
+
+                model.radiation.u(rr,p,f) = half * (rr_interpolated_I+ar_interpolated_I);
+                    // model.radiation.J(   o,f) += 2.0 * model.geometry.rays.weight[rr] *   model.radiation.u(rr,o,f);
+                    // model.radiation.u(rr,o,f) = half * (model.radiation.I(rr,o,f) + model.radiation.I(ar,o,f));
+                    // model.radiation.J(   o,f) += 2.0 * model.geometry.rays.weight[rr] *   model.radiation.u(rr,o,f);
+                // }
+            }
+        }
+    }
+}
+
 
 accel inline void Solver :: solve_shortchar_static (
           Model& model,
@@ -448,6 +568,7 @@ accel inline void Solver :: solve_shortchar_static (
     Vector<Real>& chi_c = chi_c_();
     Vector<Real>& chi_n = chi_n_();
     // Vector<Real>& dZ = dZ_();
+    Vector<double>& shift = shift_();
 
     //TODO
     // Vector<Size>& n_rays_through_point = n_rays_through_point[];//number of rays through a point
@@ -475,6 +596,8 @@ accel inline void Solver :: solve_shortchar_static (
     for (Size f = 0; f < model.parameters.nfreqs(); f++)
     {
         model.radiation.I(rr,nr[first_()],f) = boundary_intensity(model, nr[first_()], model.radiation.frequencies.nu(o, f));
+        //Shift is in the wrong direction
+        model.radiation.u(rr,nr[first_()],f)+= half * boundary_intensity(model, nr[first_()], model.radiation.frequencies.nu(o, f) * (2.0-shift[first_()]))/n_rays_through_point(rr,first_()); //as we have the boundary value, why not directly fill in the comoving freq
         temp_intensity[f]=model.radiation.I(rr,nr[first_()],f);
     }
 
@@ -493,39 +616,51 @@ accel inline void Solver :: solve_shortchar_static (
         const double dZ = dZ_()[idx-1];//dZ_ contains nonzero values from first() to last()-1
         // std::cout<<"dz: "<<dZ<<std::endl;
 
-        const Size shift_curr=shift_()[idx-1];
-        const Size shift_next=shift_()[idx];
-        // std::cout<<"shift curr: "<<shift_curr<<std::endl;
+
+        // Shift should be turned the other way around, so 2-(1-v)=1+v
+        const double shift_curr=2.0-shift[idx-1];
+        const double shift_next=2.0-shift[idx];
+        // const double shift_curr=shift[idx-1];
+        // const double shift_next=shift[idx];
+        std::cout<<"curr point: "<<curr_point<<std::endl;
+        std::cout<<"shift curr: "<<shift_curr<<std::endl;
         // std::cout<<"shift next: "<<shift_next<<std::endl;
 
         for (Size f = 0; f < model.parameters.nfreqs(); f++)
         {
             const Real freq = model.radiation.frequencies.nu(o, f);
 
-            get_eta_and_chi (model, curr_point, freq*shift_curr, eta_c[f], chi_c[f]);
-            get_eta_and_chi (model, next_point, freq*shift_next, eta_n[f], chi_n[f]);
+            get_eta_and_chi_static (model, curr_point, freq, shift_curr, eta_c[f], chi_c[f]);
+            get_eta_and_chi_static (model, next_point, freq, shift_next, eta_n[f], chi_n[f]);
+            // get_eta_and_chi (model, curr_point, freq*shift_curr, eta_c[f], chi_c[f]);
+            // get_eta_and_chi (model, next_point, freq*shift_next, eta_n[f], chi_n[f]);
 
 
             const Real Scurr=eta_c[f]/chi_c[f];
             const Real Snext=eta_n[f]/chi_n[f];
 
-            const Real source_term = (Scurr+Snext)/2.0;//TODO: add variations
-
-            //TODO: check which dZ value I need, or compute it yourself using Z
-
             const Real dtau = trap (chi_c[f], chi_n[f], dZ);
 
-            const Real onemexpmintau = -expm1(-dtau);
+            // both first order accurate
+            // const Real source_term = -expm1(-dtau)*(Scurr+Snext)/2.0;//TODO: add variations
+            // const Real source_term = -expm1(-dtau/2.0)*(exp(-dtau/2.0)*Scurr+Snext);//TODO: add variations
+
+            // second order accurate
+            const Real common_term = (dtau+expm1(-dtau))/dtau;
+            const Real source_term = common_term*Scurr+(-common_term-expm1(-dtau))*Snext;
+
+
+            // const Real onemexpmintau = -expm1(-dtau);
             // std::cout<<"chi_c: "<<chi_c[f]<<std::endl;
             // std::cout<<"dtau: "<<dtau<<std::endl;
             // std::cout<<"expm1(-dtau):"<<expm1(-dtau)<<std::endl;
             //
             // std::cout<<"source part: "<<onemexpmintau*source_term<<std::endl;
-            temp_intensity[f]=temp_intensity[f]*exp(-dtau)+onemexpmintau*source_term;
+            temp_intensity[f]=temp_intensity[f]*exp(-dtau)+source_term;
 
             // model.radiation.I(rr, next_point, f)=model.radiation.I(rr, curr_point, f)*exp(-dtau)+onemexpmintau*source terms;
         }
-
+        std::cout<<"n_rays_through_point"<<n_rays_through_point(rr,next_point)<<std::endl;
         if (real_pt[idx])
         {
             // std::cout<<"real_pt idx: "<<idx<<std::endl;
@@ -533,8 +668,100 @@ accel inline void Solver :: solve_shortchar_static (
             {
                 //average over all rays which are traced through the point
                 model.radiation.I(rr, next_point, f)+=temp_intensity[f]/n_rays_through_point(rr,next_point);
+                //DEBUG: just set to intensity of first point
+                // model.radiation.I(rr, next_point, f)+=temp_intensity[0]/n_rays_through_point(rr,next_point);
             }
+
+            //while we still have computed the shift, we can fill in the u; TODO: this is inefficient, but handy for bugfixing
+            const Real leftmost_static_freq=model.radiation.frequencies.nu(next_point,0);
+            const Real rightmost_static_freq=model.radiation.frequencies.nu(next_point,model.parameters.nfreqs()-1);
+            // std::cout<<"leftmost_static_freq: "<<leftmost_static_freq<<std::endl;
+            // std::cout<<"rightmost_static_freq: "<<rightmost_static_freq<<std::endl;
+
+            Size static_freq_idx=0;
+            Real interpolated_I=0;
+            for (Size f=0; f<model.parameters.nfreqs(); f++)
+            {
+                const Real shifted_freq=model.radiation.frequencies.nu(next_point,f)*shift_next;
+                // std::cout<<"shifted freq: "<<shifted_freq<<std::endl;
+                //so first for the the ray with index rr
+                if (shifted_freq<=leftmost_static_freq)
+                {//cant really fill in anything else except maybe the boundary value; TODO
+                    // model.radiation.u(rr,o,f)+=model.radiation.I(rr,o,0);
+                    // std::cout<<"path: less than leftmost"<<std::endl;
+                    interpolated_I=temp_intensity[0];
+                    // continue;
+                }
+                else if (shifted_freq>=rightmost_static_freq)
+                {//cant really fill in anything else except maybe the boundary value; TODO
+                    // model.radiation.u(rr,o,f)+=model.radiation.I(rr,o,model.parameters.nfreqs()-1);
+                    // std::cout<<"path: more than rightmost"<<std::endl;
+                    interpolated_I=temp_intensity[model.parameters.nfreqs()-1];
+                    // continue;
+                }
+                else
+                {
+                    Real right_static_freq=model.radiation.frequencies.nu(next_point,static_freq_idx+1);
+                    //otherwise we can just start iterating over the vector
+                    while (shifted_freq>right_static_freq)
+                    {
+                        //iterate until next right freq is larger than shifted freq
+                        static_freq_idx++;
+                        right_static_freq=model.radiation.frequencies.nu(next_point,static_freq_idx+1);
+                    }
+                    Real left_static_freq=model.radiation.frequencies.nu(next_point,static_freq_idx);
+                    Real left_static_intensity=temp_intensity[static_freq_idx];
+                    Real right_static_intensity=temp_intensity[static_freq_idx+1];
+                    //and now interpolate between the left and right static intensities
+                    interpolated_I=interpolate_linear(left_static_freq, left_static_intensity, right_static_freq, right_static_intensity, shifted_freq);
+                }
+                model.radiation.u(rr, next_point, f)+=half * interpolated_I/n_rays_through_point(rr,next_point);
+            }
+                //This is somewhat more complicated, due to needing to interpolate the current intensity values
+            // }
         }
+
+        // //while we still have computed the shift, we can fill in the u; TODO: this is inefficient, but handy for bugfixing
+        // Real leftmost_static_freq=model.radiation.frequencies.nu(p,0);
+        // Real rightmost_static_freq=model.radiation.frequencies.nu(p,model.parameters.nfreqs()-1);
+        // Size static_freq_idx=0;
+        //
+        // Real interpolated_I=0;
+        // for (Size f=0; f<model.parameters.nfreqs(); f++)
+        // {
+        //     const Real rr_shifted_freq=model.radiation.frequencies.nu(p,f)*rr_shift;
+        //     const Real ar_shifted_freq=model.radiation.frequencies.nu(p,f)*ar_shift;
+        //     //so first for the the ray with index rr
+        //     if (shifted_freq<=leftmost_static_freq)
+        //     {//cant really fill in anything else except maybe the boundary value; TODO
+        //         // model.radiation.u(rr,o,f)+=model.radiation.I(rr,o,0);
+        //         rr_interpolated_I=model.radiation.I(rr,p,0);
+        //         // continue;
+        //     }
+        //     else if (rr_shifted_freq>=rightmost_static_freq)
+        //     {//cant really fill in anything else except maybe the boundary value; TODO
+        //       // model.radiation.u(rr,o,f)+=model.radiation.I(rr,o,model.parameters.nfreqs()-1);
+        //         rr_interpolated_I=model.radiation.I(rr,p,model.parameters.nfreqs()-1);
+        //         // continue;
+        //     }
+        //     else
+        //     {
+        //         Real right_static_freq=model.radiation.frequencies.nu(p,rr_static_freq_idx+1);
+        //         //otherwise we can just start iterating over the vector
+        //         while (rr_shifted_freq>right_static_freq)
+        //         {
+        //             //iterate until next right freq is larger than shifted freq
+        //             rr_static_freq_idx++;
+        //             right_static_freq=model.radiation.frequencies.nu(p,rr_static_freq_idx+1);
+        //         }
+        //         Real left_static_freq=model.radiation.frequencies.nu(p,rr_static_freq_idx);
+        //         Real left_static_intensity=model.radiation.I(rr,p,rr_static_freq_idx);
+        //         Real right_static_intensity=model.radiation.I(rr,p,rr_static_freq_idx+1);
+        //         //and now interpolate between the left and right static intensities
+        //         rr_interpolated_I=interpolate_linear(left_static_freq, left_static_intensity, right_static_freq, right_static_intensity, rr_shifted_freq);
+        //     }
+        //
+        //     model.radiation.u(rr,p,f) += half * interpolated_I;
 
     }
 
@@ -547,6 +774,7 @@ accel inline void Solver :: solve_shortchar_static (
     {
         model.radiation.I(ar,nr[last_()],f) = boundary_intensity(model, nr[last_()], model.radiation.frequencies.nu(o, f));
         temp_intensity[f]=model.radiation.I(ar,nr[last_()],f);
+        model.radiation.u(rr,nr[last_()],f)+= half * boundary_intensity(model, nr[last_()], model.radiation.frequencies.nu(o, f) * shift[last_()])/n_rays_through_point(ar,last_()); //as we have the boundary value, why not directly fill in the comoving freq
     }
 
     //and also solve from the reverse direction
@@ -560,34 +788,48 @@ accel inline void Solver :: solve_shortchar_static (
         const double dZ = dZ_()[idx-1];//dZ_ contains nonzero values from first() to last()-1
         // std::cout<<"dz: "<<dZ<<std::endl;
 
-        const Size shift_curr=shift_()[idx-1];
-        const Size shift_next=shift_()[idx];
+        // Shift should be turned the other way around in the reverse direction, so 2-(1-v)=1+v
+        // const double shift_curr=2.0-shift[idx];
+        // const double shift_next=2.0-shift[idx-1];
+        const double shift_curr=shift[idx];
+        const double shift_next=shift[idx-1];
+        // std::cout<<"rev shift curr: "<<shift_curr<<std::endl;
+        // std::cout<<"rev shift next: "<<shift_next<<std::endl;
+
 
         for (Size f = 0; f < model.parameters.nfreqs(); f++)
         {
             const Real freq = model.radiation.frequencies.nu(o, f);
 
-            get_eta_and_chi (model, curr_point, freq*shift_curr, eta_c[f], chi_c[f]);
-            get_eta_and_chi (model, next_point, freq*shift_next, eta_n[f], chi_n[f]);
+            get_eta_and_chi_static (model, curr_point, freq, shift_curr, eta_c[f], chi_c[f]);
+            get_eta_and_chi_static (model, next_point, freq, shift_next, eta_n[f], chi_n[f]);
+            // get_eta_and_chi (model, curr_point, freq*shift_curr, eta_c[f], chi_c[f]);
+            // get_eta_and_chi (model, next_point, freq*shift_next, eta_n[f], chi_n[f]);
 
             const Real Scurr=eta_c[f]/chi_c[f];
             const Real Snext=eta_n[f]/chi_n[f];
 
-            // std::cout<<"chi_c: "<<chi_c[f];
+            const Real dtau = trap (chi_c[f], chi_n[f], dZ);
 
-            const Real source_term = (Scurr+Snext)/2.0;//TODO: add variations
+            // both first order accurate
+            // const Real source_term = -expm1(-dtau)*(Scurr+Snext)/2.0;//TODO: add variations
+            // const Real source_term = -expm1(-dtau/2.0)*(exp(-dtau/2.0)*Scurr+Snext);//TODO: add variations
+
+            // second order accurate
+            const Real common_term = (dtau+expm1(-dtau))/dtau;
+            const Real source_term = common_term*Scurr+(-common_term-expm1(-dtau))*Snext;
+
 
             //TODO: check which dZ value I need, or compute it yourself using Z
 
-            const Real dtau = trap (chi_c[f], chi_n[f], dZ);
 
-            const Real onemexpmintau = -expm1(-dtau);
+            // const Real onemexpmintau = -expm1(-dtau);
             // std::cout<<"chi_c: "<<chi_c[f]<<std::endl;
             // std::cout<<"dtau: "<<dtau<<std::endl;
             // std::cout<<"expm1(-dtau):"<<expm1(-dtau)<<std::endl;
             //
             // std::cout<<"source part: "<<onemexpmintau*source_term<<std::endl;
-            temp_intensity[f]=temp_intensity[f]*exp(-dtau)+onemexpmintau*source_term;
+            temp_intensity[f]=temp_intensity[f]*exp(-dtau)+source_term;
 
             // model.radiation.I(rr, next_point, f)=model.radiation.I(rr, curr_point, f)*exp(-dtau)+onemexpmintau*source terms;
         }
@@ -599,8 +841,59 @@ accel inline void Solver :: solve_shortchar_static (
             {
                 //average over all rays which are traced through the point
                 model.radiation.I(ar, next_point, f)+=temp_intensity[f]/n_rays_through_point(rr,next_point);
+                //DEBUG: just set to intensity of first point
+                // model.radiation.I(ar, next_point, f)+=temp_intensity[0]/n_rays_through_point(rr,next_point);
             }
+
+            // for (Size f = 0; f < model.parameters.nfreqs(); f++)
+            // {
+
+            //while we still have computed the shift, we can fill in the u; TODO: this is inefficient, but handy for bugfixing
+            Real leftmost_static_freq=model.radiation.frequencies.nu(next_point,0);
+            Real rightmost_static_freq=model.radiation.frequencies.nu(next_point,model.parameters.nfreqs()-1);
+            Size static_freq_idx=0;
+
+            Real interpolated_I=0;
+            for (Size f=0; f<model.parameters.nfreqs(); f++)
+            {
+                const Real shifted_freq=model.radiation.frequencies.nu(next_point,f)*shift_next;
+                //so first for the the ray with index rr
+                if (shifted_freq<=leftmost_static_freq)
+                {//cant really fill in anything else except maybe the boundary value; TODO
+                    // model.radiation.u(rr,o,f)+=model.radiation.I(rr,o,0);
+                    interpolated_I=temp_intensity[0];
+                    // continue;
+                }
+                else if (shifted_freq>=rightmost_static_freq)
+                {//cant really fill in anything else except maybe the boundary value; TODO
+                    // model.radiation.u(rr,o,f)+=model.radiation.I(rr,o,model.parameters.nfreqs()-1);
+                    interpolated_I=temp_intensity[model.parameters.nfreqs()-1];
+                    // continue;
+                }
+                else
+                {
+                    Real right_static_freq=model.radiation.frequencies.nu(next_point,static_freq_idx+1);
+                    //otherwise we can just start iterating over the vector
+                    while (shifted_freq>right_static_freq)
+                    {
+                        //iterate until next right freq is larger than shifted freq
+                        static_freq_idx++;
+                        right_static_freq=model.radiation.frequencies.nu(next_point,static_freq_idx+1);
+                    }
+                    Real left_static_freq=model.radiation.frequencies.nu(next_point,static_freq_idx);
+                    Real left_static_intensity=temp_intensity[static_freq_idx];
+                    Real right_static_intensity=temp_intensity[static_freq_idx+1];
+                    //and now interpolate between the left and right static intensities
+                    interpolated_I=interpolate_linear(left_static_freq, left_static_intensity, right_static_freq, right_static_intensity, shifted_freq);
+                }
+                model.radiation.u(rr, next_point, f)+=half * interpolated_I/n_rays_through_point(rr,next_point);
+            }
+            //This is somewhat more complicated, due to needing to interpolate the current intensity values
+            // }
         }
+
+        //while we still have the shift, we can compute the u we can fill in
+
 
     }
 }
@@ -922,7 +1215,7 @@ accel inline Size Solver :: trace_ray_static (
                   crt =       nxt;
             shift_crt = shift_nxt;
 
-                  nxt = geometry.get_next          (o, r, nxt, Z, dZ);
+                  nxt = geometry.get_next          (o, r, crt, Z, dZ);
             shift_nxt = geometry.get_shift <frame> (o, r, nxt, Z    );
 
             set_data_static (crt, nxt, shift_crt, shift_nxt, dZ, dshift_max, increment, id1, id2);
@@ -1064,6 +1357,7 @@ accel inline void Solver :: set_data_static (
         nr   [id1] = nxt;
         real_pt[id1]= true;
         shift[id1] = shift_nxt;
+        // std::cout<<"shift: "<<shift_nxt<<std::endl;
         dZ   [id2] = dZ_loc;
 
         id1 += increment;
@@ -1138,6 +1432,52 @@ accel inline void Solver :: get_eta_and_chi (
     {
         const Real diff = freq - model.lines.line[l];
         const Real prof = freq * gaussian (model.lines.inverse_width(p, l), diff);
+
+        eta += prof * model.lines.emissivity(p, l);
+        chi += prof * model.lines.opacity   (p, l);
+
+        // cout << "prof = " << prof << "     diff = " << diff  << "     width = " << width << endl;
+        // printf("prof = %le,   diff = %le,   freq = %le,   line = %le\n", prof, diff, freq, model.lines.line[l]);
+
+
+        // if (isnan(eta) || isnan(chi))
+        // {
+        //     cout << "emmi = " << model.lines.emissivity(p, l) << "   p = " << p << "   l = " << l << endl;
+        //     cout << "opac = " << model.lines.opacity   (p, l) << "   p = " << p << "   l = " << l << endl;
+        //     cout << "widt = " << model.lines.inverse_width (p, l) << "   p = " << p << "   l = " << l << endl;
+        //     cout << "prof = " << prof << "   freq = " << freq << "   diff = " << diff << endl;
+        // }
+    }
+
+
+    // cout << "eta, chi = " << eta << "  " << chi << endl;
+}
+
+///  Getter for the emissivity (eta) and the opacity (chi) in the static frame
+///    @param[in]  model : reference to model object
+///    @param[in]  p     : in dex of the cell
+///    @param[in]  freq  : frequency (in static frame)
+///    @param[in]  shift : doppler shift for line freq
+///    @param[out] eta   : emissivity
+///    @param[out] chi   : opacity
+//////////////////////////////////////////////////////////
+accel inline void Solver :: get_eta_and_chi_static (
+    const Model& model,
+    const Size   p,
+    const Real   freq,
+    const double shift,
+          Real&  eta,
+          Real&  chi ) const
+{
+    // Initialize
+    eta = 0.0;
+    chi = 1.0e-26;
+
+    // Set line emissivity and opacity
+    for (Size l = 0; l < model.parameters.nlines(); l++)
+    {
+        const Real diff = freq - model.lines.line[l] * shift;
+        const Real prof = freq * gaussian (model.lines.inverse_width(p, l) / shift, diff);
 
         eta += prof * model.lines.emissivity(p, l);
         chi += prof * model.lines.opacity   (p, l);

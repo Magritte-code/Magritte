@@ -3,6 +3,7 @@
 
 #include "model/model.hpp"
 #include "tools/types.hpp"
+#include "tools/interpolation.hpp"
 #include <set>
 
 
@@ -134,6 +135,8 @@ class Solver
 
         inline void get_static_rays_to_trace (Model& model);
 
+        inline void compute_u_static (Model& model);
+
         accel inline void set_data (
             const Size   crt,
             const Size   nxt,
@@ -168,6 +171,14 @@ class Solver
             const Model& model,
             const Size   p,
             const Real   freq,
+                  Real&  eta,
+                  Real&  chi ) const;
+
+        accel inline void get_eta_and_chi_static (
+            const Model& model,
+            const Size   p,
+            const Real   freq,
+            const double shift,
                   Real&  eta,
                   Real&  chi ) const;
 
