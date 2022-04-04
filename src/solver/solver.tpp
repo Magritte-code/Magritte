@@ -273,12 +273,12 @@ inline void Solver :: get_static_rays_to_trace (Model& model)
         std::cout<<"rr: "<<rr<<" size points_to_trace_ray_through: "<<points_to_trace_ray_through[rr].size()<<std::endl;
         for (Size idx=0; idx<points_to_trace_ray_through[rr].size(); idx++)
         {
-            std::cout<<"point: "<<points_to_trace_ray_through[rr][idx]<<std::endl;
+            // std::cout<<"point: "<<points_to_trace_ray_through[rr][idx]<<std::endl;
         }
-        std::cout<<"number of rays per point"<<std::endl;
+        // std::cout<<"number of rays per point"<<std::endl;
         for (Size p=0; p<model.parameters.npoints(); p++)
         {
-            std::cout<<"point: "<<p<<"#: "<<n_rays_through_point(rr, p)<<std::endl;
+            // std::cout<<"point: "<<p<<"#: "<<n_rays_through_point(rr, p)<<std::endl;
         }
 
     }
@@ -597,7 +597,7 @@ accel inline void Solver :: solve_shortchar_static (
     {
         model.radiation.I(rr,nr[first_()],f) = boundary_intensity(model, nr[first_()], model.radiation.frequencies.nu(o, f));
         //Shift is in the wrong direction
-        model.radiation.u(rr,nr[first_()],f)+= half * boundary_intensity(model, nr[first_()], model.radiation.frequencies.nu(o, f) * (2.0-shift[first_()]))/n_rays_through_point(rr,first_()); //as we have the boundary value, why not directly fill in the comoving freq
+        model.radiation.u(rr,nr[first_()],f)+= half * boundary_intensity(model, nr[first_()], model.radiation.frequencies.nu(o, f) * (2.0-shift[first_()]))/n_rays_through_point(rr,nr[first_()]); //as we have the boundary value, why not directly fill in the comoving freq
         temp_intensity[f]=model.radiation.I(rr,nr[first_()],f);
     }
 
@@ -622,8 +622,8 @@ accel inline void Solver :: solve_shortchar_static (
         const double shift_next=2.0-shift[idx];
         // const double shift_curr=shift[idx-1];
         // const double shift_next=shift[idx];
-        std::cout<<"curr point: "<<curr_point<<std::endl;
-        std::cout<<"shift curr: "<<shift_curr<<std::endl;
+        // std::cout<<"curr point: "<<curr_point<<std::endl;
+        // std::cout<<"shift curr: "<<shift_curr<<std::endl;
         // std::cout<<"shift next: "<<shift_next<<std::endl;
 
         for (Size f = 0; f < model.parameters.nfreqs(); f++)
@@ -660,9 +660,12 @@ accel inline void Solver :: solve_shortchar_static (
 
             // model.radiation.I(rr, next_point, f)=model.radiation.I(rr, curr_point, f)*exp(-dtau)+onemexpmintau*source terms;
         }
-        std::cout<<"n_rays_through_point"<<n_rays_through_point(rr,next_point)<<std::endl;
+        // std::cout<<"n_rays_through_point"<<n_rays_through_point(rr,next_point)<<std::endl;
+        // std::cout<<"real_pt: "<<real_pt[idx]==1<<std::endl;
         if (real_pt[idx])
         {
+            std::cout<<"next point: "<<next_point<<std::endl;
+            std::cout<<"is real point"<<std::endl;
             // std::cout<<"real_pt idx: "<<idx<<std::endl;
             for (Size f = 0; f < model.parameters.nfreqs(); f++)
             {
@@ -774,8 +777,9 @@ accel inline void Solver :: solve_shortchar_static (
     {
         model.radiation.I(ar,nr[last_()],f) = boundary_intensity(model, nr[last_()], model.radiation.frequencies.nu(o, f));
         temp_intensity[f]=model.radiation.I(ar,nr[last_()],f);
-        model.radiation.u(rr,nr[last_()],f)+= half * boundary_intensity(model, nr[last_()], model.radiation.frequencies.nu(o, f) * shift[last_()])/n_rays_through_point(ar,last_()); //as we have the boundary value, why not directly fill in the comoving freq
+        model.radiation.u(rr,nr[last_()],f)+= half * boundary_intensity(model, nr[last_()], model.radiation.frequencies.nu(o, f) * shift[last_()])/n_rays_through_point(rr,nr[last_()]); //as we have the boundary value, why not directly fill in the comoving freq
     }
+
 
     //and also solve from the reverse direction
     for (Size idx=last_(); idx>first_(); idx--)//index manipulation, as Size is unsigned
