@@ -108,10 +108,10 @@ def create_rotation_matrix(n):
     n1  = n 
     n1 /= np.linalg.norm(n1)
 
-    if np.linalg.norm(n1-nx) < 1.0e-16:
-        n2 = np.cross(nx, n1)
-    else:
+    if np.linalg.norm(n1-nx) < 1.0e-6:
         n2 = np.cross(ny, n1)
+    else:
+        n2 = np.cross(nx, n1)
     n2 /= np.linalg.norm(n2)
 
     n3  = np.cross(n2, n)
