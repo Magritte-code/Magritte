@@ -489,6 +489,20 @@ int Model :: compute_image (const Size ray_nr)
 }
 
 
+///  Computer for image in one point
+////////////////////////////////////
+int Model :: compute_image_for_point (const Size ray_nr, const Size p)
+{
+    cout << "Computing image for point " << p << "..." << endl;
+
+    Solver solver;
+    solver.setup <Rest>                      (*this);
+    solver.image_feautrier_order_2_for_point (*this, ray_nr, p);
+
+    return (0);
+}
+
+
 int Model :: set_eta_and_chi (const Size rr)
 {
     Solver solver;

@@ -147,6 +147,14 @@ class Solver
             const Size   ar,
             const Size   f  );
 
+        accel inline void image_feautrier_order_2_for_point (Model& model, const Size rr, const Size p);
+        accel inline void image_feautrier_order_2_for_point (
+                  Model& model,
+            const Size   o,
+            const Size   rr,
+            const Size   ar,
+            const Size   f  );
+
 
         accel inline Real     kernel (const Vector3D d) const;
         accel inline Real     kernel (const Model& model, const Size r, const Size p1, const Size p2) const;
