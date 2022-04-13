@@ -11,23 +11,23 @@ import SpecialFunctions as sf
 ld=TestMolecule.testlinedata()
 println(ld)
 
-quadfactor=2
+quadfactor=1
 factor=1.0;#normally, we should adaptively determine to insert ghost points inbetween, but for simplicity, we just make a more dense discretization
 #not the exact settings, but just to test
 npoints   = convert(Int, 30*factor)
 nrays     = 1
-nquads    = 165*quadfactor
+nquads    = 75*quadfactor
 
 nH2  = 1.0E+12                 # [m^-3]
 nTT  = 1.0E+08                 # [m^-3]
 temp = 4.5E+01                 # [K]
 turb = 0.0E+00                 # [m/s]
 dx   = 1.0E+04/factor        # [m]
-dx   = 1.5e11
+dx   = 1.5e010
 r_in=10.0
 
 dv   = 2.5E+02 / 300_000_000   # [fraction of speed of light]
-dv   = 2.5E+02 / 300_000_000/ factor   # [fraction of speed of light]
+dv   = 2.0E+02 / 300_000_000/ factor   # [fraction of speed of light]
 # dv   = 0.015
 # dv   = 1e-19
 
@@ -47,12 +47,11 @@ dnu = Tools.dnu(ld, k, temp, (turb/TestMolecule.CC)^2)
 println(src)
 println(eta/chi)
 println(ld.frequency[1])
-println("dnu: ", dnu)
 
 
 quad_rel_diff=0.25/quadfactor
 ν=ld.frequency[1].+(-(nquads-1)/2:(nquads-1)/2).*quad_rel_diff.*dnu
-νarbit=reshape([ld.frequency[1]+quad*quad_rel_diff*dnu*(1.0+0.002*point) for point in 1:npoints for quad in (-(nquads-1)/2:(nquads-1)/2)], nquads, npoints)
+νarbit=reshape([ld.frequency[1]+quad*quad_rel_diff*dnu*(1.0+0.00*point) for point in 1:npoints for quad in (-(nquads-1)/2:(nquads-1)/2)], nquads, npoints)
 # νarbit=reshape([ld.frequency[1]+quad*quad_rel_diff*dnu for point in 1:npoints for quad in (-(nquads-1)/2:(nquads-1)/2)], nquads, npoints)
 
 println(length(ν))
@@ -117,7 +116,7 @@ function I_(nu, r, theta)
     # if tau(nu, r, theta)<1e-8
     #     return bdy(nu)
     # else
-    println("optical depth increments: ", tau(nu, r, theta)./(npoints.-1))
+    # println("optical depth increments: ", tau(nu, r, theta)./(npoints.-1))
     return src + (bdy(nu.*(1.0 .+vmax))-src)*exp(-tau(nu, r, theta))
     # end
 end
@@ -225,6 +224,15 @@ data9=ComovingSolvers.data(Icmb,(0:npoints-1).*dx, v, χstatic, ηstatic, νdopp
 ComovingSolvers.computesinglerayshortcharstatic(data9)
 shortcharstaticfreq=data9.allintensities
 
+#full second order somewhat adaptive comoving solver, using shortchar formula
+data10=ComovingSolvers.data(Icmbarbitrary,(0:npoints-1).*dx, v, χarbitrary, ηarbitrary, νarbitrary, middleνdoppl)
+ComovingSolvers.computesingleraysecondorderadaptiveshortchar(data10)
+comovingshortchar=data10.allintensities
+
+#first order in freq somewhat adaptive comoving solver, using shortchar formula
+data11=ComovingSolvers.data(Icmbarbitrary,(0:npoints-1).*dx, v, χarbitrary, ηarbitrary, νarbitrary, middleνdoppl)
+ComovingSolvers.computesinglerayfirstorderadaptiveshortchar(data11)
+comovingshortcharfirstorder=data11.allintensities
 
 Iray=I_.(ν, L, 0.0)
 # println(Iray)
@@ -241,13 +249,15 @@ Plots.plot()
 # Plots.plot!([νdoppl[:,end], νdoppl[:,end]],1e8.*[Iray, secondorderfull[:, npoints]], label = ["analytic" "full second order"])
 Plots.plot!([νdoppl[:,end]],1e8.*[Iray], label = "analytic")
 # Plots.plot!([νarbitrary[:,end]],1e8.*[secondorderfull[:, npoints]], label = "full second order")
-# Plots.plot!([νarbitrary[:,end]],1e8.*[secondorderadaptive[:, npoints]], label = "adaptive second order")
-Plots.plot!([ν[:]],1e8.*[shortcharstaticfreq[:, npoints]], label = "short char static")
+Plots.plot!([νarbitrary[:,end]],1e8.*[secondorderadaptive[:, npoints]], label = "adaptive second order")
+Plots.plot!([νarbitrary[:,end]],1e8.*[comovingshortchar[:, npoints]], label = "comoving shortchar 2nd")
+Plots.plot!([νarbitrary[:,end]],1e8.*[comovingshortcharfirstorder[:, npoints]], label = "comoving shortchar 1st")
+# Plots.plot!([ν[:]],1e8.*[shortcharstaticfreq[:, npoints]], label = "short char static")
 
 
 
 # Plots.plot([νdoppl[:,end], νdoppl[:,end]],1e8.*[secondorderfreq[:, npoints], Iray], label = ["second order impl" "analytic"])
-Plots.vline!([middleνdoppl[end], middleνdoppl[end]-dnu*(1+v[end]), middleνdoppl[end]+dnu*(1+v[end])], label=["shifted line center ±δν" "-δν" "+δν"],legend=:topright)
+Plots.vline!([middleνdoppl[end], middleνdoppl[end]-dnu*(1+v[end]), middleνdoppl[end]+dnu*(1+v[end])], label=["shifted line center ±δν" "-δν" "+δν"],legend=:bottomright)
 
 Plots.gui()
 # Plots.savefig("Comparison full 2nd vs adaptive 2nd")
@@ -257,4 +267,7 @@ Plots.gui()
 
 println(tau(middleν, L, 0.0))
 println(I_(middleν, L, 0.0))
-# println("v: ", v, "\n")
+println("dnu: ", dnu)
+println("dnu quad: ", dnu/4.0/quadfactor)
+println("doppler shift: ", frq*dv)
+println("v: ", v, "\n")

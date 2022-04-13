@@ -109,7 +109,14 @@ struct Model
     Matrix<Real> eta;
     Matrix<Real> chi;
 
+    Matrix<Real>  eta_ray;
+    Matrix<Real>  chi_ray;
+    Matrix<Real> dtau_ray;
+    Matrix<Real>    u_ray;
+
     Matrix<Real> boundary_condition;
+
+    int compute_image_for_point (const Size ray_nr, const Size p);
 
     int set_eta_and_chi       ();
     int set_boundary_condition();

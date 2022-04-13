@@ -664,8 +664,6 @@ accel inline void Solver :: solve_shortchar_static (
         // std::cout<<"real_pt: "<<real_pt[idx]==1<<std::endl;
         if (real_pt[idx])
         {
-            std::cout<<"next point: "<<next_point<<std::endl;
-            std::cout<<"is real point"<<std::endl;
             // std::cout<<"real_pt idx: "<<idx<<std::endl;
             for (Size f = 0; f < model.parameters.nfreqs(); f++)
             {
@@ -2875,4 +2873,195 @@ accel inline void Solver :: set_boundary_condition (Model& model) const
             model.boundary_condition(b,f) = boundary_intensity (model, p, freq);
         }
     }
+}
+
+
+inline void Solver :: image_feautrier_order_2_for_point (Model& model, const Size rr, const Size p)
+{
+    // Redefine p to keep everything as similar to image_feautrier_order_2 as possible
+    const Size o = p;
+
+
+    const Size ar = model.geometry.rays.antipod[rr];
+
+    const Real dshift_max = get_dshift_max (model, o);
+
+    nr_   ()[centre] = o;
+    shift_()[centre] = model.geometry.get_shift <Rest> (o, rr, o, 0.0);;
+
+    first_() = trace_ray <Rest> (model.geometry, o, rr, dshift_max, -1, centre-1, centre-1) + 1;
+    last_ () = trace_ray <Rest> (model.geometry, o, ar, dshift_max, +1, centre+1, centre  ) - 1;
+    n_tot_() = (last_()+1) - first_();
+
+    model. eta_ray.resize (n_tot_(), model.parameters.nfreqs());
+    model. chi_ray.resize (n_tot_(), model.parameters.nfreqs());
+    model.dtau_ray.resize (n_tot_(), model.parameters.nfreqs());
+    model.   u_ray.resize (n_tot_(), model.parameters.nfreqs());
+
+    if (n_tot_() > 1)
+    {
+        for (Size f = 0; f < model.parameters.nfreqs(); f++)
+        {
+            image_feautrier_order_2_for_point (model, o, rr, ar, f);
+        }
+    }
+
+}
+
+///  Solver for Feautrier equation along ray pairs using the (ordinary)
+///  2nd-order solver, without adaptive optical depth increments
+///    @param[in] w : width index
+///////////////////////////////////////////////////////////////////////
+accel inline void Solver :: image_feautrier_order_2_for_point (
+          Model& model,
+    const Size   o,
+    const Size   rr,
+    const Size   ar,
+    const Size   f  )
+{
+    const Real freq = model.radiation.frequencies.nu(o, f);
+
+    // cout << "o = " << o << "  f = " << f << "  " << CC*(freq / model.lines.line[0] - 1.0) << endl;
+
+    Real eta_c, chi_c, dtau_c, term_c;
+    Real eta_n, chi_n, dtau_n, term_n;
+
+    const Size first = first_();
+    const Size last  = last_ ();
+    const Size n_tot = n_tot_();
+
+    Vector<double>& dZ    = dZ_   ();
+    Vector<Size  >& nr    = nr_   ();
+    Vector<double>& shift = shift_();
+
+    Vector<Real>& inverse_chi = inverse_chi_();
+
+    Vector<Real>& Su = Su_();
+    Vector<Real>& Sv = Sv_();
+
+    Vector<Real>& A         = A_        ();
+    Vector<Real>& C         = C_        ();
+    Vector<Real>& inverse_A = inverse_A_();
+    Vector<Real>& inverse_C = inverse_C_();
+
+    Vector<Real>& FF = FF_();
+    Vector<Real>& FI = FI_();
+    Vector<Real>& GG = GG_();
+    Vector<Real>& GI = GI_();
+    Vector<Real>& GP = GP_();
+
+    Vector<Real>& L_diag  = L_diag_ ();
+    Matrix<Real>& L_upper = L_upper_();
+    Matrix<Real>& L_lower = L_lower_();
+
+
+    // Get optical properties for first two elements
+    get_eta_and_chi (model, nr[first  ], freq*shift[first  ], eta_c, chi_c);
+    get_eta_and_chi (model, nr[first+1], freq*shift[first+1], eta_n, chi_n);
+
+    inverse_chi[first  ] = 1.0 / chi_c;
+    inverse_chi[first+1] = 1.0 / chi_n;
+
+    term_c = eta_c * inverse_chi[first  ];
+    term_n = eta_n * inverse_chi[first+1];
+    dtau_n = half * (chi_c + chi_n) * dZ[first];
+
+    model. chi_ray(0, f) =  chi_c;
+    model. chi_ray(1, f) =  chi_n;
+
+    model. eta_ray(0, f) =  eta_c;
+    model. eta_ray(1, f) =  eta_n;
+
+    model.dtau_ray(0, f) = 0.0;
+    model.dtau_ray(1, f) = dtau_n;
+
+
+    // Set boundary conditions
+    const Real inverse_dtau_f = one / dtau_n;
+
+    C[first] = two * inverse_dtau_f * inverse_dtau_f;
+
+    const Real Bf_min_Cf = one + two * inverse_dtau_f;
+    const Real Bf        = Bf_min_Cf + C[first];
+    const Real I_bdy_f   = boundary_intensity (model, nr[first], freq*shift[first]);
+
+    Su[first]  = term_c + two * I_bdy_f * inverse_dtau_f;
+    Su[first] /= Bf;
+
+    /// Write economically: F[first] = (B[first] - C[first]) / C[first];
+    FF[first] = half * Bf_min_Cf * dtau_n * dtau_n;
+    FI[first] = one / (one + FF[first]);
+
+    // cout << "FF[first] = " << FF[first] << "  dtau_n = " << dtau_n << "   chi_n = " << chi_n << "   chi_c = " << chi_c <<  endl;
+
+    /// Set body of Feautrier matrix
+    for (Size n = first+1; n < last; n++)
+    {
+        term_c = term_n;
+        dtau_c = dtau_n;
+         eta_c =  eta_n;
+         chi_c =  chi_n;
+
+        // Get new radiative properties
+        get_eta_and_chi (model, nr[n+1], freq*shift[n+1], eta_n, chi_n);
+
+        inverse_chi[n+1] = 1.0 / chi_n;
+
+        term_n = eta_n * inverse_chi[n+1];
+        dtau_n = half * (chi_c + chi_n) * dZ[n];
+
+        // cout << "dtau = " << dtau_n << endl;
+
+        const Real dtau_avg = half * (dtau_c + dtau_n);
+        inverse_A[n] = dtau_avg * dtau_c;
+        inverse_C[n] = dtau_avg * dtau_n;
+
+        model. chi_ray(n+1-first, f) =  chi_n;
+        model. eta_ray(n+1-first, f) =  eta_n;
+        model.dtau_ray(n+1-first, f) = dtau_n;
+
+        A[n] = one / inverse_A[n];
+        C[n] = one / inverse_C[n];
+
+        /// Use the previously stored value of the source function
+        Su[n] = term_c;
+
+        // cout << "inverse_C[" << n << "] = " << inverse_C[n] << endl;
+
+        FF[n] = (A[n] * FF[n-1] * FI[n-1] + one) * inverse_C[n];
+        FI[n] = one / (one + FF[n]);
+        Su[n] = (A[n] * Su[n-1] + Su[n]) * FI[n] * inverse_C[n];
+    }
+
+
+    /// Set boundary conditions
+    const Real inverse_dtau_l = one / dtau_n;
+
+    A[last] = two * inverse_dtau_l * inverse_dtau_l;
+
+    const Real Bl_min_Al = one + two * inverse_dtau_l;
+    const Real Bl        = Bl_min_Al + A[last];
+
+    const Real denominator = one / (Bl * FF[last-1] + Bl_min_Al);
+
+    // cout << "Bl = " << Bl << "   FF[last-1] = " << FF[last-1] << "   Bl_min_Al = " << Bl_min_Al << endl;
+
+    const Real I_bdy_l = boundary_intensity (model, nr[last], freq*shift[last]);
+
+    Su[last] = term_n + two * I_bdy_l * inverse_dtau_l;
+    Su[last] = (A[last] * Su[last-1] + Su[last]) * (one + FF[last-1]) * denominator;
+
+    model.u_ray(last-first, f) = Su[last];
+
+
+    for (long n = last-1; n > first; n--) // use long in reverse loops!
+    {
+        Su[n] += Su[n+1] * FI[n];
+
+        model.u_ray(n-first, f) = Su[n];
+    }
+
+    Su[first] += Su[first+1] * FI[first];
+
+    model.u_ray(0, f) = Su[first];
 }

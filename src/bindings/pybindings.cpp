@@ -118,6 +118,10 @@ PYBIND11_MODULE (core, module)
         .def_readonly  ("images",         &Model::images)
         .def_readwrite ("eta",                &Model::eta)
         .def_readwrite ("chi",                &Model::chi)
+        .def_readwrite ( "chi_ray",            &Model:: chi_ray)
+        .def_readwrite ( "eta_ray",            &Model:: eta_ray)
+        .def_readwrite ("dtau_ray",            &Model::dtau_ray)
+        .def_readwrite (   "u_ray",            &Model::   u_ray)
         .def_readwrite ("boundary_condition", &Model::boundary_condition)
         .def_readonly  (
             "error_mean",
@@ -224,6 +228,11 @@ PYBIND11_MODULE (core, module)
             "set_boundary_condition",
             &Model::set_boundary_condition,
             "Set boundary condition (internally)."
+        )
+        .def (
+            "compute_image_for_point",
+            &Model::compute_image_for_point,
+            "Compute image (single pixel) for a single point."
         )
         // constructor
         .def (py::init<const string>())
