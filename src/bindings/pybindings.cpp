@@ -185,6 +185,16 @@ PYBIND11_MODULE (core, module)
             "Compute the radiation field for the modle using the 2nd-order Feautrier solver."
         )
         .def (
+            "compute_radiation_field_feautrier_order_2_uv",
+            &Model::compute_radiation_field_feautrier_order_2_uv,
+            "Compute the radiation field for the modle using the 2nd-order Feautrier solver."
+        )
+        .def (
+            "compute_radiation_field_feautrier_order_2_anis",
+            &Model::compute_radiation_field_feautrier_order_2_anis,
+            "Compute the radiation field for the modle using the 2nd-order Feautrier solver, anisotropic case."
+        )
+        .def (
             "compute_radiation_field_shortchar_order_0",
             &Model::compute_radiation_field_shortchar_order_0,
             "Compute the radiation field for the modle using the 0th-order short-characteristics methods."
@@ -249,6 +259,7 @@ PYBIND11_MODULE (core, module)
         .def ("set_nquads",                   &Parameters::set_nquads              , "Set number of quadrature points.")
         .def ("set_pop_prec",                 &Parameters::set_pop_prec            , "Set required precision for ALI.")
         .def ("set_use_scattering",           &Parameters::set_use_scattering      , "Set whether or not to use scattering.")
+        .def ("set_store_intensities",        &Parameters::set_store_intensities   , "Set whether or not to store intensities.")
         .def ("set_spherical_symmetry",       &Parameters::set_spherical_symmetry  , "Set whether or not to use spherical symmetry")
         .def ("set_adaptive_ray_tracing",     &Parameters::set_adaptive_ray_tracing, "Set whether or not to use adaptive ray tracing.")
         // getters
@@ -266,6 +277,7 @@ PYBIND11_MODULE (core, module)
         .def ("nquads",                       &Parameters::nquads                  , "Number of quadrature points.")
         .def ("pop_prec",                     &Parameters::pop_prec                , "Required precision for ALI.")
         .def ("use_scattering",               &Parameters::use_scattering          , "Whether or not to use scattering.")
+        .def ("store_intensities",            &Parameters::store_intensities       , "Whether or not to store intensities.")
         .def ("spherical_symmetry",           &Parameters::spherical_symmetry      , "Whether or not to use spherical symmetry.")
         .def ("adaptive_ray_tracing",         &Parameters::adaptive_ray_tracing    , "Whether or not to use adaptive ray tracing.")
         // functions
@@ -429,6 +441,13 @@ PYBIND11_MODULE (core, module)
         .def_readwrite ("Jeff",             &LineProducingSpecies::Jeff, "Array with effective mean intensities in the lines.")
         .def_readwrite ("Jdif",             &LineProducingSpecies::Jdif)
         .def_readwrite ("Jlin",             &LineProducingSpecies::Jlin)
+
+        .def_readwrite ("J",                &LineProducingSpecies::J)
+        .def_readwrite ("J2_0",             &LineProducingSpecies::J2_0)
+        .def_readwrite ("J2_1_Re",          &LineProducingSpecies::J2_1_Re)
+        .def_readwrite ("J2_1_Im",          &LineProducingSpecies::J2_1_Im)
+        .def_readwrite ("J2_2_Re",          &LineProducingSpecies::J2_2_Re)
+        .def_readwrite ("J2_2_Im",          &LineProducingSpecies::J2_2_Im)
         .def_readwrite ("nr_line",          &LineProducingSpecies::nr_line)
         .def_readwrite ("population",       &LineProducingSpecies::population, "Array with level populations for each point.")
         .def_readwrite ("population_tot",   &LineProducingSpecies::population_tot, "Array with the sum of all level populations at each point. (Should be equal to the abundance of the species.)")

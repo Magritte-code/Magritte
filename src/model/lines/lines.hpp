@@ -13,16 +13,8 @@ struct Lines
 
     vector <LineProducingSpecies> lineProducingSpecies;
 
-    // Real1 line;         ///< [Hz] line center frequencies orderd
-    Vector<Real> line;     ///< [Hz] line center frequencies (NOT ordered!)
-    // Size1 line_index;   ///< index of the corresponding frequency in line
-
-    Vector<Size> nrad_cum;
-
-    // Real1 emissivity;   ///< line emissivity (p,l,k)
-    // Real1 opacity;      ///< line opacity    (p,l,k)
-
-
+    Vector<Real> line;            ///< [Hz] line center frequencies (NOT ordered!)
+    Vector<Size> nrad_cum;        ///< Cumulative number of radiative transitions
 
     Matrix<Real> emissivity;      ///< line emissivity    (p, lid)
     Matrix<Real> opacity;         ///< line opacity       (p, lid)

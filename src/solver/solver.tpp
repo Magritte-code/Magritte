@@ -117,37 +117,25 @@ inline Size Solver :: get_ray_lengths_max (Model& model)
 }
 
 
-// inline void Solver :: trace (Model& model)
-// {
-//     for (Size rr = 0; rr < model.parameters.hnrays(); rr++)
-//     {
-//         const Size ar = model.geometry.rays.antipod[rr];
-//
-//         cout << "rr = " << rr << endl;
-//
-//         accelerated_for (o, model.parameters.npoints(),
-//         {
-//             const Real dshift_max = get_dshift_max (model, o);
-//             // const Real dshift_max = 1.0e+99;
-//
-//             model.geometry.lengths[model.parameters.npoints()*rr+o] =
-//                 trace_ray <CoMoving> (model.geometry, o, rr, dshift_max, +1, centre+1, centre+1) + 1
-//               - trace_ray <CoMoving> (model.geometry, o, ar, dshift_max, -1, centre+1, centre  );
-//         })
-//
-//         pc::accelerator::synchronize();
-//     }
-//
-//     model.geometry.lengths.copy_ptr_to_vec ();
-// }
-
-
 inline void Solver :: solve_shortchar_order_0 (Model& model)
 {
+    // Allocate memory if not pre-allocated
+    if (!model.parameters.store_intensities())
+    {
+        model.radiation.I.resize (model.parameters.nrays(),  model.parameters.npoints(), model.parameters.nfreqs());
+        model.radiation.u.resize (model.parameters.hnrays(), model.parameters.npoints(), model.parameters.nfreqs());
+        model.radiation.v.resize (model.parameters.hnrays(), model.parameters.npoints(), model.parameters.nfreqs());
+        model.radiation.J.resize (                           model.parameters.npoints(), model.parameters.nfreqs());
+    }
+
+    // Initialise Lambda operator
     for (auto &lspec : model.lines.lineProducingSpecies) {lspec.lambda.clear();}
 
+    // Initialise mean intensity
     model.radiation.initialize_J();
+    
 
+    // For each ray, solve transfer equation
     for (Size rr = 0; rr < model.parameters.hnrays(); rr++)
     {
         const Size ar = model.geometry.rays.antipod[rr];
@@ -177,12 +165,182 @@ inline void Solver :: solve_shortchar_order_0 (Model& model)
 }
 
 
+inline void Solver :: solve_feautrier_order_2_uv (Model& model)
+{
+    // Allocate memory if not pre-allocated
+    if (!model.parameters.store_intensities())
+    {
+        model.radiation.I.resize (model.parameters.nrays(),  model.parameters.npoints(), model.parameters.nfreqs());
+        model.radiation.u.resize (model.parameters.hnrays(), model.parameters.npoints(), model.parameters.nfreqs());
+        model.radiation.v.resize (model.parameters.hnrays(), model.parameters.npoints(), model.parameters.nfreqs());
+        model.radiation.J.resize (                           model.parameters.npoints(), model.parameters.nfreqs());
+    }
+
+
+    // For each ray, solve transfer equation
+    for (Size rr = 0; rr < model.parameters.hnrays(); rr++)
+    {
+        const Size ar = model.geometry.rays.antipod[rr];
+
+        cout << "--- rr = " << rr << endl;
+
+        accelerated_for (o, model.parameters.npoints(),
+        {
+            const Real dshift_max = get_dshift_max (model, o);
+
+            nr_   ()[centre] = o;
+            shift_()[centre] = 1.0;
+
+            first_() = trace_ray <CoMoving> (model.geometry, o, rr, dshift_max, -1, centre-1, centre-1) + 1;
+            last_ () = trace_ray <CoMoving> (model.geometry, o, ar, dshift_max, +1, centre+1, centre  ) - 1;
+            n_tot_() = (last_()+1) - first_();
+
+            if (n_tot_() > 1)
+            {
+                for (Size f = 0; f < model.parameters.nfreqs(); f++)
+                {
+                    solve_feautrier_order_2_uv (model, o, rr, ar, f);
+
+                    model.radiation.u(rr,o,f)  = Su_()[centre];
+                    model.radiation.v(rr,o,f)  = Sv_()[centre];
+                }
+            }
+            else
+            {
+                for (Size f = 0; f < model.parameters.nfreqs(); f++)
+                {
+                    model.radiation.u(rr,o,f)  = boundary_intensity(model, o, model.radiation.frequencies.nu(o, f));
+                    model.radiation.v(rr,o,f)  = 0.0; 
+                }
+            }
+        })
+
+        pc::accelerator::synchronize();
+    }
+
+    model.radiation.u.copy_ptr_to_vec();
+    model.radiation.v.copy_ptr_to_vec();
+}
+
+
+inline void Solver :: solve_feautrier_order_2_anis (Model& model)
+{
+    // Initialise variables
+    for (LineProducingSpecies &lspec : model.lines.lineProducingSpecies)
+    {
+        lspec.J      .resize(model.parameters.npoints(), lspec.linedata.nrad);
+        lspec.J2_0   .resize(model.parameters.npoints(), lspec.linedata.nrad);
+        lspec.J2_1_Re.resize(model.parameters.npoints(), lspec.linedata.nrad);
+        lspec.J2_1_Im.resize(model.parameters.npoints(), lspec.linedata.nrad);
+        lspec.J2_2_Re.resize(model.parameters.npoints(), lspec.linedata.nrad);
+        lspec.J2_2_Im.resize(model.parameters.npoints(), lspec.linedata.nrad);
+
+        threaded_for (o, model.parameters.npoints(),
+        {
+            for (Size k = 0; k < lspec.linedata.nrad; k++)
+            {
+                lspec.J       (o,k) = 0.0;
+                lspec.J2_0    (o,k) = 0.0;
+                lspec.J2_1_Re (o,k) = 0.0;
+                lspec.J2_1_Im (o,k) = 0.0;
+                lspec.J2_2_Re (o,k) = 0.0;
+                lspec.J2_2_Im (o,k) = 0.0;
+            }
+        })
+    }
+
+
+    // For each ray, solve transfer equation
+    for (Size rr = 0; rr < model.parameters.hnrays(); rr++)
+    {
+        const Size     ar = model.geometry.rays.antipod  [rr];
+        const Real     wt = model.geometry.rays.weight   [rr];
+        const Vector3D nn = model.geometry.rays.direction[rr];
+
+        const Real wt_0    =     inv_sqrt2 * (three * nn.z() * nn.z() - one);
+        const Real wt_1_Re =        -sqrt3 *          nn.x() * nn.z();
+        const Real wt_1_Im =        -sqrt3 *          nn.y() * nn.z();
+        const Real wt_2_Re =  half * sqrt3 * (nn.x() * nn.x() - nn.y() * nn.y());
+        const Real wt_2_Im =         sqrt3 *          nn.x() * nn.y();
+
+        cout << "--- rr = " << rr << endl;
+
+        for (LineProducingSpecies &lspec : model.lines.lineProducingSpecies)
+        {
+            threaded_for (o, model.parameters.npoints(),
+            {
+                const Real dshift_max = get_dshift_max (model, o);
+
+                nr_   ()[centre] = o;
+                shift_()[centre] = 1.0;
+
+                first_() = trace_ray <CoMoving> (model.geometry, o, rr, dshift_max, -1, centre-1, centre-1) + 1;
+                last_ () = trace_ray <CoMoving> (model.geometry, o, ar, dshift_max, +1, centre+1, centre  ) - 1;
+                n_tot_() = (last_()+1) - first_();
+
+                if (n_tot_() > 1)
+                {
+                    for (Size k = 0; k < lspec.linedata.nrad; k++)
+                    {
+                        // Integrate over the line
+                        for (Size z = 0; z < model.parameters.nquads(); z++)
+                        {
+                            solve_feautrier_order_2 (model, o, rr, ar, lspec.nr_line[o][k][z]);
+
+                            const Real du = lspec.quadrature.weights[z] * wt * Su_()[centre];
+
+                            lspec.J       (o,k) += two     * du;
+                            lspec.J2_0    (o,k) += wt_0    * du;
+                            lspec.J2_1_Re (o,k) += wt_1_Re * du;
+                            lspec.J2_1_Im (o,k) += wt_1_Im * du;
+                            lspec.J2_2_Re (o,k) += wt_2_Re * du;
+                            lspec.J2_2_Im (o,k) += wt_2_Im * du;
+                        }
+                    }
+                }
+                else
+                {
+                    for (Size k = 0; k < lspec.linedata.nrad; k++)
+                    {
+                        // Integrate over the line
+                        for (Size z = 0; z < model.parameters.nquads(); z++)
+                        {
+                            const Real du = lspec.quadrature.weights[z] * wt * boundary_intensity(model, o, model.radiation.frequencies.nu(o, lspec.nr_line[o][k][z]));
+
+                            lspec.J       (o,k) += two     * du;
+                            lspec.J2_0    (o,k) += wt_0    * du;
+                            lspec.J2_1_Re (o,k) += wt_1_Re * du;
+                            lspec.J2_1_Im (o,k) += wt_1_Im * du;
+                            lspec.J2_2_Re (o,k) += wt_2_Re * du;
+                            lspec.J2_2_Im (o,k) += wt_2_Im * du;
+                        }
+                    }
+                }
+            })
+        }
+    }
+}
+
+
 inline void Solver :: solve_feautrier_order_2 (Model& model)
 {
+    // Allocate memory if not pre-allocated
+    if (!model.parameters.store_intensities())
+    {
+        model.radiation.I.resize (model.parameters.nrays(),  model.parameters.npoints(), model.parameters.nfreqs());
+        model.radiation.u.resize (model.parameters.hnrays(), model.parameters.npoints(), model.parameters.nfreqs());
+        model.radiation.v.resize (model.parameters.hnrays(), model.parameters.npoints(), model.parameters.nfreqs());
+        model.radiation.J.resize (                           model.parameters.npoints(), model.parameters.nfreqs());
+    }
+
+    // Initialise Lambda operator
     for (auto &lspec : model.lines.lineProducingSpecies) {lspec.lambda.clear();}
 
+    // Initialise mean intensity
     model.radiation.initialize_J();
 
+
+    // For each ray, solve transfer equation
     for (Size rr = 0; rr < model.parameters.hnrays(); rr++)
     {
         const Size ar = model.geometry.rays.antipod[rr];
@@ -481,22 +639,7 @@ accel inline void Solver :: get_eta_and_chi (
 
         eta += prof * model.lines.emissivity(p, l);
         chi += prof * model.lines.opacity   (p, l);
-
-        // cout << "prof = " << prof << "     diff = " << diff  << "     width = " << width << endl;
-        // printf("prof = %le,   diff = %le,   freq = %le,   line = %le\n", prof, diff, freq, model.lines.line[l]);
-
-
-        // if (isnan(eta) || isnan(chi))
-        // {
-        //     cout << "emmi = " << model.lines.emissivity(p, l) << "   p = " << p << "   l = " << l << endl;
-        //     cout << "opac = " << model.lines.opacity   (p, l) << "   p = " << p << "   l = " << l << endl;
-        //     cout << "widt = " << model.lines.inverse_width (p, l) << "   p = " << p << "   l = " << l << endl;
-        //     cout << "prof = " << prof << "   freq = " << freq << "   diff = " << diff << endl;
-        // }
     }
-
-
-    // cout << "eta, chi = " << eta << "  " << chi << endl;
 }
 
 
@@ -1147,202 +1290,136 @@ accel inline void Solver :: image_feautrier_order_2_for_point (
 }
 
 
+///  Solver for Feautrier equation along ray pairs using the (ordinary)
+///  2nd-order solver, without adaptive optical depth increments
+///////////////////////////////////////////////////////////////////////
+accel inline void Solver :: solve_feautrier_order_2_uv (
+          Model& model,
+    const Size   o,
+    const Size   rr,
+    const Size   ar,
+    const Size   f  )
+{
+    const Real freq = model.radiation.frequencies.nu(o, f);
+
+    Real eta_c, chi_c, dtau_c, term_c;
+    Real eta_n, chi_n, dtau_n, term_n;
+
+    const Size first = first_();
+    const Size last  = last_ ();
+    const Size n_tot = n_tot_();
+
+    Vector<double>& dZ    = dZ_   ();
+    Vector<Size  >& nr    = nr_   ();
+    Vector<double>& shift = shift_();
+
+    Vector<Real>& inverse_chi = inverse_chi_();
+
+    Vector<Real>& Su = Su_();
+    Vector<Real>& Sv = Sv_();
+
+    Vector<Real>& A         = A_        ();
+    Vector<Real>& C         = C_        ();
+    Vector<Real>& inverse_A = inverse_A_();
+    Vector<Real>& inverse_C = inverse_C_();
+
+    Vector<Real>& FF = FF_();
+    Vector<Real>& FI = FI_();
 
 
+    // Get optical properties for first two elements
+    get_eta_and_chi (model, nr[first  ], freq*shift[first  ], eta_c, chi_c);
+    get_eta_and_chi (model, nr[first+1], freq*shift[first+1], eta_n, chi_n);
 
-// const Real alpha  = 1.0;
-// const Real alpha2 = alpha * alpha;
-// const Real h_smt  = 1.0;
-// const Real h_smt2 = h_smt * h_smt;
-// const Real inverse_h_smt2 = 1.0 / h_smt2;
-// const Real inverse_h_smt4 = inverse_h_smt2 * inverse_h_smt2;
-// const Real minus_half_inverse_h_smt2 = -0.5 * inverse_h_smt2;
-//
-//
-// accel inline Real Solver :: kernel (const Vector3D d) const
-// {
-//     return alpha2 * exp(minus_half_inverse_h_smt2 * d.squaredNorm());
-// }
-//
-//
-// accel inline Real Solver :: kernel (
-//     const Model& model,
-//     const Size   r,
-//     const Size   p1,
-//     const Size   p2 ) const
-// {
-//     const Vector3D x1 = model.geometry.points.position[p1];
-//     const Vector3D x2 = model.geometry.points.position[p2];
-//
-//     return kernel(x1-x2);
-// }
-//
-//
-// accel inline Real Solver :: L1_kernel (
-//     const Model& model,
-//     const Size   r,
-//     const Size   p1,
-//     const Size   p2 ) const
-// {
-//     const Vector3D d =   model.geometry.points.position[p1]
-//                        - model.geometry.points.position[p2];
-//
-//     const Real g = d.dot(model.geometry.rays.direction[r]) * inverse_h_smt2;
-//
-//     return (chi[p1] - g) * kernel(d);
-// }
-//
-//
-// accel inline Real Solver :: L2_kernel (
-//     const Model& model,
-//     const Size   r,
-//     const Size   p1,
-//     const Size   p2 ) const
-// {
-//     const Vector3D d =   model.geometry.points.position[p1]
-//                        - model.geometry.points.position[p2];
-//
-//     const Real g = d.dot(model.geometry.rays.direction[r]) * inverse_h_smt2;
-//
-//     return (chi[p2] + g) * kernel(d);
-// }
-//
-//
-// accel inline Real Solver :: L12_kernel (
-//     const Model& model,
-//     const Size   r,
-//     const Size   p1,
-//     const Size   p2 ) const
-// {
-//     const Vector3D d =   model.geometry.points.position[p1]
-//                        - model.geometry.points.position[p2];
-//
-//     const Real g = d.dot(model.geometry.rays.direction[r]) * inverse_h_smt2;
-//
-//     return ((chi[p1] + g)*(chi[p2] - g) + inverse_h_smt2) * kernel(d);
-// }
-//
-//
-// accel inline void Solver :: solve_kernel_method (
-//           Model& model,
-//     const Size   r,
-//     const Size   f )
-// {
-//     const Real freq = model.radiation.frequencies.nu(0, f);
-//
-//     // Get emissivity and opacity
-//     eta.resize (model.parameters.npoints());
-//     chi.resize (model.parameters.npoints());
-//
-//     for (Size p = 0; p < model.parameters.npoints(); p++)
-//     {
-//         get_eta_and_chi (model, p, freq, eta[p], chi[p]);
-//     }
-//
-//
-//     // Triplets for (sparse) covariance matrix
-//     vector<Triplet<Real, Size>> triplets;
-//
-//     VectorXr y (model.parameters.npoints() + model.parameters.nboundary());
-//     VectorXr w (model.parameters.npoints() + model.parameters.nboundary());
-//
-//
-//     for (Size b1 = 0; b1 < model.parameters.nboundary(); b1++)
-//     {
-//         const Size p1 = model.geometry.boundary.boundary2point[b1];
-//
-//         for (Size b2 = 0; b2 < model.parameters.nboundary(); b2++)
-//         {
-//             const Size p2 = model.geometry.boundary.boundary2point[b2];
-//
-//             triplets.push_back (Triplet<Real, Size> (
-//                 b1,
-//                 b2,
-//                 kernel (model, r, p1, p2)
-//             ));
-//         }
-//
-//         for (Size p2 = 0; p2 < model.parameters.npoints(); p2++)
-//         {
-//             triplets.push_back (Triplet<Real, Size> (
-//                 b1,
-//                 p2 + model.parameters.nboundary(),
-//                 L2_kernel (model, r, p1, p2)
-//             ));
-//         }
-//
-//         y[b1] = boundary_intensity (model, p1, freq);
-//     }
-//
-//
-//     for (Size p1 = 0; p1 < model.parameters.npoints(); p1++)
-//     {
-//         const Size i1 = p1 + model.parameters.nboundary();
-//
-//         for (Size b2 = 0; b2 < model.parameters.nboundary(); b2++)
-//         {
-//             const Size p2 = model.geometry.boundary.boundary2point[b2];
-//
-//             triplets.push_back (Triplet<Real, Size> (
-//                 i1,
-//                 b2,
-//                 L1_kernel (model, r, p1, p2)
-//             ));
-//         }
-//
-//         for (Size p2 = 0; p2 < model.parameters.npoints(); p2++)
-//         {
-//             triplets.push_back (Triplet<Real, Size> (
-//                 i1,
-//                 p2 + model.parameters.nboundary(),
-//                 L12_kernel (model, r, p1, p2)
-//             ));
-//         }
-//
-//         y[i1] = eta[p1];
-//     }
-//
-//
-//     SparseMatrix<Real> covariance;
-//     covariance.setFromTriplets (triplets.begin(), triplets.end());
-//
-//     SparseLU <SparseMatrix<Real>, COLAMDOrdering<int>> solver;
-//
-//     cout << "Analyzing covariance matrix..." << endl;
-//     solver.analyzePattern (covariance);
-//     cout << "Factoring covariance matrix..." << endl;
-//     solver.factorize      (covariance);
-//
-//     if (solver.info() != Eigen::Success)
-//     {
-//         throw std::runtime_error (solver.lastErrorMessage());
-//     }
-//
-//     cout << "Inverting covariance matrix..." << endl;
-//     w = solver.solve (y);
-//
-//
-//     for (Size p1 = 0; p1 < model.parameters.npoints(); p1++)
-//     {
-//         model.radiation.I(r, p1, f) = 0.0;
-//
-//         for (Size b2 = 0; b2 < model.parameters.nboundary(); b2++)
-//         {
-//             const Size p2 = model.geometry.boundary.boundary2point[b2];
-//
-//             model.radiation.I(r, p1, f) += kernel(model, r, p1, p2) * w[b2];
-//         }
-//
-//         for (Size p2 = 0; p2 < model.parameters.npoints(); p2++)
-//         {
-//             const Size i2 = p2 + model.parameters.nboundary();
-//
-//             model.radiation.I(r, p1, f) += L2_kernel(model, r, p1, p2) * w[i2];
-//         }
-//     }
-//
-//     return;
-// }
+    inverse_chi[first  ] = one / chi_c;
+    inverse_chi[first+1] = one / chi_n;
+
+    term_c = eta_c * inverse_chi[first  ];
+    term_n = eta_n * inverse_chi[first+1];
+    dtau_n = half * (chi_c + chi_n) * dZ[first];
+
+    // Set boundary conditions
+    const Real inverse_dtau_f = one / dtau_n;
+
+            C[first] = two * inverse_dtau_f * inverse_dtau_f;
+    inverse_C[first] = one / C[first];   // Required for Lambda_diag
+
+    const Real Bf_min_Cf = one + two * inverse_dtau_f;
+    const Real Bf        = Bf_min_Cf + C[first];
+    const Real I_bdy_f   = boundary_intensity (model, nr[first], freq*shift[first]);
+
+    Su[first]  = term_c + two * I_bdy_f * inverse_dtau_f;
+    Sv[first]  = two * inverse_dtau_f * (I_bdy_f - term_c);
+
+    Su[first] /= Bf;
+    Sv[first] /= Bf;
+
+    /// Write economically: F[first] = (B[first] - C[first]) / C[first];
+    FF[first] = half * Bf_min_Cf * dtau_n * dtau_n;
+    FI[first] = one / (one + FF[first]);
+
+
+    /// Set body of Feautrier matrix
+    for (Size n = first+1; n < last; n++)
+    {
+        term_c = term_n;
+        dtau_c = dtau_n;
+         eta_c =  eta_n;
+         chi_c =  chi_n;
+
+        // Get new radiative properties
+        get_eta_and_chi (model, nr[n+1], freq*shift[n+1], eta_n, chi_n);
+
+        inverse_chi[n+1] = one / chi_n;
+
+        term_n = eta_n * inverse_chi[n+1];
+        dtau_n = half * (chi_c + chi_n) * dZ[n];
+
+        const Real dtau_avg = half * (dtau_c + dtau_n);
+        inverse_A[n] = dtau_avg * dtau_c;
+        inverse_C[n] = dtau_avg * dtau_n;
+
+        A[n] = one / inverse_A[n];
+        C[n] = one / inverse_C[n];
+
+        /// Use the previously stored value of the source function
+        Su[n] = term_c;
+
+        FF[n] = (A[n] * FF[n-1] * FI[n-1] + one) * inverse_C[n];
+        FI[n] = one / (one + FF[n]);
+        Su[n] = (A[n] * Su[n-1] + Su[n]) * FI[n] * inverse_C[n];
+        Sv[n] = (A[n] * Sv[n-1]        ) * FI[n] * inverse_C[n];
+    }
+
+
+    /// Set boundary conditions
+    const Real inverse_dtau_l = one / dtau_n;
+
+    A[last] = two * inverse_dtau_l * inverse_dtau_l;
+
+    const Real Bl_min_Al = one + two * inverse_dtau_l;
+    const Real Bl        = Bl_min_Al + A[last];
+
+    const Real denominator = one / (Bl * FF[last-1] + Bl_min_Al);
+
+    const Real I_bdy_l = boundary_intensity (model, nr[last], freq*shift[last]);
+
+    Su[last] = term_n + two * I_bdy_l * inverse_dtau_l;
+    Sv[last] = two * inverse_dtau_l * (I_bdy_l - term_n);
+
+    Su[last] = (A[last] * Su[last-1] + Su[last]) * (one + FF[last-1]) * denominator;
+    Sv[last] = (A[last] * Sv[last-1]           ) * (one + FF[last-1]) * denominator;
+
+    if (centre < last)
+    {
+        for (long n = last-1; n >= centre; n--) // use long in reverse loops!
+        {
+            Su[n] += Su[n+1] * FI[n];
+            Sv[n] += Sv[n+1] * FI[n];
+        }
+    }
+
+}
 
 
 accel inline void Solver :: set_eta_and_chi (Model& model, const Size rr) const

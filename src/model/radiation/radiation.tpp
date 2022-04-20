@@ -7,42 +7,6 @@ inline Size Radiation :: index (const Size p, const Size f ) const
 }
 
 
-// inline Real Radiation :: get_U (const Size R, const Size p, const Size f) const
-// {
-//     return U[R][index (p, f)];
-// }
-//
-//
-// inline Real Radiation :: get_V (const Size R, const Size p, const Size f) const
-// {
-//     return V[R][index (p, f)];
-// }
-
-
-inline Real Radiation :: get_I_bdy (const Size R, const Size b, const Size f) const
-{
-    return I_bdy[R][b][f];
-}
-
-
-// inline Real Radiation :: get_u (const Size r, const Size p, const Size f) const
-// {
-//     return u[r][index (p, f)];
-// }
-//
-//
-// inline Real Radiation :: get_v (const Size r, const Size p, const Size f) const
-// {
-//     return v[r][index (p, f)];
-// }
-
-
-// inline Real Radiation :: get_J (const Size p, const Size f) const
-// {
-    // return J[index (p, f)];
-// }
-
-
 //inline void Radiation :: rescale_U_and_V (
 //    const Real &freq_scaled,
 //    const Size  R,

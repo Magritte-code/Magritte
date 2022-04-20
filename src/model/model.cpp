@@ -29,7 +29,6 @@ void Model :: read (const Io& io)
     cout << "  nrays_red  = " << parameters.nrays_red  () << endl;
     cout << "  nboundary  = " << parameters.nboundary  () << endl;
     cout << "  nfreqs     = " << parameters.nfreqs     () << endl;
-    // cout << "  nfreqs_red = " << parameters.nfreqs_red () << endl;
     cout << "  nspecs     = " << parameters.nspecs     () << endl;
     cout << "  nlspecs    = " << parameters.nlspecs    () << endl;
     cout << "  nlines     = " << parameters.nlines     () << endl;
@@ -295,11 +294,6 @@ int Model :: compute_radiation_field_shortchar_order_0 ()
 {
     cout << "Computing radiation field..." << endl;
 
-    // const Size length_max = 4*parameters.npoints() + 1;
-    // const Size  width_max =   parameters.nfreqs ();
-
-    // Solver solver (length_max, width_max, parameters.n_off_diag);
-
     Solver solver;
     solver.setup <CoMoving>        (*this);
     solver.solve_shortchar_order_0 (*this);
@@ -314,14 +308,37 @@ int Model :: compute_radiation_field_feautrier_order_2 ()
 {
     cout << "Computing radiation field..." << endl;
 
-    // const Size length_max = 4*parameters.npoints() + 1;
-    // const Size  width_max =   parameters.nfreqs ();
-
-    // Solver solver (length_max, width_max, parameters.n_off_diag);
-
     Solver solver;
     solver.setup <CoMoving>        (*this);
     solver.solve_feautrier_order_2 (*this);
+
+    return (0);
+}
+
+
+///  Computer for the radiation field
+/////////////////////////////////////
+int Model :: compute_radiation_field_feautrier_order_2_uv ()
+{
+    cout << "Computing radiation field..." << endl;
+
+    Solver solver;
+    solver.setup <CoMoving>           (*this);
+    solver.solve_feautrier_order_2_uv (*this);
+
+    return (0);
+}
+
+
+///  Computer for the radiation field
+/////////////////////////////////////
+int Model :: compute_radiation_field_feautrier_order_2_anis ()
+{
+    cout << "Computing radiation field..." << endl;
+
+    Solver solver;
+    solver.setup <CoMoving>             (*this);
+    solver.solve_feautrier_order_2_anis (*this);
 
     return (0);
 }
@@ -333,8 +350,6 @@ int Model :: compute_Jeff ()
 {
     for (LineProducingSpecies &lspec : lines.lineProducingSpecies)
     {
-       // Lambda = MatrixXd::Zero (lspec.population.size(), lspec.population.size());
-
         threaded_for (p, parameters.npoints(),
         {
             for (Size k = 0; k < lspec.linedata.nrad; k++)
@@ -475,11 +490,6 @@ int Model :: compute_level_populations (
 int Model :: compute_image (const Size ray_nr)
 {
     cout << "Computing image..." << endl;
-
-    // const Size length_max = 4*parameters.npoints() + 1;
-    // const Size  width_max =   parameters.nfreqs ();
-
-    // Solver solver (length_max, width_max, parameters.n_off_diag);
 
     Solver solver;
     solver.setup <Rest>            (*this);

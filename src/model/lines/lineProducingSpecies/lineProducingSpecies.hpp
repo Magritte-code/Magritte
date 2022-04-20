@@ -28,6 +28,13 @@ struct LineProducingSpecies
     Real2 Jeff;                      ///< effective mean intensity in the line (actual - ALO)
     Real2 Jdif;                      ///< effective mean intensity in the line (actual - ALO)
 
+    Matrix<Real> J;                  ///< Isotropic radiation field
+    Matrix<Real> J2_0;               ///< Anisotropic radiation field tensor element 0
+    Matrix<Real> J2_1_Re;            ///< Anisotropic radiation field tensor element 1 (real part)
+    Matrix<Real> J2_1_Im;            ///< Anisotropic radiation field tensor element 1 (imaginary part)
+    Matrix<Real> J2_2_Re;            ///< Anisotropic radiation field tensor element 2 (real part)
+    Matrix<Real> J2_2_Im;            ///< Anisotropic radiation field tensor element 2 (imaginary part)
+
     Size3 nr_line;                   ///< frequency number corresponing to line (p,k,z)
 
     double relative_change_mean;     ///< mean    relative change

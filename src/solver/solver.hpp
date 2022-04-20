@@ -45,18 +45,11 @@ class Solver
         pc::multi_threading::ThreadPrivate<Matrix<Real>> L_lower_;
 
 
-        // Kernel approach
         Vector<Real> eta;
         Vector<Real> chi;
 
-        // SparseMatrix<Real> covariance;
-        // Matrix<Real> L2_kernel_p;
-
         Size nblocks  = 512;
         Size nthreads = 512;
-
-        // Solver () {};
-        // Solver (const Size l, const Size w, const Size n_o_d);
 
         template <Frame frame>
         void setup (Model& model);
@@ -78,9 +71,6 @@ class Solver
         Size width;
 
         Size n_off_diag;
-
-
-        // void initialize (const Size l, const Size w);
 
         template <Frame frame>
         accel inline Size trace_ray (
@@ -154,6 +144,16 @@ class Solver
             const Size   rr,
             const Size   ar,
             const Size   f  );
+
+        accel inline void solve_feautrier_order_2_uv (Model& model);
+        accel inline void solve_feautrier_order_2_uv (
+                  Model& model,
+            const Size   o,
+            const Size   rr,
+            const Size   ar,
+            const Size   f  );
+
+        accel inline void solve_feautrier_order_2_anis (Model& model);
 
 
         accel inline Real     kernel (const Vector3D d) const;

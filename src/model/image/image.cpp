@@ -114,10 +114,6 @@ void Image :: set_coordinates (const Geometry& geometry)
                 ImY[p] =   jx * geometry.points.position[p].x()
                          + jy * geometry.points.position[p].y()
                          + jz * geometry.points.position[p].z();
-
-                // cout << "position = " << geometry.points.position[p].x() << endl;
-                // cout << "ImX = " << ImX[p] << "  " << ix << endl;
-                // cout << "ImY = " << ImY[p] << "  " << jx << endl;
             })
         }
         else

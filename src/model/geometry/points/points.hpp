@@ -5,7 +5,6 @@
 #include "model/parameters/parameters.hpp"
 #include "tools/types.hpp"
 
-// const Size nnbs = 12;
 
 struct Points
 {
@@ -17,8 +16,6 @@ struct Points
     Vector <Size>     cum_n_neighbors;   ///< cumulative number of neighbors
     Vector <Size>         n_neighbors;   ///< number of neighbors
     Vector <Size>           neighbors;   ///< neighbors of each point
-
-    // Vector <Size> nbs;
 
     void read  (const Io& io);
     void write (const Io& io) const;

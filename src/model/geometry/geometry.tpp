@@ -24,10 +24,8 @@ accel inline Size Geometry :: get_next_general_geometry (
     double dmin = std::numeric_limits<Real>::max();   // Initialize to "infinity"
     Size   next = parameters.npoints();               // return npoints when there is no next
 
-//    for (Size i = 0; i < nnbs; i++)
     for (Size i = 0; i < n_nbs; i++)
     {
-//        const Size     n     = points.nbs[c*nnbs+i];
         const Size     n     = points.neighbors[cum_n_nbs+i];
         const Vector3D R     = points.position[n] - points.position[o];
         const double   Z_new = R.dot(rays.direction[r]);
@@ -207,48 +205,6 @@ accel inline Size Geometry :: get_ray_length (
 }
 
 
-// inline Size1 Geometry :: get_ray_lengths ()
-// {
-//     for (Size rr = 0; rr < parameters.hnrays(); rr++)
-//     {
-//         const Size ar = rays.antipod[rr];
-//
-//         cout << "rr = " << rr << endl;
-//
-//         threaded_for (o, parameters.npoints(),
-//         {
-//             const Real dshift_max = 1.0e+99;
-//
-//             lengths.vec[parameters.npoints()*rr+o] =
-//                 get_ray_length <CoMoving> (o, rr, dshift_max)
-//               + get_ray_length <CoMoving> (o, ar, dshift_max);
-//         })
-//     }
-//
-//     return lengths.vec;
-// }
-
-
-// template <Frame frame>
-// inline void Geometry :: get_ray_lengths (const Real dshift_max)
-// {
-//     for (Size rr = 0; rr < parameters.hnrays(); rr++)
-//     {
-//         const Size ar = rays.antipod[rr];
-//
-//         accelerated_for (o, parameters.npoints(),
-//         {
-//             lengths(rr,o) =  get_ray_length <frame> (o, rr, dshift_max)
-//                            + get_ray_length <frame> (o, ar, dshift_max);
-//         })
-//
-//         pc::accelerator::synchronize();
-//     }
-//
-//     lengths.copy_ptr_to_vec();
-// }
-
-
 ///  Check whether a point index is valid
 ///    @param[in] p : point index
 ///    @returns true if p is a valid index
@@ -385,25 +341,6 @@ inline double Geometry :: get_shift_spherical_symmetry <Rest> (
     {
         return 1.0 + points.velocity[c].x() * Rcos_plus_Z / points.position[c].x();
     }
-
-    // cout << "r = " << r << "  o = " << o << "  c = " << c << "  " << shift << endl;
-
-    // return shift;
-
-
-    // const double shift = 1.0 - points.velocity[c].x() * Rcos_plus_Z / points.position[c].x();
-    // return shift;
-
-    //if (rays.direction[r].x() >= 0)
-    //{
-    //    const double shift = 1.0 - points.velocity[c].x() * Rcos_plus_Z / points.position[c].x();
-    //    return shift;
-    //}
-    //else
-    //{
-    //    const double shift = 1.0 + points.velocity[c].x() * Rcos_plus_Z / points.position[c].x();
-    //    return shift;
-    //}
 }
 
 

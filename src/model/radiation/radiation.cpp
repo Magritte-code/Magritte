@@ -28,51 +28,27 @@ void Radiation :: read (const Io& io)
     parameters.set_nrays_red (paracabs::message_passing::length (parameters.hnrays()));
 
 
-
-
-    // Size and initialize I_bdy, u, v, U and V
-
-    I_bdy.resize (parameters.nrays_red());
-
-    for (Size r = 0; r < parameters.nrays_red(); r++)
+    // Size and initialize I, u, v
+    if (parameters.store_intensities())
     {
-        I_bdy[r].resize (parameters.nboundary());
-
-        for (Size p = 0; p < parameters.nboundary(); p++)
-        {
-            I_bdy[r][p].resize (parameters.nfreqs());
-        }
+        I.resize (parameters.nrays(),  parameters.npoints(), parameters.nfreqs());
+        u.resize (parameters.hnrays(), parameters.npoints(), parameters.nfreqs());
+        v.resize (parameters.hnrays(), parameters.npoints(), parameters.nfreqs());
+        J.resize (                     parameters.npoints(), parameters.nfreqs());
     }
 
 
-    I.resize (parameters.nrays(),  parameters.npoints(), parameters.nfreqs());
-    u.resize (parameters.hnrays(), parameters.npoints(), parameters.nfreqs());
-    v.resize (parameters.hnrays(), parameters.npoints(), parameters.nfreqs());
-    J.resize (                     parameters.npoints(), parameters.nfreqs());
-
-    // for (Size r = 0; r < parameters.nrays(); r++)
+    // if (parameters.use_scattering())
     // {
-        // I[r].resize (parameters.npoints(), parameters.nfreqs());
+    //     U.resize (parameters.nrays_red());
+    //     V.resize (parameters.nrays_red());
+    //
+    //     for (Size r = 0; r < parameters.nrays_red(); r++)
+    //     {
+    //         U[r].resize (npoints, nfreqs_red);
+    //         V[r].resize (npoints, nfreqs_red);
+    //     }
     // }
-
-    if (parameters.use_scattering())
-    {
-
-        // u.resize (parameters.nrays_red());
-        // v.resize (parameters.nrays_red());
-
-        // U.resize (parameters.nrays_red());
-        // V.resize (parameters.nrays_red());
-
-        for (Size r = 0; r < parameters.nrays_red(); r++)
-        {
-            // u[r].resize (parameters.npoints(), parameters.nfreqs());
-//            v[r].resize (npoints, nfreqs_red);
-
-//            U[r].resize (npoints, nfreqs_red);
-//            V[r].resize (npoints, nfreqs_red);
-        }
-    }
 }
 
 
@@ -84,148 +60,6 @@ void Radiation :: write (const Io &io) const
     cout << "Writing radiation..." << endl;
 
     frequencies.write (io);
-
-
-//    Double2 JJ (ncells, Double1 (nfreqs));
-//
-//    OMP_PARALLEL_FOR (p, ncells)
-//    {
-//        for (size_t f = 0; f < nfreqs; f++)
-//        {
-//            JJ[p][f] = get_J (p,f);
-//        }
-//    }
-//
-//    io.write_array (prefix+"J", JJ);
-
-//    io.write_list (prefix+"J", J);
-
-
-//    Double2 uu (nrays_red, Double1 (ncells*nfreqs));
-//
-//    for (size_t R = 0; R < nrays_red; R++)
-//    {
-//        OMP_PARALLEL_FOR (p, ncells)
-//        {
-//            for (size_t f = 0; f < nfreqs; f++)
-//            {
-//                uu[R][index(p,f)] = get_u (R,p,f);
-//            }
-//        }
-//    }
-//
-//    io.write_array (prefix+"u", uu);
-
-
-    // io.write_array (prefix+"u", u);
-
-
-//    Double2 I_bdy_buffer (I_bdy.size(), Double1 (I_bdy[0].size()*I_bdy[0][0].size()));
-//
-//    for (long r = 0; r < nrays_red; r++)
-//    {
-//        OMP_PARALLEL_FOR (p, ncells)
-//        {
-//            for (size_t f = 0; f < nfreqs; f++)
-//            {
-//                I_bdy_buffer[r][p + f] = get_J (p,f);
-//            }
-//        }
-//    }
-
-
-  // Print all frequencies (nu)
-//# if (GRID_SIMD)
-//
-//    Double3 u_expanded (ncells, Double1 (ncells*nfreqs));
-//
-//
-//    OMP_PARALLEL_FOR (p, ncells)
-//    {
-//      long index = 0;
-//
-//      for (long f = 0; f < nfreqs_red; f++)
-//      {
-//        for (int lane = 0; lane < n_simd_lanes; lane++)
-//        {
-//          nu_expanded[p][index] = nu[p][f].getlane (lane);
-//          index++;
-//        }
-//      }
-//    }
-//
-//    io.write_array (prefix+"nu", nu_expanded);
-//
-//# else
-//
-//    io.write_array (prefix+"nu", nu);
-//
-//# endif
-//  if (MPI_comm_rank () == 0)
-//  {
-//    const string file_name_J = output_folder + "J" + tag + ".txt";
-//    const string file_name_G = output_folder + "G" + tag + ".txt";
-//
-//    ofstream outputFile_J (file_name_J);
-//    ofstream outputFile_G (file_name_G);
-//
-//    outputFile_J << scientific << setprecision(16);
-//    outputFile_G << scientific << setprecision(16);
-//
-//
-//    for (long p = 0; p < ncells; p++)
-//    {
-//      for (int f = 0; f < nfreq_red; f++)
-//      {
-//#       if (GRID_SIMD)
-//          for (int lane = 0; lane < n_simd_lanes; lane++)
-//          {
-//            outputFile_J << J[index(p,f)].getlane(lane) << "\t";
-//            outputFile_G << G[index(p,f)].getlane(lane) << "\t";
-//          }
-//#       else
-//          outputFile_J << J[index(p,f)] << "\t";
-//          outputFile_G << G[index(p,f)] << "\t";
-//#       endif
-//      }
-//
-//      outputFile_J << endl;
-//      outputFile_G << endl;
-//    }
-//
-//    outputFile_J.close ();
-//    outputFile_G.close ();
-//
-//
-//    const string file_name_bc = output_folder + "bc" + tag + ".txt";
-//
-//    ofstream outputFile_bc (file_name_bc);
-//
-//    //for (long r = 0; r < nrays_red; r++)
-//    //{
-//      long r = 0;
-//      for (long b = 0; b < nboundary; b++)
-//      {
-//        for (long f = 0; f < nfreq_red; f++)
-//        {
-//#         if (GRID_SIMD)
-//            for (int lane = 0; lane < n_simd_lanes; lane++)
-//            {
-//              outputFile_bc << boundary_intensity[r][b][f].getlane(lane) << "\t";
-//            }
-//#         else
-//            outputFile_bc << boundary_intensity[r][b][f] << "\t";
-//#         endif
-//        }
-//          outputFile_bc << endl;
-//      }
-//    //}
-//
-//    outputFile_bc.close ();
-//
-//  }
-//
-//
 }
 
 

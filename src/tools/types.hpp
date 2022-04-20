@@ -14,6 +14,8 @@ using std::to_string;
 #include <Eigen/Core>
 using Eigen::VectorXd;
 using Eigen::MatrixXd;
+#include <cmath>
+using std::sqrt;
 
 #include "paracabs.hpp"
 namespace pc = paracabs;
@@ -32,9 +34,14 @@ template <typename type>
 using Tensor = pc::datatypes::Tensor <type>;
 
 
-const Real one  = 1.0;
-const Real two  = 2.0;
-const Real half = 0.5;
+const Real one       = 1.0;
+const Real two       = 2.0;
+const Real three     = 3.0;
+const Real half      = 0.5;
+const Real quart     = 0.25;
+const Real sqrt2     = sqrt(2.0);
+const Real sqrt3     = sqrt(3.0);
+const Real inv_sqrt2 = 1.0/sqrt2;
 
 
 // Vectors of Size
