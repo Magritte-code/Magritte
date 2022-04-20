@@ -19,6 +19,7 @@ struct Radiation
     Tensor<Real> I;         ///< intensity (r, p, f)
     Tensor<Real> u;         ///< intensity (r, p, f)
     Tensor<Real> v;         ///< intensity (r, p, f)
+
     Matrix<Real> J;         ///< (angular) mean intensity (p, f)
 
     // vector<Matrix<Real>> U;         ///< U scattered intensity   (r, index(p,f))

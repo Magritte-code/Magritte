@@ -22,10 +22,15 @@ namespace pc = paracabs;
 
 // Default Real and Size types
 typedef long double Real;
-typedef uint32_t   Size;
+typedef uint32_t    Size;
 
+#define MPI_TYPE_REAL MPI_LONG_DOUBLE
+#define MPI_TYPE_SIZE MPI_INT
+
+// Paracabs Vector3D
 using Vector3D = pc::datatypes::Vector3D <double>;
 
+// Define templated Paracabs datatypes
 template <typename type>
 using Vector = pc::datatypes::Vector <type>;
 template <typename type>
@@ -33,7 +38,7 @@ using Matrix = pc::datatypes::Matrix <type>;
 template <typename type>
 using Tensor = pc::datatypes::Tensor <type>;
 
-
+// Numerical constants
 const Real one       = 1.0;
 const Real two       = 2.0;
 const Real three     = 3.0;
@@ -42,7 +47,6 @@ const Real quart     = 0.25;
 const Real sqrt2     = sqrt(2.0);
 const Real sqrt3     = sqrt(3.0);
 const Real inv_sqrt2 = 1.0/sqrt2;
-
 
 // Vectors of Size
 typedef vector<Size>  Size1;

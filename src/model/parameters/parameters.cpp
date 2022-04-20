@@ -30,7 +30,6 @@ void Parameters :: read (const Io &io)
     READ_NUMBER (Size, totnnbs   );
     READ_NUMBER (Size, nrays     );
     READ_NUMBER (Size, hnrays    );
-    READ_NUMBER (Size, nrays_red );
     READ_NUMBER (Size, order_min );
     READ_NUMBER (Size, order_max );
     READ_NUMBER (Size, nboundary );
@@ -61,7 +60,6 @@ void Parameters :: write (const Io &io) const
     WRITE_NUMBER (Size, totnnbs   );
     WRITE_NUMBER (Size, nrays     );
     WRITE_NUMBER (Size, hnrays    );
-    WRITE_NUMBER (Size, nrays_red );
     WRITE_NUMBER (Size, order_min );
     WRITE_NUMBER (Size, order_max );
     WRITE_NUMBER (Size, nboundary );

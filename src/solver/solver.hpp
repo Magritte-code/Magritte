@@ -122,50 +122,18 @@ class Solver
             const double dshift_max );
 
         accel inline void solve_feautrier_order_2 (Model& model);
-        accel inline void solve_feautrier_order_2 (
-                  Model& model,
-            const Size   o,
-            const Size   rr,
-            const Size   ar,
-            const Size   f  );
+        accel inline void solve_feautrier_order_2 (Model& model, const Size o, const Size f);
 
         accel inline void image_feautrier_order_2 (Model& model, const Size rr);
-        accel inline void image_feautrier_order_2 (
-                  Model& model,
-            const Size   o,
-            const Size   rr,
-            const Size   ar,
-            const Size   f  );
+        accel inline void image_feautrier_order_2 (Model& model, const Size o, const Size f);
 
-        accel inline void image_feautrier_order_2_for_point (Model& model, const Size rr, const Size p);
-        accel inline void image_feautrier_order_2_for_point (
-                  Model& model,
-            const Size   o,
-            const Size   rr,
-            const Size   ar,
-            const Size   f  );
+        accel inline void image_feautrier_order_2_for_point     (Model& model, const Size rr, const Size p);
+        accel inline void image_feautrier_order_2_for_point_loc (Model& model, const Size o,  const Size f);
 
         accel inline void solve_feautrier_order_2_uv (Model& model);
-        accel inline void solve_feautrier_order_2_uv (
-                  Model& model,
-            const Size   o,
-            const Size   rr,
-            const Size   ar,
-            const Size   f  );
+        accel inline void solve_feautrier_order_2_uv (Model& model, const Size o, const Size f);
 
         accel inline void solve_feautrier_order_2_anis (Model& model);
-
-
-        accel inline Real     kernel (const Vector3D d) const;
-        accel inline Real     kernel (const Model& model, const Size r, const Size p1, const Size p2) const;
-        accel inline Real  L1_kernel (const Model& model, const Size r, const Size p1, const Size p2) const;
-        accel inline Real  L2_kernel (const Model& model, const Size r, const Size p1, const Size p2) const;
-        accel inline Real L12_kernel (const Model& model, const Size r, const Size p1, const Size p2) const;
-
-        accel inline void solve_kernel_method (
-                  Model& model,
-            const Size   r,
-            const Size   f );
 
         accel inline void set_eta_and_chi        (Model& model, const Size rr) const;
         accel inline void set_boundary_condition (Model& model) const;

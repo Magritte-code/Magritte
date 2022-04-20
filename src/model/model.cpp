@@ -26,7 +26,6 @@ void Model :: read (const Io& io)
     cout << "-------------------------------------------" << endl;
     cout << "  npoints    = " << parameters.npoints    () << endl;
     cout << "  nrays      = " << parameters.nrays      () << endl;
-    cout << "  nrays_red  = " << parameters.nrays_red  () << endl;
     cout << "  nboundary  = " << parameters.nboundary  () << endl;
     cout << "  nfreqs     = " << parameters.nfreqs     () << endl;
     cout << "  nspecs     = " << parameters.nspecs     () << endl;
@@ -40,12 +39,16 @@ void Model :: read (const Io& io)
 
 void Model :: write (const Io& io) const
 {
-    parameters    .write (io);
-    geometry      .write (io);
-    chemistry     .write (io);
-    thermodynamics.write (io);
-    lines         .write (io);
-    radiation     .write (io);
+    // Let only root (rank 0) process write output
+    if (pc::message_passing::comm_rank() == 0)
+    {
+        parameters    .write (io);
+        geometry      .write (io);
+        chemistry     .write (io);
+        thermodynamics.write (io);
+        lines         .write (io);
+        radiation     .write (io);
+    }
 }
 
 

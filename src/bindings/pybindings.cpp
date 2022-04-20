@@ -18,7 +18,6 @@ namespace py = pybind11;
 
 PYBIND11_MAKE_OPAQUE (vector<LineProducingSpecies>);
 PYBIND11_MAKE_OPAQUE (vector<CollisionPartner>);
-// PYBIND11_MAKE_OPAQUE (vector<Matrix<Real>>);
 
 
 PYBIND11_MODULE (core, module)
@@ -27,17 +26,41 @@ PYBIND11_MODULE (core, module)
     module.doc() = "Core module of Magritte: a modern software library for 3D radiative transfer.";
 
 
+    // Paracabs
     module.def(
-        "n_threads_avail",
+        "pcmt_n_threads_avail",
         &paracabs::multi_threading::n_threads_avail,
         "Get the number of available threads (using OpenMP)."
     );
-
-
     module.def(
-        "set_n_threads_avail",
+        "pcmt_set_n_threads_avail",
         &paracabs::multi_threading::set_n_threads_avail,
         "Set the number of available threads (using OpenMP)."
+    );
+    module.def(
+        "pcmp_comm_rank",
+        &paracabs::message_passing::comm_rank,
+        "Get the rank of the current process (using MPI)."
+    );
+    module.def(
+        "pcmp_comm_size",
+        &paracabs::message_passing::comm_size,
+        "Get the size of the current communicator (using MPI)."
+    );
+    module.def(
+        "pcmp_length",
+        &paracabs::message_passing::length,
+        "Get the size of an array with given length that is given to the current process (using MPI)."
+    );
+    module.def(
+        "pcmp_start",
+        &paracabs::message_passing::start,
+        "Get the first index of an array with given length that will be given to this process (using MPI)."
+    );
+    module.def(
+        "pcmp_stop",
+        &paracabs::message_passing::stop,
+        "Get the last index of an array with given length that will be given to this process (using MPI)."
     );
 
 
@@ -257,7 +280,6 @@ PYBIND11_MODULE (core, module)
         .def ("set_npoints",                  &Parameters::set_npoints             , "Set number of points.")
         .def ("set_nrays",                    &Parameters::set_nrays               , "Set number of rays.")
         .def ("set_hnrays",                   &Parameters::set_hnrays              , "Set the half of the number of rays.")
-        .def ("set_nrays_red",                &Parameters::set_nrays_red           , "Set the reduced number of rays.")
         .def ("set_nboundary",                &Parameters::set_nboundary           , "Set number of boundary points.")
         .def ("set_nfreqs",                   &Parameters::set_nfreqs              , "Set number of frequency bins.")
         .def ("set_nspecs",                   &Parameters::set_nspecs              , "Set number of species.")
@@ -275,7 +297,6 @@ PYBIND11_MODULE (core, module)
         .def ("npoints",                      &Parameters::npoints                 , "Number of points.")
         .def ("nrays",                        &Parameters::nrays                   , "Number of rays.")
         .def ("hnrays",                       &Parameters::hnrays                  , "Half the number of rays.")
-        .def ("nrays_red",                    &Parameters::nrays_red               , "Reduced number of rays.")
         .def ("nboundary",                    &Parameters::nboundary               , "Number of boundary points.")
         .def ("nfreqs",                       &Parameters::nfreqs                  , "Number of frequency bins.")
         .def ("nspecs",                       &Parameters::nspecs                  , "Number of species.")

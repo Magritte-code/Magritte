@@ -70,7 +70,6 @@ struct Parameters
     CREATE_PARAMETER (Size, totnnbs   );
     CREATE_PARAMETER (Size, nrays     );
     CREATE_PARAMETER (Size, hnrays    );
-    CREATE_PARAMETER (Size, nrays_red );
     CREATE_PARAMETER (Size, order_min );
     CREATE_PARAMETER (Size, order_max );
     CREATE_PARAMETER (Size, nboundary );
@@ -97,7 +96,6 @@ struct Parameters
         CONSTRUCT_PARAMETER (Size, totnnbs   );
         CONSTRUCT_PARAMETER (Size, nrays     );
         CONSTRUCT_PARAMETER (Size, hnrays    );
-        CONSTRUCT_PARAMETER (Size, nrays_red );
         CONSTRUCT_PARAMETER (Size, order_min );
         CONSTRUCT_PARAMETER (Size, order_max );
         CONSTRUCT_PARAMETER (Size, nboundary );
@@ -125,7 +123,6 @@ struct Parameters
         COPY_PARAMETER (totnnbs   );
         COPY_PARAMETER (nrays     );
         COPY_PARAMETER (hnrays    );
-        COPY_PARAMETER (nrays_red );
         COPY_PARAMETER (order_min );
         COPY_PARAMETER (order_max );
         COPY_PARAMETER (nboundary );

@@ -25,16 +25,18 @@ void Radiation :: read (const Io& io)
         cout << "Not using scattering!" << endl;
     }
 
-    parameters.set_nrays_red (paracabs::message_passing::length (parameters.hnrays()));
-
 
     // Size and initialize I, u, v
     if (parameters.store_intensities())
     {
-        I.resize (parameters.nrays(),  parameters.npoints(), parameters.nfreqs());
-        u.resize (parameters.hnrays(), parameters.npoints(), parameters.nfreqs());
-        v.resize (parameters.hnrays(), parameters.npoints(), parameters.nfreqs());
-        J.resize (                     parameters.npoints(), parameters.nfreqs());
+        // Define the local (i.e. in this process) lengths of the distributed arrays
+        const Size  nrays_local = pc::message_passing::length(parameters. nrays());
+        const Size hnrays_local = pc::message_passing::length(parameters.hnrays());
+
+        I.resize ( nrays_local, parameters.npoints(), parameters.nfreqs());
+        u.resize (hnrays_local, parameters.npoints(), parameters.nfreqs());
+        v.resize (hnrays_local, parameters.npoints(), parameters.nfreqs());
+        J.resize (              parameters.npoints(), parameters.nfreqs());
     }
 
 
@@ -67,7 +69,6 @@ void Radiation :: write (const Io &io) const
 
 ///  initialize: initialize vector with zero's
 //////////////////////////////////////////////
-
 void initialize (Real1 &vec)
 {
     threaded_for (i, vec.size(),
@@ -77,6 +78,8 @@ void initialize (Real1 &vec)
 }
 
 
+///  Initialize J (angular ean intensity)
+/////////////////////////////////////////
 void Radiation :: initialize_J ()
 {
     for (Size p = 0; p < parameters.npoints(); p++)
@@ -92,26 +95,21 @@ void Radiation :: initialize_J ()
 /// calc_J: integrate mean intensity and "flux over all directions
 //////////////////////////////////////////////////////////////////
 void Radiation :: MPI_reduce_J ()
-
 #if (MPI_PARALLEL)
-
 {
     int ierr = MPI_Allreduce (
                   MPI_IN_PLACE,      // pointer to data to be reduced -> here in place
-                  J.data(),          // pointer to data to be received
+                  J.dat,             // pointer to data to be received
                   J.size(),          // size of data to be received
-                  MPI_DOUBLE,        // type of reduced data
+                  MPI_TYPE_REAL,     // type of reduced data
                   MPI_SUM,           // reduction operation
                   MPI_COMM_WORLD);
     assert (ierr == 0);
 }
-
 #else
-
 {
     return;
 }
-
 #endif
 
 
@@ -120,9 +118,7 @@ void Radiation :: MPI_reduce_J ()
 /// calc_U_and_V: integrate scattering quantities over all directions
 /////////////////////////////////////////////////////////////////////
 void Radiation :: calc_U_and_V ()
-
 #if (MPI_PARALLEL)
-
 {
 //    Real1 U_local (parameters.npoints()*parameters.nfreqs());
 //    Real1 V_local (parameters.npoints()*parameters.nfreqs());
@@ -173,9 +169,7 @@ void Radiation :: calc_U_and_V ()
 //        }
 //    }
 }
-
 #else
-
 {
 //    Real1 U_local (parameters.npoints()*parameters.nfreqs());
 //    Real1 V_local (parameters.npoints()*parameters.nfreqs());
@@ -201,5 +195,4 @@ void Radiation :: calc_U_and_V ()
 //        V[r1] = V_local;
 //    }
 }
-
 #endif

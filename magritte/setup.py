@@ -12,7 +12,7 @@ def check_if_1D(model):
     """
     Check if the point positions are 1D for Magritte, i.e only have a non-zero x-coordinate,
     raises a ValueError if not.
-    
+
     Parameters
     ----------
     model : Magritte model object
@@ -27,7 +27,7 @@ def check_if_1D(model):
 def check_if_ordered(arr):
     """
     Check if an array is ordered, raise a ValueError if not.
-    
+
     Parameters
     ----------
     arr : array_like
@@ -43,12 +43,12 @@ def check_if_ordered(arr):
 def set_Delaunay_neighbor_lists (model):
     """
     Setter for the neighbor lists for each point, assuming they are the cell centers of a Voronoi tesselation.
-    
+
     Parameters
     ----------
     model : Magritte model object
         Magritte model object to set.
-        
+
     Returns
     -------
     out : Magritte model object
@@ -101,11 +101,11 @@ def create_rotation_matrix(n):
     Helper function to create rotation matrices.
     Returns a 3x3 orthonormal matrix around n.
     '''
-    
+
     nx = np.array([1.0, 0.0, 0.0])
     ny = np.array([0.0, 1.0, 0.0])
-    
-    n1  = n 
+
+    n1  = n
     n1 /= np.linalg.norm(n1)
 
     if np.linalg.norm(n1-nx) < 1.0e-6:
@@ -120,10 +120,59 @@ def create_rotation_matrix(n):
     return np.array([n1, n2, n3]).T
 
 
+def load_balance_directions(directions, comm_size):
+    """
+    Basic attempt to imporved load balancing between different MPI
+    processes by reordering the rays such that each process gets a
+    similar set of direcitons.
+    """
+    # Initialize
+    Rs = directions
+
+    # Precompute distances between all directions
+    distances = np.arccos(np.matmul(Rs, Rs.T))
+
+    # Get antipode for each direction
+    antipodes = np.argmax(distances, axis=0)
+
+    # Restrict to one hemisphere (antipodes will follow)
+    Rs = Rs[:len(Rs)//2]
+
+    # Precompute distances between all directions
+    distances = np.arccos(np.matmul(Rs, Rs.T))
+
+    # Initialize index lists
+    inds   = list(range(len(Rs)))
+    inds_o = [[] for _ in range(comm_size)]
+
+    while len(inds) >= comm_size:
+        # Take the next index
+        id0 = inds[0]
+        inds     .remove(id0)
+        inds_o[0].append(id0)
+        # Append indices of close directions to other processes
+        for i in range(1, comm_size):
+            idi = inds[np.argmin(distances[id0][inds])]
+            inds     .remove(idi)
+            inds_o[i].append(idi)
+
+    # Append final indices
+    for i, idx in enumerate(inds):
+        inds_o[i].append(idx)
+
+    # Unravel
+    inds_o = [j for sl in inds_o for j in sl]
+
+    # Add antipodes
+    inds_o.extend(antipodes[inds_o].tolist())
+
+    return directions[inds_o]
+
+
 def set_uniform_rays(model, randomize=False, first_ray=np.array([1.0, 0.0, 0.0])):
     """
     Setter for rays to uniformly distributed directions.
-    
+
     Parameters
     ----------
     model : Magritte model object
@@ -132,7 +181,7 @@ def set_uniform_rays(model, randomize=False, first_ray=np.array([1.0, 0.0, 0.0])
         Whether or not to randomize the directions of the rays.
     first_ray: array-like
         Direction vector of the first ray in the ray list.
-        
+
     Returns
     -------
     out : Magritte model object
@@ -154,14 +203,14 @@ def set_uniform_rays(model, randomize=False, first_ray=np.array([1.0, 0.0, 0.0])
         direction  = np.array(direction).transpose()
         if randomize:
             direction = sp.spatial.transform.Rotation.random().apply(rays)
-            
+
         # Rotate such that the first ray is in the given direction
         R1 = create_rotation_matrix(direction[0])
         R2 = create_rotation_matrix(first_ray)
         R  = R2 @ np.linalg.inv(R1)
-        
+
         direction = direction @ R.T
-        
+
     else:
         raise ValueError ('Dimension should be 1 or 3.')
     # Cast to numpy arrays of appropriate type and shape
@@ -174,7 +223,7 @@ def set_uniform_rays(model, randomize=False, first_ray=np.array([1.0, 0.0, 0.0])
 def set_rays_spherical_symmetry(model, nextra=0, uniform=True):
     """
     Setter for rays in a 1D spherically symmetric model.
-    
+
     Parameters
     ----------
     model : Magritte model object
@@ -183,13 +232,13 @@ def set_rays_spherical_symmetry(model, nextra=0, uniform=True):
         Number of extra rays to add.
     uniform : bool
         Whether or not to use uniformly distributed rays.
-        
+
     Returns
     -------
     out : Magritte model object
         Updated Magritte object.
     """
-    
+
     if uniform:
         nrays  = model.parameters.nrays()
         nextra = nrays//2-1
@@ -257,12 +306,12 @@ def set_rays_spherical_symmetry(model, nextra=0, uniform=True):
 def set_Delaunay_boundary (model):
     """
     Setter for the boundary, assuming all points are the cell centers of a Voronoi tesselation.
-    
+
     Parameters
     ----------
     model : Magritte model object
         Magritte model object to set.
-        
+
     Returns
     -------
     out : Magritte model object
@@ -286,12 +335,12 @@ def set_Delaunay_boundary (model):
 def set_boundary_condition_CMB (model):
     """
     Setter for incoming CMB boundary condition at each boundary point.
-    
+
     Parameters
     ----------
     model : Magritte model object
         Magritte model object to set.
-        
+
     Returns
     -------
     out : Magritte model object
@@ -307,7 +356,7 @@ def set_boundary_condition_CMB (model):
 def set_boundary_condition_1D (model, T_in=T_CMB, T_out=T_CMB):
     """
     Setter for incoming CMB boundary condition at each boundary point.
-    
+
     Parameters
     ----------
     model : Magritte model object
@@ -316,7 +365,7 @@ def set_boundary_condition_1D (model, T_in=T_CMB, T_out=T_CMB):
         Boundary temperature at the inner boundary.
     T_out : float
         Boundary temperature at the outer boundary.
-        
+
     Returns
     -------
     out : Magritte model object
@@ -338,12 +387,12 @@ def set_quadrature(model):
     """
     Setter for the quadrature roots and weights for the Gauss-Hermite
     quadrature, used for integrating over (Gaussian) line profiles.
-    
+
     Parameters
     ----------
     model : Magritte model object
         Magritte model object to set.
-        
+
     Returns
     -------
     out : Magritte model object
@@ -410,7 +459,7 @@ class LamdaFileReader ():
     def __init__ (self ,fileName):
         """
         Set the file name of the LAMDA file.
-        
+
         Parameters
         ----------
         fileName : str
@@ -456,7 +505,7 @@ class LamdaFileReader ():
 def set_linedata_from_LAMDA_file (model, fileNames, config={}):
     """
     Set line data by reading it from a data file in LAMDA format.
-    
+
     Parameters
     ----------
     model : Magritte model object
@@ -465,12 +514,12 @@ def set_linedata_from_LAMDA_file (model, fileNames, config={}):
         List of file names for the LAMDA line data files.
     config : dict
         Optionally specify specific radiative transitions to consider.
-        
+
     Returns
     -------
     out : Magritte model object
         Updated Magritte object.
-    
+
     Note
     ----
     Do not use the Magritte objects linedata etc. this will kill performance. Hence, the copies.
