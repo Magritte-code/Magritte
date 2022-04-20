@@ -529,3 +529,12 @@ int Model :: set_boundary_condition ()
 
     return (0);
 }
+
+
+int Model :: set_column ()
+{
+    Solver solver;
+    solver.set_column (*this);
+
+    return (0);
+}

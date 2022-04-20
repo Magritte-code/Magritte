@@ -1457,3 +1457,54 @@ accel inline void Solver :: set_boundary_condition (Model& model) const
         }
     }
 }
+
+
+inline void Solver :: set_column (Model& model) const
+{
+    model.column.resize (model.parameters.nrays(), model.parameters.npoints());
+
+    for (Size rr = 0; rr < model.parameters.hnrays(); rr++)
+    {
+        const Size ar = model.geometry.rays.antipod[rr];
+
+        cout << "--- rr = " << rr << endl;
+
+        accelerated_for (o, model.parameters.npoints(),
+        {
+            model.column(rr, o) = get_column(model, o, rr);
+            model.column(ar, o) = get_column(model, o, ar);
+        })
+    }
+
+}
+
+
+accel inline Real Solver :: get_column (
+    const Model& model,
+    const Size   o,
+    const Size   r ) const
+{
+    Real column = 0.0;
+
+    double  Z = 0.0;   // distance from origin (o)
+    double dZ = 0.0;   // last increment in Z
+
+    Size nxt = model.geometry.get_next (o, r, o, Z, dZ);
+
+    if (model.geometry.valid_point(nxt))
+    {
+        Size crt = o;
+
+        column += 0.5 * (model.density[crt] + model.density[nxt]) * dZ;
+
+        while (model.geometry.not_on_boundary(nxt))
+        {
+            crt = nxt;
+            nxt = model.geometry.get_next (o, r, nxt, Z, dZ);
+
+            column += 0.5 * (model.density[crt] + model.density[nxt]) * dZ;
+        }
+    }
+
+    return column;
+}

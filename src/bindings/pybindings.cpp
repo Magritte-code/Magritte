@@ -123,6 +123,8 @@ PYBIND11_MODULE (core, module)
         .def_readwrite ("dtau_ray",            &Model::dtau_ray)
         .def_readwrite (   "u_ray",            &Model::   u_ray)
         .def_readwrite ("boundary_condition", &Model::boundary_condition)
+        .def_readwrite ("column",             &Model::column)
+        .def_readwrite ("density",            &Model::density)
         .def_readonly  (
             "error_mean",
             &Model::error_mean,
@@ -233,6 +235,11 @@ PYBIND11_MODULE (core, module)
             "compute_image_for_point",
             &Model::compute_image_for_point,
             "Compute image (single pixel) for a single point."
+        )
+        .def (
+            "set_column",
+            &Model::set_column,
+            "Set column (internally)."
         )
         // constructor
         .def (py::init<const string>())
