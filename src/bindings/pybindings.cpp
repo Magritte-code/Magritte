@@ -215,6 +215,11 @@ PYBIND11_MODULE (core, module)
             "Compute the level populations for the model assuming statistical equilibrium until convergence, optionally using Ng-acceleration, and for the given maximum number of iterations."
         )
         .def (
+            "compute_level_populations_static",
+            &Model::compute_level_populations_static,
+            "Compute the level populations for the model assuming statistical equilibrium until convergence, optionally using Ng-acceleration, and for the given maximum number of iterations."
+        )
+        .def (
             "compute_image",
             &Model::compute_image,
             "Compute an image for the model along the given ray."

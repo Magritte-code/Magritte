@@ -58,6 +58,11 @@ struct Model
         // const Io   &io,
         const bool  use_Ng_acceleration,
         const long  max_niterations     );
+    //Or add an option for which solver to use
+    int compute_level_populations_static          (
+        // const Io   &io,
+        const bool  use_Ng_acceleration,
+        const long  max_niterations     );
     int compute_image                             (const Size ray_nr);
 
     Double1 error_max;

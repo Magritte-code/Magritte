@@ -719,7 +719,19 @@ accel inline void Solver :: solve_shortchar_static (
                 model.radiation.u(rr, next_point, f)+=half * interpolated_I/n_rays_through_point(rr,next_point);
             }
                 //This is somewhat more complicated, due to needing to interpolate the current intensity values
+                // in a later version, we will no longer do this roundabout way, but rather compute the mean line intensity contribution directly:
+                // J+=half * ϕ(ν,ν_l) * TODO quadrature weights for integrating?
+                // or instead just
             // }
+
+            //Also computing the approximate lambda elements
+            //a*ϕ(ν)*S_l(n^†); a = (Δτ-1+e^{-Δτ})/Δτ; for Δτ→0: a≃Δτ/2, for Δτ→∞: a=1
+            //Hmm, where would we put the computation?
+            //two options: either here, then only partial results each time, but we have access to Δτ, a, ϕ(ν)
+            // or after computing the intensities, then directly ... but need to define some structure to store a (and here merely inserting a and relative doppler location OR store a*line profile fun ϕ); but this needs to be done for all lines...
+            //However, as we are working in the static frame, we can instead just compute a, and leave the doppler shifting to some other place
+
+            //for all lines:
         }
 
         // //while we still have computed the shift, we can fill in the u; TODO: this is inefficient, but handy for bugfixing

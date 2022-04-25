@@ -187,10 +187,10 @@ def convert_msh_to_pos(meshName, replace:bool=False):
     run(f'gmsh -0 {conversion_script}')
 
     # Remove the auxiliary file that is created (geo_unrolled) and the script file
-    try:
-        os.remove(f'{meshName}_convert_to_pos.geo_unrolled')
-    except FileNotFoundError:
-        print("Could not remove unrolled geometry file")
+    # try:
+    os.remove(f'{meshName}_convert_to_pos.geo_unrolled')
+    # except FileNotFoundError:
+        # print("Could not remove unrolled geometry file")
     os.remove(conversion_script)
     if replace:
         os.remove(f"{meshName}.msh")
