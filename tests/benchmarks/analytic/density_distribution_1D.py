@@ -208,6 +208,20 @@ def run_model (a_or_b, nosave=False):
         plt.legend()
         plt.savefig(f'{resdir}{modelName}_cumu-{timestamp}.png', dpi=150)
 
+    #setting 'b' not yet used for testing
+    if a_or_b == 'a':
+        #error bounds are chosen somewhat arbitrarily, based on previously obtained results; this should prevent serious regressions.
+        FEAUTRIER_AS_EXPECTED=(np.mean(error_u_2f)<0.05)
+        #not that well implmented, so less accurate
+        FIRSTORDER_AS_EXPECTED=(np.mean(error_u_0s)<0.1)
+
+        if not FIRSTORDER_AS_EXPECTED:
+            print("First order solver mean error too large: ", np.mean(error_u_0s))
+        if not FEAUTRIER_AS_EXPECTED:
+            print("Feautrier solver mean error too large: ", np.mean(error_u_2f))
+
+        return (FEAUTRIER_AS_EXPECTED&FIRSTORDER_AS_EXPECTED)
+
     return
 
 

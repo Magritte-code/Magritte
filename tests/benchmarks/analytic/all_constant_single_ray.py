@@ -160,7 +160,24 @@ def run_model (nosave=False):
         plt.ylabel('Mean intensity [W/m$^{2}$]')
         plt.savefig(f'{resdir}{modelName}-{timestamp}.png', dpi=150)
 
-    return
+    #returning whether output is as expected (not too far from the input)
+    # max_diff=max(u_(x))-min(u_(x))
+    # print(max_diff)
+    #error should at max be proportional to max diff? only maybe for testing non analytic models
+
+    #error bounds are chosen somewhat arbitrarily, based on previously obtained results; this should prevent serious regressions.
+    #feautrier should be quite accurate, so we take 1e-5 as maximal max error
+    FEAUTRIER_AS_EXPECTED=(np.max(error_u_2f)<1e-5)
+    #not that well implmented, so less accurate
+    FIRSTORDER_AS_EXPECTED=(np.max(error_u_0s)<0.1)
+
+    if not FIRSTORDER_AS_EXPECTED:
+        print("First order solver max error too large: ", np.max(error_u_0s))
+    if not FEAUTRIER_AS_EXPECTED:
+        print("Feautrier solver max error too large: ", np.max(error_u_2f))
+
+
+    return (FEAUTRIER_AS_EXPECTED&FIRSTORDER_AS_EXPECTED)
 
 
 def run_test (nosave=False):
