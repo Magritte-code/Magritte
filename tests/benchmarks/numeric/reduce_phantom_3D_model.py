@@ -22,8 +22,8 @@ def reduce_phantom():
 
     modeldir= path+"/../../models"
     datadir = path+"/../../data"
-    model_file = os.path.join(modeldir, 'wind_00350.hdf5' )   # Resulting Magritte model
-    redux_file = os.path.join(modeldir, 'wind_00350_red' )   # Reduced Magritte model (no extension!)
+    model_file = os.path.join(modeldir, 'wind.hdf5' )   # Resulting Magritte model
+    redux_file = os.path.join(modeldir, 'wind_red' )   # Reduced Magritte model (no extension!)
     lamda_file = os.path.join(datadir, 'co.txt'                )   # Line data file
 
     print("Reading model")
@@ -114,7 +114,7 @@ def reduce_phantom():
     model.parameters.set_nrays              (12)                      # Number of rays
     model.parameters.set_nspecs             (5)                      # Number of species (min. 5)
     model.parameters.set_nlspecs            (1)                      # Number of line species
-    model.parameters.set_nquads             (31)                     # Number of quadrature points
+    model.parameters.set_nquads             (21)                     # Number of quadrature points
     model.parameters.set_pop_prec           (1.0e-6)                 # Pops. convergence criterion
 
     model.geometry.points.position.set(position_reduced)
