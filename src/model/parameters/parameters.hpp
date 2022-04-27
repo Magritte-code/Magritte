@@ -57,8 +57,9 @@
 //////////////////////////////////////////////////////////
 struct Parameters
 {
-    long   n_off_diag         = 0;
-    double max_width_fraction = 0.5;
+    long   n_off_diag           = 0;
+    double max_width_fraction   = 0.5;
+    double convergence_fraction = 0.995;
 
     void read (const Io &io);
     void write(const Io &io) const;

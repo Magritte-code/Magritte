@@ -469,7 +469,7 @@ int Model :: compute_level_populations (
             error_mean.push_back (lines.lineProducingSpecies[l].relative_change_mean);
             error_max .push_back (lines.lineProducingSpecies[l].relative_change_max);
 
-            if (lines.lineProducingSpecies[l].fraction_not_converged > 0.005)
+            if (lines.lineProducingSpecies[l].fraction_not_converged > 1.0 - parameters.convergence_fraction)
             {
                 some_not_converged = true;
             }

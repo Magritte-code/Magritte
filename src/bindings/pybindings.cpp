@@ -274,6 +274,7 @@ PYBIND11_MODULE (core, module)
         // io
         .def_readwrite ("n_off_diag",         &Parameters::n_off_diag              , "Bandwidth of the ALO (0=diagonal, 1=tri-diaginal, 2=penta-diagonal, ...)")
         .def_readwrite ("max_width_fraction", &Parameters::max_width_fraction      , "Max tolerated Doppler shift as fraction of line width (default=0.5).")
+        .def_readwrite ("convergence_fraction", &Parameters::convergence_fraction, "Fraction of levels that should obey the convergence criterion.")
         // setters
         .def ("set_model_name",               &Parameters::set_model_name          , "Set model name.")
         .def ("set_dimension",                &Parameters::set_dimension           , "Set spatial dimension of the model.")
