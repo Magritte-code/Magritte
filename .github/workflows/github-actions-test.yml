@@ -1,25 +1,41 @@
 name: Github actions test
 on: [push]
+# on:
+#   push:
+#     branches: [ stable ]
+#   pull_request:
+#     branches: [ stable ]
 jobs:
   BuildAndTest:
-    runs-on: ubuntu-latest
+    # runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+            PACKAGE_MANAGER: brew
+            INSTALL_COMMAND: install
+            DEPENDENCIES: gmsh #llvm libomp
+            C-COMPILER: gcc-11
+            CXX-COMPILER: g++-11
+          - os: ubuntu-latest
+            PACKAGE_MANAGER: sudo apt-get
+            INSTALL_COMMAND: install -y
+            DEPENDENCIES: gmsh libegl1
+            C-COMPILER: gcc
+            CXX-COMPILER: g++
     defaults:
       run:
         shell: bash -l {0}
     steps:
+      - run: ${{matrix.PACKAGE_MANAGER}} update
+      - name: install dependencies
+        run: ${{matrix.PACKAGE_MANAGER}} ${{matrix.INSTALL_COMMAND}} ${{matrix.DEPENDENCIES}}
       - name: Check out repository code
         uses: actions/checkout@v3
         with:
           ref: testing_CI
           submodules: true
-
-      # - name: construct conda env //conda already installed by default
-      # - run: dependencies/get_conda.sh
-      - run: sudo apt-get update
-      - name: install gmsh
-        run: sudo apt-get install -y gmsh
-      - name: install libegl1
-        run: sudo apt-get install -y libegl1
       - name: setup python
         uses: actions/setup-python@v3
         # run: $CONDA/bin/conda env update -f dependencies/conda_env.yml
@@ -34,7 +50,8 @@ jobs:
         uses: conda-incubator/setup-miniconda@v2
         with:
           activate-environment: magritte
-          environment-file: dependencies/test_environment.yml
+          # environment-file: dependencies/test_environment.yml
+          environment-file: dependencies/conda_env.yml
           auto-activate-base: false
           mamba-version: "*"
           channels: conda-forge, defaults
@@ -47,26 +64,27 @@ jobs:
       - name: install pytest (if not already installed because of dependencies)
         run: conda install pytest
 
-      # - name: printing current path
-      #   run: pwd
-      #
-      # - name: printing conda env
-      #   run: conda list
-      #
-      # - name: printing current dir contents
-      #   run: ls
-
       - name: build Magritte
         run: bash build.sh
+        env:
+          CC : ${{ matrix.C-COMPILER }}
+          CXX: ${{ matrix.CXX-COMPILER }}
+
+
+      # - name: build Magritte (on Linux)
+      #   if:
+      #
+      # - name: build Magritte (on macOS)
+      #   run: bash build.sh
+      #   env:
+      #     - gcc=$(brew --prefix gcc)
+      #     - g++=$(brew --prefix g++)
 
 
       #and finally do our tests (located in the benchmarks folder)
-      # - run: cd tests/benchmarks/analytic,
       - name: run analytic tests
         run: pytest --verbose
         working-directory: tests/benchmarks/analytic
-      # - run: cd ../numeric
-      #more output is helpful for debugging so -s flag added
       - name: run numeric tests
-        run: pytest --verbose -s
+        run: pytest --verbose
         working-directory: tests/benchmarks/numeric
