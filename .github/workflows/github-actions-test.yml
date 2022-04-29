@@ -21,20 +21,27 @@ jobs:
       - name: setup python
         uses: actions/setup-python@v3
         # run: $CONDA/bin/conda env update -f dependencies/conda_env.yml
-      - uses: conda-incubator/setup-miniconda@v2
-        with:
-          activate-environment: magritte
-          environment-file: dependencies/conda_env.yml
-          auto-activate-base: false
-          channels: conda-forge, anaconda, defaults
-          use-mamba: true
+      - name: Add conda to system path
+        # $CONDA is an environment variable pointing to the root of the miniconda directory
+        run: echo $CONDA/bin >> $GITHUB_PATH
+      - name: Install conda dependencies
+        run: conda env update --file dependencies/test_environment.yml --name magritte
+      - name: Activate magritte conda env
+        run: conda activate magritte
+      # - uses: conda-incubator/setup-miniconda@v2
+      #   with:
+      #     activate-environment: magritte
+      #     environment-file: dependencies/conda_env.yml
+      #     auto-activate-base: false
+      #     channels: conda-forge, anaconda, defaults
+          # use-mamba: true
         # with:
         #   auto-activate-base: false
       # - name: setup conda env
         # run: conda env create -f dependencies/conda_env.yml # Create conda environment
       # - run: conda activate magritte
       - name: install pytest (if not already installed because of dependencies)
-        run: pip install pytest
+        run: conda install pytest
 
       - name: build Magritte
         run: build.sh
