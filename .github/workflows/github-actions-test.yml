@@ -58,9 +58,11 @@ jobs:
 
 
       #and finally do our tests (located in the benchmarks folder)
-      - run: cd tests/benchmarks/analytic
+      # - run: cd tests/benchmarks/analytic,
       - name: run analytic tests
         run: pytest --verbose
-      - run: cd ../numeric
+        working-directory: tests/benchmarks/analytic
+      # - run: cd ../numeric
       - name: run numeric tests
         run: pytest --verbose
+        working-directory: tests/benchmarks/numeric
