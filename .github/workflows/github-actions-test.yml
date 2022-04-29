@@ -44,8 +44,17 @@ jobs:
       - name: install pytest (if not already installed because of dependencies)
         run: conda install pytest
 
+      - name: printing current path
+        run: pwd
+
+      - name: printing conda env
+        run: conda list
+
+      - name: printing current dir contents
+        run: ls
+
       - name: build Magritte
-        run: build.sh
+        run: bash build.sh
 
 
       #and finally do our tests (located in the benchmarks folder)
