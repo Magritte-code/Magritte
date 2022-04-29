@@ -1,0 +1,47 @@
+name: Github actions test
+on: [push]
+jobs:
+  BuildAndTest:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -l {0}
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+        with:
+          ref: testing_CI
+          submodules: true
+
+      # - name: construct conda env //conda already installed by default
+      # - run: dependencies/get_conda.sh
+      - run: sudo apt-get update
+      - name: install gmsh
+        run: sudo apt-get install -y gmsh
+      - name: setup python
+        uses: actions/setup-python@v3
+        # run: $CONDA/bin/conda env update -f dependencies/conda_env.yml
+      - uses: conda-incubator/setup-miniconda@v2
+        with:
+          activate-environment: magritte
+          environment-file: dependencies/conda_env.yml
+          auto-activate-base: false
+        # with:
+        #   auto-activate-base: false
+      # - name: setup conda env
+        # run: conda env create -f dependencies/conda_env.yml # Create conda environment
+      # - run: conda activate magritte
+      - name: install pytest (if not already installed because of dependencies)
+        run: pip install pytest
+
+      - name: build Magritte
+        run: build.sh
+
+
+      #and finally do our tests (located in the benchmarks folder)
+      - run: cd tests/benchmarks/analytic
+      - name: run analytic tests
+        run: pytest --verbose
+      - run: cd ../numeric
+      - name: run numeric tests
+        run: pytest --verbose
