@@ -36,8 +36,9 @@ jobs:
           activate-environment: magritte
           environment-file: dependencies/test_environment.yml
           auto-activate-base: false
+          mamba-version: "*"
           channels: conda-forge, defaults
-          use-mamba: true
+          # use-mamba: true
         # with:
         #   auto-activate-base: false
       # - name: setup conda env

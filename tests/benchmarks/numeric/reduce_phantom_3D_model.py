@@ -26,7 +26,11 @@ def reduce_phantom():
     redux_file = os.path.join(modeldir, 'wind_00350_red' )   # Reduced Magritte model (no extension!)
     lamda_file = os.path.join(datadir, 'co.txt'                )   # Line data file
 
+    print("Reading model")
+
     model = magritte.Model(model_file)
+
+    print("Setting arrays")
 
     position = np.array(model.geometry.points.position)
     velocity = np.array(model.geometry.points.velocity)
@@ -36,11 +40,16 @@ def reduce_phantom():
     tmp      = np.array(model.thermodynamics.temperature.gas)
     trb      = np.array(model.thermodynamics.turbulence.vturb2)
 
+    print("Doing delaunay")
+
     delaunay = Delaunay(position)
 
     r_bdy = 0.99 * np.min(np.linalg.norm(position[boundary], axis=1))
 
     boundary_reduced = mesher.boundary_sphere(radius = r_bdy)
+
+
+    print("Reducing model")
 
 
 # %%capture
@@ -60,9 +69,12 @@ def reduce_phantom():
         ftarget   = 3.68                # 50^(-1/3) for approx 50x fewer points
         )
 
+    print("Meshing")
 
     # %%capture
     mesh = mesher.Mesh(f'{redux_file}.vtk')
+
+    print("Done meshing")
 
     npoints          = model.parameters.npoints()
     npoints_reduced  = len(mesh.points)
