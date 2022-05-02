@@ -34,7 +34,8 @@ jobs:
         uses: conda-incubator/setup-miniconda@v2
         with:
           activate-environment: magritte
-          environment-file: dependencies/test_environment.yml
+          # environment-file: dependencies/test_environment.yml
+          environment-file: dependencies/conda_env.yml
           auto-activate-base: false
           mamba-version: "*"
           channels: conda-forge, defaults
