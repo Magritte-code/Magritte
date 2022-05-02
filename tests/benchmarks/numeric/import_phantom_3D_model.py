@@ -23,8 +23,8 @@ def import_phantom():
 
     #TODO maybe rename this ascii file (seems random number)
 
-    input_file = os.path.join(modeldir, 'wind_00350.ascii')   # Phantom snapshot
-    model_file = os.path.join(modeldir, 'wind_00350.hdf5' )   # Resulting Magritte model
+    input_file = os.path.join(modeldir, 'wind.ascii')   # Phantom snapshot
+    model_file = os.path.join(modeldir, 'wind.hdf5' )   # Resulting Magritte model
     lamda_file = os.path.join(datadir, 'co.txt'                )   # Line data file
 
     input_link="https://owncloud.ster.kuleuven.be/index.php/s/Z7NfRBJrPeQa85g/download"
@@ -147,6 +147,7 @@ def import_phantom():
     model.parameters.set_nlspecs            (1)            # Number of line species
     model.parameters.set_nquads             (31)           # Number of quadrature points
     model.parameters.set_pop_prec           (1.0e-6)       # Pops. convergence criterion
+    model.parameters.set_store_intensities(False)          # We will not be storing the intensities, as we only want to compute on the reduced model
 
     model.geometry.points.position.set(position)
     model.geometry.points.velocity.set(velocity)

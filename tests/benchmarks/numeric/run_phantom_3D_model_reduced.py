@@ -15,7 +15,7 @@ modeldir= path+"/../../models/"
 datadir = path+"/../../data/"
 result_dir= path+"/../../results/"
 # model_file = os.path.join(modeldir, 'wind_00350.hdf5' )   # Resulting Magritte model
-redux_file = os.path.join(modeldir, 'wind_00350_red.hdf5' )   # Reduced Magritte model
+redux_file = os.path.join(modeldir, 'wind_red.hdf5' )   # Reduced Magritte model
 # lamda_file = os.path.join(datadir, 'co.txt'                )   # Line data file
 
 
