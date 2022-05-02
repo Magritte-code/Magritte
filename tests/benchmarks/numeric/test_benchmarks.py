@@ -1,11 +1,9 @@
+from vanZadelhoff_1_1D import create_model as vanZadelhoff_1D_setup
+from vanZadelhoff_1_1D import run_model as vanZadelhoff_1D_run
+
 from import_phantom_3D_model import import_phantom
 from reduce_phantom_3D_model import reduce_phantom
 from run_phantom_3D_model_reduced import run_model as run_phantom
-# from all_constant_single_ray import run_model as all_constant_run
-# from density_distribution_1D import create_model as density_dist_setup
-# from density_distribution_1D import run_model as density_dist_run
-# from constant_velocity_gradient_1D import create_model as velocity_gradient_setup
-# from constant_velocity_gradient_1D import run_model as velocity_gradient_run
 
 import pytest
 
@@ -14,23 +12,28 @@ import pytest
 #     yield
 
 class TestNumeric:
+
     #incremental testing; see conftest.py or pytest.ini
     @pytest.mark.incremental
-    class TestImportPhantom:
+    class TestVanZadelhoff1D:
+        def test_vanZadelhoff1D_setup(self):
+            vanZadelhoff_1D_setup('a')
+
+        def test_vanZadelhoff1D_run(self):
+            assert vanZadelhoff_1D_run('a', nosave=True)
+
+    @pytest.mark.incremental
+    class TestPhantom:
         #note: import has some extra filtering: also removes points with zero or negative abundances
         #testing whether the setup runs
         def test_import_phantom(self):
             import_phantom()
 
-    #reduction will probably take the most time of these tests
-    @pytest.mark.incremental
-    class TestReducePhantom:
+        #reduction will probably take the most time of these tests
         def test_reduce_phantom(self):
             reduce_phantom()
 
-    #currently only checks whether it is able to run succesfully, does not yet check whether the results make sense
-    @pytest.mark.incremental
-    class TestRunPhantomModel:
+        #currently only checks whether it is able to run succesfully, does not yet check whether the results make sense
         def test_run_phantom_model(self):
             run_phantom()
 
