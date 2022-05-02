@@ -44,6 +44,7 @@ struct LineProducingSpecies
     VectorXr population;             ///< level population (most recent)
     Real1    population_tot;         ///< total level population (sum over levels)
 
+    // As these vectors keep growing after each iteration, we have a memory leak; thus this functionality should be disabled
     vector<VectorXr> populations;    ///< list of populations in previous iterations
     vector<VectorXr> residuals;      ///< list of residuals in the populations
 
@@ -77,6 +78,12 @@ struct LineProducingSpecies
     inline void update_using_statistical_equilibrium (
         const Double2      &abundance,
         const Vector<Real> &temperature );
+
+    //refactoring from update_using_statistical_equilibrium
+    inline VectorXr solve_statistical_equilibrium(
+      const Double2      &abundance,
+      const Vector<Real> &temperature,
+      vector<Size> &points_to_use);
 
     inline void update_using_Ng_acceleration ();
     inline void update_using_acceleration (const Size order);

@@ -61,6 +61,9 @@ struct Parameters
     double max_width_fraction   = 0.5;
     double convergence_fraction = 0.995;
 
+    Size max_matrix_size=100*1024*1024;///< Max temp matrix size when solving for the level populations //By default hundred megabyte
+    //Max extra memory usage during stat eq solving is then approx times 2 due to use of eigen triplets (1) + setting matrix from this (1).
+
     void read (const Io &io);
     void write(const Io &io) const;
 
