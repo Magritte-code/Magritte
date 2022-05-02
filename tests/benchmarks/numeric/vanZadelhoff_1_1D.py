@@ -155,16 +155,13 @@ def run_model (a_or_b, nosave=False):
         plt.ylabel('fractional level populations [.]')
         plt.savefig(f'{resdir}{modelName}-{timestamp}.png', dpi=150)
 
-        #maximal error lies mainly on the boundary (due to not exactly obeying boundary conditions) and in the regime change
-        FEAUTRIER_AS_EXPECTED=((np.max(error_0[1:])<0.2)&(np.max(error_1[1:])<0.2))
+    #maximal error lies mainly on the boundary (due to not exactly obeying boundary conditions) and in the regime change
+    FEAUTRIER_AS_EXPECTED=((np.max(error_0[1:])<0.2)&(np.max(error_1[1:])<0.2))
 
-        if not FEAUTRIER_AS_EXPECTED:
-            print("Feautrier solver mean error too large: ", np.mean(error_u_2f))
+    if not FEAUTRIER_AS_EXPECTED:
+        print("Feautrier solver mean error too large: ", np.mean(error_u_2f))
 
-        return (FEAUTRIER_AS_EXPECTED)
-
-    return
-
+    return (FEAUTRIER_AS_EXPECTED)
 
 def run_test (nosave=False):
 
