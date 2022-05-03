@@ -646,8 +646,9 @@ accel inline void Solver :: solve_shortchar_static (
             // const Real source_term = -expm1(-dtau/2.0)*(exp(-dtau/2.0)*Scurr+Snext);//TODO: add variations
 
             // second order accurate
-            const Real common_term = (dtau+expm1(-dtau))/dtau;
-            const Real source_term = common_term*Scurr+(-common_term-expm1(-dtau))*Snext;
+            // const Real common_term = (dtau+expm1(-dtau))/dtau;
+            const Real common_term = 1+expm1(-dtau)/dtau;//rewritten
+            const Real source_term = common_term*Snext+(-common_term-expm1(-dtau))*Scurr;
 
 
             // const Real onemexpmintau = -expm1(-dtau);
@@ -830,8 +831,9 @@ accel inline void Solver :: solve_shortchar_static (
             // const Real source_term = -expm1(-dtau/2.0)*(exp(-dtau/2.0)*Scurr+Snext);//TODO: add variations
 
             // second order accurate
-            const Real common_term = (dtau+expm1(-dtau))/dtau;
-            const Real source_term = common_term*Scurr+(-common_term-expm1(-dtau))*Snext;
+            // const Real common_term = (dtau+expm1(-dtau))/dtau;
+            const Real common_term = 1+expm1(-dtau)/dtau;//rewritten
+            const Real source_term = common_term*Snext+(-common_term-expm1(-dtau))*Scurr;
 
 
             //TODO: check which dZ value I need, or compute it yourself using Z
