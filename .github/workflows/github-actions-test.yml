@@ -28,11 +28,11 @@ jobs:
 
       # - name: construct conda env //conda already installed by default
       # - run: dependencies/get_conda.sh
-      - run: sudo ${{matrix.PACKAGE_MANAGER}} update
+      - run: ${{matrix.PACKAGE_MANAGER}} update
       - name: install gmsh
-        run: sudo ${{matrix.PACKAGE_MANAGER}} install -y gmsh
+        run: ${{matrix.PACKAGE_MANAGER}} install -y gmsh
       - name: install libegl1
-        run: sudo ${{matrix.PACKAGE_MANAGER}} install -y libegl1
+        run: ${{matrix.PACKAGE_MANAGER}} install -y libegl1
       - name: setup python
         uses: actions/setup-python@v3
         # run: $CONDA/bin/conda env update -f dependencies/conda_env.yml
