@@ -11,7 +11,11 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-latest]
+        include:
+          - os: macos-latest
+            PACKAGE_MANAGER: brew
+          - os: ubuntu-latest
+            PACKAGE_MANAGER: apt-get
     defaults:
       run:
         shell: bash -l {0}
@@ -24,11 +28,11 @@ jobs:
 
       # - name: construct conda env //conda already installed by default
       # - run: dependencies/get_conda.sh
-      - run: sudo apt-get update
+      - run: sudo ${{matrix.PACKAGE_MANAGER}} update
       - name: install gmsh
-        run: sudo apt-get install -y gmsh
+        run: sudo ${{matrix.PACKAGE_MANAGER}} install -y gmsh
       - name: install libegl1
-        run: sudo apt-get install -y libegl1
+        run: sudo ${{matrix.PACKAGE_MANAGER}} install -y libegl1
       - name: setup python
         uses: actions/setup-python@v3
         # run: $CONDA/bin/conda env update -f dependencies/conda_env.yml
