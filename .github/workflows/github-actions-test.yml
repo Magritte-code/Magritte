@@ -27,14 +27,14 @@ jobs:
       - run: ${{matrix.PACKAGE_MANAGER}} update
       - name: install dependencies
         run: ${{matrix.PACKAGE_MANAGER}} ${{matrix.INSTALL_COMMAND}} ${{matrix.DEPENDENCIES}}
+      - name: Check out repository code
+        uses: actions/checkout@v3
+        with:
+          ref: testing_CI
+          submodules: true
       - name: setup python
         uses: actions/setup-python@v3
         # run: $CONDA/bin/conda env update -f dependencies/conda_env.yml
-      - name: Check out repository code
-      uses: actions/checkout@v3
-      with:
-        ref: testing_CI
-        submodules: true
       # - name: Add conda to system path
       #   # $CONDA is an environment variable pointing to the root of the miniconda directory
       #   run: echo $CONDA/bin >> $GITHUB_PATH
