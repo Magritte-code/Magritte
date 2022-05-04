@@ -24,9 +24,6 @@ jobs:
       run:
         shell: bash -l {0}
     steps:
-
-      # - name: construct conda env //conda already installed by default
-      # - run: dependencies/get_conda.sh
       - run: ${{matrix.PACKAGE_MANAGER}} update
       - name: install dependencies
         run: ${{matrix.PACKAGE_MANAGER}} ${{matrix.INSTALL_COMMAND}} ${{matrix.DEPENDENCIES}}
