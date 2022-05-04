@@ -1,8 +1,17 @@
 name: Github actions test
 on: [push]
+# on:
+#   push:
+#     branches: [ stable ]
+#   pull_request:
+#     branches: [ stable ]
 jobs:
   BuildAndTest:
-    runs-on: ubuntu-latest
+    # runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest]
     defaults:
       run:
         shell: bash -l {0}
@@ -62,12 +71,9 @@ jobs:
 
 
       #and finally do our tests (located in the benchmarks folder)
-      # - run: cd tests/benchmarks/analytic,
       - name: run analytic tests
         run: pytest --verbose
         working-directory: tests/benchmarks/analytic
-      # - run: cd ../numeric
-      #more output is helpful for debugging so -s flag added
       - name: run numeric tests
-        run: pytest --verbose -s
+        run: pytest --verbose
         working-directory: tests/benchmarks/numeric
