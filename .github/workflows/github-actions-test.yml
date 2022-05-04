@@ -15,7 +15,7 @@ jobs:
           - os: macos-latest
             PACKAGE_MANAGER: brew
             INSTALL_COMMAND: install
-            DEPENDENCIES: gmsh
+            DEPENDENCIES: gmsh llvm libomp
           - os: ubuntu-latest
             PACKAGE_MANAGER: sudo apt-get
             INSTALL_COMMAND: install -y
