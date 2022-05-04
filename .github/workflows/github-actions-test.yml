@@ -14,28 +14,30 @@ jobs:
         include:
           - os: macos-latest
             PACKAGE_MANAGER: brew
+            INSTALL_COMMAND: install
+            DEPENDENCIES: gmsh
           - os: ubuntu-latest
             PACKAGE_MANAGER: sudo apt-get
+            INSTALL_COMMAND: install -y
+            DEPENDENCIES: gmsh libegl1
     defaults:
       run:
         shell: bash -l {0}
     steps:
-      - name: Check out repository code
-        uses: actions/checkout@v3
-        with:
-          ref: testing_CI
-          submodules: true
 
       # - name: construct conda env //conda already installed by default
       # - run: dependencies/get_conda.sh
       - run: ${{matrix.PACKAGE_MANAGER}} update
-      - name: install gmsh
-        run: ${{matrix.PACKAGE_MANAGER}} install -y gmsh
-      - name: install libegl1
-        run: ${{matrix.PACKAGE_MANAGER}} install -y libegl1
+      - name: install dependencies
+        run: ${{matrix.PACKAGE_MANAGER}} ${{matrix.INSTALL_COMMAND}} ${{matrix.DEPENDENCIES}}
       - name: setup python
         uses: actions/setup-python@v3
         # run: $CONDA/bin/conda env update -f dependencies/conda_env.yml
+      - name: Check out repository code
+      uses: actions/checkout@v3
+      with:
+        ref: testing_CI
+        submodules: true
       # - name: Add conda to system path
       #   # $CONDA is an environment variable pointing to the root of the miniconda directory
       #   run: echo $CONDA/bin >> $GITHUB_PATH
