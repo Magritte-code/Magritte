@@ -15,7 +15,7 @@ jobs:
           - os: macos-latest
             PACKAGE_MANAGER: brew
           - os: ubuntu-latest
-            PACKAGE_MANAGER: apt-get
+            PACKAGE_MANAGER: sudo apt-get
     defaults:
       run:
         shell: bash -l {0}
