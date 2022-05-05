@@ -15,6 +15,8 @@
 ///  Remember to ensure in Parameters copy constructor to
 ///  ensure that the local variables are up to date, i.e.
 ///  ensure that their values equal the global values.
+/////////////////////////////////////////////////////////////
+///  If the parameter is not yet set, the default value of the type is returned upon calling "x()"
 
 #define CREATE_PARAMETER(type, x)                                                           \
     private:                                                                                \
@@ -87,6 +89,7 @@ struct Parameters
 
     CREATE_PARAMETER (bool, use_scattering      );
     CREATE_PARAMETER (bool, store_intensities   );
+    CREATE_PARAMETER (bool, memory_optimisation_stat_eq);
     CREATE_PARAMETER (bool, use_Ng_acceleration );
     CREATE_PARAMETER (bool, spherical_symmetry  );
     CREATE_PARAMETER (bool, adaptive_ray_tracing);
@@ -113,6 +116,7 @@ struct Parameters
 
         CONSTRUCT_PARAMETER (bool, use_scattering      );
         CONSTRUCT_PARAMETER (bool, store_intensities   );
+        CONSTRUCT_PARAMETER (bool, memory_optimisation_stat_eq);
         CONSTRUCT_PARAMETER (bool, use_Ng_acceleration );
         CONSTRUCT_PARAMETER (bool, spherical_symmetry  );
         CONSTRUCT_PARAMETER (bool, adaptive_ray_tracing);
@@ -140,6 +144,7 @@ struct Parameters
 
         COPY_PARAMETER (use_scattering      );
         COPY_PARAMETER (store_intensities   );
+        COPY_PARAMETER (memory_optimisation_stat_eq);
         COPY_PARAMETER (use_Ng_acceleration );
         COPY_PARAMETER (spherical_symmetry  );
         COPY_PARAMETER (adaptive_ray_tracing);

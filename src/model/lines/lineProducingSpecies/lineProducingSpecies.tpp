@@ -251,7 +251,7 @@ inline void LineProducingSpecies :: update_using_statistical_equilibrium (
     //                                                + 4 * linedata.ncol_tot );
 
     // We can split our block diagonal matrix if there are no non-local contributions
-    if (parameters.n_off_diag==0){
+    if (parameters.n_off_diag==0 && parameters.memory_optimisation_stat_eq()){
         Size n_points_per_block=parameters.max_matrix_size/((linedata.nlev + 6 * linedata.nrad + 4 * linedata.ncol_tot)*sizeof(Real));
         Size n_different_matrices=(points_in_grid.size()+(n_points_per_block-1))/n_points_per_block;//rounding up
         std::cout<<"Splitting big matrix into n parts: "<<n_different_matrices<<std::endl;
