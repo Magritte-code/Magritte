@@ -31,11 +31,6 @@ jobs:
       - run: ${{matrix.PACKAGE_MANAGER}} update
       - name: install dependencies
         run: ${{matrix.PACKAGE_MANAGER}} ${{matrix.INSTALL_COMMAND}} ${{matrix.DEPENDENCIES}}
-      - name: macos set gcc, g++
-        if: startsWith(matrix.os, 'macos')
-        run: |
-          export gcc=$(brew --prefix gcc)
-          export g++=$(brew --prefix g++)
       - name: Check out repository code
         uses: actions/checkout@v3
         with:
