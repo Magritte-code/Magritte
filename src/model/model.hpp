@@ -51,9 +51,12 @@ struct Model
     int compute_radiation_field_feautrier_order_2 ();
     int compute_radiation_field_shortchar_order_0 ();
     int compute_Jeff                              ();
+    int compute_Jeff_sparse                       ();
     int compute_level_populations_from_stateq     ();
     int compute_level_populations                 (
-        // const Io   &io,
+        const bool  use_Ng_acceleration,
+        const long  max_niterations     );
+    int compute_level_populations_sparse          (
         const bool  use_Ng_acceleration,
         const long  max_niterations     );
     int compute_image                             (const Size ray_nr);
@@ -61,51 +64,8 @@ struct Model
     Double1 error_max;
     Double1 error_mean;
 
-    pc::multi_threading::ThreadPrivate<Vector<Real>> a;
-    pc::multi_threading::ThreadPrivate<Vector<Real>> b;
-    pc::multi_threading::ThreadPrivate<Vector<Real>> c;
-
-
-    int set()
-    {
-       for (Size i = 0; i < pc::multi_threading::n_threads_avail(); i++)
-       {
-           const Size N = 1000000;
-
-           cout << "Setting thread " << i << endl;
-
-           a(i).resize(N);
-           b(i).resize(N);
-           c(i).resize(N);
-
-           for (Size n = 0; n < N; n++)
-           {
-               a(i)[n] = 1.0;
-               b(i)[n] = 2.0;
-               c(i)[n] = 5.0;
-           }
-       }
-
-       return (0);
-    }
-
-    Vector<Real> add ()
-    {
-        cout << "c.size() = " << c().vec.size() << endl;
-
-        accelerated_for (i, c().vec.size(), 
-        {
-            c()[i] = a()[i] + b()[i];
-
-            // cout << "c[" << i << "] = " << c()[i] << endl;
-        })
-
-        return c().vec;
-    }
-
     Matrix<Real> eta;
     Matrix<Real> chi;
-
 
     Matrix<Real>  eta_ray;
     Matrix<Real>  chi_ray;
@@ -116,8 +76,9 @@ struct Model
 
     int compute_image_for_point (const Size ray_nr, const Size p);
 
-    int compute_radiation_field_feautrier_order_2_uv   ();
-    int compute_radiation_field_feautrier_order_2_anis ();
+    int compute_radiation_field_feautrier_order_2_uv     ();
+    int compute_radiation_field_feautrier_order_2_anis   ();
+    int compute_radiation_field_feautrier_order_2_sparse ();
 
     int set_eta_and_chi       (const Size rr);
     int set_boundary_condition();

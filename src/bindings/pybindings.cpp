@@ -132,19 +132,19 @@ PYBIND11_MODULE (core, module)
     // Model
     py::class_<Model> (module, "Model", "Class containing the Magritte model.")
         // attributes
-        .def_readwrite ("parameters",     &Model::parameters)
-        .def_readwrite ("geometry",       &Model::geometry)
-        .def_readwrite ("chemistry",      &Model::chemistry)
-        .def_readwrite ("lines",          &Model::lines)
-        .def_readwrite ("thermodynamics", &Model::thermodynamics)
-        .def_readwrite ("radiation",      &Model::radiation)
-        .def_readonly  ("images",         &Model::images)
+        .def_readwrite ("parameters",         &Model::parameters)
+        .def_readwrite ("geometry",           &Model::geometry)
+        .def_readwrite ("chemistry",          &Model::chemistry)
+        .def_readwrite ("lines",              &Model::lines)
+        .def_readwrite ("thermodynamics",     &Model::thermodynamics)
+        .def_readwrite ("radiation",          &Model::radiation)
+        .def_readonly  ("images",             &Model::images)
         .def_readwrite ("eta",                &Model::eta)
         .def_readwrite ("chi",                &Model::chi)
-        .def_readwrite ( "chi_ray",            &Model:: chi_ray)
-        .def_readwrite ( "eta_ray",            &Model:: eta_ray)
-        .def_readwrite ("dtau_ray",            &Model::dtau_ray)
-        .def_readwrite (   "u_ray",            &Model::   u_ray)
+        .def_readwrite ( "chi_ray",           &Model:: chi_ray)
+        .def_readwrite ( "eta_ray",           &Model:: eta_ray)
+        .def_readwrite ("dtau_ray",           &Model::dtau_ray)
+        .def_readwrite (   "u_ray",           &Model::   u_ray)
         .def_readwrite ("boundary_condition", &Model::boundary_condition)
         .def_readwrite ("column",             &Model::column)
         .def_readwrite ("density",            &Model::density)
@@ -210,6 +210,11 @@ PYBIND11_MODULE (core, module)
             "Compute the radiation field for the modle using the 2nd-order Feautrier solver."
         )
         .def (
+            "compute_radiation_field_feautrier_order_2_sparse",
+            &Model::compute_radiation_field_feautrier_order_2_sparse,
+            "Compute the radiation field for the modle using the 2nd-order Feautrier solver."
+        )
+        .def (
             "compute_radiation_field_feautrier_order_2_uv",
             &Model::compute_radiation_field_feautrier_order_2_uv,
             "Compute the radiation field for the modle using the 2nd-order Feautrier solver."
@@ -238,6 +243,11 @@ PYBIND11_MODULE (core, module)
             "compute_level_populations",
             &Model::compute_level_populations,
             "Compute the level populations for the model assuming statistical equilibrium until convergence, optionally using Ng-acceleration, and for the given maximum number of iterations."
+        )
+        .def (
+            "compute_level_populations_sparse",
+            &Model::compute_level_populations_sparse,
+            "Compute the level populations for the model assuming statistical equilibrium until convergence, optionally using Ng-acceleration, and for the given maximum number of iterations. (Memory sparse option.)"
         )
         .def (
             "compute_image",

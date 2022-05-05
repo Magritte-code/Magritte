@@ -135,6 +135,8 @@ class Solver
 
         accel inline void solve_feautrier_order_2_anis (Model& model);
 
+        accel inline void solve_feautrier_order_2_sparse (Model& model);
+
         accel inline void set_eta_and_chi        (Model& model, const Size rr) const;
         accel inline void set_boundary_condition (Model& model) const;
 

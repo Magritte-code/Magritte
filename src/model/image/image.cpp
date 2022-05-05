@@ -104,7 +104,7 @@ void Image :: set_coordinates (const Geometry& geometry)
         const double jy =  ry * rz * inverse_denominator;
         const double jz = -denominator;
 
-        if (denominator != 0.0)
+        if (denominator >= 1.0e-9)
         {
             threaded_for (p, geometry.parameters.npoints(),
             {

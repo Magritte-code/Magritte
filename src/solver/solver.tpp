@@ -170,10 +170,8 @@ inline void Solver :: solve_feautrier_order_2_uv (Model& model)
     // Allocate memory if not pre-allocated
     if (!model.parameters.store_intensities())
     {
-        model.radiation.I.resize (model.parameters.nrays(),  model.parameters.npoints(), model.parameters.nfreqs());
         model.radiation.u.resize (model.parameters.hnrays(), model.parameters.npoints(), model.parameters.nfreqs());
         model.radiation.v.resize (model.parameters.hnrays(), model.parameters.npoints(), model.parameters.nfreqs());
-        model.radiation.J.resize (                           model.parameters.npoints(), model.parameters.nfreqs());
     }
 
 
@@ -220,6 +218,77 @@ inline void Solver :: solve_feautrier_order_2_uv (Model& model)
 
     model.radiation.u.copy_ptr_to_vec();
     model.radiation.v.copy_ptr_to_vec();
+}
+
+
+inline void Solver :: solve_feautrier_order_2_sparse (Model& model)
+{
+    // Initialise variables
+    for (LineProducingSpecies &lspec : model.lines.lineProducingSpecies)
+    {
+        lspec.J.resize(model.parameters.npoints(), lspec.linedata.nrad);
+
+        threaded_for (o, model.parameters.npoints(),
+        {
+            for (Size k = 0; k < lspec.linedata.nrad; k++)
+            {
+                lspec.J(o,k) = 0.0;
+            }
+        })
+    }
+
+
+    // For each ray, solve transfer equation
+    for (Size rr = 0; rr < model.parameters.hnrays(); rr++)
+    {
+        const Size     ar = model.geometry.rays.antipod  [rr];
+        const Real     wt = model.geometry.rays.weight   [rr] * two;
+        const Vector3D nn = model.geometry.rays.direction[rr];
+
+        cout << "--- rr = " << rr << endl;
+
+        for (LineProducingSpecies &lspec : model.lines.lineProducingSpecies)
+        {
+            threaded_for (o, model.parameters.npoints(),
+            {
+                const Real dshift_max = get_dshift_max (model, o);
+
+                nr_   ()[centre] = o;
+                shift_()[centre] = 1.0;
+
+                first_() = trace_ray <CoMoving> (model.geometry, o, rr, dshift_max, -1, centre-1, centre-1) + 1;
+                last_ () = trace_ray <CoMoving> (model.geometry, o, ar, dshift_max, +1, centre+1, centre  ) - 1;
+                n_tot_() = (last_()+1) - first_();
+
+                if (n_tot_() > 1)
+                {
+                    for (Size k = 0; k < lspec.linedata.nrad; k++)
+                    {
+                        // Integrate over the line
+                        for (Size z = 0; z < model.parameters.nquads(); z++)
+                        {
+                            solve_feautrier_order_2 (model, o,  lspec.nr_line[o][k][z]);
+
+                            lspec.J(o,k) += lspec.quadrature.weights[z] * wt * Su_()[centre];
+
+                            update_Lambda           (model, rr, lspec.nr_line[o][k][z]);
+                        }
+                    }
+                }
+                else
+                {
+                    for (Size k = 0; k < lspec.linedata.nrad; k++)
+                    {
+                        // Integrate over the line
+                        for (Size z = 0; z < model.parameters.nquads(); z++)
+                        {
+                            lspec.J(o,k) += lspec.quadrature.weights[z] * wt * boundary_intensity(model, o, model.radiation.frequencies.nu(o, lspec.nr_line[o][k][z]));
+                        }
+                    }
+                }
+            })
+        }
+    }
 }
 
 
@@ -327,9 +396,7 @@ inline void Solver :: solve_feautrier_order_2 (Model& model)
     // Allocate memory if not pre-allocated
     if (!model.parameters.store_intensities())
     {
-        model.radiation.I.resize (model.parameters.nrays(),  model.parameters.npoints(), model.parameters.nfreqs());
         model.radiation.u.resize (model.parameters.hnrays(), model.parameters.npoints(), model.parameters.nfreqs());
-        model.radiation.v.resize (model.parameters.hnrays(), model.parameters.npoints(), model.parameters.nfreqs());
         model.radiation.J.resize (                           model.parameters.npoints(), model.parameters.nfreqs());
     }
 
@@ -422,7 +489,7 @@ inline void Solver :: image_feautrier_order_2 (Model& model, const Size rr)
             {
                 image_feautrier_order_2 (model, o, f);
 
-                image.I(o,f) = two*Su_()[first_()] - boundary_intensity(model, nr_()[first_()], model.radiation.frequencies.nu(o, f));
+                image.I(o,f) = two*Su_()[last_()] - boundary_intensity(model, nr_()[last_()], model.radiation.frequencies.nu(o, f));
             }
         }
         else
@@ -1004,8 +1071,6 @@ accel inline void Solver :: image_feautrier_order_2 (Model& model, const Size o,
 {
     const Real freq = model.radiation.frequencies.nu(o, f);
 
-    // cout << "o = " << o << "  f = " << f << "  " << CC*(freq / model.lines.line[0] - 1.0) << endl;
-
     Real eta_c, chi_c, dtau_c, term_c;
     Real eta_n, chi_n, dtau_n, term_n;
 
@@ -1065,7 +1130,6 @@ accel inline void Solver :: image_feautrier_order_2 (Model& model, const Size o,
     FF[first] = half * Bf_min_Cf * dtau_n * dtau_n;
     FI[first] = one / (one + FF[first]);
 
-    // cout << "FF[first] = " << FF[first] << "  dtau_n = " << dtau_n << "   chi_n = " << chi_n << "   chi_c = " << chi_c <<  endl;
 
     /// Set body of Feautrier matrix
     for (Size n = first+1; n < last; n++)
@@ -1083,8 +1147,6 @@ accel inline void Solver :: image_feautrier_order_2 (Model& model, const Size o,
         term_n = eta_n * inverse_chi[n+1];
         dtau_n = half * (chi_c + chi_n) * dZ[n];
 
-        // cout << "dtau = " << dtau_n << endl;
-
         const Real dtau_avg = half * (dtau_c + dtau_n);
         inverse_A[n] = dtau_avg * dtau_c;
         inverse_C[n] = dtau_avg * dtau_n;
@@ -1094,8 +1156,6 @@ accel inline void Solver :: image_feautrier_order_2 (Model& model, const Size o,
 
         /// Use the previously stored value of the source function
         Su[n] = term_c;
-
-        // cout << "inverse_C[" << n << "] = " << inverse_C[n] << endl;
 
         FF[n] = (A[n] * FF[n-1] * FI[n-1] + one) * inverse_C[n];
         FI[n] = one / (one + FF[n]);
@@ -1113,19 +1173,18 @@ accel inline void Solver :: image_feautrier_order_2 (Model& model, const Size o,
 
     const Real denominator = one / (Bl * FF[last-1] + Bl_min_Al);
 
-    // cout << "Bl = " << Bl << "   FF[last-1] = " << FF[last-1] << "   Bl_min_Al = " << Bl_min_Al << endl;
 
     const Real I_bdy_l = boundary_intensity (model, nr[last], freq*shift[last]);
 
     Su[last] = term_n + two * I_bdy_l * inverse_dtau_l;
     Su[last] = (A[last] * Su[last-1] + Su[last]) * (one + FF[last-1]) * denominator;
 
-    for (long n = last-1; n > first; n--) // use long in reverse loops!
-    {
-        Su[n] += Su[n+1] * FI[n];
-    }
+    // for (long n = last-1; n > first; n--) // use long in reverse loops!
+    // {
+    //     Su[n] += Su[n+1] * FI[n];
+    // }
 
-    Su[first] += Su[first+1] * FI[first];
+    // Su[first] += Su[first+1] * FI[first];
 }
 
 
@@ -1136,8 +1195,6 @@ accel inline void Solver :: image_feautrier_order_2 (Model& model, const Size o,
 accel inline void Solver :: image_feautrier_order_2_for_point_loc (Model& model, const Size o, const Size f)
 {
     const Real freq = model.radiation.frequencies.nu(o, f);
-
-    // cout << "o = " << o << "  f = " << f << "  " << CC*(freq / model.lines.line[0] - 1.0) << endl;
 
     Real eta_c, chi_c, dtau_c, term_c;
     Real eta_n, chi_n, dtau_n, term_n;
@@ -1208,8 +1265,6 @@ accel inline void Solver :: image_feautrier_order_2_for_point_loc (Model& model,
     FF[first] = half * Bf_min_Cf * dtau_n * dtau_n;
     FI[first] = one / (one + FF[first]);
 
-    // cout << "FF[first] = " << FF[first] << "  dtau_n = " << dtau_n << "   chi_n = " << chi_n << "   chi_c = " << chi_c <<  endl;
-
     /// Set body of Feautrier matrix
     for (Size n = first+1; n < last; n++)
     {
@@ -1226,8 +1281,6 @@ accel inline void Solver :: image_feautrier_order_2_for_point_loc (Model& model,
         term_n = eta_n * inverse_chi[n+1];
         dtau_n = half * (chi_c + chi_n) * dZ[n];
 
-        // cout << "dtau = " << dtau_n << endl;
-
         const Real dtau_avg = half * (dtau_c + dtau_n);
         inverse_A[n] = dtau_avg * dtau_c;
         inverse_C[n] = dtau_avg * dtau_n;
@@ -1241,8 +1294,6 @@ accel inline void Solver :: image_feautrier_order_2_for_point_loc (Model& model,
 
         /// Use the previously stored value of the source function
         Su[n] = term_c;
-
-        // cout << "inverse_C[" << n << "] = " << inverse_C[n] << endl;
 
         FF[n] = (A[n] * FF[n-1] * FI[n-1] + one) * inverse_C[n];
         FI[n] = one / (one + FF[n]);
@@ -1259,8 +1310,6 @@ accel inline void Solver :: image_feautrier_order_2_for_point_loc (Model& model,
     const Real Bl        = Bl_min_Al + A[last];
 
     const Real denominator = one / (Bl * FF[last-1] + Bl_min_Al);
-
-    // cout << "Bl = " << Bl << "   FF[last-1] = " << FF[last-1] << "   Bl_min_Al = " << Bl_min_Al << endl;
 
     const Real I_bdy_l = boundary_intensity (model, nr[last], freq*shift[last]);
 
