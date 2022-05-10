@@ -120,6 +120,6 @@ typedef vector<MatrixXd1>  MatrixXd2;
 typedef vector<MatrixXd2>  MatrixXd3;
 
 typedef Eigen::Matrix<Real, Eigen::Dynamic, Eigen::Dynamic> MatrixXr;
-typedef vector<VectorXr>  MatrixXr1;
-typedef vector<VectorXr1> MatrixXr2;
-typedef vector<VectorXr2> MatrixXr3;
+typedef vector<MatrixXr>  MatrixXr1;
+typedef vector<MatrixXr1> MatrixXr2;
+typedef vector<MatrixXr2> MatrixXr3;

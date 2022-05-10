@@ -32,6 +32,11 @@ struct Lines
         const Vector<Real> &temperature,
         const Real          pop_prec             );
 
+    void iteration_using_statistical_equilibrium_sparse (
+        const Double2      &abundance,
+        const Vector<Real> &temperature,
+        const Real          pop_prec                    );
+
     void iteration_using_Ng_acceleration (
         const Real pop_prec              );
 

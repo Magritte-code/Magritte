@@ -423,6 +423,7 @@ int Model :: compute_Jeff_sparse ()
                     diff += lspec.lambda.get_Ls(p,k,m) * lspec.population[I];
                 }
 
+                lspec.Jlin[p][k] = lspec.J(p,k);
                 lspec.Jeff[p][k] = lspec.Jlin[p][k] - HH_OVER_FOUR_PI * diff;
             }
         })
@@ -584,10 +585,10 @@ int Model :: compute_level_populations_sparse (
             compute_radiation_field_feautrier_order_2_sparse ();
             compute_Jeff_sparse                              ();
 
-            lines.iteration_using_statistical_equilibrium (
+            lines.iteration_using_statistical_equilibrium_sparse (
                 chemistry.species.abundance,
                 thermodynamics.temperature.gas,
-                parameters.pop_prec()                     );
+                parameters.pop_prec()                            );
 
             iteration_normal++;
         }

@@ -16,13 +16,6 @@ void LineProducingSpecies :: read (const Io& io, const Size l)
     quadrature.read (io, l);
 
 
-    RT        .resize (parameters.npoints()*linedata.nlev,
-                       parameters.npoints()*linedata.nlev );
-    LambdaStar.resize (parameters.npoints()*linedata.nlev,
-                       parameters.npoints()*linedata.nlev );
-    LambdaTest.resize (parameters.npoints()*linedata.nlev,
-                       parameters.npoints()*linedata.nlev );
-
     lambda.initialize (linedata.nrad);
 
     Jeff.resize (parameters.npoints());

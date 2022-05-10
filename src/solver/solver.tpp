@@ -225,7 +225,9 @@ inline void Solver :: solve_feautrier_order_2_sparse (Model& model)
 {
     // Initialise variables
     for (LineProducingSpecies &lspec : model.lines.lineProducingSpecies)
-    {
+    {   
+        lspec.lambda.clear();
+
         lspec.J.resize(model.parameters.npoints(), lspec.linedata.nrad);
 
         threaded_for (o, model.parameters.npoints(),

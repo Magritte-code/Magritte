@@ -78,6 +78,10 @@ struct LineProducingSpecies
         const Double2      &abundance,
         const Vector<Real> &temperature );
 
+    inline void update_using_statistical_equilibrium_sparse (
+        const Double2      &abundance,
+        const Vector<Real> &temperature );
+
     inline void update_using_Ng_acceleration ();
     inline void update_using_acceleration (const Size order);
 };

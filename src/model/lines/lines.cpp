@@ -121,6 +121,23 @@ void Lines :: iteration_using_statistical_equilibrium (
 }
 
 
+void Lines :: iteration_using_statistical_equilibrium_sparse (
+    const Double2      &abundance,
+    const Vector<Real> &temperature,
+    const Real          pop_prec )
+{
+    for (LineProducingSpecies &lspec : lineProducingSpecies)
+    {
+        lspec.update_using_statistical_equilibrium_sparse (abundance, temperature);
+        lspec.check_for_convergence                       (pop_prec);
+    }
+
+    set_emissivity_and_opacity ();
+
+    //gather_emissivities_and_opacities ();
+}
+
+
 // DEPRECATED: Now try to keep emissivities and opacities local.
 //
 // void Lines :: gather_emissivities_and_opacities ()

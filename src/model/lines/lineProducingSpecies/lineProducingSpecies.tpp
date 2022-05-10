@@ -231,10 +231,14 @@ inline void LineProducingSpecies :: update_using_statistical_equilibrium (
     const Double2      &abundance,
     const Vector<Real> &temperature )
 {
+    RT        .resize (parameters.npoints()*linedata.nlev, parameters.npoints()*linedata.nlev);
+    LambdaStar.resize (parameters.npoints()*linedata.nlev, parameters.npoints()*linedata.nlev);
+    LambdaTest.resize (parameters.npoints()*linedata.nlev, parameters.npoints()*linedata.nlev);
+
     const Size non_zeros = parameters.npoints() * (      linedata.nlev
                                                    + 6 * linedata.nrad
                                                    + 4 * linedata.ncol_tot );
-
+    // Store previous iterations
     population_prev3 = population_prev2;
     population_prev2 = population_prev1;
     population_prev1 = population;
@@ -417,20 +421,8 @@ inline void LineProducingSpecies :: update_using_statistical_equilibrium (
         cout << "Factorization failed with error message:" << endl;
         cout << solver.lastErrorMessage()                  << endl;
 
-        // cout << endl << RT << endl;
-
         throw std::runtime_error ("Eigen solver ERROR.");
     }
-
-    //cout << "Try compute" << endl;
-
-    //solver.compute (RT);
-
-    //if (solver.info() != Eigen::Success)
-    //{
-    //  cout << "Decomposition failed" << endl;
-    //  //assert(false);
-    //}
 
     cout << "Solving rate equations for the level populations..." << endl;
 
@@ -444,6 +436,130 @@ inline void LineProducingSpecies :: update_using_statistical_equilibrium (
     }
 
     cout << "Succesfully solved for the level populations!"       << endl;
+
+    //OMP_PARALLEL_FOR (p, ncells)
+    //{
+    //
+    //  for (long i = 0; i < linedata.nlev; i++)
+    //  {
+    //    const long I = index (p, i);
+
+    //    population[I] = population_prev1[I];
+
+    //    //if (population[I] < 1.0E-50)
+    //    //{
+    //    //  population[I] = 1.0E-50;
+    //    //}
+    //  }
+    //}
+}
+
+
+///  update_using_statistical_equilibrium: computes level populations by solving
+///  the statistical equilibrium equation taking into account the radiation field
+///    @param[in] abundance: chemical abundances of species in the model
+///    @param[in] temperature: gas temperature in the model
+/////////////////////////////////////////////////////////////////////////////////
+inline void LineProducingSpecies :: update_using_statistical_equilibrium_sparse (
+    const Double2      &abundance,
+    const Vector<Real> &temperature )
+{
+
+    if (parameters.n_off_diag != 0)
+    {
+        throw std::runtime_error ("parameters.n_off_diag != 0 so cannot use sparse update.");
+    }
+
+    // Store previous iterations
+    population_prev3 = population_prev2;
+    population_prev2 = population_prev1;
+    population_prev1 = population;
+
+    // residuals  .push_back(population-populations.back());
+    // populations.push_back(population);
+
+    MatrixXr StatEq (linedata.nlev, linedata.nlev);
+    VectorXr y = VectorXr::Zero(linedata.nlev);
+
+
+    for (Size p = 0; p < parameters.npoints(); p++) // !!! no OMP because push_back is not thread safe !!!
+    {
+        StatEq.setZero();
+
+        // Radiative transitions
+        for (Size k = 0; k < linedata.nrad; k++)
+        {
+            const Real v_IJ = linedata.A[k] + linedata.Bs[k] * Jeff[p][k];
+            const Real v_JI =                 linedata.Ba[k] * Jeff[p][k];
+
+            // Note: we define our transition matrix as the transpose of R in the paper.
+            const Size I = linedata.irad[k];
+            const Size J = linedata.jrad[k];
+
+            StatEq(J, I) += v_IJ;
+            StatEq(J, J) -= v_JI;
+            StatEq(I, J) += v_JI;
+            StatEq(I, I) -= v_IJ;
+        }
+
+        // Approximated Lambda operator
+        for (Size k = 0; k < linedata.nrad; k++)
+        {
+            for (Size m = 0; m < lambda.get_size(p,k); m++)
+            {
+                const Size   nr =  lambda.get_nr(p, k, m);
+                const Real v_IJ = -lambda.get_Ls(p, k, m) * get_opacity(p, k);
+
+                if (nr != p)
+                {
+                    throw std::runtime_error ("ERROR: non-local Approximated Lambda operator.");
+                }
+
+                // Note: we define our transition matrix as the transpose of R in the paper.
+                const Size I = linedata.irad[k];
+                const Size J = linedata.jrad[k];
+
+                StatEq(J, I) += v_IJ;
+                StatEq(I, I) -= v_IJ;
+            }
+        }
+
+        // Collisional transitions
+        for (CollisionPartner &colpar : linedata.colpar)
+        {
+            Real abn = abundance[p][colpar.num_col_partner];
+            Real tmp = temperature[p];
+
+            colpar.adjust_abundance_for_ortho_or_para (tmp, abn);
+            colpar.interpolate_collision_coefficients (tmp);
+
+            for (Size k = 0; k < colpar.ncol; k++)
+            {
+                const Real v_IJ = colpar.Cd_intpld[k] * abn;
+                const Real v_JI = colpar.Ce_intpld[k] * abn;
+
+                // Note: we define our transition matrix as the transpose of R in the paper.
+                const Size I = colpar.icol[k];
+                const Size J = colpar.jcol[k];
+
+                StatEq(J, I) += v_IJ;
+                StatEq(J, J) -= v_JI;
+                StatEq(I, J) += v_JI;
+                StatEq(I, I) -= v_IJ;
+            }
+        }
+
+        // Replace the last row with normalisation
+        StatEq.row(linedata.nlev-1).setOnes();
+
+        y[linedata.nlev-1] = population_tot[p];
+
+
+        // Solve statistical equilibrium and store level populations
+        population.segment(p*linedata.nlev, linedata.nlev) = StatEq.colPivHouseholderQr().solve(y);
+
+    } // for all cells
+
 
     //OMP_PARALLEL_FOR (p, ncells)
     //{
