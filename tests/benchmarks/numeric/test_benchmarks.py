@@ -1,5 +1,7 @@
 from vanZadelhoff_1_1D import create_model as vanZadelhoff_1D_setup
 from vanZadelhoff_1_1D import run_model as vanZadelhoff_1D_run
+from vanZadelhoff_1_3D_healpix import create_model as vanZadelhoff_3D_setup
+from vanZadelhoff_1_3D_healpix import run_model as vanZadelhoff_3D_run
 
 from import_phantom_3D_model import import_phantom
 from reduce_phantom_3D_model import reduce_phantom
@@ -22,6 +24,16 @@ class TestNumeric:
         def test_vanZadelhoff1D_run(self):
             assert vanZadelhoff_1D_run('a', nosave=True)
 
+    #for testing whether a 3D model can succesfully converge to the correct solution
+    @pytest.mark.incremental
+    class TestVanZadelhoff3D:
+        def test_vanZadelhoff3D_setup(self):
+            vanZadelhoff_3D_setup('a')
+
+        def test_vanZadelhoff3D_run(self):
+            assert vanZadelhoff_3D_run('a', nosave=True)
+
+    #for testing whether a phantom model can be correctly imported, reduced and run.
     @pytest.mark.incremental
     class TestPhantom:
         #note: import has some extra filtering: also removes points with zero or negative abundances
