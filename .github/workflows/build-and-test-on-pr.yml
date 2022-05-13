@@ -1,11 +1,11 @@
-# Connected to the status badge
-name: Build
-on: [push]
+#separated, as a failed build on a pr should not impact the current status badge
+name: Build and test on pull request
 on:
-  push:
-    branches: [ stable, testing_CI ] # [ stable, testing_CI ]
+  pull_request:
+    branches: [ stable ]
 jobs:
   BuildAndTest:
+    # runs-on: ubuntu-latest
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -44,7 +44,6 @@ jobs:
           auto-activate-base: false
           mamba-version: "*"
           channels: conda-forge, defaults
-
       - name: install pytest (if not already installed because of dependencies)
         run: conda install pytest
 
