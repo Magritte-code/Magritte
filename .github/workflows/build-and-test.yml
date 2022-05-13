@@ -1,6 +1,5 @@
 # Connected to the status badge
 name: Build
-on: [push]
 on:
   push:
     branches: [ stable, testing_CI ] # [ stable, testing_CI ]
