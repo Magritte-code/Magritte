@@ -15,7 +15,6 @@ PYTHON_EXECUTABLE=$(which python)
 # if the compilers are not set, use the default gcc and g++ compilers
 COMPILER_CC=${CC:-$(which gcc)}
 COMPILER_CXX=${CXX:-$(which g++)}
-echo "C compiler: " $COMPILER_CC
 # COMPILER_CC=$(which gcc-11)
 # COMPILER_CXX=$(which g++-11)
 #COMPILER_CC=$(which clang)

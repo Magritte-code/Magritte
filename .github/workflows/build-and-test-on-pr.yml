@@ -31,8 +31,7 @@ jobs:
         run: ${{matrix.PACKAGE_MANAGER}} ${{matrix.INSTALL_COMMAND}} ${{matrix.DEPENDENCIES}}
       - name: Check out repository code
         uses: actions/checkout@v3
-        with:
-          ref: testing_CI
+        with: #no ref: thus checks out commit which triggered workflow
           submodules: true
       - name: setup python
         uses: actions/setup-python@v3
