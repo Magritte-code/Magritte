@@ -525,7 +525,7 @@ inline void Solver :: image_feautrier_order_2_for_point (Model& model, const Siz
     first_() = trace_ray <Rest> (model.geometry, o, rr, dshift_max, -1, centre-1, centre-1) + 1;
     last_ () = trace_ray <Rest> (model.geometry, o, ar, dshift_max, +1, centre+1, centre  ) - 1;
     n_tot_() = (last_()+1) - first_();
-
+    
     model. eta_ray.resize (n_tot_(), model.parameters.nfreqs());
     model. chi_ray.resize (n_tot_(), model.parameters.nfreqs());
     model.dtau_ray.resize (n_tot_(), model.parameters.nfreqs());
@@ -535,7 +535,7 @@ inline void Solver :: image_feautrier_order_2_for_point (Model& model, const Siz
     {
         for (Size f = 0; f < model.parameters.nfreqs(); f++)
         {
-            image_feautrier_order_2_for_point (model, o, f);
+            image_feautrier_order_2_for_point_loc (model, o, f);
         }
     }
 
