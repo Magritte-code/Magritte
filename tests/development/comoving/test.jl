@@ -14,16 +14,16 @@ println(ld)
 quadfactor=1
 factor=1.0;#normally, we should adaptively determine to insert ghost points inbetween, but for simplicity, we just make a more dense discretization
 #not the exact settings, but just to test
-npoints   = convert(Int, 60*factor)
+npoints   = convert(Int, 5*factor)
 nrays     = 1
-nquads    = 145*quadfactor
+nquads    = 55*quadfactor
 
 nH2  = 1.0E+12                 # [m^-3]
 nTT  = 1.0E+08                 # [m^-3]
 temp = 4.5E+01                 # [K]
 turb = 0.0E+00                 # [m/s]
 dx   = 1.0E+04/factor        # [m]
-# dx   = 4.0e10
+dx   = 4.0e15
 # dx   = 1.5E-00
 r_in=10.0
 
@@ -31,7 +31,7 @@ dv   = 2.5E+02 / 300_000_000   # [fraction of speed of light]
 dv   = -2.5E+02 / 300_000_000/ factor   # [fraction of speed of light]
 # dv   = 0.000015
 #bug: nan for analytic solution when putting dv to 0
-# dv   = 1E-18
+dv   = 1E-18
 
 #sinusoidal velocity profile for testing
 maxV = 2.0E+03 / 300_000_000
@@ -234,7 +234,7 @@ secondorderfull=data7.allintensities
 
 #full second order somewhat adaptive comoving solver
 # data7=ComovingSolvers.data(Icmb,(0:npoints-1).*dx, v, χ, η, νdoppl, middleνdoppl)
-data8=ComovingSolvers.data(Icmbarbitrary,(0:npoints-1).*dx, v, χarbitrary, ηarbitrary, νarbitrary, middleνdoppl)
+data8=ComovingSolvers.data(Icmbarbitrary,(0:npoints-1).*dx, v, χarbitrary, ηarbitrary, νarbitrary, middleνdoppl, src)
 ComovingSolvers.computesingleraysecondorderadaptive(data8)
 secondorderadaptive=data8.allintensities
 
@@ -278,12 +278,12 @@ Plots.plot()
 
 # Plots.plot!([νdoppl[:,end], νdoppl[:,end]],1e8.*[Iray, secondorderfull[:, npoints]], label = ["analytic" "full second order"])
 Plots.plot!([νdoppl[:,end]],1e8.*[Iray], label = "analytic")
-# Plots.plot!([νarbitrary[:,end]],1e8.*[secondorderfull[:, npoints]], label = "full second order")
+Plots.plot!([νarbitrary[:,end]],1e8.*[secondorderfull[:, npoints]], label = "full second order")
 # Plots.plot!([νarbitrary[:,end]],1e8.*[secondorderadaptive[:, npoints]], label = "adaptive second order")
 Plots.plot!([νarbitrary[:,end]],1e8.*[comovingshortchar[:, npoints]], label = "comoving shortchar 2nd")
 # Plots.plot!([νarbitrary[:,end]],1e8.*[comovingshortcharfirstorder[:, npoints]], label = "comoving shortchar 1st")
 # Plots.plot!([νarbitrary[:,end]],1e8.*[comovingshortcharimplicit[:, npoints]], label = "comoving shortchar impl")
-Plots.plot!([νarbitrary[:,end]],1e8.*[comovingexplicit[:, npoints]], label = "comoving expl")
+# Plots.plot!([νarbitrary[:,end]],1e8.*[comovingexplicit[:, npoints]], label = "comoving expl")
 # Plots.plot!([ν[:]],1e8.*[shortcharstaticfreq[:, npoints]], label = "short char static")
 
 
