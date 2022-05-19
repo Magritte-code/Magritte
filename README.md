@@ -1,6 +1,6 @@
 <img src="docs/src/images/Magritte_logo_plain.svg" alt="logo" width="350"/>
 
-[![Build Status](https://travis-ci.com/Magritte-code/Magritte.svg?branch=master)](https://travis-ci.com/Magritte-code/Magritte)
+[![Build status](https://github.com/Magritte-code/Magritte/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/Magritte-code/Magritte/actions/workflows/build-and-test.yml)
 [![Documentation Status](https://readthedocs.org/projects/magritte/badge/?version=stable)](https://magritte.readthedocs.io/en/stable/?badge=stable)
 [![DOI](https://joss.theoj.org/papers/10.21105/joss.03905/status.svg)](https://doi.org/10.21105/joss.03905)
 ---

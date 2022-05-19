@@ -1,0 +1,61 @@
+#separated, as a failed build on a pr should not impact the current status badge
+name: Build and test on pull request
+on:
+  pull_request:
+    branches: [ stable ]
+jobs:
+  BuildAndTest:
+    # runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+            PACKAGE_MANAGER: brew
+            INSTALL_COMMAND: install
+            DEPENDENCIES: gmsh #llvm libomp
+            C-COMPILER: gcc-11
+            CXX-COMPILER: g++-11
+          - os: ubuntu-latest
+            PACKAGE_MANAGER: sudo apt-get
+            INSTALL_COMMAND: install -y
+            DEPENDENCIES: gmsh libegl1
+            C-COMPILER: gcc
+            CXX-COMPILER: g++
+    defaults:
+      run:
+        shell: bash -l {0}
+    steps:
+      - run: ${{matrix.PACKAGE_MANAGER}} update
+      - name: install dependencies
+        run: ${{matrix.PACKAGE_MANAGER}} ${{matrix.INSTALL_COMMAND}} ${{matrix.DEPENDENCIES}}
+      - name: Check out repository code
+        uses: actions/checkout@v3
+        with: #no ref: thus checks out commit which triggered workflow
+          submodules: true
+      - name: setup python
+        uses: actions/setup-python@v3
+      - name: Install conda packages
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          activate-environment: magritte
+          environment-file: dependencies/conda_env.yml
+          auto-activate-base: false
+          mamba-version: "*"
+          channels: conda-forge, defaults
+      - name: install pytest (if not already installed because of dependencies)
+        run: conda install pytest
+
+      - name: build Magritte
+        run: bash build.sh
+        env:
+          CC : ${{ matrix.C-COMPILER }}
+          CXX: ${{ matrix.CXX-COMPILER }}
+
+      #and finally do our tests (located in the benchmarks folder)
+      - name: run analytic tests
+        run: pytest --verbose
+        working-directory: tests/benchmarks/analytic
+      - name: run numeric tests
+        run: pytest --verbose
+        working-directory: tests/benchmarks/numeric

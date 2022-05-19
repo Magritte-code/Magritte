@@ -19,7 +19,7 @@ from scipy.interpolate import interp1d
 
 dimension = 3
 nshells   = 20
-nrays     = 12*3**2
+nrays     = 12*2**2 #reduced number of rays to speed up test
 nspecs    = 5
 nlspecs   = 1
 nquads    = 11
@@ -173,7 +173,13 @@ def run_model (a_or_b, nosave=False):
         plt.ylabel('fractional level populations [.]')
         plt.savefig(f'{resdir}{modelName}-{timestamp}.png', dpi=150)
 
-    return
+    #note: as some randomness is involved in the setup (random orientation of the shells), the error bound is taken somewhat more loose (~10%)
+    FEAUTRIER_AS_EXPECTED=((np.max(error_0[1:])<0.2)&(np.max(error_1[1:])<0.2))
+
+    if not FEAUTRIER_AS_EXPECTED:
+        print("Feautrier solver max error too large; [0]:", np.max(error_0[1:]), " [1]:", np.max(error_1[1:]))
+
+    return (FEAUTRIER_AS_EXPECTED)
 
 
 def run_test (nosave=False):
