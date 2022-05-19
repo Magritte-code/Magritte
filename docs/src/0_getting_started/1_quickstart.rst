@@ -61,7 +61,8 @@ Magritte can easily be build in its default configuration with:
 
 This will create the necessary files for the Magritte python package.
 
-.. Hint:: By default, the C and C++ compilers used for building Magritte, are determined respectively with,
+.. Hint::
+    By default, the C and C++ compilers used for building Magritte, are determined respectively with,
 
     .. code-block:: shell
     
