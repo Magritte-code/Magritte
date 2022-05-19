@@ -61,6 +61,17 @@ Magritte can easily be build in its default configuration with:
 
 This will create the necessary files for the Magritte python package.
 
+.. Hint::
+    By default, the C and C++ compilers used for building Magritte, are determined respectively with,
+
+    .. code-block:: shell
+    
+        which gcc   # C   compiler
+        which g++   # C++ compiler
+
+    One can optionally define the environment variables :literal:`CC` and :literal:`CXX` to point respectively to a C and C++ compiler.
+    This is particularly useful on MacOs, where :literal:`gcc` by default points to Apple clang, which causes issues with OpenMP.
+
 
 Run
 ***
