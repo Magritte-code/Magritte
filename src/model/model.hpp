@@ -60,6 +60,7 @@ struct Model
         const bool  use_Ng_acceleration,
         const long  max_niterations     );
     int compute_image                             (const Size ray_nr);
+    int compute_image_optical_depth               (const Size ray_nr);
 
     Double1 error_max;
     Double1 error_mean;

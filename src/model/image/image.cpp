@@ -7,7 +7,7 @@ const string prefix = "image/";
 
 ///  Constructor for Image
 //////////////////////////
-Image :: Image (const Geometry& geometry, const Size rr) : ray_nr (rr)
+Image :: Image (const Geometry& geometry, const ImageType it, const Size rr) : imageType(it), ray_nr (rr)
 {
     if (geometry.parameters.dimension() == 1)
     {
@@ -29,7 +29,7 @@ Image :: Image (const Geometry& geometry, const Size rr) : ray_nr (rr)
 
 ///  Copy constructor for Image
 ///////////////////////////////
-Image :: Image (const Image& image) : ray_nr (image.ray_nr)
+Image :: Image (const Image& image) : imageType(image.imageType), ray_nr (image.ray_nr)
 {
     ImX = image.ImX;
     ImY = image.ImY;

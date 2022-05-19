@@ -646,6 +646,18 @@ int Model :: compute_image_for_point (const Size ray_nr, const Size p)
 }
 
 
+///  Computer for optical depth iimage
+//////////////////////////////////////
+int Model :: compute_image_optical_depth (const Size ray_nr)
+{
+    Solver solver;
+    solver.setup <Rest>        (*this);
+    solver.image_optical_depth (*this, ray_nr);
+
+    return (0);
+}
+
+
 int Model :: set_eta_and_chi (const Size rr)
 {
     Solver solver;

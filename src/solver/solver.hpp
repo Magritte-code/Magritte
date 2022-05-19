@@ -44,6 +44,8 @@ class Solver
         pc::multi_threading::ThreadPrivate<Matrix<Real>> L_upper_;
         pc::multi_threading::ThreadPrivate<Matrix<Real>> L_lower_;
 
+        pc::multi_threading::ThreadPrivate<Real> optical_depth_;
+
 
         Vector<Real> eta;
         Vector<Real> chi;
@@ -129,6 +131,9 @@ class Solver
 
         accel inline void image_feautrier_order_2_for_point     (Model& model, const Size rr, const Size p);
         accel inline void image_feautrier_order_2_for_point_loc (Model& model, const Size o,  const Size f);
+
+        accel inline void image_optical_depth (Model& model, const Size rr);
+        accel inline void image_optical_depth (Model& model, const Size o, const Size f);
 
         accel inline void solve_feautrier_order_2_uv (Model& model);
         accel inline void solve_feautrier_order_2_uv (Model& model, const Size o, const Size f);

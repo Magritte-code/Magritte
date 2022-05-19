@@ -467,7 +467,7 @@ inline void Solver :: solve_feautrier_order_2 (Model& model)
 
 inline void Solver :: image_feautrier_order_2 (Model& model, const Size rr)
 {
-    Image image = Image(model.geometry, rr);
+    Image image = Image(model.geometry, Intensity, rr);
 
 
     cout << "--------------------------------------" << endl;
@@ -539,6 +539,50 @@ inline void Solver :: image_feautrier_order_2_for_point (Model& model, const Siz
         }
     }
 
+}
+
+
+inline void Solver :: image_optical_depth (Model& model, const Size rr)
+{
+    Image image = Image(model.geometry, OpticalDepth, rr);
+
+
+    cout << "--------------------------------------" << endl;
+
+    const Size ar = model.geometry.rays.antipod[rr];
+
+    accelerated_for (o, model.parameters.npoints(),
+    {
+        const Real dshift_max = get_dshift_max (model, o);
+
+        nr_   ()[centre] = o;
+        shift_()[centre] = model.geometry.get_shift <Rest> (o, rr, o, 0.0);;
+
+        first_() = trace_ray <Rest> (model.geometry, o, rr, dshift_max, -1, centre-1, centre-1) + 1;
+        last_ () = trace_ray <Rest> (model.geometry, o, ar, dshift_max, +1, centre+1, centre  ) - 1;
+        n_tot_() = (last_()+1) - first_();
+
+        if (n_tot_() > 1)
+        {
+            for (Size f = 0; f < model.parameters.nfreqs(); f++)
+            {
+                image_optical_depth (model, o, f);
+
+                image.I(o,f) = optical_depth_();
+            }
+        }
+        else
+        {
+            for (Size f = 0; f < model.parameters.nfreqs(); f++)
+            {
+                image.I(o,f) = 0.0;
+            }
+        }
+    })
+
+    pc::accelerator::synchronize();
+
+    model.images.push_back (image);
 }
 
 
@@ -1331,6 +1375,48 @@ accel inline void Solver :: image_feautrier_order_2_for_point_loc (Model& model,
     Su[first] += Su[first+1] * FI[first];
 
     model.u_ray(0, f) = Su[first];
+}
+
+/// Image the optical depth
+///////////////////////////////////////////////////////////////////////
+accel inline void Solver :: image_optical_depth (Model& model, const Size o, const Size f)
+{
+    const Real freq = model.radiation.frequencies.nu(o, f);
+    
+    const Size first = first_();
+    const Size last  = last_ ();
+    const Size n_tot = n_tot_();
+
+    Vector<double>& dZ    = dZ_   ();
+    Vector<Size  >& nr    = nr_   ();
+    Vector<double>& shift = shift_();
+
+    Real eta_c, chi_c;
+    Real eta_n, chi_n;
+
+    Real tau = 0.0;
+
+
+    // Get optical properties for first two elements
+    get_eta_and_chi (model, nr[first  ], freq*shift[first  ], eta_c, chi_c);
+    get_eta_and_chi (model, nr[first+1], freq*shift[first+1], eta_n, chi_n);
+
+    tau += half * (chi_c + chi_n) * dZ[first];
+
+
+    /// Set body of Feautrier matrix
+    for (Size n = first+1; n < last; n++)
+    {
+        eta_c = eta_n;
+        chi_c = chi_n;
+
+        // Get new radiative properties
+        get_eta_and_chi (model, nr[n+1], freq*shift[n+1], eta_n, chi_n);
+
+        tau += half * (chi_c + chi_n) * dZ[n];
+    }
+
+    optical_depth_() = tau;
 }
 
 

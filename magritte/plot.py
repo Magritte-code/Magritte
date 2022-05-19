@@ -15,6 +15,9 @@ from palettable.cubehelix import cubehelix2_16      # Nice colormap
 from tqdm                 import tqdm               # Progress bars
 from ipywidgets           import interact           # Interactive plots
 from ipywidgets.embed     import embed_minimal_html # Store interactive plots
+from magritte.core        import ImageType          # Image type
+from math                 import floor, ceil        # Math helper functions
+from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
 
 # Port matplotlib colormaps to plotly
@@ -137,9 +140,19 @@ def image_mpl(
     zs[zs==0.0] = np.min(zs[zs!=0.0])
 
     # Get the logarithm of the data (matplotlib has a hard time handling logarithmic data.)
-    log_zs     = np.log(zs)
+    log_zs     = np.log10(zs)
     log_zs_min = np.min(log_zs)
     log_zs_max = np.max(log_zs)
+    
+    lzmin = ceil (log_zs_min)
+    lzmax = floor(log_zs_max)
+
+    lz_25 = ceil (log_zs_min + 0.25*(log_zs_max - log_zs_min))
+    lz_50 = ceil (log_zs_min + 0.50*(log_zs_max - log_zs_min))
+    lz_75 = floor(log_zs_min + 0.75*(log_zs_max - log_zs_min))
+
+    ticks  = [lzmin, lz_25, lz_50, lz_75, lzmax]
+    levels = np.linspace(log_zs_min, log_zs_max, 250)
     
     figs = []
     gs   = GridSpec(1,2, wspace=.1, width_ratios=[2, 1])
@@ -147,15 +160,29 @@ def image_mpl(
     for f in tqdm(range(nfreqs)):
         fig = plt.figure(dpi=300)
         ax1 = fig.add_subplot(gs[0])
-        ax1.contourf(
+        ax  = ax1.contourf(
             xs / (1.0 * x_unit).si.value,
             ys / (1.0 * x_unit).si.value,
             log_zs[f],
             cmap=cubehelix2_16.mpl_colormap,
-            vmin=log_zs_min,
-            vmax=log_zs_max,
-            levels=250
+            levels=levels
         )
+        ax0 = inset_axes(
+                  ax1,
+                  width="100%",
+                  height="5%",
+                  loc='lower left',
+                  bbox_to_anchor=(0, 1.025, 1, 1),
+                  bbox_transform=ax1.transAxes,
+                  borderpad=0
+        )
+        
+        cbar = fig.colorbar(ax, cax=ax0, orientation="horizontal")
+        ax0.xaxis.set_ticks_position('top')
+        ax0.xaxis.set_label_position('top')
+        ax0.xaxis.set_ticks         (ticks)
+        ax0.xaxis.set_ticklabels    ([f'$10^{{{t}}}$' for t in ticks])
+        
         ax1.set_aspect('equal')
         ax1.set_xlabel(f'image x [{x_unit}]', labelpad = 10)
         ax1.set_ylabel(f'image y [{x_unit}]', labelpad = 10)
@@ -165,10 +192,16 @@ def image_mpl(
         ax2.yaxis.set_label_position("right")
         ax2.yaxis.tick_right()
         ax2.axvline(velos[f], c='red')
-        ax2.set_ylabel(f'Relative intensity',  labelpad=15)
         ax2.set_xlabel(f'velocity [{v_unit}]', labelpad=10)
         asp = 2*np.diff(ax2.get_xlim())[0] / np.diff(ax2.get_ylim())[0]
         ax2.set_aspect(asp)
+        
+        if   (model.images[image_nr].imageType == ImageType.Intensity):
+            ax0.set_xlabel('Intensity [W m$^{-2}$ sr$^{-1}$ Hz$^{-1}$]', labelpad=11)
+            ax2.set_ylabel('Relative intensity',                         labelpad=15)
+        elif (model.images[image_nr].imageType == ImageType.OpticalDepth):
+            ax0.set_xlabel('Optical depth [.]',      labelpad=11)
+            ax2.set_ylabel('Relative optical depth', labelpad=15)
 
         plt.savefig(f"{im_dir}/image_{f:0>3d}.png", bbox_inches='tight')
     
@@ -278,18 +311,29 @@ def image_plotly(
     zs[zs==0.0] = np.min(zs[zs!=0.0])
     
     # Get the logarithm of the data (matplotlib has a hard time handling logarithmic data.)
-    log_zs     = np.log(zs)
+    log_zs     = np.log10(zs)
     log_zs_min = np.min(log_zs)
     log_zs_max = np.max(log_zs)
     
-    # Create plotly plot
-    fig = make_subplots(
-        rows               = 1, 
-        cols               = 2,
-        column_widths      = [0.7, 0.3],
-        horizontal_spacing = 0.05,
-        subplot_titles     = ['Channel map', 'Spectrum'],
-    )
+    if   (model.images[image_nr].imageType == ImageType.Intensity):
+        # Create plotly plot
+        fig = make_subplots(
+            rows               = 1, 
+            cols               = 2,
+            column_widths      = [0.7, 0.3],
+            horizontal_spacing = 0.05,
+            subplot_titles     = ['Intensity', ''],
+        )
+    elif (model.images[image_nr].imageType == ImageType.OpticalDepth):
+        # Create plotly plot
+        fig = make_subplots(
+            rows               = 1, 
+            cols               = 2,
+            column_widths      = [0.7, 0.3],
+            horizontal_spacing = 0.05,
+            subplot_titles     = ['Optical depth', ''],
+        )
+    
 
     fig.add_vrect(
         row        = 1,
@@ -400,14 +444,24 @@ def image_plotly(
         title_text = f'velocity [{v_unit}]',
         range      = [v_min, v_max]
     )
-    fig.update_yaxes(
-        row        = 1,
-        col        = 2,
-        title_text = "relative intensity",
-        side       = 'right',
-        range      = [-0.05, +1.05]
-    )
     
+    if   (model.images[image_nr].imageType == ImageType.Intensity):
+        fig.update_yaxes(
+            row        = 1,
+            col        = 2,
+            title_text = "Relative intensity",
+            side       = 'right',
+            range      = [-0.05, +1.05]
+        )
+    elif (model.images[image_nr].imageType == ImageType.OpticalDepth):
+        fig.update_yaxes(
+            row        = 1,
+            col        = 2,
+            title_text = "Relative opacity",
+            side       = 'right',
+            range      = [-0.05, +1.05]
+        )
+        
     # Subplot titles are annotations
     fig.update_annotations(
         font_size = 16,

@@ -117,16 +117,22 @@ PYBIND11_MODULE (core, module)
         // constructor
         .def (py::init<>());
 
+    // ImageType
+    py::enum_<ImageType>(module, "ImageType")
+        .value("Intensity",    Intensity)
+        .value("OpticalDepth", OpticalDepth)
+        .export_values();
 
     // Image
     py::class_<Image> (module, "Image", "Image class, 2D point cloud of intensities for each frequency bin.")
         // attributes
-        .def_readonly  ("ray_nr", &Image::ray_nr, "Number of the ray along which the image is taken.")
-        .def_readonly  ("ImX",    &Image::ImX,    "X-coordinates of the points in the image plane.")
-        .def_readonly  ("ImY",    &Image::ImY,    "Y-coordinates of the points in the image plane.")
-        .def_readonly  ("I",      &Image::I,      "Intensity of the points in the image (for each frequency bin).")
+        .def_readonly  ("imageType", &Image::imageType, "Type of image (intensity of optical depth).")
+        .def_readonly  ("ray_nr",    &Image::ray_nr,    "Number of the ray along which the image is taken.")
+        .def_readonly  ("ImX",       &Image::ImX,       "X-coordinates of the points in the image plane.")
+        .def_readonly  ("ImY",       &Image::ImY,       "Y-coordinates of the points in the image plane.")
+        .def_readonly  ("I",         &Image::I,         "Intensity of the points in the image (for each frequency bin).")
         // constructor
-        .def (py::init<const Geometry&, const Size&>());
+        .def (py::init<const Geometry&, const ImageType&, const Size&>());
 
 
     // Model
@@ -253,6 +259,11 @@ PYBIND11_MODULE (core, module)
             "compute_image",
             &Model::compute_image,
             "Compute an image for the model along the given ray."
+        )
+        .def (
+            "compute_image_optical_depth",
+            &Model::compute_image_optical_depth,
+            "Compute an image of the optical depth for the model along the given ray."
         )
         .def (
             "set_eta_and_chi",
