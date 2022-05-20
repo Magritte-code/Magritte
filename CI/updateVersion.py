@@ -12,7 +12,7 @@ with open(os.path.join(this_dir, "../CMakeLists.txt"), "r+") as file:
     # Extract the lines containing the project description
     filecontents=file.read()
     line = re.findall('project.*\([^\)]*\)', filecontents)[0]
-    print(line)
+    # print(line)
     # Extract the version number form those lines
     semver=list(re.finditer('(?P<major>|\d*)\.(?P<minor>\d*)\.(?P<patch>\d*)', line))
 
@@ -43,14 +43,14 @@ with open(os.path.join(this_dir, "../CMakeLists.txt"), "r+") as file:
         patch=patch+1
         #by default, increment patch version
 
-    print([major, minor, patch])
+    # print([major, minor, patch])
     replaced_line=re.sub('(?P<major>|\d*)\.(?P<minor>\d*)\.(?P<patch>\d*)', str(major)+"."+str(minor)+"."+str(patch), line)
-    print(replaced_line)
+    # print(replaced_line)
 
     #and finally replace the line in the file with the new line
     line_regex=re.escape(line)
     replaced_file=re.sub(line_regex, replaced_line, filecontents)
-    print("here")
+    # print("here")
     # print(replaced_file)
 
     file.close()
@@ -58,7 +58,7 @@ with open(os.path.join(this_dir, "../CMakeLists.txt"), "r+") as file:
     writefile=open(os.path.join(this_dir, "../CMakeLists.txt"), "w")
 
     writefile.write(replaced_file)
+    writefile.close()
 
-
-
-    #get the same
+    #also output the new version
+    sys.stdout.write(str(major)+"."+str(minor)+"."+str(patch))
