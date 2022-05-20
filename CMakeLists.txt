@@ -7,7 +7,7 @@ cmake_policy (SET CMP0048 NEW)
 # Set project title, version, description, and url
 project (
     "Magritte"
-    VERSION      0.1.0
+    VERSION      0.1.2
     DESCRIPTION  "A modern software library for simulating radiation transport."
     HOMEPAGE_URL "https://github.com/Magritte-code/Magritte"
 )
