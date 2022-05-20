@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: checkout repo
-        run: actions/checkout@v3
+        uses: actions/checkout@v3
       - name: Update version (locally) using commit message to determine version increase
         run: echo "NewVersion=$(python UpdateVersion.py ${{github.event.head_commit.message}})" >> $GITHUB_ENV
         working-directory: CI
