@@ -23,9 +23,11 @@ with open(os.path.join(this_dir, "../CMakeLists.txt"), "r+") as file:
 
     msg=sys.argv[1]#commit msg
 
-    major_reg=re.compile(r'^major(.+)?', re.IGNORECASE)
-    minor_reg=re.compile(r'^minor(.+)?', re.IGNORECASE)
-    patch_reg=re.compile(r'^patch(.+)?', re.IGNORECASE)
+    #matching word exactly (no exact letters directly afterwards, then any number of characters)
+    #ofcourse, only the word itself may also be matched
+    major_reg=re.compile(r'^major([^a-zA-Z](.+))?$', re.IGNORECASE)
+    minor_reg=re.compile(r'^minor([^a-zA-Z](.+))?$', re.IGNORECASE)
+    patch_reg=re.compile(r'^patch([^a-zA-Z](.+))?$', re.IGNORECASE)
     #python 3.10 would enable us to use fancy switch statements; for now, we use if-else statements
     if re.match(major_reg, msg):
         #increment major version
