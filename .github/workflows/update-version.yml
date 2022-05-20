@@ -1,5 +1,4 @@
 #todo: place after build-and-test
-#note: regex taken from semver.org
 name: Update version
 on:
   push:
