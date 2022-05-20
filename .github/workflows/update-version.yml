@@ -18,3 +18,4 @@ jobs:
           file-path: CMakeLists.txt
           commit-msg: "CI: increment version number to ${{env.NewVersion}}"
           github-token: ${{ secrets.GITHUB_TOKEN}}
+          branch: version-numbers
