@@ -16,22 +16,22 @@ factor=1.0;#normally, we should adaptively determine to insert ghost points inbe
 #not the exact settings, but just to test
 # npoints   = convert(Int, 12*factor)
 nrays     = 1
-nsegments = 1#forwards and backwards in frequency space
-npoints_half_segment = 5
+nsegments = 5#forwards and backwards in frequency space
+npoints_half_segment = 3
 npoints   = 1+nsegments*npoints_half_segment*2#starting point +
-nquads    = 135*quadfactor
+nquads    = 105*quadfactor
 
 nH2  = 1.0E+12                 # [m^-3]
 nTT  = 1.0E+08                 # [m^-3]
 temp = 4.5E+01                 # [K]
 turb = 0.0E+00                 # [m/s]
 dx   = 1.0E+04/factor        # [m]
-# dx   = 1.0e09
+dx   = 1.0e06
 # dx   = 1.5E-00
 # r_in=10.0
 
 dv   = 2.5E+02 / 300_000_000   # [fraction of speed of light]
-dv   = -1.0E+03 / 300_000_000/ factor   # [fraction of speed of light]
+dv   = 1.0*-8.7E+02 / 300_000_000/ factor   # [fraction of speed of light]
 # dv   = 0.000015
 #bug: nan for analytic solution when putting dv to 0
 # dv   = 1E-18
@@ -150,6 +150,9 @@ end
 #uses reduced
 function tau_up(nu, r_red, theta)
     l   = z_max(r_red, theta)
+    if l==0.0
+        return 0
+    end
     arg = -(nu - frq) / dnu#freq diff with line freq (reversed because I define doppler shift in the other way)
     fct = v_max_half_segment * nu / dnu * l / L_half_segment#doppler shift factor
     prefactor=chi*l / (fct*dnu)
@@ -161,6 +164,9 @@ end
 #uses reduced r, for computing increment
 function tau_down(nu, r_red, theta)
     l   = z_max(r_red, theta)
+    if l==0.0
+        return 0
+    end
     arg = -(nu - frq - v_max_half_segment * nu) / dnu#freq diff with line freq (reversed because I define doppler shift in the other way)
     fct = v_max_half_segment * nu / dnu * l / L_half_segment#doppler shift factor
     prefactor=chi*l / (fct*dnu)
@@ -199,11 +205,18 @@ function I_(nu, r, theta)
     # println("optical depth increments: ", tau(nu, r, theta)./(npoints.-1))
     #convert r to r_red and compute the number of segments already passed
     r_red=mod(r, L_half_segment)
+    println("l_red", r_red)
     n_segments_passed=r.÷L_half_segment
+    println("n segments passed: ", n_segments_passed)
 
     tau_curr_seg = (n_segments_passed.%2==0) .* tau_up(nu, r_red, theta) .+ (n_segments_passed.%2==1) .* tau_down(nu, r_red, theta)
+    println("firstpart:", tau_up(nu, r_red, theta))
+    println("secondpart:", tau_down(nu, r_red, theta))
+    println("tau_curr_seg: ", tau_curr_seg)
 
     tautot=tau_segment(nu, n_segments_passed).+tau_curr_seg
+
+    println("tautot: ", tautot)
 
     # return src + (bdy(nu.*(1.0 .+vmax))-src)*exp(-tautot)#tau(nu, r, theta))
     return src + (bdy(nu.*(1.0))-src)*exp(-tautot)#tau(nu, r, theta))
@@ -347,7 +360,7 @@ ComovingSolvers.computesinglerayexplicitadaptive(data13)
 comovingexplicit=data13.allintensities
 
 Iray=I_.(ν, L, 0.0)
-# println(Iray)
+println(Iray)
 # println(ν, size(ν))
 println(v[end])
 Plots.plot(1)
@@ -360,12 +373,12 @@ Plots.plot(1)
 
 # Plots.plot!([νdoppl[:,end], νdoppl[:,end]],1e8.*[Iray, secondorderfull[:, npoints]], label = ["analytic" "full second order"])
 Plots.plot!([νdoppl[:,end]],1e8.*[Iray], label = "analytic")
-Plots.plot!([νarbitrary[:,end]],1e8.*[secondorderfull[:, npoints]], label = "full second order")
+# Plots.plot!([νarbitrary[:,end]],1e8.*[secondorderfull[:, npoints]], label = "full second order")
 # Plots.plot!([νarbitrary[:,end]],1e8.*[secondorderadaptive[:, npoints]], label = "adaptive second order")
 Plots.plot!([νarbitrary[:,end]],1e8.*[comovingshortchar[:, npoints]], label = "comoving shortchar 2nd")
 # Plots.plot!([νarbitrary[:,end]],1e8.*[comovingshortcharfirstorder[:, npoints]], label = "comoving shortchar 1st")
-Plots.plot!([νarbitrary[:,end]],1e8.*[comovingshortcharimplicit[:, npoints]], label = "comoving shortchar impl")
-Plots.plot!([ν[:]],1e8.*[shortcharstaticfreq[:, npoints]], label = "short char static")
+# Plots.plot!([νarbitrary[:,end]],1e8.*[comovingshortcharimplicit[:, npoints]], label = "comoving shortchar impl")
+# Plots.plot!([ν[:]],1e8.*[shortcharstaticfreq[:, npoints]], label = "short char static")
 # Plots.plot!([νarbitrary[:,end]],1e8.*[comovingexplicit[:, npoints]], label = "comoving expl")
 
 
@@ -378,8 +391,9 @@ Plots.gui()
 #also plot previous points
 Plots.plot(reuse=false)
 #index starting from last
-i=2
-Iraym1=I_.(ν, L-i*dx, 0.0)
+i=0
+Iraym1=I_.(ν, L-(i)*dx, 0.0)
+# print(Iraym1)
 #multiplication factor because julia plots do not like very small values...
 # Plots.plot([νdoppl[:,end], νdoppl[:,end],νdoppl[:,end]],1e8.*[firstorderintensities[:, npoints], secondorderfreq[:, npoints], secondorderintensities[:,npoints]], label = ["first order" "second order freq" "second order"])
 
@@ -393,8 +407,8 @@ Plots.plot!([νarbitrary[:,end-i]],1e8.*[secondorderfull[:, npoints-i]], label =
 # Plots.plot!([νarbitrary[:,end]],1e8.*[secondorderadaptive[:, npoints]], label = "adaptive second order")
 Plots.plot!([νarbitrary[:,end-i]],1e8.*[comovingshortchar[:, npoints-i]], label = "comoving shortchar 2nd")
 # Plots.plot!([νarbitrary[:,end]],1e8.*[comovingshortcharfirstorder[:, npoints]], label = "comoving shortchar 1st")
-Plots.plot!([νarbitrary[:,end-i]],1e8.*[comovingshortcharimplicit[:, npoints-i]], label = "comoving shortchar impl")
-Plots.plot!([ν[:]],1e8.*[shortcharstaticfreq[:, npoints-i]], label = "short char static")
+# Plots.plot!([νarbitrary[:,end-i]],1e8.*[comovingshortcharimplicit[:, npoints-i]], label = "comoving shortchar impl")
+# Plots.plot!([ν[:]],1e8.*[shortcharstaticfreq[:, npoints-i]], label = "short char static")
 # Plots.plot!([νarbitrary[:,end]],1e8.*[comovingexplicit[:, npoints]], label = "comoving expl")
 
 

@@ -14,24 +14,24 @@ println(ld)
 quadfactor=1
 factor=1.0;#normally, we should adaptively determine to insert ghost points inbetween, but for simplicity, we just make a more dense discretization
 #not the exact settings, but just to test
-npoints   = convert(Int, 5*factor)
+npoints   = convert(Int, 40*factor)
 nrays     = 1
-nquads    = 55*quadfactor
+nquads    = 25*quadfactor
 
 nH2  = 1.0E+12                 # [m^-3]
 nTT  = 1.0E+08                 # [m^-3]
 temp = 4.5E+01                 # [K]
 turb = 0.0E+00                 # [m/s]
 dx   = 1.0E+04/factor        # [m]
-dx   = 4.0e15
+dx   = 1.0E+07
 # dx   = 1.5E-00
-r_in=10.0
+r_in=10.0 #TODO REMOVE
 
 dv   = 2.5E+02 / 300_000_000   # [fraction of speed of light]
-dv   = -2.5E+02 / 300_000_000/ factor   # [fraction of speed of light]
+dv   = 10.0*-8.7E+02 / 300_000_000/ factor   # [fraction of speed of light] #8.7E+02 is line width
 # dv   = 0.000015
 #bug: nan for analytic solution when putting dv to 0
-dv   = 1E-18
+# dv   = 1E-18
 
 #sinusoidal velocity profile for testing
 maxV = 2.0E+03 / 300_000_000
@@ -43,22 +43,28 @@ v=(0:npoints-1)*dv
 
 k=1
 
-frq = ld.frequency[k]
-pop = Tools.LTEpop(ld, temp) .* nTT
-eta = Tools.lineEmissivity(ld, pop)[k]
-chi = Tools.lineOpacity(ld, pop)[k]
-#flooring the minimal optical depth
-# chi = max(chi, 1E-10)
+#emissionvalue=10000.0
 
-src = Tools.lineSource(ld, pop)[k]
+frq = ld.frequency[k]
+println("line freq:", frq)
+pop = Tools.LTEpop(ld, temp) .* nTT
+eta = Tools.lineEmissivity(ld, pop)[k]#/emissionvalue
+chi = Tools.lineOpacity(ld, pop)[k]
+println("max chi: ", maximum(chi))
+
+src = Tools.lineSource(ld, pop)[k]#/emissionvalue
 dnu = Tools.dnu(ld, k, temp, (turb/TestMolecule.CC)^2)
 
-println(src)
+println("source:", src)
+println("eta: ", eta)
+println("chi: ", chi)
 println(eta/chi)
 println(ld.frequency[1])
 
 
 quad_rel_diff=0.25/quadfactor
+# quad_rel_diff=0.35/quadfactor
+# quad_rel_diff=0.20/quadfactor
 ν=ld.frequency[1].+(-(nquads-1)/2:(nquads-1)/2).*quad_rel_diff.*dnu
 νarbit=reshape([ld.frequency[1]+quad*quad_rel_diff*dnu*(1.0-0.0000*point) for point in 1:npoints for quad in (-(nquads-1)/2:(nquads-1)/2)], nquads, npoints)
 # νarbit=reshape([ld.frequency[1]+quad*quad_rel_diff*dnu for point in 1:npoints for quad in (-(nquads-1)/2:(nquads-1)/2)], nquads, npoints)
@@ -263,7 +269,7 @@ data13=ComovingSolvers.data(Icmbarbitrary,(0:npoints-1).*dx, v, χarbitrary, ηa
 ComovingSolvers.computesinglerayexplicitadaptive(data13)
 comovingexplicit=data13.allintensities
 
-
+#TODO REORDER; put all plotting stuff right after solvers; then (un)comment them at the same time
 Iray=I_.(ν, L, 0.0)
 # println(Iray)
 # println(ν, size(ν))
@@ -282,7 +288,7 @@ Plots.plot!([νarbitrary[:,end]],1e8.*[secondorderfull[:, npoints]], label = "fu
 # Plots.plot!([νarbitrary[:,end]],1e8.*[secondorderadaptive[:, npoints]], label = "adaptive second order")
 Plots.plot!([νarbitrary[:,end]],1e8.*[comovingshortchar[:, npoints]], label = "comoving shortchar 2nd")
 # Plots.plot!([νarbitrary[:,end]],1e8.*[comovingshortcharfirstorder[:, npoints]], label = "comoving shortchar 1st")
-# Plots.plot!([νarbitrary[:,end]],1e8.*[comovingshortcharimplicit[:, npoints]], label = "comoving shortchar impl")
+Plots.plot!([νarbitrary[:,end]],1e8.*[comovingshortcharimplicit[:, npoints]], label = "comoving shortchar impl")
 # Plots.plot!([νarbitrary[:,end]],1e8.*[comovingexplicit[:, npoints]], label = "comoving expl")
 # Plots.plot!([ν[:]],1e8.*[shortcharstaticfreq[:, npoints]], label = "short char static")
 
