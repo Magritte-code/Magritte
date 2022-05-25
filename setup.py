@@ -12,13 +12,15 @@ this_dir = os.path.dirname(os.path.realpath(__file__))
 with open(os.path.join(this_dir, "README.md"), "r") as file:
     long_description = file.read()
 
+with open(os.path.join(this_dir, "version.txt"), "r") as file:
+    __version__ = re.findall('\d*\.\d*\.\d*', file.read())[0]
+    print("version: ",__version__)
 
-with open(os.path.join(this_dir, "CMakeLists.txt"), "r") as file:
-    # Extract the lines containing the project description
-    lines = re.findall('project.*\([^\)]*\)', file.read())[0]
-    # Extract the version nuber form those lines
-    __version__ = re.findall('\d*\.\d*\.\d*', lines)[0]
-
+# with open(os.path.join(this_dir, "CMakeLists.txt"), "r") as file:
+#     # Extract the lines containing the project description
+#     lines = re.findall('project.*\([^\)]*\)', file.read())[0]
+#     # Extract the version nuber form those lines
+#     __version__ = re.findall('\d*\.\d*\.\d*', lines)[0]
 
 class my_build_ext(build_ext):
 
