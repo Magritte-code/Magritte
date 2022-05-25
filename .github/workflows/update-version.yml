@@ -3,7 +3,14 @@ name: Update version
 on:
   push:
 jobs:
+  TestGoingFirst:
+    runs-on: ubuntu-latest
+    steps:
+      - name: test
+        run: echo "this should go first"
+
   UpdateVersion:
+    needs: TestGoingFirst
     runs-on: ubuntu-latest
     steps:
       - name: checkout repo
