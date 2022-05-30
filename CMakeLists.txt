@@ -1,15 +1,25 @@
 # Set minimun required CMake version
 cmake_minimum_required (VERSION 3.18)
 
+# Read version number
+file (STRINGS "version.txt" VERSION_NUMBER)
+
 # Set CMake version policy
 cmake_policy (SET CMP0048 NEW)
 
 # Set project title, version, description, and url
 project (
     "Magritte"
-    VERSION      0.0.1
+    VERSION      ${VERSION_NUMBER}
     DESCRIPTION  "A modern software library for simulating radiation transport."
     HOMEPAGE_URL "https://github.com/Magritte-code/Magritte"
+)
+
+# Forces rebuild on change of version file
+set_property(
+        DIRECTORY
+        APPEND
+        PROPERTY CMAKE_CONFIGURE_DEPENDS "version.txt"
 )
 
 # Set build type
