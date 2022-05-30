@@ -2,7 +2,7 @@ sphinx
 sphinx-rtd-theme
 sphinx-copybutton
 nbsphinx
-breathe
+breathe<4.13.0
 ipython
 jupyter_sphinx
 mkdocs==1.2.3
