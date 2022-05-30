@@ -12,6 +12,11 @@
     if (io.read_bool ("."#x, x##_copy) == 0) {set_##x (x##_copy);}                         \
     else                                     {cout << "Failed to read "#x"!" << endl;}
 
+#define READ_WORD(type, x)                                                                 \
+    type x##_copy;                                                                         \
+    if (io.read_word ("."#x, x##_copy) == 0) {set_##x (x##_copy);}                         \
+    else                                     {cout << "Failed to read "#x"!" << endl;}
+
 #define WRITE_NUMBER(type, x)                                                              \
     try         {io.write_number ("."#x, get_##x());}                                      \
     catch (...) {cout << "Failed write "#x"!" << endl;}
@@ -20,10 +25,16 @@
     try         {io.write_bool ("."#x, get_##x());}                                        \
     catch (...) {cout << "Failed write "#x"!" << endl;}
 
+#define WRITE_WORD(type, x)                                                                \
+    try         {io.write_word ("."#x, get_##x());}                                        \
+    catch (...) {cout << "Failed write "#x"!" << endl;}
+
 
 void Parameters :: read (const Io &io)
 {
     cout << "Reading parameters..." << endl;
+
+    READ_WORD (string, version);
 
     READ_NUMBER (Size, dimension );
     READ_NUMBER (Size, npoints   );
@@ -54,6 +65,8 @@ void Parameters :: read (const Io &io)
 void Parameters :: write (const Io &io) const
 {
     cout << "Writing parameters..." << endl;
+
+    WRITE_WORD (string, version);
 
     WRITE_NUMBER (Size, dimension );
     WRITE_NUMBER (Size, npoints   );
