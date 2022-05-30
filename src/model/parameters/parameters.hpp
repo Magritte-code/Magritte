@@ -3,6 +3,7 @@
 
 #include <limits>
 
+#include "../../configure.hpp"
 #include "io/io.hpp"
 #include "tools/setOnce.hpp"
 
@@ -64,6 +65,8 @@ struct Parameters
     void read (const Io &io);
     void write(const Io &io) const;
 
+    CREATE_PARAMETER (string, version);
+
     CREATE_PARAMETER (string, model_name);
 
     CREATE_PARAMETER (Size, dimension );
@@ -90,6 +93,10 @@ struct Parameters
 
     Parameters ()
     {
+        CONSTRUCT_PARAMETER (string, version);
+
+        set_version(MAGRITTE_VERSION);
+
         CONSTRUCT_PARAMETER (string, model_name);
 
         CONSTRUCT_PARAMETER (Size, dimension );
@@ -117,6 +124,7 @@ struct Parameters
 
     Parameters (const Parameters& parameters)
     {
+        COPY_PARAMETER (version);
         COPY_PARAMETER (model_name);
 
         COPY_PARAMETER (dimension );

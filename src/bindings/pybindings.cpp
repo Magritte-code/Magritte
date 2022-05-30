@@ -314,6 +314,7 @@ PYBIND11_MODULE (core, module)
         .def ("set_spherical_symmetry",       &Parameters::set_spherical_symmetry  , "Set whether or not to use spherical symmetry")
         .def ("set_adaptive_ray_tracing",     &Parameters::set_adaptive_ray_tracing, "Set whether or not to use adaptive ray tracing.")
         // getters
+		.def ("version",                      &Parameters::version                 , "Magritte version number.")
 		.def ("model_name",                   &Parameters::model_name              , "Model name.")
         .def ("dimension",                    &Parameters::dimension               , "Spatial dimension of the model.")
         .def ("npoints",                      &Parameters::npoints                 , "Number of points.")
