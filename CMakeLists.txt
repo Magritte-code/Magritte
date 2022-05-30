@@ -19,7 +19,7 @@ project (
 set_property(
         DIRECTORY
         APPEND
-        PROPERTY CMAKE_CONFIGURE_DEPENDS ${ARGV}
+        PROPERTY CMAKE_CONFIGURE_DEPENDS "version.txt"
 )
 
 # Set build type

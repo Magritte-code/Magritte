@@ -14,7 +14,6 @@ with open(os.path.join(this_dir, "README.md"), "r") as file:
 
 with open(os.path.join(this_dir, "version.txt"), "r") as file:
     __version__ = re.findall('\d*\.\d*\.\d*', file.read())[0]
-    print("version: ",__version__)
 
 # with open(os.path.join(this_dir, "CMakeLists.txt"), "r") as file:
 #     # Extract the lines containing the project description
