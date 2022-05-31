@@ -12,7 +12,7 @@ jobs:
       #     submodules: true
       - name: Install dependencies
         run: sudo apt-get install -y gmsh libegl1
-      - run: ld -llmpe --verbose
+      # - run: ld -llmpe --verbose
       - name: Check out repository code (with retries)
         uses: Wandalen/wretry.action@v1.0.20
         with:
