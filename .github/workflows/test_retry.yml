@@ -28,7 +28,7 @@ jobs:
       - name: Install conda packages (with retries)
         uses: Wandalen/wretry.action@v1.0.20
         with:
-          action: conda-incubator/setup-miniconda@v2
+          action: conda-incubator/setup-miniconda@v2 #wretry does seem to not allow setting default values inside; so we manually need to activate the conda env
           with: |
             activate-environment: magritte
             environment-file: dependencies/conda_env.yml
@@ -37,7 +37,8 @@ jobs:
             channels: conda-forge, defaults
           attempt_limit: 3
           attempt_delay: 5000 #in ms
-      - run: echo $(conda info) #debug output
+      - run: conda activate magritte
+      # - run: echo $(conda info) #debug output
       - name: build Magritte
         run: bash build.sh
         env:
