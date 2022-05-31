@@ -29,7 +29,7 @@ dependencies:
   - pandas
   - nodejs
   - twine
-  - sphinx
+  - sphinx=4.4.0
   - breathe
   - sphinx-copybutton
   - nbsphinx
