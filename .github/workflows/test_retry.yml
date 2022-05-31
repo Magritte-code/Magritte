@@ -37,8 +37,8 @@ jobs:
             channels: conda-forge, defaults
           attempt_limit: 3
           attempt_delay: 5000 #in ms
-      - run: conda activate magritte
-      # - run: echo $(conda info) #debug output
+      - run: conda init bash && conda activate magritte
+      - run: echo $(conda info) #debug output
       - name: build Magritte
         run: bash build.sh
         env:
