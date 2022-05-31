@@ -6,18 +6,20 @@ jobs:
   RetryTest:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out repository code (without retries)
-        uses: actions/checkout@v3
-        with:
-          submodules: true
-      # - name: Check out repository code (with retries)
-      #   uses: Wandalen/wretry.action@v1.0.20
+      # - name: Check out repository code (without retries)
+      #   uses: actions/checkout@v3
       #   with:
-      #     action: actions/checkout@v3
-      #     with: |
-      #       submodules: true
-      #     attempt_limit: 3
-      #     attempt_delay: 5000 #in ms
+      #     submodules: true
+      - name: Check out repository code (with retries)
+        uses: Wandalen/wretry.action@v1.0.20
+        with:
+          action: actions/checkout@v3
+          with: | #wretry does not support defaults at time of writing
+            submodules: true
+            repository: ${{github.repository}}
+            token: ${{github.token}}
+          attempt_limit: 3
+          attempt_delay: 5000 #in ms
       - name: setup python
         uses: actions/setup-python@v3
       - name: Install conda packages (with retries)
