@@ -12,6 +12,7 @@ jobs:
       #     submodules: true
       - name: Install dependencies
         run: sudo apt-get install -y gmsh libegl1
+      - run: ld -llmpe --verbose
       - name: Check out repository code (with retries)
         uses: Wandalen/wretry.action@v1.0.20
         with:
@@ -36,6 +37,7 @@ jobs:
             channels: conda-forge, defaults
           attempt_limit: 3
           attempt_delay: 5000 #in ms
+      - run: echo $(conda info) #debug output
       - name: build Magritte
         run: bash build.sh
         env:
