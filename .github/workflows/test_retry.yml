@@ -5,6 +5,9 @@ on:
 jobs:
   RetryTest:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -l {0}
     steps:
       - name: Install dependencies
         run: sudo apt-get install -y gmsh libegl1
@@ -100,7 +103,7 @@ jobs:
       #     attempt_delay: 5000 #in ms
       # - run: conda init bash
       # - run: conda activate magritte
-      - run: echo $(conda info) #debug output
+      # - run: echo $(conda info) #debug output
       - name: build Magritte
         run: bash build.sh
         env:
