@@ -1,0 +1,32 @@
+name: TestRetrySyntax
+on:
+  push:
+    branches: [ 74-automated-builds-failing-on-http-errors ]
+jobs:
+  UpdateVersion:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code (with retries)
+        uses: Wandalen/wretry.action@v1.0.20
+        with:
+          action: actions/checkout@v3
+          with: |
+            submodules: true
+          attempt_limit: 3
+          attempt_delay: 5000 #in ms
+      - name: setup python
+        uses: actions/setup-python@v3
+      - name: Install conda packages (with retries)
+        uses: Wandalen/wretry.action@v1.0.20
+        with:
+          action: conda-incubator/setup-miniconda@v2
+          with: |
+            activate-environment: magritte
+            environment-file: dependencies/conda_env.yml
+            auto-activate-base: false
+            mamba-version: "*"
+            channels: conda-forge, defaults
+          attempt_limit: 3
+          attempt_delay: 5000 #in ms
+      - name: build Magritte
+        run: bash build.sh #on linux, gcc and g++ are the defaults, so no env vars are needed for testing

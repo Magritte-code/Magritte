@@ -34,3 +34,4 @@ dependencies:
   - sphinx-copybutton
   - nbsphinx
   - sphinx_rtd_theme
+  - pytest
