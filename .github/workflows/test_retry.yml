@@ -37,4 +37,7 @@ jobs:
           attempt_limit: 3
           attempt_delay: 5000 #in ms
       - name: build Magritte
-        run: bash build.sh #on linux, gcc and g++ are the defaults, so no env vars are needed for testing
+        run: bash build.sh
+        env:
+          CC : gcc
+          CXX: g++
