@@ -1,9 +1,0 @@
-sphinx<=4.4.0
-sphinx-rtd-theme
-sphinx-copybutton
-nbsphinx
-breathe<4.13.0
-ipython
-jupyter_sphinx
-mkdocs==1.2.3
-jinja2==3.0.0
