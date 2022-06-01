@@ -24,18 +24,44 @@ jobs:
             CXX-COMPILER: g++
     defaults:
       run:
-        shell: bash -l {0}
+        shell: bash -l {0} #necessary for conda
     steps:
       - run: ${{matrix.PACKAGE_MANAGER}} update
       - name: install dependencies
         run: ${{matrix.PACKAGE_MANAGER}} ${{matrix.INSTALL_COMMAND}} ${{matrix.DEPENDENCIES}}
-      - name: Check out repository code
+
+      # retrying checkout: 3 tries, with 5 seconds wait inbetween
+      - name: Check out repository code (try 1)
+        id: checkouttry1
         uses: actions/checkout@v3
         with: #no ref: thus checks out commit which triggered workflow
           submodules: true
+      - name: wait 5 s if attempt failed
+        if: steps.checkouttry1.outcome == 'failure'
+        run: sleep 5
+      - name: Check out repository code (try 2)
+        id: checkouttry2
+        if: steps.checkouttry1.outcome == 'failure'
+        uses: actions/checkout@v3
+        with: #no ref: thus checks out commit which triggered workflow
+          submodules: true
+      - name: wait 5 s if attempt failed
+        if: steps.checkouttry2.outcome == 'failure'
+        run: sleep 5
+      - name: Check out repository code (try 3)
+        id: checkouttry3
+        if: steps.checkouttry2.outcome == 'failure'
+        uses: actions/checkout@v3
+        with: #no ref: thus checks out commit which triggered workflow
+          submodules: true
+      # end retrying checkout
+
       - name: setup python
         uses: actions/setup-python@v3
-      - name: Install conda packages
+
+      # retrying setting up conda: 3 tries, with 5 seconds wait inbetween
+      - name: Install conda packages (try 1)
+        id: setupcondatry1
         uses: conda-incubator/setup-miniconda@v2
         with:
           activate-environment: magritte
@@ -43,8 +69,33 @@ jobs:
           auto-activate-base: false
           mamba-version: "*"
           channels: conda-forge, defaults
-      - name: install pytest (if not already installed because of dependencies)
-        run: conda install pytest
+      - name: wait 5 s if attempt failed
+        if: steps.setupcondatry1.outcome == 'failure'
+        run: sleep 5
+      - name: Install conda packages (try 2)
+        id: setupcondatry2
+        if: steps.setupcondatry1.outcome == 'failure'
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          activate-environment: magritte
+          environment-file: dependencies/conda_env.yml
+          auto-activate-base: false
+          mamba-version: "*"
+          channels: conda-forge, defaults
+      - name: wait 5 s if attempt failed
+        if: steps.setupcondatry2.outcome == 'failure'
+        run: sleep 5
+      - name: Install conda packages (try 3)
+        id: setupcondatry3
+        if: steps.setupcondatry2.outcome == 'failure'
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          activate-environment: magritte
+          environment-file: dependencies/conda_env.yml
+          auto-activate-base: false
+          mamba-version: "*"
+          channels: conda-forge, defaults
+      # end retrying conda
 
       - name: build Magritte
         run: bash build.sh
