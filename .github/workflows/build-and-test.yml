@@ -4,7 +4,26 @@ on:
   push:
     branches: [ stable ]
 jobs:
+#Before testing, we increase the version number. Otherwise, some delay (>30 mins) may occur between updating the code and doing the version increase.
+  UpdateVersion:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repo
+        uses: actions/checkout@v3
+      - name: Update version (locally) using commit message to determine version increase
+        run: echo "NewVersion=$(python updateVersion.py "${{github.event.head_commit.message}}")" >> $GITHUB_ENV
+        working-directory: CI
+      - name: Auto commit the version change
+        uses: test-room-7/action-update-file@v1
+        with:
+          file-path: version.txt
+          commit-msg: "CI: increment version number to ${{env.NewVersion}}"
+          github-token: ${{ secrets.GITHUB_TOKEN}}
+          branch: stable
+
+
   BuildAndTest:
+    needs: UpdateVersion
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -109,21 +128,3 @@ jobs:
       - name: run numeric tests
         run: pytest --verbose
         working-directory: tests/benchmarks/numeric
-
-#If all tests work, we can increase the version number
-  UpdateVersion:
-    needs: BuildAndTest
-    runs-on: ubuntu-latest
-    steps:
-      - name: checkout repo
-        uses: actions/checkout@v3
-      - name: Update version (locally) using commit message to determine version increase
-        run: echo "NewVersion=$(python updateVersion.py "${{github.event.head_commit.message}}")" >> $GITHUB_ENV
-        working-directory: CI
-      - name: Auto commit the version change
-        uses: test-room-7/action-update-file@v1
-        with:
-          file-path: version.txt
-          commit-msg: "CI: increment version number to ${{env.NewVersion}}"
-          github-token: ${{ secrets.GITHUB_TOKEN}}
-          branch: stable
