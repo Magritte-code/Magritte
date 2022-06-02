@@ -148,8 +148,6 @@ function firstorderexplicitsecondorderfrequency(previndex, data, forwardfreqdisc
     a=-Δνsmall./(Δνlarge.^2-Δνsmall.*Δνlarge)
     b=Δνlarge./(Δνsmall.*Δνlarge-Δνsmall.^2)
     c=.-a.-b;
-    # println(stdout, "a,b,c: ", max(a...), ", ", max(b...), ", ", max(c...))
-    # println(1.0 ./max(Δνsmall...))
 
     if forwardfreqdisc
         Δνterm=(a.*view(currintensity, 3:nfreqs).+b.*view(currintensity, 2:nfreqs-1).+c.*view(currintensity, 1:nfreqs-2)).*lineν
@@ -290,11 +288,6 @@ function secondorderfull(previndex, data, forwardfreqdisc::Bool)
     a=-Δνsmall./(Δνlarge.^2-Δνsmall.*Δνlarge)
     b=Δνlarge./(Δνsmall.*Δνlarge-Δνsmall.^2)
     c=.-a.-b;
-    # println(stdout, "a,b,c: ", max(a...), ", ", max(b...), ", ", max(c...))
-    # println(1.0 ./max(Δνsmall...))
-    # println("forward disc: ", forwardfreqdisc)
-    # println("a: ", a)
-    # println("Δνdiv2: ", Δνdiv2)
 
     if forwardfreqdisc
         # Δνterm=(a.*view(currintensity, 3:nfreqs).+b.*view(currintensity, 2:nfreqs-1).+c.*view(currintensity, 1:nfreqs-2)).*lineν
@@ -544,8 +537,6 @@ function shortcharstatic(previndex, data)
     #simplest shortchar solver available
     # @views currintensity[1:nfreqs]=currintensity[1:nfreqs].*expminτ.+onemexpminτ.*S[1:nfreqs, previndex]
 
-    println("shortchar: ",currintensity)
-
     data.allintensities[:,previndex+1]=currintensity;
     return
 end
@@ -581,28 +572,18 @@ function secondorderadaptive(previndex, data)
     nextlineν=data.lineν[previndex+1]
 
     #now compute for which frequency points we need a forward or backward discretization
-    println(size(ν))
     currν=data.ν[:, previndex]
     nextν=data.ν[:, previndex+1]
 
     # forwardfreqdisc=(nextν.-currν.+nextlineν.-lineν.>0.0)
     forwardfreqdisc=(nextν.-currν.>0.0)
 
-    println(forwardfreqdisc)
-    # println(nextν.-currν.+nextlineν.-lineν)
-    println(nextν.-currν)
-    # println(nextν.-lineν.+nextlineν.-lineν)
-
     starting_upwind=forwardfreqdisc[1]
     ending_upwind=forwardfreqdisc[nfreqs]
-    # println("starting upwind: ", starting_upwind)
 
     other_discretization_direction=[!(starting_upwind==forwardfreqdisc[index]) for index in 1:length(forwardfreqdisc)]
-    # println(other_discretization_direction)
 
     inflection_point=findfirst(other_discretization_direction)
-    println(inflection_point)
-    # println("previndex: ",previndex)
 
     if isnothing(inflection_point)
         if starting_upwind
@@ -640,11 +621,6 @@ function secondorderadaptive(previndex, data)
     a=-Δνsmall./(Δνlarge.^2-Δνsmall.*Δνlarge)
     b=Δνlarge./(Δνsmall.*Δνlarge-Δνsmall.^2)
     c=.-a.-b;
-    # println(stdout, "a,b,c: ", max(a...), ", ", max(b...), ", ", max(c...))
-    # println(1.0 ./max(Δνsmall...))
-    # println("forward disc: ", forwardfreqdisc)
-    # println("a: ", a)
-    # println("Δνdiv2: ", Δνdiv2)
 
     Δνterm=(a.*view(currintensity, upwind_points.+2).+b.*view(currintensity, upwind_points.+1).+c.*view(currintensity, upwind_points))#.*lineν
 
@@ -661,11 +637,6 @@ function secondorderadaptive(previndex, data)
     a=-Δνsmall./(Δνlarge.^2-Δνsmall.*Δνlarge)
     b=Δνlarge./(Δνsmall.*Δνlarge-Δνsmall.^2)
     c=.-a.-b;
-    # println(stdout, "a,b,c: ", max(a...), ", ", max(b...), ", ", max(c...))
-    # println(1.0 ./max(Δνsmall...))
-    # println("forward disc: ", forwardfreqdisc)
-    # println("a: ", a)
-    # println("Δνdiv2: ", Δνdiv2)
 
     Δνterm=(-a.*view(currintensity, downwind_points.-2).+-b.*view(currintensity, downwind_points.-1).+-c.*view(currintensity, downwind_points))#.*lineν
 
@@ -680,18 +651,12 @@ function secondorderadaptive(previndex, data)
     #now apply boundary conditions
     for bdy_tpl_index ∈ 1:length(boundary_points)
         indices=[boundary_points[bdy_tpl_index][i] for i ∈ 1:length(boundary_points[bdy_tpl_index])]
-        # println("bdy indices: ", indices)
-        # println("is outer boundary condition?", boundary_point_is_outer[bdy_tpl_index])
         if (boundary_point_is_outer[bdy_tpl_index])
             #then just set it to the boundary value
             @views currintensity[indices]=bdyintensity[indices, previndex+1]
         else
             νdiff=currν[indices[2]]-currν[indices[1]]
-            # println("nu diff: ",νdiff)
             νleft=currν[indices[1]]
-            # println("diff with left: ",nextν[indices].-νleft)
-            # println("nextν-currν: ",nextν.-currν)
-            # println("nu diff at inflection point",nextν[indices].-currν[indices])
             #interpolate them to their next frequencies (linearly)
             @views currintensity[indices]=currintensity[indices[1]].+
                     (nextν[indices].-νleft)./νdiff.*(currintensity[indices[2]].-currintensity[indices[1]])
@@ -779,7 +744,6 @@ function computesingleraysecondorderadaptive(data::Data)
         # forwardfreqdisc = (dv>=0 ?  true : false)
         #compute the next one
         secondorderadaptive(i, data)
-        # println("here")
     end
     # display(Plots.plot(data.currintensity)
     return
@@ -811,7 +775,6 @@ function secondorderadaptiveshortchar(previndex, data)
     Δτdiv2 = Δτ./2.0
     # Δτdiv2=Δx*(χ[:,previndex+1].+χ[:,previndex])./4.0
 
-    # println("Δτ min:", minimum(Δτ))
     expminτdiv2=exp.(-Δτdiv2)
     expminτ=exp.(-2.0.*Δτdiv2)
     onemexpminτdiv2=-expm1.(-Δτdiv2)
@@ -821,28 +784,19 @@ function secondorderadaptiveshortchar(previndex, data)
     nextlineν=data.lineν[previndex+1]
 
     #now compute for which frequency points we need a forward or backward discretization
-    # println(size(ν))
     currν=data.ν[:, previndex]
     nextν=data.ν[:, previndex+1]
 
     # forwardfreqdisc=(nextν.-currν.+nextlineν.-lineν.>0.0)
     forwardfreqdisc=(nextν.-currν.>0.0)
 
-    # println(forwardfreqdisc)
-    # println(nextν.-currν.+nextlineν.-lineν)
-    # println(nextν.-currν)
-    # println(nextν.-lineν.+nextlineν.-lineν)
 
     starting_upwind=forwardfreqdisc[1]
     ending_upwind=forwardfreqdisc[nfreqs]
-    # println("starting upwind: ", starting_upwind)
 
     other_discretization_direction=[!(starting_upwind==forwardfreqdisc[index]) for index in 1:length(forwardfreqdisc)]
-    # println(other_discretization_direction)
 
     inflection_point=findfirst(other_discretization_direction)
-    # println(inflection_point)
-    # println("previndex: ",previndex)
 
     #Default discretization direction
     if isnothing(inflection_point)
@@ -924,11 +878,7 @@ function secondorderadaptiveshortchar(previndex, data)
     #huh, why is this stable (and not correct?); somehow filled in the wrong term?
     # @views curr_factor=((Δτ[upwind_points].*expminτ[upwind_points].-onemexpminτ[upwind_points])./Δτ[upwind_points].+onemexpminτ[upwind_points])./Δτ[upwind_points]
     @views curr_factor=onemexpminτ[upwind_points]./Δτ[upwind_points].+(onemexpminτ[upwind_points].-Δτ[upwind_points])./Δτ[upwind_points].^2
-    # println("curr_factor max: ",maximum(curr_factor))
-    # println("c: ", c)
     # @views curr_factor=(Δτ[upwind_points].-1.0 .+expminτ[upwind_points]+Δτ[upwind_points].*(expminτ[upwind_points]))./Δτ[upwind_points]
-    # println("old curr_factor max: ",maximum(curr_factor))
-    # println("older curr_factor max: ",maximum(curr_factor))
 
     # @views currintensity[upwind_points].+=(Δxdiv2.*(η[upwind_points, previndex]+η[upwind_points, previndex+1]-currintensity[upwind_points].*χ[upwind_points, previndex])
     #         +Δνdiv2[upwind_points].*Δνterm)#lineν is absorbed into Δνdiv2
@@ -976,18 +926,12 @@ function secondorderadaptiveshortchar(previndex, data)
     #now apply boundary conditions
     for bdy_tpl_index ∈ 1:length(boundary_points)
         indices=[boundary_points[bdy_tpl_index][i] for i ∈ 1:length(boundary_points[bdy_tpl_index])]
-        # println("bdy indices: ", indices)
-        # println("is outer boundary condition?", boundary_point_is_outer[bdy_tpl_index])
         if (boundary_point_is_outer[bdy_tpl_index])
             #then just set it to the boundary value
             @views currintensity[indices]=bdyintensity[indices, previndex+1]
         else
             νdiff=currν[indices[2]]-currν[indices[1]]
-            # println("nu diff: ",νdiff)
             νleft=currν[indices[1]]
-            # println("diff with left: ",nextν[indices].-νleft)
-            # println("nextν-currν: ",nextν.-currν)
-            # println("nu diff at inflection point",nextν[indices].-currν[indices])
             #interpolate them to their next frequencies (linearly)
             @views currintensity[indices]=currintensity[indices[1]].+
                     (nextν[indices].-νleft)./νdiff.*(currintensity[indices[2]].-currintensity[indices[1]])
@@ -1020,7 +964,6 @@ function secondorderadaptiveshortchar(previndex, data)
         # @views curr_factor=(Δτ[upwind_points].-1.0.+expminτ[upwind_points])./Δτ[upwind_points]
         # @views curr_factor=(-Δτ[upwind_points].*expminτ[upwind_points].+onemexpminτ[upwind_points])./Δτ[upwind_points]./Δτ[upwind_points]
         @views curr_factor=(Δτ[upwind_points].-onemexpminτ[upwind_points])./Δτ[upwind_points].^2
-        # println("implicit curr_factor max: ", maximum(curr_factor))
 
         # Δνterm=(a.*view(currintensity, upwind_points.+1).+b.*view(currintensity, upwind_points.+0))
 
@@ -1069,10 +1012,6 @@ function secondorderadaptiveshortchar(previndex, data)
         # @views curr_factor=(-Δτ[downwind_points].*expminτ[downwind_points].+onemexpminτ[downwind_points])./Δτ[downwind_points]./Δτ[downwind_points]
         @views curr_factor=(Δτ[downwind_points].-onemexpminτ[downwind_points])./Δτ[downwind_points].^2
 
-        # println("implicit curr_factor max: ", maximum(curr_factor))
-
-
-
         # Δνterm=(a.*view(currintensity, downwind_points.-0).+b.*view(currintensity, downwind_points.-1))
 
         matrixsize=length(downwind_points)+2#+2 boundary conditions at the beginning
@@ -1102,8 +1041,6 @@ function secondorderadaptiveshortchar(previndex, data)
     end
 
     data.allintensities[:,previndex+1]=currintensity;
-    # println("second order shortchar: ", currintensity)
-    # println("max intensity: ", maximum(currintensity))
     return
 end
 
@@ -1118,7 +1055,6 @@ function computesingleraysecondorderadaptiveshortchar(data::Data)
         # forwardfreqdisc = (dv>=0 ?  true : false)
         #compute the next one
         secondorderadaptiveshortchar(i, data)
-        # println("here")
     end
     # display(Plots.plot(data.currintensity)
     return
@@ -1150,7 +1086,6 @@ function firstorderadaptiveshortchar(previndex, data)
     Δτdiv2 = Δτ./2.0
     # Δτdiv2=Δx*(χ[:,previndex+1].+χ[:,previndex])./4.0
     # Δτ=Δx*(χ[:,previndex+1].+χ[:,previndex])/2.0
-    # println("Δτ min:", minimum(Δτ))
     expminτdiv2=exp.(-Δτdiv2)
     expminτ=exp.(-2.0.*Δτdiv2)
     onemexpminτdiv2=-expm1.(-Δτdiv2)
@@ -1160,28 +1095,18 @@ function firstorderadaptiveshortchar(previndex, data)
     nextlineν=data.lineν[previndex+1]
 
     #now compute for which frequency points we need a forward or backward discretization
-    # println(size(ν))
     currν=data.ν[:, previndex]
     nextν=data.ν[:, previndex+1]
 
     # forwardfreqdisc=(nextν.-currν.+nextlineν.-lineν.>0.0)
     forwardfreqdisc=(nextν.-currν.>0.0)
 
-    # println(forwardfreqdisc)
-    # println(nextν.-currν.+nextlineν.-lineν)
-    # println(nextν.-currν)
-    # println(nextν.-lineν.+nextlineν.-lineν)
-
     starting_upwind=forwardfreqdisc[1]
     ending_upwind=forwardfreqdisc[nfreqs]
-    # println("starting upwind: ", starting_upwind)
 
     other_discretization_direction=[!(starting_upwind==forwardfreqdisc[index]) for index in 1:length(forwardfreqdisc)]
-    # println(other_discretization_direction)
 
     inflection_point=findfirst(other_discretization_direction)
-    # println(inflection_point)
-    # println("previndex: ",previndex)
 
     #Default discretization direction
     if isnothing(inflection_point)
@@ -1234,11 +1159,7 @@ function firstorderadaptiveshortchar(previndex, data)
     @views sourceterm=((onemexpminτ[upwind_points].-Δτ[upwind_points])./Δτ[upwind_points].+onemexpminτ[upwind_points]).*S[upwind_points, previndex].+(Δτ[upwind_points].-onemexpminτ[upwind_points]).*S[upwind_points, previndex+1]./Δτ[upwind_points]
     #huh, why is this stable (and not correct?)
     @views curr_factor=((Δτ[upwind_points].*expminτ[upwind_points].-onemexpminτ[upwind_points])./Δτ[upwind_points].+onemexpminτ[upwind_points])./Δτ[upwind_points]
-    # println("curr_factor max: ",maximum(curr_factor))
-    # println("c: ", c)
     # @views curr_factor=(Δτ[upwind_points].-1.0 .+expminτ[upwind_points]+Δτ[upwind_points].*(expminτ[upwind_points]))./Δτ[upwind_points]
-    # println("old curr_factor max: ",maximum(curr_factor))
-    # println("older curr_factor max: ",maximum(curr_factor))
 
     # @views currintensity[upwind_points].+=(Δxdiv2.*(η[upwind_points, previndex]+η[upwind_points, previndex+1]-currintensity[upwind_points].*χ[upwind_points, previndex])
     #         +Δνdiv2[upwind_points].*Δνterm)#lineν is absorbed into Δνdiv2
@@ -1284,18 +1205,12 @@ function firstorderadaptiveshortchar(previndex, data)
     #now apply boundary conditions
     for bdy_tpl_index ∈ 1:length(boundary_points)
         indices=[boundary_points[bdy_tpl_index][i] for i ∈ 1:length(boundary_points[bdy_tpl_index])]
-        # println("bdy indices: ", indices)
-        # println("is outer boundary condition?", boundary_point_is_outer[bdy_tpl_index])
         if (boundary_point_is_outer[bdy_tpl_index])
             #then just set it to the boundary value
             @views currintensity[indices]=bdyintensity[indices, previndex+1]
         else
             νdiff=currν[indices[2]]-currν[indices[1]]
-            # println("nu diff: ",νdiff)
             νleft=currν[indices[1]]
-            # println("diff with left: ",nextν[indices].-νleft)
-            # println("nextν-currν: ",nextν.-currν)
-            # println("nu diff at inflection point",nextν[indices].-currν[indices])
             #interpolate them to their next frequencies (linearly)
             @views currintensity[indices]=currintensity[indices[1]].+
                     (nextν[indices].-νleft)./νdiff.*(currintensity[indices[2]].-currintensity[indices[1]])
@@ -1327,7 +1242,6 @@ function firstorderadaptiveshortchar(previndex, data)
         b=-1.0 ./Δν
         @views curr_factor=(-Δτ[upwind_points].*expminτ[upwind_points].+onemexpminτ[upwind_points])./Δτ[upwind_points]./Δτ[upwind_points]
         # @views curr_factor=(Δτ[upwind_points].-1.0.+expminτ[upwind_points])./Δτ[upwind_points]
-        # println("implicit curr_factor max: ", maximum(curr_factor))
         # Δνterm=(a.*view(currintensity, upwind_points.+1).+b.*view(currintensity, upwind_points.+0))
 
         matrixsize=length(upwind_points)+2#+2 boundary conditions at the end
@@ -1375,7 +1289,6 @@ function firstorderadaptiveshortchar(previndex, data)
         # curr_factor=0
         # @views curr_factor=(Δτ[downwind_points].-onemexpminτ[downwind_points])./Δτ[downwind_points]./Δτ[downwind_points]
         @views curr_factor=(-Δτ[downwind_points].*expminτ[downwind_points].+onemexpminτ[downwind_points])./Δτ[downwind_points]./Δτ[downwind_points]
-        # println("implicit curr_factor max: ", maximum(curr_factor))
 
 
 
@@ -1422,7 +1335,6 @@ function computesinglerayfirstorderadaptiveshortchar(data::Data)
         # forwardfreqdisc = (dv>=0 ?  true : false)
         #compute the next one
         firstorderadaptiveshortchar(i, data)
-        # println("here")
     end
     # display(Plots.plot(data.currintensity)
     return
@@ -1454,7 +1366,6 @@ function adaptiveimplicitshortchar(previndex, data)
     # Δτdiv2=Δx*(χ[:,previndex+1].+χ[:,previndex])./4.0
     # Δτ=Δx*(χ[:,previndex+1].+χ[:,previndex])/2.0
 
-    println("Δτ min:", minimum(Δτ))
     expminτdiv2=exp.(-Δτdiv2)
     expminτ=exp.(-2.0.*Δτdiv2)
     onemexpminτdiv2=-expm1.(-Δτdiv2)
@@ -1464,28 +1375,18 @@ function adaptiveimplicitshortchar(previndex, data)
     nextlineν=data.lineν[previndex+1]
 
     #now compute for which frequency points we need a forward or backward discretization
-    println(size(ν))
     currν=data.ν[:, previndex]
     nextν=data.ν[:, previndex+1]
 
     # forwardfreqdisc=(nextν.-currν.+nextlineν.-lineν.>0.0)
     forwardfreqdisc=(nextν.-currν.>0.0)
 
-    println(forwardfreqdisc)
-    # println(nextν.-currν.+nextlineν.-lineν)
-    println(nextν.-currν)
-    # println(nextν.-lineν.+nextlineν.-lineν)
-
     starting_upwind=forwardfreqdisc[1]
     ending_upwind=forwardfreqdisc[nfreqs]
-    # println("starting upwind: ", starting_upwind)
 
     other_discretization_direction=[!(starting_upwind==forwardfreqdisc[index]) for index in 1:length(forwardfreqdisc)]
-    # println(other_discretization_direction)
 
     inflection_point=findfirst(other_discretization_direction)
-    println(inflection_point)
-    # println("previndex: ",previndex)
 
     #Default discretization direction
     if isnothing(inflection_point)
@@ -1548,18 +1449,12 @@ function adaptiveimplicitshortchar(previndex, data)
     #now apply boundary conditions
     for bdy_tpl_index ∈ 1:length(boundary_points)
         indices=[boundary_points[bdy_tpl_index][i] for i ∈ 1:length(boundary_points[bdy_tpl_index])]
-        # println("bdy indices: ", indices)
-        # println("is outer boundary condition?", boundary_point_is_outer[bdy_tpl_index])
         if (boundary_point_is_outer[bdy_tpl_index])
             #then just set it to the boundary value
             @views currintensity[indices]=bdyintensity[indices, previndex+1]
         else
             νdiff=currν[indices[2]]-currν[indices[1]]
-            # println("nu diff: ",νdiff)
             νleft=currν[indices[1]]
-            # println("diff with left: ",nextν[indices].-νleft)
-            # println("nextν-currν: ",nextν.-currν)
-            # println("nu diff at inflection point",nextν[indices].-currν[indices])
             #interpolate them to their next frequencies (linearly)
             @views currintensity[indices]=currintensity[indices[1]].+
                     (nextν[indices].-νleft)./νdiff.*(currintensity[indices[2]].-currintensity[indices[1]])
@@ -1585,7 +1480,6 @@ function adaptiveimplicitshortchar(previndex, data)
         # c=.-a.-b;
 
         Δνnext=(view(ν, upwind_points, previndex+1)-view(ν, upwind_points, previndex))
-        # print(Δνnext)
 
         Δν=(view(ν, upwind_points.+1, previndex+1)-view(ν, upwind_points.+0, previndex+1))
         a=1.0 ./Δν
@@ -1594,7 +1488,6 @@ function adaptiveimplicitshortchar(previndex, data)
         @views curr_factor=(onemexpminτ[upwind_points])./Δτ[upwind_points]
         # @views curr_factor=0
         # @views curr_factor=(Δτ[upwind_points].-1.0.+expminτ[upwind_points])./Δτ[upwind_points]
-        println("implicit curr_factor max: ", maximum(curr_factor./Δνnext))
         # Δνterm=(a.*view(currintensity, upwind_points.+1).+b.*view(currintensity, upwind_points.+0))
 
         matrixsize=length(upwind_points)+2#+2 boundary conditions at the end
@@ -1609,7 +1502,6 @@ function adaptiveimplicitshortchar(previndex, data)
 
         @views diagonal[1:(matrixsize-2)].+=-curr_factor.*Δνnext.*b
         @views offdiagonal[1:(matrixsize-2)]=-curr_factor.*Δνnext.*a
-        # print("offdiagonal: ", offdiagonal)
 
         #inefficient, as julia stores the entire matrix, but this should work
         # matrix=LA.diagm(0 => diagonal,1=>offdiagonal, 2=>secondoffdiagonal)
@@ -1627,7 +1519,6 @@ function adaptiveimplicitshortchar(previndex, data)
     if length(downwind_points)>0
 
         Δνnext=(view(ν, downwind_points, previndex+1)-view(ν, downwind_points, previndex))
-        # print(Δνnext)
 
         # Δνsmall=(view(ν, downwind_points.-1, previndex+1)-view(ν, downwind_points.-2, previndex+1))
         # Δνlarge=(view(ν, downwind_points, previndex+1)-view(ν, downwind_points.-2, previndex+1))
@@ -1644,7 +1535,6 @@ function adaptiveimplicitshortchar(previndex, data)
         # @views curr_factor=(-Δτ[downwind_points].*expminτ[downwind_points].+onemexpminτ[downwind_points])./Δτ[downwind_points]./Δτ[downwind_points]
         @views curr_factor=(onemexpminτ[downwind_points])./Δτ[downwind_points]
         # @views curr_factor=0
-        println("implicit curr_factor max: ", maximum(curr_factor./Δν))
 
 
 
@@ -1711,28 +1601,19 @@ function firstorderexplicitadaptive(previndex, data)
     nextlineν=data.lineν[previndex+1]
 
     #now compute for which frequency points we need a forward or backward discretization
-    println(size(ν))
     currν=data.ν[:, previndex]
     nextν=data.ν[:, previndex+1]
 
     # forwardfreqdisc=(nextν.-currν.+nextlineν.-lineν.>0.0)
     forwardfreqdisc=(nextν.-currν.>0.0)
 
-    println(forwardfreqdisc)
-    # println(nextν.-currν.+nextlineν.-lineν)
-    println(nextν.-currν)
-    # println(nextν.-lineν.+nextlineν.-lineν)
 
     starting_upwind=forwardfreqdisc[1]
     ending_upwind=forwardfreqdisc[nfreqs]
-    # println("starting upwind: ", starting_upwind)
 
     other_discretization_direction=[!(starting_upwind==forwardfreqdisc[index]) for index in 1:length(forwardfreqdisc)]
-    # println(other_discretization_direction)
 
     inflection_point=findfirst(other_discretization_direction)
-    println(inflection_point)
-    # println("previndex: ",previndex)
 
     if isnothing(inflection_point)
         if starting_upwind
@@ -1794,18 +1675,12 @@ function firstorderexplicitadaptive(previndex, data)
     #now apply boundary conditions
     for bdy_tpl_index ∈ 1:length(boundary_points)
         indices=[boundary_points[bdy_tpl_index][i] for i ∈ 1:length(boundary_points[bdy_tpl_index])]
-        # println("bdy indices: ", indices)
-        # println("is outer boundary condition?", boundary_point_is_outer[bdy_tpl_index])
         if (boundary_point_is_outer[bdy_tpl_index])
             #then just set it to the boundary value
             @views currintensity[indices]=bdyintensity[indices, previndex+1]
         else
             νdiff=currν[indices[2]]-currν[indices[1]]
-            # println("nu diff: ",νdiff)
             νleft=currν[indices[1]]
-            # println("diff with left: ",nextν[indices].-νleft)
-            # println("nextν-currν: ",nextν.-currν)
-            # println("nu diff at inflection point",nextν[indices].-currν[indices])
             #interpolate them to their next frequencies (linearly)
             @views currintensity[indices]=currintensity[indices[1]].+
                     (nextν[indices].-νleft)./νdiff.*(currintensity[indices[2]].-currintensity[indices[1]])
@@ -1865,7 +1740,6 @@ function shortcharsplit(previndex, data)
     # Δτdiv2=Δx*(χ[:,previndex+1].+χ[:,previndex])./4.0
     # Δτ=Δx*(χ[:,previndex+1].+χ[:,previndex])/2.0
 
-    println("Δτ min:", minimum(Δτ))
     expminτdiv2=exp.(-Δτdiv2)
     expminτ=exp.(-2.0.*Δτdiv2)
     onemexpminτdiv2=-expm1.(-Δτdiv2)
@@ -1875,28 +1749,18 @@ function shortcharsplit(previndex, data)
     nextlineν=data.lineν[previndex+1]
 
     #now compute for which frequency points we need a forward or backward discretization
-    println(size(ν))
     currν=data.ν[:, previndex]
     nextν=data.ν[:, previndex+1]
 
     # forwardfreqdisc=(nextν.-currν.+nextlineν.-lineν.>0.0)
     forwardfreqdisc=(nextν.-currν.>0.0)
 
-    println(forwardfreqdisc)
-    # println(nextν.-currν.+nextlineν.-lineν)
-    println(nextν.-currν)
-    # println(nextν.-lineν.+nextlineν.-lineν)
-
     starting_upwind=forwardfreqdisc[1]
     ending_upwind=forwardfreqdisc[nfreqs]
-    # println("starting upwind: ", starting_upwind)
 
     other_discretization_direction=[!(starting_upwind==forwardfreqdisc[index]) for index in 1:length(forwardfreqdisc)]
-    # println(other_discretization_direction)
 
     inflection_point=findfirst(other_discretization_direction)
-    println(inflection_point)
-    # println("previndex: ",previndex)
 
     #Default discretization direction
     if isnothing(inflection_point)
@@ -1934,17 +1798,13 @@ function shortcharsplit(previndex, data)
     b=-1.0 ./Δνd
     #is the numerical derivative of I
     Δνterm=(a.*view(currintensity, upwind_points.+1).+b.*view(currintensity, upwind_points.+0))
-    println("frac: ", abs.((nextν[upwind_points].-currν[upwind_points])./Δνd))
     # expl_frac=min.(1.0, abs.((nextν[upwind_points].-currν[upwind_points])./Δνd))
-    # println("upwind frac: ", expl_frac)
     # opt_depth_upwind=Δτ[upwind_points].*min.(1.0,abs.(Δνd./(nextν[upwind_points].-currν[upwind_points])))
     opt_depth_upwind=min.(Δτ[upwind_points],log.(1.0.+Δτ[upwind_points].*Δνd./abs.(nextν[upwind_points].-currν[upwind_points])))
-    println("upwind optical depth: ", opt_depth_upwind./Δτ[upwind_points])
 
     @views sourceterm=((onemexpminτ[upwind_points].-Δτ[upwind_points])./Δτ[upwind_points].+onemexpminτ[upwind_points]).*S[upwind_points, previndex].+(Δτ[upwind_points].-onemexpminτ[upwind_points]).*S[upwind_points, previndex+1]./Δτ[upwind_points]
     #fully implicit contribution
     @views curr_factor=(exp.(-Δτ[upwind_points]+opt_depth_upwind)-expminτ[upwind_points])./Δτ[upwind_points]
-    println("curr_factor: ", curr_factor)
     @views currintensity[upwind_points]=currintensity[upwind_points].*expminτ[upwind_points].+sourceterm.+curr_factor.*Δνterm.*Δν[upwind_points]
     #end forward discretization explicit part
     #now do backward discretization explicit part
@@ -1957,14 +1817,10 @@ function shortcharsplit(previndex, data)
     Δνterm=(a.*view(currintensity, downwind_points.-0).+b.*view(currintensity, downwind_points.-1))
     # opt_depth_downwind=Δτ[downwind_points].*min.(1.0,abs.(Δνd./(nextν[downwind_points].-currν[downwind_points])))
     opt_depth_downwind=min.(Δτ[downwind_points],log.(1.0.+Δτ[downwind_points].*Δνd./abs.(nextν[downwind_points].-currν[downwind_points])))
-    println("downwind optical depth: ", opt_depth_downwind./Δτ[downwind_points])
-    println("default optical depth: ", Δτ[downwind_points])
 
     @views sourceterm=((onemexpminτ[downwind_points].-Δτ[downwind_points])./Δτ[downwind_points].+onemexpminτ[downwind_points]).*S[downwind_points, previndex].+(Δτ[downwind_points].-onemexpminτ[downwind_points]).*S[downwind_points, previndex+1]./Δτ[downwind_points]
     #fully implicit contribution
     @views curr_factor=(exp.(-Δτ[downwind_points]+opt_depth_downwind)-expminτ[downwind_points])./Δτ[downwind_points]
-    println("curr_factor: ", curr_factor)
-    println("should be positive: ", expminτ[downwind_points].-curr_factor.*Δν[downwind_points]./Δνd )
     @views currintensity[downwind_points]=currintensity[downwind_points].*expminτ[downwind_points].+sourceterm.+curr_factor.*Δνterm.*Δν[downwind_points]
 
     #end backward discretization explicit part
@@ -1972,18 +1828,12 @@ function shortcharsplit(previndex, data)
     #now apply boundary conditions
     for bdy_tpl_index ∈ 1:length(boundary_points)
         indices=[boundary_points[bdy_tpl_index][i] for i ∈ 1:length(boundary_points[bdy_tpl_index])]
-        # println("bdy indices: ", indices)
-        # println("is outer boundary condition?", boundary_point_is_outer[bdy_tpl_index])
         if (boundary_point_is_outer[bdy_tpl_index])
             #then just set it to the boundary value
             @views currintensity[indices]=bdyintensity[indices, previndex+1]
         else
             νdiff=currν[indices[2]]-currν[indices[1]]
-            # println("nu diff: ",νdiff)
             νleft=currν[indices[1]]
-            # println("diff with left: ",nextν[indices].-νleft)
-            # println("nextν-currν: ",nextν.-currν)
-            # println("nu diff at inflection point",nextν[indices].-currν[indices])
             #interpolate them to their next frequencies (linearly)
             @views currintensity[indices]=currintensity[indices[1]].+
                     (nextν[indices].-νleft)./νdiff.*(currintensity[indices[2]].-currintensity[indices[1]])
@@ -2009,7 +1859,6 @@ function shortcharsplit(previndex, data)
         # c=.-a.-b;
 
         Δνnext=(view(ν, upwind_points, previndex+1)-view(ν, upwind_points, previndex))
-        # print(Δνnext)
 
         Δν=(view(ν, upwind_points.+1, previndex+1)-view(ν, upwind_points.+0, previndex+1))
         a=1.0 ./Δν
@@ -2017,10 +1866,8 @@ function shortcharsplit(previndex, data)
         # @views curr_factor=(-Δτ[upwind_points].*expminτ[upwind_points].+onemexpminτ[upwind_points])./Δτ[upwind_points]./Δτ[upwind_points]
         # @views curr_factor=(onemexpminτ[upwind_points])./Δτ[upwind_points]
         @views curr_factor=(-expm1.(-Δτ[upwind_points]+opt_depth_upwind))./Δτ[upwind_points]
-        println("curr_factor: ", curr_factor)
         # @views curr_factor=0
         # @views curr_factor=(Δτ[upwind_points].-1.0.+expminτ[upwind_points])./Δτ[upwind_points]
-        println("implicit curr_factor max: ", maximum(curr_factor./Δν.*Δνnext))
         # Δνterm=(a.*view(currintensity, upwind_points.+1).+b.*view(currintensity, upwind_points.+0))
 
         matrixsize=length(upwind_points)+2#+2 boundary conditions at the end
@@ -2035,12 +1882,10 @@ function shortcharsplit(previndex, data)
 
         @views diagonal[1:(matrixsize-2)].+=-curr_factor.*Δνnext.*b
         @views offdiagonal[1:(matrixsize-2)]=-curr_factor.*Δνnext.*a
-        # print("offdiagonal: ", offdiagonal)
 
         #inefficient, as julia stores the entire matrix, but this should work
         # matrix=LA.diagm(0 => diagonal,1=>offdiagonal, 2=>secondoffdiagonal)
         matrix=LA.diagm(0 => diagonal,1=>offdiagonal)
-        print(matrix)
 
         rangeincludingbdy=UnitRange(first(upwind_points), last(upwind_points)+2)
         @views currintensity[rangeincludingbdy].=(matrix \ currintensity[rangeincludingbdy])
@@ -2054,7 +1899,6 @@ function shortcharsplit(previndex, data)
     if length(downwind_points)>0
 
         Δνnext=(view(ν, downwind_points, previndex+1)-view(ν, downwind_points, previndex))
-        # print(Δνnext)
 
         # Δνsmall=(view(ν, downwind_points.-1, previndex+1)-view(ν, downwind_points.-2, previndex+1))
         # Δνlarge=(view(ν, downwind_points, previndex+1)-view(ν, downwind_points.-2, previndex+1))
@@ -2073,8 +1917,6 @@ function shortcharsplit(previndex, data)
         @views curr_factor=(-expm1.(-Δτ[downwind_points]+opt_depth_downwind))./Δτ[downwind_points]
 
         # @views curr_factor=0
-        println("implicit curr_factor max: ", maximum(curr_factor./Δν))
-
 
 
         # Δνterm=(a.*view(currintensity, downwind_points.-0).+b.*view(currintensity, downwind_points.-1))
