@@ -12,60 +12,65 @@ ld=TestMolecule.testlinedata()
 println(ld)
 
 quadfactor=1
-factor=1.0;#normally, we should adaptively determine to insert ghost points inbetween, but for simplicity, we just make a more dense discretization
+factor=10.0;#normally, we should adaptively determine to insert ghost points inbetween, but for simplicity, we just make a more dense discretization
 #not the exact settings, but just to test
-npoints   = convert(Int, 3*factor)
-nrays     = 1
-nquads    = 45*quadfactor
+npoints   = convert(Int, 101*factor)
+println("npoints: ", npoints)
+damping   = convert(Int, 40 *factor)
+period    = npoints-1
+amplitude = 5.0e-0 #in km/s
+# nrays     = 1
+nquads    = 1025*quadfactor
 
 nH2  = 1.0E+12                 # [m^-3]
 nTT  = 1.0E+08                 # [m^-3]
 temp = 4.5E+01                 # [K]
 turb = 0.0E+00                 # [m/s]
-dx   = 1.0E+04/factor        # [m]
-dx   = 1.0E+09/factor
+dx   = 1.0E+09/factor        # [m]
+# dx   = 1.0e9
 # dx   = 1.5E-00
-r_in=10.0 #TODO REMOVE
+# r_in=10.0
 
-dv   = 2.5E+02 / 300_000_000   # [fraction of speed of light]
-dv   = -0.5*8.7E+02 / 300_000_000/ factor   # [fraction of speed of light] #8.7E+02 is +-line width
+# dv   = 2.5E+02 / 300_000_000   # [fraction of speed of light]
+# dv   = -2.0*8.7E+02 / 300_000_000/ factor   # [fraction of speed of light] #8.7E+02 is +-line width
 # dv   = 0.000015
 #bug: nan for analytic solution when putting dv to 0
 # dv   = 1E-18
 
-#sinusoidal velocity profile for testing
-maxV = 2.0E+03 / 300_000_000
-# maxV = 0
-
 L    = dx*(npoints-1)
-vmax = dv*(npoints-1)
-v=(0:npoints-1)*dv
+# vmax = dv
+# vmax = dv*(npoints-1)
+# v=(0:npoints-1)*dv
+
+pointids = 0:(npoints-1)
+println("pointids: ", pointids)
+v=amplitude.*exp.(pointids./damping).*sin.(2π.*pointids./period)./300_000 #Figure 5 from Baron & Hauschildt 2004
+println("v: ", v)
+println("shift in line widths :", v.*frq./dnu)
 
 k=1
 
-#emissionvalue=10000.0
-
 frq = ld.frequency[k]
-println("line freq:", frq)
 pop = Tools.LTEpop(ld, temp) .* nTT
-eta = Tools.lineEmissivity(ld, pop)[k]#/emissionvalue
+eta = Tools.lineEmissivity(ld, pop)[k]
+eta = eta#./10000 #TESTING: less emission means less gibbs nonsense
 chi = Tools.lineOpacity(ld, pop)[k]
-println("max chi: ", maximum(chi))
+#flooring the minimal optical depth
+# chi = max(chi, 1E-10)
 
-src = Tools.lineSource(ld, pop)[k]#/emissionvalue
+src = Tools.lineSource(ld, pop)[k]
+src = src#./10000 #TESTING: less emission means less gibbs nonsense
 dnu = Tools.dnu(ld, k, temp, (turb/TestMolecule.CC)^2)
 
-println("source:", src)
-println("eta: ", eta)
-println("chi: ", chi)
+println("src: ",src)
 println(eta/chi)
 println(ld.frequency[1])
 
 
 quad_rel_diff=0.25/quadfactor
-# quad_rel_diff=0.35/quadfactor
-# quad_rel_diff=0.20/quadfactor
-ν=ld.frequency[1].+(-(nquads-1)/2:(nquads-1)/2).*quad_rel_diff.*dnu
+# quad_rel_diff=0.15/quadfactor
+ν=ld.frequency[1].+(-(nquads-1)/2:(nquads-1)/2).*quad_rel_diff.*dnu #static
+#becomes comoving; can also change frequencies for more difficulty
 νarbit=reshape([ld.frequency[1]+quad*quad_rel_diff*dnu*(1.0-0.0000*point) for point in 1:npoints for quad in (-(nquads-1)/2:(nquads-1)/2)], nquads, npoints)
 # νarbit=reshape([ld.frequency[1]+quad*quad_rel_diff*dnu for point in 1:npoints for quad in (-(nquads-1)/2:(nquads-1)/2)], nquads, npoints)
 
@@ -81,12 +86,17 @@ middleν=ld.frequency[1]
 # νarbitrary=reshape(collect([ν[freq]*(1.0+1.0*v[point])+0.25*sin(point)*dnu for point ∈ 1:npoints for freq in 1:nquads]), nquads, npoints)
 νarbitrary=reshape(collect([νarbit[freq,point]*(1.0+1.0*v[point]) for point ∈ 1:npoints for freq in 1:nquads]), nquads, npoints)
 # νarbitrary=reshape(collect([νarbit[freq,point]*(1.0+maxV*sin(point*2π/32)) for point ∈ 1:npoints for freq in 1:nquads]), nquads, npoints)
+println("size nu: ",size(νarbitrary))
+println("nquads: ", nquads)
+println("npoints: ", npoints)
+println("size nu doppl: ", size(νdoppl))
 
 
 # middleνdoppl=reshape(middleν.*(1.0 .+v), 1, npoints)
 middleνdoppl=middleν.*(1.0 .+v)
 doppl_δν=reshape([ν[freq]-middleνdoppl[point] for point ∈ 1:npoints for freq ∈ 1:nquads], nquads, npoints)
 println("dopple freq: ",size(νdoppl))
+println("size middleνdoppl: ", size(middleνdoppl))
 # println("Icmb: ", size(Icmb))
 # println(min(Icmb...))
 # println(max(Icmb...))
@@ -100,45 +110,8 @@ function bdy(nu)
 end
 
 Icmb=bdy.(νdoppl)
+println("boundary intensity: ", Icmb[1])
 Icmbarbitrary=bdy.(νarbitrary)
-
-function z_max(r, theta)
-    return r#assuming only a single ray, starting from x=0
-    # println(stdout, "theta: ", theta)
-    # if (theta < asin(r_in/r))
-    #     println(stdout, "first: ", r_in^2 - (r*sin(theta))^2)
-    #     return r * cos(theta) - sqrt(r_in^2 - (r*sin(theta))^2)
-    # else
-    #     println(stdout, "second: ", L^2 - (r*sin(theta))^2)
-    #     println(stdout, "costheta: ", cos(theta))
-    #     println(stdout, "r: ", r)
-    #     println(stdout, "return: ", r * cos(theta) + sqrt(L^2 - (r*sin(theta))^2))
-    #     return r * cos(theta) + sqrt(L^2 - (r*sin(theta))^2)
-    # end
-end
-
-function tau(nu, r, theta)
-    l   = z_max(r, theta)
-    arg = -(nu - frq) / dnu#freq diff with line freq (reversed because I define doppler shift in the other way)
-    fct = vmax * nu / dnu #doppler shift factor
-    prefactor=chi*l / (fct*dnu)
-    #check within which bounds it lies; wait erf is antisymmetric
-    return prefactor * 0.5 * (sf.erf(-arg+fct) + sf.erf(arg))
-    # return chi*L / (fct*dnu) * 0.5 * (sf.erf(arg) + sf.erf(fct*l/L-arg))
-end
-
-function I_(nu, r, theta)
-    # println(stdout, "tau: ", tau(nu, r, theta))
-    # if tau(nu, r, theta)<1e-8
-    #     return bdy(nu)
-    # else
-    # println("optical depth increments: ", tau(nu, r, theta)./(npoints.-1))
-    return src + (bdy(nu.*(1.0 .+vmax))-src)*exp(-tau(nu, r, theta))
-    # end
-end
-
-
-
 
 function computeχ(npoints, nquads, ρ)
     # return ones(Float64, nquads, npoints)
@@ -182,10 +155,14 @@ end
 
 η = computeη(npoints, nquads, 1)
 χarbitrary = computeχarbitary(npoints, nquads, 1)
+# println(χarbitrary)
+
 # toolow = findall(χarbitrary.<=minchi)
 # χarbitrary[toolow] .= minchi
 
 ηarbitrary = computeηarbitrary(npoints, nquads, 1)
+# println(ηarbitrary)
+# error()
 
 χstatic = computeχstatic()
 ηstatic = computeηstatic()
@@ -214,7 +191,7 @@ data2=ComovingSolvers.data(Icmb,(0:npoints-1).*dx, v, χ, η, νdoppl, middleνd
 ComovingSolvers.computesingleraysecondorder(data2)
 secondorderintensities=data2.allintensities
 
-# data3=ComovingSolvers.data(bdyintensity,(0:npoints-1).*dx, v, χ, η, ν, middleν, src)
+# data3=ComovingSolvers.data(bdyintensity,(0:npoints-1).*dx, v, χ, η, ν, middleν)
 # ComovingSolvers.computesinglerayfirstorderexplicitupwind(data3)
 # firstorderintensitiesupwind=data3.allintensities
 
@@ -269,24 +246,19 @@ data13=ComovingSolvers.data(Icmbarbitrary,(0:npoints-1).*dx, v, χarbitrary, ηa
 ComovingSolvers.computesinglerayexplicitadaptive(data13)
 comovingexplicit=data13.allintensities
 
-#first order fully explicit adaptive comoving solver, using default formula
-data14=ComovingSolvers.data(Icmbarbitrary,(0:npoints-1).*dx, v, χarbitrary, ηarbitrary, νarbitrary, middleνdoppl, src)
-ComovingSolvers.computesinglerayshortcharsplit(data14)
-shortcharsplit=data14.allintensities
-
 #first order fully implicit adaptive comoving solver, using changed opacity
 data15=ComovingSolvers.data(Icmbarbitrary,(0:npoints-1).*dx, v, χarbitrary, ηarbitrary, νarbitrary, middleνdoppl, src)
 ComovingSolvers.computesingleraysecondorderhauschildt2004shortchar(data15)
 shortcharhauschildt=data15.allintensities
 
 
-#TODO REORDER; put all plotting stuff right after solvers; then (un)comment them at the same time
-Iray=I_.(ν, L, 0.0)
+# Iray=I_.(ν, L, 0.0)
 # println(Iray)
 # println(ν, size(ν))
 println(v[end])
 Plots.plot()
 #multiplication factor because julia plots do not like very small values...
+Plots.plot!(1e-11.*[νarbitrary[:,end]],1e18.*[comovingshortchar[:, npoints]], label = "comoving shortchar 2nd", xlabel="ν [10^{11}s^{-1}]", ylabel="I [10^{-18} W Hz^{-1} sr^{-1} m^{-2}]", ylims=(0, Inf))#lims support only setting a single option by using 'Inf' for the non-set option
 # Plots.plot([νdoppl[:,end], νdoppl[:,end],νdoppl[:,end]],1e8.*[firstorderintensities[:, npoints], secondorderfreq[:, npoints], secondorderintensities[:,npoints]], label = ["first order" "second order freq" "second order"])
 
 # Plots.savefig("Example static eval")
@@ -294,32 +266,31 @@ Plots.plot()
 # Plots.plot!([νdoppl[:,end], ν[:], νdoppl[:,end]],1e8.*[Iray, staticfreqsecond[:, npoints], secondorderfull[:, npoints]], label = ["analytic" "static second order" "full second order"])
 
 # Plots.plot!([νdoppl[:,end], νdoppl[:,end]],1e8.*[Iray, secondorderfull[:, npoints]], label = ["analytic" "full second order"])
-Plots.plot!(1e-11.*[νdoppl[:,end]],1e18.*[Iray], label = "analytic", xlabel="ν [10^{11}s^{-1}]", ylabel="I [10^{-18} W Hz^{-1} sr^{-1} m^{-2}]", ylims=(0, Inf))#lims support only setting a single option by using 'Inf' for the non-set option
 # Plots.plot!([νarbitrary[:,end]],1e8.*[secondorderfull[:, npoints]], label = "full second order")
 # Plots.plot!([νarbitrary[:,end]],1e8.*[secondorderadaptive[:, npoints]], label = "adaptive second order")
-Plots.plot!(1e-11.*[νarbitrary[:,end]],1e18.*[comovingshortchar[:, npoints]], label = "comoving shortchar 2nd")
-Plots.plot!(1e-11.*[νarbitrary[:,end]],1e18.*[shortcharhauschildt[:, npoints]], label = "shortchar hauschildt")
-# Plots.plot!([νarbitrary[:,end]],1e8.*[comovingshortcharfirstorder[:, npoints]], label = "comoving shortchar 1st")
+# Plots.plot!(1e-11.*[νarbitrary[:,end]],1e18.*[comovingshortcharfirstorder[:, npoints]], label = "comoving shortchar 1st")
 Plots.plot!(1e-11.*[νarbitrary[:,end]],1e18.*[comovingshortcharimplicit[:, npoints]], label = "comoving shortchar impl")
-# Plots.plot!([νarbitrary[:,end]],1e8.*[comovingexplicit[:, npoints]], label = "comoving expl")
-# Plots.plot!([νarbitrary[:,end]],1e8.*[shortcharsplit[:, npoints]], label = "split shortchar")
-# Plots.plot!([ν[:]],1e8.*[shortcharstaticfreq[:, npoints]], label = "short char static")
+Plots.plot!(1e-11.*[ν[:]],1e18.*[shortcharstaticfreq[:, npoints]], label = "short char static")
+Plots.plot!(1e-11.*[νarbitrary[:,end]],1e18.*[shortcharhauschildt[:, npoints]], label = "shortchar hauschildt")
+# Plots.plot!(1e-11.*[νarbitrary[:,end]],1e18.*[comovingexplicit[:, npoints]], label = "comoving expl")
 
+Plots.vline!(1e-11.*[middleνdoppl[end], middleνdoppl[end]-dnu*(1+v[end]), middleνdoppl[end]+dnu*(1+v[end])], label=["shifted line center ±δν" "-δν" "+δν"],legend=:topleft)
 
 
 # Plots.plot([νdoppl[:,end], νdoppl[:,end]],1e8.*[secondorderfreq[:, npoints], Iray], label = ["second order impl" "analytic"])
-Plots.vline!(1e-11.*[middleνdoppl[end], middleνdoppl[end]-dnu*(1+v[end]), middleνdoppl[end]+dnu*(1+v[end])], label=["shifted line center ±δν" "-δν" "+δν"],legend=:topleft)
 
 Plots.gui()
-# Plots.savefig("bench_hubble_lemaitre_01 doppl, 1e9 dx, n 31, frq dns 2")
+# Plots.savefig("bench_numeric_25 kms, 1e7 dx, n 101, factor 10, quadfactor 4")
+
 # display(Plots.plot(10e14.*[secondorderintensities[:,npoints]], label = ["second order"]))
 # println(I_.(ν, 11.0e5, 0))
 # Plots.plot(1e5.*[firstorderintensities[:,npoints], secondorderintensities[:,npoints], Iray], label = ["first order" "second order" "analytic"])
 
-println(tau(middleν, L, 0.0))
-println(I_(middleν, L, 0.0))
+# println(tau(middleν, L, 0.0))
+# println(I_(middleν, L, 0.0))
 println("dnu: ", dnu)
 println("dnu quad: ", dnu/4.0/quadfactor)
-println("doppler shift: ", frq*dv)
-println("v: ", v, "\n")
+# println("doppler shift: ", frq*dv)
+println("max doppl shift: ", frq.*amplitude./300_000.0 .*2π/period)
+# println("v: ", v, "\n")
 # println("min χ: ",minimum(χ))

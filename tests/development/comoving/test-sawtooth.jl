@@ -11,27 +11,27 @@ import SpecialFunctions as sf
 ld=TestMolecule.testlinedata()
 println(ld)
 
-quadfactor=3
+quadfactor=4
 factor=1.0;#normally, we should adaptively determine to insert ghost points inbetween, but for simplicity, we just make a more dense discretization
 #not the exact settings, but just to test
 # npoints   = convert(Int, 12*factor)
 nrays     = 1
-nsegments = 5#forwards and backwards in frequency space
-npoints_half_segment = 3
+nsegments = 3#forwards and backwards in frequency space
+npoints_half_segment = 5
 npoints   = 1+nsegments*npoints_half_segment*2#starting point +
-nquads    = 105*quadfactor
+nquads    = 225*quadfactor
 
 nH2  = 1.0E+12                 # [m^-3]
 nTT  = 1.0E+08                 # [m^-3]
 temp = 4.5E+01                 # [K]
 turb = 0.0E+00                 # [m/s]
 dx   = 1.0E+04/factor        # [m]
-dx   = 1.0e06
+dx   = 1.0e07
 # dx   = 1.5E-00
 # r_in=10.0
 
 dv   = 2.5E+02 / 300_000_000   # [fraction of speed of light]
-dv   = 1.0*-8.7E+02 / 300_000_000/ factor   # [fraction of speed of light]
+dv   = 2.0*8.7E+02 / 300_000_000/ factor   # [fraction of speed of light] #8.7E+02 is +-line width
 # dv   = 0.000015
 #bug: nan for analytic solution when putting dv to 0
 # dv   = 1E-18
@@ -78,6 +78,7 @@ println(ld.frequency[1])
 
 
 quad_rel_diff=0.25/quadfactor
+# quad_rel_diff=0.15/quadfactor
 ν=ld.frequency[1].+(-(nquads-1)/2:(nquads-1)/2).*quad_rel_diff.*dnu
 νarbit=reshape([ld.frequency[1]+quad*quad_rel_diff*dnu*(1.0-0.0000*point) for point in 1:npoints for quad in (-(nquads-1)/2:(nquads-1)/2)], nquads, npoints)
 # νarbit=reshape([ld.frequency[1]+quad*quad_rel_diff*dnu for point in 1:npoints for quad in (-(nquads-1)/2:(nquads-1)/2)], nquads, npoints)
@@ -359,6 +360,11 @@ data13=ComovingSolvers.data(Icmbarbitrary,(0:npoints-1).*dx, v, χarbitrary, ηa
 ComovingSolvers.computesinglerayexplicitadaptive(data13)
 comovingexplicit=data13.allintensities
 
+#first order fully implicit adaptive comoving solver, using changed opacity
+data15=ComovingSolvers.data(Icmbarbitrary,(0:npoints-1).*dx, v, χarbitrary, ηarbitrary, νarbitrary, middleνdoppl, src)
+ComovingSolvers.computesingleraysecondorderhauschildt2004shortchar(data15)
+shortcharhauschildt=data15.allintensities
+
 Iray=I_.(ν, L, 0.0)
 println(Iray)
 # println(ν, size(ν))
@@ -376,6 +382,7 @@ Plots.plot!([νdoppl[:,end]],1e8.*[Iray], label = "analytic")
 # Plots.plot!([νarbitrary[:,end]],1e8.*[secondorderfull[:, npoints]], label = "full second order")
 # Plots.plot!([νarbitrary[:,end]],1e8.*[secondorderadaptive[:, npoints]], label = "adaptive second order")
 Plots.plot!([νarbitrary[:,end]],1e8.*[comovingshortchar[:, npoints]], label = "comoving shortchar 2nd")
+Plots.plot!(1e-11.*[νarbitrary[:,end]],1e18.*[shortcharhauschildt[:, npoints]], label = "shortchar hauschildt")
 # Plots.plot!([νarbitrary[:,end]],1e8.*[comovingshortcharfirstorder[:, npoints]], label = "comoving shortchar 1st")
 # Plots.plot!([νarbitrary[:,end]],1e8.*[comovingshortcharimplicit[:, npoints]], label = "comoving shortchar impl")
 # Plots.plot!([ν[:]],1e8.*[shortcharstaticfreq[:, npoints]], label = "short char static")
@@ -391,7 +398,7 @@ Plots.gui()
 #also plot previous points
 Plots.plot(reuse=false)
 #index starting from last
-i=0
+i=1
 Iraym1=I_.(ν, L-(i)*dx, 0.0)
 # print(Iraym1)
 #multiplication factor because julia plots do not like very small values...
@@ -402,10 +409,11 @@ Iraym1=I_.(ν, L-(i)*dx, 0.0)
 # Plots.plot!([νdoppl[:,end], ν[:], νdoppl[:,end]],1e8.*[Iray, staticfreqsecond[:, npoints], secondorderfull[:, npoints]], label = ["analytic" "static second order" "full second order"])
 
 # Plots.plot!([νdoppl[:,end], νdoppl[:,end]],1e8.*[Iray, secondorderfull[:, npoints]], label = ["analytic" "full second order"])
-Plots.plot!([νdoppl[:,end]],1e8.*[Iraym1], label = "analytic")
-Plots.plot!([νarbitrary[:,end-i]],1e8.*[secondorderfull[:, npoints-i]], label = "full second order")
+Plots.plot!(1e-11.*[νdoppl[:,end]],1e18.*[Iraym1], label = "analytic", xlabel="ν [10^{11}s^{-1}]", ylabel="I [10^{-18} W Hz^{-1} sr^{-1} m^{-2}]", ylims=(0, Inf))
+# Plots.plot!([νarbitrary[:,end-i]],1e8.*[secondorderfull[:, npoints-i]], label = "full second order")
 # Plots.plot!([νarbitrary[:,end]],1e8.*[secondorderadaptive[:, npoints]], label = "adaptive second order")
-Plots.plot!([νarbitrary[:,end-i]],1e8.*[comovingshortchar[:, npoints-i]], label = "comoving shortchar 2nd")
+Plots.plot!(1e-11.*[νarbitrary[:,end-i]],1e18.*[comovingshortchar[:, npoints-i]], label = "comoving shortchar 2nd")
+Plots.plot!(1e-11.*[νarbitrary[:,end]],1e18.*[shortcharhauschildt[:, npoints]], label = "shortchar hauschildt")
 # Plots.plot!([νarbitrary[:,end]],1e8.*[comovingshortcharfirstorder[:, npoints]], label = "comoving shortchar 1st")
 # Plots.plot!([νarbitrary[:,end-i]],1e8.*[comovingshortcharimplicit[:, npoints-i]], label = "comoving shortchar impl")
 # Plots.plot!([ν[:]],1e8.*[shortcharstaticfreq[:, npoints-i]], label = "short char static")
@@ -414,12 +422,11 @@ Plots.plot!([νarbitrary[:,end-i]],1e8.*[comovingshortchar[:, npoints-i]], label
 
 
 # Plots.plot([νdoppl[:,end], νdoppl[:,end]],1e8.*[secondorderfreq[:, npoints], Iray], label = ["second order impl" "analytic"])
-Plots.vline!([middleνdoppl[end-i], middleνdoppl[end-i]-dnu*(1+v[end-i]), middleνdoppl[end-i]+dnu*(1+v[end-i])], label=["shifted line center ±δν" "-δν" "+δν"],legend=:topright)
+Plots.vline!(1e-11.*[middleνdoppl[end-i], middleνdoppl[end-i]-dnu*(1+v[end-i]), middleνdoppl[end-i]+dnu*(1+v[end-i])], label=["shifted line center ±δν" "-δν" "+δν"],legend=:topright)
 
 Plots.gui()
+# Plots.savefig("bench_sawtooth_2 doppl, 1e11 dx, npart 3, npoint 5")
 
-
-# Plots.savefig("Comparison full 2nd vs adaptive 2nd")
 # display(Plots.plot(10e14.*[secondorderintensities[:,npoints]], label = ["second order"]))
 # println(I_.(ν, 11.0e5, 0))
 # Plots.plot(1e5.*[firstorderintensities[:,npoints], secondorderintensities[:,npoints], Iray], label = ["first order" "second order" "analytic"])
