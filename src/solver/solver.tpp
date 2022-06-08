@@ -165,6 +165,7 @@ inline void Solver :: solve_shortchar_order_0 (Model& model)
 }
 
 
+template<ApproximationType approx>
 inline void Solver :: solve_feautrier_order_2_uv (Model& model)
 {
     // Allocate memory if not pre-allocated
@@ -197,7 +198,7 @@ inline void Solver :: solve_feautrier_order_2_uv (Model& model)
             {
                 for (Size f = 0; f < model.parameters.nfreqs(); f++)
                 {
-                    solve_feautrier_order_2_uv (model, o, f);
+                    solve_feautrier_order_2_uv <approx> (model, o, f);
 
                     model.radiation.u(rr,o,f)  = Su_()[centre];
                     model.radiation.v(rr,o,f)  = Sv_()[centre];
@@ -221,11 +222,12 @@ inline void Solver :: solve_feautrier_order_2_uv (Model& model)
 }
 
 
+template<ApproximationType approx>
 inline void Solver :: solve_feautrier_order_2_sparse (Model& model)
 {
     // Initialise variables
     for (LineProducingSpecies &lspec : model.lines.lineProducingSpecies)
-    {   
+    {
         lspec.lambda.clear();
 
         lspec.J.resize(model.parameters.npoints(), lspec.linedata.nrad);
@@ -269,7 +271,7 @@ inline void Solver :: solve_feautrier_order_2_sparse (Model& model)
                         // Integrate over the line
                         for (Size z = 0; z < model.parameters.nquads(); z++)
                         {
-                            solve_feautrier_order_2 (model, o,  lspec.nr_line[o][k][z]);
+                            solve_feautrier_order_2 <approx> (model, o,  lspec.nr_line[o][k][z]);
 
                             lspec.J(o,k) += lspec.quadrature.weights[z] * wt * Su_()[centre];
 
@@ -294,6 +296,7 @@ inline void Solver :: solve_feautrier_order_2_sparse (Model& model)
 }
 
 
+template<ApproximationType approx>
 inline void Solver :: solve_feautrier_order_2_anis (Model& model)
 {
     // Initialise variables
@@ -356,7 +359,7 @@ inline void Solver :: solve_feautrier_order_2_anis (Model& model)
                         // Integrate over the line
                         for (Size z = 0; z < model.parameters.nquads(); z++)
                         {
-                            solve_feautrier_order_2 (model, o, lspec.nr_line[o][k][z]);
+                            solve_feautrier_order_2 <approx> (model, o, lspec.nr_line[o][k][z]);
 
                             const Real du = lspec.quadrature.weights[z] * wt * Su_()[centre];
 
@@ -393,6 +396,7 @@ inline void Solver :: solve_feautrier_order_2_anis (Model& model)
 }
 
 
+template<ApproximationType approx>
 inline void Solver :: solve_feautrier_order_2 (Model& model)
 {
     // Allocate memory if not pre-allocated
@@ -430,7 +434,7 @@ inline void Solver :: solve_feautrier_order_2 (Model& model)
             {
                 for (Size f = 0; f < model.parameters.nfreqs(); f++)
                 {
-                    solve_feautrier_order_2 (model, o, f);
+                    solve_feautrier_order_2 <approx> (model, o, f);
 
                     model.radiation.u(rr_loc,o,f)  = Su_()[centre];
                     model.radiation.J(       o,f) += Su_()[centre] * two * model.geometry.rays.weight[rr];
@@ -468,9 +472,6 @@ inline void Solver :: solve_feautrier_order_2 (Model& model)
 inline void Solver :: image_feautrier_order_2 (Model& model, const Size rr)
 {
     Image image = Image(model.geometry, Intensity, rr);
-
-
-    cout << "--------------------------------------" << endl;
 
     const Size ar = model.geometry.rays.antipod[rr];
 
@@ -525,7 +526,7 @@ inline void Solver :: image_feautrier_order_2_for_point (Model& model, const Siz
     first_() = trace_ray <Rest> (model.geometry, o, rr, dshift_max, -1, centre-1, centre-1) + 1;
     last_ () = trace_ray <Rest> (model.geometry, o, ar, dshift_max, +1, centre+1, centre  ) - 1;
     n_tot_() = (last_()+1) - first_();
-    
+
     model. eta_ray.resize (n_tot_(), model.parameters.nfreqs());
     model. chi_ray.resize (n_tot_(), model.parameters.nfreqs());
     model.dtau_ray.resize (n_tot_(), model.parameters.nfreqs());
@@ -545,9 +546,6 @@ inline void Solver :: image_feautrier_order_2_for_point (Model& model, const Siz
 inline void Solver :: image_optical_depth (Model& model, const Size rr)
 {
     Image image = Image(model.geometry, OpticalDepth, rr);
-
-
-    cout << "--------------------------------------" << endl;
 
     const Size ar = model.geometry.rays.antipod[rr];
 
@@ -736,14 +734,16 @@ accel inline Real Solver :: boundary_intensity (const Model& model, const Size p
 
 ///  Getter for the emissivity (eta) and the opacity (chi)
 ///    @param[in]  model : reference to model object
-///    @param[in]  p     : in dex of the cell
+///    @param[in]  p     : index of the point
 ///    @param[in]  freq  : frequency (in co-moving frame)
 ///    @param[out] eta   : emissivity
 ///    @param[out] chi   : opacity
 //////////////////////////////////////////////////////////
-accel inline void Solver :: get_eta_and_chi (
+template<>
+accel inline void Solver :: get_eta_and_chi <None> (
     const Model& model,
     const Size   p,
+    const Size   l,
     const Real   freq,
           Real&  eta,
           Real&  chi ) const
@@ -761,6 +761,31 @@ accel inline void Solver :: get_eta_and_chi (
         eta += prof * model.lines.emissivity(p, l);
         chi += prof * model.lines.opacity   (p, l);
     }
+}
+
+
+///  Getter for the emissivity (eta) and the opacity (chi) in the "one line" approixmation
+///    @param[in]  model : reference to model object
+///    @param[in]  p     : index of the point
+///    @param[in]  l     : line index corresponding to the frequency
+///    @param[in]  freq  : frequency (in co-moving frame)
+///    @param[out] eta   : emissivity
+///    @param[out] chi   : opacity
+//////////////////////////////////////////////////////////////////////////////////////////
+template<>
+accel inline void Solver :: get_eta_and_chi <OneLine> (
+    const Model& model,
+    const Size   p,
+    const Size   l,
+    const Real   freq,
+          Real&  eta,
+          Real&  chi ) const
+{
+    const Real diff = freq - model.lines.line[l];
+    const Real prof = freq * gaussian (model.lines.inverse_width(p, l), diff);
+
+    eta = prof * model.lines.emissivity(p, l);
+    chi = prof * model.lines.opacity   (p, l) + 1.0e-26;
 }
 
 
@@ -808,9 +833,10 @@ accel inline void Solver :: solve_shortchar_order_0 (
         for (Size f = 0; f < model.parameters.nfreqs(); f++)
         {
             const Real freq = model.radiation.frequencies.nu(o, f);
+            const Size l    = model.radiation.frequencies.corresponding_line[f];
 
-            get_eta_and_chi (model, crt, freq,         eta_c[f], chi_c[f]);
-            get_eta_and_chi (model, nxt, freq*shift_n, eta_n[f], chi_n[f]);
+            get_eta_and_chi <None> (model, crt, l, freq,         eta_c[f], chi_c[f]);
+            get_eta_and_chi <None> (model, nxt, l, freq*shift_n, eta_n[f], chi_n[f]);
 
             const Real drho = trap (eta_c[f], eta_n[f], dZ);
             const Real dtau = trap (chi_c[f], chi_n[f], dZ);
@@ -831,8 +857,9 @@ accel inline void Solver :: solve_shortchar_order_0 (
             for (Size f = 0; f < model.parameters.nfreqs(); f++)
             {
                 const Real freq = model.radiation.frequencies.nu(o, f);
+                const Size l    = model.radiation.frequencies.corresponding_line[f];
 
-                get_eta_and_chi (model, nxt, freq*shift_n, eta_n[f], chi_n[f]);
+                get_eta_and_chi <None> (model, nxt, l, freq*shift_n, eta_n[f], chi_n[f]);
 
                 const Real drho = trap (eta_c[f], eta_n[f], dZ);
                 const Real dtau = trap (chi_c[f], chi_n[f], dZ);
@@ -932,9 +959,11 @@ accel inline void Solver :: update_Lambda (Model &model, const Size rr, const Si
 ///  2nd-order solver, without adaptive optical depth increments
 ///    @param[in] w : width index
 ///////////////////////////////////////////////////////////////////////
+template<ApproximationType approx>
 accel inline void Solver :: solve_feautrier_order_2 (Model& model, const Size o, const Size f)
 {
     const Real freq = model.radiation.frequencies.nu(o, f);
+    const Size l    = model.radiation.frequencies.corresponding_line[f];
 
     Real eta_c, chi_c, dtau_c, term_c;
     Real eta_n, chi_n, dtau_n, term_n;
@@ -969,8 +998,8 @@ accel inline void Solver :: solve_feautrier_order_2 (Model& model, const Size o,
 
 
     // Get optical properties for first two elements
-    get_eta_and_chi (model, nr[first  ], freq*shift[first  ], eta_c, chi_c);
-    get_eta_and_chi (model, nr[first+1], freq*shift[first+1], eta_n, chi_n);
+    get_eta_and_chi <approx> (model, nr[first  ], l, freq*shift[first  ], eta_c, chi_c);
+    get_eta_and_chi <approx> (model, nr[first+1], l, freq*shift[first+1], eta_n, chi_n);
 
     inverse_chi[first  ] = 1.0 / chi_c;
     inverse_chi[first+1] = 1.0 / chi_n;
@@ -1006,7 +1035,7 @@ accel inline void Solver :: solve_feautrier_order_2 (Model& model, const Size o,
          chi_c =  chi_n;
 
         // Get new radiative properties
-        get_eta_and_chi (model, nr[n+1], freq*shift[n+1], eta_n, chi_n);
+        get_eta_and_chi <approx> (model, nr[n+1], l, freq*shift[n+1], eta_n, chi_n);
 
         inverse_chi[n+1] = 1.0 / chi_n;
 
@@ -1116,6 +1145,7 @@ accel inline void Solver :: solve_feautrier_order_2 (Model& model, const Size o,
 accel inline void Solver :: image_feautrier_order_2 (Model& model, const Size o, const Size f)
 {
     const Real freq = model.radiation.frequencies.nu(o, f);
+    const Size l    = model.radiation.frequencies.corresponding_line[f];
 
     Real eta_c, chi_c, dtau_c, term_c;
     Real eta_n, chi_n, dtau_n, term_n;
@@ -1150,8 +1180,8 @@ accel inline void Solver :: image_feautrier_order_2 (Model& model, const Size o,
 
 
     // Get optical properties for first two elements
-    get_eta_and_chi (model, nr[first  ], freq*shift[first  ], eta_c, chi_c);
-    get_eta_and_chi (model, nr[first+1], freq*shift[first+1], eta_n, chi_n);
+    get_eta_and_chi <None> (model, nr[first  ], l, freq*shift[first  ], eta_c, chi_c);
+    get_eta_and_chi <None> (model, nr[first+1], l, freq*shift[first+1], eta_n, chi_n);
 
     inverse_chi[first  ] = 1.0 / chi_c;
     inverse_chi[first+1] = 1.0 / chi_n;
@@ -1186,7 +1216,7 @@ accel inline void Solver :: image_feautrier_order_2 (Model& model, const Size o,
          chi_c =  chi_n;
 
         // Get new radiative properties
-        get_eta_and_chi (model, nr[n+1], freq*shift[n+1], eta_n, chi_n);
+        get_eta_and_chi <None> (model, nr[n+1], l, freq*shift[n+1], eta_n, chi_n);
 
         inverse_chi[n+1] = 1.0 / chi_n;
 
@@ -1241,6 +1271,7 @@ accel inline void Solver :: image_feautrier_order_2 (Model& model, const Size o,
 accel inline void Solver :: image_feautrier_order_2_for_point_loc (Model& model, const Size o, const Size f)
 {
     const Real freq = model.radiation.frequencies.nu(o, f);
+    const Size l    = model.radiation.frequencies.corresponding_line[f];
 
     Real eta_c, chi_c, dtau_c, term_c;
     Real eta_n, chi_n, dtau_n, term_n;
@@ -1275,8 +1306,8 @@ accel inline void Solver :: image_feautrier_order_2_for_point_loc (Model& model,
 
 
     // Get optical properties for first two elements
-    get_eta_and_chi (model, nr[first  ], freq*shift[first  ], eta_c, chi_c);
-    get_eta_and_chi (model, nr[first+1], freq*shift[first+1], eta_n, chi_n);
+    get_eta_and_chi <None> (model, nr[first  ], l, freq*shift[first  ], eta_c, chi_c);
+    get_eta_and_chi <None> (model, nr[first+1], l, freq*shift[first+1], eta_n, chi_n);
 
     inverse_chi[first  ] = 1.0 / chi_c;
     inverse_chi[first+1] = 1.0 / chi_n;
@@ -1320,7 +1351,7 @@ accel inline void Solver :: image_feautrier_order_2_for_point_loc (Model& model,
          chi_c =  chi_n;
 
         // Get new radiative properties
-        get_eta_and_chi (model, nr[n+1], freq*shift[n+1], eta_n, chi_n);
+        get_eta_and_chi <None> (model, nr[n+1], l, freq*shift[n+1], eta_n, chi_n);
 
         inverse_chi[n+1] = 1.0 / chi_n;
 
@@ -1382,7 +1413,8 @@ accel inline void Solver :: image_feautrier_order_2_for_point_loc (Model& model,
 accel inline void Solver :: image_optical_depth (Model& model, const Size o, const Size f)
 {
     const Real freq = model.radiation.frequencies.nu(o, f);
-    
+    const Size l    = model.radiation.frequencies.corresponding_line[f];
+
     const Size first = first_();
     const Size last  = last_ ();
     const Size n_tot = n_tot_();
@@ -1398,8 +1430,8 @@ accel inline void Solver :: image_optical_depth (Model& model, const Size o, con
 
 
     // Get optical properties for first two elements
-    get_eta_and_chi (model, nr[first  ], freq*shift[first  ], eta_c, chi_c);
-    get_eta_and_chi (model, nr[first+1], freq*shift[first+1], eta_n, chi_n);
+    get_eta_and_chi <None> (model, nr[first  ], l, freq*shift[first  ], eta_c, chi_c);
+    get_eta_and_chi <None> (model, nr[first+1], l, freq*shift[first+1], eta_n, chi_n);
 
     tau += half * (chi_c + chi_n) * dZ[first];
 
@@ -1411,7 +1443,7 @@ accel inline void Solver :: image_optical_depth (Model& model, const Size o, con
         chi_c = chi_n;
 
         // Get new radiative properties
-        get_eta_and_chi (model, nr[n+1], freq*shift[n+1], eta_n, chi_n);
+        get_eta_and_chi <None> (model, nr[n+1], l, freq*shift[n+1], eta_n, chi_n);
 
         tau += half * (chi_c + chi_n) * dZ[n];
     }
@@ -1423,9 +1455,11 @@ accel inline void Solver :: image_optical_depth (Model& model, const Size o, con
 ///  Solver for Feautrier equation along ray pairs using the (ordinary)
 ///  2nd-order solver, without adaptive optical depth increments
 ///////////////////////////////////////////////////////////////////////
+template<ApproximationType approx>
 accel inline void Solver :: solve_feautrier_order_2_uv (Model& model, const Size o, const Size f)
 {
     const Real freq = model.radiation.frequencies.nu(o, f);
+    const Size l    = model.radiation.frequencies.corresponding_line[f];
 
     Real eta_c, chi_c, dtau_c, term_c;
     Real eta_n, chi_n, dtau_n, term_n;
@@ -1453,8 +1487,8 @@ accel inline void Solver :: solve_feautrier_order_2_uv (Model& model, const Size
 
 
     // Get optical properties for first two elements
-    get_eta_and_chi (model, nr[first  ], freq*shift[first  ], eta_c, chi_c);
-    get_eta_and_chi (model, nr[first+1], freq*shift[first+1], eta_n, chi_n);
+    get_eta_and_chi <approx> (model, nr[first  ], l, freq*shift[first  ], eta_c, chi_c);
+    get_eta_and_chi <approx> (model, nr[first+1], l, freq*shift[first+1], eta_n, chi_n);
 
     inverse_chi[first  ] = one / chi_c;
     inverse_chi[first+1] = one / chi_n;
@@ -1493,7 +1527,7 @@ accel inline void Solver :: solve_feautrier_order_2_uv (Model& model, const Size
          chi_c =  chi_n;
 
         // Get new radiative properties
-        get_eta_and_chi (model, nr[n+1], freq*shift[n+1], eta_n, chi_n);
+        get_eta_and_chi <approx> (model, nr[n+1], l, freq*shift[n+1], eta_n, chi_n);
 
         inverse_chi[n+1] = one / chi_n;
 
@@ -1559,8 +1593,9 @@ accel inline void Solver :: set_eta_and_chi (Model& model, const Size rr) const
             // Extract the Doppler shift
             const double shift = model.geometry.get_shift <Rest> (0, rr, p, 0.0);
             const Real   freq  = model.radiation.frequencies.nu(0, f);
+            const Size   l     = model.radiation.frequencies.corresponding_line[f];
 
-            get_eta_and_chi (model, p, freq*shift, model.eta(p,f), model.chi(p,f));
+            get_eta_and_chi <None> (model, p, l, freq*shift, model.eta(p,f), model.chi(p,f));
         }
     }
 }

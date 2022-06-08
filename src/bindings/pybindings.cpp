@@ -186,6 +186,16 @@ PYBIND11_MODULE (core, module)
            "Write model file using the given Io object."
         )
         .def (
+           "read",
+           (void (Model::*)(const string)) &Model::read,
+           "Read model file (assuming HDF5 file format)."
+        )
+        .def (
+            "write",
+            (void (Model::*)(const string) const) &Model::write,
+           "Write model file (assuming HDF5 file format)."
+        )
+        .def (
             "compute_inverse_line_widths",
             &Model::compute_inverse_line_widths,
             "Compute the inverse line widths for the model. (Needs to be recomputed whenever the temperature of turbulence changes.)"
@@ -293,9 +303,10 @@ PYBIND11_MODULE (core, module)
     // Parameters
     py::class_<Parameters> (module, "Parameters", "Class containing the model parameters.")
         // io
-        .def_readwrite ("n_off_diag",         &Parameters::n_off_diag              , "Bandwidth of the ALO (0=diagonal, 1=tri-diaginal, 2=penta-diagonal, ...)")
-        .def_readwrite ("max_width_fraction", &Parameters::max_width_fraction      , "Max tolerated Doppler shift as fraction of line width (default=0.5).")
-        .def_readwrite ("convergence_fraction", &Parameters::convergence_fraction, "Fraction of levels that should obey the convergence criterion.")
+        .def_readwrite ("n_off_diag",                  &Parameters::n_off_diag                 , "Bandwidth of the ALO (0=diagonal, 1=tri-diaginal, 2=penta-diagonal, ...)")
+        .def_readwrite ("max_width_fraction",          &Parameters::max_width_fraction         , "Max tolerated Doppler shift as fraction of line width (default=0.5).")
+        .def_readwrite ("convergence_fraction",        &Parameters::convergence_fraction       , "Fraction of levels that should obey the convergence criterion.")
+        .def_readwrite ("min_rel_pop_for_convergence", &Parameters::min_rel_pop_for_convergence, "Minimum relative level population to be considered in the convergence criterion.")
         // setters
         .def ("set_model_name",               &Parameters::set_model_name          , "Set model name.")
         .def ("set_dimension",                &Parameters::set_dimension           , "Set spatial dimension of the model.")
@@ -330,6 +341,7 @@ PYBIND11_MODULE (core, module)
         .def ("store_intensities",            &Parameters::store_intensities       , "Whether or not to store intensities.")
         .def ("spherical_symmetry",           &Parameters::spherical_symmetry      , "Whether or not to use spherical symmetry.")
         .def ("adaptive_ray_tracing",         &Parameters::adaptive_ray_tracing    , "Whether or not to use adaptive ray tracing.")
+        .def ("one_line_approximation",       &Parameters::one_line_approximation  , "Whether or not to use one line approximation.")
         // functions
         .def ("read",                         &Parameters::read                    , "Rread object from file.")
         .def ("write",                        &Parameters::write                   , "Write object to file.")
@@ -449,9 +461,9 @@ PYBIND11_MODULE (core, module)
         .def_readwrite ("species", &Chemistry::species, "Species object.")
         // functions
         .def ("read",              &Chemistry::read, "Read object from file.")
-        .def ("write",             &Chemistry::write, "Write object to file.")
+        .def ("write",             &Chemistry::write, "Write object to file.");
         // constructor
-        .def (py::init());
+        // .def (py::init());
 
 
     // Species
@@ -461,9 +473,9 @@ PYBIND11_MODULE (core, module)
         .def_readwrite ("abundance", &Species::abundance, "Array with the abundances at each point.")
         // functions
         .def ("read",                &Species::read, "Read object from file.")
-        .def ("write",               &Species::write, "Write object to file.")
+        .def ("write",               &Species::write, "Write object to file.");
         // constructor
-        .def (py::init());
+        // .def (py::init<Parameters&>());
 
 
     // Lines

@@ -91,19 +91,14 @@ inline void LineProducingSpecies :: check_for_convergence (const Real pop_prec)
     Real fnc = 0.0;
     Real rcm = 0.0;
 
-    relative_change_max = 0.0;
-
-//    for (long p = 0; p < ncells; p++)
 #   pragma omp parallel for reduction (+: fnc, rcm)
     for (Size p = 0; p < parameters.npoints(); p++)
     {
-        const double min_pop = 1.0E-10 * population_tot[p];
-
         for (Size i = 0; i < linedata.nlev; i++)
         {
             const Size ind = index (p, i);
 
-            if (population(ind) > min_pop)
+            if (population(ind) > parameters.min_rel_pop_for_convergence * population_tot[p])
             {
                 Real relative_change = 2.0;
 
@@ -116,12 +111,6 @@ inline void LineProducingSpecies :: check_for_convergence (const Real pop_prec)
                 }
 
                 rcm += (weight * relative_change);
-
-                // NOT THREAD SAFE !!!
-                //if (relative_change > relative_change_max)
-                //{
-                //  relative_change_max = relative_change;
-                //}
             }
         }
     }

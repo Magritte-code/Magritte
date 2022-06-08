@@ -146,6 +146,17 @@ int Model :: compute_spectral_discretisation ()
         }
     })
 
+
+    // Set corresponding frequencies
+    for (Size f = 0; f < parameters.nfreqs(); f++)
+    {
+        const Size l = radiation.frequencies.corresponding_l_for_spec[f];
+        const Size k = radiation.frequencies.corresponding_k_for_tran[f];
+
+        radiation.frequencies.corresponding_line[f] = lines.line_index(l, k);
+    }
+
+
     // Set spectral discretisation setting
     spectralDiscretisation = SD_Lines;
 
@@ -312,8 +323,16 @@ int Model :: compute_radiation_field_feautrier_order_2 ()
     cout << "Computing radiation field..." << endl;
 
     Solver solver;
-    solver.setup <CoMoving>        (*this);
-    solver.solve_feautrier_order_2 (*this);
+    solver.setup <CoMoving> (*this);
+
+    if (parameters.one_line_approximation())
+    {
+        solver.solve_feautrier_order_2 <OneLine> (*this);
+    }
+    else
+    {
+        solver.solve_feautrier_order_2 <None> (*this);
+    }
 
     return (0);
 }
@@ -326,8 +345,16 @@ int Model :: compute_radiation_field_feautrier_order_2_uv ()
     cout << "Computing radiation field..." << endl;
 
     Solver solver;
-    solver.setup <CoMoving>           (*this);
-    solver.solve_feautrier_order_2_uv (*this);
+    solver.setup <CoMoving>                  (*this);
+
+    if (parameters.one_line_approximation())
+    {
+        solver.solve_feautrier_order_2_uv <OneLine> (*this);
+    }
+    else
+    {
+        solver.solve_feautrier_order_2_uv <None> (*this);
+    }
 
     return (0);
 }
@@ -340,8 +367,16 @@ int Model :: compute_radiation_field_feautrier_order_2_anis ()
     cout << "Computing radiation field..." << endl;
 
     Solver solver;
-    solver.setup <CoMoving>             (*this);
-    solver.solve_feautrier_order_2_anis (*this);
+    solver.setup <CoMoving>                    (*this);
+
+    if (parameters.one_line_approximation())
+    {
+        solver.solve_feautrier_order_2_anis <OneLine> (*this);
+    }
+    else
+    {
+        solver.solve_feautrier_order_2_anis <None> (*this);
+    }
 
     return (0);
 }
@@ -354,8 +389,16 @@ int Model :: compute_radiation_field_feautrier_order_2_sparse ()
     cout << "Computing radiation field..." << endl;
 
     Solver solver;
-    solver.setup <CoMoving>               (*this);
-    solver.solve_feautrier_order_2_sparse (*this);
+    solver.setup <CoMoving>                      (*this);
+    
+    if (parameters.one_line_approximation())
+    {
+        solver.solve_feautrier_order_2_sparse <OneLine> (*this);
+    }
+    else
+    {
+        solver.solve_feautrier_order_2_sparse <None> (*this);
+    }
 
     return (0);
 }
@@ -496,13 +539,27 @@ int Model :: compute_level_populations (
             // logger.write ("Computing the radiation field...");
             cout << "Computing the radiation field..." << endl;
 
+            Timer timer_1("Compute Radiation Field");
+            timer_1.start();
+
             compute_radiation_field_feautrier_order_2 ();
             compute_Jeff                              ();
+
+            timer_1.stop();
+            timer_1.print_total();
+
+
+            Timer timer_2("Compute Statistical Equilibrium");
+            timer_2.start();
 
             lines.iteration_using_statistical_equilibrium (
                 chemistry.species.abundance,
                 thermodynamics.temperature.gas,
                 parameters.pop_prec()                     );
+
+            timer_2.stop();
+            timer_2.print_total();
+
 
             iteration_normal++;
         }
@@ -582,13 +639,27 @@ int Model :: compute_level_populations_sparse (
             // logger.write ("Computing the radiation field...");
             cout << "Computing the radiation field..." << endl;
 
+            Timer timer_1("Compute Radiation Field");
+            timer_1.start();
+
             compute_radiation_field_feautrier_order_2_sparse ();
             compute_Jeff_sparse                              ();
+
+            timer_1.stop();
+            timer_1.print_total();
+
+
+            Timer timer_2("Compute Statistical Equilibrium");
+            timer_2.start();
 
             lines.iteration_using_statistical_equilibrium_sparse (
                 chemistry.species.abundance,
                 thermodynamics.temperature.gas,
                 parameters.pop_prec()                            );
+
+            timer_2.stop();
+            timer_2.print_total();
+
 
             iteration_normal++;
         }

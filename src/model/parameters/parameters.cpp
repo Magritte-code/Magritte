@@ -41,11 +41,12 @@ void Parameters :: read (const Io &io)
 
     READ_NUMBER (Real, pop_prec);
 
-    READ_BOOL (bool, use_scattering      );
-    READ_BOOL (bool, store_intensities   );
-    READ_BOOL (bool, use_Ng_acceleration );
-    READ_BOOL (bool, spherical_symmetry  );
-    READ_BOOL (bool, adaptive_ray_tracing);
+    READ_BOOL (bool, use_scattering        );
+    READ_BOOL (bool, store_intensities     );
+    READ_BOOL (bool, use_Ng_acceleration   );
+    READ_BOOL (bool, spherical_symmetry    );
+    READ_BOOL (bool, adaptive_ray_tracing  );
+    READ_BOOL (bool, one_line_approximation);
 }
 
 
@@ -71,9 +72,10 @@ void Parameters :: write (const Io &io) const
 
     WRITE_NUMBER (Real, pop_prec);
 
-    WRITE_BOOL (bool, use_scattering      );
-    WRITE_BOOL (bool, store_intensities   );
-    WRITE_BOOL (bool, use_Ng_acceleration );
-    WRITE_BOOL (bool, spherical_symmetry  );
-    WRITE_BOOL (bool, adaptive_ray_tracing);
+    WRITE_BOOL (bool, use_scattering        );
+    WRITE_BOOL (bool, store_intensities     );
+    WRITE_BOOL (bool, use_Ng_acceleration   );
+    WRITE_BOOL (bool, spherical_symmetry    );
+    WRITE_BOOL (bool, adaptive_ray_tracing  );
+    WRITE_BOOL (bool, one_line_approximation);
 }

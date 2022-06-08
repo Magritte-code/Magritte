@@ -57,9 +57,13 @@
 //////////////////////////////////////////////////////////
 struct Parameters
 {
-    long   n_off_diag           = 0;
-    double max_width_fraction   = 0.5;
-    double convergence_fraction = 0.995;
+    // !!! These parameters are not updated globally !!!
+    // Get rid of the Meyer's singleton construction !!!
+    long   n_off_diag                  = 0;
+    double max_width_fraction          = 0.5;
+    double convergence_fraction        = 0.995;
+    double min_rel_pop_for_convergence = 1.0e-10;
+    ////////////////////////////////////////////////////
 
     void read (const Io &io);
     void write(const Io &io) const;
@@ -82,11 +86,12 @@ struct Parameters
 
     CREATE_PARAMETER (Real, pop_prec);
 
-    CREATE_PARAMETER (bool, use_scattering      );
-    CREATE_PARAMETER (bool, store_intensities   );
-    CREATE_PARAMETER (bool, use_Ng_acceleration );
-    CREATE_PARAMETER (bool, spherical_symmetry  );
-    CREATE_PARAMETER (bool, adaptive_ray_tracing);
+    CREATE_PARAMETER (bool, use_scattering        );
+    CREATE_PARAMETER (bool, store_intensities     );
+    CREATE_PARAMETER (bool, use_Ng_acceleration   );
+    CREATE_PARAMETER (bool, spherical_symmetry    );
+    CREATE_PARAMETER (bool, adaptive_ray_tracing  );
+    CREATE_PARAMETER (bool, one_line_approximation);
 
     Parameters ()
     {
@@ -108,11 +113,12 @@ struct Parameters
 
         CONSTRUCT_PARAMETER (Real, pop_prec);
 
-        CONSTRUCT_PARAMETER (bool, use_scattering      );
-        CONSTRUCT_PARAMETER (bool, store_intensities   );
-        CONSTRUCT_PARAMETER (bool, use_Ng_acceleration );
-        CONSTRUCT_PARAMETER (bool, spherical_symmetry  );
-        CONSTRUCT_PARAMETER (bool, adaptive_ray_tracing);
+        CONSTRUCT_PARAMETER (bool, use_scattering        );
+        CONSTRUCT_PARAMETER (bool, store_intensities     );
+        CONSTRUCT_PARAMETER (bool, use_Ng_acceleration   );
+        CONSTRUCT_PARAMETER (bool, spherical_symmetry    );
+        CONSTRUCT_PARAMETER (bool, adaptive_ray_tracing  );
+        CONSTRUCT_PARAMETER (bool, one_line_approximation);
     }
 
     Parameters (const Parameters& parameters)
@@ -135,10 +141,11 @@ struct Parameters
 
         COPY_PARAMETER (pop_prec);
 
-        COPY_PARAMETER (use_scattering      );
-        COPY_PARAMETER (store_intensities   );
-        COPY_PARAMETER (use_Ng_acceleration );
-        COPY_PARAMETER (spherical_symmetry  );
-        COPY_PARAMETER (adaptive_ray_tracing);
+        COPY_PARAMETER (use_scattering        );
+        COPY_PARAMETER (store_intensities     );
+        COPY_PARAMETER (use_Ng_acceleration   );
+        COPY_PARAMETER (spherical_symmetry    );
+        COPY_PARAMETER (adaptive_ray_tracing  );
+        COPY_PARAMETER (one_line_approximation);
     }
 };
