@@ -11,12 +11,12 @@ import SpecialFunctions as sf
 ld=TestMolecule.testlinedata()
 println(ld)
 
-quadfactor=4
-factor=1.0;#normally, we should adaptively determine to insert ghost points inbetween, but for simplicity, we just make a more dense discretization
+quadfactor=2
+factor=4.0;#normally, we should adaptively determine to insert ghost points inbetween, but for simplicity, we just make a more dense discretization
 #not the exact settings, but just to test
 # npoints   = convert(Int, 12*factor)
 nrays     = 1
-nsegments = 3#forwards and backwards in frequency space
+nsegments = 10#forwards and backwards in frequency space
 npoints_half_segment = 5
 npoints   = 1+nsegments*npoints_half_segment*2#starting point +
 nquads    = 225*quadfactor
@@ -26,12 +26,12 @@ nTT  = 1.0E+08                 # [m^-3]
 temp = 4.5E+01                 # [K]
 turb = 0.0E+00                 # [m/s]
 dx   = 1.0E+04/factor        # [m]
-dx   = 1.0e07
+dx   = 1.0e09
 # dx   = 1.5E-00
 # r_in=10.0
 
 dv   = 2.5E+02 / 300_000_000   # [fraction of speed of light]
-dv   = 2.0*8.7E+02 / 300_000_000/ factor   # [fraction of speed of light] #8.7E+02 is +-line width
+dv   = -0.5*8.7E+02 / 300_000_000/ factor   # [fraction of speed of light] #8.7E+02 is +-line width
 # dv   = 0.000015
 #bug: nan for analytic solution when putting dv to 0
 # dv   = 1E-18
@@ -206,18 +206,18 @@ function I_(nu, r, theta)
     # println("optical depth increments: ", tau(nu, r, theta)./(npoints.-1))
     #convert r to r_red and compute the number of segments already passed
     r_red=mod(r, L_half_segment)
-    println("l_red", r_red)
+    # println("l_red", r_red)
     n_segments_passed=r.÷L_half_segment
-    println("n segments passed: ", n_segments_passed)
+    # println("n segments passed: ", n_segments_passed)
 
     tau_curr_seg = (n_segments_passed.%2==0) .* tau_up(nu, r_red, theta) .+ (n_segments_passed.%2==1) .* tau_down(nu, r_red, theta)
-    println("firstpart:", tau_up(nu, r_red, theta))
-    println("secondpart:", tau_down(nu, r_red, theta))
-    println("tau_curr_seg: ", tau_curr_seg)
+    # println("firstpart:", tau_up(nu, r_red, theta))
+    # println("secondpart:", tau_down(nu, r_red, theta))
+    # println("tau_curr_seg: ", tau_curr_seg)
 
     tautot=tau_segment(nu, n_segments_passed).+tau_curr_seg
 
-    println("tautot: ", tautot)
+    # println("tautot: ", tautot)
 
     # return src + (bdy(nu.*(1.0 .+vmax))-src)*exp(-tautot)#tau(nu, r, theta))
     return src + (bdy(nu.*(1.0))-src)*exp(-tautot)#tau(nu, r, theta))
@@ -360,15 +360,25 @@ data13=ComovingSolvers.data(Icmbarbitrary,(0:npoints-1).*dx, v, χarbitrary, ηa
 ComovingSolvers.computesinglerayexplicitadaptive(data13)
 comovingexplicit=data13.allintensities
 
+#first order fully explicit adaptive comoving solver, using split formula for stability
+data14=ComovingSolvers.data(Icmbarbitrary,(0:npoints-1).*dx, v, χarbitrary, ηarbitrary, νarbitrary, middleνdoppl, src)
+ComovingSolvers.computesinglerayshortcharsplit(data14)
+shortcharsplit=data14.allintensities
+
 #first order fully implicit adaptive comoving solver, using changed opacity
 data15=ComovingSolvers.data(Icmbarbitrary,(0:npoints-1).*dx, v, χarbitrary, ηarbitrary, νarbitrary, middleνdoppl, src)
 ComovingSolvers.computesingleraysecondorderhauschildt2004shortchar(data15)
 shortcharhauschildt=data15.allintensities
 
+#second order solver from redefining opacity
+data16=ComovingSolvers.data(Icmbarbitrary,(0:npoints-1).*dx, v, χarbitrary, ηarbitrary, νarbitrary, middleνdoppl, src)
+ComovingSolvers.computesinglerayfullsecondorderdiffopacity(data16)
+shortchardiffopacity=data16.allintensities
+
 Iray=I_.(ν, L, 0.0)
-println(Iray)
+println("Iray: ", Iray)
 # println(ν, size(ν))
-println(v[end])
+println("v end: ", v[end])
 Plots.plot(1)
 #multiplication factor because julia plots do not like very small values...
 # Plots.plot([νdoppl[:,end], νdoppl[:,end],νdoppl[:,end]],1e8.*[firstorderintensities[:, npoints], secondorderfreq[:, npoints], secondorderintensities[:,npoints]], label = ["first order" "second order freq" "second order"])
@@ -398,7 +408,7 @@ Plots.gui()
 #also plot previous points
 Plots.plot(reuse=false)
 #index starting from last
-i=1
+i=0
 Iraym1=I_.(ν, L-(i)*dx, 0.0)
 # print(Iraym1)
 #multiplication factor because julia plots do not like very small values...
@@ -413,7 +423,8 @@ Plots.plot!(1e-11.*[νdoppl[:,end]],1e18.*[Iraym1], label = "analytic", xlabel="
 # Plots.plot!([νarbitrary[:,end-i]],1e8.*[secondorderfull[:, npoints-i]], label = "full second order")
 # Plots.plot!([νarbitrary[:,end]],1e8.*[secondorderadaptive[:, npoints]], label = "adaptive second order")
 Plots.plot!(1e-11.*[νarbitrary[:,end-i]],1e18.*[comovingshortchar[:, npoints-i]], label = "comoving shortchar 2nd")
-Plots.plot!(1e-11.*[νarbitrary[:,end]],1e18.*[shortcharhauschildt[:, npoints]], label = "shortchar hauschildt")
+# Plots.plot!(1e-11.*[νarbitrary[:,end]],1e18.*[shortcharhauschildt[:, npoints]], label = "shortchar hauschildt")
+# Plots.plot!(1e-11.*[νarbitrary[:,end]],1e18.*[shortchardiffopacity[:, npoints]], label = "comoving diff opacity 2nd")
 # Plots.plot!([νarbitrary[:,end]],1e8.*[comovingshortcharfirstorder[:, npoints]], label = "comoving shortchar 1st")
 # Plots.plot!([νarbitrary[:,end-i]],1e8.*[comovingshortcharimplicit[:, npoints-i]], label = "comoving shortchar impl")
 # Plots.plot!([ν[:]],1e8.*[shortcharstaticfreq[:, npoints-i]], label = "short char static")

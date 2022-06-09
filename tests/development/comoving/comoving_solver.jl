@@ -2180,7 +2180,293 @@ function computesingleraysecondorderhauschildt2004shortchar(data::Data)
 end
 
 
+#computes intensity using second order semi implicit discretization (also second order for the frequency derivative)
+function fullsecondorderdiffopacity(previndex, data)
+    Δx=(data.x[previndex+1]-data.x[previndex])#assumes x strictly increasing
+    Δxdiv2=(data.x[previndex+1]-data.x[previndex])/2.0#assumes x strictly increasing
+    Δvdiv2=(data.v[previndex+1]-data.v[previndex])/2.0
+    @views Δνdiv2=(data.ν[:,previndex+1]-data.ν[:,previndex])/2.0
+    @views Δν=(data.ν[:,previndex+1]-data.ν[:,previndex])
+    #renaming stuff
+    nfreqs=data.nfreqs
+    currintensity=data.currintensity
+    bdyintensity=data.backgroundintensity
+    η=data.η
+    χ=data.χ
+    ν=data.ν
+    # S=η./χ
+    S=fill(data.S, size(η))
+    #bounding Δτ from below, as division by almost 0 errors can happen. (we are dividing by Δτ.^2)
+    Δτ=Δx*(χ[:,previndex+1].+χ[:,previndex])/2.0
+    minτ=1.0E-10
+    toolow = findall(Δτ.<=minτ)
+    Δτ[toolow] .= minτ
+    Δτdiv2 = Δτ./2.0
+    # Δτdiv2=Δx*(χ[:,previndex+1].+χ[:,previndex])./4.0
 
+    expminτdiv2=exp.(-Δτdiv2)
+    expminτ=exp.(-2.0.*Δτdiv2)
+    onemexpminτdiv2=-expm1.(-Δτdiv2)
+    onemexpminτ=-expm1.(-2.0 .*Δτdiv2)
+
+    lineν=data.lineν[previndex]
+    nextlineν=data.lineν[previndex+1]
+
+    #now compute for which frequency points we need a forward or backward discretization
+    currν=data.ν[:, previndex]
+    nextν=data.ν[:, previndex+1]
+
+    # forwardfreqdisc=(nextν.-currν.+nextlineν.-lineν.>0.0)
+    forwardfreqdisc=(nextν.-currν.>0.0)
+
+
+    starting_upwind=forwardfreqdisc[1]
+    ending_upwind=forwardfreqdisc[nfreqs]
+
+    other_discretization_direction=[!(starting_upwind==forwardfreqdisc[index]) for index in 1:length(forwardfreqdisc)]
+
+    inflection_point=findfirst(other_discretization_direction)
+
+    #Default discretization direction
+    if isnothing(inflection_point)
+        if starting_upwind
+            boundary_points=[(nfreqs-1,nfreqs)]#is tuple, as they should be treated together
+            boundary_point_is_outer=[true]
+            upwind_points=1:(nfreqs-2)
+            downwind_points=[]
+        else
+            boundary_points=[(1,2)]
+            boundary_point_is_outer=[true]
+            upwind_points=[]
+            downwind_points=3:nfreqs
+        end
+    else
+        if starting_upwind
+            boundary_points=[(inflection_point-1,inflection_point)]
+            boundary_point_is_outer=[false]
+            #thus only inner boundary points
+            upwind_points=1:(inflection_point-2)
+            downwind_points=inflection_point+1:nfreqs
+        else
+            boundary_points=[(1,2),(nfreqs-1,nfreqs)]
+            boundary_point_is_outer=[true, true]
+            #thus only outer boundary points
+            upwind_points=inflection_point:nfreqs-2
+            downwind_points=3:(inflection_point-1)
+        end
+    end
+
+
+    #forward discretization
+    Δνsmall=(view(ν, upwind_points.+2, previndex)-view(ν, upwind_points.+1, previndex))
+    Δνlarge=(view(ν, upwind_points.+2, previndex)-view(ν, upwind_points, previndex))
+    a=-Δνsmall./(Δνlarge.^2-Δνsmall.*Δνlarge)
+    b=Δνlarge./(Δνsmall.*Δνlarge-Δνsmall.^2)
+    c=.-a.-b;
+
+    #also already need coef c for the next point (in order to compute the optical depth increment)
+    Δνsmall=(view(ν, upwind_points.+2, previndex.+1)-view(ν, upwind_points.+1, previndex.+1))
+    Δνlarge=(view(ν, upwind_points.+2, previndex.+1)-view(ν, upwind_points, previndex.+1))
+    anext=-Δνsmall./(Δνlarge.^2-Δνsmall.*Δνlarge)
+    bnext=Δνlarge./(Δνsmall.*Δνlarge-Δνsmall.^2)
+    cnext=.-anext.-bnext;
+
+    prefactorup=Δν[upwind_points]./Δx.*-c#./(view(ν, upwind_points.+1, previndex)-view(ν, upwind_points.+0, previndex))
+    @views χadapt=χ[upwind_points, previndex].+prefactorup
+    Δτadaptup=Δτ[upwind_points].+Δν[upwind_points].*
+        (0.5.*(-c.-cnext))
+        # (0.5./(view(ν, upwind_points.+1, previndex.+0)-view(ν, upwind_points.+0, previndex.+0)).+0.5./(view(ν, upwind_points.+1, previndex.+1)-view(ν, upwind_points.+0, previndex.+1)))
+
+
+    expminτup=exp.(-Δτadaptup)
+    onemexpminτup=-expm1.(-Δτadaptup)
+
+    @views sourceprevadapt=χ[upwind_points, previndex]./χadapt.*S[upwind_points, previndex].+
+        a.*Δν[upwind_points]./Δx.*currintensity[upwind_points.+2]./χadapt.+
+        b.*Δν[upwind_points]./Δx.*currintensity[upwind_points.+1]./χadapt
+        # prefactorup.*currintensity[upwind_points.+1]./χadapt
+    @views χadapt=χ[upwind_points, previndex.+1].+prefactorup
+    @views sourcecurradapt=χ[upwind_points, previndex.+1]./χadapt.*S[upwind_points, previndex.+1]
+
+    @views sourceterm=((onemexpminτup.-Δτadaptup)./Δτadaptup.+onemexpminτup).*sourceprevadapt.+(Δτadaptup.-onemexpminτup).*sourcecurradapt./Δτadaptup
+    @views currintensity[upwind_points].=currintensity[upwind_points].*expminτup.+sourceterm
+    # @views currintensity[1:nfreqs]=currintensity[1:nfreqs].*expminτ.+expminτdiv2.*onemexpminτdiv2.*S[1:nfreqs, previndex].+onemexpminτdiv2.*S[1:nfreqs, previndex+1]
+
+
+    #end forward discretization explicit part
+    #now do backward discretization explicit part
+
+    #downwind discretization
+    Δνsmall=(view(ν, downwind_points.-1, previndex)-view(ν, downwind_points.-2, previndex))
+    Δνlarge=(view(ν, downwind_points, previndex)-view(ν, downwind_points.-2, previndex))
+    a=-Δνsmall./(Δνlarge.^2-Δνsmall.*Δνlarge)
+    b=Δνlarge./(Δνsmall.*Δνlarge-Δνsmall.^2)
+    c=.-a.-b;
+
+    #also already need coef c for the next point (in order to compute the optical depth increment)
+    Δνsmall=(view(ν, downwind_points.-1, previndex.+1)-view(ν, downwind_points.-2, previndex.+1))
+    Δνlarge=(view(ν, downwind_points, previndex.+1)-view(ν, downwind_points.-2, previndex.+1))
+    anext=-Δνsmall./(Δνlarge.^2-Δνsmall.*Δνlarge)
+    bnext=Δνlarge./(Δνsmall.*Δνlarge-Δνsmall.^2)
+    cnext=.-anext.-bnext;
+
+    prefactordown=-Δν[downwind_points]./Δx.*-c#./(view(ν, upwind_points.+1, previndex)-view(ν, upwind_points.+0, previndex))
+    @views χadapt=χ[downwind_points, previndex].+prefactordown
+    Δτadaptdown=Δτ[downwind_points].-Δν[downwind_points].*
+        (0.5.*(-c.-cnext))
+        # (0.5./(view(ν, upwind_points.+1, previndex.+0)-view(ν, upwind_points.+0, previndex.+0)).+0.5./(view(ν, upwind_points.+1, previndex.+1)-view(ν, upwind_points.+0, previndex.+1)))
+
+
+    expminτdown=exp.(-Δτadaptdown)
+    onemexpminτdown=-expm1.(-Δτadaptdown)
+
+    @views sourceprevadapt=χ[downwind_points, previndex]./χadapt.*S[downwind_points, previndex].+
+        a.*-Δν[downwind_points]./Δx.*currintensity[downwind_points.-2]./χadapt.+
+        b.*-Δν[downwind_points]./Δx.*currintensity[downwind_points.-1]./χadapt
+
+    @views χadapt=χ[downwind_points, previndex.+1].+prefactordown
+    @views sourcecurradapt=χ[downwind_points, previndex.+1]./χadapt.*S[downwind_points, previndex.+1]
+
+    @views sourceterm=((onemexpminτdown.-Δτadaptdown)./Δτadaptdown.+onemexpminτdown).*sourceprevadapt.+(Δτadaptdown.-onemexpminτdown).*sourcecurradapt./Δτadaptdown
+    @views currintensity[downwind_points].=currintensity[downwind_points].*expminτdown.+sourceterm
+
+    # prefactordown=-Δν[downwind_points]./Δx./(view(ν, downwind_points.-0, previndex)-view(ν, downwind_points.-1, previndex))
+    # @views χadapt=χ[downwind_points, previndex].+prefactordown
+    # Δτadaptdown=Δτ[downwind_points].-Δν[downwind_points].*
+    #     (0.5./(view(ν, downwind_points.-0, previndex.+0)-view(ν, downwind_points.-1, previndex.+0)).+0.5./(view(ν, downwind_points.-0, previndex.+1)-view(ν, downwind_points.-1, previndex.+1)))
+    #
+    # expminτdown=exp.(-Δτadaptdown)
+    # onemexpminτdown=-expm1.(-Δτadaptdown)
+    #
+    # @views sourceprevadapt=χ[downwind_points, previndex]./χadapt.*S[downwind_points, previndex].+
+    #     prefactordown.*currintensity[downwind_points.-1]./χadapt
+    # @views χadapt=χ[downwind_points, previndex.+1].+prefactordown
+    # @views sourcecurradapt=χ[downwind_points, previndex.+1]./χadapt.*S[downwind_points, previndex.+1]
+    #
+    #
+    # @views sourceterm=((onemexpminτdown.-Δτadaptdown)./Δτadaptdown.+onemexpminτdown).*sourceprevadapt.+(Δτadaptdown.-onemexpminτdown).*sourcecurradapt./Δτadaptdown
+    # @views currintensity[downwind_points].=currintensity[downwind_points].*expminτdown.+sourceterm
+
+    #end backward discretization explicit part
+
+    #now apply boundary conditions
+    for bdy_tpl_index ∈ 1:length(boundary_points)
+        indices=[boundary_points[bdy_tpl_index][i] for i ∈ 1:length(boundary_points[bdy_tpl_index])]
+        if (boundary_point_is_outer[bdy_tpl_index])
+            #then just set it to the boundary value
+            @views currintensity[indices]=bdyintensity[indices, previndex+1]
+        else
+            νdiff=currν[indices[2]]-currν[indices[1]]
+            νleft=currν[indices[1]]
+            #interpolate them to their next frequencies (linearly)
+            @views currintensity[indices]=currintensity[indices[1]].+
+                    (nextν[indices].-νleft)./νdiff.*(currintensity[indices[2]].-currintensity[indices[1]])
+            #also interpolate some opacities and emissivities
+            @views ηint=η[indices[1], previndex].+(nextν[indices].-νleft)./νdiff.*(η[indices[2], previndex].-η[indices[1], previndex])
+            @views χint=χ[indices[1], previndex].+(nextν[indices].-νleft)./νdiff.*(χ[indices[2], previndex].-χ[indices[1], previndex])
+            #now apply 2nd order static solver to them
+            @views currintensity[indices]=((currintensity[indices].*(1.0 .-Δxdiv2.*χint).+Δxdiv2.*(ηint.+η[indices, previndex+1]))
+                                           ./(1.0.+Δxdiv2.*χ[indices, previndex+1]))
+        end
+    end
+
+    lineν=data.lineν[previndex+1]
+
+    #upwind implicit part
+    #err, just ignore implicit part for now if no points need to be computed with this discretization
+    if length(upwind_points)>0
+
+        #also already need coef c for the next point (in order to compute the optical depth increment)
+        Δνsmall=(view(ν, upwind_points.+2, previndex.+1)-view(ν, upwind_points.+1, previndex.+1))
+        Δνlarge=(view(ν, upwind_points.+2, previndex.+1)-view(ν, upwind_points, previndex.+1))
+        a=-Δνsmall./(Δνlarge.^2-Δνsmall.*Δνlarge)
+        b=Δνlarge./(Δνsmall.*Δνlarge-Δνsmall.^2)
+        c=.-a.-b
+
+        @views curr_factor=(Δτadaptup.-onemexpminτup)./Δτadaptup
+        prefactorup=Δν[upwind_points]./Δx.*-c
+        @views χadapt=χ[upwind_points, previndex.+1].+prefactorup
+
+        # Δνterm=(a.*view(currintensity, upwind_points.+1).+b.*view(currintensity, upwind_points.+0))
+
+        matrixsize=length(upwind_points)+2#+2 boundary conditions at the end
+        #setting up the matrix
+        diagonal=ones(matrixsize)
+        offdiagonal=zeros(matrixsize-1)
+        secondoffdiagonal=zeros(matrixsize-2)
+
+        @views offdiagonal[1:(matrixsize-2)].-=curr_factor.*b.*Δν[upwind_points]./Δx./χadapt
+        @views secondoffdiagonal[1:(matrixsize-2)].-=curr_factor.*a.*Δν[upwind_points]./Δx./χadapt
+
+        # matrix=LA.diagm(0 => diagonal,1=>offdiagonal)
+        matrix=LA.diagm(0 => diagonal,1=>offdiagonal,2=>secondoffdiagonal)
+
+        rangeincludingbdy=UnitRange(first(upwind_points), last(upwind_points)+2)
+        @views currintensity[rangeincludingbdy].=(matrix \ currintensity[rangeincludingbdy])
+
+    end
+
+    #end upwind implicit part TODO IMPLEMENT
+
+    #start downwind implicit part
+    #err, just ignore implicit part for now if no points need to be computed with this discretization
+    if length(downwind_points)>0
+
+        # @views curr_factor=(Δτadaptdown.-onemexpminτdown)./Δτadaptdown
+        # prefactordown=-Δν[downwind_points]./Δx./(view(ν, downwind_points.-0, previndex.+1)-view(ν, downwind_points.-1, previndex.+1))
+        # @views χadapt=χ[downwind_points, previndex.+1].+prefactordown
+
+        # Δνterm=(a.*view(currintensity, downwind_points.-0).+b.*view(currintensity, downwind_points.-1))
+
+        Δνsmall=(view(ν, downwind_points.-1, previndex.+1)-view(ν, downwind_points.-2, previndex.+1))
+        Δνlarge=(view(ν, downwind_points, previndex.+1)-view(ν, downwind_points.-2, previndex.+1))
+        a=-Δνsmall./(Δνlarge.^2-Δνsmall.*Δνlarge)
+        b=Δνlarge./(Δνsmall.*Δνlarge-Δνsmall.^2)
+        c=.-a.-b;
+
+
+        @views curr_factor=(Δτadaptdown.-onemexpminτdown)./Δτadaptdown
+        prefactordown=-Δν[downwind_points]./Δx.*-c
+        @views χadapt=χ[downwind_points, previndex.+1].+prefactordown
+
+        matrixsize=length(downwind_points)+2#+2 boundary conditions at the beginning
+        #setting up the matrix
+
+        diagonal=ones(matrixsize)
+        offdiagonal=zeros(matrixsize-1)
+        secondoffdiagonal=zeros(matrixsize-2)
+
+        @views offdiagonal[2:(matrixsize-1)].-=curr_factor.*b.*-Δν[downwind_points]./Δx./χadapt
+        @views secondoffdiagonal[1:(matrixsize-2)].-=curr_factor.*a.*-Δν[downwind_points]./Δx./χadapt
+
+        matrix=LA.diagm(0 => diagonal,-1=>offdiagonal, -2=>secondoffdiagonal)
+
+        rangeincludingbdy=UnitRange(first(downwind_points)-2, last(downwind_points))
+
+        @views currintensity[rangeincludingbdy].=(matrix \ currintensity[rangeincludingbdy])
+
+    end
+
+    data.allintensities[:,previndex+1]=currintensity;
+    return
+end
+
+#inspired by Hauschildt & Baron 2004, we redefine optical depth slightly different
+# This is a second order accurate (in Δν) version, which did not appear in the original paper
+function computesinglerayfullsecondorderdiffopacity(data::Data)
+    #TODO analyse whether we need some extra points inbetween
+    #use data struct defined here
+    for i ∈ 1:data.npoints-1
+        #compute dv
+        #
+        # dv=data.v[i+1]-data.v[i]
+        # forwardfreqdisc = (dv>=0 ?  true : false)
+        #compute the next one
+        fullsecondorderdiffopacity(i, data)
+    end
+    # display(Plots.plot(data.currintensity)
+    return
+end
 
 
 end

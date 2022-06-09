@@ -14,9 +14,9 @@ println(ld)
 quadfactor=1
 factor=1.0;#normally, we should adaptively determine to insert ghost points inbetween, but for simplicity, we just make a more dense discretization
 #not the exact settings, but just to test
-npoints   = convert(Int, 3*factor)
+npoints   = convert(Int, 15*factor)
 nrays     = 1
-nquads    = 45*quadfactor
+nquads    = 245*quadfactor
 
 nH2  = 1.0E+12                 # [m^-3]
 nTT  = 1.0E+08                 # [m^-3]
@@ -28,8 +28,8 @@ dx   = 1.0E+09/factor
 r_in=10.0 #TODO REMOVE
 
 dv   = 2.5E+02 / 300_000_000   # [fraction of speed of light]
-dv   = -0.5*8.7E+02 / 300_000_000/ factor   # [fraction of speed of light] #8.7E+02 is +-line width
-# dv   = 0.000015
+dv   = 0.5*8.7E+02 / 300_000_000/ factor   # [fraction of speed of light] #8.7E+02 is +-line width
+# dv   = -0.0000015
 #bug: nan for analytic solution when putting dv to 0
 # dv   = 1E-18
 
@@ -269,7 +269,7 @@ data13=ComovingSolvers.data(Icmbarbitrary,(0:npoints-1).*dx, v, χarbitrary, ηa
 ComovingSolvers.computesinglerayexplicitadaptive(data13)
 comovingexplicit=data13.allintensities
 
-#first order fully explicit adaptive comoving solver, using default formula
+#first order fully explicit adaptive comoving solver, using split formula for stability
 data14=ComovingSolvers.data(Icmbarbitrary,(0:npoints-1).*dx, v, χarbitrary, ηarbitrary, νarbitrary, middleνdoppl, src)
 ComovingSolvers.computesinglerayshortcharsplit(data14)
 shortcharsplit=data14.allintensities
@@ -278,6 +278,11 @@ shortcharsplit=data14.allintensities
 data15=ComovingSolvers.data(Icmbarbitrary,(0:npoints-1).*dx, v, χarbitrary, ηarbitrary, νarbitrary, middleνdoppl, src)
 ComovingSolvers.computesingleraysecondorderhauschildt2004shortchar(data15)
 shortcharhauschildt=data15.allintensities
+
+#second order solver from redefining opacity
+data16=ComovingSolvers.data(Icmbarbitrary,(0:npoints-1).*dx, v, χarbitrary, ηarbitrary, νarbitrary, middleνdoppl, src)
+ComovingSolvers.computesinglerayfullsecondorderdiffopacity(data16)
+shortchardiffopacity=data16.allintensities
 
 
 #TODO REORDER; put all plotting stuff right after solvers; then (un)comment them at the same time
@@ -298,9 +303,10 @@ Plots.plot!(1e-11.*[νdoppl[:,end]],1e18.*[Iray], label = "analytic", xlabel="ν
 # Plots.plot!([νarbitrary[:,end]],1e8.*[secondorderfull[:, npoints]], label = "full second order")
 # Plots.plot!([νarbitrary[:,end]],1e8.*[secondorderadaptive[:, npoints]], label = "adaptive second order")
 Plots.plot!(1e-11.*[νarbitrary[:,end]],1e18.*[comovingshortchar[:, npoints]], label = "comoving shortchar 2nd")
-Plots.plot!(1e-11.*[νarbitrary[:,end]],1e18.*[shortcharhauschildt[:, npoints]], label = "shortchar hauschildt")
+# Plots.plot!(1e-11.*[νarbitrary[:,end]],1e18.*[shortcharhauschildt[:, npoints]], label = "shortchar hauschildt")
+# Plots.plot!(1e-11.*[νarbitrary[:,end]],1e18.*[shortchardiffopacity[:, npoints]], label = "comoving diff opacity 2nd")
 # Plots.plot!([νarbitrary[:,end]],1e8.*[comovingshortcharfirstorder[:, npoints]], label = "comoving shortchar 1st")
-Plots.plot!(1e-11.*[νarbitrary[:,end]],1e18.*[comovingshortcharimplicit[:, npoints]], label = "comoving shortchar impl")
+# Plots.plot!(1e-11.*[νarbitrary[:,end]],1e18.*[comovingshortcharimplicit[:, npoints]], label = "comoving shortchar impl")
 # Plots.plot!([νarbitrary[:,end]],1e8.*[comovingexplicit[:, npoints]], label = "comoving expl")
 # Plots.plot!([νarbitrary[:,end]],1e8.*[shortcharsplit[:, npoints]], label = "split shortchar")
 # Plots.plot!([ν[:]],1e8.*[shortcharstaticfreq[:, npoints]], label = "short char static")

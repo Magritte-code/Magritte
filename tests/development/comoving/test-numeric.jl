@@ -11,16 +11,16 @@ import SpecialFunctions as sf
 ld=TestMolecule.testlinedata()
 println(ld)
 
-quadfactor=1
-factor=10.0;#normally, we should adaptively determine to insert ghost points inbetween, but for simplicity, we just make a more dense discretization
+quadfactor=4
+factor=8.0;#normally, we should adaptively determine to insert ghost points inbetween, but for simplicity, we just make a more dense discretization
 #not the exact settings, but just to test
 npoints   = convert(Int, 101*factor)
 println("npoints: ", npoints)
 damping   = convert(Int, 40 *factor)
 period    = npoints-1
-amplitude = 5.0e-0 #in km/s
+
 # nrays     = 1
-nquads    = 1025*quadfactor
+nquads    = 225*quadfactor
 
 nH2  = 1.0E+12                 # [m^-3]
 nTT  = 1.0E+08                 # [m^-3]
@@ -44,9 +44,12 @@ L    = dx*(npoints-1)
 
 pointids = 0:(npoints-1)
 println("pointids: ", pointids)
-v=amplitude.*exp.(pointids./damping).*sin.(2π.*pointids./period)./300_000 #Figure 5 from Baron & Hauschildt 2004
+amplitude = -29.0e-0 #in km/s To obtain same amount of shift (in units of line widths) as Baron & Hauschildt 2004
+v=amplitude.*exp.(-pointids./damping).*sin.(2π.*pointids./period)./300_000 #Figure 5 from Baron & Hauschildt 2004
+## uncomment for tracing ray in opposite direction
+amplitude = -29.0e-0/exp(maximum(pointids)/damping) #in km/s
+v=amplitude.*exp.(pointids./damping).*sin.(-2π.*pointids./period)./300_000  #modified from Figure 5 from Baron & Hauschildt 2004
 println("v: ", v)
-println("shift in line widths :", v.*frq./dnu)
 
 k=1
 
@@ -62,6 +65,7 @@ src = Tools.lineSource(ld, pop)[k]
 src = src#./10000 #TESTING: less emission means less gibbs nonsense
 dnu = Tools.dnu(ld, k, temp, (turb/TestMolecule.CC)^2)
 
+println("shift in line widths :", v.*frq./dnu)
 println("src: ",src)
 println(eta/chi)
 println(ld.frequency[1])
@@ -246,19 +250,32 @@ data13=ComovingSolvers.data(Icmbarbitrary,(0:npoints-1).*dx, v, χarbitrary, ηa
 ComovingSolvers.computesinglerayexplicitadaptive(data13)
 comovingexplicit=data13.allintensities
 
+#first order fully explicit adaptive comoving solver, using split formula for stability
+data14=ComovingSolvers.data(Icmbarbitrary,(0:npoints-1).*dx, v, χarbitrary, ηarbitrary, νarbitrary, middleνdoppl, src)
+ComovingSolvers.computesinglerayshortcharsplit(data14)
+shortcharsplit=data14.allintensities
+
 #first order fully implicit adaptive comoving solver, using changed opacity
 data15=ComovingSolvers.data(Icmbarbitrary,(0:npoints-1).*dx, v, χarbitrary, ηarbitrary, νarbitrary, middleνdoppl, src)
 ComovingSolvers.computesingleraysecondorderhauschildt2004shortchar(data15)
+
+#second order solver from redefining opacity
+data16=ComovingSolvers.data(Icmbarbitrary,(0:npoints-1).*dx, v, χarbitrary, ηarbitrary, νarbitrary, middleνdoppl, src)
+ComovingSolvers.computesinglerayfullsecondorderdiffopacity(data16)
+shortchardiffopacity=data16.allintensities
 shortcharhauschildt=data15.allintensities
 
+#index starting from last
+i=convert(Int, round(4*npoints/5))
+i=0
 
 # Iray=I_.(ν, L, 0.0)
 # println(Iray)
 # println(ν, size(ν))
-println(v[end])
+println("v end: ", v[end])
 Plots.plot()
 #multiplication factor because julia plots do not like very small values...
-Plots.plot!(1e-11.*[νarbitrary[:,end]],1e18.*[comovingshortchar[:, npoints]], label = "comoving shortchar 2nd", xlabel="ν [10^{11}s^{-1}]", ylabel="I [10^{-18} W Hz^{-1} sr^{-1} m^{-2}]", ylims=(0, Inf))#lims support only setting a single option by using 'Inf' for the non-set option
+Plots.plot!(1e-11.*[νarbitrary[:,end-i]],1e18.*[comovingshortchar[:, npoints-i]], label = "comoving shortchar 2nd", xlabel="ν [10^{11}s^{-1}]", ylabel="I [10^{-18} W Hz^{-1} sr^{-1} m^{-2}]", ylims=(0, Inf))#lims support only setting a single option by using 'Inf' for the non-set option
 # Plots.plot([νdoppl[:,end], νdoppl[:,end],νdoppl[:,end]],1e8.*[firstorderintensities[:, npoints], secondorderfreq[:, npoints], secondorderintensities[:,npoints]], label = ["first order" "second order freq" "second order"])
 
 # Plots.savefig("Example static eval")
@@ -269,9 +286,10 @@ Plots.plot!(1e-11.*[νarbitrary[:,end]],1e18.*[comovingshortchar[:, npoints]], l
 # Plots.plot!([νarbitrary[:,end]],1e8.*[secondorderfull[:, npoints]], label = "full second order")
 # Plots.plot!([νarbitrary[:,end]],1e8.*[secondorderadaptive[:, npoints]], label = "adaptive second order")
 # Plots.plot!(1e-11.*[νarbitrary[:,end]],1e18.*[comovingshortcharfirstorder[:, npoints]], label = "comoving shortchar 1st")
-Plots.plot!(1e-11.*[νarbitrary[:,end]],1e18.*[comovingshortcharimplicit[:, npoints]], label = "comoving shortchar impl")
-Plots.plot!(1e-11.*[ν[:]],1e18.*[shortcharstaticfreq[:, npoints]], label = "short char static")
-Plots.plot!(1e-11.*[νarbitrary[:,end]],1e18.*[shortcharhauschildt[:, npoints]], label = "shortchar hauschildt")
+# Plots.plot!(1e-11.*[νarbitrary[:,end]],1e18.*[comovingshortcharimplicit[:, npoints]], label = "comoving shortchar impl")
+Plots.plot!(1e-11.*[ν[:]],1e18.*[shortcharstaticfreq[:, npoints-i]], label = "short char static")
+# Plots.plot!(1e-11.*[νarbitrary[:,end]],1e18.*[shortcharhauschildt[:, npoints]], label = "shortchar hauschildt")
+# Plots.plot!(1e-11.*[νarbitrary[:,end]],1e18.*[shortchardiffopacity[:, npoints]], label = "comoving diff opacity 2nd")
 # Plots.plot!(1e-11.*[νarbitrary[:,end]],1e18.*[comovingexplicit[:, npoints]], label = "comoving expl")
 
 Plots.vline!(1e-11.*[middleνdoppl[end], middleνdoppl[end]-dnu*(1+v[end]), middleνdoppl[end]+dnu*(1+v[end])], label=["shifted line center ±δν" "-δν" "+δν"],legend=:topleft)
@@ -280,7 +298,7 @@ Plots.vline!(1e-11.*[middleνdoppl[end], middleνdoppl[end]-dnu*(1+v[end]), midd
 # Plots.plot([νdoppl[:,end], νdoppl[:,end]],1e8.*[secondorderfreq[:, npoints], Iray], label = ["second order impl" "analytic"])
 
 Plots.gui()
-# Plots.savefig("bench_numeric_25 kms, 1e7 dx, n 101, factor 10, quadfactor 4")
+# Plots.savefig("bench_numeric_29 kms, reverse ray, 1e9 dx, n 101, factor 1, quadfactor 1")
 
 # display(Plots.plot(10e14.*[secondorderintensities[:,npoints]], label = ["second order"]))
 # println(I_.(ν, 11.0e5, 0))
