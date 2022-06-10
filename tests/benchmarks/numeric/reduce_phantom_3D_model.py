@@ -111,11 +111,10 @@ def reduce_phantom():
     model.parameters.set_spherical_symmetry (False)                  # No spherical symmetry
     model.parameters.set_dimension          (3)                      # This is a 3D model
     model.parameters.set_npoints            (npoints_reduced)        # Number of points
-    model.parameters.set_nrays              (12)                      # Number of rays
+    model.parameters.set_nrays              (12)                     # Number of rays
     model.parameters.set_nspecs             (5)                      # Number of species (min. 5)
     model.parameters.set_nlspecs            (1)                      # Number of line species
     model.parameters.set_nquads             (21)                     # Number of quadrature points
-    model.parameters.set_pop_prec           (1.0e-6)                 # Pops. convergence criterion
 
     model.geometry.points.position.set(position_reduced)
     model.geometry.points.velocity.set(velocity_reduced)

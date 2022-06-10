@@ -8,19 +8,19 @@ void Rays :: read (const Io& io)
 {
     cout << "Reading rays..." << endl;
 
-    parameters.set_nrays (io.get_length (prefix+"direction"));
-    parameters.set_hnrays (parameters.nrays()/2);
+    parameters->set_nrays (io.get_length (prefix+"direction"));
+    parameters->set_hnrays (parameters->nrays()/2);
 
-    direction.resize (parameters.nrays());
-      antipod.resize (parameters.nrays());
-       weight.resize (parameters.nrays());
+    direction.resize (parameters->nrays());
+      antipod.resize (parameters->nrays());
+       weight.resize (parameters->nrays());
 
-    Double2 direction_buffer (parameters.nrays(), Double1(3));
+    Double2 direction_buffer (parameters->nrays(), Double1(3));
 
     io.read_array (prefix+"direction", direction_buffer);
     io.read_list  (prefix+"weight",    weight);
 
-    for (Size r = 0; r < parameters.nrays(); r++)
+    for (Size r = 0; r < parameters->nrays(); r++)
     {
         direction[r] = Vector3D (direction_buffer[r][0],
                                  direction_buffer[r][1],
@@ -29,9 +29,9 @@ void Rays :: read (const Io& io)
 
     const double tolerance = 1.0E-9;
 
-    for (Size r1 = 0; r1 < parameters.nrays(); r1++)
+    for (Size r1 = 0; r1 < parameters->nrays(); r1++)
     {
-        for (Size r2 = 0; r2 < parameters.nrays(); r2++)
+        for (Size r2 = 0; r2 < parameters->nrays(); r2++)
         {
             if ((direction[r1] + direction[r2]).squaredNorm() < tolerance)
             {
@@ -50,9 +50,9 @@ void Rays :: write (const Io& io) const
 {
     cout << "Writing rays..." << endl;
 
-    Double2 direction_buffer (parameters.nrays(), Double1(3));
+    Double2 direction_buffer (parameters->nrays(), Double1(3));
 
-    for (Size r = 0; r < parameters.nrays(); r++)
+    for (Size r = 0; r < parameters->nrays(); r++)
     {
         direction_buffer[r] = {direction[r].x(),
                                direction[r].y(),

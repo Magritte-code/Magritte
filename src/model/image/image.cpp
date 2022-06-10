@@ -9,7 +9,7 @@ const string prefix = "image/";
 //////////////////////////
 Image :: Image (const Geometry& geometry, const ImageType it, const Size rr) : imageType(it), ray_nr (rr)
 {
-    if (geometry.parameters.dimension() == 1)
+    if (geometry.parameters->dimension() == 1)
     {
         if ((geometry.rays.direction[ray_nr].x() != 0.0) ||
             (geometry.rays.direction[ray_nr].y() != 1.0) ||
@@ -19,9 +19,9 @@ Image :: Image (const Geometry& geometry, const ImageType it, const Size rr) : i
         }
     }
 
-    ImX.resize (geometry.parameters.npoints());
-    ImY.resize (geometry.parameters.npoints());
-    I.  resize (geometry.parameters.npoints(), geometry.parameters.nfreqs());
+    ImX.resize (geometry.parameters->npoints());
+    ImY.resize (geometry.parameters->npoints());
+    I.  resize (geometry.parameters->npoints(), geometry.parameters->nfreqs());
 
     set_coordinates (geometry);
 }
@@ -79,16 +79,16 @@ Image :: Image (const Image& image) : imageType(image.imageType), ray_nr (image.
 /////////////////////////////////////////////////////////
 void Image :: set_coordinates (const Geometry& geometry)
 {
-    if (geometry.parameters.dimension() == 1)
+    if (geometry.parameters->dimension() == 1)
     {
-        threaded_for (p, geometry.parameters.npoints(),
+        threaded_for (p, geometry.parameters->npoints(),
         {
             ImX[p] = geometry.points.position[p].x();
             ImY[p] = 0.0;
         })
     }
 
-    if (geometry.parameters.dimension() == 3)
+    if (geometry.parameters->dimension() == 3)
     {
         const double rx = geometry.rays.direction[ray_nr].x();
         const double ry = geometry.rays.direction[ray_nr].y();
@@ -106,7 +106,7 @@ void Image :: set_coordinates (const Geometry& geometry)
 
         if (denominator >= 1.0e-9)
         {
-            threaded_for (p, geometry.parameters.npoints(),
+            threaded_for (p, geometry.parameters->npoints(),
             {
                 ImX[p] =   ix * geometry.points.position[p].x()
                          + iy * geometry.points.position[p].y();
@@ -118,7 +118,7 @@ void Image :: set_coordinates (const Geometry& geometry)
         }
         else
         {
-            threaded_for (p, geometry.parameters.npoints(),
+            threaded_for (p, geometry.parameters->npoints(),
             {
                 ImX[p] = geometry.points.position[p].x();
                 ImY[p] = geometry.points.position[p].y();

@@ -7,76 +7,30 @@
 #include "tools/setOnce.hpp"
 
 
-///  Create for each parameter "x":
-///    - a (private) local variable "x__",
-///    - a (private) Meyers' singleton for isSet "x_isSet()",
-///    - a (public) Meyers' singleton for value "x()",
-///    - a (public) setter function "set_x".
-///  Remember to ensure in Parameters copy constructor to
-///  ensure that the local variables are up to date, i.e.
-///  ensure that their values equal the global values.
-
-#define CREATE_PARAMETER(type, x)                                                           \
-    private:                                                                                \
-        SetOnce<type> x##__;                     /* Local (SetOnce) variable           */   \
-        accel inline bool& x##_isSet () const    /* Meyers' singleton for global isSet */   \
-        {                                                                                   \
-            static bool isSet = false;           /* Global isSet                       */   \
-            return isSet;                        /* Return global isSet                */   \
-        }                                                                                   \
-    public:                                                                                 \
-        accel inline type& x () const            /* Meyers' singleton for global value */   \
-        {                                                                                   \
-            static type x##_value;               /* Global value                       */   \
-            if (!x##_isSet())                    /* If global value is not set         */   \
-            {                                                                               \
-                x##_value   = x##__.get();       /* Set global with local value        */   \
-                x##_isSet() = true;              /* Mark global value as set           */   \
-            }                                                                               \
-            return x##_value;                    /* Return global value                */   \
-        }                                                                                   \
-        inline void set_##x (const type value)   /* Setter function                    */   \
-        {                                                                                   \
-            x##__.set (value);                   /* Set local value                    */   \
-            x() = value;                         /* Set global value                   */   \
-        }                                                                                   \
-        inline type get_##x () const             /* Getter function                    */   \
-        {                                                                                   \
-            return x();                          /* Return copy of global value        */   \
-        }
-
-#define CONSTRUCT_PARAMETER(type, x)                                                        \
-    x##__ = SetOnce <type> (x());
-
-#define COPY_PARAMETER(x)                                                                   \
-    if (x##_isSet()) x##__.set(x());
-
+#define CREATE_PARAMETER(type, x)                                               \
+    private:                                                                    \
+        SetOnce<type> x##__;                                                    \
+    public:                                                                     \
+        inline void set_##x (const type value)       {       x##__.set(value);};\
+        inline type       x (                ) const {return x##__.get(     );};
 
 
 ///  Parameters: secure structure for the model parameters
 //////////////////////////////////////////////////////////
 struct Parameters
 {
-    // !!! These parameters are not updated globally !!!
-    // Get rid of the Meyer's singleton construction !!!
-    long   n_off_diag                  = 0;
-    double max_width_fraction          = 0.5;
-    double convergence_fraction        = 0.995;
-    double min_rel_pop_for_convergence = 1.0e-10;
-    ////////////////////////////////////////////////////
+    SetOnce<Size> np_;
 
-    void read (const Io &io);
-    void write(const Io &io) const;
+    inline void set_np (const Size value) {       np_.set(value);}
+    inline Size     np () const           {return np_.get();}
+
 
     CREATE_PARAMETER (string, model_name);
 
     CREATE_PARAMETER (Size, dimension );
     CREATE_PARAMETER (Size, npoints   );
-    CREATE_PARAMETER (Size, totnnbs   );
     CREATE_PARAMETER (Size, nrays     );
     CREATE_PARAMETER (Size, hnrays    );
-    CREATE_PARAMETER (Size, order_min );
-    CREATE_PARAMETER (Size, order_max );
     CREATE_PARAMETER (Size, nboundary );
     CREATE_PARAMETER (Size, nfreqs    );
     CREATE_PARAMETER (Size, nspecs    );
@@ -84,68 +38,32 @@ struct Parameters
     CREATE_PARAMETER (Size, nlines    );
     CREATE_PARAMETER (Size, nquads    );
 
-    CREATE_PARAMETER (Real, pop_prec);
-
     CREATE_PARAMETER (bool, use_scattering        );
-    CREATE_PARAMETER (bool, store_intensities     );
-    CREATE_PARAMETER (bool, use_Ng_acceleration   );
     CREATE_PARAMETER (bool, spherical_symmetry    );
     CREATE_PARAMETER (bool, adaptive_ray_tracing  );
-    CREATE_PARAMETER (bool, one_line_approximation);
+
+
+    Size n_off_diag                  = 0;
+    Real max_width_fraction          = 0.5;
+    Real convergence_fraction        = 0.995;
+    Real min_rel_pop_for_convergence = 1.0e-10;
+    Real pop_prec                    = 1.0e-6;
+    bool store_intensities           = false;
+    bool use_Ng_acceleration         = true;
+    bool one_line_approximation      = false;
+
 
     Parameters ()
     {
-        CONSTRUCT_PARAMETER (string, model_name);
+        // Disable scattering
+        use_scattering__      .set         (false);
 
-        CONSTRUCT_PARAMETER (Size, dimension );
-        CONSTRUCT_PARAMETER (Size, npoints   );
-        CONSTRUCT_PARAMETER (Size, totnnbs   );
-        CONSTRUCT_PARAMETER (Size, nrays     );
-        CONSTRUCT_PARAMETER (Size, hnrays    );
-        CONSTRUCT_PARAMETER (Size, order_min );
-        CONSTRUCT_PARAMETER (Size, order_max );
-        CONSTRUCT_PARAMETER (Size, nboundary );
-        CONSTRUCT_PARAMETER (Size, nfreqs    );
-        CONSTRUCT_PARAMETER (Size, nspecs    );
-        CONSTRUCT_PARAMETER (Size, nlspecs   );
-        CONSTRUCT_PARAMETER (Size, nlines    );
-        CONSTRUCT_PARAMETER (Size, nquads    );
+        // Set defaults
+        spherical_symmetry__  .set_default (false);
+        adaptive_ray_tracing__.set_default (false);
+    };
 
-        CONSTRUCT_PARAMETER (Real, pop_prec);
 
-        CONSTRUCT_PARAMETER (bool, use_scattering        );
-        CONSTRUCT_PARAMETER (bool, store_intensities     );
-        CONSTRUCT_PARAMETER (bool, use_Ng_acceleration   );
-        CONSTRUCT_PARAMETER (bool, spherical_symmetry    );
-        CONSTRUCT_PARAMETER (bool, adaptive_ray_tracing  );
-        CONSTRUCT_PARAMETER (bool, one_line_approximation);
-    }
-
-    Parameters (const Parameters& parameters)
-    {
-        COPY_PARAMETER (model_name);
-
-        COPY_PARAMETER (dimension );
-        COPY_PARAMETER (npoints   );
-        COPY_PARAMETER (totnnbs   );
-        COPY_PARAMETER (nrays     );
-        COPY_PARAMETER (hnrays    );
-        COPY_PARAMETER (order_min );
-        COPY_PARAMETER (order_max );
-        COPY_PARAMETER (nboundary );
-        COPY_PARAMETER (nfreqs    );
-        COPY_PARAMETER (nspecs    );
-        COPY_PARAMETER (nlspecs   );
-        COPY_PARAMETER (nlines    );
-        COPY_PARAMETER (nquads    );
-
-        COPY_PARAMETER (pop_prec);
-
-        COPY_PARAMETER (use_scattering        );
-        COPY_PARAMETER (store_intensities     );
-        COPY_PARAMETER (use_Ng_acceleration   );
-        COPY_PARAMETER (spherical_symmetry    );
-        COPY_PARAMETER (adaptive_ray_tracing  );
-        COPY_PARAMETER (one_line_approximation);
-    }
+    void read (const Io &io);
+    void write(const Io &io) const;
 };

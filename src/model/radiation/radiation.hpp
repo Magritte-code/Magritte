@@ -11,19 +11,23 @@
 //////////////////////////////////////////////////////
 struct Radiation
 {
-    Parameters parameters;
+    std::shared_ptr<Parameters> parameters;   ///< data structure containing model
 
-    Frequencies frequencies;
-    Scattering  scattering;
+    Frequencies frequencies;                  ///< data structure containing frequency bins
 
-    Tensor<Real> I;         ///< intensity (r, p, f)
-    Tensor<Real> u;         ///< intensity (r, p, f)
-    Tensor<Real> v;         ///< intensity (r, p, f)
+    Tensor<Real> I;                           ///< intensity (r, p, f)
+    Tensor<Real> u;                           ///< intensity (r, p, f)
+    Tensor<Real> v;                           ///< intensity (r, p, f)
 
-    Matrix<Real> J;         ///< (angular) mean intensity (p, f)
+    Matrix<Real> J;                           ///< (angular) mean intensity (p, f)
 
     // vector<Matrix<Real>> U;         ///< U scattered intensity   (r, index(p,f))
     // vector<Matrix<Real>> V;         ///< V scattered intensity   (r, index(p,f))
+
+
+    Radiation (std::shared_ptr<Parameters> params)
+    : parameters  (params)
+    , frequencies (params) {};
 
     void read  (const Io& io);
     void write (const Io& io) const;

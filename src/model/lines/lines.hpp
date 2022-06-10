@@ -9,16 +9,20 @@
 
 struct Lines
 {
-    Parameters parameters;
+    std::shared_ptr<Parameters> parameters;   ///< data structure containing model parameters
 
     vector <LineProducingSpecies> lineProducingSpecies;
 
-    Vector<Real> line;            ///< [Hz] line center frequencies (NOT ordered!)
-    Vector<Size> nrad_cum;        ///< Cumulative number of radiative transitions
+    Vector<Real> line;                       ///< [Hz] line center frequencies (NOT ordered!)
+    Vector<Size> nrad_cum;                   ///< Cumulative number of radiative transitions
 
-    Matrix<Real> emissivity;      ///< line emissivity    (p, lid)
-    Matrix<Real> opacity;         ///< line opacity       (p, lid)
-    Matrix<Real> inverse_width;   ///< inverse line width (p, lid)
+    Matrix<Real> emissivity;                 ///< line emissivity    (p, lid)
+    Matrix<Real> opacity;                    ///< line opacity       (p, lid)
+    Matrix<Real> inverse_width;              ///< inverse line width (p, lid)
+
+
+    Lines (std::shared_ptr<Parameters> params)
+    : parameters (params) {};
 
     void read  (const Io& io);
     void write (const Io& io) const;
@@ -46,6 +50,11 @@ struct Lines
 
     inline void set_emissivity_and_opacity ();
     inline void set_inverse_width (const Thermodynamics& thermodynamics);
+
+    void resize_LineProducingSpecies(const Size nlspec)
+    {
+        lineProducingSpecies.resize (parameters->nlspecs(), LineProducingSpecies(parameters));
+    }
 
     void gather_emissivities_and_opacities ();
 };

@@ -6,17 +6,21 @@
 
 struct Lambda
 {
-    Parameters parameters;
+    std::shared_ptr<Parameters> parameters;   ///< data structure containing model parameters
 
-    Real3 Ls;     ///< values
-    Size3 nr;     ///< position indices
+    Real3 Ls;                                 ///< values
+    Size3 nr;                                 ///< position indices
 
-    Real1 Lss;    ///< linearized values
-    Size1 nrs;    ///< linearized position indices
+    Real1 Lss;                                ///< linearized values
+    Size1 nrs;                                ///< linearized position indices
 
     Size1 size;
 
-    Size  nrad;   ///< number of (radiative) transitions
+    Size  nrad;                               ///< number of (radiative) transitions
+
+
+    Lambda (std::shared_ptr<Parameters> params)
+    : parameters (params) {};
 
     inline void initialize (const Size nrad_new);
     inline void clear ();

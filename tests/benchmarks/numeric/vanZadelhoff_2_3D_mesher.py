@@ -51,16 +51,16 @@ def create_model (a_or_b):
     temp    = np.flip (temp,    axis=0)
     vs      = np.flip (vs,      axis=0)
     turb    = np.flip (turb,    axis=0)
-    
+
     nH2_int   = interp1d(r_shell, nH2,  fill_value='extrapolate')
     X_mol_int = interp1d(r_shell, X_mol,fill_value='extrapolate')
     temp_int  = interp1d(r_shell, temp, fill_value='extrapolate')
     vs_int    = interp1d(r_shell, vs,   fill_value='extrapolate')
     turb_int  = interp1d(r_shell, turb, fill_value='extrapolate')
-    
+
     r_in  = min(r_shell)
     r_out = max(r_shell)
-    
+
     scale_max = 0.1 * r_out
     scale_min = 0.1 * r_in
     scale_cte = 0.1 * r_in
@@ -78,9 +78,9 @@ def create_model (a_or_b):
         scale_function = scale_fun )
 
     mesh = mesher.Mesh(meshName)
-    
+
     position = mesh.points
-    
+
     npoints = len(mesh.points)
     print(npoints)
 #     nbs     = [n for sublist in mesh.neighbors for n in sublist]
@@ -89,10 +89,9 @@ def create_model (a_or_b):
     rs = np.linalg.norm(mesh.points, axis=1)
 
     velocity = (vs_int(rs) / rs * position.T).T
-    
+
     model = magritte.Model ()
     model.parameters.set_spherical_symmetry(False)
-    model.parameters.set_pop_prec          (1.0e-6)
     model.parameters.set_model_name        (modelFile)
     model.parameters.set_dimension         (dimension)
     model.parameters.set_npoints           (npoints)
@@ -112,7 +111,7 @@ def create_model (a_or_b):
 
     model.thermodynamics.temperature.gas  .set([temp_int(r)    for r in rs])
     model.thermodynamics.turbulence.vturb2.set([turb_int(r)**2 for r in rs])
-    
+
     model = setup.set_Delaunay_neighbor_lists (model)
 
     model.parameters.set_nboundary(len(mesh.boundary))

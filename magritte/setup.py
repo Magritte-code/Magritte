@@ -530,8 +530,8 @@ def set_linedata_from_LAMDA_file (model, fileNames, config={}):
     # Make sure a file is provides for each species
     if len(fileNames) != model.parameters.nlspecs():
         raise ValueError('Number of provided LAMDA files != nlspecs')
-    # Create lineProducingSpecies objects
-    model.lines.lineProducingSpecies = vLineProducingSpecies([LineProducingSpecies() for _ in fileNames])
+    # Create lineProducingSpecies objects    
+    model.lines.resize_LineProducingSpecies (len(fileNames))
     # Convenient name
     species = model.chemistry.species
     # Add data for each LAMDA file

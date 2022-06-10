@@ -18,36 +18,36 @@ void LineProducingSpecies :: read (const Io& io, const Size l)
 
     lambda.initialize (linedata.nrad);
 
-    Jeff.resize (parameters.npoints());
-    Jlin.resize (parameters.npoints());
-    Jdif.resize (parameters.npoints());
+    Jeff.resize (parameters->npoints());
+    Jlin.resize (parameters->npoints());
+    Jdif.resize (parameters->npoints());
 
 
-    for (Size p = 0; p < parameters.npoints(); p++)
+    for (Size p = 0; p < parameters->npoints(); p++)
     {
         Jeff[p].resize (linedata.nrad);
         Jlin[p].resize (linedata.nrad);
         Jdif[p].resize (linedata.nrad);
     }
 
-    nr_line.resize (parameters.npoints());
+    nr_line.resize (parameters->npoints());
 
-    for (Size p = 0; p < parameters.npoints(); p++)
+    for (Size p = 0; p < parameters->npoints(); p++)
     {
         nr_line[p].resize (linedata.nrad);
 
         for (Size k = 0; k < linedata.nrad; k++)
         {
-            nr_line[p][k].resize (parameters.nquads());
+            nr_line[p][k].resize (parameters->nquads());
         }
     }
 
 
-    population_prev1.resize (parameters.npoints()*linedata.nlev);
-    population_prev2.resize (parameters.npoints()*linedata.nlev);
-    population_prev3.resize (parameters.npoints()*linedata.nlev);
-      population_tot.resize (parameters.npoints()*linedata.nlev);
-          population.resize (parameters.npoints()*linedata.nlev);
+    population_prev1.resize (parameters->npoints()*linedata.nlev);
+    population_prev2.resize (parameters->npoints()*linedata.nlev);
+    population_prev3.resize (parameters->npoints()*linedata.nlev);
+      population_tot.resize (parameters->npoints()*linedata.nlev);
+          population.resize (parameters->npoints()*linedata.nlev);
 
     const string prefix_l = prefix + std::to_string (l) + "/";
 
@@ -57,16 +57,16 @@ void LineProducingSpecies :: read (const Io& io, const Size l)
     read_populations (io, l, "");
 
 
-    Double2 pops_prev1 (parameters.npoints(), Double1 (linedata.nlev));
-    Double2 pops_prev2 (parameters.npoints(), Double1 (linedata.nlev));
-    Double2 pops_prev3 (parameters.npoints(), Double1 (linedata.nlev));
+    Double2 pops_prev1 (parameters->npoints(), Double1 (linedata.nlev));
+    Double2 pops_prev2 (parameters->npoints(), Double1 (linedata.nlev));
+    Double2 pops_prev3 (parameters->npoints(), Double1 (linedata.nlev));
 
     int err_prev1 = io.read_array (prefix_l+"population_prev1", pops_prev1);
     int err_prev2 = io.read_array (prefix_l+"population_prev2", pops_prev2);
     int err_prev3 = io.read_array (prefix_l+"population_prev3", pops_prev3);
 
 
-    threaded_for (p, parameters.npoints(),
+    threaded_for (p, parameters->npoints(),
     {
         for (Size i = 0; i < linedata.nlev; i++)
         {
@@ -95,11 +95,11 @@ void LineProducingSpecies :: write (const Io& io, const Size l) const
 
     // io.write_list (prefix_l + "population_tot", population_tot);
 
-    // Double2 pops_prev1 (parameters.npoints(), Double1 (linedata.nlev));
-    // Double2 pops_prev2 (parameters.npoints(), Double1 (linedata.nlev));
-    // Double2 pops_prev3 (parameters.npoints(), Double1 (linedata.nlev));
+    // Double2 pops_prev1 (parameters->npoints(), Double1 (linedata.nlev));
+    // Double2 pops_prev2 (parameters->npoints(), Double1 (linedata.nlev));
+    // Double2 pops_prev3 (parameters->npoints(), Double1 (linedata.nlev));
 
-    // threaded_for (p, parameters.npoints(),
+    // threaded_for (p, parameters->npoints(),
     // {
     //     for (Size i = 0; i < linedata.nlev; i++)
     //     {
@@ -124,13 +124,13 @@ void LineProducingSpecies :: read_populations (const Io &io, const Size l, const
 {
     const string prefix_l = prefix + std::to_string (l) + "/";
 
-    Double2 pops (parameters.npoints(), Double1 (linedata.nlev));
+    Double2 pops (parameters->npoints(), Double1 (linedata.nlev));
 
     int err = io.read_array (prefix_l+"population"+tag, pops);
 
     if (err == 0)
     {
-        threaded_for (p, parameters.npoints(),
+        threaded_for (p, parameters->npoints(),
         {
             for (Size i = 0; i < linedata.nlev; i++)
             {
@@ -157,9 +157,9 @@ void LineProducingSpecies :: write_populations (const Io& io, const Size l, cons
 
     if (population.size() > 0)
     {
-        Double2 pops (parameters.npoints(), Double1 (linedata.nlev));
+        Double2 pops (parameters->npoints(), Double1 (linedata.nlev));
 
-        threaded_for (p, parameters.npoints(),
+        threaded_for (p, parameters->npoints(),
         {
             for (Size i = 0; i < linedata.nlev; i++)
             {

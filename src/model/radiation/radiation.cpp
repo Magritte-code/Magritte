@@ -16,7 +16,7 @@ void Radiation :: read (const Io& io)
 
     frequencies.read (io);
 
-    if (parameters.use_scattering())
+    if (parameters->use_scattering())
     {
         cout << "Using scattering, make sure you have enough memory!" << endl;
     }
@@ -27,25 +27,25 @@ void Radiation :: read (const Io& io)
 
 
     // Size and initialize I, u, v
-    if (parameters.store_intensities())
+    if (parameters->store_intensities)
     {
         // Define the local (i.e. in this process) lengths of the distributed arrays
-        const Size  nrays_local = pc::message_passing::length(parameters. nrays());
-        const Size hnrays_local = pc::message_passing::length(parameters.hnrays());
+        const Size  nrays_local = pc::message_passing::length(parameters-> nrays());
+        const Size hnrays_local = pc::message_passing::length(parameters->hnrays());
 
-        I.resize ( nrays_local, parameters.npoints(), parameters.nfreqs());
-        u.resize (hnrays_local, parameters.npoints(), parameters.nfreqs());
-        v.resize (hnrays_local, parameters.npoints(), parameters.nfreqs());
-        J.resize (              parameters.npoints(), parameters.nfreqs());
+        I.resize ( nrays_local, parameters->npoints(), parameters->nfreqs());
+        u.resize (hnrays_local, parameters->npoints(), parameters->nfreqs());
+        v.resize (hnrays_local, parameters->npoints(), parameters->nfreqs());
+        J.resize (              parameters->npoints(), parameters->nfreqs());
     }
 
 
-    // if (parameters.use_scattering())
+    // if (parameters->use_scattering())
     // {
-    //     U.resize (parameters.nrays_red());
-    //     V.resize (parameters.nrays_red());
+    //     U.resize (parameters->nrays_red());
+    //     V.resize (parameters->nrays_red());
     //
-    //     for (Size r = 0; r < parameters.nrays_red(); r++)
+    //     for (Size r = 0; r < parameters->nrays_red(); r++)
     //     {
     //         U[r].resize (npoints, nfreqs_red);
     //         V[r].resize (npoints, nfreqs_red);
@@ -82,9 +82,9 @@ void initialize (Real1 &vec)
 /////////////////////////////////////////
 void Radiation :: initialize_J ()
 {
-    for (Size p = 0; p < parameters.npoints(); p++)
+    for (Size p = 0; p < parameters->npoints(); p++)
     {
-        for (Size f = 0; f < parameters.nfreqs(); f++)
+        for (Size f = 0; f < parameters->nfreqs(); f++)
         {
             J(p,f) = 0.0;
         }
@@ -120,13 +120,13 @@ void Radiation :: MPI_reduce_J ()
 void Radiation :: calc_U_and_V ()
 #if (MPI_PARALLEL)
 {
-//    Real1 U_local (parameters.npoints()*parameters.nfreqs());
-//    Real1 V_local (parameters.npoints()*parameters.nfreqs());
+//    Real1 U_local (parameters->npoints()*parameters->nfreqs());
+//    Real1 V_local (parameters->npoints()*parameters->nfreqs());
 //
 //    for (Size w = 0; w < pc::message_passing::comm_size(); w++)
 //    {
-//        const Size start = ( w   *(parameters.hnrays())) / pc::message_passing::comm_size();
-//        const Size stop  = ((w+1)*(parameters.hnrays())) / pc::message_passing::comm_size();
+//        const Size start = ( w   *(parameters->hnrays())) / pc::message_passing::comm_size();
+//        const Size stop  = ((w+1)*(parameters->hnrays())) / pc::message_passing::comm_size();
 //
 //        for (Size r1 = start; r1 < stop; r1++)
 //        {
@@ -135,11 +135,11 @@ void Radiation :: calc_U_and_V ()
 //            initialize (U_local);
 //            initialize (V_local);
 //
-//            distributed_for (r2, R2, parameters.hnrays(),
+//            distributed_for (r2, R2, parameters->hnrays(),
 //            {
-//                threaded_for (p, parameters.npoints(),
+//                threaded_for (p, parameters->npoints(),
 //                {
-//                    for (Size f = 0; f < parameters.nfreqs(); f++)
+//                    for (Size f = 0; f < parameters->nfreqs(); f++)
 //              	    {
 //                        U_local[index(p,f)] += u[R2][index(p,f)]; // * scattering.phase[r1][r2][f];
 //                        V_local[index(p,f)] += v[R2][index(p,f)]; // * scattering.phase[r1][r2][f];
@@ -171,19 +171,19 @@ void Radiation :: calc_U_and_V ()
 }
 #else
 {
-//    Real1 U_local (parameters.npoints()*parameters.nfreqs());
-//    Real1 V_local (parameters.npoints()*parameters.nfreqs());
+//    Real1 U_local (parameters->npoints()*parameters->nfreqs());
+//    Real1 V_local (parameters->npoints()*parameters->nfreqs());
 
-//    for (Size r1 = 0; r1 < parameters.hnrays(); r1++)
+//    for (Size r1 = 0; r1 < parameters->hnrays(); r1++)
 //    {
 //        initialize (U_local);
 //        initialize (V_local);
 
-//        for (Size r2 = 0; r2 < parameters.hnrays(); r2++)
+//        for (Size r2 = 0; r2 < parameters->hnrays(); r2++)
 //        {
-//            threaded_for (p, parameters.npoints(),
+//            threaded_for (p, parameters->npoints(),
 //            {
-//                for (Size f = 0; f < parameters.nfreqs(); f++)
+//                for (Size f = 0; f < parameters->nfreqs(); f++)
 //                {
 //                    U_local[index(p,f)] += u[r2][index(p,f)]; // * scattering.phase[r1][r2][f];
 //                    V_local[index(p,f)] += v[r2][index(p,f)]; // * scattering.phase[r1][r2][f];

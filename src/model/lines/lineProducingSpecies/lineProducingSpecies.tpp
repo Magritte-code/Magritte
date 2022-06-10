@@ -56,7 +56,7 @@ inline void LineProducingSpecies :: update_using_LTE (
     const Double2      &abundance,
     const Vector<Real> &temperature )
 {
-    threaded_for (p, parameters.npoints(),
+    threaded_for (p, parameters->npoints(),
     {
         population_tot[p] = abundance[p][linedata.num];
 
@@ -86,19 +86,19 @@ inline void LineProducingSpecies :: update_using_LTE (
 
 inline void LineProducingSpecies :: check_for_convergence (const Real pop_prec)
 {
-    const Real weight = 1.0 / (parameters.npoints() * linedata.nlev);
+    const Real weight = 1.0 / (parameters->npoints() * linedata.nlev);
 
     Real fnc = 0.0;
     Real rcm = 0.0;
 
 #   pragma omp parallel for reduction (+: fnc, rcm)
-    for (Size p = 0; p < parameters.npoints(); p++)
+    for (Size p = 0; p < parameters->npoints(); p++)
     {
         for (Size i = 0; i < linedata.nlev; i++)
         {
             const Size ind = index (p, i);
 
-            if (population(ind) > parameters.min_rel_pop_for_convergence * population_tot[p])
+            if (population(ind) > parameters->min_rel_pop_for_convergence * population_tot[p])
             {
                 Real relative_change = 2.0;
 
@@ -126,7 +126,7 @@ inline void LineProducingSpecies :: check_for_convergence (const Real pop_prec)
 ///////////////////////////////////////////////////////////////////////////
 void LineProducingSpecies :: update_using_Ng_acceleration ()
 {
-    VectorXr Wt (parameters.npoints()*linedata.nlev);
+    VectorXr Wt (parameters->npoints()*linedata.nlev);
 
     VectorXr Q1 = population - 2.0*population_prev1 + population_prev2;
     VectorXr Q2 = population -     population_prev1 - population_prev2 + population_prev3;
@@ -220,13 +220,13 @@ inline void LineProducingSpecies :: update_using_statistical_equilibrium (
     const Double2      &abundance,
     const Vector<Real> &temperature )
 {
-    RT        .resize (parameters.npoints()*linedata.nlev, parameters.npoints()*linedata.nlev);
-    LambdaStar.resize (parameters.npoints()*linedata.nlev, parameters.npoints()*linedata.nlev);
-    LambdaTest.resize (parameters.npoints()*linedata.nlev, parameters.npoints()*linedata.nlev);
+    RT        .resize (parameters->npoints()*linedata.nlev, parameters->npoints()*linedata.nlev);
+    LambdaStar.resize (parameters->npoints()*linedata.nlev, parameters->npoints()*linedata.nlev);
+    LambdaTest.resize (parameters->npoints()*linedata.nlev, parameters->npoints()*linedata.nlev);
 
-    const Size non_zeros = parameters.npoints() * (      linedata.nlev
-                                                   + 6 * linedata.nrad
-                                                   + 4 * linedata.ncol_tot );
+    const Size non_zeros = parameters->npoints() * (      linedata.nlev
+                                                    + 6 * linedata.nrad
+                                                    + 4 * linedata.ncol_tot );
     // Store previous iterations
     population_prev3 = population_prev2;
     population_prev2 = population_prev1;
@@ -237,7 +237,7 @@ inline void LineProducingSpecies :: update_using_statistical_equilibrium (
 
 //    SparseMatrix<double> RT (ncells*linedata.nlev, ncells*linedata.nlev);
 
-    VectorXr y = VectorXr::Zero (parameters.npoints()*linedata.nlev);
+    VectorXr y = VectorXr::Zero (parameters->npoints()*linedata.nlev);
 
     vector<Triplet<Real, Size>> triplets;
 //    vector<Triplet<Real, Size>> triplets_LT;
@@ -247,7 +247,7 @@ inline void LineProducingSpecies :: update_using_statistical_equilibrium (
 //    triplets_LT.reserve (non_zeros);
 //    triplets_LS.reserve (non_zeros);
 
-    for (Size p = 0; p < parameters.npoints(); p++) // !!! no OMP because push_back is not thread safe !!!
+    for (Size p = 0; p < parameters->npoints(); p++) // !!! no OMP because push_back is not thread safe !!!
     {
         // Radiative transitions
 
@@ -454,9 +454,9 @@ inline void LineProducingSpecies :: update_using_statistical_equilibrium_sparse 
     const Vector<Real> &temperature )
 {
 
-    if (parameters.n_off_diag != 0)
+    if (parameters->n_off_diag != 0)
     {
-        throw std::runtime_error ("parameters.n_off_diag != 0 so cannot use sparse update.");
+        throw std::runtime_error ("parameters->n_off_diag != 0 so cannot use sparse update.");
     }
 
     // Store previous iterations
@@ -471,7 +471,7 @@ inline void LineProducingSpecies :: update_using_statistical_equilibrium_sparse 
     VectorXr y = VectorXr::Zero(linedata.nlev);
 
 
-    for (Size p = 0; p < parameters.npoints(); p++) // !!! no OMP because push_back is not thread safe !!!
+    for (Size p = 0; p < parameters->npoints(); p++) // !!! no OMP because push_back is not thread safe !!!
     {
         StatEq.setZero();
 

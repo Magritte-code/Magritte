@@ -16,7 +16,8 @@
 
 struct Model
 {
-    Parameters     parameters;
+    std::shared_ptr<Parameters> parameters;
+
     Geometry       geometry;
     Chemistry      chemistry;
     Thermodynamics thermodynamics;
@@ -27,18 +28,35 @@ struct Model
     enum SpectralDiscretisation {SD_None, SD_Lines, SD_Image}
          spectralDiscretisation = SD_None;
 
-    Model () {};
+
+    Model ()
+    : parameters     (new Parameters())
+    , geometry       (    parameters  )
+    , chemistry      (    parameters  )
+    , thermodynamics (    parameters  )
+    , lines          (    parameters  )
+    , radiation      (    parameters  )
+    {};
+
     Model (const string name)
+    : parameters     (new Parameters())
+    , geometry       (    parameters  )
+    , chemistry      (    parameters  )
+    , thermodynamics (    parameters  )
+    , lines          (    parameters  )
+    , radiation      (    parameters  )
     {
-        parameters.model_name() = name;
+        parameters->set_model_name (name);
         read ();
     }
+
+    std::shared_ptr<Parameters> params() const {return parameters;};
 
     void read  (const Io& io);
     void write (const Io& io) const;
 
-    void read  ()       {read  (IoPython ("hdf5", parameters.model_name()));};
-    void write () const {write (IoPython ("hdf5", parameters.model_name()));};
+    void read  ()       {read  (IoPython ("hdf5", parameters->model_name()));};
+    void write () const {write (IoPython ("hdf5", parameters->model_name()));};
 
     void read  (const string model_name)       {read  (IoPython ("hdf5", model_name));};
     void write (const string model_name) const {write (IoPython ("hdf5", model_name));};

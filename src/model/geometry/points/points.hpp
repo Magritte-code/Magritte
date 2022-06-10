@@ -8,7 +8,7 @@
 
 struct Points
 {
-    Parameters parameters;
+    std::shared_ptr<Parameters> parameters;
 
     Vector <Vector3D> position;          ///< position vectors of each point
     Vector <Vector3D> velocity;          ///< velocity vectors of each point
@@ -17,14 +17,10 @@ struct Points
     Vector <Size>         n_neighbors;   ///< number of neighbors
     Vector <Size>           neighbors;   ///< neighbors of each point
 
+
+    Points (std::shared_ptr<Parameters> params)
+    : parameters (params) {};
+
     void read  (const Io& io);
     void write (const Io& io) const;
-
-    void print()
-    {
-        for (Size r = 0; r < 10; r++)
-        {
-            position[r].print();
-        }
-    }
 };

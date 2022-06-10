@@ -8,23 +8,13 @@
 
 struct Temperature
 {
-    Parameters parameters;
+    std::shared_ptr<Parameters> parameters;   ///< data structure containing model
 
-    Vector<Real> gas;   ///< [K] gas temperature
+    Vector<Real> gas;                         ///< [K] gas temperature
 
-    void print()
-    {
-        cout << "data = " << gas.vec.data() << endl;
-        // Real* ptr = gas.dat;
-        // cout << "test = " << ptr--          << endl;
-        cout << "dat  = " << gas.dat        << endl;
 
-        for (Size i = 0; i < parameters.npoints(); i++)
-        {
-            cout << "gas[i] = " << gas[i] << "    gas.vec[i] = " << gas.vec[i] << endl;
-        }
-    }
-
+    Temperature (std::shared_ptr<Parameters> params)
+    : parameters (params) {};
 
     void read  (const Io& io);
     void write (const Io& io) const;

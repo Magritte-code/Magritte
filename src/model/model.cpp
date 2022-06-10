@@ -13,7 +13,7 @@ void Model :: read (const Io& io)
     cout << " model file = " << io.io_file                << endl;
     cout << "-------------------------------------------" << endl;
 
-    parameters    .read (io);
+    parameters   ->read (io);
     geometry      .read (io);
     chemistry     .read (io);
     thermodynamics.read (io);
@@ -24,14 +24,14 @@ void Model :: read (const Io& io)
     cout << "-------------------------------------------" << endl;
     cout << "  Model read, parameters:                  " << endl;
     cout << "-------------------------------------------" << endl;
-    cout << "  npoints    = " << parameters.npoints    () << endl;
-    cout << "  nrays      = " << parameters.nrays      () << endl;
-    cout << "  nboundary  = " << parameters.nboundary  () << endl;
-    cout << "  nfreqs     = " << parameters.nfreqs     () << endl;
-    cout << "  nspecs     = " << parameters.nspecs     () << endl;
-    cout << "  nlspecs    = " << parameters.nlspecs    () << endl;
-    cout << "  nlines     = " << parameters.nlines     () << endl;
-    cout << "  nquads     = " << parameters.nquads     () << endl;
+    cout << "  npoints    = " << parameters->npoints   () << endl;
+    cout << "  nrays      = " << parameters->nrays     () << endl;
+    cout << "  nboundary  = " << parameters->nboundary () << endl;
+    cout << "  nfreqs     = " << parameters->nfreqs    () << endl;
+    cout << "  nspecs     = " << parameters->nspecs    () << endl;
+    cout << "  nlspecs    = " << parameters->nlspecs   () << endl;
+    cout << "  nlines     = " << parameters->nlines    () << endl;
+    cout << "  nquads     = " << parameters->nquads    () << endl;
     cout << "-------------------------------------------" << endl;
     cout << "                                           " << endl;
 }
@@ -42,7 +42,7 @@ void Model :: write (const Io& io) const
     // Let only root (rank 0) process write output
     if (pc::message_passing::comm_rank() == 0)
     {
-        parameters    .write (io);
+        parameters   ->write (io);
         geometry      .write (io);
         chemistry     .write (io);
         thermodynamics.write (io);
@@ -69,16 +69,16 @@ int Model :: compute_spectral_discretisation ()
 {
     cout << "Computing spectral discretisation..." << endl;
 
-    threaded_for (p, parameters.npoints(),
+    threaded_for (p, parameters->npoints(),
     {
-        Real1 freqs (parameters.nfreqs());
-        Size1 nmbrs (parameters.nfreqs());
+        Real1 freqs (parameters->nfreqs());
+        Size1 nmbrs (parameters->nfreqs());
 
         Size index0 = 0;
         Size index1 = 0;
 
         // Add the line frequencies (over the profile)
-        for (Size l = 0; l < parameters.nlspecs(); l++)
+        for (Size l = 0; l < parameters->nlspecs(); l++)
         {
             const Real inverse_mass = lines.lineProducingSpecies[l].linedata.inverse_mass;
 
@@ -87,7 +87,7 @@ int Model :: compute_spectral_discretisation ()
                 const Real freqs_line = lines.line[index0];
                 const Real width      = freqs_line * thermodynamics.profile_width (inverse_mass, p);
 
-                for (Size z = 0; z < parameters.nquads(); z++)
+                for (Size z = 0; z < parameters->nquads(); z++)
                 {
                     const Real root = lines.lineProducingSpecies[l].quadrature.roots[z];
 
@@ -106,28 +106,28 @@ int Model :: compute_spectral_discretisation ()
 
 
         // Set all frequencies nu
-        for (Size fl = 0; fl < parameters.nfreqs(); fl++)
+        for (Size fl = 0; fl < parameters->nfreqs(); fl++)
         {
             radiation.frequencies.nu(p, fl) = freqs[fl];
         }
 
 
         // Create lookup table for the frequency corresponding to each line
-        Size1 nmbrs_inverted (parameters.nfreqs());
+        Size1 nmbrs_inverted (parameters->nfreqs());
 
-        for (Size fl = 0; fl < parameters.nfreqs(); fl++)
+        for (Size fl = 0; fl < parameters->nfreqs(); fl++)
         {
             nmbrs_inverted[nmbrs[fl]] = fl;
 
             radiation.frequencies.appears_in_line_integral[fl] = false;;
-            radiation.frequencies.corresponding_l_for_spec[fl] = parameters.nfreqs();
-            radiation.frequencies.corresponding_k_for_tran[fl] = parameters.nfreqs();
-            radiation.frequencies.corresponding_z_for_line[fl] = parameters.nfreqs();
+            radiation.frequencies.corresponding_l_for_spec[fl] = parameters->nfreqs();
+            radiation.frequencies.corresponding_k_for_tran[fl] = parameters->nfreqs();
+            radiation.frequencies.corresponding_z_for_line[fl] = parameters->nfreqs();
         }
 
         Size index2 = 0;
 
-        for (Size l = 0; l < parameters.nlspecs(); l++)
+        for (Size l = 0; l < parameters->nlspecs(); l++)
         {
             for (Size k = 0; k < lines.lineProducingSpecies[l].nr_line[p].size(); k++)
             {
@@ -148,7 +148,7 @@ int Model :: compute_spectral_discretisation ()
 
 
     // Set corresponding frequencies
-    for (Size f = 0; f < parameters.nfreqs(); f++)
+    for (Size f = 0; f < parameters->nfreqs(); f++)
     {
         const Size l = radiation.frequencies.corresponding_l_for_spec[f];
         const Size k = radiation.frequencies.corresponding_k_for_tran[f];
@@ -172,23 +172,23 @@ int Model :: compute_spectral_discretisation (const Real width)
 {
     cout << "Computing spectral discretisation..." << endl;
 
-    threaded_for (p, parameters.npoints(),
+    threaded_for (p, parameters->npoints(),
     {
-        Real1 freqs (parameters.nfreqs());
-        Size1 nmbrs (parameters.nfreqs());
+        Real1 freqs (parameters->nfreqs());
+        Size1 nmbrs (parameters->nfreqs());
 
         Size index0 = 0;
         Size index1 = 0;
 
 
         // Add the line frequencies (over the profile)
-        for (Size l = 0; l < parameters.nlspecs(); l++)
+        for (Size l = 0; l < parameters->nlspecs(); l++)
         {
             for (Size k = 0; k < lines.lineProducingSpecies[l].linedata.nrad; k++)
             {
                 const Real freqs_line = lines.line[index0];
 
-                for (Size z = 0; z < parameters.nquads(); z++)
+                for (Size z = 0; z < parameters->nquads(); z++)
                 {
                     const Real root = lines.lineProducingSpecies[l].quadrature.roots[z];
 
@@ -208,7 +208,7 @@ int Model :: compute_spectral_discretisation (const Real width)
 
 
         // Set all frequencies nu
-        for (Size fl = 0; fl < parameters.nfreqs(); fl++)
+        for (Size fl = 0; fl < parameters->nfreqs(); fl++)
         {
             radiation.frequencies.nu(p, fl) = freqs[fl];
         }
@@ -216,21 +216,21 @@ int Model :: compute_spectral_discretisation (const Real width)
 
 
         // Create lookup table for the frequency corresponding to each line
-        Size1 nmbrs_inverted (parameters.nfreqs());
+        Size1 nmbrs_inverted (parameters->nfreqs());
 
-        for (Size fl = 0; fl < parameters.nfreqs(); fl++)
+        for (Size fl = 0; fl < parameters->nfreqs(); fl++)
         {
             nmbrs_inverted[nmbrs[fl]] = fl;
 
             radiation.frequencies.appears_in_line_integral[fl] = false;;
-            radiation.frequencies.corresponding_l_for_spec[fl] = parameters.nfreqs();
-            radiation.frequencies.corresponding_k_for_tran[fl] = parameters.nfreqs();
-            radiation.frequencies.corresponding_z_for_line[fl] = parameters.nfreqs();
+            radiation.frequencies.corresponding_l_for_spec[fl] = parameters->nfreqs();
+            radiation.frequencies.corresponding_k_for_tran[fl] = parameters->nfreqs();
+            radiation.frequencies.corresponding_z_for_line[fl] = parameters->nfreqs();
         }
 
         Size index2 = 0;
 
-        for (Size l = 0; l < parameters.nlspecs(); l++)
+        for (Size l = 0; l < parameters->nlspecs(); l++)
         {
             for (Size k = 0; k < lines.lineProducingSpecies[l].nr_line[p].size(); k++)
             {
@@ -267,18 +267,18 @@ int Model :: compute_spectral_discretisation (
 {
     cout << "Computing spectral discretisation..." << endl;
 
-    const long double dnu = (nu_max - nu_min) / (parameters.nfreqs() - 1);
+    const long double dnu = (nu_max - nu_min) / (parameters->nfreqs() - 1);
 
-    threaded_for (p, parameters.npoints(),
+    threaded_for (p, parameters->npoints(),
     {
-        for (Size f = 0; f < parameters.nfreqs(); f++)
+        for (Size f = 0; f < parameters->nfreqs(); f++)
         {
             radiation.frequencies.nu(p, f) = (Real) (nu_min + f*dnu);
 
             radiation.frequencies.appears_in_line_integral[f] = false;;
-            radiation.frequencies.corresponding_l_for_spec[f] = parameters.nfreqs();
-            radiation.frequencies.corresponding_k_for_tran[f] = parameters.nfreqs();
-            radiation.frequencies.corresponding_z_for_line[f] = parameters.nfreqs();
+            radiation.frequencies.corresponding_l_for_spec[f] = parameters->nfreqs();
+            radiation.frequencies.corresponding_k_for_tran[f] = parameters->nfreqs();
+            radiation.frequencies.corresponding_z_for_line[f] = parameters->nfreqs();
         }
     })
 
@@ -325,7 +325,7 @@ int Model :: compute_radiation_field_feautrier_order_2 ()
     Solver solver;
     solver.setup <CoMoving> (*this);
 
-    if (parameters.one_line_approximation())
+    if (parameters->one_line_approximation)
     {
         solver.solve_feautrier_order_2 <OneLine> (*this);
     }
@@ -347,7 +347,7 @@ int Model :: compute_radiation_field_feautrier_order_2_uv ()
     Solver solver;
     solver.setup <CoMoving>                  (*this);
 
-    if (parameters.one_line_approximation())
+    if (parameters->one_line_approximation)
     {
         solver.solve_feautrier_order_2_uv <OneLine> (*this);
     }
@@ -369,7 +369,7 @@ int Model :: compute_radiation_field_feautrier_order_2_anis ()
     Solver solver;
     solver.setup <CoMoving>                    (*this);
 
-    if (parameters.one_line_approximation())
+    if (parameters->one_line_approximation)
     {
         solver.solve_feautrier_order_2_anis <OneLine> (*this);
     }
@@ -390,8 +390,8 @@ int Model :: compute_radiation_field_feautrier_order_2_sparse ()
 
     Solver solver;
     solver.setup <CoMoving>                      (*this);
-    
-    if (parameters.one_line_approximation())
+
+    if (parameters->one_line_approximation)
     {
         solver.solve_feautrier_order_2_sparse <OneLine> (*this);
     }
@@ -410,7 +410,7 @@ int Model :: compute_Jeff ()
 {
     for (LineProducingSpecies &lspec : lines.lineProducingSpecies)
     {
-        threaded_for (p, parameters.npoints(),
+        threaded_for (p, parameters->npoints(),
         {
             for (Size k = 0; k < lspec.linedata.nrad; k++)
             {
@@ -420,7 +420,7 @@ int Model :: compute_Jeff ()
                 lspec.Jlin[p][k] = 0.0;
 
                 // Integrate over the line
-                for (Size z = 0; z < parameters.nquads(); z++)
+                for (Size z = 0; z < parameters->nquads(); z++)
                 {
                     lspec.Jlin[p][k] += lspec.quadrature.weights[z] * radiation.J(p, freq_nrs[z]);
                 }
@@ -452,7 +452,7 @@ int Model :: compute_Jeff_sparse ()
 {
     for (LineProducingSpecies &lspec : lines.lineProducingSpecies)
     {
-        threaded_for (p, parameters.npoints(),
+        threaded_for (p, parameters->npoints(),
         {
             for (Size k = 0; k < lspec.linedata.nrad; k++)
             {
@@ -483,7 +483,7 @@ int Model :: compute_level_populations_from_stateq ()
     lines.iteration_using_statistical_equilibrium (
             chemistry.species.abundance,
             thermodynamics.temperature.gas,
-            parameters.pop_prec()                 );
+            parameters->pop_prec                 );
 
     return (0);
 }
@@ -530,7 +530,7 @@ int Model :: compute_level_populations (
 
         if (use_Ng_acceleration && (iteration_normal == 4))
         {
-            lines.iteration_using_Ng_acceleration (parameters.pop_prec());
+            lines.iteration_using_Ng_acceleration (parameters->pop_prec);
 
             iteration_normal = 0;
         }
@@ -555,7 +555,7 @@ int Model :: compute_level_populations (
             lines.iteration_using_statistical_equilibrium (
                 chemistry.species.abundance,
                 thermodynamics.temperature.gas,
-                parameters.pop_prec()                     );
+                parameters->pop_prec                     );
 
             timer_2.stop();
             timer_2.print_total();
@@ -565,12 +565,12 @@ int Model :: compute_level_populations (
         }
 
 
-        for (int l = 0; l < parameters.nlspecs(); l++)
+        for (int l = 0; l < parameters->nlspecs(); l++)
         {
             error_mean.push_back (lines.lineProducingSpecies[l].relative_change_mean);
             error_max .push_back (lines.lineProducingSpecies[l].relative_change_max);
 
-            if (lines.lineProducingSpecies[l].fraction_not_converged > 1.0 - parameters.convergence_fraction)
+            if (lines.lineProducingSpecies[l].fraction_not_converged > 1.0 - parameters->convergence_fraction)
             {
                 some_not_converged = true;
             }
@@ -630,7 +630,7 @@ int Model :: compute_level_populations_sparse (
 
         if (use_Ng_acceleration && (iteration_normal == 4))
         {
-            lines.iteration_using_Ng_acceleration (parameters.pop_prec());
+            lines.iteration_using_Ng_acceleration (parameters->pop_prec);
 
             iteration_normal = 0;
         }
@@ -655,7 +655,7 @@ int Model :: compute_level_populations_sparse (
             lines.iteration_using_statistical_equilibrium_sparse (
                 chemistry.species.abundance,
                 thermodynamics.temperature.gas,
-                parameters.pop_prec()                            );
+                parameters->pop_prec                            );
 
             timer_2.stop();
             timer_2.print_total();
@@ -665,12 +665,12 @@ int Model :: compute_level_populations_sparse (
         }
 
 
-        for (int l = 0; l < parameters.nlspecs(); l++)
+        for (int l = 0; l < parameters->nlspecs(); l++)
         {
             error_mean.push_back (lines.lineProducingSpecies[l].relative_change_mean);
             error_max .push_back (lines.lineProducingSpecies[l].relative_change_max);
 
-            if (lines.lineProducingSpecies[l].fraction_not_converged > 1.0 - parameters.convergence_fraction)
+            if (lines.lineProducingSpecies[l].fraction_not_converged > 1.0 - parameters->convergence_fraction)
             {
                 some_not_converged = true;
             }

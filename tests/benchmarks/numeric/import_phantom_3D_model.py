@@ -146,8 +146,6 @@ def import_phantom():
     model.parameters.set_nspecs             (5)            # Number of species (min. 5)
     model.parameters.set_nlspecs            (1)            # Number of line species
     model.parameters.set_nquads             (31)           # Number of quadrature points
-    model.parameters.set_pop_prec           (1.0e-6)       # Pops. convergence criterion
-    model.parameters.set_store_intensities(False)          # We will not be storing the intensities, as we only want to compute on the reduced model
 
     model.geometry.points.position.set(position)
     model.geometry.points.velocity.set(velocity)

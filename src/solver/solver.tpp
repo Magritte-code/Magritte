@@ -2,8 +2,8 @@ template <Frame frame>
 inline void Solver :: setup (Model& model)
 {
     const Size length = 2 * get_ray_lengths_max <frame> (model) + 1;
-    const Size  width = model.parameters.nfreqs();
-    const Size  n_o_d = model.parameters.n_off_diag;
+    const Size  width = model.parameters->nfreqs();
+    const Size  n_o_d = model.parameters->n_off_diag;
 
     setup (length, width, n_o_d);
 }
@@ -67,7 +67,7 @@ accel inline Real Solver :: get_dshift_max (
     for (const LineProducingSpecies &lspec : model.lines.lineProducingSpecies)
     {
         const Real inverse_mass   = lspec.linedata.inverse_mass;
-        const Real new_dshift_max = model.parameters.max_width_fraction
+        const Real new_dshift_max = model.parameters->max_width_fraction
                                     * model.thermodynamics.profile_width (inverse_mass, o);
 
         if (dshift_max > new_dshift_max)
@@ -83,11 +83,11 @@ accel inline Real Solver :: get_dshift_max (
 template <Frame frame>
 inline void Solver :: get_ray_lengths (Model& model)
 {
-    for (Size rr = 0; rr < model.parameters.hnrays(); rr++)
+    for (Size rr = 0; rr < model.parameters->hnrays(); rr++)
     {
         const Size ar = model.geometry.rays.antipod[rr];
 
-        accelerated_for (o, model.parameters.npoints(),
+        accelerated_for (o, model.parameters->npoints(),
         {
             const Real dshift_max = get_dshift_max (model, o);
 
@@ -120,12 +120,12 @@ inline Size Solver :: get_ray_lengths_max (Model& model)
 inline void Solver :: solve_shortchar_order_0 (Model& model)
 {
     // Allocate memory if not pre-allocated
-    if (!model.parameters.store_intensities())
+    if (!model.parameters->store_intensities)
     {
-        model.radiation.I.resize (model.parameters.nrays(),  model.parameters.npoints(), model.parameters.nfreqs());
-        model.radiation.u.resize (model.parameters.hnrays(), model.parameters.npoints(), model.parameters.nfreqs());
-        model.radiation.v.resize (model.parameters.hnrays(), model.parameters.npoints(), model.parameters.nfreqs());
-        model.radiation.J.resize (                           model.parameters.npoints(), model.parameters.nfreqs());
+        model.radiation.I.resize (model.parameters->nrays(),  model.parameters->npoints(), model.parameters->nfreqs());
+        model.radiation.u.resize (model.parameters->hnrays(), model.parameters->npoints(), model.parameters->nfreqs());
+        model.radiation.v.resize (model.parameters->hnrays(), model.parameters->npoints(), model.parameters->nfreqs());
+        model.radiation.J.resize (                           model.parameters->npoints(), model.parameters->nfreqs());
     }
 
     // Initialise Lambda operator
@@ -136,13 +136,13 @@ inline void Solver :: solve_shortchar_order_0 (Model& model)
 
 
     // For each ray, solve transfer equation
-    for (Size rr = 0; rr < model.parameters.hnrays(); rr++)
+    for (Size rr = 0; rr < model.parameters->hnrays(); rr++)
     {
         const Size ar = model.geometry.rays.antipod[rr];
 
         cout << "--- rr = " << rr << endl;
 
-        accelerated_for (o, model.parameters.npoints(),
+        accelerated_for (o, model.parameters->npoints(),
         {
             // const Real dshift_max = get_dshift_max (o);
             const Real dshift_max = 1.0e+99;
@@ -150,7 +150,7 @@ inline void Solver :: solve_shortchar_order_0 (Model& model)
             solve_shortchar_order_0 (model, o, rr, dshift_max);
             solve_shortchar_order_0 (model, o, ar, dshift_max);
 
-            for (Size f = 0; f < model.parameters.nfreqs(); f++)
+            for (Size f = 0; f < model.parameters->nfreqs(); f++)
             {
                 model.radiation.u(rr,o,f) = 0.5 * (model.radiation.I(rr,o,f) + model.radiation.I(ar,o,f));
                 // model.radiation.v(rr,o,f) = 0.5 * (model.radiation.I(rr,o,f) - model.radiation.I(ar,o,f));
@@ -169,21 +169,21 @@ template<ApproximationType approx>
 inline void Solver :: solve_feautrier_order_2_uv (Model& model)
 {
     // Allocate memory if not pre-allocated
-    if (!model.parameters.store_intensities())
+    if (!model.parameters->store_intensities)
     {
-        model.radiation.u.resize (model.parameters.hnrays(), model.parameters.npoints(), model.parameters.nfreqs());
-        model.radiation.v.resize (model.parameters.hnrays(), model.parameters.npoints(), model.parameters.nfreqs());
+        model.radiation.u.resize (model.parameters->hnrays(), model.parameters->npoints(), model.parameters->nfreqs());
+        model.radiation.v.resize (model.parameters->hnrays(), model.parameters->npoints(), model.parameters->nfreqs());
     }
 
 
     // For each ray, solve transfer equation
-    for (Size rr = 0; rr < model.parameters.hnrays(); rr++)
+    for (Size rr = 0; rr < model.parameters->hnrays(); rr++)
     {
         const Size ar = model.geometry.rays.antipod[rr];
 
         cout << "--- rr = " << rr << endl;
 
-        accelerated_for (o, model.parameters.npoints(),
+        accelerated_for (o, model.parameters->npoints(),
         {
             const Real dshift_max = get_dshift_max (model, o);
 
@@ -196,7 +196,7 @@ inline void Solver :: solve_feautrier_order_2_uv (Model& model)
 
             if (n_tot_() > 1)
             {
-                for (Size f = 0; f < model.parameters.nfreqs(); f++)
+                for (Size f = 0; f < model.parameters->nfreqs(); f++)
                 {
                     solve_feautrier_order_2_uv <approx> (model, o, f);
 
@@ -206,7 +206,7 @@ inline void Solver :: solve_feautrier_order_2_uv (Model& model)
             }
             else
             {
-                for (Size f = 0; f < model.parameters.nfreqs(); f++)
+                for (Size f = 0; f < model.parameters->nfreqs(); f++)
                 {
                     model.radiation.u(rr,o,f)  = boundary_intensity(model, o, model.radiation.frequencies.nu(o, f));
                     model.radiation.v(rr,o,f)  = 0.0;
@@ -230,9 +230,9 @@ inline void Solver :: solve_feautrier_order_2_sparse (Model& model)
     {
         lspec.lambda.clear();
 
-        lspec.J.resize(model.parameters.npoints(), lspec.linedata.nrad);
+        lspec.J.resize(model.parameters->npoints(), lspec.linedata.nrad);
 
-        threaded_for (o, model.parameters.npoints(),
+        threaded_for (o, model.parameters->npoints(),
         {
             for (Size k = 0; k < lspec.linedata.nrad; k++)
             {
@@ -243,7 +243,7 @@ inline void Solver :: solve_feautrier_order_2_sparse (Model& model)
 
 
     // For each ray, solve transfer equation
-    for (Size rr = 0; rr < model.parameters.hnrays(); rr++)
+    for (Size rr = 0; rr < model.parameters->hnrays(); rr++)
     {
         const Size     ar = model.geometry.rays.antipod  [rr];
         const Real     wt = model.geometry.rays.weight   [rr] * two;
@@ -253,7 +253,7 @@ inline void Solver :: solve_feautrier_order_2_sparse (Model& model)
 
         for (LineProducingSpecies &lspec : model.lines.lineProducingSpecies)
         {
-            threaded_for (o, model.parameters.npoints(),
+            threaded_for (o, model.parameters->npoints(),
             {
                 const Real dshift_max = get_dshift_max (model, o);
 
@@ -269,7 +269,7 @@ inline void Solver :: solve_feautrier_order_2_sparse (Model& model)
                     for (Size k = 0; k < lspec.linedata.nrad; k++)
                     {
                         // Integrate over the line
-                        for (Size z = 0; z < model.parameters.nquads(); z++)
+                        for (Size z = 0; z < model.parameters->nquads(); z++)
                         {
                             solve_feautrier_order_2 <approx> (model, o,  lspec.nr_line[o][k][z]);
 
@@ -284,7 +284,7 @@ inline void Solver :: solve_feautrier_order_2_sparse (Model& model)
                     for (Size k = 0; k < lspec.linedata.nrad; k++)
                     {
                         // Integrate over the line
-                        for (Size z = 0; z < model.parameters.nquads(); z++)
+                        for (Size z = 0; z < model.parameters->nquads(); z++)
                         {
                             lspec.J(o,k) += lspec.quadrature.weights[z] * wt * boundary_intensity(model, o, model.radiation.frequencies.nu(o, lspec.nr_line[o][k][z]));
                         }
@@ -302,14 +302,14 @@ inline void Solver :: solve_feautrier_order_2_anis (Model& model)
     // Initialise variables
     for (LineProducingSpecies &lspec : model.lines.lineProducingSpecies)
     {
-        lspec.J      .resize(model.parameters.npoints(), lspec.linedata.nrad);
-        lspec.J2_0   .resize(model.parameters.npoints(), lspec.linedata.nrad);
-        lspec.J2_1_Re.resize(model.parameters.npoints(), lspec.linedata.nrad);
-        lspec.J2_1_Im.resize(model.parameters.npoints(), lspec.linedata.nrad);
-        lspec.J2_2_Re.resize(model.parameters.npoints(), lspec.linedata.nrad);
-        lspec.J2_2_Im.resize(model.parameters.npoints(), lspec.linedata.nrad);
+        lspec.J      .resize(model.parameters->npoints(), lspec.linedata.nrad);
+        lspec.J2_0   .resize(model.parameters->npoints(), lspec.linedata.nrad);
+        lspec.J2_1_Re.resize(model.parameters->npoints(), lspec.linedata.nrad);
+        lspec.J2_1_Im.resize(model.parameters->npoints(), lspec.linedata.nrad);
+        lspec.J2_2_Re.resize(model.parameters->npoints(), lspec.linedata.nrad);
+        lspec.J2_2_Im.resize(model.parameters->npoints(), lspec.linedata.nrad);
 
-        threaded_for (o, model.parameters.npoints(),
+        threaded_for (o, model.parameters->npoints(),
         {
             for (Size k = 0; k < lspec.linedata.nrad; k++)
             {
@@ -325,7 +325,7 @@ inline void Solver :: solve_feautrier_order_2_anis (Model& model)
 
 
     // For each ray, solve transfer equation
-    for (Size rr = 0; rr < model.parameters.hnrays(); rr++)
+    for (Size rr = 0; rr < model.parameters->hnrays(); rr++)
     {
         const Size     ar = model.geometry.rays.antipod  [rr];
         const Real     wt = model.geometry.rays.weight   [rr];
@@ -341,7 +341,7 @@ inline void Solver :: solve_feautrier_order_2_anis (Model& model)
 
         for (LineProducingSpecies &lspec : model.lines.lineProducingSpecies)
         {
-            threaded_for (o, model.parameters.npoints(),
+            threaded_for (o, model.parameters->npoints(),
             {
                 const Real dshift_max = get_dshift_max (model, o);
 
@@ -357,7 +357,7 @@ inline void Solver :: solve_feautrier_order_2_anis (Model& model)
                     for (Size k = 0; k < lspec.linedata.nrad; k++)
                     {
                         // Integrate over the line
-                        for (Size z = 0; z < model.parameters.nquads(); z++)
+                        for (Size z = 0; z < model.parameters->nquads(); z++)
                         {
                             solve_feautrier_order_2 <approx> (model, o, lspec.nr_line[o][k][z]);
 
@@ -377,7 +377,7 @@ inline void Solver :: solve_feautrier_order_2_anis (Model& model)
                     for (Size k = 0; k < lspec.linedata.nrad; k++)
                     {
                         // Integrate over the line
-                        for (Size z = 0; z < model.parameters.nquads(); z++)
+                        for (Size z = 0; z < model.parameters->nquads(); z++)
                         {
                             const Real du = lspec.quadrature.weights[z] * wt * boundary_intensity(model, o, model.radiation.frequencies.nu(o, lspec.nr_line[o][k][z]));
 
@@ -400,10 +400,10 @@ template<ApproximationType approx>
 inline void Solver :: solve_feautrier_order_2 (Model& model)
 {
     // Allocate memory if not pre-allocated
-    if (!model.parameters.store_intensities())
+    if (!model.parameters->store_intensities)
     {
-        model.radiation.u.resize (model.parameters.hnrays(), model.parameters.npoints(), model.parameters.nfreqs());
-        model.radiation.J.resize (                           model.parameters.npoints(), model.parameters.nfreqs());
+        model.radiation.u.resize (model.parameters->hnrays(), model.parameters->npoints(), model.parameters->nfreqs());
+        model.radiation.J.resize (                           model.parameters->npoints(), model.parameters->nfreqs());
     }
 
     // Initialise Lambda operator
@@ -413,13 +413,13 @@ inline void Solver :: solve_feautrier_order_2 (Model& model)
     model.radiation.initialize_J();
 
     // For each ray, solve transfer equation
-    distributed_for (rr, rr_loc, model.parameters.hnrays(),
+    distributed_for (rr, rr_loc, model.parameters->hnrays(),
     {
         const Size ar = model.geometry.rays.antipod[rr];
 
         cout << "--- rr = " << rr << endl;
 
-        accelerated_for (o, model.parameters.npoints(),
+        accelerated_for (o, model.parameters->npoints(),
         {
             const Real dshift_max = get_dshift_max (model, o);
 
@@ -432,7 +432,7 @@ inline void Solver :: solve_feautrier_order_2 (Model& model)
 
             if (n_tot_() > 1)
             {
-                for (Size f = 0; f < model.parameters.nfreqs(); f++)
+                for (Size f = 0; f < model.parameters->nfreqs(); f++)
                 {
                     solve_feautrier_order_2 <approx> (model, o, f);
 
@@ -444,7 +444,7 @@ inline void Solver :: solve_feautrier_order_2 (Model& model)
             }
             else
             {
-                for (Size f = 0; f < model.parameters.nfreqs(); f++)
+                for (Size f = 0; f < model.parameters->nfreqs(); f++)
                 {
                     model.radiation.u(rr_loc,o,f)  = boundary_intensity(model, o, model.radiation.frequencies.nu(o, f));
                     model.radiation.J(       o,f) += two * model.geometry.rays.weight[rr] * model.radiation.u(rr_loc,o,f);
@@ -475,7 +475,7 @@ inline void Solver :: image_feautrier_order_2 (Model& model, const Size rr)
 
     const Size ar = model.geometry.rays.antipod[rr];
 
-    accelerated_for (o, model.parameters.npoints(),
+    accelerated_for (o, model.parameters->npoints(),
     {
         const Real dshift_max = get_dshift_max (model, o);
 
@@ -488,7 +488,7 @@ inline void Solver :: image_feautrier_order_2 (Model& model, const Size rr)
 
         if (n_tot_() > 1)
         {
-            for (Size f = 0; f < model.parameters.nfreqs(); f++)
+            for (Size f = 0; f < model.parameters->nfreqs(); f++)
             {
                 image_feautrier_order_2 (model, o, f);
 
@@ -497,7 +497,7 @@ inline void Solver :: image_feautrier_order_2 (Model& model, const Size rr)
         }
         else
         {
-            for (Size f = 0; f < model.parameters.nfreqs(); f++)
+            for (Size f = 0; f < model.parameters->nfreqs(); f++)
             {
                 image.I(o,f) = boundary_intensity(model, o, model.radiation.frequencies.nu(o, f));
             }
@@ -527,14 +527,14 @@ inline void Solver :: image_feautrier_order_2_for_point (Model& model, const Siz
     last_ () = trace_ray <Rest> (model.geometry, o, ar, dshift_max, +1, centre+1, centre  ) - 1;
     n_tot_() = (last_()+1) - first_();
 
-    model. eta_ray.resize (n_tot_(), model.parameters.nfreqs());
-    model. chi_ray.resize (n_tot_(), model.parameters.nfreqs());
-    model.dtau_ray.resize (n_tot_(), model.parameters.nfreqs());
-    model.   u_ray.resize (n_tot_(), model.parameters.nfreqs());
+    model. eta_ray.resize (n_tot_(), model.parameters->nfreqs());
+    model. chi_ray.resize (n_tot_(), model.parameters->nfreqs());
+    model.dtau_ray.resize (n_tot_(), model.parameters->nfreqs());
+    model.   u_ray.resize (n_tot_(), model.parameters->nfreqs());
 
     if (n_tot_() > 1)
     {
-        for (Size f = 0; f < model.parameters.nfreqs(); f++)
+        for (Size f = 0; f < model.parameters->nfreqs(); f++)
         {
             image_feautrier_order_2_for_point_loc (model, o, f);
         }
@@ -549,7 +549,7 @@ inline void Solver :: image_optical_depth (Model& model, const Size rr)
 
     const Size ar = model.geometry.rays.antipod[rr];
 
-    accelerated_for (o, model.parameters.npoints(),
+    accelerated_for (o, model.parameters->npoints(),
     {
         const Real dshift_max = get_dshift_max (model, o);
 
@@ -562,7 +562,7 @@ inline void Solver :: image_optical_depth (Model& model, const Size rr)
 
         if (n_tot_() > 1)
         {
-            for (Size f = 0; f < model.parameters.nfreqs(); f++)
+            for (Size f = 0; f < model.parameters->nfreqs(); f++)
             {
                 image_optical_depth (model, o, f);
 
@@ -571,7 +571,7 @@ inline void Solver :: image_optical_depth (Model& model, const Size rr)
         }
         else
         {
-            for (Size f = 0; f < model.parameters.nfreqs(); f++)
+            for (Size f = 0; f < model.parameters->nfreqs(); f++)
             {
                 image.I(o,f) = 0.0;
             }
@@ -743,7 +743,7 @@ template<>
 accel inline void Solver :: get_eta_and_chi <None> (
     const Model& model,
     const Size   p,
-    const Size   l,
+    const Size   ll,  // dummy variable
     const Real   freq,
           Real&  eta,
           Real&  chi ) const
@@ -753,7 +753,7 @@ accel inline void Solver :: get_eta_and_chi <None> (
     chi = 1.0e-26;
 
     // Set line emissivity and opacity
-    for (Size l = 0; l < model.parameters.nlines(); l++)
+    for (Size l = 0; l < model.parameters->nlines(); l++)
     {
         const Real diff = freq - model.lines.line[l];
         const Real prof = freq * gaussian (model.lines.inverse_width(p, l), diff);
@@ -830,7 +830,7 @@ accel inline void Solver :: solve_shortchar_order_0 (
         double shift_c = 1.0;
         double shift_n = model.geometry.get_shift <CoMoving> (o, r, nxt, Z);
 
-        for (Size f = 0; f < model.parameters.nfreqs(); f++)
+        for (Size f = 0; f < model.parameters->nfreqs(); f++)
         {
             const Real freq = model.radiation.frequencies.nu(o, f);
             const Size l    = model.radiation.frequencies.corresponding_line[f];
@@ -854,7 +854,7 @@ accel inline void Solver :: solve_shortchar_order_0 (
 
             model.geometry.get_next (o, r, crt, nxt, Z, dZ, shift_n);
 
-            for (Size f = 0; f < model.parameters.nfreqs(); f++)
+            for (Size f = 0; f < model.parameters->nfreqs(); f++)
             {
                 const Real freq = model.radiation.frequencies.nu(o, f);
                 const Size l    = model.radiation.frequencies.corresponding_line[f];
@@ -869,7 +869,7 @@ accel inline void Solver :: solve_shortchar_order_0 (
             }
         }
 
-        for (Size f = 0; f < model.parameters.nfreqs(); f++)
+        for (Size f = 0; f < model.parameters->nfreqs(); f++)
         {
             const Real freq = model.radiation.frequencies.nu(o, f);
 
@@ -880,7 +880,7 @@ accel inline void Solver :: solve_shortchar_order_0 (
 
     else
     {
-        for (Size f = 0; f < model.parameters.nfreqs(); f++)
+        for (Size f = 0; f < model.parameters->nfreqs(); f++)
         {
             const Real freq = model.radiation.frequencies.nu(o, f);
 
@@ -1583,12 +1583,12 @@ accel inline void Solver :: solve_feautrier_order_2_uv (Model& model, const Size
 
 accel inline void Solver :: set_eta_and_chi (Model& model, const Size rr) const
 {
-    model.eta.resize (model.parameters.npoints(), model.parameters.nfreqs());
-    model.chi.resize (model.parameters.npoints(), model.parameters.nfreqs());
+    model.eta.resize (model.parameters->npoints(), model.parameters->nfreqs());
+    model.chi.resize (model.parameters->npoints(), model.parameters->nfreqs());
 
-    for (Size p = 0; p < model.parameters.npoints(); p++)
+    for (Size p = 0; p < model.parameters->npoints(); p++)
     {
-        for (Size f = 0; f < model.parameters.nfreqs(); f++)
+        for (Size f = 0; f < model.parameters->nfreqs(); f++)
         {
             // Extract the Doppler shift
             const double shift = model.geometry.get_shift <Rest> (0, rr, p, 0.0);
@@ -1603,13 +1603,13 @@ accel inline void Solver :: set_eta_and_chi (Model& model, const Size rr) const
 
 accel inline void Solver :: set_boundary_condition (Model& model) const
 {
-    model.boundary_condition.resize (model.parameters.nboundary(), model.parameters.nfreqs());
+    model.boundary_condition.resize (model.parameters->nboundary(), model.parameters->nfreqs());
 
-    for (Size b = 0; b < model.parameters.nboundary(); b++)
+    for (Size b = 0; b < model.parameters->nboundary(); b++)
     {
         const Size p = model.geometry.boundary.boundary2point[b];
 
-        for (Size f = 0; f < model.parameters.nfreqs(); f++)
+        for (Size f = 0; f < model.parameters->nfreqs(); f++)
         {
             const Real freq = model.radiation.frequencies.nu(0, f);
 
@@ -1621,15 +1621,15 @@ accel inline void Solver :: set_boundary_condition (Model& model) const
 
 inline void Solver :: set_column (Model& model) const
 {
-    model.column.resize (model.parameters.nrays(), model.parameters.npoints());
+    model.column.resize (model.parameters->nrays(), model.parameters->npoints());
 
-    for (Size rr = 0; rr < model.parameters.hnrays(); rr++)
+    for (Size rr = 0; rr < model.parameters->hnrays(); rr++)
     {
         const Size ar = model.geometry.rays.antipod[rr];
 
         cout << "--- rr = " << rr << endl;
 
-        accelerated_for (o, model.parameters.npoints(),
+        accelerated_for (o, model.parameters->npoints(),
         {
             model.column(rr, o) = get_column(model, o, rr);
             model.column(ar, o) = get_column(model, o, ar);

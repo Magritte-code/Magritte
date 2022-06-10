@@ -8,7 +8,7 @@
 /////////////////////////////////////////////////
 inline Size Lines :: index (const Size p, const Size line_index) const
 {
-    return line_index + p*parameters.nlines();
+    return line_index + p*parameters->nlines();
 }
 
 
@@ -37,9 +37,9 @@ inline Size Lines :: index (const Size p, const Size l, const Size k) const
 ///////////////////////////////////////////
 inline void Lines :: set_emissivity_and_opacity ()
 {
-    threaded_for (p, parameters.npoints(),
+    threaded_for (p, parameters->npoints(),
     {
-        for (Size l = 0; l < parameters.nlspecs(); l++)
+        for (Size l = 0; l < parameters->nlspecs(); l++)
         {
             for (Size k = 0; k < lineProducingSpecies[l].linedata.nrad; k++)
             {
@@ -58,9 +58,9 @@ inline void Lines :: set_emissivity_and_opacity ()
 /////////////////////////////////////////////////////////////////////
 inline void Lines :: set_inverse_width (const Thermodynamics& thermodynamics)
 {
-    threaded_for (p, parameters.npoints(),
+    threaded_for (p, parameters->npoints(),
     {
-        for (Size l = 0; l < parameters.nlspecs(); l++)
+        for (Size l = 0; l < parameters->nlspecs(); l++)
         {
             for (Size k = 0; k < lineProducingSpecies[l].linedata.nrad; k++)
             {
