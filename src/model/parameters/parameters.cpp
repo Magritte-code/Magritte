@@ -30,6 +30,10 @@
     try         {io.write_bool ("."#x, x());}                                              \
     catch (...) {cout << "Failed to write parameter "#x"!" << endl;}
 
+#define WRITE_SETONCE_WORD(type, x)                                                        \
+    try         {io.write_word ("."#x, x());}                                              \
+    catch (...) {cout << "Failed to write parameter "#x"!" << endl;}
+
 #define WRITE_NUMBER(type, x)                                                              \
     try         {io.write_number ("."#x, x);}                                              \
     catch (...) {cout << "Failed to write parameter "#x"!" << endl;}
@@ -37,10 +41,6 @@
 #define WRITE_BOOL(type, x)                                                                \
     try         {io.write_bool ("."#x, x);}                                                \
     catch (...) {cout << "Failed to write parameter "#x"!" << endl;}
-
-#define WRITE_WORD(type, x)                                                                \
-    try         {io.write_word ("."#x, get_##x());}                                        \
-    catch (...) {cout << "Failed write "#x"!" << endl;}
 
 
 void Parameters :: read (const Io &io)
@@ -80,6 +80,8 @@ void Parameters :: read (const Io &io)
 void Parameters :: write (const Io &io) const
 {
     cout << "Writing parameters..." << endl;
+
+    WRITE_SETONCE_WORD (string, version);
 
     WRITE_SETONCE_NUMBER (Size, dimension);
     WRITE_SETONCE_NUMBER (Size, npoints  );

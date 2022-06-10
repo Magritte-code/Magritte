@@ -23,11 +23,4 @@ struct Species
 
     void read  (const Io& io);
     void write (const Io& io) const;
-
-    int test()
-    {
-        cout << parameters->np() << endl;
-
-        return 666;
-    }
 };

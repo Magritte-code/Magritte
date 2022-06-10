@@ -20,12 +20,6 @@
 //////////////////////////////////////////////////////////
 struct Parameters
 {
-    SetOnce<Size> np_;
-
-    inline void set_np (const Size value) {       np_.set(value);}
-    inline Size     np () const           {return np_.get();}
-
-
     CREATE_PARAMETER (string, version);
 
     CREATE_PARAMETER (string, model_name);
@@ -59,7 +53,10 @@ struct Parameters
     Parameters ()
     {
         // Disable scattering
-        use_scattering__      .set         (false);
+        use_scattering__.set (false);
+
+        // Set version
+        version__.set (MAGRITTE_VERSION);
 
         // Set defaults
         spherical_symmetry__  .set_default (false);

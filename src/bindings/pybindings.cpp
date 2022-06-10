@@ -311,8 +311,6 @@ PYBIND11_MODULE (core, module)
         .def_readwrite ("store_intensities",           &Parameters::store_intensities          , "Whether or not to store intensities.")
         .def_readwrite ("use_Ng_acceleration",         &Parameters::use_Ng_acceleration        , "Whether or not to use Ng acceleration.")
         .def_readwrite ("one_line_approximation",      &Parameters::one_line_approximation     , "Whether or not to use one line approximation.")
-        .def ("set_np", &Parameters::set_np)
-        .def ("np", &Parameters::np)
         // setters
         .def ("set_model_name",               &Parameters::set_model_name          , "Set model name.")
         .def ("set_dimension",                &Parameters::set_dimension           , "Set spatial dimension of the model.")
@@ -450,7 +448,6 @@ PYBIND11_MODULE (core, module)
         .def_readwrite ("symbol",    &Species::symbol,    "Symbol of the species.")
         .def_readwrite ("abundance", &Species::abundance, "Array with the abundances at each point.")
         // functions
-        .def ("test", &Species::test)
         .def ("read",                &Species::read,  "Read object from file.")
         .def ("write",               &Species::write, "Write object to file.");
 
