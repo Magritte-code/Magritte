@@ -9,9 +9,15 @@
 
 struct Thermodynamics
 {
-    Parameters  parameters;
-    Temperature temperature;
-    Turbulence  turbulence;
+    std::shared_ptr<Parameters>  parameters;   ///< data structure containing model
+
+    Temperature temperature;                   ///< data structure containing temperature
+    Turbulence  turbulence;                    ///< data structure containing turbulence
+
+
+    Thermodynamics (std::shared_ptr<Parameters> params)
+    : temperature (params)
+    , turbulence  (params) {};
 
     void read  (const Io& io);
     void write (const Io& io) const;

@@ -79,7 +79,6 @@ def create_model (a_or_b):
 
     model = magritte.Model ()
     model.parameters.set_spherical_symmetry(False)
-    model.parameters.set_pop_prec          (1.0e-6)
     model.parameters.set_model_name        (modelFile)
     model.parameters.set_dimension         (dimension)
     model.parameters.set_npoints           (npoints)
@@ -101,7 +100,7 @@ def create_model (a_or_b):
     model.thermodynamics.turbulence.vturb2.set((turb/magritte.CC)**2 * np.ones(npoints))
 
     model = setup.set_Delaunay_neighbor_lists (model)
-    
+
     model.parameters.set_nboundary(len(mesh.boundary))
     model.geometry.boundary.boundary2point.set(mesh.boundary)
 

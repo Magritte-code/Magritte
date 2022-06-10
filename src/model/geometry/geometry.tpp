@@ -22,7 +22,7 @@ accel inline Size Geometry :: get_next_general_geometry (
     const Size cum_n_nbs = points.cum_n_neighbors[c];
 
     double dmin = std::numeric_limits<Real>::max();   // Initialize to "infinity"
-    Size   next = parameters.npoints();               // return npoints when there is no next
+    Size   next = parameters->npoints();              // return npoints when there is no next
 
     for (Size i = 0; i < n_nbs; i++)
     {
@@ -78,7 +78,7 @@ inline Size Geometry :: get_next_spherical_symmetry (
     {
         if (c <= 0)
         {
-            return parameters.npoints();
+            return parameters->npoints();
         }
 
         if (points.position[c-1].squaredNorm() >= Rsin2)
@@ -94,9 +94,9 @@ inline Size Geometry :: get_next_spherical_symmetry (
     }
     else
     {
-        if (c >= parameters.npoints()-1)
+        if (c >= parameters->npoints()-1)
         {
-            return parameters.npoints();
+            return parameters->npoints();
         }
 
         next = c + 1;
@@ -142,7 +142,7 @@ inline double Geometry :: get_shift_general_geometry <Rest> (
 {
     Size r_correct = r;
 
-    if (r >= parameters.hnrays()) // assumes ray indices and antipodes are on opposite sites of hnrays
+    if (r >= parameters->hnrays()) // assumes ray indices and antipodes are on opposite sites of hnrays
     {
         r_correct = rays.antipod[r];
     }
@@ -211,7 +211,7 @@ accel inline Size Geometry :: get_ray_length (
 //////////////////////////////////////////
 inline bool Geometry :: valid_point (const Size p) const
 {
-    return (p < parameters.npoints());
+    return (p < parameters->npoints());
 }
 
 
@@ -221,7 +221,7 @@ inline bool Geometry :: valid_point (const Size p) const
 /////////////////////////////////////////////////
 inline bool Geometry :: not_on_boundary (const Size p) const
 {
-    return (boundary.point2boundary[p] == parameters.npoints());
+    return (boundary.point2boundary[p] == parameters->npoints());
 }
 
 
@@ -243,7 +243,7 @@ accel inline Size Geometry :: get_next (
 {
     Size next;
 
-    if (parameters.spherical_symmetry())
+    if (parameters->spherical_symmetry())
     {
         next = get_next_spherical_symmetry (o, r, crt, Z, dZ);
     }
@@ -333,7 +333,7 @@ inline double Geometry :: get_shift_spherical_symmetry <Rest> (
 
     // double shift;
 
-    if (r < parameters.hnrays()) // assumes ray indices and antipodes are on opposite sites of hnrays
+    if (r < parameters->hnrays()) // assumes ray indices and antipodes are on opposite sites of hnrays
     {
         return 1.0 - points.velocity[c].x() * Rcos_plus_Z / points.position[c].x();
     }
@@ -358,7 +358,7 @@ inline double Geometry :: get_shift (
     const Size   c,
     const double Z ) const
 {
-    if (parameters.spherical_symmetry())
+    if (parameters->spherical_symmetry())
     {
         return get_shift_spherical_symmetry <frame> (o, r, c, Z);
     }

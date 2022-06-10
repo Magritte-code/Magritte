@@ -52,7 +52,6 @@ def create_model (a_or_b):
 
     model = magritte.Model ()
     model.parameters.set_spherical_symmetry(True)
-    model.parameters.set_pop_prec          (1.0e-6)
     model.parameters.set_model_name        (modelFile)
     model.parameters.set_dimension         (dimension)
     model.parameters.set_npoints           (npoints)
@@ -107,7 +106,7 @@ def run_model (a_or_b, nosave=False):
 
     npoints = model.parameters.npoints()
     nlev    = model.lines.lineProducingSpecies[0].linedata.nlev
-    
+
     pops = np.array(model.lines.lineProducingSpecies[0].population).reshape((npoints, nlev))
     abun = np.array(model.chemistry.species.abundance)[:,1]
     rs   = np.linalg.norm(np.array(model.geometry.points.position), axis=1)

@@ -3,7 +3,7 @@
 
 inline Size Radiation :: index (const Size p, const Size f ) const
 {
-    return f + p * parameters.nfreqs();
+    return f + p * parameters->nfreqs();
 }
 
 
@@ -17,7 +17,7 @@ inline Size Radiation :: index (const Size p, const Size f ) const
 //{
 //    search_with_notch (frequencies.nu[p], notch, freq_scaled);
 //
-//    if ( (notch == 0) || (notch == parameters.nfreqs()-1) )
+//    if ( (notch == 0) || (notch == parameters->nfreqs()-1) )
 //    {
 //        U_scaled = get_U (R, p, notch);
 //        V_scaled = get_V (R, p, notch);
@@ -60,7 +60,7 @@ inline Size Radiation :: index (const Size p, const Size f ) const
 //    search_with_notch (frequencies.nu[p], notch, freq_scaled);
 //    //cout << "notch = " << notch << endl;
 //
-//    if ( (notch == 0) || (notch == parameters.nfreqs()-1) )
+//    if ( (notch == 0) || (notch == parameters->nfreqs()-1) )
 //    {
 //        I_bdy_scaled = get_I_bdy (R, b, notch);
 //    }

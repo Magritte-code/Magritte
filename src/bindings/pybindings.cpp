@@ -186,6 +186,16 @@ PYBIND11_MODULE (core, module)
            "Write model file using the given Io object."
         )
         .def (
+           "read",
+           (void (Model::*)(const string)) &Model::read,
+           "Read model file (assuming HDF5 file format)."
+        )
+        .def (
+            "write",
+            (void (Model::*)(const string) const) &Model::write,
+           "Write model file (assuming HDF5 file format)."
+        )
+        .def (
             "compute_inverse_line_widths",
             &Model::compute_inverse_line_widths,
             "Compute the inverse line widths for the model. (Needs to be recomputed whenever the temperature of turbulence changes.)"
@@ -291,11 +301,18 @@ PYBIND11_MODULE (core, module)
 
 
     // Parameters
-    py::class_<Parameters> (module, "Parameters", "Class containing the model parameters.")
+    py::class_<Parameters, std::shared_ptr<Parameters>> (module, "Parameters", "Class containing the model parameters.")
         // io
-        .def_readwrite ("n_off_diag",         &Parameters::n_off_diag              , "Bandwidth of the ALO (0=diagonal, 1=tri-diaginal, 2=penta-diagonal, ...)")
-        .def_readwrite ("max_width_fraction", &Parameters::max_width_fraction      , "Max tolerated Doppler shift as fraction of line width (default=0.5).")
-        .def_readwrite ("convergence_fraction", &Parameters::convergence_fraction, "Fraction of levels that should obey the convergence criterion.")
+        .def_readwrite ("n_off_diag",                  &Parameters::n_off_diag                 , "Bandwidth of the ALO (0=diagonal, 1=tri-diaginal, 2=penta-diagonal, ...)")
+        .def_readwrite ("max_width_fraction",          &Parameters::max_width_fraction         , "Max tolerated Doppler shift as fraction of line width (default=0.5).")
+        .def_readwrite ("convergence_fraction",        &Parameters::convergence_fraction       , "Fraction of levels that should obey the convergence criterion.")
+        .def_readwrite ("min_rel_pop_for_convergence", &Parameters::min_rel_pop_for_convergence, "Minimum relative level population to be considered in the convergence criterion.")
+        .def_readwrite ("pop_prec",                    &Parameters::pop_prec                   , "Required precision for ALI.")
+        .def_readwrite ("store_intensities",           &Parameters::store_intensities          , "Whether or not to store intensities.")
+        .def_readwrite ("use_Ng_acceleration",         &Parameters::use_Ng_acceleration        , "Whether or not to use Ng acceleration.")
+        .def_readwrite ("one_line_approximation",      &Parameters::one_line_approximation     , "Whether or not to use one line approximation.")
+        .def ("set_np", &Parameters::set_np)
+        .def ("np", &Parameters::np)
         // setters
         .def ("set_model_name",               &Parameters::set_model_name          , "Set model name.")
         .def ("set_dimension",                &Parameters::set_dimension           , "Set spatial dimension of the model.")
@@ -308,9 +325,7 @@ PYBIND11_MODULE (core, module)
         .def ("set_nlspecs",                  &Parameters::set_nlspecs             , "Set number of line producing species.")
         .def ("set_nlines",                   &Parameters::set_nlines              , "Set number of lines.")
         .def ("set_nquads",                   &Parameters::set_nquads              , "Set number of quadrature points.")
-        .def ("set_pop_prec",                 &Parameters::set_pop_prec            , "Set required precision for ALI.")
         .def ("set_use_scattering",           &Parameters::set_use_scattering      , "Set whether or not to use scattering.")
-        .def ("set_store_intensities",        &Parameters::set_store_intensities   , "Set whether or not to store intensities.")
         .def ("set_spherical_symmetry",       &Parameters::set_spherical_symmetry  , "Set whether or not to use spherical symmetry")
         .def ("set_adaptive_ray_tracing",     &Parameters::set_adaptive_ray_tracing, "Set whether or not to use adaptive ray tracing.")
         // getters
@@ -326,16 +341,12 @@ PYBIND11_MODULE (core, module)
         .def ("nlspecs",                      &Parameters::nlspecs                 , "Number of line producing species.")
         .def ("nlines",                       &Parameters::nlines                  , "Number of lines.")
         .def ("nquads",                       &Parameters::nquads                  , "Number of quadrature points.")
-        .def ("pop_prec",                     &Parameters::pop_prec                , "Required precision for ALI.")
         .def ("use_scattering",               &Parameters::use_scattering          , "Whether or not to use scattering.")
-        .def ("store_intensities",            &Parameters::store_intensities       , "Whether or not to store intensities.")
         .def ("spherical_symmetry",           &Parameters::spherical_symmetry      , "Whether or not to use spherical symmetry.")
         .def ("adaptive_ray_tracing",         &Parameters::adaptive_ray_tracing    , "Whether or not to use adaptive ray tracing.")
         // functions
         .def ("read",                         &Parameters::read                    , "Rread object from file.")
-        .def ("write",                        &Parameters::write                   , "Write object to file.")
-        // constructor
-        .def (py::init());
+        .def ("write",                        &Parameters::write                   , "Write object to file.");
 
 
     // Geometry
@@ -347,12 +358,7 @@ PYBIND11_MODULE (core, module)
         .def_readwrite ("lengths",  &Geometry::lengths,  "Array containing the lengths of the rays for each direction and point.")
         // io
         .def ("read",               &Geometry::read, "Read object from file.")
-        .def ("write",              &Geometry::write, "Write object to file.")
-        // functions
-        // .def ("get_ray_lengths",     &Geometry::get_ray_lengths)
-        // .def ("get_ray_lengths_gpu", &Geometry::get_ray_lengths_gpu)
-        // constructor
-        .def (py::init<>());
+        .def ("write",              &Geometry::write, "Write object to file.");
 
 
     // Points
@@ -363,13 +369,9 @@ PYBIND11_MODULE (core, module)
         .def_readwrite ("neighbors",       &Points::neighbors, "Linearised array of neighbours of each point.")
         .def_readwrite ("n_neighbors",     &Points::n_neighbors, "Number of neighbours of each point.")
         .def_readwrite ("cum_n_neighbors", &Points::cum_n_neighbors, "Cumulative number of neighbours of each point.")
-        // .def_readwrite ("nbs",             &Points::nbs)
-        // .def ("print",                     &Points::print)
         // io
         .def ("read",                      &Points::read, "Read object from file.")
-        .def ("write",                     &Points::write, "Write object to file.")
-        // constructor
-        .def (py::init<>());
+        .def ("write",                     &Points::write, "Write object to file.");
 
 
     // Rays
@@ -378,12 +380,9 @@ PYBIND11_MODULE (core, module)
         .def_readwrite ("direction", &Rays::direction, "Array with direction vector of each ray.")
         .def_readwrite ("antipod",   &Rays::antipod, "Array with the number of the antipodal ray for each ray.")
         .def_readwrite ("weight",    &Rays::weight, "Array with the weights that each ray contributes in integrals over directions.")
-        // .def ("print",    &Rays::print)
         // io
         .def ("read",                &Rays::read, "Read object from file.")
-        .def ("write",               &Rays::write, "Write object to file.")
-        // constructor
-        .def (py::init<>());
+        .def ("write",               &Rays::write, "Write object to file.");
 
 
     // Boundary Condition
@@ -405,9 +404,7 @@ PYBIND11_MODULE (core, module)
         .def ("get_boundary_condition",         &Boundary::get_boundary_condition, "Getter for the boundary condition.")
         // io
         .def ("read",                           &Boundary::read, "Read object from file.")
-        .def ("write",                          &Boundary::write, "Write object to file.")
-        // constructor
-        .def (py::init<>());
+        .def ("write",                          &Boundary::write, "Write object to file.");
 
 
     // Thermodynamics
@@ -417,9 +414,7 @@ PYBIND11_MODULE (core, module)
         .def_readwrite ("turbulence",  &Thermodynamics::turbulence, "Turbulence object.")
         // io
         .def ("read",                  &Thermodynamics::read, "Read object from file.")
-        .def ("write",                 &Thermodynamics::write, "Write object to file.")
-        // constructor
-        .def (py::init());
+        .def ("write",                 &Thermodynamics::write, "Write object to file.");
 
 
     // Temperature
@@ -428,9 +423,7 @@ PYBIND11_MODULE (core, module)
         .def_readwrite ("gas", &Temperature::gas, "Kinetic temperature of the gas.")
         // functions
         .def ("read",          &Temperature::read, "Read object from file.")
-        .def ("write",         &Temperature::write, "Write object to file.")
-        // constructor
-        .def (py::init());
+        .def ("write",         &Temperature::write, "Write object to file.");
 
 
     // Turbulence
@@ -439,9 +432,7 @@ PYBIND11_MODULE (core, module)
         .def_readwrite ("vturb2", &Turbulence::vturb2, "Square of the micro turbulence as a fraction of the speed of light.")
         // functions
         .def ("read",             &Turbulence::read, "Read object from file.")
-        .def ("write",            &Turbulence::write, "Write object to file.")
-        // constructor
-        .def (py::init());
+        .def ("write",            &Turbulence::write, "Write object to file.");
 
 
     // Chemistry
@@ -449,22 +440,19 @@ PYBIND11_MODULE (core, module)
         // attributes
         .def_readwrite ("species", &Chemistry::species, "Species object.")
         // functions
-        .def ("read",              &Chemistry::read, "Read object from file.")
-        .def ("write",             &Chemistry::write, "Write object to file.")
-        // constructor
-        .def (py::init());
+        .def ("read",              &Chemistry::read,  "Read object from file.")
+        .def ("write",             &Chemistry::write, "Write object to file.");
 
 
     // Species
     py::class_<Species> (module, "Species", "Class containing the chemical species.")
         // attributes
-        .def_readwrite ("symbol",    &Species::symbol, "Symbol of the species.")
+        .def_readwrite ("symbol",    &Species::symbol,    "Symbol of the species.")
         .def_readwrite ("abundance", &Species::abundance, "Array with the abundances at each point.")
         // functions
-        .def ("read",                &Species::read, "Read object from file.")
-        .def ("write",               &Species::write, "Write object to file.")
-        // constructor
-        .def (py::init());
+        .def ("test", &Species::test)
+        .def ("read",                &Species::read,  "Read object from file.")
+        .def ("write",               &Species::write, "Write object to file.");
 
 
     // Lines
@@ -479,8 +467,7 @@ PYBIND11_MODULE (core, module)
         .def ("read",                           &Lines::read, "Read object from file.")
         .def ("write",                          &Lines::write, "Write object to file.")
         .def ("set_emissivity_and_opacity",     &Lines::set_emissivity_and_opacity, "Set the emissivity and opacity arrays.")
-        // constructor
-        .def (py::init<>());
+        .def ("resize_LineProducingSpecies",    &Lines::resize_LineProducingSpecies, "Resize the vector LineProducingSpecies.");
 
 
     // LineProducingSpecies
@@ -512,9 +499,7 @@ PYBIND11_MODULE (core, module)
         // functions
         .def ("read",                       &LineProducingSpecies::read, "Read object from file.")
         .def ("write",                      &LineProducingSpecies::write, "Write object to file.")
-        .def ("index",                      &LineProducingSpecies::index)
-        // constructor
-        .def (py::init<>());
+        .def ("index",                      &LineProducingSpecies::index);
 
 
     // Lambda
@@ -528,9 +513,7 @@ PYBIND11_MODULE (core, module)
         // functions
         .def ("add_element",    &Lambda::add_element)
         .def ("linearize_data", &Lambda::linearize_data)
-        .def ("MPI_gather",     &Lambda::MPI_gather)
-        // constructor
-        .def (py::init<>());
+        .def ("MPI_gather",     &Lambda::MPI_gather);
 
 
     // Quadrature
@@ -540,9 +523,7 @@ PYBIND11_MODULE (core, module)
         .def_readwrite ("weights", &Quadrature::weights, "Array containing the weights for the Gauss-Hermite quadrature.")
         // functions
         .def ("read",              &Quadrature::read, "Read object from file.")
-        .def ("write",             &Quadrature::write, "Write object to file.")
-        // constructor
-        .def (py::init<>());
+        .def ("write",             &Quadrature::write, "Write object to file.");
 
 
     // Linedata
@@ -599,9 +580,7 @@ PYBIND11_MODULE (core, module)
         .def_readwrite ("J",           &Radiation::J, "Array containing the mean intensity for each point and frequency bin.")
         // functions
         .def ("read",                  &Radiation::read, "Read object from file.")
-        .def ("write",                 &Radiation::write, "Write object to file.")
-        // constructor
-        .def (py::init());
+        .def ("write",                 &Radiation::write, "Write object to file.");
 
 
     // Frequencies
@@ -610,9 +589,7 @@ PYBIND11_MODULE (core, module)
         .def_readwrite ("nu", &Frequencies::nu, "Array of frequency bins for each point in the model.")
         // functions
         .def ("read",         &Frequencies::read, "Read object from file.")
-        .def ("write",        &Frequencies::write, "Write object to file.")
-        // constructor
-        .def (py::init());
+        .def ("write",        &Frequencies::write, "Write object to file.");
 
 
     // Vector <Size>

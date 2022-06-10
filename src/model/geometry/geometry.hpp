@@ -18,13 +18,22 @@ enum Frame {CoMoving, Rest};
 ////////////////////////////////
 struct Geometry
 {
-    Parameters parameters;   ///< data structure containing model parameters
-    Points     points;       ///< data structure containing point data
-    Rays       rays;         ///< data structure containing ray (direction) data
-    Boundary   boundary;     ///< data structure containing boundary data
+    std::shared_ptr<Parameters> parameters;   ///< data structure containing model parameters
+
+    Points   points;                          ///< data structure containing point data
+    Rays     rays;                            ///< data structure containing ray (direction) data
+    Boundary boundary;                        ///< data structure containing boundary data
 
     Matrix<Size> lengths;
     Size         lengths_max;
+
+
+    Geometry (std::shared_ptr<Parameters> params)
+    : parameters (params)
+    , points     (params)
+    , rays       (params)
+    , boundary   (params) {};
+
 
     void read  (const Io& io);
     void write (const Io& io) const;

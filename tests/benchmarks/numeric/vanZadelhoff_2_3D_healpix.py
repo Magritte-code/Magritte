@@ -50,13 +50,13 @@ def create_model (a_or_b):
     temp    = np.flip (temp,    axis=0)
     vs      = np.flip (vs,      axis=0)
     turb    = np.flip (turb,    axis=0)
-    
+
     nH2_int   = interp1d(r_shell, nH2,  fill_value='extrapolate')
     X_mol_int = interp1d(r_shell, X_mol,fill_value='extrapolate')
     temp_int  = interp1d(r_shell, temp, fill_value='extrapolate')
     vs_int    = interp1d(r_shell, vs,   fill_value='extrapolate')
     turb_int  = interp1d(r_shell, turb, fill_value='extrapolate')
-    
+
     npoints_in_shell = [hp.nside2npix(2+s//7) for s in range(nshells)]
     npoints          = sum(npoints_in_shell)
 
@@ -68,15 +68,14 @@ def create_model (a_or_b):
     position = xyz[1:]
 
     rs = np.linalg.norm(position, axis=1)
-    
-    npoints = len(rs)    
+
+    npoints = len(rs)
     print(npoints)
-    
+
     velocity = (vs_int(rs) / rs * position.T).T
-    
+
     model = magritte.Model ()
     model.parameters.set_spherical_symmetry(False)
-    model.parameters.set_pop_prec          (1.0e-6)
     model.parameters.set_model_name        (modelFile)
     model.parameters.set_dimension         (dimension)
     model.parameters.set_npoints           (npoints)
@@ -137,7 +136,7 @@ def run_model (a_or_b, nosave=False):
 
     npoints = model.parameters.npoints()
     nlev    = model.lines.lineProducingSpecies[0].linedata.nlev
-    
+
     pops = np.array(model.lines.lineProducingSpecies[0].population).reshape((npoints, nlev))
     abun = np.array(model.chemistry.species.abundance)[:,1]
     rs   = np.linalg.norm(np.array(model.geometry.points.position), axis=1)

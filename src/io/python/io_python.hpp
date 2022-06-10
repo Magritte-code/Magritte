@@ -77,9 +77,9 @@ struct IoPython : public Io
 
         template <class type>
         int read_in_python  (
-            const string function, const string file_name,        type &data) const;
+            const string function, const string file_name,       type &data) const;
 
         template <class type>
-         int write_in_python (
-             const string function, const string file_name, const type &data) const;
+        int write_in_python (
+            const string function, const string file_name, const type &data) const;
 };

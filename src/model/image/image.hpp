@@ -17,10 +17,10 @@ struct Image
     const ImageType imageType;   ///< Type of image (intensity or optical depth)
     const Size      ray_nr;      ///< number of the ray to be imaged
 
-    Double1 ImX;         ///< x coordinate of point in image
-    Double1 ImY;         ///< y coordinate of point in image
+    Double1 ImX;                 ///< x coordinate of point in image
+    Double1 ImY;                 ///< y coordinate of point in image
 
-    Matrix<Real> I;      ///< intensity out along ray (index(p,f))
+    Matrix<Real> I;              ///< intensity out along ray (index(p,f))
 
     Image (const Geometry& geometry, const ImageType, const Size ray_nr);
     Image (const Image& image);

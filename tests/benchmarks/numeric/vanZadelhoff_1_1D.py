@@ -56,7 +56,6 @@ def create_model (a_or_b):
 
     model = magritte.Model ()
     model.parameters.set_spherical_symmetry(True)
-    model.parameters.set_pop_prec          (1.0e-6)
     model.parameters.set_model_name        (modelFile)
     model.parameters.set_dimension         (dimension)
     model.parameters.set_npoints           (npoints)

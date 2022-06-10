@@ -11,13 +11,17 @@ enum BoundaryCondition {Zero, Thermal, CMB};
 
 struct Boundary
 {
-    Parameters parameters;
+    std::shared_ptr<Parameters> parameters;
 
     Vector<Size> boundary2point;
     Vector<Size> point2boundary;
 
     Vector<BoundaryCondition> boundary_condition;
     Vector<Real>              boundary_temperature;
+
+
+    Boundary (std::shared_ptr<Parameters> params)
+    : parameters (params) {};
 
     BoundaryCondition set_boundary_condition (const Size b, const BoundaryCondition cd);
     BoundaryCondition get_boundary_condition (const Size b) const;

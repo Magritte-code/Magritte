@@ -30,6 +30,7 @@ class SetOnce
 {
     private:
         bool already_set = false;
+        bool default_set = false;
         type value;
 
     public:
@@ -57,11 +58,28 @@ class SetOnce
         }
 
 
+        inline void set_default (const type new_value)
+        {
+            if (already_set)
+            {
+                if (value != new_value)
+                {
+                    std::cout << "ERROR value = " << value << " new value = " << new_value << std::endl;
+                    throw DoubleSetException ();
+                }
+            }
+            else
+            {
+                default_set = true;
+                value       = new_value;
+            }
+        }
+
+
         accel inline type get () const
         {
-            return value;
-//            if (already_set) {return value;                  }
-//            else             {throw GetBeforeSetException ();}
+            if (already_set || default_set) {return value;                  }
+            else                            {throw GetBeforeSetException ();}
         }
 
 

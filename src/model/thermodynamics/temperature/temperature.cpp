@@ -11,9 +11,9 @@ void Temperature :: read (const Io& io)
 {
     cout << "Reading temperature..." << endl;
 
-    parameters.set_npoints (io.get_length (prefix+"gas"));
+    parameters->set_npoints (io.get_length (prefix+"gas"));
 
-    gas.resize (parameters.npoints());
+    gas.resize (parameters->npoints());
 
     io.read_list (prefix+"gas", gas);
 }

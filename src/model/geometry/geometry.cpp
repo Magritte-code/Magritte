@@ -7,7 +7,7 @@ void Geometry :: read (const Io& io)
     rays    .read (io);
     boundary.read (io);
 
-    lengths.resize (parameters.hnrays(), parameters.npoints());
+    lengths.resize (parameters->hnrays(), parameters->npoints());
 }
 
 

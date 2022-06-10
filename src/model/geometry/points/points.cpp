@@ -9,19 +9,19 @@ void Points :: read (const Io& io)
 {
     cout << "Reading points..." << endl;
 
-    parameters.set_npoints (io.get_length (prefix+"position"));
-    parameters.set_npoints (io.get_length (prefix+"velocity"));
+    parameters->set_npoints (io.get_length (prefix+"position"));
+    parameters->set_npoints (io.get_length (prefix+"velocity"));
 
-    position.resize (parameters.npoints());
-    velocity.resize (parameters.npoints());
+    position.resize (parameters->npoints());
+    velocity.resize (parameters->npoints());
 
-    Double2 position_buffer (parameters.npoints(), Double1(3));
-    Double2 velocity_buffer (parameters.npoints(), Double1(3));
+    Double2 position_buffer (parameters->npoints(), Double1(3));
+    Double2 velocity_buffer (parameters->npoints(), Double1(3));
 
     io.read_array (prefix+"position", position_buffer);
     io.read_array (prefix+"velocity", velocity_buffer);
 
-    for (Size p = 0; p < parameters.npoints(); p++)
+    for (Size p = 0; p < parameters->npoints(); p++)
     {
         position[p] = Vector3D (position_buffer[p][0],
                                 position_buffer[p][1],
@@ -32,11 +32,11 @@ void Points :: read (const Io& io)
                                 velocity_buffer[p][2] );
     }
 
-    parameters.set_totnnbs (io.get_length (prefix+"neighbors"));
+    const Size totnnbs = io.get_length (prefix+"neighbors");
 
-    cum_n_neighbors.resize (parameters.npoints());
-        n_neighbors.resize (parameters.npoints());
-          neighbors.resize (parameters.totnnbs());
+    cum_n_neighbors.resize (parameters->npoints());
+        n_neighbors.resize (parameters->npoints());
+          neighbors.resize (            totnnbs  );
 
     io.read_list (prefix+"n_neighbors", n_neighbors);
     io.read_list (prefix+  "neighbors",   neighbors);
@@ -44,7 +44,7 @@ void Points :: read (const Io& io)
 
     cum_n_neighbors[0] = 0;
 
-    for (Size p = 1; p < parameters.npoints(); p++)
+    for (Size p = 1; p < parameters->npoints(); p++)
     {
         cum_n_neighbors[p] = cum_n_neighbors[p-1] + n_neighbors[p-1];
     }
@@ -60,10 +60,10 @@ void Points :: read (const Io& io)
 
 void Points :: write (const Io& io) const
 {
-    Double2 position_buffer (parameters.npoints(), Double1(3));
-    Double2 velocity_buffer (parameters.npoints(), Double1(3));
+    Double2 position_buffer (parameters->npoints(), Double1(3));
+    Double2 velocity_buffer (parameters->npoints(), Double1(3));
 
-    for (size_t p = 0; p < parameters.npoints(); p++)
+    for (size_t p = 0; p < parameters->npoints(); p++)
     {
         position_buffer[p] = {position[p].x(),
                               position[p].y(),
