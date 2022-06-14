@@ -50,8 +50,6 @@ struct Model
         read ();
     }
 
-    std::shared_ptr<Parameters> params() const {return parameters;};
-
     void read  (const Io& io);
     void write (const Io& io) const;
 

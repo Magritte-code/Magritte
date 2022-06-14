@@ -332,6 +332,26 @@ def set_Delaunay_boundary (model):
     return model
 
 
+def set_boundary_condition_zero (model):
+    """
+    Setter for incoming zero boundary condition at each boundary point.
+
+    Parameters
+    ----------
+    model : Magritte model object
+        Magritte model object to set.
+
+    Returns
+    -------
+    out : Magritte model object
+        Updated Magritte object.
+    """
+    for b in range(model.parameters.nboundary()):
+        model.geometry.boundary.set_boundary_condition (b, BoundaryCondition.Zero)
+    # Done
+    return model
+
+
 def set_boundary_condition_CMB (model):
     """
     Setter for incoming CMB boundary condition at each boundary point.

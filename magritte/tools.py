@@ -462,3 +462,41 @@ def save_fits(
     print('Written file to:', filename)
     
     return
+
+
+def check_one_line_approximation(model):
+    
+    # Extract the largest line width from the model
+    width_max = np.max (1.0/np.array(model.lines.inverse_width), axis=0)
+    width_rel = np.mean(width_max/lines)
+    width_std = np.std (width_max/lines)
+
+    if (width_std / width_rel > 1.0e-10):
+        ValueError('Issue with the line widths in the model.')
+    
+    # Extract the largest line quadrature root from the model
+    root_max = 0.0
+    for l in range(model.parameters.nlspecs()):
+        roots    = np.array(model.lines.lineProducingSpecies[l].quadrature.roots)
+        root_max = np.max([np.abs(roots[0]), np.abs(roots[-1]), rtmax])
+        
+    # Find the (relatively) closest two lines
+    dist_min = np.inf
+    for i1, l1 in enumerate(lines):
+        for i2, l2 in enumerate(lines):
+            if i1 != i2:
+                dist = np.abs(l1 - l2) / np.max([l1, l2])
+                if dist < dist_min:
+                    dist_min  = dist
+                    line_low  = np.min([l1, l2])
+                    line_high = np.max([l1, l2])
+                    
+    lim_low  = line_low  * (1.0 + width_rel*root_max) * shift_up
+    lim_high = line_high * (1.0 - width_rel*root_max) * shift_down
+    
+    width_high = width_rel * line_high
+    diff_max   = np.max([lim_high - line_low, line_high - lim_low]) / width_high
+
+    contribution = np.exp(-diff_max**2)
+    
+    return contribution

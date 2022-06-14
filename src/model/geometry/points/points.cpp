@@ -60,6 +60,8 @@ void Points :: read (const Io& io)
 
 void Points :: write (const Io& io) const
 {
+    cout << "Writing points..." << endl;
+
     Double2 position_buffer (parameters->npoints(), Double1(3));
     Double2 velocity_buffer (parameters->npoints(), Double1(3));
 
