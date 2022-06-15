@@ -6,6 +6,7 @@ import .TestMolecule
 import .Tools
 import Plots
 import SpecialFunctions as sf
+import Statistics
 
 
 ld=TestMolecule.testlinedata()
@@ -14,24 +15,39 @@ println(ld)
 quadfactor=1
 factor=1.0;#normally, we should adaptively determine to insert ghost points inbetween, but for simplicity, we just make a more dense discretization
 #not the exact settings, but just to test
-npoints   = convert(Int, 15*factor)
+npoints   = convert(Int, 31*factor)
 nrays     = 1
-nquads    = 245*quadfactor
+nquads    = 225*quadfactor
 
 nH2  = 1.0E+12                 # [m^-3]
 nTT  = 1.0E+08                 # [m^-3]
 temp = 4.5E+01                 # [K]
 turb = 0.0E+00                 # [m/s]
 dx   = 1.0E+04/factor        # [m]
-dx   = 1.0E+09/factor
-# dx   = 1.5E-00
-r_in=10.0 #TODO REMOVE
 
-dv   = 2.5E+02 / 300_000_000   # [fraction of speed of light]
-dv   = 0.5*8.7E+02 / 300_000_000/ factor   # [fraction of speed of light] #8.7E+02 is +-line width
+#small optical depth
+dx   = 1.0E+07/factor
+#medium optical depth
+# dx   = 1.0E+09/factor
+# large optical depth
+dx   = 1.0E+11/factor
+
+# dx   = 1.5E-00
+
+# dv   = 2.5E+02 / 300_000_000   # [fraction of speed of light]
+
+#small doppler shift
+dv   = -0.1*8.7E+02 / 300_000_000/ factor   # [fraction of speed of light] #8.7E+02 is +-line width
+#medium doppler shift
+dv   = -0.5*8.7E+02 / 300_000_000/ factor   # [fraction of speed of light] #8.7E+02 is +-line width
+#large doppler shift
+# dv   = -2.0*8.7E+02 / 300_000_000/ factor   # [fraction of speed of light] #8.7E+02 is +-line width
+
 # dv   = -0.0000015
 #bug: nan for analytic solution when putting dv to 0
 # dv   = 1E-18
+
+#TODO: cleanup: add explicit options/commented out stuff for all configurations
 
 #sinusoidal velocity profile for testing
 maxV = 2.0E+03 / 300_000_000
@@ -66,7 +82,7 @@ quad_rel_diff=0.25/quadfactor
 # quad_rel_diff=0.35/quadfactor
 # quad_rel_diff=0.20/quadfactor
 ν=ld.frequency[1].+(-(nquads-1)/2:(nquads-1)/2).*quad_rel_diff.*dnu
-νarbit=reshape([ld.frequency[1]+quad*quad_rel_diff*dnu*(1.0-0.0000*point) for point in 1:npoints for quad in (-(nquads-1)/2:(nquads-1)/2)], nquads, npoints)
+νarbit=reshape([ld.frequency[1]+quad*quad_rel_diff*dnu*(1.0+0.0000*point) for point in 1:npoints for quad in (-(nquads-1)/2:(nquads-1)/2)], nquads, npoints)
 # νarbit=reshape([ld.frequency[1]+quad*quad_rel_diff*dnu for point in 1:npoints for quad in (-(nquads-1)/2:(nquads-1)/2)], nquads, npoints)
 
 println(length(ν))
@@ -284,13 +300,28 @@ data16=ComovingSolvers.data(Icmbarbitrary,(0:npoints-1).*dx, v, χarbitrary, ηa
 ComovingSolvers.computesinglerayfullsecondorderdiffopacity(data16)
 shortchardiffopacity=data16.allintensities
 
+#first order solver from interpolation
+data17=ComovingSolvers.data(Icmbarbitrary,(0:npoints-1).*dx, v, χarbitrary, ηarbitrary, νarbitrary, middleνdoppl, src)
+ComovingSolvers.computesinglerayfinterpolateshortchar(data17)
+interpolateshortchar=data17.allintensities
+
+#second order solver shortchar solver with freq mismatch
+data18=ComovingSolvers.data(Icmbarbitrary,(0:npoints-1).*dx, v, χarbitrary, ηarbitrary, νarbitrary, middleνdoppl, src)
+ComovingSolvers.computesingleraysecondorderadaptiveshortcharfreqmismatch(data18)
+freqmisshortchar=data18.allintensities
+
+#second order solver shortchar solver with freq mismatch
+data19=ComovingSolvers.data(Icmbarbitrary,(0:npoints-1).*dx, v, χarbitrary, ηarbitrary, νarbitrary, middleνdoppl, src)
+ComovingSolvers.computesinglerayfirstorderadaptiveshortcharfreqmismatch(data19)
+freqmis1stshortchar=data19.allintensities
+
 
 #TODO REORDER; put all plotting stuff right after solvers; then (un)comment them at the same time
 Iray=I_.(ν, L, 0.0)
 # println(Iray)
 # println(ν, size(ν))
 println(v[end])
-Plots.plot()
+p1 = Plots.plot()
 #multiplication factor because julia plots do not like very small values...
 # Plots.plot([νdoppl[:,end], νdoppl[:,end],νdoppl[:,end]],1e8.*[firstorderintensities[:, npoints], secondorderfreq[:, npoints], secondorderintensities[:,npoints]], label = ["first order" "second order freq" "second order"])
 
@@ -307,17 +338,30 @@ Plots.plot!(1e-11.*[νarbitrary[:,end]],1e18.*[comovingshortchar[:, npoints]], l
 # Plots.plot!(1e-11.*[νarbitrary[:,end]],1e18.*[shortchardiffopacity[:, npoints]], label = "comoving diff opacity 2nd")
 # Plots.plot!([νarbitrary[:,end]],1e8.*[comovingshortcharfirstorder[:, npoints]], label = "comoving shortchar 1st")
 # Plots.plot!(1e-11.*[νarbitrary[:,end]],1e18.*[comovingshortcharimplicit[:, npoints]], label = "comoving shortchar impl")
+# Plots.plot!(1e-11.*[νarbitrary[:,end]],1e18.*[interpolateshortchar[:, npoints]], label = "interpolate shortchar")
+Plots.plot!(1e-11.*[νarbitrary[:,end]],1e18.*[freqmisshortchar[:, npoints]], label = "freq mismatch shortchar")
+# Plots.plot!(1e-11.*[νarbitrary[:,end]],1e18.*[freqmis1stshortchar[:, npoints]], label = "freq mismatch 1st order")
 # Plots.plot!([νarbitrary[:,end]],1e8.*[comovingexplicit[:, npoints]], label = "comoving expl")
 # Plots.plot!([νarbitrary[:,end]],1e8.*[shortcharsplit[:, npoints]], label = "split shortchar")
-# Plots.plot!([ν[:]],1e8.*[shortcharstaticfreq[:, npoints]], label = "short char static")
+# Plots.plot!(1e-11.*[ν[:]],1e18.*[shortcharstaticfreq[:, npoints]], label = "short char static")
 
 
 
 # Plots.plot([νdoppl[:,end], νdoppl[:,end]],1e8.*[secondorderfreq[:, npoints], Iray], label = ["second order impl" "analytic"])
 Plots.vline!(1e-11.*[middleνdoppl[end], middleνdoppl[end]-dnu*(1+v[end]), middleνdoppl[end]+dnu*(1+v[end])], label=["shifted line center ±δν" "-δν" "+δν"],legend=:topleft)
 
+
+#residual plot for default solver
+# p2 = Plots.plot((comovingshortchar[:, npoints]-Iray)./Iray, xaxis=false, legend=false, xticks=false, ylabel="ΔI/I")
+#residual plot for freq mismatch solver
+p2 = Plots.plot((freqmisshortchar[:, npoints]-Iray)./Iray, xaxis=false, legend=false, xticks=false, ylabel="ΔI/I")
+
+l = Plots.@layout [a{0.8h}; b]
+
+Plots.plot(p1, p2, layout=l)
+
 Plots.gui()
-# Plots.savefig("bench_hubble_lemaitre_01 doppl, 1e9 dx, n 31, frq dns 2")
+# Plots.savefig("bench_hubble_lemaitre_2 doppl, 1e11 dx, n 31")
 # display(Plots.plot(10e14.*[secondorderintensities[:,npoints]], label = ["second order"]))
 # println(I_.(ν, 11.0e5, 0))
 # Plots.plot(1e5.*[firstorderintensities[:,npoints], secondorderintensities[:,npoints], Iray], label = ["first order" "second order" "analytic"])
@@ -328,4 +372,22 @@ println("dnu: ", dnu)
 println("dnu quad: ", dnu/4.0/quadfactor)
 println("doppler shift: ", frq*dv)
 println("v: ", v, "\n")
-# println("min χ: ",minimum(χ))
+
+#computing relative diff of new method with analytic solution
+abs_rel_diff=abs.(comovingshortchar[:, npoints]-Iray)./Iray
+
+println("Results comoving shortchar: ")
+
+println("max |ΔE|: ", maximum(abs_rel_diff))
+println("median |ΔE|: ", Statistics.median(abs_rel_diff))
+println("mean |ΔE|: ", Statistics.mean(abs_rel_diff))
+
+
+#computing relative diff of new method with analytic solution
+abs_rel_diff=abs.(freqmisshortchar[:, npoints]-Iray)./Iray
+
+println("Results freq mismatch shortchar: ")
+
+println("max |ΔE|: ", maximum(abs_rel_diff))
+println("median |ΔE|: ", Statistics.median(abs_rel_diff))
+println("mean |ΔE|: ", Statistics.mean(abs_rel_diff))

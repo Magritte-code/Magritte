@@ -2469,4 +2469,752 @@ function computesinglerayfullsecondorderdiffopacity(data::Data)
 end
 
 
+#computes intensity using second order semi implicit discretization (also second order for the frequency derivative)
+function interpolateshortchar(previndex, data)
+    Δx=(data.x[previndex+1]-data.x[previndex])#assumes x strictly increasing
+    Δxdiv2=(data.x[previndex+1]-data.x[previndex])/2.0#assumes x strictly increasing
+    Δvdiv2=(data.v[previndex+1]-data.v[previndex])/2.0
+    @views Δνdiv2=(data.ν[:,previndex+1]-data.ν[:,previndex])/2.0
+    @views Δν=(data.ν[:,previndex+1]-data.ν[:,previndex])
+    #renaming stuff
+    nfreqs=data.nfreqs
+    currintensity=data.currintensity
+    bdyintensity=data.backgroundintensity
+    η=data.η
+    χ=data.χ
+    ν=data.ν
+    # S=η./χ
+    S=fill(data.S, size(η))
+    #bounding Δτ from below, as division by almost 0 errors can happen. (we are dividing by Δτ.^2)
+    Δτ=Δx*(χ[:,previndex+1].+χ[:,previndex])/2.0
+    minτ=1.0E-10
+    toolow = findall(Δτ.<=minτ)
+    Δτ[toolow] .= minτ
+    Δτdiv2 = Δτ./2.0
+    # Δτdiv2=Δx*(χ[:,previndex+1].+χ[:,previndex])./4.0
+
+    expminτdiv2=exp.(-Δτdiv2)
+    expminτ=exp.(-2.0.*Δτdiv2)
+    onemexpminτdiv2=-expm1.(-Δτdiv2)
+    onemexpminτ=-expm1.(-2.0 .*Δτdiv2)
+
+    lineν=data.lineν[previndex]
+    nextlineν=data.lineν[previndex+1]
+
+    #now compute for which frequency points we need a forward or backward discretization
+    currν=data.ν[:, previndex]
+    nextν=data.ν[:, previndex+1]
+
+    #assume frequencies sorted
+    nextfreqidx=1
+    currfreqidx=1
+    is_boundary_point=trues(nfreqs)#BitArray(true, nfreqs)
+    currleftidx=zeros(Int, nfreqs)
+    while ((currfreqidx <= nfreqs) && (nextfreqidx <= nfreqs))
+        if (currν[currfreqidx]<nextν[nextfreqidx])
+            currfreqidx+=1
+        else
+            is_boundary_point[nextfreqidx]=false
+            currleftidx[nextfreqidx]=currfreqidx-1
+            nextfreqidx+=1
+        end
+    end
+    #and set boundary condition if left boundary point would be 0 (i.e. outside domain)
+    for tempidx∈1:nfreqs
+        if currleftidx[tempidx]==0
+            is_boundary_point[tempidx]=true
+        end
+    end
+
+    nextintensity=copy(currintensity)#for array with same size
+    # nextintensity=0.0
+
+    #now apply interpolation, then shortchar
+    for tempidx ∈ 1:nfreqs
+        # nextintensity=0.0
+        if is_boundary_point[tempidx]
+            #apply boundary condition
+            nextintensity[tempidx]=bdyintensity[tempidx, previndex+1]
+        else
+            leftidx=currleftidx[tempidx]
+            νdiff=currν[leftidx+1]-currν[leftidx]
+            νleft=currν[leftidx]
+            #interpolate to next intensities
+            nextintensity[tempidx]=currintensity[leftidx].+
+                    (nextν[tempidx].-νleft)./νdiff.*(currintensity[leftidx+1].-currintensity[leftidx])
+            #also interpolate some opacities and emissivities
+            ηint=η[leftidx, previndex].+(nextν[tempidx].-νleft)./νdiff.*(η[leftidx+1, previndex].-η[leftidx, previndex])
+            χint=χ[leftidx, previndex].+(nextν[tempidx].-νleft)./νdiff.*(χ[leftidx+1, previndex].-χ[leftidx, previndex])
+
+            Δτ=Δx*(χ[tempidx,previndex+1].+χint)/2.0
+            if Δτ<1.0E-20
+                Δτ=1.0E-20
+            end
+            if χint==0.0 || ηint==0.0#too far from line center
+                Sint=0
+            else
+                Sint=ηint/χint
+            end
+            # if Sint == nan
+
+            expminτ=exp(-Δτ)
+            expminτdiv2=exp(-Δτ/2)
+            onemexpminτdiv2=-expm1(-Δτ/2)
+            #now apply 2nd order static solver to them
+            nextintensity[tempidx]=nextintensity[tempidx]*expminτ+expminτdiv2*onemexpminτdiv2*Sint+onemexpminτdiv2*S[tempidx, previndex+1]
+        end
+
+
+    end
+
+    for tempidx ∈ 1:nfreqs
+        data.currintensity[tempidx]=nextintensity[tempidx]
+    end
+
+    # data.currintensity=copy(nextintensity)
+
+    data.allintensities[:,previndex+1]=data.currintensity;
+    return
+end
+
+#first order accurate solver which mismatches the frequency indices
+function computesinglerayfinterpolateshortchar(data::Data)
+    for i ∈ 1:data.npoints-1
+        interpolateshortchar(i, data)
+    end
+
+    return
+end
+
+#TODO TODO REFACTOR QUITE A BIT (probably, the difference between upwind and downwind is so minor, such that we do not need to copy most of it)
+#computes intensity using second order semi implicit discretization (also second order for the frequency derivative). Mismatches the frequency indices to obtain better stability.
+function secondordershortcharfreqmismatch(previndex, data)
+    Δx=(data.x[previndex+1]-data.x[previndex])#assumes x strictly increasing
+    Δxdiv2=(data.x[previndex+1]-data.x[previndex])/2.0#assumes x strictly increasing
+    Δvdiv2=(data.v[previndex+1]-data.v[previndex])/2.0
+    #renaming stuff
+    nfreqs=data.nfreqs
+    currintensity=data.currintensity
+    bdyintensity=data.backgroundintensity
+    η=data.η
+    χ=data.χ
+    ν=data.ν
+    # S=η./χ
+    S=fill(data.S, size(η))
+
+    lineν=data.lineν[previndex]
+    nextlineν=data.lineν[previndex+1]
+
+    #imposing the freq disc direction
+    forwardfreqdisc=(nextlineν-lineν>0.0)
+
+    #now compute for which frequency points we need a forward or backward discretization
+    currν=data.ν[:, previndex]
+    nextν=data.ν[:, previndex+1]
+
+    #for all points, determine the interval of the previous freqs
+    #assume frequencies sorted
+    nextfreqidx=1
+    currfreqidx=1
+    is_boundary_point=trues(nfreqs)#BitArray(true, nfreqs)
+    curr_corr_idx=zeros(Int, nfreqs)
+    while ((currfreqidx <= nfreqs) && (nextfreqidx <= nfreqs))
+        if (currν[currfreqidx]<nextν[nextfreqidx])
+            currfreqidx+=1
+        else
+            is_boundary_point[nextfreqidx]=false
+            if forwardfreqdisc
+                curr_corr_idx[nextfreqidx]=currfreqidx-1
+            else
+                curr_corr_idx[nextfreqidx]=currfreqidx
+            end
+            nextfreqidx+=1
+        end
+    end
+    #and set boundary condition if left boundary point would be 0 (i.e. outside domain)
+    for tempidx∈1:nfreqs
+        if curr_corr_idx[tempidx]==0
+            is_boundary_point[tempidx]=true
+        end
+    end
+    #also set the outmost point(s) in the direction to be (a) boundary point(s).
+    if forwardfreqdisc
+        is_boundary_point[nfreqs-1]=true
+        is_boundary_point[nfreqs]=true
+        is_boundary_point[curr_corr_idx.==nfreqs-1].=true
+        is_boundary_point[curr_corr_idx.==nfreqs].=true
+    else
+        is_boundary_point[1]=true
+        is_boundary_point[2]=true
+        is_boundary_point[curr_corr_idx.==1].=true
+        is_boundary_point[curr_corr_idx.==2].=true
+    end
+
+    #forward discretization
+    boundary_points=findall(is_boundary_point.==true)
+    if forwardfreqdisc
+        upwind_points=findall(is_boundary_point.==false)
+        upwind_curr_corr_idx=curr_corr_idx[upwind_points]
+
+        #shift freq range and apply boundary condition?
+
+        Δτ=Δx*(χ[upwind_points,previndex+1].+χ[upwind_curr_corr_idx,previndex])/2.0
+        minτ=1.0E-10
+        toolow = findall(Δτ.<=minτ)
+        Δτ[toolow] .= minτ
+        Δτdiv2 = Δτ./2.0
+
+        expminτdiv2=exp.(-Δτdiv2)
+        expminτ=exp.(-2.0.*Δτdiv2)
+        onemexpminτdiv2=-expm1.(-Δτdiv2)
+        onemexpminτ=-expm1.(-2.0.*Δτdiv2)
+
+        @views Δνdiv2=(data.ν[upwind_points,previndex+1]-data.ν[upwind_curr_corr_idx,previndex])/2.0
+        @views Δν=(data.ν[upwind_points,previndex+1]-data.ν[upwind_curr_corr_idx,previndex])
+
+        println("Δν: ", Δν)
+
+        # Δνd=(view(ν, upwind_points.+1, previndex)-view(ν, upwind_points.+0, previndex))
+        # a=1.0 ./Δνd
+        # b=-1.0 ./Δνd
+        # Δνterm=(a.*view(currintensity, upwind_points.+1).+b.*view(currintensity, upwind_points.+0))
+
+        Δνsmall=(view(ν, upwind_curr_corr_idx.+2, previndex)-view(ν, upwind_curr_corr_idx.+1, previndex))
+        Δνlarge=(view(ν, upwind_curr_corr_idx.+2, previndex)-view(ν, upwind_curr_corr_idx, previndex))
+        a=-Δνsmall./(Δνlarge.^2-Δνsmall.*Δνlarge)
+        b=Δνlarge./(Δνsmall.*Δνlarge-Δνsmall.^2)
+        c=.-a.-b;
+
+        #is the numerical derivative of I
+        Δνterm=(a.*view(currintensity, upwind_curr_corr_idx.+2).+b.*view(currintensity, upwind_curr_corr_idx.+1).+c.*view(currintensity, upwind_curr_corr_idx))#.*lineν
+
+        #FIXME: inconsistent source term (also for backward discretization)
+        # @views sourceterm=expminτdiv2[upwind_points].*onemexpminτdiv2[upwind_points].*S[upwind_points, previndex].+onemexpminτdiv2[upwind_points].*S[upwind_points, previndex+1]
+        @views sourceterm=((onemexpminτ.-Δτ)./Δτ.+onemexpminτ).*S[upwind_curr_corr_idx, previndex].+(Δτ.-onemexpminτ).*S[upwind_points, previndex+1]./Δτ
+        #huh, why is this stable (and not correct?); somehow filled in the wrong term?
+        # @views curr_factor=((Δτ[upwind_points].*expminτ[upwind_points].-onemexpminτ[upwind_points])./Δτ[upwind_points].+onemexpminτ[upwind_points])./Δτ[upwind_points]
+        @views curr_factor=onemexpminτ./Δτ.+(onemexpminτ.-Δτ)./Δτ.^2
+        # @views curr_factor=(Δτ[upwind_points].-1.0 .+expminτ[upwind_points]+Δτ[upwind_points].*(expminτ[upwind_points]))./Δτ[upwind_points]
+
+        # @views currintensity[upwind_points].+=(Δxdiv2.*(η[upwind_points, previndex]+η[upwind_points, previndex+1]-currintensity[upwind_points].*χ[upwind_points, previndex])
+        #         +Δνdiv2[upwind_points].*Δνterm)#lineν is absorbed into Δνdiv2
+        @views currintensity[upwind_points]=currintensity[upwind_curr_corr_idx].*expminτ.+sourceterm.+curr_factor.*Δνterm.*Δν
+        # @views currintensity[1:nfreqs]=currintensity[1:nfreqs].*expminτ.+expminτdiv2.*onemexpminτdiv2.*S[1:nfreqs, previndex].+onemexpminτdiv2.*S[1:nfreqs, previndex+1]
+
+        #end forward discretization explicit part
+    else
+        #do backward discretization explicit part
+        downwind_points=findall(is_boundary_point.==false)
+
+        downwind_curr_corr_idx=curr_corr_idx[downwind_points]
+
+        Δτ=Δx*(χ[downwind_points,previndex+1].+χ[downwind_curr_corr_idx,previndex])/2.0
+        minτ=1.0E-10
+        toolow = findall(Δτ.<=minτ)
+        Δτ[toolow] .= minτ
+        Δτdiv2 = Δτ./2.0
+
+        expminτdiv2=exp.(-Δτdiv2)
+        expminτ=exp.(-2.0.*Δτdiv2)
+        onemexpminτdiv2=-expm1.(-Δτdiv2)
+        onemexpminτ=-expm1.(-2.0.*Δτdiv2)
+
+        @views Δνdiv2=(data.ν[downwind_points,previndex+1]-data.ν[downwind_curr_corr_idx,previndex])/2.0
+        @views Δν=(data.ν[downwind_points,previndex+1]-data.ν[downwind_curr_corr_idx,previndex])
+
+        println("Δν: ", Δν)
+
+
+        # Δνd=(view(ν, upwind_points.+1, previndex)-view(ν, upwind_points.+0, previndex))
+        # a=1.0 ./Δνd
+        # b=-1.0 ./Δνd
+        # Δνterm=(a.*view(currintensity, upwind_points.+1).+b.*view(currintensity, upwind_points.+0))
+
+        Δνsmall=(view(ν, downwind_curr_corr_idx.-1, previndex)-view(ν, downwind_curr_corr_idx.-2, previndex))
+        Δνlarge=(view(ν, downwind_curr_corr_idx, previndex)-view(ν, downwind_curr_corr_idx.-2, previndex))
+        a=-Δνsmall./(Δνlarge.^2-Δνsmall.*Δνlarge)
+        b=Δνlarge./(Δνsmall.*Δνlarge-Δνsmall.^2)
+        c=.-a.-b;
+
+        #is the numerical derivative of I
+        Δνterm=(a.*view(currintensity, downwind_curr_corr_idx.-2).+b.*view(currintensity, downwind_curr_corr_idx.-1).+c.*view(currintensity, downwind_curr_corr_idx))#.*lineν
+
+        #FIXME: inconsistent source term (also for backward discretization)
+        # @views sourceterm=expminτdiv2[upwind_points].*onemexpminτdiv2[upwind_points].*S[upwind_points, previndex].+onemexpminτdiv2[upwind_points].*S[upwind_points, previndex+1]
+        @views sourceterm=((onemexpminτ.-Δτ)./Δτ.+onemexpminτ).*S[downwind_curr_corr_idx, previndex].+(Δτ.-onemexpminτ).*S[downwind_points, previndex+1]./Δτ
+        #huh, why is this stable (and not correct?); somehow filled in the wrong term?
+        # @views curr_factor=((Δτ[upwind_points].*expminτ[upwind_points].-onemexpminτ[upwind_points])./Δτ[upwind_points].+onemexpminτ[upwind_points])./Δτ[upwind_points]
+        @views curr_factor=onemexpminτ./Δτ.+(onemexpminτ.-Δτ)./Δτ.^2
+        # @views curr_factor=(Δτ[upwind_points].-1.0 .+expminτ[upwind_points]+Δτ[upwind_points].*(expminτ[upwind_points]))./Δτ[upwind_points]
+
+        # @views currintensity[upwind_points].+=(Δxdiv2.*(η[upwind_points, previndex]+η[upwind_points, previndex+1]-currintensity[upwind_points].*χ[upwind_points, previndex])
+        #         +Δνdiv2[upwind_points].*Δνterm)#lineν is absorbed into Δνdiv2
+        @views currintensity[downwind_points]=currintensity[downwind_curr_corr_idx].*expminτ.+sourceterm.+curr_factor.*Δνterm.*-Δν
+        # @views currintensity[1:nfreqs]=currintensity[1:nfreqs].*expminτ.+expminτdiv2.*onemexpminτdiv2.*S[1:nfreqs, previndex].+onemexpminτdiv2.*S[1:nfreqs, previndex+1]
+
+        #end backward discretization explicit part
+    end
+
+    #end backward discretization explicit part
+
+    #now apply boundary conditions
+    @views currintensity[boundary_points]=bdyintensity[boundary_points, previndex+1]
+
+    lineν=data.lineν[previndex+1]
+
+    #upwind implicit part
+    #err, just ignore implicit part for now if no points need to be computed with this discretization
+    # if length(upwind_points)>0
+    if forwardfreqdisc
+
+        upwind_points=findall(is_boundary_point.==false)
+        upwind_curr_corr_idx=curr_corr_idx[upwind_points]
+
+        Δνsmall=(view(ν, upwind_points.+2, previndex+1)-view(ν, upwind_points.+1, previndex+1))
+        Δνlarge=(view(ν, upwind_points.+2, previndex+1)-view(ν, upwind_points, previndex+1))
+        a=-Δνsmall./(Δνlarge.^2-Δνsmall.*Δνlarge)
+        b=Δνlarge./(Δνsmall.*Δνlarge-Δνsmall.^2)
+        c=.-a.-b;
+
+        Δτ=Δx*(χ[upwind_points,previndex+1].+χ[upwind_curr_corr_idx,previndex])/2.0
+        minτ=1.0E-10
+        toolow = findall(Δτ.<=minτ)
+        Δτ[toolow] .= minτ
+        Δτdiv2 = Δτ./2.0
+
+        expminτdiv2=exp.(-Δτdiv2)
+        expminτ=exp.(-2.0.*Δτdiv2)
+        onemexpminτdiv2=-expm1.(-Δτdiv2)
+        onemexpminτ=-expm1.(-2.0.*Δτdiv2)
+
+        Δν=(view(ν, upwind_points, previndex+1)-view(ν, upwind_curr_corr_idx, previndex))
+
+        # Δνd=(view(ν, upwind_points.+1, previndex+1)-view(ν, upwind_points.+0, previndex+1))
+        # a=1.0 ./Δνd
+        # b=-1.0 ./Δνd
+        # @views curr_factor=(Δτ[upwind_points].-1.0.+expminτ[upwind_points])./Δτ[upwind_points]
+        # @views curr_factor=(-Δτ[upwind_points].*expminτ[upwind_points].+onemexpminτ[upwind_points])./Δτ[upwind_points]./Δτ[upwind_points]
+        @views curr_factor=(Δτ.-onemexpminτ)./Δτ.^2
+
+        # Δνterm=(a.*view(currintensity, upwind_points.+1).+b.*view(currintensity, upwind_points.+0))
+
+        matrixsize=length(upwind_points)+2#+2 boundary conditions at the end
+        #setting up the matrix
+        diagonal=ones(matrixsize)
+        offdiagonal=zeros(matrixsize-1)
+        secondoffdiagonal=zeros(matrixsize-2)
+
+        @views diagonal[1:(matrixsize-2)].+=-curr_factor.*Δν.*c
+        @views offdiagonal[1:(matrixsize-2)]=-curr_factor.*Δν.*b
+        @views secondoffdiagonal=-curr_factor.*Δν.*a
+
+        # @views diagonal[1:(matrixsize-1)].+=-curr_factor.*Δν[upwind_points].*b
+        # @views offdiagonal[1:(matrixsize-1)]=-curr_factor.*Δν[upwind_points].*a
+
+        #inefficient, as julia stores the entire matrix, but this should work
+        matrix=LA.diagm(0 => diagonal,1=>offdiagonal, 2=>secondoffdiagonal)
+        # matrix=LA.diagm(0 => diagonal,1=>offdiagonal)
+
+        rangeincludingbdy=UnitRange(first(upwind_points), last(upwind_points)+2)
+        @views currintensity[rangeincludingbdy].=(matrix \ currintensity[rangeincludingbdy])
+
+    else
+
+    #end upwind implicit part
+
+    #start downwind implicit part
+    #err, just ignore implicit part for now if no points need to be computed with this discretization
+    # if length(downwind_points)>0
+
+        downwind_points=findall(is_boundary_point.==false)
+
+        downwind_curr_corr_idx=curr_corr_idx[downwind_points]
+
+        Δτ=Δx*(χ[downwind_points,previndex+1].+χ[downwind_curr_corr_idx,previndex])/2.0
+        minτ=1.0E-10
+        toolow = findall(Δτ.<=minτ)
+        Δτ[toolow] .= minτ
+        Δτdiv2 = Δτ./2.0
+
+        expminτdiv2=exp.(-Δτdiv2)
+        expminτ=exp.(-2.0.*Δτdiv2)
+        onemexpminτdiv2=-expm1.(-Δτdiv2)
+        onemexpminτ=-expm1.(-2.0.*Δτdiv2)
+
+        Δν=(view(ν, downwind_points, previndex+1)-view(ν, downwind_curr_corr_idx, previndex))
+
+        Δνsmall=(view(ν, downwind_points.-1, previndex+1)-view(ν, downwind_points.-2, previndex+1))
+        Δνlarge=(view(ν, downwind_points, previndex+1)-view(ν, downwind_points.-2, previndex+1))
+        a=-Δνsmall./(Δνlarge.^2 .-Δνsmall.*Δνlarge)
+        b=Δνlarge./(Δνsmall.*Δνlarge.-Δνsmall.^2)
+        c=.-a.-b;
+
+        # Δνd=(view(ν, downwind_points, previndex)-view(ν, downwind_points.-1, previndex))
+        # a=1.0 ./Δνd
+        # b=-1.0 ./Δνd
+
+        # @views curr_factor=(Δτ[downwind_points].-1.0.+expminτ[downwind_points])./Δτ[downwind_points]
+        # @views curr_factor=(Δτ[downwind_points].-onemexpminτ[downwind_points])./Δτ[downwind_points]./Δτ[downwind_points]
+        # @views curr_factor=(-Δτ[downwind_points].*expminτ[downwind_points].+onemexpminτ[downwind_points])./Δτ[downwind_points]./Δτ[downwind_points]
+        @views curr_factor=(Δτ.-onemexpminτ)./Δτ.^2
+
+        # Δνterm=(a.*view(currintensity, downwind_points.-0).+b.*view(currintensity, downwind_points.-1))
+
+        matrixsize=length(downwind_points)+2#+2 boundary conditions at the beginning
+        #setting up the matrix
+
+        diagonal=ones(matrixsize)
+        offdiagonal=zeros(matrixsize-1)
+        secondoffdiagonal=zeros(matrixsize-2)
+
+        # @views diagonal[3:matrixsize].+=curr_factor.*Δν[downwind_points].*b
+        # @views offdiagonal[2:(matrixsize-1)]=curr_factor.*Δν[downwind_points].*a
+
+        #note: FD formula for backward is exactly the same, except we need to change sign of coefficients
+
+        println("factor on diagonal: ", curr_factor.*Δν.*c)
+
+        @views diagonal[3:matrixsize].+=curr_factor.*Δν.*c
+        @views offdiagonal[2:(matrixsize-1)]=curr_factor.*Δν.*b
+        @views secondoffdiagonal=curr_factor.*Δν.*a
+
+        #inefficient, as julia stores the entire matrix, but this should work
+        matrix=LA.diagm(0 => diagonal,-1=>offdiagonal, -2=>secondoffdiagonal)
+        # matrix=LA.diagm(0 => diagonal,-1=>offdiagonal)
+
+        rangeincludingbdy=UnitRange(first(downwind_points)-2, last(downwind_points))
+
+        @views currintensity[rangeincludingbdy].=(matrix \ currintensity[rangeincludingbdy])
+
+    end
+
+    data.allintensities[:,previndex+1]=currintensity;
+    return
+end
+
+
+function computesingleraysecondorderadaptiveshortcharfreqmismatch(data::Data)
+    for i ∈ 1:data.npoints-1
+        secondordershortcharfreqmismatch(i, data)
+    end
+    # display(Plots.plot(data.currintensity)
+    return
+end
+
+#TODO TODO REFACTOR QUITE A BIT (probably, the difference between upwind and downwind is so minor, such that we do not need to copy most of it)
+#computes intensity using second order semi implicit discretization (but first order for the frequency derivative). Mismatches the frequency indices to obtain better stability.
+function firstordershortcharfreqmismatch(previndex, data)
+    Δx=(data.x[previndex+1]-data.x[previndex])#assumes x strictly increasing
+    Δxdiv2=(data.x[previndex+1]-data.x[previndex])/2.0#assumes x strictly increasing
+    Δvdiv2=(data.v[previndex+1]-data.v[previndex])/2.0
+    #renaming stuff
+    nfreqs=data.nfreqs
+    currintensity=data.currintensity
+    bdyintensity=data.backgroundintensity
+    η=data.η
+    χ=data.χ
+    ν=data.ν
+    # S=η./χ
+    S=fill(data.S, size(η))
+
+    lineν=data.lineν[previndex]
+    nextlineν=data.lineν[previndex+1]
+
+    #imposing the freq disc direction
+    forwardfreqdisc=(nextlineν-lineν>0.0)
+
+    #now compute for which frequency points we need a forward or backward discretization
+    currν=data.ν[:, previndex]
+    nextν=data.ν[:, previndex+1]
+
+    #for all points, determine the interval of the previous freqs
+    #assume frequencies sorted
+    nextfreqidx=1
+    currfreqidx=1
+    is_boundary_point=trues(nfreqs)#BitArray(true, nfreqs)
+    curr_corr_idx=zeros(Int, nfreqs)
+    while ((currfreqidx <= nfreqs) && (nextfreqidx <= nfreqs))
+        if (currν[currfreqidx]<nextν[nextfreqidx])
+            currfreqidx+=1
+        else
+            is_boundary_point[nextfreqidx]=false
+            if forwardfreqdisc
+                curr_corr_idx[nextfreqidx]=currfreqidx-1
+            else
+                curr_corr_idx[nextfreqidx]=currfreqidx
+            end
+            nextfreqidx+=1
+        end
+    end
+    #and set boundary condition if left boundary point would be 0 (i.e. outside domain)
+    for tempidx∈1:nfreqs
+        if curr_corr_idx[tempidx]==0
+            is_boundary_point[tempidx]=true
+        end
+    end
+    #also set the outmost point(s) in the direction to be (a) boundary point(s).
+    if forwardfreqdisc
+        # is_boundary_point[nfreqs-1]=true
+        is_boundary_point[nfreqs]=true
+        # is_boundary_point[curr_corr_idx.==nfreqs-1].=true
+        is_boundary_point[curr_corr_idx.==nfreqs].=true
+    else
+        is_boundary_point[1]=true
+        # is_boundary_point[2]=true
+        is_boundary_point[curr_corr_idx.==1].=true
+        # is_boundary_point[curr_corr_idx.==2].=true
+    end
+
+    #forward discretization
+    boundary_points=findall(is_boundary_point.==true)
+    if forwardfreqdisc
+        upwind_points=findall(is_boundary_point.==false)
+        upwind_curr_corr_idx=curr_corr_idx[upwind_points]
+
+        #shift freq range and apply boundary condition?
+
+        Δτ=Δx*(χ[upwind_points,previndex+1].+χ[upwind_curr_corr_idx,previndex])/2.0
+        minτ=1.0E-10
+        toolow = findall(Δτ.<=minτ)
+        Δτ[toolow] .= minτ
+        Δτdiv2 = Δτ./2.0
+
+        expminτdiv2=exp.(-Δτdiv2)
+        expminτ=exp.(-2.0.*Δτdiv2)
+        onemexpminτdiv2=-expm1.(-Δτdiv2)
+        onemexpminτ=-expm1.(-2.0.*Δτdiv2)
+
+        @views Δνdiv2=(data.ν[upwind_points,previndex+1]-data.ν[upwind_curr_corr_idx,previndex])/2.0
+        @views Δν=(data.ν[upwind_points,previndex+1]-data.ν[upwind_curr_corr_idx,previndex])
+
+        println("Δν: ", Δν)
+
+        Δνd=(view(ν, upwind_curr_corr_idx.+1, previndex)-view(ν, upwind_curr_corr_idx.+0, previndex))
+        a=1.0 ./Δνd
+        b=-1.0 ./Δνd
+        Δνterm=(a.*view(currintensity, upwind_curr_corr_idx.+1).+b.*view(currintensity, upwind_curr_corr_idx.+0))
+
+        # Δνsmall=(view(ν, upwind_curr_corr_idx.+2, previndex)-view(ν, upwind_curr_corr_idx.+1, previndex))
+        # Δνlarge=(view(ν, upwind_curr_corr_idx.+2, previndex)-view(ν, upwind_curr_corr_idx, previndex))
+        # a=-Δνsmall./(Δνlarge.^2-Δνsmall.*Δνlarge)
+        # b=Δνlarge./(Δνsmall.*Δνlarge-Δνsmall.^2)
+        # c=.-a.-b;
+
+        #is the numerical derivative of I
+        # Δνterm=(a.*view(currintensity, upwind_curr_corr_idx.+2).+b.*view(currintensity, upwind_curr_corr_idx.+1).+c.*view(currintensity, upwind_curr_corr_idx))#.*lineν
+
+        #FIXME: inconsistent source term (also for backward discretization)
+        # @views sourceterm=expminτdiv2[upwind_points].*onemexpminτdiv2[upwind_points].*S[upwind_points, previndex].+onemexpminτdiv2[upwind_points].*S[upwind_points, previndex+1]
+        @views sourceterm=((onemexpminτ.-Δτ)./Δτ.+onemexpminτ).*S[upwind_curr_corr_idx, previndex].+(Δτ.-onemexpminτ).*S[upwind_points, previndex+1]./Δτ
+        #huh, why is this stable (and not correct?); somehow filled in the wrong term?
+        # @views curr_factor=((Δτ[upwind_points].*expminτ[upwind_points].-onemexpminτ[upwind_points])./Δτ[upwind_points].+onemexpminτ[upwind_points])./Δτ[upwind_points]
+        @views curr_factor=onemexpminτ./Δτ.+(onemexpminτ.-Δτ)./Δτ.^2
+        # @views curr_factor=(Δτ[upwind_points].-1.0 .+expminτ[upwind_points]+Δτ[upwind_points].*(expminτ[upwind_points]))./Δτ[upwind_points]
+
+        # @views currintensity[upwind_points].+=(Δxdiv2.*(η[upwind_points, previndex]+η[upwind_points, previndex+1]-currintensity[upwind_points].*χ[upwind_points, previndex])
+        #         +Δνdiv2[upwind_points].*Δνterm)#lineν is absorbed into Δνdiv2
+        @views currintensity[upwind_points]=currintensity[upwind_curr_corr_idx].*expminτ.+sourceterm.+curr_factor.*Δνterm.*Δν
+        # @views currintensity[1:nfreqs]=currintensity[1:nfreqs].*expminτ.+expminτdiv2.*onemexpminτdiv2.*S[1:nfreqs, previndex].+onemexpminτdiv2.*S[1:nfreqs, previndex+1]
+
+        #end forward discretization explicit part
+    else
+        #do backward discretization explicit part
+        downwind_points=findall(is_boundary_point.==false)
+
+        downwind_curr_corr_idx=curr_corr_idx[downwind_points]
+
+        Δτ=Δx*(χ[downwind_points,previndex+1].+χ[downwind_curr_corr_idx,previndex])/2.0
+        minτ=1.0E-10
+        toolow = findall(Δτ.<=minτ)
+        Δτ[toolow] .= minτ
+        Δτdiv2 = Δτ./2.0
+
+        expminτdiv2=exp.(-Δτdiv2)
+        expminτ=exp.(-2.0.*Δτdiv2)
+        onemexpminτdiv2=-expm1.(-Δτdiv2)
+        onemexpminτ=-expm1.(-2.0.*Δτdiv2)
+
+        @views Δνdiv2=(data.ν[downwind_points,previndex+1]-data.ν[downwind_curr_corr_idx,previndex])/2.0
+        @views Δν=(data.ν[downwind_points,previndex+1]-data.ν[downwind_curr_corr_idx,previndex])
+
+        println("Δν: ", Δν)
+
+        Δνd=(view(ν, downwind_curr_corr_idx.-0, previndex)-view(ν, downwind_curr_corr_idx.-1, previndex))
+        a=1.0 ./Δνd
+        b=-1.0 ./Δνd
+        Δνterm=(a.*view(currintensity, downwind_curr_corr_idx.-0).+b.*view(currintensity, downwind_points.-1))
+
+        # Δνsmall=(view(ν, downwind_curr_corr_idx.-1, previndex)-view(ν, downwind_curr_corr_idx.-2, previndex))
+        # Δνlarge=(view(ν, downwind_curr_corr_idx, previndex)-view(ν, downwind_curr_corr_idx.-2, previndex))
+        # a=-Δνsmall./(Δνlarge.^2-Δνsmall.*Δνlarge)
+        # b=Δνlarge./(Δνsmall.*Δνlarge-Δνsmall.^2)
+        # c=.-a.-b;
+
+        #is the numerical derivative of I
+        # Δνterm=(a.*view(currintensity, downwind_curr_corr_idx.-2).+b.*view(currintensity, downwind_curr_corr_idx.-1).+c.*view(currintensity, downwind_curr_corr_idx))#.*lineν
+
+        #FIXME: inconsistent source term (also for backward discretization)
+        # @views sourceterm=expminτdiv2[upwind_points].*onemexpminτdiv2[upwind_points].*S[upwind_points, previndex].+onemexpminτdiv2[upwind_points].*S[upwind_points, previndex+1]
+        @views sourceterm=((onemexpminτ.-Δτ)./Δτ.+onemexpminτ).*S[downwind_curr_corr_idx, previndex].+(Δτ.-onemexpminτ).*S[downwind_points, previndex+1]./Δτ
+        #huh, why is this stable (and not correct?); somehow filled in the wrong term?
+        # @views curr_factor=((Δτ[upwind_points].*expminτ[upwind_points].-onemexpminτ[upwind_points])./Δτ[upwind_points].+onemexpminτ[upwind_points])./Δτ[upwind_points]
+        @views curr_factor=onemexpminτ./Δτ.+(onemexpminτ.-Δτ)./Δτ.^2
+        # @views curr_factor=(Δτ[upwind_points].-1.0 .+expminτ[upwind_points]+Δτ[upwind_points].*(expminτ[upwind_points]))./Δτ[upwind_points]
+
+        # @views currintensity[upwind_points].+=(Δxdiv2.*(η[upwind_points, previndex]+η[upwind_points, previndex+1]-currintensity[upwind_points].*χ[upwind_points, previndex])
+        #         +Δνdiv2[upwind_points].*Δνterm)#lineν is absorbed into Δνdiv2
+        @views currintensity[downwind_points]=currintensity[downwind_curr_corr_idx].*expminτ.+sourceterm.+curr_factor.*Δνterm.*-Δν
+        # @views currintensity[1:nfreqs]=currintensity[1:nfreqs].*expminτ.+expminτdiv2.*onemexpminτdiv2.*S[1:nfreqs, previndex].+onemexpminτdiv2.*S[1:nfreqs, previndex+1]
+
+        #end backward discretization explicit part
+    end
+
+    #end backward discretization explicit part
+
+    #now apply boundary conditions
+    @views currintensity[boundary_points]=bdyintensity[boundary_points, previndex+1]
+
+    lineν=data.lineν[previndex+1]
+
+    #upwind implicit part
+    #err, just ignore implicit part for now if no points need to be computed with this discretization
+    # if length(upwind_points)>0
+    if forwardfreqdisc
+
+        upwind_points=findall(is_boundary_point.==false)
+        upwind_curr_corr_idx=curr_corr_idx[upwind_points]
+
+        # Δνsmall=(view(ν, upwind_points.+2, previndex+1)-view(ν, upwind_points.+1, previndex+1))
+        # Δνlarge=(view(ν, upwind_points.+2, previndex+1)-view(ν, upwind_points, previndex+1))
+        # a=-Δνsmall./(Δνlarge.^2-Δνsmall.*Δνlarge)
+        # b=Δνlarge./(Δνsmall.*Δνlarge-Δνsmall.^2)
+        # c=.-a.-b;
+
+        Δτ=Δx*(χ[upwind_points,previndex+1].+χ[upwind_curr_corr_idx,previndex])/2.0
+        minτ=1.0E-10
+        toolow = findall(Δτ.<=minτ)
+        Δτ[toolow] .= minτ
+        Δτdiv2 = Δτ./2.0
+
+        expminτdiv2=exp.(-Δτdiv2)
+        expminτ=exp.(-2.0.*Δτdiv2)
+        onemexpminτdiv2=-expm1.(-Δτdiv2)
+        onemexpminτ=-expm1.(-2.0.*Δτdiv2)
+
+        Δν=(view(ν, upwind_points, previndex+1)-view(ν, upwind_curr_corr_idx, previndex))
+
+        Δνd=(view(ν, upwind_points.+1, previndex+1)-view(ν, upwind_points.+0, previndex+1))
+        a=1.0 ./Δνd
+        b=-1.0 ./Δνd
+        # @views curr_factor=(Δτ[upwind_points].-1.0.+expminτ[upwind_points])./Δτ[upwind_points]
+        # @views curr_factor=(-Δτ[upwind_points].*expminτ[upwind_points].+onemexpminτ[upwind_points])./Δτ[upwind_points]./Δτ[upwind_points]
+        @views curr_factor=(Δτ.-onemexpminτ)./Δτ.^2
+
+        # Δνterm=(a.*view(currintensity, upwind_points.+1).+b.*view(currintensity, upwind_points.+0))
+
+        matrixsize=length(upwind_points)+1#+2 boundary conditions at the end
+        #setting up the matrix
+        diagonal=ones(matrixsize)
+        offdiagonal=zeros(matrixsize-1)
+        # secondoffdiagonal=zeros(matrixsize-2)
+
+        # @views diagonal[1:(matrixsize-2)].+=-curr_factor.*Δν[upwind_points].*c
+        # @views offdiagonal[1:(matrixsize-2)]=-curr_factor.*Δν[upwind_points].*b
+        # @views secondoffdiagonal=-curr_factor.*Δν[upwind_points].*a
+
+        @views diagonal[1:(matrixsize-1)].+=-curr_factor.*Δν.*b
+        @views offdiagonal[1:(matrixsize-1)]=-curr_factor.*Δν.*a
+
+        #inefficient, as julia stores the entire matrix, but this should work
+        # matrix=LA.diagm(0 => diagonal,1=>offdiagonal, 2=>secondoffdiagonal)
+        matrix=LA.diagm(0 => diagonal,1=>offdiagonal)
+
+        rangeincludingbdy=UnitRange(first(upwind_points), last(upwind_points)+1)
+        @views currintensity[rangeincludingbdy].=(matrix \ currintensity[rangeincludingbdy])
+
+    else
+
+    #end upwind implicit part
+
+    #start downwind implicit part
+    #err, just ignore implicit part for now if no points need to be computed with this discretization
+    # if length(downwind_points)>0
+
+        downwind_points=findall(is_boundary_point.==false)
+
+        downwind_curr_corr_idx=curr_corr_idx[downwind_points]
+
+        Δτ=Δx*(χ[downwind_points,previndex+1].+χ[downwind_curr_corr_idx,previndex])/2.0
+        minτ=1.0E-10
+        toolow = findall(Δτ.<=minτ)
+        Δτ[toolow] .= minτ
+        Δτdiv2 = Δτ./2.0
+
+        expminτdiv2=exp.(-Δτdiv2)
+        expminτ=exp.(-2.0.*Δτdiv2)
+        onemexpminτdiv2=-expm1.(-Δτdiv2)
+        onemexpminτ=-expm1.(-2.0.*Δτdiv2)
+
+        Δν=(view(ν, downwind_points, previndex+1)-view(ν, downwind_curr_corr_idx, previndex))
+
+        # Δνsmall=(view(ν, downwind_points.-1, previndex+1)-view(ν, downwind_points.-2, previndex+1))
+        # Δνlarge=(view(ν, downwind_points, previndex+1)-view(ν, downwind_points.-2, previndex+1))
+        # a=-Δνsmall./(Δνlarge.^2 .-Δνsmall.*Δνlarge)
+        # b=Δνlarge./(Δνsmall.*Δνlarge.-Δνsmall.^2)
+        # c=.-a.-b;
+
+        Δνd=(view(ν, downwind_points, previndex.+1)-view(ν, downwind_points.-1, previndex.+1))
+        a=1.0 ./Δνd
+        b=-1.0 ./Δνd
+
+        # @views curr_factor=(Δτ[downwind_points].-1.0.+expminτ[downwind_points])./Δτ[downwind_points]
+        # @views curr_factor=(Δτ[downwind_points].-onemexpminτ[downwind_points])./Δτ[downwind_points]./Δτ[downwind_points]
+        # @views curr_factor=(-Δτ[downwind_points].*expminτ[downwind_points].+onemexpminτ[downwind_points])./Δτ[downwind_points]./Δτ[downwind_points]
+        @views curr_factor=(Δτ.-onemexpminτ)./Δτ.^2
+
+        # Δνterm=(a.*view(currintensity, downwind_points.-0).+b.*view(currintensity, downwind_points.-1))
+
+        matrixsize=length(downwind_points)+1#+1 boundary conditions at the beginning
+        #setting up the matrix
+
+        diagonal=ones(matrixsize)
+        offdiagonal=zeros(matrixsize-1)
+        # secondoffdiagonal=zeros(matrixsize-2)
+
+        @views diagonal[2:matrixsize].+=curr_factor.*Δν.*b
+        @views offdiagonal[1:(matrixsize-1)]=curr_factor.*Δν.*a
+
+        #note: FD formula for backward is exactly the same, except we need to change sign of coefficients
+
+        # println("factor on diagonal: ", curr_factor.*Δν.*c)
+        #
+        # @views diagonal[3:matrixsize].+=curr_factor.*Δν.*c
+        # @views offdiagonal[2:(matrixsize-1)]=curr_factor.*Δν.*b
+        # @views secondoffdiagonal=curr_factor.*Δν.*a
+
+        #inefficient, as julia stores the entire matrix, but this should work
+        # matrix=LA.diagm(0 => diagonal,-1=>offdiagonal, -2=>secondoffdiagonal)
+        matrix=LA.diagm(0 => diagonal,-1=>offdiagonal)
+
+        rangeincludingbdy=UnitRange(first(downwind_points)-1, last(downwind_points))
+
+        @views currintensity[rangeincludingbdy].=(matrix \ currintensity[rangeincludingbdy])
+
+    end
+
+    data.allintensities[:,previndex+1]=currintensity;
+    return
+end
+
+
+function computesinglerayfirstorderadaptiveshortcharfreqmismatch(data::Data)
+    for i ∈ 1:data.npoints-1
+        firstordershortcharfreqmismatch(i, data)
+    end
+    # display(Plots.plot(data.currintensity)
+    return
+end
+
+
+
 end
