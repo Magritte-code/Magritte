@@ -275,7 +275,7 @@ inline void Solver :: solve_feautrier_order_2_sparse (Model& model)
 
                             lspec.J(o,k) += lspec.quadrature.weights[z] * wt * Su_()[centre];
 
-                            update_Lambda           (model, rr, lspec.nr_line[o][k][z]);
+                            update_Lambda (model, rr, lspec.nr_line[o][k][z]);
                         }
                     }
                 }
@@ -750,7 +750,7 @@ accel inline void Solver :: get_eta_and_chi <None> (
 {
     // Initialize
     eta = 0.0;
-    chi = 1.0e-26;
+    chi = model.parameters->min_opacity;
 
     // Set line emissivity and opacity
     for (Size l = 0; l < model.parameters->nlines(); l++)
@@ -785,7 +785,7 @@ accel inline void Solver :: get_eta_and_chi <OneLine> (
     const Real prof = freq * gaussian (model.lines.inverse_width(p, l), diff);
 
     eta = prof * model.lines.emissivity(p, l);
-    chi = prof * model.lines.opacity   (p, l) + 1.0e-26;
+    chi = prof * model.lines.opacity   (p, l) + model.parameters->min_opacity;
 }
 
 

@@ -68,6 +68,7 @@ void Parameters :: read (const Io &io)
     READ_NUMBER (Real, convergence_fraction       );
     READ_NUMBER (Real, min_rel_pop_for_convergence);
     READ_NUMBER (Real, pop_prec                   );
+    READ_NUMBER (Real, min_opacity                );
 
     READ_BOOL (bool, store_intensities     );
     READ_BOOL (bool, use_Ng_acceleration   );
@@ -105,6 +106,7 @@ void Parameters :: write (const Io &io) const
     WRITE_NUMBER (Real, convergence_fraction       );
     WRITE_NUMBER (Real, min_rel_pop_for_convergence);
     WRITE_NUMBER (Real, pop_prec                   );
+    WRITE_NUMBER (Real, min_opacity                );
 
     WRITE_BOOL (bool, store_intensities     );
     WRITE_BOOL (bool, use_Ng_acceleration   );

@@ -375,7 +375,7 @@ def set_boundary_condition_CMB (model):
 
 def set_boundary_condition_1D (model, T_in=T_CMB, T_out=T_CMB):
     """
-    Setter for incoming CMB boundary condition at each boundary point.
+    Setter for incoming black body radiation boundary condition at each boundary point.
 
     Parameters
     ----------
@@ -393,6 +393,8 @@ def set_boundary_condition_1D (model, T_in=T_CMB, T_out=T_CMB):
     """
     if not (model.parameters.dimension() == 1):
         raise ValueError ('These boundary conditions only work for a 1D model.')
+    if not (model.parameters.nboundary() == 2):
+        raise ValueError ('A 1D model must have exactly 2 boundary points.')
     else:
         # Set all boundary conditions to Thermal
         for b in range(model.parameters.nboundary()):

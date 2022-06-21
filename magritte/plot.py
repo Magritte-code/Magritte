@@ -520,3 +520,160 @@ def image_plotly(
     fig.write_html(f"{im_dir}/image.html", config=config)
     
     return fig.show(config=config)
+
+
+def plot_velocity_1D(model, xscale='log', yscale='linear'):
+    """
+    Plot the velocity profile of the model (in 1D, radially).
+    
+    Parameters
+    ----------
+    model : object
+        Magritte model object.
+    xscale : str
+        Scale of the xaxis ("linear", "log", "symlog", "logit", ...)
+    yscale : str
+        Scale of the yaxis ("linear", "log", "symlog", "logit", ...)
+    
+    Returns
+    -------
+    None
+    """
+    rs = np.linalg.norm(model.geometry.points.position, axis=1)
+    vs = np.linalg.norm(model.geometry.points.velocity, axis=1)
+
+    fig = plt.figure(dpi=300)
+    plt.plot  (rs, vs*constants.c.si.value)
+    plt.xlabel('radius [m]',     labelpad=10)
+    plt.ylabel('velocity [m/s]', labelpad=10)
+    plt.xscale(xscale)
+    plt.yscale(yscale)
+    plt.show  ()
+    
+
+def plot_temperature_1D(model, xscale='log', yscale='linear'):
+    """
+    Plot the temperature profile of the model (in 1D, radially).
+    
+    Parameters
+    ----------
+    model : object
+        Magritte model object.
+    xscale : str
+        Scale of the xaxis ("linear", "log", "symlog", "logit", ...)
+    yscale : str
+        Scale of the yaxis ("linear", "log", "symlog", "logit", ...)
+    
+    Returns
+    -------
+    None
+    """    
+    rs   = np.linalg.norm(model.geometry.points.position, axis=1)
+    temp = np.array      (model.thermodynamics.temperature.gas)
+
+    fig = plt.figure(dpi=300)
+    plt.plot  (rs, temp)
+    plt.xlabel('radius [m]',      labelpad=10)
+    plt.ylabel('temperature [K]', labelpad=10)
+    plt.xscale(xscale)
+    plt.yscale(yscale)
+    plt.show  ()
+    
+
+def plot_turbulence_1D(model, xscale='log', yscale='linear'):
+    """
+    Plot the (micro) turbulence profile of the model (in 1D, radially).
+    
+    Parameters
+    ----------
+    model : object
+        Magritte model object.
+    xscale : str
+        Scale of the xaxis ("linear", "log", "symlog", "logit", ...)
+    yscale : str
+        Scale of the yaxis ("linear", "log", "symlog", "logit", ...)
+    
+    Returns
+    -------
+    None
+    """    
+    rs     = np.linalg.norm(model.geometry.points.position, axis=1)
+    vturb2 = np.array      (model.thermodynamics.turbulence.vturb2)
+
+    fig = plt.figure(dpi=300)
+    plt.plot  (rs, np.sqrt(vturb2)*constants.c.si.value)
+    plt.xlabel('radius [m]',       labelpad=10)
+    plt.ylabel('turbulence [m/s]', labelpad=10)
+    plt.xscale(xscale)
+    plt.yscale(yscale)
+    plt.show  ()
+    
+    
+def plot_number_densities_1D(model, xscale='log', yscale='log'):
+    """
+    Plot the number densities of all species in the model (in 1D, radially).
+    
+    Parameters
+    ----------
+    model : object
+        Magritte model object.
+    xscale : str
+        Scale of the xaxis ("linear", "log", "symlog", "logit", ...)
+    yscale : str
+        Scale of the yaxis ("linear", "log", "symlog", "logit", ...)
+    
+    Returns
+    -------
+    None
+    """    
+    rs   = np.linalg.norm(model.geometry.points.position, axis=1)
+    abns = np.array      (model.chemistry.species.abundance)
+    syms = np.array      (model.chemistry.species.symbol)
+
+    for s in range(1, model.parameters.nspecs()-2):
+        fig = plt.figure(dpi=300)
+        plt.plot  (rs, abns[:,s])
+        plt.xlabel('radius [m]',                               labelpad=10)
+        plt.ylabel(f'{syms[s]} number density [m$^{{{-3}}}$]', labelpad=10)
+        plt.xscale(xscale)
+        plt.yscale(yscale)
+        plt.show  ()
+        
+        
+def plot_populations_1D(model, lev_max=7, xscale='log', yscale='log'):
+    """
+    Plot the relative populations in the model (in 1D, radially).
+    
+    Parameters
+    ----------
+    model : object
+        Magritte model object.
+    lev_max : int
+        Number of levels to plot.
+    xscale : str
+        Scale of the xaxis ("linear", "log", "symlog", "logit", ...)
+    yscale : str
+        Scale of the yaxis ("linear", "log", "symlog", "logit", ...)
+    
+    Returns
+    -------
+    None
+    """
+    rs      = np.linalg.norm(model.geometry.points.position, axis=1)
+    npoints = model.parameters.npoints()
+
+    for lspec in model.lines.lineProducingSpecies:
+        nlev     = lspec.linedata.nlev
+        pops     = np.array(lspec.population).reshape((npoints,nlev))
+        pops_tot = np.array(lspec.population_tot)
+    
+        plt.figure(dpi=300)
+    
+        for i in range(min([lev_max, nlev])):
+            plt.plot  (rs, pops[:,i]/pops_tot, label=f'i={i}')
+            plt.ylabel('fractional level populations [.]', labelpad=10)
+            plt.xlabel('radius [m]',                       labelpad=10)
+            plt.xscale(xscale)
+            plt.yscale(yscale)
+            plt.legend()
+        plt.show()

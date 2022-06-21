@@ -45,6 +45,7 @@ struct Parameters
     Real convergence_fraction        = 0.995;
     Real min_rel_pop_for_convergence = 1.0e-10;
     Real pop_prec                    = 1.0e-6;
+    Real min_opacity                 = 1.0e-26;
     bool store_intensities           = false;
     bool use_Ng_acceleration         = true;
     bool one_line_approximation      = false;
