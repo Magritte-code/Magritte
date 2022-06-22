@@ -78,7 +78,7 @@ void initialize (Real1 &vec)
 }
 
 
-///  Initialize J (angular ean intensity)
+///  Initialize J (angular mean intensity)
 /////////////////////////////////////////
 void Radiation :: initialize_J ()
 {

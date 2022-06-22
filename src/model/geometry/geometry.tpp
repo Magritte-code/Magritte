@@ -367,3 +367,33 @@ inline double Geometry :: get_shift (
         return get_shift_general_geometry <frame> (o, r, c);
     }
 }
+
+///  Computes the squared distant between the specified point on the ray and the given point p
+accel inline double get_dist2_ray_point (
+    const Size o,//origin point
+    const Size p,//point to compute distance to
+    const Size r,//ray dir index
+    const double Z) const
+{
+    if (parameters->spherical_symmetry())
+    {
+        throw Exception("computing distances not implemented for 1D spherically symmetric")
+    }
+    else
+    {
+        return get_dist2_ray_point_general_geometry (o, p, r);
+    }
+}
+
+///  Computes the squared distant between the specified point on the ray and the given point p
+accel inline double get_dist2_ray_point_general_geometry (
+    const Size o,
+    const Size p,
+    const Size r//,const double Z
+    ) const
+{
+    const Vector3D R = points.position[p] - points.position[o];
+    const double   Z = R.dot(rays.direction[r]);
+    const double distance_from_ray2 = R.dot(R) - Z*Z;
+    return distance_from_ray2;
+}
