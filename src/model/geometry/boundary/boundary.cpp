@@ -65,11 +65,11 @@ void Boundary :: write (const Io& io) const
 
     Size1 boundary_condition_int (parameters->nboundary());
 
-    for (Size b = 0; b < parameters->nboundary(); b++) switch (boundary_condition[b])
+    for (Size b = 0; b < parameters->nboundary(); b++)
     {
-        case Zero    : boundary_condition_int[b] = 0;
-        case Thermal : boundary_condition_int[b] = 1;
-        case CMB     : boundary_condition_int[b] = 2;
+        if (boundary_condition[b] == Zero   ) boundary_condition_int[b] = 0;
+        if (boundary_condition[b] == Thermal) boundary_condition_int[b] = 1;
+        if (boundary_condition[b] == CMB    ) boundary_condition_int[b] = 2;
     }
 
     io.write_list (prefix+"boundary_temperature", boundary_temperature);

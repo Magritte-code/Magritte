@@ -4,6 +4,14 @@
 #include "tools/types.hpp"
 
 
+///  Index corresponding to the maximmum value
+///    @param[in] a : vector of values
+///    @param[in] n : length of vector a
+///    @param[in] i : first index
+///    @param[in] j : second index
+///    @param[in] k : third index
+///    @return index corresponding to the largest value in vector a
+///////////////////////////////////////////////////////////////////
 template <typename type>
 inline long max (const vector<type>& a, const long n, const long i, const long j, const long k)
 {
@@ -16,6 +24,12 @@ inline long max (const vector<type>& a, const long n, const long i, const long j
 }
 
 
+///  Downheap sort
+///    @param[in] a : vector of values
+///    @param[in] b : vector of indices
+///    @param[in] n : length of vectors a and b
+///    @param[in] i : starting index
+///////////////////////////////////////////////
 template <typename type>
 inline void downheap (vector<type>& a, Size1& b, long n, long i)
 {
@@ -39,6 +53,10 @@ inline void downheap (vector<type>& a, Size1& b, long n, long i)
 }
 
 
+///  Heapsort of a vector (a) which keeps track of the original indices (b)
+///    @param[in] a : vector of values to sort
+///    @param[in] b : vector of original indices
+///////////////////////////////////////////////////////////////////////////
 template <typename type>
 inline void heapsort (vector<type>& a, Size1& b)
 {
