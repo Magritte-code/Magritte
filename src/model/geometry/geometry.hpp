@@ -99,6 +99,11 @@ struct Geometry
         const Size   r,
         const double dshift_max ) const;
 
+    accel inline double get_dist2_ray_point (
+        const Size o,
+        const Size p,
+        const Size r) const;
+
     inline bool valid_point     (const Size p) const;
     inline bool not_on_boundary (const Size p) const;
 };

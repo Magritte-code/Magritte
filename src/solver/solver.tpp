@@ -116,6 +116,145 @@ inline Size Solver :: get_ray_lengths_max (Model& model)
     return geo.lengths_max;
 }
 
+//traces all points on a given ray (should be called in both directions)
+//but as tracing antipodal rays should be symmetric, we only need to keep track of one direction
+accel inline void Solver :: trace_ray_points (
+    const Geometry& geometry,
+    const Size      o,
+    const Size      rdir,
+    const Size      rsav,
+    const Size      rayidx)
+{
+    double  Z = 0.0;   // distance from origin (o)
+    double dZ = 0.0;   // last increment in Z
+
+    Size nxt = geometry.get_next (o, rdir, o, Z, dZ);
+
+    // // For generality, I assign a ray index to each ray of a given direction rsav
+    // // TODO: maybe change this if we were to allow arbitrary rays to be traced
+    // // Also the ray direction is identified with the forward dir
+    // closest_ray(rsav,o)=rayidx;
+    // min_ray_distsqr(rsav,o)=0.0;
+
+    if (geometry.valid_point(nxt))
+    {
+        n_rays_through_point(rsav,nxt)++;
+
+        // get distance and check if closest ray
+        // TODO: maybe write optimize function which also returns the distance, as we are currently doing some minor work twice
+        Real dist2 = geometry.get_dist2_ray_point(o, nxt, r)
+
+        if (dist2<min_ray_distsqr(rsav,nxt))
+        {
+            min_ray_distsqr(rsav,nxt)=dist2;
+            closest_ray(rsav,nxt)=rayidx;
+        }
+
+        Size         crt = o;
+
+        while (geometry.not_on_boundary(nxt))
+        {
+            crt =       nxt;
+            nxt = geometry.get_next(o, rdir, nxt, Z, dZ);
+
+            n_rays_through_point(rsav,nxt)++;
+
+            // get distance and check if closest ray
+            Real dist2 = geometry.get_dist2_ray_point(o, nxt, r)
+
+            if (dist2<min_ray_distsqr(rsav,nxt))
+            {
+                min_ray_distsqr(rsav,nxt)=dist2;
+                closest_ray(rsav,nxt)=rayidx;
+            }
+        }
+    }
+}
+
+inline void Solver :: get_static_rays_to_trace (Model& model)
+{
+    accelerated_for (rr, model.parameters.hnrays(),
+    {
+        Size n_rays_to_trace=0;
+        const Size ar=model.geometry.rays.antipod[rr];
+        for (Size o=0; o<model.parameters.npoints(); o++)
+        {
+            // std::cout<<"n_rays_through_point: "<<n_rays_through_point(rr,o)<<std::endl;
+            // TODO?: maybe replace with some boolean-like thing, as we do not actually care (aside from debugging)
+            // how much rays are traced through a point
+            if (n_rays_through_point(rr,o)>0)
+            {continue;}
+
+            //seemingly no ray has been traced through this point, so we must trace a ray through it
+            points_to_trace_ray_through[rr][n_rays_to_trace]=o;
+            n_rays_to_trace++;
+            //tracing rays is symmetric, so only keep for the first half of the ray directions
+
+            //trace ray through point
+            n_rays_through_point(rr,o)++;
+            //antipod has exactly same number of rays through the point, so do not save
+
+            // For generality, I assign a ray index to each ray of a given direction rsav
+            // Also the ray direction is identified with the forward dir
+            closest_ray(rsav,o)=rayidx;
+            min_ray_distsqr(rsav,o)=0.0;
+
+            //now trace rest of rays
+            trace_ray_points(model.geometry, o, rr, rr);
+            trace_ray_points(model.geometry, o, ar, rr);
+        }
+        // n_points_to_trace_ray_through[rr]=n_rays_to_trace;
+        points_to_trace_ray_through[rr].resize(n_rays_to_trace);//and now the correct size, instead of parameters->npoints()
+
+    })
+
+    //debug print stuff
+    for (Size rr=0; rr<model.parameters.hnrays(); rr++)
+    {
+        std::cout<<"rr: "<<rr<<" size points_to_trace_ray_through: "<<points_to_trace_ray_through[rr].size()<<std::endl;
+        for (Size idx=0; idx<points_to_trace_ray_through[rr].size(); idx++)
+        {
+            // std::cout<<"point: "<<points_to_trace_ray_through[rr][idx]<<std::endl;
+        }
+        // std::cout<<"number of rays per point"<<std::endl;
+        for (Size p=0; p<model.parameters.npoints(); p++)
+        {
+            // std::cout<<"point: "<<p<<"#: "<<n_rays_through_point(rr, p)<<std::endl;
+        }
+
+    }
+
+}
+
+
+// Splits the frequencies into different parts, such that the different parts are sufficiently seperated
+// TODO: In single line approx, this step should be ignored, as all lines are far enough from eachother
+//ASSUMES FREQS SORTED
+// p should be next point on the ray
+//NOTE TO SELF: I ASSUMED FOR SIMPLICITY THAT I SPLIT IT A SINGLE RAY AT A TIME; NOT DIFFERENTLY FOR EACH POINT ON THE RAY
+//TODO FIXME: USE THE RAY TO SPLIT THE FREQUENCIES IN A GLOBAL BOUND MANNER
+// as a consequence, handling frequency quadratures very close to eachother should be automatically included
+//Note: this can mean however that the frequency derivative terms might not be computed that accurately if the lines separate
+inline void Solver :: split_frequencies (Model& model, Size p)
+{
+    freqsplits_()[0]=0;
+    n_freqsplits_()=1;
+    Real currfreq=model.radiation.frequencies.nu(p, 0);
+    Real deltafreq=0.0;
+    //TODO GET MIN LINE WIDTH
+    for (freqid=1; freqid<model.parameters->nfreqs(), freqid++)
+    {
+        deltafreq=model.radiation.frequencies.nu(p, freqid)-currfreq;
+        if (deltafreq>FACTORTODO*LINEWIDTHTODO)
+        {
+            freqsplits_()[n_freqsplits_()]=freqid;
+            n_freqsplits_()++;
+        }
+        currfreq=model.radiation.frequencies.nu(p, freqid);
+    }
+    freqsplits_()[n_freqsplits_()]=model.parameters->nfreqs();//for simplicity, also add the last split.. makes it easier to get rightmost value in a split
+}
+
 
 inline void Solver :: solve_shortchar_order_0 (Model& model)
 {
@@ -293,6 +432,622 @@ inline void Solver :: solve_feautrier_order_2_sparse (Model& model)
             })
         }
     }
+}
+
+// Matches the frequency indices such that the
+// ALSO relies on the current frequency split
+// ERR, should just iterate over all frequencies, ignoring those different splits. Boundary conditions
+// is_upward_disc denotes whether we want an upward discretization
+// nextpointonrayindex should denote how far the next point lies on the ray
+// currpointonrayindex should do the same, but for the previous point
+inline void Solver :: match_frequency_indices(Model& model, const Size nextpoint, const Size currpoint, Size nextpointonrayindex, Size currpointonrayindex, bool is_upward_disc)
+{//, const Size splitindex
+    //if upward discretization, we start from the uppermost part
+    if (is_upward_disc)
+    {
+        //for all frequencies in this split, TODO
+        //starting from the highest frequency
+        //Due to Size being unsigned, we will increase the index of all variables below by 1 (otherwise doing 0-1 results in max value due to overflow)
+        // Assumption that we should first split the rays is false, so commented
+        // Size curr_freq_idx=freqsplits_()[splitindex+1]-1+1;//freq index for the current point
+        // Size next_freq_idx=freqsplits_()[splitindex+1]-1+1;//freq index for the next point
+        // const Size min_freq_idx = freqsplits_()[splitindex]+1;//minimal freq index for this split
+        //+1 to all indices due to using unsigned ints
+        const Size min_freq_idx=0;
+        Size curr_freq_idx=model.parameters->nfreqs()-1;
+        Size next_freq_idx=model.parameters->nfreqs()-1;
+        //assumes at least a single frequency will not be a boundary condition (is reasonable if we limit the doppler shift)
+        //NOTE: oob freqs should be dealt with later on
+        while (curr_freq_idx+1>=min_freq_idx+1 && temp_freq_idx+1>=min_freq_idx+1)
+        {
+            //check if a previous index exists which is higher than this
+            if (model.radiation.frequencies.nu(currpoint, curr_freq_idx)>
+                model.radiation.frequencies.nu(nextpoint, next_freq_idx))
+            {
+                curr_freq_idx--;
+                // freq_matching_()[next_freq_idx]=curr_freq_idx;
+            }
+            else//freq matching index must be determined if it is just higher than the freq at the previous point
+            {
+                // freq_matching_()[next_freq_idx-1]=curr_freq_idx-1;
+                start_indices_()(nextpointonrayindex,next_freq_idx)[0]=currpointonrayindex;//stores point
+                start_indices_()(nextpointonrayindex,next_freq_idx-[1]=curr_freq_idx;//stores freq
+                //for the sake of boundary conditions, these start_indices_ might be overwritten later
+                next_freq_idx--;
+            }
+        }
+    }
+    else
+    {
+        //for all frequencies in this split, TODO
+        //starting from the highest frequency
+        // Assumption that we should first split the rays is false, so commented
+        // Size curr_freq_idx=freqsplits_()[splitindex];//freq index for the current point
+        // Size next_freq_idx=freqsplits_()[splitindex];//freq index for the next point
+        // const Size max_freq_idx = freqsplits_()[splitindex+1]-1//minimal freq index for this split
+        Size curr_freq_idx = 0;
+        Size next_freq_idx = 0;
+        const Size max_freq_idx = model.parameters->nfreqs()-1;
+        //assumes at least a single frequency will not be a boundary condition (is reasonable if we limit the doppler shift)
+        while (curr_freq_idx<=max_freq_idx && temp_freq_idx<=max_freq_idx)
+        {
+            //check if a previous index exists which is higher than this
+            if (model.radiation.frequencies.nu(currpoint, curr_freq_idx)<
+                model.radiation.frequencies.nu(nextpoint, next_freq_idx))
+            {
+                curr_freq_idx++;
+                // freq_matching_()[next_freq_idx]=curr_freq_idx;
+            }
+            else//freq matching index must be determined if it is just higher than the freq at the previous point
+            {
+                // freq_matching_()[next_freq_idx]=curr_freq_idx;
+                start_indices_()(nextpointonrayindex,next_freq_idx)[0]=currpointonrayindex;//stores point
+                start_indices_()(nextpointonrayindex,next_freq_idx)[1]=curr_freq_idx;//stores freq
+                //for the sake of boundary conditions, these start_indices_ might be overwritten later
+                next_freq_idx++;
+            }
+        }
+    }
+//? should also return the number/indices of boundary frequencies
+}
+
+//TODO: not really needed anymore, as the set_[left/right]_implicit_boundary_frequencies does the same job, but better suited
+//TODO? seperate the curr and next boundary conditions? No, just do it in between the explicit and implicit part
+inline void Solver :: set_boundary_frequencies(const Size nextpoint, const Size currpoint, const Size splitindex, bool is_upward_disc)
+{
+    //TODO FOR SPLITS
+    //somehow intersect the frequency ranges of the next point and previous point, given a given split.
+    //split min, max indices are given by
+    const Size min_freq_idx=freqsplits_()[splitindex];//freq index for the current point
+    const Size max_freq_idx = freqsplits_()[splitindex+1]-1//minimal freq index for this split
+
+    const Real curr_min_bound = model.radiation.frequencies.nu(currpoint, min_freq_idx);
+    const Real curr_max_bound = model.radiation.frequencies.nu(currpoint, max_freq_idx);
+    const Real next_min_bound = model.radiation.frequencies.nu(nextpoint, min_freq_idx);
+    const Real next_max_bound = model.radiation.frequencies.nu(nextpoint, max_freq_idx);
+
+    //lazy checking whether ourside the bounds; TODO improve, as this currently does not use the fact that freqs are sorted
+    for (Size curr_freq_idx=min_freq_idx; curr_freq_idx<=max_freq_idx; curr_freq_idx++)
+    {
+        const Real temp_curr_freq = model.radiation.frequencies.nu(currpoint, curr_freq_idx);
+        if (temp_curr_freq<next_min_bound || temp_curr_freq>next_max_bound)
+        {
+            //TODO DATASTRUCT OR JUST DIRECTLY DO THE MOVE TO BDY INTENSITIES
+
+        }
+    }
+
+    //lazy checking whether ourside the bounds; TODO improve, as this currently does not use the fact that freqs are sorted
+    for (Size next_freq_idx=min_freq_idx; next_freq_idx<=max_freq_idx; next_freq_idx++)
+    {
+        const Real temp_next_freq = model.radiation.frequencies.nu(nextpoint, next_freq_idx);
+        if (temp_next_freq<curr_min_bound || temp_next_freq>curr_max_bound)
+        {
+            //TODO DATASTRUCT OR JUST DIRECTLY GET FROM BDY INTENSITIES
+            is_bdy_freq_()[temp_next_freq]=true;
+            //Also set boundary frequency
+            //using curr_min_bound or curr_max_bound as values for interpolating
+            //remove from list when encountering smaller/larger / ALSO EQUAL values as stored
+        }
+    }
+
+    //TODO
+
+    //for next point, set boundary points to background/prev intensity
+    //for curr point, store boundary points
+
+}
+
+//Computes which lines are overlapping at the given point (next point)
+//might not be useful, better to determine covering; although we might need it anyway for determining the freq der boundary conditions
+//TODO: determine both (and define data struct for the overlap stuff) technically a simple Vector should work fine (even/odd indices respectively denotes start and end of intervals)
+//err, we do need them at different points (overlap at curr point, freq der at next point hmm, also at curr?)
+inline void Solver :: get_overlapping_lines(Model& model, const Size nextpoint, bool is_upward_disc)
+{
+    TODO sorted_line_centers;//shifting centers is not really necessary, as we only want to know whether they overlap
+    TODO corrsp_line_widths;//corresponding line widths also necessary
+    Real max_quad_dist;//in terms of line width
+    for (Size lineidx=0; lineidx<model.parameters->nlines(); lineidx++)
+    //FIXME: THE LINE CENTRE FREQS ARE NOT YET ORDERED; EITHER DO THIS ON THE FLY
+    //OR DO SOMETHING WEIRD BY JUST ITERATING OVER ALL FREQS, checking
+    {
+
+    }
+}
+
+
+
+//TODO: add the freq derivative bdy conditions here TOO
+//maybe TODO: add some array of bools for determining this? (or just modify the if-clause, checking whether and flag is set TODO ADD AS ARGUMENT and index <)
+//We need the curr_point, as the ray_direction is not given
+//Sets the left boundary frequencies needed due to shift
+inline void Solver :: set_left_implicit_boundary_frequencies(const Size nextpoint, const Size currpoint, const Size lineindex,
+                          std::vector<std::array<std::deque<std::tuple<Real, Size, Size>>>>& tuple_deque_array_vector, bool disc_boundary_condition)
+{//, const Size splitindex
+    //freq splits no longer used; just use all individual lines
+    // const Size min_freq_idx=freqsplits_()[splitindex];//freq index for the current point
+    // const Size max_freq_idx=freqsplits_()[splitindex+1]-1;//minimal freq index for this split
+    const Size min_freq_idx=freqsplits_()[splitindex];//freq index for the current point
+    const Size max_freq_idx=freqsplits_()[splitindex+1]-1;//minimal freq index for this split
+    Real curr_min_bound=model.radiation.frequencies.nu(currpoint, min_freq_idx);
+    //? replace by line_quad_right_overlap_(eval)?
+    if (disc_boundary_condition)//just add the outermost two freqs without checking if we decide to have a boundary condition anyway
+    {
+        //FIXME: ordering can be completely wrong? //Yes, this is due to arbitrarily deciding that the outermost two freqs must be a boundary condition
+        //Er, no, the boundary condition issues are already solved in the same iteration, as the innermost freqs will be filled in by the boundary conditions itself (and thus popped from the deque)
+        tuple_deque_array_vector[splitindex][0].push_back(std::make_tuple(freq, nextpoint, min_freq_idx));
+        tuple_deque_array_vector[splitindex][0].push_back(std::make_tuple(freq, nextpoint, min_freq_idx+1));
+        min_freq_idx+=2;//first two indices have now already been processed
+    }
+    for (Size next_freq_idx=min_freq_idx; next_freq_idx<=max_freq_idx; next_freq_idx++)
+    {
+        const Real temp_next_freq = model.radiation.frequencies.nu(nextpoint, next_freq_idx);
+        if (temp_next_freq>=curr_min_bound)//boundary condition not needed if falls inside range of currpoint
+        {
+            break;
+        }
+        //add at the right of the current boundary frequencies needed
+        tuple_deque_array_vector[splitindex][0].push_back(std::make_tuple(freq, nextpoint, next_freq_idx));
+    }
+}
+
+//TODO: add the freq derivative bdy conditions here TOO
+//We need the curr_point, as the ray_direction is not given
+//Sets the left boundary frequencies needed due to shift
+inline void Solver :: set_right_implicit_boundary_frequencies(const Size nextpoint, const Size currpoint, const Size splitindex,
+                          std::vector<std::array<std::deque<std::tuple<Real, Size, Size>>>>& tuple_deque_array_vector)
+{
+    //Using Size, so add +1 to all indices not do 0-1
+    const Size min_freq_idx=freqsplits_()[splitindex]+1;//freq index for the current point
+    const Size max_freq_idx=freqsplits_()[splitindex+1]-1+1;//minimal freq index for this split
+    Real curr_max_bound=model.radiation.frequencies.nu(currpoint, max_freq_idx-1);
+    if (disc_boundary_condition)//just add the outermost two freqs without checking if we decide to have a boundary condition anyway
+    {
+        //FIXME: ordering can be completely wrong? //No: see comment in function above
+        tuple_deque_array_vector[splitindex][1].push_back(std::make_tuple(freq, nextpoint, max_freq_idx-1));
+        tuple_deque_array_vector[splitindex][1].push_back(std::make_tuple(freq, nextpoint, max_freq_idx-2));
+        max_freq_idx-=2;//last two indices have now already been processed
+    }
+    for (Size next_freq_idx=max_freq_idx; next_freq_idx>=max_freq_idx; next_freq_idx--)
+    {
+        const Real temp_next_freq = model.radiation.frequencies.nu(nextpoint, next_freq_idx-1);
+        if (temp_next_freq<=curr_max_bound)//boundary condition not needed if falls inside range of currpoint
+        {
+            break;
+        }
+        //add at the right of the current boundary frequencies needed
+        tuple_deque_array_vector[splitindex][1].push_front(std::make_tuple(freq, nextpoint, next_freq_idx-1));
+    }
+}
+
+
+
+// Maybe TODO? add some conversion from (point,freq) to general index? Only useful if we were not using Matrix
+
+//Idea, maybe specialize this function by setting the discretization direction in a template? So less if-clauses should appear
+//BEFORE EVERY RAY IN EVERY DIRECTION (also backwards, even though it is seemingly mirrored)
+//Run twice; once for forward ray, once for backward ray TODO: implement backward ray version
+//assumes ray has already been traced
+inline void Solver :: comoving_ray_bdy_setup(TODO)
+{
+    Size n_freqsplits=n_freqsplits_();
+    //Trace the ray as usual, not needing anything except the frequencies
+    //Start with imposing some initial boundary conditions
+    Matrix<Real> intensities=intensities_();
+    //Note: this assumes forward ray, not backward ray TODO IMPLEMENT OTHER DIRECTION
+    Size first_index=first_();
+    for (Size freqid=0; freqid<model.parameters->nfreqs(); freqid++)
+    {
+        intensities(first_index, freqid)=TODOBDY;
+    }
+
+    //FOR EVERY
+
+    rayposidx=last_();//ray position index -> point index through nr[rayposidx]
+    //from first_+1 to last_ index, trace the ray in
+    // for (Size rayposidx=first_(); rayposidx<=last_(); pointidx++)//for loop does at least one iteration, which results in oob access if ray goes trough one point
+    // std::vector<std::deque<std::map<Real, std::pair<Size, Size>>>> deque_vector;//Holds temporary values for determining which frequency boundary values are needed where
+    // deque_vector.resize(TODO_N_SPLITS);//Wait, due to line width increase, technically up to 2*Nsplit deques are needed for storing the boundary points
+    //Therefore a fixed size vector is not appropriate
+    //However, as we will only traverse the deques sequentially (for performance savings), I see no reason not to add another deque instead of a vector
+    // std::deque<std::deque<std::map<Real, std::pair<Size, Size>>>> deque_deque;//Holds temporary values for determining which frequency boundary values are needed where
+    // std::deque<std::deque<std::tuple<Real, Size, Size>>> deque_deque;//Holds temporary values for determining which frequency boundary values are needed where
+    std::vector<std::array<std::deque<std::tuple<Real, Size, Size>>>> tuple_deque_array_vector;//Holds temporary values for determining which frequency boundary values are needed where
+    tuple_deque_array_vector.resize(n_freqsplits);
+    for (Size tempidx=0; tempidx<n_freqsplits; tempidx++)
+    {
+        tuple_deque_array_vector[tempidx].resize(2);//A left and a right
+    }
+
+    //for every freq split, a deque holding maps of the frequencies to the pair of index values (point, freqidx)
+    while (rayposidx>first_())
+    {
+        //somewhere, we should also compute all of S, Δτ, dI/dν stuff
+        //this first part might be appropriate, as we can as well overwrite all this stuff later for the boundary conditions
+        //err, Δτ is not available until we know which freq matches which other freq
+        match_frequency_indices(TODO)
+        //Now compute all default stuff, computing bogus for the non-matched indices (as these correspond to boundary indices, we will overwrite this anyway)
+        for (Size next_freq_idx=0; next_freq_idx<=model.parameters->nfreqs())
+        {
+            Compute_S
+            Compute_dtau
+            compute_freq_der_coeffs //and indices
+        }
+
+        //now start classifying the boundary points
+        Size bdy_deque_split_index=0;
+        Size next_split_index=0;
+        compute_overlap(nextpoint)//technically, we should compute which lines overlap only in this part
+        computed_ranges=compute_overlap(currpoint)//for the current point, we definitely need the exact ranges (fiddled with to ensure enough bdy conditions)
+        //?WHILE LOOP SEEMS WEIRD?
+        for (ALL LINES)
+        // for (ALL SPLITS)
+        while (bdy_deque_split_index<n_freqsplits &&next_split_index<n_freqsplits)
+        {
+            //Wait a bit, this left deque can only be fed by going to the right, so we do not need these silly minima for adding stuff to the deque
+            // Real left_deque_min=std::get<0>(deque_vector[bdy_deque_split_index][0].front());
+            // Real left_deque_max=std::get<0>(deque_vector[bdy_deque_split_index][0].back());
+            //While the right deque can only be fed by the outermost freq going to the left!
+            //adds the oob freqs to the deque[splitindex]
+            set_left_implicit_boundary_frequencies(TODO, using computed ranges)//
+            set_right_implicit_boundary_frequencies(TODO, using computed ranges)
+
+
+            // NOTE TO SELF: already included in boundary conditions
+            // //also set the 2 last ones in the discretization direction to be boundary points //probably far enough away from line center
+            // //TODO CHECK REASONABLE MIN freq dist; (optical depth increments will also limit this approach, as in case of near infinite optical depths, the affected frequency range can be arbitrarily large)
+            // if (forwardfreqdisc)
+            // {
+            //     std::deque<std::tuple<Real, Size, Size>>& left_deque=tuple_deque_array_vector[bdy_deque_split_index][0];
+            //     //check whether the two rightmost things are included
+            //     //just grab two last indices if possible
+            //     if (left_deque.size()>=2)
+            //     {
+            //
+            //     }
+            //     else if (left_deque.size()==1)
+            //     {
+            //
+            //     }
+            // }
+            // else
+            // {
+            //
+            // }
+            // //add
+        }
+
+        bdy_deque_split_index=0;//TODO replace by line index, as we will interpolate using line quadratures. (makes me not have to deal with defining some suitable distance measure between lines)
+        Size curr_split_index=0;
+        while (bdy_deque_split_index<n_freqsplits && curr_split_index<n_freqsplits)
+        {//mashing two loops together, saving one order of magnitude of time
+        // for (ALL SPLITS (saved boundary))//iterating over all boundary splits (sorted obviously)
+        // {//TODO TODO MASH THESE LOOPS TOGETHER, saving one order of magnitude (N_lines) of time
+        //     for (ALL SPLITS (current splits))//iterating over all current splits (also sorted)
+            //States that the matching (overlapping with the explicit part) boundary frequencies, should be removed from the dequeus, filling in the boundary conditions
+            //Evidently iterate over all non-empty deques
+            //NOTE TO SELF: for the boundary conditions, set Δτ very low, the implicit derivative coeffs to 0, the explicit derivative coeffs to TWICE the usual coeffs (as normally a part of the freq derivative is implicit).
+            //and the source function can be ignored (Δτ very low)
+            match_implicit_boundary_frequencies
+            //only at the very end (initial boundary conditions), the source must be set very high and the optical depth too. (then also set freq der coeffs to zero)
+        // }
+        }
+        //if tracing the ray forward for discovering the boundary conditions
+        //get curr point oob freqs
+        //store ?map? in deque (also store limits (or just query them)) (map should map freq to exact index (pair?) (point, freqidx) which put it on)
+
+        //get next point oob freqs
+
+        //OR if tracing the ray backward to discover the boundary conditions
+        //then store 'next'? point oob freqs in deque and also their indices (so map again necessary// err, is exactly the same procedure, so just choose one
+
+        //AT THE END, overwrite the lastmost two freq derivative
+    }
+
+
+
+    //For every point on the ray
+    for(TODO)
+    {
+        //'save' curr oob intensity, overwriting if necessary (easy way: if previous iteration stored and too close (0.? line widths))
+        //err, overwriting is a bit unnecessary in this step, as it should only be deleted when consumed to determine an intensity
+        //? should we also consider the furthermost intensity as a boundary condition ?
+        //
+        // So the
+
+        //for the next point, check if oob intensity lies close enough between 2 values in the list
+        //Also include curr point farmost freq in search?
+        //By default, bdy condition; but if one nearby stored frequency is found, one can also check the split for previous freqs to fully enclose it
+        //if not found, evidently we need initial intensities
+    }
+    //Also compute the freq derivative coeffs here? Depends on the discretization direction, so does not strictly fit in the same piece of code
+    //However, this would lead us not to duplicate logic..., thus might be useful
+    //If we use this opportunity, we can save some headaches
+
+
+
+    //In the same vein, cant we also precompute all Δτ, S? (same memory requirement)
+    //Then the boundary condition can be obtained by cheating (set Δτ=very high (such that e^-Δτ≃0), S=bdy intensity), intuitively this is just rethermalizing the intensity
+    //This is a bit optimistic, as we need S for two points... (however duplicating S is possible (Scurr and Snext for every position increment)
+    //; so we might be able to choose the intensity by only changing a single increment
+    //
+    //Then the only thing left would be the (quite simplified) computation
+
+    //And even save the traced points, as we do not really need to trace the same ray once again...
+    //However, can't we jsut give the ray points to this function? (just vector with points) //should also be able to be reversed without performance penalty
+
+}
+
+
+
+
+//
+inline void Solver :: compute_freq_der_term(TODO)
+{
+    //Assumes we have already computed the giant lists of boundary freqs?
+
+}
+
+
+
+// TODO: CHANGE THIS TO COMOVING SOLVER
+// Note: single line approximation might be useful for determining the splits. IMPLEMENT FANCY VERSION
+template<ApproximationType approx>
+inline void Solver :: solve_comoving_order_2_sparse (Model& model)
+{
+    // Initialise variables
+    for (LineProducingSpecies &lspec : model.lines.lineProducingSpecies)
+    {
+        lspec.lambda.clear();
+
+        lspec.J.resize(model.parameters->npoints(), lspec.linedata.nrad);
+
+        accelerated_for (o, model.parameters->npoints(),
+        {
+            for (Size k = 0; k < lspec.linedata.nrad; k++)
+            {
+                lspec.J(o,k) = 0.0;
+            }
+        })
+    }
+
+    // For each ray, solve the radiative transfer equation in a comoving manner
+    accelerated_for (rr, model.parameters->hnrays(),
+    {
+        const Size     ar = model.geometry.rays.antipod  [rr];
+        // const Real     wt = model.geometry.rays.weight   [rr] * two;
+        // const Vector3D nn = model.geometry.rays.direction[rr];
+
+        std::cout << "--- rr = " << rr << std::endl;
+
+        //for every ray to trace
+        const Size n_rays_to_trace=points_to_trace_ray_through.size();
+        accelerated_for (rayidx, n_rays_to_trace,
+        {
+            //trace and solve over the ray in both directions, incrementing J as necessary
+            //too complicated to decouple ray tracing from solving
+            solve_comoving_order_2_sparse(model, o, rr, rayidx, dshift_max);
+            // solve_comoving_order_2_sparse(model, o, ar, rayidx, dshift_max); //reuse of some data is possible
+        })
+    })
+
+    // TODO REPLACE/DELETE THIS?
+    // For each ray, solve transfer equation
+    for (Size rr = 0; rr < model.parameters->hnrays(); rr++)
+    {
+        const Size     ar = model.geometry.rays.antipod  [rr];
+        const Real     wt = model.geometry.rays.weight   [rr] * two;
+        const Vector3D nn = model.geometry.rays.direction[rr];
+
+        cout << "--- rr = " << rr << endl;
+
+        for (LineProducingSpecies &lspec : model.lines.lineProducingSpecies)
+        {
+            threaded_for (o, model.parameters->npoints(),
+            {
+                const Real dshift_max = get_dshift_max (model, o);
+
+                nr_   ()[centre] = o;
+                shift_()[centre] = 1.0;
+
+                first_() = trace_ray <CoMoving> (model.geometry, o, rr, dshift_max, -1, centre-1, centre-1) + 1;
+                last_ () = trace_ray <CoMoving> (model.geometry, o, ar, dshift_max, +1, centre+1, centre  ) - 1;
+                n_tot_() = (last_()+1) - first_();
+
+                if (n_tot_() > 1)
+                {
+                    for (Size k = 0; k < lspec.linedata.nrad; k++)
+                    {
+                        // Integrate over the line
+                        for (Size z = 0; z < model.parameters->nquads(); z++)
+                        {
+                            solve_feautrier_order_2 <approx> (model, o,  lspec.nr_line[o][k][z]);
+
+                            lspec.J(o,k) += lspec.quadrature.weights[z] * wt * Su_()[centre];
+
+                            update_Lambda           (model, rr, lspec.nr_line[o][k][z]);
+                        }
+                    }
+                }
+                else
+                {
+                    for (Size k = 0; k < lspec.linedata.nrad; k++)
+                    {
+                        // Integrate over the line
+                        for (Size z = 0; z < model.parameters->nquads(); z++)
+                        {
+                            lspec.J(o,k) += lspec.quadrature.weights[z] * wt * boundary_intensity(model, o, model.radiation.frequencies.nu(o, lspec.nr_line[o][k][z]));
+                        }
+                    }
+                }
+            })
+        }
+    }
+}
+
+//
+inline void Solver :: solve_comoving_order_2_sparse (
+      Model& model,
+      const Size o,//ray origin point
+      const Size r,//ray direction index
+      const Size rayidx//ray trace index
+      const double dshift_max)
+{
+    Vector<Real>& eta_c = eta_c_();//current emissivity for all freqs
+    Vector<Real>& eta_n = eta_n_();//next emissivity    for all freqs
+
+    Vector<Real>& chi_c = chi_c_();//current opacity    for all freqs
+    Vector<Real>& chi_n = chi_n_();//next opacity       for all freqs
+
+    Vector<Real>& curr_intensity = curr_intensity_();//current intensity for all freqs
+    Vector<Real>& next_intensity = next_intensity_();//storage for next intensity for all freqs
+
+    Vector<unsigned char>& real_pt= real_pt_();//for denoting whether the given point is a real point
+
+    Vector<double>& shift = shift_();// contains the doppler shifts for all points on the ray
+
+    const Real     wt = model.geometry.rays.weight   [rr];//ray direction weight
+
+    double Z = 0.0; //distance along ray
+    double dZ= 0.0; //last distance increment
+
+    //trace the ray
+    first_() = trace_ray_indicate_point <CoMoving> (model.geometry, o, rr, dshift_max, -1, centre-1, centre-1) + 1;
+    last_ () = trace_ray_indicate_point <CoMoving> (model.geometry, o, ar, dshift_max, +1, centre+1, centre  ) - 1;
+
+    nr_   ()[centre] = o;
+    shift_()[centre] = 1.0;
+    n_tot_() = (last_()+1) - first_();
+
+    //Now is the perfect time to setup the boundary conditions (and dIdnu stuff?)
+
+
+    //assuming boundary points are real points ofcourse
+
+    //Set the boundary conditions, as this is the first point on the ray
+    //TODO PROBABLY NO LONGER USEFUL HERE
+    for (Size freqid=0; freqid<model.parameters->nfreqs(); freqid++)
+    {
+        curr_intensity[freqid]=TODOBDY
+    }
+
+    //check if closest ray // maybe todo: replace with some weights 0/1 for eliminating the if-clause
+    if (closest_ray(rr, nr[first_()]))
+    {
+        //then obviously add (weighted) to J
+        for (Size freqid=0; freqid<model.parameters->nfreqs(); freqid++)
+        {
+            // Size1 corresponding_l_for_spec;           ///< number of line species corresponding to frequency
+            // Size1 corresponding_k_for_tran;           ///< number of transition corresponding to frequency
+            // Size1 corresponding_z_for_line;           ///< number of line number corresponding to frequency
+            const Size k=model.radiation.frequencies.corresponding_k_for_tran[freqid];
+            const Size z=model.radiation.frequencies.corresponding_z_for_line[freqid];
+            lspec.J(nr[first_()],k) += lspec.quadrature.weights[z] * wt * curr_intensity[freqid];// Su_()[centre];
+        }
+    }
+
+    rayposidx=first_()+1;//ray position index -> point index through nr[rayposidx]
+    //from first_+1 to last_ index, trace the ray in
+    // for (Size rayposidx=first_(); rayposidx<=last_(); pointidx++)//for loop does at least one iteration, which results in oob access if ray goes trough one point
+    while (rayposidx<=last_())
+    {
+        //Do the freq split
+        const Size currpointidx=nr[rayposidx-1];
+        const Size nextpointidx=nr[rayposidx];
+
+        split_frequencies(model, nextpointidx);
+
+        const Real rel_doppler_shift=shift[rayposidx]-shift[rayposidx-1];
+
+        if (rel_doppler_shift>0)
+        {
+            //For every split, do freq mismatch and get boundary conditions
+            //also rotate the frequencies if necessary before overwriting with boundary conditions
+            for (Size splitid=0; split<n_freqsplits_(); split++)
+            {
+                //determine number of boundary conditions
+                const Size nboundaryconditions=std::max(2,TODO);//at least two are needed for the solver
+
+                // RESET frequency correspondence?
+                //For all other (next) frequencies, determine what previous frequency corresponds
+                // and 'shift' the current intensity accordingly
+
+
+
+              //set boundary stuff depending on sign doppler shift
+
+
+              //get explicit term frequency derivative term (for all but the outermost two points)
+              //and do the explicit part
+
+
+            }
+
+            //Do freq mismatch and get boundary conditions?
+
+            //for every split
+            //Actually compute the intensity (explicit part)
+
+            //for every split
+            //Actually compute the intensity (implicit part)
+
+            //set Boundary conditions? (or do this when getting bdy conditions)
+
+        }
+        else
+        {//almost exactly the same, but in reverse direction
+            //TODO
+        }
+
+
+        //Finally increment J if and real point check if closest ray
+        if (real_pt[rayposidx]&&closest_ray(rr, nextpointidx))
+        {
+            //then obviously add (weighted) to J
+            for (Size freqid=0; freqid<model.parameters->nfreqs(); freqid++)
+            {
+                // Size1 corresponding_l_for_spec;           ///< number of line species corresponding to frequency
+                // Size1 corresponding_k_for_tran;           ///< number of transition corresponding to frequency
+                // Size1 corresponding_z_for_line;           ///< quadrature number corresponding to frequency
+                const Size k=model.radiation.frequencies.corresponding_k_for_tran[freqid];
+                const Size z=model.radiation.frequencies.corresponding_z_for_line[freqid];
+                lspec.J(nextpointidx,k) += lspec.quadrature.weights[z] * wt * curr_intensity[freqid];// Su_()[centre];
+            }
+        }
+
+        //and finally move the contents of next_intensity to curr_intensity
+        for (Size freqid=0; freqid<model.parameters->nfreqs(); freqid++)
+        {
+            curr_intensity[freqid]=next_intensity[freqid];
+        }
+
+        rayposidx++;
+    }
+
+
+
+
+
 }
 
 
@@ -622,6 +1377,48 @@ accel inline Size Solver :: trace_ray (
     return id1;
 }
 
+//For the comoving solvers, we compute J for all points on a ray,
+// so we need to know which points are real
+template <Frame frame>
+accel inline Size Solver :: trace_ray_indicate_point (
+    const Geometry& geometry,
+    const Size      o,
+    const Size      r,
+    const double    dshift_max,
+    const int       increment,
+          Size      id1,
+          Size      id2 )
+{
+    double  Z = 0.0;   // distance from origin (o)
+    double dZ = 0.0;   // last increment in Z
+
+    //set self also on ray? No, will be added manually in the middle
+
+    Size nxt = geometry.get_next (o, r, o, Z, dZ);
+
+    if (geometry.valid_point(nxt))
+    {
+        Size         crt = o;
+        double shift_crt = geometry.get_shift <frame> (o, r, crt, 0.0);
+        double shift_nxt = geometry.get_shift <frame> (o, r, nxt, Z  );
+
+        set_data_indicate_point (crt, nxt, shift_crt, shift_nxt, dZ, dshift_max, increment, id1, id2);
+
+        while (geometry.not_on_boundary(nxt))
+        {
+                  crt =       nxt;
+            shift_crt = shift_nxt;
+
+                  nxt = geometry.get_next          (o, r, crt, Z, dZ);
+            shift_nxt = geometry.get_shift <frame> (o, r, nxt, Z    );
+
+            set_data_indicate_point (crt, nxt, shift_crt, shift_nxt, dZ, dshift_max, increment, id1, id2);
+        }
+    }
+
+    return id1;
+}
+
 
 accel inline void Solver :: set_data (
     const Size   crt,
@@ -681,6 +1478,79 @@ accel inline void Solver :: set_data (
     {
         nr   [id1] = nxt;
         shift[id1] = shift_nxt;
+        dZ   [id2] = dZ_loc;
+
+        id1 += increment;
+        id2 += increment;
+    }
+}
+
+// Comoving solver also needs to know which points are real points in the grid, to be able to compute J from the correct intensity
+accel inline void Solver :: set_data_indicate_point (
+    const Size   crt,
+    const Size   nxt,
+    const double shift_crt,
+    const double shift_nxt,
+    const double dZ_loc,
+    const double dshift_max,
+    const int    increment,
+          Size&  id1,
+          Size&  id2 )
+{
+    Vector<double>& dZ    = dZ_   ();
+    Vector<Size  >& nr    = nr_   ();
+    Vector<double>& shift = shift_();
+    Vector<unsigned char>& real_pt= real_pt_();
+
+    const double dshift     = shift_nxt - shift_crt;
+    const double dshift_abs = fabs (dshift);
+
+    if (dshift_abs > dshift_max) // If velocity gradient is not well-sampled enough
+    {
+        // Interpolate velocity gradient field
+        const Size        n_interpl = dshift_abs / dshift_max + 1;
+        const Size   half_n_interpl = 0.5 * n_interpl;
+        const double     dZ_interpl =     dZ_loc / n_interpl;
+        const double dshift_interpl =     dshift / n_interpl;
+
+        if (n_interpl > 10000)
+        {
+            printf ("ERROR (n_intpl > 10 000) || (dshift_max < 0, probably due to overflow)\n");
+        }
+
+        Size startid1=id1;
+        // Assign current cell to first half of interpolation points
+        for (Size m = 1; m < half_n_interpl; m++)
+        {
+            nr   [id1] = crt;
+            real_pt[id1]= false;
+            shift[id1] = shift_crt + m*dshift_interpl;
+            dZ   [id2] = dZ_interpl;
+
+            id1 += increment;
+            id2 += increment;
+        }
+
+        // Assign next cell to second half of interpolation points
+        for (Size m = half_n_interpl; m <= n_interpl; m++)
+        {
+            nr   [id1] = nxt;
+            real_pt[id1]= false;
+            shift[id1] = shift_crt + m*dshift_interpl;
+            dZ   [id2] = dZ_interpl;
+
+            id1 += increment;
+            id2 += increment;
+        }
+        real_pt[id1-increment]=true;
+    }
+
+    else
+    {
+        nr   [id1] = nxt;
+        real_pt[id1]= true;
+        shift[id1] = shift_nxt;
+        // std::cout<<"shift: "<<shift_nxt<<std::endl;
         dZ   [id2] = dZ_loc;
 
         id1 += increment;

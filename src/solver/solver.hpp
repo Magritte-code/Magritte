@@ -49,6 +49,83 @@ struct Solver
 
     pc::multi_threading::ThreadPrivate<Real> optical_depth_;
 
+    // Comoving approach
+
+
+    pc::multi_threading::ThreadPrivate<Vector<Size>> freqsplits_;//resize to nlines as overestimate for size of this
+    pc::multi_threading::ThreadPrivate<Size> n_freqsplits_;
+
+
+
+    Vector<Vector<Size>> points_to_trace_ray_through;
+    Matrix<Size> n_rays_through_point;//raydir, point ; might not be used that much in the future
+    //hmm, we need to weight the rays somehow; for now we just only use the closest ray to determine intensity
+    Matrix<Size>> closest_ray;//raydir, point (contains closest rayid?)
+    Matrix<Size>> min_ray_distsqr;//raydir, pointid
+    // pc::multi_threading::ThreadPrivate<Size> n_rays_to_trace_;
+    //I will assume no more than 2^16-1 rays go through a specific point if choosing unsigned int
+    //However, just go with a Size for absolute safety (max upper bound on number rays traced can be assumed to be the number of points)
+    pc::multi_threading::ThreadPrivate<Vector<unsigned char>> real_pt_;
+    pc::multi_threading::ThreadPrivate<Vector<Real>> curr_intensity_;
+    pc::multi_threading::ThreadPrivate<Vector<Real>> next_intensity_;
+    // pc::multi_threading::ThreadPrivate<Vector<Size>> freq_matching_;//for (mis)matching the frequency indices; wait: this assumes that we only go one positional step at a time, drastically increasing the difficulty for adding boundary conditions
+    //NOTE: boundary conditions might result in
+    //Again, no: this is merely for determining what freqs match, the actual previous point to use has not yet been defined!
+    pc::multi_threading::ThreadPrivate<Matrix<Vector<Size>>> start_indices_;//For every point (on the ray) (maybe except the first point)), for every frequency, denotes from which index one needs to start
+    // This is necessary due to boundary conditions possibly refererring to points way back on the ray; NOTE: vectors have size 2
+    //TOOD: next thing not used anymore
+    // pc::multi_threading::ThreadPrivate<Vector<unsigned char>> is_bdy_freq_;//for denoting which freqs (for the next point) should just be filled in with bdy conditions
+    //either on a point-by-point basis (-> less memory), and is depending on the exact point either way (not used for anything but adding bdy conditions to the deque)
+    //or we could compute it for all points at the same time
+    //FIXME: for extreme overlap (a line quad completely covering another one), this definition is not well defined. TODO FIX THIS
+    pc::multi_threading::ThreadPrivate<Vector<unsigned char>> line_quad_left_overlap_;//for every line, denotes whether the left boundary overlaps with another quadrature
+    pc::multi_threading::ThreadPrivate<Vector<unsigned char>> line_quad_right_overlap_;//for denoting which freqs (for the next point) should just be filled in with bdy conditions
+    //WAIT A MINUTE, as we only need the overlap in one direction (depending on the discretization direction),
+    //NO, this is wrong, is there exist overlap in both directions; but this does not really matter that much, as this should only be used for the freq der boundary points
+    //THUS TODO: replace with single thing
+    pc::multi_threading::ThreadPrivate<Vector<unsigned char>> line_quad_discdir_overlap_;//for denoting which lines should include the freq dir boundary conditions
+
+
+    // If one precomputes S, Δτ, then one can set the boundary conditions by cheating (Δτ→very high, S→boundary intensity)
+    // pc::multi_threading::ThreadPrivate<Vector<unsigned char>> bdy_freqs_;//for denoting which freqs (for the next point) should just be filled in with bdy conditions
+
+    pc::multi_threading::ThreadPrivate<Matrix<Real>> intensities_;//for every point on the ray, for every frequency; stores the intensities for a single ray
+    pc::multi_threading::ThreadPrivate<Matrix<Real>> bdy_intensities_;//for every point, for every split (two freqs per split); stores the intensities for a single ray
+    pc::multi_threading::ThreadPrivate<Matrix<Real>> delta_tau_;//for every point, for every frequency, storing the optical depth increments; might be fiddled with to set boundary conditions
+    pc::multi_threading::ThreadPrivate<Matrix<Real>> S_;//for every point, for every frequency, storing source function; might be fiddled with to set boundary conditions
+    //TODO: split S into S_curr and S_next, in order to freely change stuff for boundary conditions
+
+    //For computing the second order accurate frequency derivative
+    //Cant we just compute is during the main computation? I see no reason to store it now?
+    //For the explicit part, this can certainly be done; however for the implicit part... (well it can also be computed on the fly, thus it might be useless)
+    //Err no, it is necessary for allowing us to interpolate boundary values (using only 2 nonzero coeffs, third index may be arbitrary?, as third coef is arbitrary; DOCS STATE NO OOB ACCESS, so arbitrary in bounds value is fine)
+    // Thus we might just shift the coef indices to set everything in a sensible range for the boundary interpolation stuff
+    //These ones cannot be computed on the fly, as we kind of need to cheat including the boundary conditions efficiently
+    // Weird enough, our boundary conditions can be written as special cases of the comoving RTE.
+    // For initial boundary stuff, set coeffs to 0, Δτ→very large, S→bdy intensity
+    // For interpolating previous values (linearly/cubibcly), set the coeffs respectively to the interpolation weights (Δτ should be 0)
+
+    /// Explicit part (technically we should not need the coefs, however if we do not include this, we will access oob array values (even though the intention is to mutliply them by 0!))
+    pc::multi_threading::ThreadPrivate<Matrix<Real>> dIdnu_coef1_;//storing freq derivative coef; might be fiddled with to set boundary conditions
+    pc::multi_threading::ThreadPrivate<Matrix<Real>> dIdnu_coef2_;//storing freq derivative coef; might be fiddled with to set boundary conditions
+    pc::multi_threading::ThreadPrivate<Matrix<Real>> dIdnu_coef3_;//storing freq derivative coef; might be fiddled with to set boundary conditions
+    ///
+    pc::multi_threading::ThreadPrivate<Matrix<Size>> dIdnu_index1_;//storing freq derivative corresp index; might be fiddled with to set boundary conditions
+    pc::multi_threading::ThreadPrivate<Matrix<Size>> dIdnu_index2_;//storing freq derivative corresp index; might be fiddled with to set boundary conditions
+    pc::multi_threading::ThreadPrivate<Matrix<Size>> dIdnu_index3_;//storing freq derivative corresp index; might be fiddled with to set boundary conditions
+
+    /// Implicit part (same remark)
+    pc::multi_threading::ThreadPrivate<Matrix<Real>> dIdnu_coef1_;//storing freq derivative coef; might be fiddled with to set boundary conditions
+    pc::multi_threading::ThreadPrivate<Matrix<Real>> dIdnu_coef2_;//storing freq derivative coef; might be fiddled with to set boundary conditions
+    pc::multi_threading::ThreadPrivate<Matrix<Real>> dIdnu_coef3_;//storing freq derivative coef; might be fiddled with to set boundary conditions
+    ///
+    pc::multi_threading::ThreadPrivate<Matrix<Size>> dIdnu_index1_;//storing freq derivative corresp index; might be fiddled with to set boundary conditions
+    pc::multi_threading::ThreadPrivate<Matrix<Size>> dIdnu_index2_;//storing freq derivative corresp index; might be fiddled with to set boundary conditions
+    pc::multi_threading::ThreadPrivate<Matrix<Size>> dIdnu_index3_;//storing freq derivative corresp index; might be fiddled with to set boundary conditions
+    // pc::multi_threading::ThreadPrivate<std::map
+
+
+
 
     Vector<Real> eta;
     Vector<Real> chi;
