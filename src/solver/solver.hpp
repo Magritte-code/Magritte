@@ -85,6 +85,14 @@ struct Solver
     //THUS TODO: replace with single thing
     pc::multi_threading::ThreadPrivate<Vector<unsigned char>> line_quad_discdir_overlap_;//for denoting which lines should include the freq dir boundary conditions
 
+    // The overlap ranges
+    pc::multi_threading::ThreadPrivate<Vector<Real>> left_bound_;//Specifies the left bounds of the ranges
+    pc::multi_threading::ThreadPrivate<Vector<Real>> right_bound_;//Specifies the right bounds of the ranges
+    pc::multi_threading::ThreadPrivate<Size> nb_ranges_;//contains the number of ranges
+    // For computing the overlap ranges
+    pc::multi_threading::ThreadPrivate<Vector<Size>> line_count_;//for every line, counts the number of quadrature points encountered
+    pc::multi_threading::ThreadPrivate<Vector<Size>> quad_range_weight_;//for every quad, contains one if the quadrature may be counted for the range
+    pc::multi_threading::ThreadPrivate<Size> tot_quad_range_weight_;//sum of quad_range_weight
 
     // If one precomputes S, Δτ, then one can set the boundary conditions by cheating (Δτ→very high, S→boundary intensity)
     // pc::multi_threading::ThreadPrivate<Vector<unsigned char>> bdy_freqs_;//for denoting which freqs (for the next point) should just be filled in with bdy conditions
