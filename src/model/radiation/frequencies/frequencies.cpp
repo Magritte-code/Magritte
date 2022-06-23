@@ -25,6 +25,7 @@ void Frequencies :: read (const Io& io)
     nu.resize (parameters->npoints(), parameters->nfreqs());
 
     corresponding_line.resize (parameters->nfreqs());
+    corresponding_line_matrix.resize (parameters->npoints(), parameters->nfreqs());
 
     appears_in_line_integral.resize (parameters->nfreqs());
     corresponding_l_for_spec.resize (parameters->nfreqs());
