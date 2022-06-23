@@ -73,6 +73,7 @@ int Model :: compute_spectral_discretisation ()
     {
         Real1 freqs (parameters->nfreqs());
         Size1 nmbrs (parameters->nfreqs());
+        Size1 lineidx(parameters->nfreqs());
 
         Size index0 = 0;
         Size index1 = 0;
@@ -93,6 +94,7 @@ int Model :: compute_spectral_discretisation ()
 
                     freqs[index1] = freqs_line + width * root;
                     nmbrs[index1] = index1;
+                    lineidx[index1] = index0;
 
                     index1++;
                 }
@@ -103,6 +105,12 @@ int Model :: compute_spectral_discretisation ()
 
         // Sort frequencies
         heapsort (freqs, nmbrs);
+
+        //Also link the frequencies to the original line index
+        for (Size freqidx = 0; freqidx<parameters->nfreqs(); freqidx++)
+        {
+            radiation.frequencies.corresponding_line_matrix(p, freqidx)=lineidx[nmbrs];
+        }
 
 
         // Set all frequencies nu

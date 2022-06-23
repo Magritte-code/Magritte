@@ -13,6 +13,7 @@ struct Frequencies
 
     Matrix<Real> nu;                          ///< [Hz] frequencies (ordered in f) (p,f)
     Vector<Size> corresponding_line;          ///< [Hz] corresponding line to each frequency (f)
+    Matrix<Size> corresponding_line_matrix;   ///< corresponding line index to each frequency (p,f)
 
     Bool1 appears_in_line_integral;           ///< True if the frequency appears in line integral
     Size1 corresponding_l_for_spec;           ///< number of line species corresponding to frequency
