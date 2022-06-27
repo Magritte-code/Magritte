@@ -109,6 +109,7 @@ struct Solver
     pc::multi_threading::ThreadPrivate<Matrix<Real>> S_curr_;//for every point, for every frequency, storing source function; might be fiddled with to set boundary conditions
     pc::multi_threading::ThreadPrivate<Matrix<Real>> S_next_;//for every point, for every frequency, storing source function; might be fiddled with to set boundary conditions
 
+    const Size COMOVING_MIN_DTAU=1E-10;
 
     //For computing the second order accurate frequency derivative
     //Cant we just compute is during the main computation? I see no reason to store it now?
@@ -137,7 +138,9 @@ struct Solver
     pc::multi_threading::ThreadPrivate<Matrix<Size>> dIdnu_index1_next_;//storing freq derivative corresp index; might be fiddled with to set boundary conditions
     pc::multi_threading::ThreadPrivate<Matrix<Size>> dIdnu_index2_next_;//storing freq derivative corresp index; might be fiddled with to set boundary conditions
     pc::multi_threading::ThreadPrivate<Matrix<Size>> dIdnu_index3_next_;//storing freq derivative corresp index; might be fiddled with to set boundary conditions
-    // pc::multi_threading::ThreadPrivate<std::map
+    //EXTRA REQUIREMENT: dIdnu_index1_next_()==start_indices_()[1]; this for easily treating the implicit part
+    // && dIdnu_index2/3_next_()!=start_indices_()[1] IF the corresponding coefficient is nonzero
+    //Practically, this means that I can just simply subtract 
 
 
 
