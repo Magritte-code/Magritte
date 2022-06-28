@@ -3,6 +3,8 @@
 
 #include "model/model.hpp"
 #include "tools/types.hpp"
+#include <map>
+#include <tuple>
 
 ///  Approximation used in the solver
 /////////////////////////////////////
@@ -52,27 +54,28 @@ struct Solver
     // Comoving approach
 
 
-    pc::multi_threading::ThreadPrivate<Vector<Size>> freqsplits_;//resize to nlines as overestimate for size of this
-    pc::multi_threading::ThreadPrivate<Size> n_freqsplits_;
+    // pc::multi_threading::ThreadPrivate<Vector<Size>> freqsplits_;//resize to nlines as overestimate for size of this
+    // pc::multi_threading::ThreadPrivate<Size> n_freqsplits_;
 
 
-
-    Vector<Vector<Size>> points_to_trace_ray_through;
+    // For tracing the rays and keeping track of the closest ones
+    Vector<Vector<Size>> points_to_trace_ray_through;//raydir, rays to trace
     Matrix<Size> n_rays_through_point;//raydir, point ; might not be used that much in the future
     //hmm, we need to weight the rays somehow; for now we just only use the closest ray to determine intensity
-    Matrix<Size>> closest_ray;//raydir, point (contains closest rayid?)
-    Matrix<Size>> min_ray_distsqr;//raydir, pointid
-    // pc::multi_threading::ThreadPrivate<Size> n_rays_to_trace_;
+    Matrix<Size> closest_ray;//raydir, point (contains closest rayid?)
+    Matrix<Size> min_ray_distsqr;//raydir, pointid
     //I will assume no more than 2^16-1 rays go through a specific point if choosing unsigned int
     //However, just go with a Size for absolute safety (max upper bound on number rays traced can be assumed to be the number of points)
     pc::multi_threading::ThreadPrivate<Vector<unsigned char>> real_pt_;
-    pc::multi_threading::ThreadPrivate<Vector<Real>> curr_intensity_;
-    pc::multi_threading::ThreadPrivate<Vector<Real>> next_intensity_;
+
+    // pc::multi_threading::ThreadPrivate<Vector<Real>> curr_intensity_;
+    // pc::multi_threading::ThreadPrivate<Vector<Real>> next_intensity_;
     // pc::multi_threading::ThreadPrivate<Vector<Size>> freq_matching_;//for (mis)matching the frequency indices; wait: this assumes that we only go one positional step at a time, drastically increasing the difficulty for adding boundary conditions
     //NOTE: boundary conditions might result in
     //Again, no: this is merely for determining what freqs match, the actual previous point to use has not yet been defined!
     pc::multi_threading::ThreadPrivate<Matrix<Vector<Size>>> start_indices_;//For every point (on the ray) (maybe except the first point)), for every frequency, denotes from which index (pointonray, freq) one needs to start
     // This is necessary due to boundary conditions possibly refererring to points way back on the ray; NOTE: vectors have size 2
+    //TODO: replace Vector with pair? // or split into two?
     //TOOD: next thing not used anymore
     // pc::multi_threading::ThreadPrivate<Vector<unsigned char>> is_bdy_freq_;//for denoting which freqs (for the next point) should just be filled in with bdy conditions
     //either on a point-by-point basis (-> less memory), and is depending on the exact point either way (not used for anything but adding bdy conditions to the deque)
@@ -109,7 +112,7 @@ struct Solver
     pc::multi_threading::ThreadPrivate<Matrix<Real>> S_curr_;//for every point, for every frequency, storing source function; might be fiddled with to set boundary conditions
     pc::multi_threading::ThreadPrivate<Matrix<Real>> S_next_;//for every point, for every frequency, storing source function; might be fiddled with to set boundary conditions
 
-    const Size COMOVING_MIN_DTAU=1E-10;
+    const Real COMOVING_MIN_DTAU=1E-10;
 
     //For computing the second order accurate frequency derivative
     //Cant we just compute is during the main computation? I see no reason to store it now?
@@ -140,7 +143,7 @@ struct Solver
     pc::multi_threading::ThreadPrivate<Matrix<Size>> dIdnu_index3_next_;//storing freq derivative corresp index; might be fiddled with to set boundary conditions
     //EXTRA REQUIREMENT: dIdnu_index1_next_()==start_indices_()[1]; this for easily treating the implicit part
     // && dIdnu_index2/3_next_()!=start_indices_()[1] IF the corresponding coefficient is nonzero
-    //Practically, this means that I can just simply subtract 
+    //Practically, this means that I can just simply subtract
 
 
 
@@ -230,6 +233,58 @@ struct Solver
               Model& model,
         const Size   o,
         const Size   r);
+
+    // Comoving solvers stuff
+    /////////////////////////
+    inline void setup_comoving (Model& model, const Size l, const Size w);
+    inline void get_static_rays_to_trace (Model& model);
+    accel inline void trace_ray_points (
+        const Geometry& geometry,
+        const Size      o,
+        const Size      rdir,
+        const Size      rsav,
+        const Size      rayidx);
+
+    inline void match_frequency_indices(Model& model, const Size nextpoint, const Size currpoint, Size nextpointonrayindex, Size currpointonrayindex, bool is_upward_disc);
+    inline void get_overlapping_lines(Model& model, const Size nextpoint, bool is_upward_disc);
+    inline void get_line_ranges(Model& model, const Size curr_point, bool is_upward_disc, Real curr_shift);
+    inline void set_implicit_boundary_frequencies(Model& model, const Size nextpoint, const Size nextpointonrayindex, Real shift_next,
+                    std::multimap<Real, std::tuple<Size, Size>>& multimap_freq_to_bdy_index, bool is_upward_disc);
+    inline void match_overlapping_boundary_conditions(Model& model, const Size currpoint, const Size curr_point_on_ray_index,
+                    const Real curr_shift, std::multimap<Real, std::tuple<Size, Size>>& multimap_freq_to_bdy_index);
+    inline void set_initial_boundary_conditions(Model& model, const Size currpoint, const Real curr_shift, std::multimap<Real, std::tuple<Size, Size>>& multimap_freq_to_bdy_index);
+    template <ApproximationType approx>
+    inline void comoving_ray_bdy_setup_forward(Model& model);
+    template <ApproximationType approx>
+    inline void comoving_ray_bdy_setup_backward(Model& model);
+    template<ApproximationType approx>
+    inline void solve_comoving_order_2_sparse (Model& model);
+    inline void solve_comoving_single_step (Model& model, const Size rayposidx, const Size rr, const bool is_upward_disc, const bool forward_ray);
+    template<ApproximationType approx>
+    inline void solve_comoving_order_2_sparse (
+          Model& model,
+          const Size o,//ray origin point
+          const Size r,//ray direction index
+          const Size rayidx,//ray trace index
+          const double dshift_max);
+    accel inline Size trace_ray_indicate_point (
+          const Geometry& geometry,
+          const Size      o,
+          const Size      r,
+          const double    dshift_max,
+          const int       increment,
+                Size      id1,
+                Size      id2 );
+    accel inline void set_data_indicate_point (
+        const Size   crt,
+        const Size   nxt,
+        const double shift_crt,
+        const double shift_nxt,
+        const double dZ_loc,
+        const double dshift_max,
+        const int    increment,
+              Size&  id1,
+              Size&  id2 );
 
 
     // Solvers for images
