@@ -109,7 +109,7 @@ int Model :: compute_spectral_discretisation ()
         //Also link the frequencies to the original line index
         for (Size freqidx = 0; freqidx<parameters->nfreqs(); freqidx++)
         {
-            radiation.frequencies.corresponding_line_matrix(p, freqidx)=lineidx[nmbrs];
+            radiation.frequencies.corresponding_line_matrix(p, freqidx)=lineidx[nmbrs[freqidx]];
         }
 
 

@@ -369,15 +369,17 @@ inline double Geometry :: get_shift (
 }
 
 ///  Computes the squared distant between the specified point on the ray and the given point p
-accel inline double get_dist2_ray_point (
+accel inline double Geometry :: get_dist2_ray_point (
     const Size o,//origin point
     const Size p,//point to compute distance to
-    const Size r,//ray dir index
-    const double Z) const
+    const Size r//ray dir index
+    ) const
 {
     if (parameters->spherical_symmetry())
     {
-        throw Exception("computing distances not implemented for 1D spherically symmetric")
+        std::cout<<"computing distances not implemented for 1D spherically symmetric; stubbed"<<std::endl;
+        return 0;
+        // throw Exception("computing distances not implemented for 1D spherically symmetric")
     }
     else
     {
@@ -386,7 +388,7 @@ accel inline double get_dist2_ray_point (
 }
 
 ///  Computes the squared distant between the specified point on the ray and the given point p
-accel inline double get_dist2_ray_point_general_geometry (
+accel inline double Geometry :: get_dist2_ray_point_general_geometry (
     const Size o,
     const Size p,
     const Size r//,const double Z
