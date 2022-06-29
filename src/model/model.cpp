@@ -323,6 +323,25 @@ int Model :: compute_radiation_field_shortchar_order_0 ()
     return (0);
 }
 
+///   Computer for the radiation field
+//////////////////////////////////////
+int Model :: compute_radiation_field_comoving ()
+{
+    std::cout<< "Computing radiation field..." <<std::endl;
+    Solver solver;
+    solver.setup_comoving(*this);
+    // paracabs::multi_threading::set_n_threads_avail(1);
+    if (parameters->one_line_approximation)
+    {
+        solver.solve_comoving_order_2_sparse<OneLine>(*this);
+    }
+    else
+    {
+        solver.solve_comoving_order_2_sparse<None>(*this);
+    }
+    return (0);
+}
+
 
 ///  Computer for the radiation field
 /////////////////////////////////////
@@ -652,6 +671,106 @@ int Model :: compute_level_populations_sparse (
 
             compute_radiation_field_feautrier_order_2_sparse ();
             compute_Jeff_sparse                              ();
+
+            timer_1.stop();
+            timer_1.print_total();
+
+
+            Timer timer_2("Compute Statistical Equilibrium");
+            timer_2.start();
+
+            lines.iteration_using_statistical_equilibrium_sparse (
+                chemistry.species.abundance,
+                thermodynamics.temperature.gas,
+                parameters->pop_prec                            );
+
+            timer_2.stop();
+            timer_2.print_total();
+
+
+            iteration_normal++;
+        }
+
+
+        for (int l = 0; l < parameters->nlspecs(); l++)
+        {
+            error_mean.push_back (lines.lineProducingSpecies[l].relative_change_mean);
+            error_max .push_back (lines.lineProducingSpecies[l].relative_change_max);
+
+            if (lines.lineProducingSpecies[l].fraction_not_converged > 1.0 - parameters->convergence_fraction)
+            {
+                some_not_converged = true;
+            }
+
+            const double fnc = lines.lineProducingSpecies[l].fraction_not_converged;
+
+            // logger.write ("Already ", 100 * (1.0 - fnc), " % converged!");
+            cout << "Already " << 100.0 * (1.0 - fnc) << " % converged!" << endl;
+        }
+    } // end of while loop of iterations
+
+    // Print convergence stats
+    cout << "Converged after " << iteration << " iterations" << endl;
+
+    return iteration;
+}
+
+
+///  Compute level populations self-consistenly with the radiation field
+///  assuming statistical equilibrium (detailed balance for the levels)
+///  @param[in] io                  : io object (for writing level populations)
+///  @param[in] use_Ng_acceleration : true if Ng acceleration has to be used
+///  @param[in] max_niterations     : maximum number of iterations
+///  @return number of iteration done
+///////////////////////////////////////////////////////////////////////////////
+int Model :: compute_level_populations_comoving (
+    const bool use_Ng_acceleration,
+    const long max_niterations     )
+{
+    // Check spectral discretisation setting
+    if (spectralDiscretisation != SD_Lines)
+    {
+        throw std::runtime_error ("Spectral discretisation was not set for Lines!");
+    }
+
+    // Initialize the number of iterations
+    int iteration        = 0;
+    int iteration_normal = 0;
+
+    // Initialize errors
+    error_mean.clear ();
+    error_max .clear ();
+
+    // Initialize some_not_converged
+    bool some_not_converged = true;
+
+    // Iterate as long as some levels are not converged
+    while (some_not_converged && (iteration < max_niterations))
+    {
+        iteration++;
+
+        // logger.write ("Starting iteration ", iteration);
+        cout << "Starting iteration " << iteration << endl;
+
+        // Start assuming convergence
+        some_not_converged = false;
+
+        if (use_Ng_acceleration && (iteration_normal == 4))
+        {
+            lines.iteration_using_Ng_acceleration (parameters->pop_prec);
+
+            iteration_normal = 0;
+        }
+        else
+        {
+            // logger.write ("Computing the radiation field...");
+            cout << "Computing the radiation field..." << endl;
+
+            Timer timer_1("Compute Radiation Field");
+            timer_1.start();
+
+            compute_radiation_field_comoving();
+            compute_Jeff_sparse             ();
 
             timer_1.stop();
             timer_1.print_total();

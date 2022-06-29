@@ -18,7 +18,7 @@ npoints   = 50
 nrays     = 2
 nspecs    = 5
 nlspecs   = 1
-nquads    = 1
+nquads    = 3
 
 nH2  = 1.0E+12                 # [m^-3]
 nTT  = 1.0E+03                 # [m^-3]
@@ -71,6 +71,7 @@ def create_model ():
 
 def run_model (nosave=False):
 
+
     modelName = f'all_constant_single_ray'
     modelFile = f'{moddir}{modelName}.hdf5'
     timestamp = tools.timestamp()
@@ -79,6 +80,7 @@ def run_model (nosave=False):
     timer1.start()
     model = magritte.Model (modelFile)
     timer1.stop()
+    magritte.pcmt_set_n_threads_avail(6)
 
     timer2 = tools.Timer('setting model')
     timer2.start()
@@ -98,6 +100,12 @@ def run_model (nosave=False):
     model.compute_radiation_field_feautrier_order_2 ()
     timer4.stop()
     u_2f = np.array(model.radiation.u)
+
+#TODO: figure out a way to compare this stuff
+    timer5 = tools.Timer('comoving  ')
+    timer5.start()
+    model.compute_radiation_field_comoving ()
+    timer5.stop()
 
     x  = np.array(model.geometry.points.position)[:,0]
     nu = np.array(model.radiation.frequencies.nu)

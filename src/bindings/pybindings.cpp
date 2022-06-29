@@ -223,27 +223,32 @@ PYBIND11_MODULE (core, module)
         .def (
             "compute_radiation_field_feautrier_order_2",
             &Model::compute_radiation_field_feautrier_order_2,
-            "Compute the radiation field for the modle using the 2nd-order Feautrier solver."
+            "Compute the radiation field for the model using the 2nd-order Feautrier solver."
         )
         .def (
             "compute_radiation_field_feautrier_order_2_sparse",
             &Model::compute_radiation_field_feautrier_order_2_sparse,
-            "Compute the radiation field for the modle using the 2nd-order Feautrier solver."
+            "Compute the radiation field for the model using the 2nd-order Feautrier solver."
         )
         .def (
             "compute_radiation_field_feautrier_order_2_uv",
             &Model::compute_radiation_field_feautrier_order_2_uv,
-            "Compute the radiation field for the modle using the 2nd-order Feautrier solver."
+            "Compute the radiation field for the model using the 2nd-order Feautrier solver."
         )
         .def (
             "compute_radiation_field_feautrier_order_2_anis",
             &Model::compute_radiation_field_feautrier_order_2_anis,
-            "Compute the radiation field for the modle using the 2nd-order Feautrier solver, anisotropic case."
+            "Compute the radiation field for the model using the 2nd-order Feautrier solver, anisotropic case."
         )
         .def (
             "compute_radiation_field_shortchar_order_0",
             &Model::compute_radiation_field_shortchar_order_0,
-            "Compute the radiation field for the modle using the 0th-order short-characteristics methods."
+            "Compute the radiation field for the model using the 0th-order short-characteristics methods."
+        )
+        .def (
+            "compute_radiation_field_comoving",
+            &Model::compute_radiation_field_comoving,
+            "Compute the radiation field for the model using the 2th-order comoving method."
         )
         .def (
             "compute_Jeff",
@@ -264,6 +269,11 @@ PYBIND11_MODULE (core, module)
             "compute_level_populations_sparse",
             &Model::compute_level_populations_sparse,
             "Compute the level populations for the model assuming statistical equilibrium until convergence, optionally using Ng-acceleration, and for the given maximum number of iterations. (Memory sparse option.)"
+        )
+        .def (
+            "compute_level_populations_comoving",
+            &Model::compute_level_populations_comoving,
+            "Compute the level populations for the model assuming statistical equilibrium until convergence, using a comoving type method. This optionally use Ng-acceleration and iterates maximally for the given maximum number of iterations. (Memory sparse option.)"
         )
         .def (
             "compute_image",
