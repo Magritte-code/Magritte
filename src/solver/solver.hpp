@@ -236,7 +236,8 @@ struct Solver
 
     // Comoving solvers stuff
     /////////////////////////
-    inline void setup_comoving (Model& model, const Size l, const Size w);
+    // inline void setup_comoving (Model& model, const Size l, const Size w);
+    inline void setup_comoving (Model& model);
     inline void get_static_rays_to_trace (Model& model);
     accel inline void trace_ray_points (
         const Geometry& geometry,
