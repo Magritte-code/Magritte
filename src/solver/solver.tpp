@@ -1037,12 +1037,19 @@ inline void Solver :: match_overlapping_boundary_conditions(Model& model, const 
         const Real bdy_freq=it->first;//get boundary freq
         const Size bdy_point_on_ray_idx=std::get<0>(it->second);//get corresponding point index on ray
         const Size bdy_freq_idx=std::get<1>(it->second);//get corresponding freq index
+        std::cout<<"left bound of range: "<<left_bound[curr_range_index]<<std::endl;
+        std::cout<<"right bound of range: "<<right_bound[curr_range_index]<<std::endl;
+        std::cout<<"bdy_freq: "<<bdy_freq<<std::endl;
+
 
         //compare the frequency to the max freq of current range; if larger, then we need to compare against the next range
         while (right_bound[curr_range_index]<bdy_freq)
         {
-            if (curr_range_index==nb_ranges)
+            std::cout<<"nb_ranges: "<<nb_ranges<<std::endl;
+            std::cout<<"curr_range_index"<<curr_range_index<<std::endl;
+            if (curr_range_index==nb_ranges-1)//curr_range_index∈[0,...,nb_ranges-1]
             {
+                std::cout<<"stopping matching bdy conditions due to limited ranges"<<std::endl;
                 //if curr_range_index==nb_ranges, then all remaining boundary frequencies lie outside of the ranges
                 //so we do not need to waste any more time on trying to match them
                 return;
@@ -1167,7 +1174,7 @@ inline void Solver :: set_initial_boundary_conditions(Model& model, const Size c
         delta_tau_()(bdy_point_on_ray_idx, bdy_freq_idx)=50.0;//should be large enough
         S_curr_()(bdy_point_on_ray_idx, bdy_freq_idx)=bdy_intensity;
         S_next_()(bdy_point_on_ray_idx, bdy_freq_idx)=bdy_intensity;
-        std::cout<<"bdy intensity: "<<bdy_intensity<<std::endl;
+        std::cout<<"initial bdy intensity: "<<bdy_intensity<<std::endl;
 
         //pop value from iterator
         it=multimap_freq_to_bdy_index.erase(it);
@@ -1218,8 +1225,9 @@ inline void Solver :: comoving_ray_bdy_setup_forward(Model& model)
     std::cout<<"after renaming intensities_"<<std::endl;
     //TODO set o=index of first point on ray
     Size first_index=first_();//index of first point on ray
-    Size shift_first=2.0-shift_()[first_index];
+    Real shift_first=2.0-shift_()[first_()];
     Size rayposidx=last_();//ray position index -> point index through nr_()[rayposidx]
+    std::cout<<"setting bdy intensities at rayposidx= "<<first_index<<std::endl;
     for (Size freqid=0; freqid<model.parameters->nfreqs(); freqid++)
     {
         intensities(first_index, freqid)=boundary_intensity(model, nr_()[first_index], model.radiation.frequencies.nu(nr_()[first_index], freqid)*shift_first);
@@ -1452,11 +1460,17 @@ inline void Solver :: comoving_ray_bdy_setup_backward(Model& model)
     Matrix<Real>& intensities=intensities_();
     //TODO set o=index of first point on ray
     Size first_index=last_();//index of first point on ray
-    Size shift_first=shift_()[first_index];
+    Real shift_first=shift_()[first_index];//shift indices go
+    std::cout<<"first_index: "<<first_index<<std::endl;
+    std::cout<<"last_(): "<<last_()<<std::endl;
+    std::cout<<"shift_first: "<<shift_first<<std::endl;
+    std::cout<<"shift_()[last]: "<<shift_()[last_()]<<std::endl;
     Size rayposidx=first_();//ray position index -> point index through nr_()[rayposidx]
+    std::cout<<"setting bdy intensities at rayposidx= "<<first_index<<std::endl;
     for (Size freqid=0; freqid<model.parameters->nfreqs(); freqid++)
     {
         intensities(first_index, freqid)=boundary_intensity(model, nr_()[first_index], model.radiation.frequencies.nu(nr_()[first_index], freqid)*shift_first);
+        std::cout<<"backward bdy intensity: "<<intensities(first_index, freqid)<<std::endl;
     }
 
     //from first_+1 to last_ index, trace the ray in reverse direction to treat the boundary conditions
@@ -1515,6 +1529,7 @@ inline void Solver :: comoving_ray_bdy_setup_backward(Model& model)
             const Real Scurr=eta_curr/chi_curr;
             S_next_()(rayposidx, next_freq_idx)=Snext;
             S_curr_()(rayposidx, next_freq_idx)=Scurr;
+            std::cout<<"setting curr source: "<<Scurr<<std::endl;
             // Floor dtau by COMOVING_MIN_DTAU, due to division by dtau^2
             const Real dtau = std::max(trap (chi_curr, chi_next, dZ), COMOVING_MIN_DTAU);
             delta_tau_()(rayposidx, next_freq_idx)=dtau;
@@ -1530,6 +1545,7 @@ inline void Solver :: comoving_ray_bdy_setup_backward(Model& model)
         //The discretization is evidently depends on freq disc direction
         if (is_upward_disc)
         {
+            std::cout<<"is_upward_disc"<<std::endl;
             //Do not forget to exclude the last two frequencies, as these cannot have any freq der computation (should definitely bdy conditions)
             for (Size next_freq_idx=0; next_freq_idx<model.parameters->nfreqs()-2; next_freq_idx++)
             {
@@ -1571,6 +1587,7 @@ inline void Solver :: comoving_ray_bdy_setup_backward(Model& model)
         }
         else
         {
+            std::cout<<"!is_upward_disc"<<std::endl;
             //Do not forget to exclude the last two frequencies, as these cannot have any freq der computation (should definitely bdy conditions)
             for (Size next_freq_idx=2; next_freq_idx<model.parameters->nfreqs(); next_freq_idx++)
             {
@@ -1813,6 +1830,14 @@ inline void Solver :: solve_comoving_single_step (Model& model, const Size raypo
         const Real expl_freq_der=dIdnu_coef1_curr(rayposidx, next_freq_idx)*intensities(curr_point_on_ray_index, dIdnu_index1_curr(rayposidx, next_freq_idx))
         +dIdnu_coef2_curr(rayposidx, next_freq_idx)*intensities(curr_point_on_ray_index, dIdnu_index2_curr(rayposidx, next_freq_idx))
         +dIdnu_coef3_curr(rayposidx, next_freq_idx)*intensities(curr_point_on_ray_index, dIdnu_index3_curr(rayposidx, next_freq_idx));
+        std::cout<<"curr freq der coef 1: "<<dIdnu_coef1_curr(rayposidx, next_freq_idx)<<std::endl;
+        std::cout<<"curr freq der coef 2: "<<dIdnu_coef2_curr(rayposidx, next_freq_idx)<<std::endl;
+        std::cout<<"curr freq der coef 3: "<<dIdnu_coef3_curr(rayposidx, next_freq_idx)<<std::endl;
+        std::cout<<"curr_point_on_ray_index: "<<curr_point_on_ray_index<<std::endl;
+        std::cout<<"respective freq index: "<<dIdnu_index1_curr(rayposidx, next_freq_idx)<<std::endl;
+        std::cout<<"intensity coef 1: "<<intensities(curr_point_on_ray_index, dIdnu_index1_curr(rayposidx, next_freq_idx))<<std::endl;
+        std::cout<<"intensity coef 2: "<<intensities(curr_point_on_ray_index, dIdnu_index2_curr(rayposidx, next_freq_idx))<<std::endl;
+        std::cout<<"intensity coef 3: "<<intensities(curr_point_on_ray_index, dIdnu_index3_curr(rayposidx, next_freq_idx))<<std::endl;
         std::cout<<"expl_freq_der: "<<expl_freq_der<<std::endl;
         std::cout<<"full freq der term: "<<expl_term*expl_freq_der*deltanu/dtau<<std::endl;
         //TODO: actually do the explicit part
@@ -1977,7 +2002,8 @@ inline void Solver :: solve_comoving_order_2_sparse (
     real_pt_()[centre]=true;
 
     nr_   ()[centre] = o;
-    shift_()[centre] = 1.0;
+    shift_()[centre] = model.geometry.get_shift <Rest> (o, rr, o, 0);
+    std::cout<<"shift_()[last]: "<<shift_()[last_()]<<std::endl;
     // TODO: compute shift versus zero velocity!
     n_tot_() = (last_()+1) - first_();
 
@@ -2035,6 +2061,7 @@ inline void Solver :: solve_comoving_order_2_sparse (
     std::cout<<"after forward iterations"<<std::endl;
 
     //Same procedure for the backward ray
+    std::cout<<"shift_()[last]: "<<shift_()[last_()]<<std::endl;
 
     //Now is the perfect time to setup the boundary conditions and data for the backward ray
     comoving_ray_bdy_setup_backward<approx>(model);
@@ -2587,6 +2614,8 @@ accel inline void Solver :: set_data_indicate_point (
         nr   [id1] = nxt;
         real_pt[id1]= true;
         shift[id1] = shift_nxt;
+        std::cout<<"shift_next: "<<shift_nxt<<std::endl;
+        std::cout<<"id1: "<<id1<<std::endl;
         // std::cout<<"shift: "<<shift_nxt<<std::endl;
         dZ   [id2] = dZ_loc;
 
