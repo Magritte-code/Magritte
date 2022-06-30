@@ -1806,7 +1806,10 @@ inline void Solver :: solve_comoving_single_step (Model& model, const Size raypo
         +dIdnu_coef2_curr(rayposidx, next_freq_idx)*intensities(curr_point_on_ray_index, dIdnu_index2_curr(rayposidx, next_freq_idx))
         +dIdnu_coef3_curr(rayposidx, next_freq_idx)*intensities(curr_point_on_ray_index, dIdnu_index3_curr(rayposidx, next_freq_idx));
         std::cout<<"expl_freq_der: "<<expl_freq_der<<std::endl;
+        std::cout<<"full freq der term: "<<expl_term*expl_freq_der*deltanu/dtau<<std::endl;
         //TODO: actually do the explicit part
+        std::cout<<"intensities before explicit part: "<<intensities(curr_point_on_ray_index, curr_freq_idx)<<std::endl;
+        std::cout<<"intensities after optical depth: "<<intensities(curr_point_on_ray_index, curr_freq_idx)*exp(-dtau)<<std::endl;
         intensities(rayposidx, next_freq_idx)=intensities(curr_point_on_ray_index, curr_freq_idx)*exp(-dtau)
         +expl_term*S_curr(rayposidx, next_freq_idx) //source term
         +expl_term*expl_freq_der*deltanu/dtau;//frequency derivative term
@@ -1844,9 +1847,12 @@ inline void Solver :: solve_comoving_single_step (Model& model, const Size raypo
             +dIdnu_coef3_next(rayposidx, next_freq_idx-1)*intensities(rayposidx, dIdnu_index3_next(rayposidx, next_freq_idx-1));
             std::cout<<"impl freq der: "<<impl_freq_der<<std::endl;
 
+            std::cout<<"intensities before implicit part: "<<intensities(rayposidx, next_freq_idx-1)<<std::endl;
+
             intensities(rayposidx, next_freq_idx-1)=(intensities(rayposidx, next_freq_idx-1)
             +impl_term*S_next(rayposidx, next_freq_idx-1)//source term
-            +impl_term*impl_freq_der*deltanu/dtau)/(1.0-dIdnu_coef1_next(rayposidx, next_freq_idx-1)*deltanu/dtau); //freq derivative term
+            +impl_term*impl_freq_der*deltanu/dtau)/(1.0-dIdnu_coef1_next(rayposidx, next_freq_idx-1)*impl_term*deltanu/dtau); //freq derivative term
+            std::cout<<"implicit part intensities: "<<intensities(rayposidx, next_freq_idx-1)<<std::endl;
         }
     }
     else
@@ -1860,14 +1866,23 @@ inline void Solver :: solve_comoving_single_step (Model& model, const Size raypo
             const Real curr_shift=(forward_ray) ? 2.0-shift[curr_point_on_ray_index] : shift[curr_point_on_ray_index];//absolute shift, versus static frame
             const Real deltanu=model.radiation.frequencies.nu(nextpointidx, next_freq_idx)*next_shift-model.radiation.frequencies.nu(curr_point_idx, curr_freq_idx)*curr_shift;
             const Real dtau=delta_tau(rayposidx, next_freq_idx);
+            std::cout<<"dtau: "<<dtau<<std::endl;
+            std::cout<<"next freq idx: "<<next_freq_idx<<std::endl;
             const Real impl_term=(dtau+expm1(-dtau))/dtau;
+            std::cout<<"impl_term: "<<impl_term<<std::endl;
             //only the parts of the other points (to subtract/add)
             const Real impl_freq_der=dIdnu_coef2_next(rayposidx, next_freq_idx)*intensities(rayposidx, dIdnu_index2_next(rayposidx, next_freq_idx))
             +dIdnu_coef3_next(rayposidx, next_freq_idx)*intensities(rayposidx, dIdnu_index3_next(rayposidx, next_freq_idx));
+            std::cout<<"impl freq der: "<<impl_freq_der<<std::endl;
+            std::cout<<"full freq der term: "<<impl_term*impl_freq_der*deltanu/dtau<<std::endl;
+            std::cout<<"1.0-dIdnu coef times...: "<<1.0-dIdnu_coef1_next(rayposidx, next_freq_idx)*deltanu/dtau<<std::endl;
+
+            std::cout<<"intensities before implicit part: "<<intensities(rayposidx, next_freq_idx)<<std::endl;
 
             intensities(rayposidx, next_freq_idx)=(intensities(rayposidx, next_freq_idx)
             +impl_term*S_next(rayposidx, next_freq_idx)//source term
-            +impl_term*impl_freq_der*deltanu/dtau)/(1.0-dIdnu_coef1_next(rayposidx, next_freq_idx)*deltanu/dtau); //freq derivative term
+            +impl_term*impl_freq_der*deltanu/dtau)/(1.0-dIdnu_coef1_next(rayposidx, next_freq_idx)*impl_term*deltanu/dtau); //freq derivative term
+            std::cout<<"implicit part intensities: "<<intensities(rayposidx, next_freq_idx)<<std::endl;
         }
     }
 

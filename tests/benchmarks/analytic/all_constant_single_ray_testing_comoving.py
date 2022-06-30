@@ -14,18 +14,19 @@ import magritte.core     as magritte
 
 
 dimension = 1
-npoints   = 10#50
+npoints   = 20#50
 nrays     = 2
 nspecs    = 5
 nlspecs   = 1
-nquads    = 23#1
+nquads    = 54#1
 
 nH2  = 1.0E+12                 # [m^-3]
 nTT  = 1.0E+03                 # [m^-3]
 temp = 4.5E+00                 # [K]
 turb = 0.0E+00                 # [m/s]
 dx   = 1.0E+12                 # [m]
-dv   = 0.0E+00 / magritte.CC   # [fraction of speed of light]
+# dv   = 0.0E+00 / magritte.CC   # [fraction of speed of light]
+dv   = 2.5E+02 / magritte.CC   # [fraction of speed of light]
 
 
 def create_model ():
@@ -159,6 +160,7 @@ def run_model (nosave=False):
     result += f'{timer2.print()                               }\n'
     result += f'{timer3.print()                               }\n'
     result += f'{timer4.print()                               }\n'
+    result += f'{timer5.print()                               }\n'
     result += f'-----------------------------------------------\n'
 
     print(result)
@@ -169,14 +171,19 @@ def run_model (nosave=False):
 
         fig = plt.figure(dpi=150)
         plt.title(modelName)
-        plt.scatter(x, u_0s[0,:,0], s=0.5, label='0s', zorder=1)
-        plt.scatter(x, u_2f[0,:,0], s=0.5, label='2f', zorder=1)
+        # plt.scatter(x, u_0s[0,:,0], s=0.5, label='0s', zorder=1)
+        # plt.scatter(x, u_2f[0,:,0], s=0.5, label='2f', zorder=1)
+        plt.scatter(x, J_0s[:,0], s=0.5, label='0s', zorder=1)
+        plt.scatter(x, J_2f[:,0], s=0.5, label='2f', zorder=1)
+        plt.scatter(x, J_co[:,0], s=0.5, label='co', zorder=1)
         plt.plot(x, u_(x), c='lightgray', zorder=0)
         plt.legend()
-        plt.xscale('log')
+        # plt.xscale('log')
         plt.xlabel('r [m]')
         plt.ylabel('Mean intensity [W/m$^{2}$]')
-        plt.savefig(f'{resdir}{modelName}-{timestamp}.png', dpi=150)
+        #TODO PLOT J instead
+        plt.show()
+        # plt.savefig(f'{resdir}{modelName}-{timestamp}.png', dpi=150)
 
     #returning whether output is as expected (not too far from the input)
     # max_diff=max(u_(x))-min(u_(x))
