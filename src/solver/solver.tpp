@@ -1022,7 +1022,7 @@ inline void Solver :: match_overlapping_boundary_conditions(Model& model, const 
     Vector<Size>& right_bound_index=right_bound_index_();//Specifies the corresponding freq index to the right bounds of the ranges
 
     Size curr_range_index=0;
-    Size curr_freq_index=left_bound[curr_range_index];//contains the current frequency index
+    Size curr_freq_index=left_bound_index[curr_range_index];//contains the current frequency index
     //Assumption: at least a single line exists -> a single range exists
     Real curr_range_min=left_bound[curr_range_index];
     Real curr_range_max=right_bound[curr_range_index];
@@ -1035,6 +1035,7 @@ inline void Solver :: match_overlapping_boundary_conditions(Model& model, const 
     std::multimap<Real, std::tuple<Size, Size>>::iterator it=multimap_freq_to_bdy_index.begin();
     while (it!=multimap_freq_to_bdy_index.end()&&curr_range_index<nb_ranges)
     {
+        std::cout<<"start of large while loop"<<std::endl;
         const Real bdy_freq=it->first;//get boundary freq
         const Size bdy_point_on_ray_idx=std::get<0>(it->second);//get corresponding point index on ray
         const Size bdy_freq_idx=std::get<1>(it->second);//get corresponding freq index
@@ -1054,10 +1055,15 @@ inline void Solver :: match_overlapping_boundary_conditions(Model& model, const 
             curr_range_max=right_bound[curr_range_index];
             curr_range_freq=curr_range_min;
             curr_freq_index=left_bound_index[curr_range_index];//stores the freq index of curr point
+            std::cout<<"curr_freq_idx: "<<curr_freq_index<<std::endl;
+            std::cout<<"looping first while loop"<<std::endl;
         }
+        std::cout<<"after correctly setting right_bound"<<std::endl;
         //now it is guaranteed that rightbound>=bdy_freq, so we only need to check whether leftbound<=bdy_freq
         if (curr_range_min<=bdy_freq)
         {
+            std::cout<<"curr range min: "<<curr_range_min<<std::endl;
+            std::cout<<"bdy freq: "<<bdy_freq<<std::endl;
             //Do the boundary stuff
             //but first check which freqs are exactly in front or behind the bdy freq
             //Start with the leftmost index of the range
@@ -1066,8 +1072,10 @@ inline void Solver :: match_overlapping_boundary_conditions(Model& model, const 
             //Find which freq bounds at curr_point exactly correspond to the bdy freq (enclosing it)
             while (bdy_freq>curr_range_freq&&curr_range_freq<curr_range_max)
             {
+                std::cout<<"curr_freq_idx: "<<curr_freq_index<<std::endl;
                 curr_freq_index++;
-                Real curr_range_freq=model.radiation.frequencies.nu(currpoint, curr_freq_index)*curr_shift;
+                curr_range_freq=model.radiation.frequencies.nu(currpoint, curr_freq_index)*curr_shift;
+                std::cout<<"looping second while loop"<<std::endl;
             }
             Size left_curr_freq_idx=curr_freq_index-1;
             Size right_curr_freq_idx=curr_freq_index;
@@ -1114,9 +1122,11 @@ inline void Solver :: match_overlapping_boundary_conditions(Model& model, const 
             //pop value from iterator
             it=multimap_freq_to_bdy_index.erase(it);
             //TODO NOT HERE: for the INITIAL BOUNDARY CONDITIONS, maybe let the function choose the TYPE OF BOUNDARY CONDITION to use!!!
+            std::cout<<"popping iterator"<<std::endl;
         }
         else
         {
+            std::cout<<"incrementing iterator"<<std::endl;
             it++;
         }
     }

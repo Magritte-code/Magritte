@@ -14,11 +14,11 @@ import magritte.core     as magritte
 
 
 dimension = 1
-npoints   = 20#50
+npoints   = 15#50
 nrays     = 2
 nspecs    = 5
 nlspecs   = 1
-nquads    = 54#1
+nquads    = 73#1
 
 nH2  = 1.0E+12                 # [m^-3]
 nTT  = 1.0E+03                 # [m^-3]
@@ -26,7 +26,9 @@ temp = 4.5E+00                 # [K]
 turb = 0.0E+00                 # [m/s]
 dx   = 1.0E+12                 # [m]
 # dv   = 0.0E+00 / magritte.CC   # [fraction of speed of light]
-dv   = 2.5E+02 / magritte.CC   # [fraction of speed of light]
+dv   = 5.5E+03 / magritte.CC   # [fraction of speed of light]
+vmax = 2.0E+02 / magritte.CC
+period = 10
 
 
 def create_model ():
@@ -49,8 +51,12 @@ def create_model ():
     model.parameters.set_nlspecs           (nlspecs)
     model.parameters.set_nquads            (nquads)
 
+
     model.geometry.points.position.set([[i*dx, 0, 0] for i in range(npoints)])
-    model.geometry.points.velocity.set([[i*dv, 0, 0] for i in range(npoints)])
+    # model.geometry.points.velocity.set([[i*dv, 0, 0] for i in range(npoints)])
+    vsin = [[vmax*np.sin(2.0*np.pi*i/period), 0, 0] for i in range (npoints)]
+    model.geometry.points.velocity.set(vsin)
+
 
     model.chemistry.species.abundance = [[     0.0,    nTT,  nH2,  0.0,      1.0] for _ in range(npoints)]
     model.chemistry.species.symbol    =  ['dummy0', 'test', 'H2', 'e-', 'dummy1']
@@ -176,7 +182,7 @@ def run_model (nosave=False):
         plt.scatter(x, J_0s[:,0], s=0.5, label='0s', zorder=1)
         plt.scatter(x, J_2f[:,0], s=0.5, label='2f', zorder=1)
         plt.scatter(x, J_co[:,0], s=0.5, label='co', zorder=1)
-        plt.plot(x, u_(x), c='lightgray', zorder=0)
+        # plt.plot(x, u_(x), c='lightgray', zorder=0)
         plt.legend()
         # plt.xscale('log')
         plt.xlabel('r [m]')
