@@ -15,7 +15,7 @@ void Rays :: read (const Io& io)
       antipod.resize (parameters->nrays());
        weight.resize (parameters->nrays());
 
-    Double2 direction_buffer (parameters->nrays(), Double1(3));
+    Real2 direction_buffer (parameters->nrays(), Real1(3));
 
     io.read_array (prefix+"direction", direction_buffer);
     io.read_list  (prefix+"weight",    weight);
@@ -27,7 +27,7 @@ void Rays :: read (const Io& io)
                                  direction_buffer[r][2] );
     }
 
-    const double tolerance = 1.0E-9;
+    const Real tolerance = 1.0E-9;
 
     for (Size r1 = 0; r1 < parameters->nrays(); r1++)
     {
@@ -50,7 +50,7 @@ void Rays :: write (const Io& io) const
 {
     cout << "Writing rays..." << endl;
 
-    Double2 direction_buffer (parameters->nrays(), Double1(3));
+    Real2 direction_buffer (parameters->nrays(), Real1(3));
 
     for (Size r = 0; r < parameters->nrays(); r++)
     {

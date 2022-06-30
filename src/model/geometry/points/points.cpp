@@ -15,8 +15,8 @@ void Points :: read (const Io& io)
     position.resize (parameters->npoints());
     velocity.resize (parameters->npoints());
 
-    Double2 position_buffer (parameters->npoints(), Double1(3));
-    Double2 velocity_buffer (parameters->npoints(), Double1(3));
+    Real2 position_buffer (parameters->npoints(), Real1(3));
+    Real2 velocity_buffer (parameters->npoints(), Real1(3));
 
     io.read_array (prefix+"position", position_buffer);
     io.read_array (prefix+"velocity", velocity_buffer);
@@ -62,8 +62,8 @@ void Points :: write (const Io& io) const
 {
     cout << "Writing points..." << endl;
 
-    Double2 position_buffer (parameters->npoints(), Double1(3));
-    Double2 velocity_buffer (parameters->npoints(), Double1(3));
+    Real2 position_buffer (parameters->npoints(), Real1(3));
+    Real2 velocity_buffer (parameters->npoints(), Real1(3));
 
     for (size_t p = 0; p < parameters->npoints(); p++)
     {

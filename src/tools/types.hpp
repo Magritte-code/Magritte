@@ -21,14 +21,14 @@ using std::sqrt;
 namespace pc = paracabs;
 
 // Default Real and Size types
-typedef long double Real;
-typedef uint32_t    Size;
+typedef double   Real;
+typedef uint32_t Size;
 
 #define MPI_TYPE_REAL MPI_LONG_DOUBLE
 #define MPI_TYPE_SIZE MPI_INT
 
 // Paracabs Vector3D
-using Vector3D = pc::datatypes::Vector3D <double>;
+using Vector3D = pc::datatypes::Vector3D <Real>;
 
 // Define templated Paracabs datatypes
 template <typename type>
@@ -59,6 +59,7 @@ typedef vector<Real>  Real1;
 typedef vector<Real1> Real2;
 typedef vector<Real2> Real3;
 typedef vector<Real3> Real4;
+typedef vector<Real4> Real5;
 
 // Vectors of bool
 typedef vector<bool>  Bool1;

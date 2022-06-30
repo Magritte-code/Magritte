@@ -38,8 +38,8 @@ struct Io
     virtual int  read_list     (const string fname,       Long1   &list  ) const = 0;
     virtual int write_list     (const string fname, const Long1   &list  ) const = 0;
 
-    virtual int  read_list     (const string fname,       Double1 &list  ) const = 0;
-    virtual int write_list     (const string fname, const Double1 &list  ) const = 0;
+    // virtual int  read_list     (const string fname,       Double1 &list  ) const = 0;
+    // virtual int write_list     (const string fname, const Double1 &list  ) const = 0;
 
     virtual int  read_list     (const string fname,       Size_t1 &list  ) const = 0;
     virtual int write_list     (const string fname, const Size_t1 &list  ) const = 0;
@@ -56,18 +56,18 @@ struct Io
     virtual int  read_array    (const string fname,       Long2   &array ) const = 0;
     virtual int write_array    (const string fname, const Long2   &array ) const = 0;
 
-    virtual int  read_array    (const string fname,       Double2 &array ) const = 0;
-    virtual int write_array    (const string fname, const Double2 &array ) const = 0;
+    // virtual int  read_array    (const string fname,       Double2 &array ) const = 0;
+    // virtual int write_array    (const string fname, const Double2 &array ) const = 0;
 
     virtual int  read_array    (const string fname,       Real2   &array ) const = 0;
     virtual int write_array    (const string fname, const Real2   &array ) const = 0;
 
-    virtual int  read_3_vector (const string fname,       Double1 &x,
-                                                          Double1 &y,
-                                                          Double1 &z     ) const = 0;
-    virtual int write_3_vector (const string fname, const Double1 &x,
-                                                    const Double1 &y,
-                                                    const Double1 &z     ) const = 0;
+    // virtual int  read_3_vector (const string fname,       Double1 &x,
+    //                                                       Double1 &y,
+    //                                                       Double1 &z     ) const = 0;
+    // virtual int write_3_vector (const string fname, const Double1 &x,
+    //                                                 const Double1 &y,
+    //                                                 const Double1 &z     ) const = 0;
 
 
     int read_list (const string fname, Vector<Size>& v) const
