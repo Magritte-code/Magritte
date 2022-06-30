@@ -14,11 +14,11 @@ import magritte.core     as magritte
 
 
 dimension = 1
-npoints   = 50
+npoints   = 10#50
 nrays     = 2
 nspecs    = 5
 nlspecs   = 1
-nquads    = 3
+nquads    = 23#1
 
 nH2  = 1.0E+12                 # [m^-3]
 nTT  = 1.0E+03                 # [m^-3]
@@ -92,20 +92,30 @@ def run_model (nosave=False):
     timer3 = tools.Timer('shortchar 0  ')
     timer3.start()
     model.compute_radiation_field_shortchar_order_0 ()
+    model.compute_Jeff()
     timer3.stop()
     u_0s = np.array(model.radiation.u)
+    J_0s = np.array(model.lines.lineProducingSpecies[0].Jlin)
+
+    timer5 = tools.Timer('comoving  ')
+    timer5.start()
+    model.compute_radiation_field_comoving ()
+    model.compute_Jeff_sparse()
+    timer5.stop()
+    J_co = np.array(model.lines.lineProducingSpecies[0].Jlin)
 
     timer4 = tools.Timer('feautrier 2  ')
     timer4.start()
     model.compute_radiation_field_feautrier_order_2 ()
+    model.compute_Jeff();
     timer4.stop()
     u_2f = np.array(model.radiation.u)
-
+    J_2f = np.array(model.lines.lineProducingSpecies[0].Jlin)
 #TODO: figure out a way to compare this stuff
-    timer5 = tools.Timer('comoving  ')
-    timer5.start()
-    model.compute_radiation_field_comoving ()
-    timer5.stop()
+
+    print(J_0s)
+    print(J_2f)
+    print(J_co)
 
     x  = np.array(model.geometry.points.position)[:,0]
     nu = np.array(model.radiation.frequencies.nu)

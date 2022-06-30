@@ -255,6 +255,11 @@ PYBIND11_MODULE (core, module)
             "Compute the effective mean intensity in the line."
         )
         .def (
+            "compute_Jeff_sparse",
+            &Model::compute_Jeff_sparse,
+            "Compute the effective mean intensity in the line for the sparse memory solvers."
+        )
+        .def (
             "compute_level_populations_from_stateq",
             &Model::compute_level_populations_from_stateq,
             "Compute the level populations for the model assuming statistical equilibrium."

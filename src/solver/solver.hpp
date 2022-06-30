@@ -112,7 +112,7 @@ struct Solver
     pc::multi_threading::ThreadPrivate<Matrix<Real>> S_curr_;//for every point, for every frequency, storing source function; might be fiddled with to set boundary conditions
     pc::multi_threading::ThreadPrivate<Matrix<Real>> S_next_;//for every point, for every frequency, storing source function; might be fiddled with to set boundary conditions
 
-    const Real COMOVING_MIN_DTAU=1E-10;
+    const Real COMOVING_MIN_DTAU=1.0e-10;
 
     //For computing the second order accurate frequency derivative
     //Cant we just compute is during the main computation? I see no reason to store it now?
@@ -260,7 +260,7 @@ struct Solver
     inline void comoving_ray_bdy_setup_backward(Model& model);
     template<ApproximationType approx>
     inline void solve_comoving_order_2_sparse (Model& model);
-    inline void solve_comoving_single_step (Model& model, const Size rayposidx, const Size rr, const bool is_upward_disc, const bool forward_ray);
+    inline void solve_comoving_single_step (Model& model, const Size rayposidx, const Size rayidx, const Size rr, const bool is_upward_disc, const bool forward_ray);
     template<ApproximationType approx>
     inline void solve_comoving_order_2_sparse (
           Model& model,
