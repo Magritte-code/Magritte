@@ -14,11 +14,11 @@ import magritte.core     as magritte
 
 
 dimension = 1
-npoints   = 15#50
+npoints   = 120#50
 nrays     = 2
 nspecs    = 5
 nlspecs   = 1
-nquads    = 73#1
+nquads    = 125#1
 
 nH2  = 1.0E+12                 # [m^-3]
 nTT  = 1.0E+03                 # [m^-3]
@@ -27,8 +27,8 @@ turb = 0.0E+00                 # [m/s]
 dx   = 1.0E+12                 # [m]
 # dv   = 0.0E+00 / magritte.CC   # [fraction of speed of light]
 dv   = 5.5E+03 / magritte.CC   # [fraction of speed of light]
-vmax = 2.0E+02 / magritte.CC
-period = 10
+vmax = 5.0E+02 / magritte.CC
+period = 40
 
 
 def create_model ():
