@@ -100,6 +100,7 @@ struct Model
     int compute_radiation_field_feautrier_order_2_uv     ();
     int compute_radiation_field_feautrier_order_2_anis   ();
     int compute_radiation_field_feautrier_order_2_sparse ();
+    int compute_radiation_field_feautrier_order_2_sparse_single_line();
 
     int set_eta_and_chi       (const Size rr);
     int set_boundary_condition();

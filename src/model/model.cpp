@@ -340,6 +340,21 @@ int Model :: compute_radiation_field_feautrier_order_2 ()
 
 ///  Computer for the radiation field
 /////////////////////////////////////
+int Model :: compute_radiation_field_feautrier_order_2_sparse_single_line ()
+{
+    cout << "Computing radiation field..." << endl;
+
+    Solver solver;
+    solver.setup <CoMoving> (*this);
+    //FIXME (after verification that it works): throw error if not using one_line_approximation!!
+    solver.solve_feautrier_order_2_sparse_single_line(*this);
+
+    return (0);
+}
+
+
+///  Computer for the radiation field
+/////////////////////////////////////
 int Model :: compute_radiation_field_feautrier_order_2_uv ()
 {
     cout << "Computing radiation field..." << endl;

@@ -87,6 +87,16 @@ struct Solver
               Size      id1,
               Size      id2 );
 
+    template <Frame frame>
+    accel inline Size trace_ray_single_line (
+        const Geometry& geometry,
+        const Size      o,
+        const Size      r,
+        const double    dshift_max,
+        const int       increment,
+              Size      id1,
+              Size      id2 );
+
     accel inline void set_data (
         const Size   crt,
         const Size   nxt,
@@ -94,6 +104,16 @@ struct Solver
         const double shift_nxt,
         const double dZ_loc,
         const double dshift_max,
+        const int    increment,
+              Size&  id1,
+              Size&  id2 );
+
+    accel inline void set_data_single_line (
+        const Size   crt,
+        const Size   nxt,
+        const double shift_crt,
+        const double shift_nxt,
+        const double dZ_loc,
         const int    increment,
               Size&  id1,
               Size&  id2 );
@@ -114,6 +134,9 @@ struct Solver
         const Real   freq,
               Real&  eta,
               Real&  chi ) const;
+
+    inline Real compute_dtau_single_line(Model& model, Size curridx, Size nextidx, Size lineidx, Real curr_freq, Real next_freq, Real dz);
+
 
     accel inline void update_Lambda (
               Model &model,
@@ -154,6 +177,10 @@ struct Solver
 
     template <ApproximationType approx>
     accel inline void solve_feautrier_order_2 (Model& model, const Size o, const Size f);
+
+    //only valid for single line approximation
+    inline void solve_feautrier_order_2_sparse_single_line (Model& model);
+    accel inline void solve_feautrier_order_2_single_line (Model& model, const Size o, const Size f);
 
 
     // Solvers for both u and v

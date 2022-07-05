@@ -296,6 +296,83 @@ inline void Solver :: solve_feautrier_order_2_sparse (Model& model)
 }
 
 
+
+//template<ApproximationType approx>
+inline void Solver :: solve_feautrier_order_2_sparse_single_line (Model& model)
+{
+    // Initialise variables
+    for (LineProducingSpecies &lspec : model.lines.lineProducingSpecies)
+    {
+        lspec.lambda.clear();
+
+        lspec.J.resize(model.parameters->npoints(), lspec.linedata.nrad);
+
+        threaded_for (o, model.parameters->npoints(),
+        {
+            for (Size k = 0; k < lspec.linedata.nrad; k++)
+            {
+                lspec.J(o,k) = 0.0;
+            }
+        })
+    }
+
+
+    // For each ray, solve transfer equation
+    for (Size rr = 0; rr < model.parameters->hnrays(); rr++)
+    {
+        const Size     ar = model.geometry.rays.antipod  [rr];
+        const Real     wt = model.geometry.rays.weight   [rr] * two;
+        const Vector3D nn = model.geometry.rays.direction[rr];
+
+        cout << "--- rr = " << rr << endl;
+
+        for (LineProducingSpecies &lspec : model.lines.lineProducingSpecies)
+        {
+            threaded_for (o, model.parameters->npoints(),
+            {
+                const Real dshift_max = get_dshift_max (model, o);
+
+                nr_   ()[centre] = o;
+                shift_()[centre] = 1.0;
+
+                first_() = trace_ray_single_line <CoMoving> (model.geometry, o, rr, dshift_max, -1, centre-1, centre-1) + 1;
+                last_ () = trace_ray_single_line <CoMoving> (model.geometry, o, ar, dshift_max, +1, centre+1, centre  ) - 1;
+                n_tot_() = (last_()+1) - first_();
+
+                if (n_tot_() > 1)
+                {
+                    for (Size k = 0; k < lspec.linedata.nrad; k++)
+                    {
+                        // Integrate over the line
+                        for (Size z = 0; z < model.parameters->nquads(); z++)
+                        {
+                            solve_feautrier_order_2_single_line (model, o,  lspec.nr_line[o][k][z]);
+
+                            lspec.J(o,k) += lspec.quadrature.weights[z] * wt * Su_()[centre];
+
+                            update_Lambda (model, rr, lspec.nr_line[o][k][z]);
+                        }
+                    }
+                }
+                else
+                {
+                    for (Size k = 0; k < lspec.linedata.nrad; k++)
+                    {
+                        // Integrate over the line
+                        for (Size z = 0; z < model.parameters->nquads(); z++)
+                        {
+                            lspec.J(o,k) += lspec.quadrature.weights[z] * wt * boundary_intensity(model, o, model.radiation.frequencies.nu(o, lspec.nr_line[o][k][z]));
+                        }
+                    }
+                }
+            })
+        }
+    }
+}
+
+
+
+
 template<ApproximationType approx>
 inline void Solver :: solve_feautrier_order_2_anis (Model& model)
 {
@@ -622,6 +699,44 @@ accel inline Size Solver :: trace_ray (
     return id1;
 }
 
+template <Frame frame>
+accel inline Size Solver :: trace_ray_single_line (
+    const Geometry& geometry,
+    const Size      o,
+    const Size      r,
+    const double    dshift_max,
+    const int       increment,
+          Size      id1,
+          Size      id2 )
+{
+    double  Z = 0.0;   // distance from origin (o)
+    double dZ = 0.0;   // last increment in Z
+
+    Size nxt = geometry.get_next (o, r, o, Z, dZ);
+
+    if (geometry.valid_point(nxt))
+    {
+        Size         crt = o;
+        double shift_crt = geometry.get_shift <frame> (o, r, crt, 0.0);
+        double shift_nxt = geometry.get_shift <frame> (o, r, nxt, Z  );
+
+        set_data_single_line (crt, nxt, shift_crt, shift_nxt, dZ, increment, id1, id2);
+
+        while (geometry.not_on_boundary(nxt))
+        {
+                  crt =       nxt;
+            shift_crt = shift_nxt;
+
+                  nxt = geometry.get_next          (o, r, nxt, Z, dZ);
+            shift_nxt = geometry.get_shift <frame> (o, r, nxt, Z    );
+
+            set_data_single_line (crt, nxt, shift_crt, shift_nxt, dZ, increment, id1, id2);
+        }
+    }
+
+    return id1;
+}
+
 
 accel inline void Solver :: set_data (
     const Size   crt,
@@ -686,6 +801,73 @@ accel inline void Solver :: set_data (
         id1 += increment;
         id2 += increment;
     }
+}
+
+
+accel inline void Solver :: set_data_single_line (
+    const Size   crt,
+    const Size   nxt,
+    const double shift_crt,
+    const double shift_nxt,
+    const double dZ_loc,
+    const int    increment,
+          Size&  id1,
+          Size&  id2 )
+{
+    Vector<double>& dZ    = dZ_   ();
+    Vector<Size  >& nr    = nr_   ();
+    Vector<double>& shift = shift_();
+
+    const double dshift     = shift_nxt - shift_crt;
+    const double dshift_abs = fabs (dshift);
+
+    //In this approximation, we no longer care about doing arbitrarily large doppler shifts
+
+    // if (dshift_abs > dshift_max) // If velocity gradient is not well-sampled enough
+    // {
+    //     // Interpolate velocity gradient field
+    //     const Size        n_interpl = dshift_abs / dshift_max + 1;
+    //     const Size   half_n_interpl = 0.5 * n_interpl;
+    //     const double     dZ_interpl =     dZ_loc / n_interpl;
+    //     const double dshift_interpl =     dshift / n_interpl;
+    //
+    //     if (n_interpl > 10000)
+    //     {
+    //         printf ("ERROR (n_intpl > 10 000) || (dshift_max < 0, probably due to overflow)\n");
+    //     }
+    //
+    //     // Assign current cell to first half of interpolation points
+    //     for (Size m = 1; m < half_n_interpl; m++)
+    //     {
+    //         nr   [id1] = crt;
+    //         shift[id1] = shift_crt + m*dshift_interpl;
+    //         dZ   [id2] = dZ_interpl;
+    //
+    //         id1 += increment;
+    //         id2 += increment;
+    //     }
+    //
+    //     // Assign next cell to second half of interpolation points
+    //     for (Size m = half_n_interpl; m <= n_interpl; m++)
+    //     {
+    //         nr   [id1] = nxt;
+    //         shift[id1] = shift_crt + m*dshift_interpl;
+    //         dZ   [id2] = dZ_interpl;
+    //
+    //         id1 += increment;
+    //         id2 += increment;
+    //     }
+    // }
+    //
+    // else
+    // {
+    nr   [id1] = nxt;
+    shift[id1] = shift_nxt;
+    dZ   [id2] = dZ_loc;
+
+    id1 += increment;
+    id2 += increment;
+    // }
 }
 
 
@@ -1042,6 +1224,256 @@ accel inline void Solver :: solve_feautrier_order_2 (Model& model, const Size o,
         term_n = eta_n * inverse_chi[n+1];
         dtau_n = half * (chi_c + chi_n) * dZ[n];
 
+        const Real dtau_avg = half * (dtau_c + dtau_n);
+        inverse_A[n] = dtau_avg * dtau_c;
+        inverse_C[n] = dtau_avg * dtau_n;
+
+        A[n] = one / inverse_A[n];
+        C[n] = one / inverse_C[n];
+
+        /// Use the previously stored value of the source function
+        Su[n] = term_c;
+
+        FF[n] = (A[n] * FF[n-1] * FI[n-1] + one) * inverse_C[n];
+        FI[n] = one / (one + FF[n]);
+        Su[n] = (A[n] * Su[n-1] + Su[n]) * FI[n] * inverse_C[n];
+    }
+
+
+    /// Set boundary conditions
+    const Real inverse_dtau_l = one / dtau_n;
+
+    A[last] = two * inverse_dtau_l * inverse_dtau_l;
+
+    const Real Bl_min_Al = one + two * inverse_dtau_l;
+    const Real Bl        = Bl_min_Al + A[last];
+
+    const Real denominator = one / (Bl * FF[last-1] + Bl_min_Al);
+
+    const Real I_bdy_l = boundary_intensity (model, nr[last], freq*shift[last]);
+
+    Su[last] = term_n + two * I_bdy_l * inverse_dtau_l;
+    Su[last] = (A[last] * Su[last-1] + Su[last]) * (one + FF[last-1]) * denominator;
+
+    if (n_off_diag == 0)
+    {
+        if (centre < last)
+        {
+            /// Write economically: G[last] = (B[last] - A[last]) / A[last];
+            GG[last] = half * Bl_min_Al * dtau_n * dtau_n;
+            GP[last] = GG[last] / (one + GG[last]);
+
+            for (long n = last-1; n > centre; n--) // use long in reverse loops!
+            {
+                Su[n] += Su[n+1] * FI[n];
+
+                GG[n] = (C[n] * GP[n+1] + one) * inverse_A[n];
+                GP[n] = GG[n] / (one + GG[n]);
+            }
+
+            Su    [centre] += Su[centre+1] * FI[centre];
+            L_diag[centre]  = inverse_C[centre] / (FF[centre] + GP[centre+1]);
+        }
+        else
+        {
+            L_diag[centre] = (one + FF[centre-1]) / (Bl_min_Al + Bl*FF[centre-1]);
+        }
+    }
+    else
+    {
+        /// Write economically: G[last] = (B[last] - A[last]) / A[last];
+        GG[last] = half * Bl_min_Al * dtau_n * dtau_n;
+        GI[last] = one / (one + GG[last]);
+        GP[last] = GG[last] * GI[last];
+
+        L_diag[last] = (one + FF[last-1]) / (Bl_min_Al + Bl*FF[last-1]);
+
+        for (long n = last-1; n > first; n--) // use long in reverse loops!
+        {
+            Su[n] += Su[n+1] * FI[n];
+
+            GG[n] = (C[n] * GP[n+1] + one) * inverse_A[n];
+            GI[n] = one / (one + GG[n]);
+            GP[n] = GG[n] * GI[n];
+
+            L_diag[n] = inverse_C[n] / (FF[n] + GP[n+1]);
+        }
+
+        Su    [first] += Su[first+1] * FI[first];
+        L_diag[first]  = (one + GG[first+1]) / (Bf_min_Cf + Bf*GG[first+1]);
+
+        for (long n = last-1; n >= first; n--) // use long in reverse loops!
+        {
+            L_upper(0,n+1) = L_diag[n+1] * FI[n  ];
+            L_lower(0,n  ) = L_diag[n  ] * GI[n+1];
+        }
+
+        for (Size m = 1; (m < n_off_diag) && (m < n_tot-1); m++)
+        {
+            for (long n = last-1-m; n >= first; n--) // use long in reverse loops!
+            {
+                L_upper(m,n+m+1) = L_upper(m-1,n+m+1) * FI[n    ];
+                L_lower(m,n    ) = L_lower(m-1,n    ) * GI[n+m+1];
+            }
+        }
+    }
+}
+
+//available stuff: model, point indices (curr, next),
+inline Real Solver :: compute_dtau_single_line(Model& model, Size curridx, Size nextidx, Size lineidx, Real curr_freq, Real next_freq, Real dz)
+{
+    const Real linefreq=model.lines.line[lineidx];
+    const Real average_inverse_line_width=(model.lines.inverse_width(curridx, lineidx)+model.lines.inverse_width(nextidx, lineidx))/2.0;
+
+    //opacity is saved divided by the linefreq, so multiply by it
+    const Real curr_line_opacity=linefreq*model.lines.opacity(curridx, lineidx);
+    const Real next_line_opacity=linefreq*model.lines.opacity(nextidx, lineidx);
+    // checking for the same doppler shift is also fine
+    //TODO: maybe do some less stringent check (allow for very small diff compared to line width)
+    if (curr_freq==next_freq)
+    {
+        //JUST DO DEFAULT COMPUTATION
+        const Real diff = curr_freq - model.lines.line[lineidx];//curr_freq==next_freq, so choice is arbitrary
+        // const Real average_line_inverse_width=2/(model.lines.inverse_width(curridx, lineidx)+model.lines.inverse_width(nextidx, lineidx));
+        const Real prof = gaussian(average_inverse_line_width, diff);
+        const Real average_opacity = (curr_line_opacity+next_line_opacity)/2.0;
+
+        return dz * (prof * average_opacity + model.parameters->min_opacity);
+    }
+
+    //assuming linear interpolation of these dimensionless frequency positions
+    //We will also assume the line width to be somewhat constant, replacing the values with the averages
+    //Err, it seems that we instead work in the comoving frame, thus we do not have a static eval frequency, but we do have static line frequencies
+    // Real next_pos=(next_linefreq_()-statfreq_())/average_line_width_;//next_linewidth_();
+    // Real curr_pos=(curr_linefreq_()-statfreq_())/average_line_width_;//curr_linewidth_();
+    //TODO: check sign
+    const Real next_pos=(linefreq-next_freq)*average_inverse_line_width;//next_linewidth_();
+    const Real curr_pos=(linefreq-curr_freq)*average_inverse_line_width;//curr_linewidth_();
+
+    //TODO? instead of using different line widths, just use the averaged line width?
+    //In this way, the diff_pos can be computed quite simple, and we do not have a discrepancy between the interpolation and the bounds
+    const Real diff_pos=next_pos-curr_pos;
+    //Approximate changing line width with average line width instead (derivation too complicated if we allow the line width to change)
+    // Real diff_pos=average_line_width/deltanu;
+
+    const Real delta_opacity=(next_line_opacity-curr_line_opacity);
+    const Real deltanu=next_freq-curr_freq;//differences in curr freqs
+    // Real delta_freq=(next_linefreq_-curr_linefreq_);==deltanu
+
+    //note: opacity can also be extrapolated; however the correction term (expterm) accounts for that
+    Real interp_opacity=curr_line_opacity+delta_opacity*(curr_freq-linefreq)/deltanu;
+
+    //This term is a constant term, giving the usual ... as if the opacity were static
+    Real erfterm=interp_opacity*dz/diff_pos/2.0*(std::erf(next_pos)-std::erf(curr_pos));
+    //This term corrects for the fact that the opacity between points changes
+    //FIXME: only once diff_pos is used for division?
+    Real expterm=delta_opacity*dz/2.0*INVERSE_SQRT_PI/diff_pos/diff_pos*(std::exp(-curr_pos*curr_pos)-std::exp(-next_pos*next_pos));
+    std::cout<<"optical depth: "<<erfterm+expterm<<std::endl;
+    std::cout<<"erfterm: "<<erfterm<<std::endl;
+    return erfterm+expterm;
+}
+
+///  Solver for Feautrier equation along ray pairs using the (ordinary)
+///  2nd-order solver, without adaptive optical depth increments
+///  uses the single line approx, together with
+///    @param[in] w : width index
+///////////////////////////////////////////////////////////////////////
+//template<ApproximationType approx>
+accel inline void Solver :: solve_feautrier_order_2_single_line (Model& model, const Size o, const Size f)
+{
+    const Real freq = model.radiation.frequencies.nu(o, f);
+    const Size l    = model.radiation.frequencies.corresponding_line[f];
+    //assume only this line to be relevant for the entire ray
+
+    Real eta_c, chi_c, dtau_c, term_c;
+    Real eta_n, chi_n, dtau_n, term_n;
+
+    const Size first = first_();
+    const Size last  = last_ ();
+    const Size n_tot = n_tot_();
+
+    Vector<double>& dZ    = dZ_   ();
+    Vector<Size  >& nr    = nr_   ();
+    Vector<double>& shift = shift_();
+
+    // Vector<Real>& inverse_chi = inverse_chi_();
+
+
+    Vector<Real>& Su = Su_();
+    Vector<Real>& Sv = Sv_();
+
+    Vector<Real>& A         = A_        ();
+    Vector<Real>& C         = C_        ();
+    Vector<Real>& inverse_A = inverse_A_();
+    Vector<Real>& inverse_C = inverse_C_();
+
+    Vector<Real>& FF = FF_();
+    Vector<Real>& FI = FI_();
+    Vector<Real>& GG = GG_();
+    Vector<Real>& GI = GI_();
+    Vector<Real>& GP = GP_();
+
+    Vector<Real>& L_diag  = L_diag_ ();
+    Matrix<Real>& L_upper = L_upper_();
+    Matrix<Real>& L_lower = L_lower_();
+
+    //TODO: also check all inverse_chi terms
+    //if possible to replace, DO THIS
+    // Get optical properties for first two elements
+    // get_eta_and_chi <approx> (model, nr[first  ], l, freq*shift[first  ], eta_c, chi_c);
+    // get_eta_and_chi <approx> (model, nr[first+1], l, freq*shift[first+1], eta_n, chi_n);
+
+    dtau_n=compute_dtau_single_line(model, nr[first], nr[first+1], l, freq*shift[first], freq*shift[first+1], dZ[first]);
+    //single line sources
+    term_c=model.lines.emissivity(nr[first  ], l)/model.lines.opacity(nr[first  ], l);//current source
+    term_n=model.lines.emissivity(nr[first+1], l)/model.lines.opacity(nr[first+1], l);//next source
+
+    // inverse_chi[first  ] = 1.0 / chi_c;
+    // inverse_chi[first+1] = 1.0 / chi_n;
+
+    //Need line sources; but can be computed independently
+    // term_c = eta_c * inverse_chi[first  ];//current source
+    // term_n = eta_n * inverse_chi[first+1];//next source
+    // dtau_n = half * (chi_c + chi_n) * dZ[first]; TODO REPLACE WITH NEW FANCY THING
+
+    // Set boundary conditions
+    const Real inverse_dtau_f = one / dtau_n;
+
+            C[first] = two * inverse_dtau_f * inverse_dtau_f;
+    inverse_C[first] = 1.0 / C[first];   // Required for Lambda_diag
+
+    const Real Bf_min_Cf = one + two * inverse_dtau_f;
+    const Real Bf        = Bf_min_Cf + C[first];
+    const Real I_bdy_f   = boundary_intensity (model, nr[first], freq*shift[first]);
+
+    Su[first]  = term_c + two * I_bdy_f * inverse_dtau_f;
+    Su[first] /= Bf;
+
+    /// Write economically: F[first] = (B[first] - C[first]) / C[first];
+    FF[first] = half * Bf_min_Cf * dtau_n * dtau_n;
+    FI[first] = one / (one + FF[first]);
+
+
+    /// Set body of Feautrier matrix
+    for (Size n = first+1; n < last; n++)
+    {
+        term_c = term_n;
+        dtau_c = dtau_n;
+         eta_c =  eta_n;
+         chi_c =  chi_n;
+
+        // Get new radiative properties
+        // get_eta_and_chi <approx> (model, nr[n+1], l, freq*shift[n+1], eta_n, chi_n);
+        dtau_n=compute_dtau_single_line(model, nr[n], nr[n+1], l, freq*shift[n], freq*shift[n+1], dZ[n]);
+        term_n=model.lines.emissivity(nr[n+1], l)/model.lines.opacity(nr[n+1], l);//next source
+        // inverse_chi[n+1] = 1.0 / chi_n;
+        //
+        // //source function: todo replace
+        // //also replace dtau_n
+        // term_n = eta_n * inverse_chi[n+1];
+        // dtau_n = half * (chi_c + chi_n) * dZ[n];
+
+        //Default averaging needed for feautrier matrix
         const Real dtau_avg = half * (dtau_c + dtau_n);
         inverse_A[n] = dtau_avg * dtau_c;
         inverse_C[n] = dtau_avg * dtau_n;

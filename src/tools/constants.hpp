@@ -16,6 +16,7 @@ const string magritte_folder = MAGRITTE_FOLDER;
 // Numerical constants
 const double PI                         =     M_PI;         // pi
 const double FOUR_PI                    = 4.0*M_PI;         // 4*pi
+const double SQRT_PI_DIV_2              = 1.0/M_2_SQRTPI;   // sqrt(pi)/2
 const double INVERSE_SQRT_PI            = 0.5*M_2_SQRTPI;   // 1/sqrt(pi)
 
 const double ONE_THIRD                  = 1.0/3.0;
