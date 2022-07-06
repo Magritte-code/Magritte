@@ -13,11 +13,11 @@ import magritte.setup    as setup
 import magritte.core     as magritte
 
 dimension = 1
-npoints   = 30
+npoints   = 100
 nrays     = 2
 nspecs    = 5
 nlspecs   = 1
-nquads    = 1
+nquads    = 50
 
 nH2  = 1.0E+12                 # [m^-3]
 nTT  = 1.0E+03                 # [m^-3]
@@ -27,7 +27,7 @@ dx   = 1.0E+12                 # [m]
 dx   = 0.6E+12                 # [m]
 # dx   = 5.0E+24                 # [m]
 dv   = 0.0E+00 / magritte.CC   # [fraction of speed of light]
-dv   = 1.5E+02 / magritte.CC   # [fraction of speed of light]
+dv   = 1.0E+04 / magritte.CC   # [fraction of speed of light]
 
 
 def create_model ():
@@ -40,13 +40,13 @@ def create_model ():
     lamdaFile = f'{datdir}test.txt'
 
     def nH2_i (i):
-        return nH2 * np.power((i+1)/npoints, 1.0)
+        return nH2 * np.power((i+npoints)/npoints, 2.0)
 
     def nTT_i (i):
         return nH2_i(i) * nTT / nH2
 
     def temp_i (i):
-        return temp * np.exp(0.2*i)#np.power((i+1), 0.7) #also some ridiculous temperature variation
+        return temp * np.exp(0.05*i)#np.power((i+1), 0.7) #also some ridiculous temperature variation
 
 
     model = magritte.Model ()
@@ -108,16 +108,20 @@ def run_model (nosave=False):
     timer3 = tools.Timer('shortchar 0  ')
     timer3.start()
     model.compute_radiation_field_shortchar_order_0 ()
+    model.compute_Jeff();
     timer3.stop()
     u_0s = np.array(model.radiation.u)
-    J_0s = np.array(model.radiation.J)
+    # J_0s = np.array(model.radiation.J)
+    J_0s = np.array(model.lines.lineProducingSpecies[0].Jlin)
 
     timer4 = tools.Timer('feautrier 2  ')
     timer4.start()
     model.compute_radiation_field_feautrier_order_2 ()
+    model.compute_Jeff();
     timer4.stop()
     u_2f = np.array(model.radiation.u)
-    J_2f = np.array(model.radiation.J)
+    # J_2f = np.array(model.radiation.J)
+    J_2f = np.array(model.lines.lineProducingSpecies[0].Jlin)
 
     timer5 = tools.Timer('feautrier 2 single line dtau')
     timer5.start()
@@ -180,10 +184,10 @@ def run_model (nosave=False):
 
         fig = plt.figure(dpi=150)
         plt.title(modelName)
-        # plt.scatter(x, J_0s[:,0], s=0.5, label='0s', zorder=1)
-        plt.scatter(x, u_0s[0,:,0], s=0.5, label='0s', zorder=1)
-        plt.scatter(x, u_2f[0,:,0], s=0.5, label='2f', zorder=1)
-        # plt.scatter(x, J_2f[:,0], s=0.5, label='2f', zorder=1)
+        # plt.scatter(x, u_0s[0,:,0], s=0.5, label='0s', zorder=1)
+        # plt.scatter(x, u_2f[0,:,0], s=0.5, label='2f', zorder=1)
+        plt.scatter(x, J_0s[:,0], s=0.5, label='0s', zorder=1)
+        plt.scatter(x, J_2f[:,0], s=0.5, label='2f', zorder=1)
         plt.scatter(x, J_single[:,0], s=0.5, label='single', zorder=1)
         # plt.plot(x, u_(x), c='lightgray', zorder=0)
         plt.legend()

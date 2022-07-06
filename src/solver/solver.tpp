@@ -306,8 +306,8 @@ inline void Solver :: solve_feautrier_order_2_sparse_single_line (Model& model)
         lspec.lambda.clear();
 
         lspec.J.resize(model.parameters->npoints(), lspec.linedata.nrad);
-        std::cout<<"J nrows:"<<model.parameters->npoints()<<std::endl;
-        std::cout<<"J ncols:"<<lspec.linedata.nrad<<std::endl;
+        // std::cout<<"J nrows:"<<model.parameters->npoints()<<std::endl;
+        // std::cout<<"J ncols:"<<lspec.linedata.nrad<<std::endl;
         threaded_for (o, model.parameters->npoints(),
         {
             for (Size k = 0; k < lspec.linedata.nrad; k++)
@@ -1192,7 +1192,7 @@ accel inline void Solver :: solve_feautrier_order_2 (Model& model, const Size o,
     term_c = eta_c * inverse_chi[first  ];
     term_n = eta_n * inverse_chi[first+1];
     dtau_n = half * (chi_c + chi_n) * dZ[first];
-    std::cout<<"dtau_n: "<<dtau_n<<std::endl;
+    // std::cout<<"dtau_n: "<<dtau_n<<std::endl;
 
     // Set boundary conditions
     const Real inverse_dtau_f = one / dtau_n;
@@ -1227,7 +1227,7 @@ accel inline void Solver :: solve_feautrier_order_2 (Model& model, const Size o,
 
         term_n = eta_n * inverse_chi[n+1];
         dtau_n = half * (chi_c + chi_n) * dZ[n];
-        std::cout<<"dtau_n: "<<dtau_n<<std::endl;
+        // std::cout<<"dtau_n: "<<dtau_n<<std::endl;
 
         const Real dtau_avg = half * (dtau_c + dtau_n);
         inverse_A[n] = dtau_avg * dtau_c;
@@ -1324,7 +1324,100 @@ accel inline void Solver :: solve_feautrier_order_2 (Model& model, const Size o,
     }
 }
 
-//available stuff: model, point indices (curr, next),
+//Least accurate approximation of the error function taken from abramowitz and stegun
+//5e-4 maximum error; but is weirdly slower than the standard
+inline Real approx_erf(const Real x)
+{
+    if (x>=0)
+    {
+        const Real x_pos=x;
+        const Real a1=0.278393;
+        const Real a2=0.230389;
+        const Real a3=0.000972;
+        const Real a4=0.078108;
+        // const Real x_sqr=x*x;
+        // return 1.0-1.0/std::pow(1.0+a1*x_pos+a2*x_sqr+a3*x_sqr*x_pos+a4*x_sqr*x_sqr, 4.0);
+        return 1.0-1.0/std::pow(1.0+a1*x_pos+a2*x_pos*x_pos+a3*x_pos*x_pos*x_pos+a4*x_pos*x_pos*x_pos*x_pos, 4.0);
+    }
+    else
+    {//approx defined for positive part of x-axis; but erf is symmetric
+        const Real x_pos=-x;
+        const Real a1=0.278393;
+        const Real a2=0.230389;
+        const Real a3=0.000972;
+        const Real a4=0.078108;
+        // const Real x_sqr=x*x;
+        return -1.0+1.0/std::pow(1.0+a1*x_pos+a2*x_pos*x_pos+a3*x_pos*x_pos*x_pos+a4*x_pos*x_pos*x_pos*x_pos, 4.0);
+    }
+}
+
+//second most accurate approx for the error function; taken from abramowitz and stegun
+//max error of 2.5e-5
+inline Real approx2_erf(const Real x)
+{
+    if (x>=0)
+    {
+        // const Real x_pos=x;
+        const Real p=0.47047;
+        const Real a_1=0.3480242;
+        const Real a_2=-0.0958798;
+        const Real a_3=0.7478556;
+        const Real t=1.0/(1.0+p*x);
+        return 1.0-(a_1*t+a_2*t*t+a_3*t*t*t)*std::exp(-x*x);
+    }
+    else
+    {
+        // const Real x_pos=-x;
+        // const Real p=0.47047;
+        // const Real a_1=0.3480242;
+        // const Real a_2=-0.0958798;
+        // const Real a_3=0.7478556;
+        // const Real t=1.0/(1.0+p*x_pos);
+        // return -1.0+(a_1*t+a_2*t*t+a_3*t*t*t)*std::exp(-x_pos*x_pos);
+        //or futher optimization:
+        // const Real x_pos=-x;
+        const Real p=-0.47047;
+        const Real a_1=0.3480242;
+        const Real a_2=-0.0958798;
+        const Real a_3=0.7478556;
+        const Real t=1.0/(1.0+p*x);
+        return -1.0+(a_1*t+a_2*t*t+a_3*t*t*t)*std::exp(-x*x);
+    }
+}
+
+//3rd? fastest approximation of the error function taken from abramowitz and stegun
+//maximum error of 3e-7
+//Err, slower than the actual std::erf implementation, so of no use
+inline Real approx3_erf(const Real x)
+{
+    if (x>=0)
+    {
+        const Real x_pos=x;
+        const Real a1=0.0705230784;
+        const Real a2=0.0422820123;
+        const Real a3=0.0092705272;
+        const Real a4=0.0001520143;
+        const Real a5=0.0002765672;
+        const Real a6=0.0000430638;
+        const Real x_sqr=x*x;
+        return 1.0-1.0/std::pow(1.0+a1*x_pos+a2*x_sqr+a3*x_sqr*x_pos+a4*x_sqr*x_sqr+a5*x_sqr*x_sqr*x_pos+a6*std::pow(x_sqr,3.0), 16.0);
+    }
+    else
+    {//approx defined for positive part of x-axis; but erf is symmetric
+        const Real x_pos=-x;
+        const Real a1=0.0705230784;
+        const Real a2=0.0422820123;
+        const Real a3=0.0092705272;
+        const Real a4=0.0001520143;
+        const Real a5=0.0002765672;
+        const Real a6=0.0000430638;
+        const Real x_sqr=x*x;
+        return -1.0+1.0/std::pow(1.0+a1*x_pos+a2*x_sqr+a3*x_sqr*x_pos+a4*x_sqr*x_sqr+a5*x_sqr*x_sqr*x_pos+a6*std::pow(x_sqr,3.0), 16.0);
+    }
+}
+
+///   Computes the optical depth assuming only a single line exists.
+/// TODO ADD PARAMETER EXPLANATIONS
 inline Real Solver :: compute_dtau_single_line(Model& model, Size curridx, Size nextidx, Size lineidx, Real curr_freq, Real next_freq, Real dz)
 {
     const Real linefreq=model.lines.line[lineidx];
@@ -1335,6 +1428,8 @@ inline Real Solver :: compute_dtau_single_line(Model& model, Size curridx, Size 
     const Real next_line_opacity=linefreq*model.lines.opacity(nextidx, lineidx);
     // checking for the same doppler shift is also fine
     //TODO: maybe do some less stringent check (allow for very small diff compared to line width)
+    //maybe use half max line width as criterion
+
     if (curr_freq==next_freq)
     {
         //JUST DO DEFAULT COMPUTATION
@@ -1358,32 +1453,37 @@ inline Real Solver :: compute_dtau_single_line(Model& model, Size curridx, Size 
     //TODO? instead of using different line widths, just use the averaged line width?
     //In this way, the diff_pos can be computed quite simple, and we do not have a discrepancy between the interpolation and the bounds
     const Real diff_pos=next_pos-curr_pos;
-    std::cout<<"diff_pos: "<<diff_pos<<std::endl;
     //Approximate changing line width with average line width instead (derivation too complicated if we allow the line width to change)
     // Real diff_pos=average_line_width/deltanu;
 
-    const Real delta_opacity=(next_line_opacity-curr_line_opacity);
-    std::cout<<"delta_opacity: "<<delta_opacity<<std::endl;
-    // const Real deltanu=next_freq-curr_freq;//differences in curr freqs
-    const Real deltanu=-next_freq+curr_freq;//differences in curr freqs; +-1 due to shift being defined in the other direction
-    // Real delta_freq=(next_linefreq_-curr_linefreq_);==deltanu
-    std::cout<<"deltanu: "<<deltanu<<std::endl;
+    /// the more correct approach, taking into account also the line opacity change
+    // const Real delta_opacity=(next_line_opacity-curr_line_opacity);
+    // // std::cout<<"delta_opacity: "<<delta_opacity<<std::endl;
+    // // const Real deltanu=next_freq-curr_freq;//differences in curr freqs
+    // const Real deltanu=-next_freq+curr_freq;//differences in curr freqs; +-1 due to shift being defined in the other direction
+    //
+    // //note: opacity can also be extrapolated; however the correction term (expterm) accounts for that
+    // const Real interp_opacity=curr_line_opacity+delta_opacity*(curr_freq-linefreq)/deltanu;
+    //
+    // //This term is a constant term, giving the usual ... as if the opacity were static
+    // const Real erfterm=interp_opacity/diff_pos/2.0*(std::erf(next_pos)-std::erf(curr_pos));
+    // //This term corrects for the fact that the opacity between points changes
+    // const Real expterm=delta_opacity/2.0*INVERSE_SQRT_PI/diff_pos/diff_pos*(std::exp(-curr_pos*curr_pos)-std::exp(-next_pos*next_pos));
+    // return dz*std::max(average_inverse_line_width*(erfterm+expterm), model.parameters->min_opacity);
 
-    std::cout<<"curr_line_opacity: "<<curr_line_opacity<<std::endl;
+    const Real average_opacity=(next_line_opacity+curr_line_opacity)/2.0;
+    //Trying out the very simple simplification of just using the average opacity instead
+    const Real erfterm=average_opacity/diff_pos/2.0*(std::erf(next_pos)-std::erf(curr_pos));
+    return dz*(average_inverse_line_width*erfterm+model.parameters->min_opacity);
 
-    //note: opacity can also be extrapolated; however the correction term (expterm) accounts for that
-    Real interp_opacity=curr_line_opacity+delta_opacity*(curr_freq-linefreq)/deltanu;
-    std::cout<<"interp_opacity: "<<interp_opacity<<std::endl;
-
-    //This term is a constant term, giving the usual ... as if the opacity were static
-    Real erfterm=interp_opacity*dz/diff_pos/2.0*(std::erf(next_pos)-std::erf(curr_pos));
-    //This term corrects for the fact that the opacity between points changes
-    //FIXME: only once diff_pos is used for division?
-    Real expterm=delta_opacity*dz/2.0*INVERSE_SQRT_PI/diff_pos/diff_pos*(std::exp(-curr_pos*curr_pos)-std::exp(-next_pos*next_pos));
-    std::cout<<"optical depth: "<<erfterm+expterm<<std::endl;
-    std::cout<<"optical depth times inverse width: "<<(erfterm+expterm)*average_inverse_line_width<<std::endl;
+    //now using more approximate stuff// err, I can't beat compiler optimizations in general (which can approximate stuff in certain regimes much better)
+    // const Real approx_erfterm=average_opacity/diff_pos/2.0*(approx_erf(next_pos)-approx_erf(curr_pos));
+    // const Real approx_erfterm=average_opacity/diff_pos/2.0*(approx2_erf(next_pos)-approx2_erf(curr_pos));
+    // const Real approx_erfterm=average_opacity/diff_pos/2.0*(approx3_erf(next_pos)-approx3_erf(curr_pos));
     // std::cout<<"erfterm: "<<erfterm<<std::endl;
-    return average_inverse_line_width*std::max((erfterm+expterm), model.parameters->min_opacity);
+    // std::cout<<"approx_erfterm: "<<approx_erfterm<<std::endl;
+    // return dz*(average_inverse_line_width*approx_erfterm+model.parameters->min_opacity);
+
 }
 
 ///  Solver for Feautrier equation along ray pairs using the (ordinary)
@@ -1437,7 +1537,7 @@ accel inline void Solver :: solve_feautrier_order_2_single_line (Model& model, c
     // get_eta_and_chi <approx> (model, nr[first+1], l, freq*shift[first+1], eta_n, chi_n);
 
     dtau_n=compute_dtau_single_line(model, nr[first], nr[first+1], l, freq*shift[first], freq*shift[first+1], dZ[first]);
-    std::cout<<"dtau_n: "<<dtau_n<<std::endl;
+    // std::cout<<"dtau_n: "<<dtau_n<<std::endl;
     //single line sources
     term_c=model.lines.emissivity(nr[first  ], l)/model.lines.opacity(nr[first  ], l);//current source
     term_n=model.lines.emissivity(nr[first+1], l)/model.lines.opacity(nr[first+1], l);//next source
@@ -1480,7 +1580,7 @@ accel inline void Solver :: solve_feautrier_order_2_single_line (Model& model, c
         // get_eta_and_chi <approx> (model, nr[n+1], l, freq*shift[n+1], eta_n, chi_n);
         dtau_n=compute_dtau_single_line(model, nr[n], nr[n+1], l, freq*shift[n], freq*shift[n+1], dZ[n]);
         term_n=model.lines.emissivity(nr[n+1], l)/model.lines.opacity(nr[n+1], l);//next source
-        std::cout<<"dtau_n: "<<dtau_n<<std::endl;
+        // std::cout<<"dtau_n: "<<dtau_n<<std::endl;
         // inverse_chi[n+1] = 1.0 / chi_n;
         //
         // //source function: todo replace
