@@ -40,10 +40,13 @@ def create_model ():
     lamdaFile = f'{datdir}test.txt'
 
     def nH2_i (i):
-        return nH2 * np.power((i+1)/npoints, 2.0)
+        return nH2 * np.power((i+1)/npoints, 1.0)
 
     def nTT_i (i):
         return nH2_i(i) * nTT / nH2
+
+    def temp_i (i):
+        return temp * np.exp(0.2*i)#np.power((i+1), 0.7) #also some ridiculous temperature variation
 
 
     model = magritte.Model ()
@@ -64,7 +67,8 @@ def create_model ():
     model.chemistry.species.abundance = [[     0.0,    nTT_i(i),  nH2_i(i),  0.0,      1.0] for i in range(npoints)]
     model.chemistry.species.symbol    =  ['dummy0', 'test', 'H2', 'e-', 'dummy1']
 
-    model.thermodynamics.temperature.gas  .set( temp                 * np.ones(npoints))
+    # model.thermodynamics.temperature.gas  .set( temp                 * np.ones(npoints))
+    model.thermodynamics.temperature.gas  .set([temp_i(i) for i in range(npoints)])
     model.thermodynamics.turbulence.vturb2.set((turb/magritte.CC)**2 * np.ones(npoints))
 
     model = setup.set_Delaunay_neighbor_lists (model)
