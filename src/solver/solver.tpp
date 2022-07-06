@@ -306,7 +306,8 @@ inline void Solver :: solve_feautrier_order_2_sparse_single_line (Model& model)
         lspec.lambda.clear();
 
         lspec.J.resize(model.parameters->npoints(), lspec.linedata.nrad);
-
+        std::cout<<"J nrows:"<<model.parameters->npoints()<<std::endl;
+        std::cout<<"J ncols:"<<lspec.linedata.nrad<<std::endl;
         threaded_for (o, model.parameters->npoints(),
         {
             for (Size k = 0; k < lspec.linedata.nrad; k++)
@@ -315,6 +316,8 @@ inline void Solver :: solve_feautrier_order_2_sparse_single_line (Model& model)
             }
         })
     }
+
+
 
 
     // For each ray, solve transfer equation
@@ -1189,6 +1192,7 @@ accel inline void Solver :: solve_feautrier_order_2 (Model& model, const Size o,
     term_c = eta_c * inverse_chi[first  ];
     term_n = eta_n * inverse_chi[first+1];
     dtau_n = half * (chi_c + chi_n) * dZ[first];
+    std::cout<<"dtau_n: "<<dtau_n<<std::endl;
 
     // Set boundary conditions
     const Real inverse_dtau_f = one / dtau_n;
@@ -1223,6 +1227,7 @@ accel inline void Solver :: solve_feautrier_order_2 (Model& model, const Size o,
 
         term_n = eta_n * inverse_chi[n+1];
         dtau_n = half * (chi_c + chi_n) * dZ[n];
+        std::cout<<"dtau_n: "<<dtau_n<<std::endl;
 
         const Real dtau_avg = half * (dtau_c + dtau_n);
         inverse_A[n] = dtau_avg * dtau_c;
@@ -1353,15 +1358,22 @@ inline Real Solver :: compute_dtau_single_line(Model& model, Size curridx, Size 
     //TODO? instead of using different line widths, just use the averaged line width?
     //In this way, the diff_pos can be computed quite simple, and we do not have a discrepancy between the interpolation and the bounds
     const Real diff_pos=next_pos-curr_pos;
+    std::cout<<"diff_pos: "<<diff_pos<<std::endl;
     //Approximate changing line width with average line width instead (derivation too complicated if we allow the line width to change)
     // Real diff_pos=average_line_width/deltanu;
 
     const Real delta_opacity=(next_line_opacity-curr_line_opacity);
-    const Real deltanu=next_freq-curr_freq;//differences in curr freqs
+    std::cout<<"delta_opacity: "<<delta_opacity<<std::endl;
+    // const Real deltanu=next_freq-curr_freq;//differences in curr freqs
+    const Real deltanu=-next_freq+curr_freq;//differences in curr freqs; +-1 due to shift being defined in the other direction
     // Real delta_freq=(next_linefreq_-curr_linefreq_);==deltanu
+    std::cout<<"deltanu: "<<deltanu<<std::endl;
+
+    std::cout<<"curr_line_opacity: "<<curr_line_opacity<<std::endl;
 
     //note: opacity can also be extrapolated; however the correction term (expterm) accounts for that
     Real interp_opacity=curr_line_opacity+delta_opacity*(curr_freq-linefreq)/deltanu;
+    std::cout<<"interp_opacity: "<<interp_opacity<<std::endl;
 
     //This term is a constant term, giving the usual ... as if the opacity were static
     Real erfterm=interp_opacity*dz/diff_pos/2.0*(std::erf(next_pos)-std::erf(curr_pos));
@@ -1369,8 +1381,9 @@ inline Real Solver :: compute_dtau_single_line(Model& model, Size curridx, Size 
     //FIXME: only once diff_pos is used for division?
     Real expterm=delta_opacity*dz/2.0*INVERSE_SQRT_PI/diff_pos/diff_pos*(std::exp(-curr_pos*curr_pos)-std::exp(-next_pos*next_pos));
     std::cout<<"optical depth: "<<erfterm+expterm<<std::endl;
-    std::cout<<"erfterm: "<<erfterm<<std::endl;
-    return erfterm+expterm;
+    std::cout<<"optical depth times inverse width: "<<(erfterm+expterm)*average_inverse_line_width<<std::endl;
+    // std::cout<<"erfterm: "<<erfterm<<std::endl;
+    return average_inverse_line_width*std::max((erfterm+expterm), model.parameters->min_opacity);
 }
 
 ///  Solver for Feautrier equation along ray pairs using the (ordinary)
@@ -1424,6 +1437,7 @@ accel inline void Solver :: solve_feautrier_order_2_single_line (Model& model, c
     // get_eta_and_chi <approx> (model, nr[first+1], l, freq*shift[first+1], eta_n, chi_n);
 
     dtau_n=compute_dtau_single_line(model, nr[first], nr[first+1], l, freq*shift[first], freq*shift[first+1], dZ[first]);
+    std::cout<<"dtau_n: "<<dtau_n<<std::endl;
     //single line sources
     term_c=model.lines.emissivity(nr[first  ], l)/model.lines.opacity(nr[first  ], l);//current source
     term_n=model.lines.emissivity(nr[first+1], l)/model.lines.opacity(nr[first+1], l);//next source
@@ -1466,6 +1480,7 @@ accel inline void Solver :: solve_feautrier_order_2_single_line (Model& model, c
         // get_eta_and_chi <approx> (model, nr[n+1], l, freq*shift[n+1], eta_n, chi_n);
         dtau_n=compute_dtau_single_line(model, nr[n], nr[n+1], l, freq*shift[n], freq*shift[n+1], dZ[n]);
         term_n=model.lines.emissivity(nr[n+1], l)/model.lines.opacity(nr[n+1], l);//next source
+        std::cout<<"dtau_n: "<<dtau_n<<std::endl;
         // inverse_chi[n+1] = 1.0 / chi_n;
         //
         // //source function: todo replace
