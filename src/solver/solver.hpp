@@ -135,6 +135,9 @@ struct Solver
               Real&  eta,
               Real&  chi ) const;
 
+    template <ApproximationType approx>
+    inline void compute_S_dtau_line_integrated (Model& model, Size currpoint, Size nextpoint, Size lineidx, Real currfreq, Real nextfreq, Real dZ, Real& dtau, Real& Scurr, Real& Snext)
+
     inline Real compute_dtau_single_line(Model& model, Size curridx, Size nextidx, Size lineidx, Real curr_freq, Real next_freq, Real dz);
 
 
@@ -176,7 +179,7 @@ struct Solver
     accel inline void solve_feautrier_order_2_anis (Model& model);
 
     template <ApproximationType approx>
-    accel inline void solve_feautrier_order_2 (Model& model, const Size o, const Size f);
+    accel inline void solve_feautrier_order_2 (Model& model, const Size o, const Size f, const Real dshift_max);
 
     //only valid for single line approximation
     inline void solve_feautrier_order_2_sparse_single_line (Model& model);

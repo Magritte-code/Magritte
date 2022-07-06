@@ -271,7 +271,7 @@ inline void Solver :: solve_feautrier_order_2_sparse (Model& model)
                         // Integrate over the line
                         for (Size z = 0; z < model.parameters->nquads(); z++)
                         {
-                            solve_feautrier_order_2 <approx> (model, o,  lspec.nr_line[o][k][z]);
+                            solve_feautrier_order_2 <approx> (model, o,  lspec.nr_line[o][k][z], dshift_max);
 
                             lspec.J(o,k) += lspec.quadrature.weights[z] * wt * Su_()[centre];
 
@@ -439,7 +439,7 @@ inline void Solver :: solve_feautrier_order_2_anis (Model& model)
                         // Integrate over the line
                         for (Size z = 0; z < model.parameters->nquads(); z++)
                         {
-                            solve_feautrier_order_2 <approx> (model, o, lspec.nr_line[o][k][z]);
+                            solve_feautrier_order_2 <approx> (model, o, lspec.nr_line[o][k][z], dshift_max);
 
                             const Real du = lspec.quadrature.weights[z] * wt * Su_()[centre];
 
@@ -514,7 +514,7 @@ inline void Solver :: solve_feautrier_order_2 (Model& model)
             {
                 for (Size f = 0; f < model.parameters->nfreqs(); f++)
                 {
-                    solve_feautrier_order_2 <approx> (model, o, f);
+                    solve_feautrier_order_2 <approx> (model, o, f, dshift_max);
 
                     model.radiation.u(rr_loc,o,f)  = Su_()[centre];
                     model.radiation.J(       o,f) += Su_()[centre] * two * model.geometry.rays.weight[rr];
@@ -663,7 +663,7 @@ inline void Solver :: image_optical_depth (Model& model, const Size rr)
     model.images.push_back (image);
 }
 
-
+//Because of the new method for computing the optical depth, adding extra frequency points for counteracting the large doppler shift is no longer necessary
 template <Frame frame>
 accel inline Size Solver :: trace_ray (
     const Geometry& geometry,
@@ -740,7 +740,7 @@ accel inline Size Solver :: trace_ray_single_line (
     return id1;
 }
 
-
+//Because of the new method for computing the optical depth, adding extra frequency points for counteracting the large doppler shift is no longer necessary
 accel inline void Solver :: set_data (
     const Size   crt,
     const Size   nxt,
@@ -759,51 +759,51 @@ accel inline void Solver :: set_data (
     const double dshift     = shift_nxt - shift_crt;
     const double dshift_abs = fabs (dshift);
 
-    if (dshift_abs > dshift_max) // If velocity gradient is not well-sampled enough
-    {
-        // Interpolate velocity gradient field
-        const Size        n_interpl = dshift_abs / dshift_max + 1;
-        const Size   half_n_interpl = 0.5 * n_interpl;
-        const double     dZ_interpl =     dZ_loc / n_interpl;
-        const double dshift_interpl =     dshift / n_interpl;
+    // if (dshift_abs > dshift_max) // If velocity gradient is not well-sampled enough
+    // {
+    //     // Interpolate velocity gradient field
+    //     const Size        n_interpl = dshift_abs / dshift_max + 1;
+    //     const Size   half_n_interpl = 0.5 * n_interpl;
+    //     const double     dZ_interpl =     dZ_loc / n_interpl;
+    //     const double dshift_interpl =     dshift / n_interpl;
+    //
+    //     if (n_interpl > 10000)
+    //     {
+    //         printf ("ERROR (n_intpl > 10 000) || (dshift_max < 0, probably due to overflow)\n");
+    //     }
+    //
+    //     // Assign current cell to first half of interpolation points
+    //     for (Size m = 1; m < half_n_interpl; m++)
+    //     {
+    //         nr   [id1] = crt;
+    //         shift[id1] = shift_crt + m*dshift_interpl;
+    //         dZ   [id2] = dZ_interpl;
+    //
+    //         id1 += increment;
+    //         id2 += increment;
+    //     }
+    //
+    //     // Assign next cell to second half of interpolation points
+    //     for (Size m = half_n_interpl; m <= n_interpl; m++)
+    //     {
+    //         nr   [id1] = nxt;
+    //         shift[id1] = shift_crt + m*dshift_interpl;
+    //         dZ   [id2] = dZ_interpl;
+    //
+    //         id1 += increment;
+    //         id2 += increment;
+    //     }
+    // }
+    //
+    // else
+    // {
+    nr   [id1] = nxt;
+    shift[id1] = shift_nxt;
+    dZ   [id2] = dZ_loc;
 
-        if (n_interpl > 10000)
-        {
-            printf ("ERROR (n_intpl > 10 000) || (dshift_max < 0, probably due to overflow)\n");
-        }
-
-        // Assign current cell to first half of interpolation points
-        for (Size m = 1; m < half_n_interpl; m++)
-        {
-            nr   [id1] = crt;
-            shift[id1] = shift_crt + m*dshift_interpl;
-            dZ   [id2] = dZ_interpl;
-
-            id1 += increment;
-            id2 += increment;
-        }
-
-        // Assign next cell to second half of interpolation points
-        for (Size m = half_n_interpl; m <= n_interpl; m++)
-        {
-            nr   [id1] = nxt;
-            shift[id1] = shift_crt + m*dshift_interpl;
-            dZ   [id2] = dZ_interpl;
-
-            id1 += increment;
-            id2 += increment;
-        }
-    }
-
-    else
-    {
-        nr   [id1] = nxt;
-        shift[id1] = shift_nxt;
-        dZ   [id2] = dZ_loc;
-
-        id1 += increment;
-        id2 += increment;
-    }
+    id1 += increment;
+    id2 += increment;
+    // }
 }
 
 
@@ -1139,13 +1139,54 @@ accel inline void Solver :: update_Lambda (Model &model, const Size rr, const Si
     }
 }
 
+///  Computer for the optical depth and source function when computing using the formal line integration
+///  TODO
+///  In case of low velocity differences, almost two times slower
+///  For high velocity increments however, this does not need any extra interpolation points (-> way faster)
+///////////////////////////////
+template<>
+inline void Solver :: compute_S_dtau_line_integrated <OneLine> (Model& model, Size currpoint, Size nextpoint, Size lineidx, Real currfreq, Real nextfreq, Real dZ, Real& dtau, Real& Scurr, Real& Snext)
+{
+    dtau=compute_dtau_single_line(model, currpoint, nextpoint, lineidx, currfreq, nextfreq, dZ);
+    Scurr=model.lines.emissivity(currpoint, lineidx)/model.lines.opacity(currpoint, lineidx);//current source
+    Snext=model.lines.emissivity(nextpoint, lineidx)/model.lines.opacity(nextpoint, lineidx);//next source
+    //note: due to interaction with dtau when computing all sources individually, we do need to recompute Scurr and Snext for all position increments
+}
+
+///  Computer for the optical depth and source function when computing using the formal line integration
+///  TODO
+///  In case of low velocity differences, almost two times slower
+///  lineidx, dummy variable
+///  For high velocity increments however, this does not need any extra interpolation points (-> way faster)
+///////////////////////////////
+template<>
+inline void Solver :: compute_S_dtau_line_integrated <None> (Model& model, Size currpoint, Size nextpoint, Size lineidx, Real currfreq, Real nextfreq, Real dZ, Real& dtau, Real& Scurr, Real& Snext)
+{
+    Real sum_dtau=0.0;
+    Real sum_dtau_times_Scurr=0.0;
+    Real sum_dtau_times_Snext=0.0;
+    for (Size l=0; l<model.parameters->nlines(); l++)
+    {
+        Real line_dtau=compute_dtau_single_line(model, currpoint, nextpoint, l, currfreq, nextfreq, dZ);
+        Real line_Scurr=model.lines.emissivity(currpoint, l)/model.lines.opacity(currpoint, l);//current source
+        Real line_Snext=model.lines.emissivity(nextpoint, l)/model.lines.opacity(nextpoint, l);//next source
+        sum_dtau+=line_dtau;
+        sum_dtau_times_Scurr+=line_dtau*line_Scurr;
+        sum_dtau_times_Snext+=line_dtau*line_Snext;
+    }
+    dtau=sum_dtau;
+    Scurr=sum_dtau_times_Scurr/sum_dtau;
+    Snext=sum_dtau_times_Snext/sum_dtau;
+    //note: due to interaction with dtau when computing all sources individually, we do need to recompute Scurr and Snext for all position increments
+}
+
 
 ///  Solver for Feautrier equation along ray pairs using the (ordinary)
 ///  2nd-order solver, without adaptive optical depth increments
 ///    @param[in] w : width index
 ///////////////////////////////////////////////////////////////////////
 template<ApproximationType approx>
-accel inline void Solver :: solve_feautrier_order_2 (Model& model, const Size o, const Size f)
+accel inline void Solver :: solve_feautrier_order_2 (Model& model, const Size o, const Size f, const Real dshift_max)
 {
     const Real freq = model.radiation.frequencies.nu(o, f);
     const Size l    = model.radiation.frequencies.corresponding_line[f];
@@ -1181,17 +1222,33 @@ accel inline void Solver :: solve_feautrier_order_2 (Model& model, const Size o,
     Matrix<Real>& L_upper = L_upper_();
     Matrix<Real>& L_lower = L_lower_();
 
+    //TODO get if clause
+    const double dshift     = shift_nxt - shift_crt;
+    const double dshift_abs = fabs (dshift);
+    TODO: add dshift max to fun def
+    if (dshift_abs > dshift_max)
+    {
+        compute_S_dtau_line_integrated <approx> (model, nr[first], nr[first+1], l, freq*shift[first], freq*shift[first+1], dZ[first], dtau_n, term_c, term_n);
+        // dtau_n=compute_dtau_single_line(model, nr[first], nr[first+1], l, freq*shift[first], freq*shift[first+1], dZ[first]);
+      // std::cout<<"dtau_n: "<<dtau_n<<std::endl;
+      //single line sources
+      // term_c=model.lines.emissivity(nr[first  ], l)/model.lines.opacity(nr[first  ], l);//current source
+      // term_n=model.lines.emissivity(nr[first+1], l)/model.lines.opacity(nr[first+1], l);//next source
+    }
+    else
+    {//default computation
+        // Get optical properties for first two elements
+        get_eta_and_chi <approx> (model, nr[first  ], l, freq*shift[first  ], eta_c, chi_c);
+        get_eta_and_chi <approx> (model, nr[first+1], l, freq*shift[first+1], eta_n, chi_n);
 
-    // Get optical properties for first two elements
-    get_eta_and_chi <approx> (model, nr[first  ], l, freq*shift[first  ], eta_c, chi_c);
-    get_eta_and_chi <approx> (model, nr[first+1], l, freq*shift[first+1], eta_n, chi_n);
+        inverse_chi[first  ] = 1.0 / chi_c;
+        inverse_chi[first+1] = 1.0 / chi_n;
 
-    inverse_chi[first  ] = 1.0 / chi_c;
-    inverse_chi[first+1] = 1.0 / chi_n;
+        term_c = eta_c * inverse_chi[first  ];
+        term_n = eta_n * inverse_chi[first+1];
+        dtau_n = half * (chi_c + chi_n) * dZ[first];
 
-    term_c = eta_c * inverse_chi[first  ];
-    term_n = eta_n * inverse_chi[first+1];
-    dtau_n = half * (chi_c + chi_n) * dZ[first];
+    }
     // std::cout<<"dtau_n: "<<dtau_n<<std::endl;
 
     // Set boundary conditions
@@ -1446,7 +1503,6 @@ inline Real Solver :: compute_dtau_single_line(Model& model, Size curridx, Size 
     //Err, it seems that we instead work in the comoving frame, thus we do not have a static eval frequency, but we do have static line frequencies
     // Real next_pos=(next_linefreq_()-statfreq_())/average_line_width_;//next_linewidth_();
     // Real curr_pos=(curr_linefreq_()-statfreq_())/average_line_width_;//curr_linewidth_();
-    //TODO: check sign
     const Real next_pos=(linefreq-next_freq)*average_inverse_line_width;//next_linewidth_();
     const Real curr_pos=(linefreq-curr_freq)*average_inverse_line_width;//curr_linewidth_();
 
