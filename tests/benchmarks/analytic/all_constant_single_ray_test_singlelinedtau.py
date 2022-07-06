@@ -13,7 +13,7 @@ import magritte.setup    as setup
 import magritte.core     as magritte
 
 dimension = 1
-npoints   = 20
+npoints   = 30
 nrays     = 2
 nspecs    = 5
 nlspecs   = 1
@@ -27,7 +27,7 @@ dx   = 1.0E+12                 # [m]
 dx   = 0.6E+12                 # [m]
 # dx   = 5.0E+24                 # [m]
 dv   = 0.0E+00 / magritte.CC   # [fraction of speed of light]
-dv   = 2.5E+01 / magritte.CC   # [fraction of speed of light]
+dv   = 1.5E+02 / magritte.CC   # [fraction of speed of light]
 
 
 def create_model ():
@@ -35,9 +35,15 @@ def create_model ():
     Create a model file for the all_constant benchmark, single ray.
     """
 
-    modelName = f'all_constant_single_ray'
+    modelName = f'all_constant_single_ray_test_singlelinedtau'
     modelFile = f'{moddir}{modelName}.hdf5'
     lamdaFile = f'{datdir}test.txt'
+
+    def nH2_i (i):
+        return nH2 * np.power((i+1)/npoints, 2.0)
+
+    def nTT_i (i):
+        return nH2_i(i) * nTT / nH2
 
 
     model = magritte.Model ()
@@ -53,7 +59,9 @@ def create_model ():
     model.geometry.points.position.set([[i*dx, 0, 0] for i in range(npoints)])
     model.geometry.points.velocity.set([[i*dv, 0, 0] for i in range(npoints)])
 
-    model.chemistry.species.abundance = [[     0.0,    nTT,  nH2,  0.0,      1.0] for _ in range(npoints)]
+    #TODO: test stuff with varying abundances! (take inspiration from density_distribution_1D...)
+
+    model.chemistry.species.abundance = [[     0.0,    nTT_i(i),  nH2_i(i),  0.0,      1.0] for i in range(npoints)]
     model.chemistry.species.symbol    =  ['dummy0', 'test', 'H2', 'e-', 'dummy1']
 
     model.thermodynamics.temperature.gas  .set( temp                 * np.ones(npoints))
@@ -76,7 +84,7 @@ def run_model (nosave=False):
     #for debugging, set to single threaded
     magritte.pcmt_set_n_threads_avail(1);
 
-    modelName = f'all_constant_single_ray'
+    modelName = f'all_constant_single_ray_test_singlelinedtau'
     modelFile = f'{moddir}{modelName}.hdf5'
     timestamp = tools.timestamp()
 
