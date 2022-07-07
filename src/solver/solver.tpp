@@ -759,51 +759,53 @@ accel inline void Solver :: set_data (
     const double dshift     = shift_nxt - shift_crt;
     const double dshift_abs = fabs (dshift);
 
-    // if (dshift_abs > dshift_max) // If velocity gradient is not well-sampled enough
-    // {
-    //     // Interpolate velocity gradient field
-    //     const Size        n_interpl = dshift_abs / dshift_max + 1;
-    //     const Size   half_n_interpl = 0.5 * n_interpl;
-    //     const double     dZ_interpl =     dZ_loc / n_interpl;
-    //     const double dshift_interpl =     dshift / n_interpl;
-    //
-    //     if (n_interpl > 10000)
-    //     {
-    //         printf ("ERROR (n_intpl > 10 000) || (dshift_max < 0, probably due to overflow)\n");
-    //     }
-    //
-    //     // Assign current cell to first half of interpolation points
-    //     for (Size m = 1; m < half_n_interpl; m++)
-    //     {
-    //         nr   [id1] = crt;
-    //         shift[id1] = shift_crt + m*dshift_interpl;
-    //         dZ   [id2] = dZ_interpl;
-    //
-    //         id1 += increment;
-    //         id2 += increment;
-    //     }
-    //
-    //     // Assign next cell to second half of interpolation points
-    //     for (Size m = half_n_interpl; m <= n_interpl; m++)
-    //     {
-    //         nr   [id1] = nxt;
-    //         shift[id1] = shift_crt + m*dshift_interpl;
-    //         dZ   [id2] = dZ_interpl;
-    //
-    //         id1 += increment;
-    //         id2 += increment;
-    //     }
-    // }
-    //
-    // else
-    // {
+    // if (true)
+    // if (dshift_abs > dshift_max)
+    // if (dshift_abs > dshift_max && dshift_max*2.0 > dshift_abs) // If velocity gradient is not well-sampled enough
+    if (false)
+    {
+        // Interpolate velocity gradient field
+        const Size        n_interpl = dshift_abs / dshift_max + 1;
+        const Size   half_n_interpl = 0.5 * n_interpl;
+        const double     dZ_interpl =     dZ_loc / n_interpl;
+        const double dshift_interpl =     dshift / n_interpl;
+
+        if (n_interpl > 10000)
+        {
+            printf ("ERROR (n_intpl > 10 000) || (dshift_max < 0, probably due to overflow)\n");
+        }
+
+        // Assign current cell to first half of interpolation points
+        for (Size m = 1; m < half_n_interpl; m++)
+        {
+            nr   [id1] = crt;
+            shift[id1] = shift_crt + m*dshift_interpl;
+            dZ   [id2] = dZ_interpl;
+
+            id1 += increment;
+            id2 += increment;
+        }
+
+        // Assign next cell to second half of interpolation points
+        for (Size m = half_n_interpl; m <= n_interpl; m++)
+        {
+            nr   [id1] = nxt;
+            shift[id1] = shift_crt + m*dshift_interpl;
+            dZ   [id2] = dZ_interpl;
+
+            id1 += increment;
+            id2 += increment;
+        }
+    }
+    else
+    {
     nr   [id1] = nxt;
     shift[id1] = shift_nxt;
     dZ   [id2] = dZ_loc;
 
     id1 += increment;
     id2 += increment;
-    // }
+    }
 }
 
 
@@ -1223,14 +1225,30 @@ accel inline void Solver :: solve_feautrier_order_2 (Model& model, const Size o,
     Matrix<Real>& L_lower = L_lower_();
 
     //TODO get if clause
-    const double dshift     = shift_nxt - shift_crt;
-    const double dshift_abs = fabs (dshift);
-    TODO: add dshift max to fun def
-    if (dshift_abs > dshift_max)
+    double dshift     = shift[first+1]-shift[first];
+    double dshift_abs = fabs (dshift);
+    // std::cout<<"starting ray computation"<<std::endl;
+    // if (dshift_abs > dshift_max)
+    // if (false)
+    if (true)
     {
+        // std::cout<<"using new dtau"<<std::endl;
+
+        // get_eta_and_chi <approx> (model, nr[first  ], l, freq*shift[first  ], eta_c, chi_c);
+        // get_eta_and_chi <approx> (model, nr[first+1], l, freq*shift[first+1], eta_n, chi_n);
+        //
+        // inverse_chi[first  ] = 1.0 / chi_c;
+        // inverse_chi[first+1] = 1.0 / chi_n;
+        //
+        // term_c = eta_c * inverse_chi[first  ];
+        // term_n = eta_n * inverse_chi[first+1];
+        // dtau_n = half * (chi_c + chi_n) * dZ[first];
+        // std::cout<<"old dtau: "<<dtau_n<<std::endl;
+
         compute_S_dtau_line_integrated <approx> (model, nr[first], nr[first+1], l, freq*shift[first], freq*shift[first+1], dZ[first], dtau_n, term_c, term_n);
         // dtau_n=compute_dtau_single_line(model, nr[first], nr[first+1], l, freq*shift[first], freq*shift[first+1], dZ[first]);
-      // std::cout<<"dtau_n: "<<dtau_n<<std::endl;
+        // std::cout<<"new dtau: "<<dtau_n<<std::endl;
+
       //single line sources
       // term_c=model.lines.emissivity(nr[first  ], l)/model.lines.opacity(nr[first  ], l);//current source
       // term_n=model.lines.emissivity(nr[first+1], l)/model.lines.opacity(nr[first+1], l);//next source
@@ -1260,6 +1278,13 @@ accel inline void Solver :: solve_feautrier_order_2 (Model& model, const Size o,
     const Real Bf_min_Cf = one + two * inverse_dtau_f;
     const Real Bf        = Bf_min_Cf + C[first];
     const Real I_bdy_f   = boundary_intensity (model, nr[first], freq*shift[first]);
+    //with the correction for doppler shifting
+    // const Real I_bdy_f   = std::pow(2.0-shift[first],3)*boundary_intensity (model, nr[first], freq*shift[first]);
+    //As usual, I do not want to see the shift in this direction
+    // const Real I_bdy_f   = boundary_intensity (model, nr[first], freq*(2.0-shift[first]));
+    //Do we actually need to shift this intensity at all?
+    // const Real I_bdy_f   = boundary_intensity (model, nr[first], freq);
+
 
     Su[first]  = term_c + two * I_bdy_f * inverse_dtau_f;
     Su[first] /= Bf;
@@ -1277,13 +1302,56 @@ accel inline void Solver :: solve_feautrier_order_2 (Model& model, const Size o,
          eta_c =  eta_n;
          chi_c =  chi_n;
 
-        // Get new radiative properties
-        get_eta_and_chi <approx> (model, nr[n+1], l, freq*shift[n+1], eta_n, chi_n);
+         double dshift     = shift[n+1]-shift[n];
+         double dshift_abs = fabs (dshift);//TODO: replace with pointwise dshift computation
+         // if (dshift_abs > dshift_max)
+         // if (false)
+         if (true)
+         {
 
-        inverse_chi[n+1] = 1.0 / chi_n;
+              // get_eta_and_chi <approx> (model, nr[n+1], l, freq*shift[n+1], eta_n, chi_n);
+              //
+              // inverse_chi[n+1] = 1.0 / chi_n;
+              //
+              // term_n = eta_n * inverse_chi[n+1];
+              // dtau_n = half * (chi_c + chi_n) * dZ[n];
+              // std::cout<<"old dtau: "<<dtau_n<<std::endl;
+              // std::cout<<"using new dtau"<<std::endl;
+              compute_S_dtau_line_integrated <approx> (model, nr[n], nr[n+1], l, freq*shift[n], freq*shift[n+1], dZ[n], dtau_n, term_c, term_n);
+              // std::cout<<"new dtau: "<<dtau_n<<std::endl;
 
-        term_n = eta_n * inverse_chi[n+1];
-        dtau_n = half * (chi_c + chi_n) * dZ[n];
+              // TODO: define chi_n anyway! (dtau/dz?)
+              // also eta_n
+              // chi_n=dtau_n/
+              // std::cout<<"dtau_n: "<<dtau_n<<std::endl;
+              // std::cout<<"S_n: "<<term_n<<std::endl;
+              // Real temp_chi_n=0.0;
+              // Real temp_chi_c=0.0;
+              // get_eta_and_chi <approx> (model, nr[n], l, freq*shift[n], eta_n, temp_chi_c);
+              // get_eta_and_chi <approx> (model, nr[n+1], l, freq*shift[n+1], eta_n, temp_chi_n);
+
+              // inverse_chi[n+1] = 1.0 / chi_n;
+
+              // term_n = eta_n * inverse_chi[n+1];
+              // std::cout<<"old dtau comp: "<<half * (temp_chi_c + temp_chi_n) * dZ[n]<<std::endl;
+              // std::cout<<"old S_next: "<<eta_n/temp_chi_n<<std::endl;
+             // dtau_n=compute_dtau_single_line(model, nr[first], nr[first+1], l, freq*shift[first], freq*shift[first+1], dZ[first]);
+           // std::cout<<"dtau_n: "<<dtau_n<<std::endl;
+           //single line sources
+           // term_c=model.lines.emissivity(nr[first  ], l)/model.lines.opacity(nr[first  ], l);//current source
+           // term_n=model.lines.emissivity(nr[first+1], l)/model.lines.opacity(nr[first+1], l);//next source
+         }
+         else
+         {//default computation
+             // Get new radiative properties
+             get_eta_and_chi <approx> (model, nr[n+1], l, freq*shift[n+1], eta_n, chi_n);
+
+             inverse_chi[n+1] = 1.0 / chi_n;
+
+             term_n = eta_n * inverse_chi[n+1];
+             dtau_n = half * (chi_c + chi_n) * dZ[n];
+         }
+
         // std::cout<<"dtau_n: "<<dtau_n<<std::endl;
 
         const Real dtau_avg = half * (dtau_c + dtau_n);
@@ -1313,6 +1381,12 @@ accel inline void Solver :: solve_feautrier_order_2 (Model& model, const Size o,
     const Real denominator = one / (Bl * FF[last-1] + Bl_min_Al);
 
     const Real I_bdy_l = boundary_intensity (model, nr[last], freq*shift[last]);
+    //with the correction for doppler shifting
+    // const Real I_bdy_l = std::pow(2.0-shift[last],3.0)*boundary_intensity (model, nr[last], freq*shift[last]);
+    //as usual, the shift used for the boundary intensity is wrong?
+    // const Real I_bdy_l = boundary_intensity (model, nr[last], freq*(2.0-shift[last]));
+    //Do we even need to shift this intensity at all?
+    // const Real I_bdy_l = boundary_intensity (model, nr[last], freq);
 
     Su[last] = term_n + two * I_bdy_l * inverse_dtau_l;
     Su[last] = (A[last] * Su[last-1] + Su[last]) * (one + FF[last-1]) * denominator;
