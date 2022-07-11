@@ -80,6 +80,7 @@ examples to facilitate its independent use. Until then, please
 * James Hetherington
 
 **Contributors**
+* Boy Lankhaar
 * Silke Maes
 * Jolien Malfait
 
