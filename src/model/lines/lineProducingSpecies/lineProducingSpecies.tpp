@@ -426,21 +426,6 @@ inline void LineProducingSpecies :: update_using_statistical_equilibrium (
 
     cout << "Succesfully solved for the level populations!"       << endl;
 
-    //OMP_PARALLEL_FOR (p, ncells)
-    //{
-    //
-    //  for (long i = 0; i < linedata.nlev; i++)
-    //  {
-    //    const long I = index (p, i);
-
-    //    population[I] = population_prev1[I];
-
-    //    //if (population[I] < 1.0E-50)
-    //    //{
-    //    //  population[I] = 1.0E-50;
-    //    //}
-    //  }
-    //}
 }
 
 
@@ -467,12 +452,22 @@ inline void LineProducingSpecies :: update_using_statistical_equilibrium_sparse 
     // residuals  .push_back(population-populations.back());
     // populations.push_back(population);
 
-    MatrixXr StatEq (linedata.nlev, linedata.nlev);
-    VectorXr y = VectorXr::Zero(linedata.nlev);
+    pc::multi_threading::ThreadPrivate<MatrixXr> StatEq_;
+    pc::multi_threading::ThreadPrivate<VectorXr>      y_;
 
-
-    for (Size p = 0; p < parameters->npoints(); p++) // !!! no OMP because push_back is not thread safe !!!
+    for (Size i = 0; i < pc::multi_threading::n_threads_avail(); i++)
     {
+        StatEq_(i).resize(linedata.nlev, linedata.nlev);
+
+        y_(i) = VectorXr::Zero(linedata.nlev);
+    }
+
+
+    threaded_for (p, parameters->npoints(),
+    {
+        MatrixXr& StatEq = StatEq_();
+        VectorXr&      y =      y_();
+
         StatEq.setZero();
 
         // Radiative transitions
@@ -547,22 +542,220 @@ inline void LineProducingSpecies :: update_using_statistical_equilibrium_sparse 
         // Solve statistical equilibrium and store level populations
         population.segment(p*linedata.nlev, linedata.nlev) = StatEq.colPivHouseholderQr().solve(y);
 
-    } // for all cells
+    }) // for all cells
+
+}
 
 
-    //OMP_PARALLEL_FOR (p, ncells)
-    //{
-    //
-    //  for (long i = 0; i < linedata.nlev; i++)
-    //  {
-    //    const long I = index (p, i);
+inline void LineProducingSpecies :: PORTAL_solve_statistical_equilibrium (
+    const Double2      &abundance,
+    const Vector<Real> &temperature )
+{
 
-    //    population[I] = population_prev1[I];
+    rho.resize(parameters->npoints());
 
-    //    //if (population[I] < 1.0E-50)
-    //    //{
-    //    //  population[I] = 1.0E-50;
-    //    //}
-    //  }
-    //}
+    for (Size p = 0; p < parameters->npoints(); p++)
+    {
+        rho[p].resize(nalign);
+    }
+
+
+    pc::multi_threading::ThreadPrivate<MatrixXd> mtrx_;
+    pc::multi_threading::ThreadPrivate<VectorXd>    y_;
+    pc::multi_threading::ThreadPrivate<VectorXd>    x_;
+
+    for (Size i = 0; i < pc::multi_threading::n_threads_avail(); i++)
+    {
+       mtrx_(i).resize(nalign, nalign);
+
+       y_(i)    = VectorXd::Zero(nalign);
+       y_(i)[0] = 1.0;
+
+       x_(i).resize(nalign);
+    }
+
+
+    threaded_for (p, parameters->npoints(),
+    {
+        MatrixXd& mtrx = mtrx_();
+        VectorXd&    y =    y_();
+        VectorXd&    x =    x_();
+
+        mtrx.setZero();
+
+        // BL:
+        //     adding the radiative transitions to the SEE
+        //     matrix.
+        for (Size t = 0; t < linedata.nrad; t++)
+        {
+            const Size k = linedata.irad[t];
+            const Size l = linedata.jrad[t];
+
+            // BL: we require the angular momentum states.
+            //     jk,jl = 2*angular momentum, so that also half-integer
+            //     angular momenta can be treated.
+            const Size jk = j_lev[k];
+            const Size jl = j_lev[l];
+
+            // BL: if j < 1, then no alignment state (k=2) is possible.
+            Size km1 = 1;
+            Size km2 = 1;
+
+            if (jk > 1) {km1 = 2;}
+            if (jl > 1) {km2 = 2;}
+
+            // BL: transitions j1 > j2
+            //                (jk) (jl)
+            for (Size k1 = 0; k1 < km1; k1++)
+            {
+                const Size k_a = a_lev[k][k1];
+
+                // BL: spontaneous emission jk --> jl
+                mtrx(k_a,k_a) -= linedata.A[t];
+
+                for (Size k2 = 0; k2 < km1; k2++)
+                {
+                    const Size k_a2 = a_lev[k][k2];
+
+                    // BL: stimulated emission jk --> jl
+                    mtrx(k_a,k_a2) -= rm[0][t][k1][k2][0] * J0[p][t];
+                    mtrx(k_a,k_a2) -= rm[0][t][k1][k2][1] * J2[p][t];
+                }
+
+                for (Size k2 = 0; k2 < km2; k2++)
+                {
+                    const Size k_l2 = a_lev[l][k2];
+
+                    // BL: stimulated absorption jl --> jk
+                    mtrx(k_a,k_l2) += rp[0][t][k1][k2][0] * J0[p][t];
+                    mtrx(k_a,k_l2) += rp[0][t][k1][k2][1] * J2[p][t];
+                }
+            }
+
+            // BL: transitions j2 > j1
+            //                (jk) (jl)
+            for (Size k1 = 0; k1 < km2; k1++)
+            {
+                const Size k_l = a_lev[l][k1];
+
+                for (Size k2 = 0; k2 < km2; k2++)
+                {
+                    const Size k_l2 = a_lev[l][k2];
+
+                    // BL: stimulated absorption jk --> jl
+                    mtrx(k_l,k_l2) -= rm[1][t][k1][k2][0] * J0[p][t];
+                    mtrx(k_l,k_l2) -= rm[1][t][k1][k2][1] * J2[p][t];
+                }
+
+                for (Size k2 = 0; k2 < km1; k2++)
+                {
+                    const Size k_a2 = a_lev[k][k2];
+
+                    // BL: stimulated emission jl --> jk
+                    mtrx(k_l,k_a2) += rp[1][t][k1][k2][0] * J0[p][t];
+                    mtrx(k_l,k_a2) += rp[1][t][k1][k2][1] * J2[p][t];
+                }
+
+                if ((km1 >= km2) || (k1 == 0))
+                {
+                    const Size k_a = a_lev[k][k1];
+
+                    // BL: spontaneous emission jl --> jk
+                    mtrx(k_l,k_a) += tp[t][k1];
+                }
+            }
+        }
+
+
+        // BL:
+        //     We add the collisional contributions to the rate matrix
+        //     matrices while being sensitive to the alignment decay
+        //     of states for all K's. Off-diagonal elements only for
+        //     the K=0, due to not accoutning for C_K, K>2 collisional
+        //     elements. See Eq.(7.101) L&L04.
+
+        for (CollisionPartner &colpar : linedata.colpar)
+        {
+            Real abn = abundance[p][colpar.num_col_partner];
+            Real tmp = temperature[p];
+
+            colpar.adjust_abundance_for_ortho_or_para (tmp, abn);
+            colpar.interpolate_collision_coefficients (tmp);
+
+            for (Size t = 0; t < colpar.ncol; t++)
+            {
+                const Size k  = colpar.icol[t];
+                const Size l  = colpar.jcol[t];
+
+                const Size jk = j_lev[k];
+                const Size jl = j_lev[l];
+
+                // BL: inelastic jl --> jk
+                // BL: superelastic jk --> jl
+
+                Size k_a = a_lev[k][0];
+                Size k_l = a_lev[l][0];
+
+                const Real g = std::sqrt((jl+1.0) / (1.0+jk));
+
+                mtrx(k_a,k_l) += g * colpar.Ce_intpld[t] * abn;
+                mtrx(k_l,k_a) +=     colpar.Cd_intpld[t] * abn / g;
+
+                // BL: if j < 1, then no alignment state (k=2) is possible.
+                Size km1 = 1;
+                Size km2 = 1;
+
+                if (jk > 1) {km1 = 2;}
+                if (jl > 1) {km2 = 2;}
+
+                // BL: transitions j1 > j2
+                //                (jk) (jl)
+                for (Size k1 = 0; k1 < km1; k1++)
+                {
+                    k_a = a_lev[k][k1];
+                    // BL: superelastic jk --> jl
+                    mtrx(k_a,k_a) -= colpar.Cd_intpld[t] * abn;
+                }
+
+                // BL: transitions j2 > j1
+                //                (jk) (jl)
+                for (Size k1 = 0; k1 < km2; k1++)
+                {
+                    k_l = a_lev[l][k1];
+                    // BL: inelastic jl --> jk
+                    mtrx(k_l,k_l) -= colpar.Ce_intpld[t] * abn;
+                }
+            }
+        }
+
+        // BL:
+        //     Normalization is added on the first line.
+        //     Instead of normalizing using the physical constraint:
+        //     \sum_i n_i = 1,
+        //     which is usual in the isotropic SEE, we instead normalize the rank-0 irreducible elements
+        //     p_i^0 = n_i / sqrt(g_i),
+        //     so that
+        //     \sum_i sqrt(g_i) p_i = 1
+        for (Size s = 0; s < nalign; s++)
+        {
+            mtrx(0,s) = 0.0;
+        }
+
+        for (Size s = 0; s < linedata.nlev; s++)
+        {
+            const Size k_a = a_lev[s][0];
+
+            mtrx(0,k_a) = std::sqrt(j_lev[s] + 1.0);
+        }
+
+
+        // Solve statistical equilibrium and store level populations
+        x = mtrx.colPivHouseholderQr().solve(y);
+
+        for (Size s = 0; s < nalign; s++)
+        {
+            rho[p][s] = x[s];
+        }
+
+    }) // for all points
 }

@@ -34,7 +34,8 @@ const double SECONDS_IN_YEAR            = 3.1556926E+7;    // number of seconds 
 const double CC_SQUARED                 = 8.98755179E+16;   // [m^2/s^2] speed of light squared
 
 const double TWO_KB_OVER_AMU_CC_SQUARED = 2.0 * KB / (AMU * CC_SQUARED);   // 2.0*Kb/(AMU*c^2)
-const double TWO_HH_OVER_CC_SQUARED     = 2.0 * HH / CC_SQUARED;
+const double     HH_OVER_CC_SQUARED     = HH / CC_SQUARED;
+const double TWO_HH_OVER_CC_SQUARED     = 2.0 * HH_OVER_CC_SQUARED;
 
 const double HH_OVER_KB                 = HH / KB;
 const double HH_OVER_FOUR_PI            = HH / FOUR_PI;

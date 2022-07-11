@@ -202,6 +202,8 @@ def image_mpl(
         elif (model.images[image_nr].imageType == ImageType.OpticalDepth):
             ax0.set_xlabel('Optical depth [.]',      labelpad=11)
             ax2.set_ylabel('Relative optical depth', labelpad=15)
+        else:
+            raise ValueError('Unrecognized image type.')
 
         plt.savefig(f"{im_dir}/image_{f:0>3d}.png", bbox_inches='tight')
     

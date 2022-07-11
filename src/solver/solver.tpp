@@ -589,21 +589,21 @@ accel inline Size Solver :: trace_ray (
     const Geometry& geometry,
     const Size      o,
     const Size      r,
-    const double    dshift_max,
+    const Real      dshift_max,
     const int       increment,
           Size      id1,
           Size      id2 )
 {
-    double  Z = 0.0;   // distance from origin (o)
-    double dZ = 0.0;   // last increment in Z
+    Real  Z = 0.0;   // distance from origin (o)
+    Real dZ = 0.0;   // last increment in Z
 
     Size nxt = geometry.get_next (o, r, o, Z, dZ);
 
     if (geometry.valid_point(nxt))
     {
-        Size         crt = o;
-        double shift_crt = geometry.get_shift <frame> (o, r, crt, 0.0);
-        double shift_nxt = geometry.get_shift <frame> (o, r, nxt, Z  );
+        Size       crt = o;
+        Real shift_crt = geometry.get_shift <frame> (o, r, crt, 0.0);
+        Real shift_nxt = geometry.get_shift <frame> (o, r, nxt, Z  );
 
         set_data (crt, nxt, shift_crt, shift_nxt, dZ, dshift_max, increment, id1, id2);
 
@@ -624,30 +624,30 @@ accel inline Size Solver :: trace_ray (
 
 
 accel inline void Solver :: set_data (
-    const Size   crt,
-    const Size   nxt,
-    const double shift_crt,
-    const double shift_nxt,
-    const double dZ_loc,
-    const double dshift_max,
-    const int    increment,
-          Size&  id1,
-          Size&  id2 )
+    const Size  crt,
+    const Size  nxt,
+    const Real  shift_crt,
+    const Real  shift_nxt,
+    const Real  dZ_loc,
+    const Real  dshift_max,
+    const int   increment,
+          Size& id1,
+          Size& id2 )
 {
-    Vector<double>& dZ    = dZ_   ();
-    Vector<Size  >& nr    = nr_   ();
-    Vector<double>& shift = shift_();
+    Vector<Real>& dZ    = dZ_   ();
+    Vector<Size>& nr    = nr_   ();
+    Vector<Real>& shift = shift_();
 
-    const double dshift     = shift_nxt - shift_crt;
-    const double dshift_abs = fabs (dshift);
+    const Real dshift     = shift_nxt - shift_crt;
+    const Real dshift_abs = fabs (dshift);
 
     if (dshift_abs > dshift_max) // If velocity gradient is not well-sampled enough
     {
         // Interpolate velocity gradient field
-        const Size        n_interpl = dshift_abs / dshift_max + 1;
-        const Size   half_n_interpl = 0.5 * n_interpl;
-        const double     dZ_interpl =     dZ_loc / n_interpl;
-        const double dshift_interpl =     dshift / n_interpl;
+        const Size      n_interpl = dshift_abs / dshift_max + 1;
+        const Size half_n_interpl = 0.5 * n_interpl;
+        const Real     dZ_interpl =     dZ_loc / n_interpl;
+        const Real dshift_interpl =     dshift / n_interpl;
 
         if (n_interpl > 10000)
         {
@@ -795,7 +795,7 @@ accel inline void Solver :: get_eta_and_chi <OneLine> (
 ///    @param[in] dZ    : distance inscrement along ray
 ///    @returns integral x over dZ
 ///////////////////////////////////////////////////////
-accel inline Real trap (const Real x_crt, const Real x_nxt, const double dZ)
+accel inline Real trap (const Real x_crt, const Real x_nxt, const Real dZ)
 {
     return half * (x_crt + x_nxt) * dZ;
 }
@@ -806,9 +806,9 @@ accel inline Real trap (const Real x_crt, const Real x_nxt, const double dZ)
 
 accel inline void Solver :: solve_shortchar_order_0 (
           Model& model,
-    const Size   o,
-    const Size   r,
-    const double dshift_max)
+    const Size o,
+    const Size r,
+    const Real dshift_max)
 {
     Vector<Real>& eta_c = eta_c_();
     Vector<Real>& eta_n = eta_n_();
@@ -819,16 +819,16 @@ accel inline void Solver :: solve_shortchar_order_0 (
     Vector<Real>& tau = tau_();
 
 
-    double  Z = 0.0;   // distance along ray
-    double dZ = 0.0;   // last distance increment
+    Real  Z = 0.0;   // distance along ray
+    Real dZ = 0.0;   // last distance increment
 
     Size crt = o;
     Size nxt = model.geometry.get_next (o, r, o, Z, dZ);
 
     if (model.geometry.valid_point (nxt))
     {
-        double shift_c = 1.0;
-        double shift_n = model.geometry.get_shift <CoMoving> (o, r, nxt, Z);
+        Real shift_c = 1.0;
+        Real shift_n = model.geometry.get_shift <CoMoving> (o, r, nxt, Z);
 
         for (Size f = 0; f < model.parameters->nfreqs(); f++)
         {
@@ -902,12 +902,12 @@ accel inline void Solver :: update_Lambda (Model &model, const Size rr, const Si
         const Size last  = last_ ();
         const Size n_tot = n_tot_();
 
-        Vector<Size  >& nr          = nr_         ();
-        Vector<double>& shift       = shift_      ();
-        Vector<Real  >& L_diag      = L_diag_     ();
-        Matrix<Real  >& L_upper     = L_upper_    ();
-        Matrix<Real  >& L_lower     = L_lower_    ();
-        Vector<Real  >& inverse_chi = inverse_chi_();
+        Vector<Size>& nr          = nr_         ();
+        Vector<Real>& shift       = shift_      ();
+        Vector<Real>& L_diag      = L_diag_     ();
+        Matrix<Real>& L_upper     = L_upper_    ();
+        Matrix<Real>& L_lower     = L_lower_    ();
+        Vector<Real>& inverse_chi = inverse_chi_();
 
         const Real w_ang = two * model.geometry.rays.weight[rr];
 
@@ -972,9 +972,9 @@ accel inline void Solver :: solve_feautrier_order_2 (Model& model, const Size o,
     const Size last  = last_ ();
     const Size n_tot = n_tot_();
 
-    Vector<double>& dZ    = dZ_   ();
-    Vector<Size  >& nr    = nr_   ();
-    Vector<double>& shift = shift_();
+    Vector<Real>& dZ    = dZ_   ();
+    Vector<Size>& nr    = nr_   ();
+    Vector<Real>& shift = shift_();
 
     Vector<Real>& inverse_chi = inverse_chi_();
 
@@ -1016,6 +1016,7 @@ accel inline void Solver :: solve_feautrier_order_2 (Model& model, const Size o,
 
     const Real Bf_min_Cf = one + two * inverse_dtau_f;
     const Real Bf        = Bf_min_Cf + C[first];
+    // const Real I_bdy_f   = boundary_intensity (model, nr[first], freq*shift[first]);
     const Real I_bdy_f   = boundary_intensity (model, nr[first], freq*shift[first]);
 
     Su[first]  = term_c + two * I_bdy_f * inverse_dtau_f;
@@ -1154,9 +1155,9 @@ accel inline void Solver :: image_feautrier_order_2 (Model& model, const Size o,
     const Size last  = last_ ();
     const Size n_tot = n_tot_();
 
-    Vector<double>& dZ    = dZ_   ();
-    Vector<Size  >& nr    = nr_   ();
-    Vector<double>& shift = shift_();
+    Vector<Real>& dZ    = dZ_   ();
+    Vector<Size>& nr    = nr_   ();
+    Vector<Real>& shift = shift_();
 
     Vector<Real>& inverse_chi = inverse_chi_();
 
@@ -1280,9 +1281,9 @@ accel inline void Solver :: image_feautrier_order_2_for_point_loc (Model& model,
     const Size last  = last_ ();
     const Size n_tot = n_tot_();
 
-    Vector<double>& dZ    = dZ_   ();
-    Vector<Size  >& nr    = nr_   ();
-    Vector<double>& shift = shift_();
+    Vector<Real>& dZ    = dZ_   ();
+    Vector<Size>& nr    = nr_   ();
+    Vector<Real>& shift = shift_();
 
     Vector<Real>& inverse_chi = inverse_chi_();
 
@@ -1419,9 +1420,9 @@ accel inline void Solver :: image_optical_depth (Model& model, const Size o, con
     const Size last  = last_ ();
     const Size n_tot = n_tot_();
 
-    Vector<double>& dZ    = dZ_   ();
-    Vector<Size  >& nr    = nr_   ();
-    Vector<double>& shift = shift_();
+    Vector<Real>& dZ    = dZ_   ();
+    Vector<Size>& nr    = nr_   ();
+    Vector<Real>& shift = shift_();
 
     Real eta_c, chi_c;
     Real eta_n, chi_n;
@@ -1468,9 +1469,9 @@ accel inline void Solver :: solve_feautrier_order_2_uv (Model& model, const Size
     const Size last  = last_ ();
     const Size n_tot = n_tot_();
 
-    Vector<double>& dZ    = dZ_   ();
-    Vector<Size  >& nr    = nr_   ();
-    Vector<double>& shift = shift_();
+    Vector<Real>& dZ    = dZ_   ();
+    Vector<Size>& nr    = nr_   ();
+    Vector<Real>& shift = shift_();
 
     Vector<Real>& inverse_chi = inverse_chi_();
 
@@ -1581,7 +1582,7 @@ accel inline void Solver :: solve_feautrier_order_2_uv (Model& model, const Size
 }
 
 
-accel inline void Solver :: set_eta_and_chi (Model& model, const Size rr) const
+inline void Solver :: set_eta_and_chi (Model& model, const Size rr) const
 {
     model.eta.resize (model.parameters->npoints(), model.parameters->nfreqs());
     model.chi.resize (model.parameters->npoints(), model.parameters->nfreqs());
@@ -1591,9 +1592,9 @@ accel inline void Solver :: set_eta_and_chi (Model& model, const Size rr) const
         for (Size f = 0; f < model.parameters->nfreqs(); f++)
         {
             // Extract the Doppler shift
-            const double shift = model.geometry.get_shift <Rest> (0, rr, p, 0.0);
-            const Real   freq  = model.radiation.frequencies.nu(0, f);
-            const Size   l     = model.radiation.frequencies.corresponding_line[f];
+            const Real shift = model.geometry.get_shift <Rest> (0, rr, p, 0.0);
+            const Real freq  = model.radiation.frequencies.nu(0, f);
+            const Size l     = model.radiation.frequencies.corresponding_line[f];
 
             get_eta_and_chi <None> (model, p, l, freq*shift, model.eta(p,f), model.chi(p,f));
         }
@@ -1601,7 +1602,7 @@ accel inline void Solver :: set_eta_and_chi (Model& model, const Size rr) const
 }
 
 
-accel inline void Solver :: set_boundary_condition (Model& model) const
+inline void Solver :: set_boundary_condition (Model& model) const
 {
     model.boundary_condition.resize (model.parameters->nboundary(), model.parameters->nfreqs());
 
@@ -1643,8 +1644,8 @@ accel inline Real Solver :: get_column (const Model& model, const Size o, const 
 {
     Real column = 0.0;
 
-    double  Z = 0.0;   // distance from origin (o)
-    double dZ = 0.0;   // last increment in Z
+    Real  Z = 0.0;   // distance from origin (o)
+    Real dZ = 0.0;   // last increment in Z
 
     Size nxt = model.geometry.get_next (o, r, o, Z, dZ);
 
@@ -1664,4 +1665,85 @@ accel inline Real Solver :: get_column (const Model& model, const Size o, const 
     }
 
     return column;
+}
+
+
+///  PPORTAL imager
+///////////////////
+inline void Solver :: PORTAL_image (Model& model, const Size rr, const Size l)
+{
+    Image image = Image(model.geometry, PolarizedIntensity, rr);
+
+    const Size ar = model.geometry.rays.antipod[rr];
+
+    accelerated_for (o, model.parameters->npoints(),
+    {
+        const Real dshift_max = get_dshift_max (model, o);
+
+        nr_   ()[centre] = o;
+        shift_()[centre] = model.geometry.get_shift <Rest> (o, rr, o, 0.0);;
+
+        first_() = trace_ray <Rest> (model.geometry, o, rr, dshift_max, -1, centre-1, centre-1) + 1;
+        last_ () = trace_ray <Rest> (model.geometry, o, ar, dshift_max, +1, centre+1, centre  ) - 1;
+        n_tot_() = (last_()+1) - first_();
+
+        for (Size f = 0; f < model.parameters->nfreqs(); f++)
+        {
+            const Real freq = model.radiation.frequencies.nu(o, f);
+
+            const Size first = first_();
+            const Size last  = last_ ();
+            const Size n_tot = n_tot_();
+
+            Vector<Real>& dZ    = dZ_   ();
+            Vector<Size>& nr    = nr_   ();
+            Vector<Real>& shift = shift_();
+
+            image.I_p(o,f) = 0.5*boundary_intensity (model, nr[first], freq*shift[first]);
+            image.I_o(o,f) = 0.5*boundary_intensity (model, nr[first], freq*shift[first]);
+            image.U  (o,f) = 0.0;
+
+            for (Size n = first; n <= last; n++)
+            {
+                const Real k_abs_0 = model.k_abs_0[nr[n]];
+                const Real k_stm_0 = model.k_stm_0[nr[n]];
+                const Real k_abs_2 = model.k_abs_2[nr[n]];
+                const Real k_stm_2 = model.k_stm_2[nr[n]];
+
+                const Real cos_t = model.geometry.rays.direction[rr].dot(model.b[nr[n]]);
+                const Real fac   = inv_sqrt2 * (three * cos_t * cos_t - two);
+
+                const Real k_abs_p = k_abs_0 + k_abs_2 * fac;
+                const Real k_stm_p = k_stm_0 + k_stm_2 * fac;
+
+                const Real k_abs_o = k_abs_0 + k_abs_2 * inv_sqrt2;
+                const Real k_stm_o = k_stm_0 + k_stm_2 * inv_sqrt2;
+
+                const Real k_p = k_abs_p - k_stm_p;
+                const Real k_o = k_abs_o - k_stm_o;
+
+                const Real freq_ij = model.lines.line[l];
+                const Real pre     = HH_OVER_CC_SQUARED * freq_ij * freq_ij * freq_ij;
+
+                const Real S_p = pre * k_stm_p / k_p;
+                const Real S_o = pre * k_stm_o / k_o;
+
+                const Real diff = freq*shift[n] - freq_ij;
+                const Real prof = gaussian (model.lines.inverse_width(nr[n], l), diff);
+
+                const Real ds_nu = prof * dZ[n];
+
+                const Real dtau_p = k_p * ds_nu;
+                const Real dtau_o = k_o * ds_nu;
+
+                image.I_p(o,f) += (image.I_p(o,f) - S_p) * expm1(-dtau_p);
+                image.I_o(o,f) += (image.I_o(o,f) - S_o) * expm1(-dtau_o);
+                image.U  (o,f) *= exp(-half*(dtau_p + dtau_o));
+            }
+        }
+    })
+
+    pc::accelerator::synchronize();
+
+    model.images.push_back (image);
 }

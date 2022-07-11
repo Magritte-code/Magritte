@@ -21,7 +21,18 @@ Image :: Image (const Geometry& geometry, const ImageType it, const Size rr) : i
 
     ImX.resize (geometry.parameters->npoints());
     ImY.resize (geometry.parameters->npoints());
-    I.  resize (geometry.parameters->npoints(), geometry.parameters->nfreqs());
+
+
+    if (it == PolarizedIntensity)
+    {
+        I_p.resize (geometry.parameters->npoints(), geometry.parameters->nfreqs());
+        I_o.resize (geometry.parameters->npoints(), geometry.parameters->nfreqs());
+        U  .resize (geometry.parameters->npoints(), geometry.parameters->nfreqs());
+    }
+    else
+    {
+        I.resize (geometry.parameters->npoints(), geometry.parameters->nfreqs());
+    }
 
     set_coordinates (geometry);
 }
@@ -35,13 +46,33 @@ Image :: Image (const Image& image) : imageType(image.imageType), ray_nr (image.
     ImY = image.ImY;
 
     // Deep copy of I
-    I.nrows = image.I.nrows;
-    I.ncols = image.I.ncols;
-
+    I.nrows          = image.I.nrows;
+    I.ncols          = image.I.ncols;
     I.vec            = image.I.vec;
     I.allocated      = false;
     I.allocated_size = 0;
     I.set_dat ();
+
+    I_p.nrows          = image.I_p.nrows;
+    I_p.ncols          = image.I_p.ncols;
+    I_p.vec            = image.I_p.vec;
+    I_p.allocated      = false;
+    I_p.allocated_size = 0;
+    I_p.set_dat ();
+
+    I_o.nrows          = image.I_o.nrows;
+    I_o.ncols          = image.I_o.ncols;
+    I_o.vec            = image.I_o.vec;
+    I_o.allocated      = false;
+    I_o.allocated_size = 0;
+    I_o.set_dat ();
+
+    U.nrows          = image.U.nrows;
+    U.ncols          = image.U.ncols;
+    U.vec            = image.U.vec;
+    U.allocated      = false;
+    U.allocated_size = 0;
+    U.set_dat ();
 }
 
 ///  print: write out the images

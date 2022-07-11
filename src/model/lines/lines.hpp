@@ -56,6 +56,10 @@ struct Lines
         lineProducingSpecies.resize (parameters->nlspecs(), LineProducingSpecies(parameters));
     }
 
+    void PORTAL_solve_statistical_equilibrium (
+        const Double2      &abundance,
+        const Vector<Real> &temperature );
+
     void gather_emissivities_and_opacities ();
 };
 

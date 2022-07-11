@@ -136,14 +136,14 @@ TEST (solver_lambda, lambda)
 
     Model model = Model (modelFile);
 
-    const Size length_max = 4*model.parameters.npoints() + 1;
-    const Size  width_max =   model.parameters.nfreqs ();
+    const Size length_max = 4*model.parameters->npoints() + 1;
+    const Size  width_max =   model.parameters->nfreqs ();
 
-    model.parameters.n_off_diag = model.parameters.npoints();
+    model.parameters->n_off_diag = model.parameters->npoints();
 
     Solver solver;
-    solver.setup <CoMoving>        (model);
-    solver.solve_feautrier_order_2 (model);
+    solver.setup <CoMoving>               (model);
+    solver.solve_feautrier_order_2 <None> (model);
 
     MatrixXr T = setup_T (solver);
     MatrixXr L = setup_L (solver);

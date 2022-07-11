@@ -7,7 +7,7 @@
 #include "model/geometry/geometry.hpp"
 
 
-enum ImageType {Intensity, OpticalDepth};
+enum ImageType {Intensity, OpticalDepth, PolarizedIntensity};
 
 
 ///  Image: data structure for the images
@@ -21,6 +21,10 @@ struct Image
     Double1 ImY;                 ///< y coordinate of point in image
 
     Matrix<Real> I;              ///< intensity out along ray (index(p,f))
+
+    Matrix<Real> I_p;            ///< intensity parallel (index(p,f))
+    Matrix<Real> I_o;            ///< intensity orthogonal (index(p,f))
+    Matrix<Real> U;              ///< intensity orthogonal (index(p,f))
 
     Image (const Geometry& geometry, const ImageType, const Size ray_nr);
     Image (const Image& image);

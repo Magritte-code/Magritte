@@ -22,7 +22,7 @@ int main (int argc, char **argv)
 
     Timer timer("solver: 2nd order Feautrier");
     timer.start();
-    model.compute_image (model.parameters.hnrays()-1);
+    model.compute_image (model.parameters->hnrays()-1);
     timer.stop();
     timer.print();
 

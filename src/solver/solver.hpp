@@ -11,9 +11,9 @@ enum ApproximationType {None, OneLine};
 
 struct Solver
 {
-    pc::multi_threading::ThreadPrivate<Vector<double>> dZ_;      ///< distance increments along the ray
-    pc::multi_threading::ThreadPrivate<Vector<Size>>   nr_;      ///< corresponding point number on the ray
-    pc::multi_threading::ThreadPrivate<Vector<double>> shift_;   ///< Doppler shift along the ray
+    pc::multi_threading::ThreadPrivate<Vector<Real>> dZ_;      ///< distance increments along the ray
+    pc::multi_threading::ThreadPrivate<Vector<Size>> nr_;      ///< corresponding point number on the ray
+    pc::multi_threading::ThreadPrivate<Vector<Real>> shift_;   ///< Doppler shift along the ray
 
     pc::multi_threading::ThreadPrivate<Vector<Real>> eta_c_;
     pc::multi_threading::ThreadPrivate<Vector<Real>> eta_n_;
@@ -48,6 +48,10 @@ struct Solver
     pc::multi_threading::ThreadPrivate<Matrix<Real>> L_lower_;
 
     pc::multi_threading::ThreadPrivate<Real> optical_depth_;
+
+    pc::multi_threading::ThreadPrivate<Real> I_p_;
+    pc::multi_threading::ThreadPrivate<Real> I_o_;
+    pc::multi_threading::ThreadPrivate<Real> U_;
 
 
     Vector<Real> eta;
@@ -131,26 +135,26 @@ struct Solver
 
     // Solvers for images
     /////////////////////
-    accel inline void image_feautrier_order_2 (Model& model, const Size rr);
+          inline void image_feautrier_order_2 (Model& model, const Size rr);
     accel inline void image_feautrier_order_2 (Model& model, const Size o, const Size f);
 
-    accel inline void image_feautrier_order_2_for_point     (Model& model, const Size rr, const Size p);
+          inline void image_feautrier_order_2_for_point     (Model& model, const Size rr, const Size p);
     accel inline void image_feautrier_order_2_for_point_loc (Model& model, const Size o,  const Size f);
 
-    accel inline void image_optical_depth (Model& model, const Size rr);
+          inline void image_optical_depth (Model& model, const Size rr);
     accel inline void image_optical_depth (Model& model, const Size o, const Size f);
 
 
     // Solvers only computing u
     ///////////////////////////
     template <ApproximationType approx>
-    accel inline void solve_feautrier_order_2 (Model& model);
+    inline void solve_feautrier_order_2 (Model& model);
 
     template <ApproximationType approx>
-    accel inline void solve_feautrier_order_2_sparse (Model& model);
+    inline void solve_feautrier_order_2_sparse (Model& model);
 
     template <ApproximationType approx>
-    accel inline void solve_feautrier_order_2_anis (Model& model);
+    inline void solve_feautrier_order_2_anis (Model& model);
 
     template <ApproximationType approx>
     accel inline void solve_feautrier_order_2 (Model& model, const Size o, const Size f);
@@ -159,7 +163,7 @@ struct Solver
     // Solvers for both u and v
     ///////////////////////////
     template <ApproximationType approx>
-    accel inline void solve_feautrier_order_2_uv (Model& model);
+    inline void solve_feautrier_order_2_uv (Model& model);
 
     template <ApproximationType approx>
     accel inline void solve_feautrier_order_2_uv (Model& model, const Size o, const Size f);
@@ -167,14 +171,19 @@ struct Solver
 
     // Getters for emissivities, opacities, and boundary conditions
     ///////////////////////////////////////////////////////////////
-    accel inline void set_eta_and_chi        (Model& model, const Size rr) const;
-    accel inline void set_boundary_condition (Model& model) const;
+    inline void set_eta_and_chi        (Model& model, const Size rr) const;
+    inline void set_boundary_condition (Model& model) const;
 
 
     // Solvers for column densities
     ///////////////////////////////
-    accel inline void set_column (Model& model) const;
+          inline void set_column (Model& model) const;
     accel inline Real get_column (const Model& model, const Size o, const Size r) const;
+
+
+    // Solvers for PORTAL
+    /////////////////////
+    inline void PORTAL_image (Model& model, const Size rr, const Size l);
 };
 
 

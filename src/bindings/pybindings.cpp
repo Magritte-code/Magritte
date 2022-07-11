@@ -119,8 +119,9 @@ PYBIND11_MODULE (core, module)
 
     // ImageType
     py::enum_<ImageType>(module, "ImageType")
-        .value("Intensity",    Intensity)
-        .value("OpticalDepth", OpticalDepth)
+        .value("Intensity",          Intensity)
+        .value("OpticalDepth",       OpticalDepth)
+        .value("PolarizedIntensity", PolarizedIntensity)
         .export_values();
 
     // Image
@@ -131,6 +132,9 @@ PYBIND11_MODULE (core, module)
         .def_readonly  ("ImX",       &Image::ImX,       "X-coordinates of the points in the image plane.")
         .def_readonly  ("ImY",       &Image::ImY,       "Y-coordinates of the points in the image plane.")
         .def_readonly  ("I",         &Image::I,         "Intensity of the points in the image (for each frequency bin).")
+        .def_readonly  ("I_o",       &Image::I_o,       "Intensity of the points in the image (for each frequency bin).")
+        .def_readonly  ("I_p",       &Image::I_p,       "Intensity of the points in the image (for each frequency bin).")
+        .def_readonly  ("U",         &Image::U,         "Intensity of the points in the image (for each frequency bin).")
         // constructor
         .def (py::init<const Geometry&, const ImageType&, const Size&>());
 
@@ -154,6 +158,28 @@ PYBIND11_MODULE (core, module)
         .def_readwrite ("boundary_condition", &Model::boundary_condition)
         .def_readwrite ("column",             &Model::column)
         .def_readwrite ("density",            &Model::density)
+        .def_readwrite ("nalign",             &Model::nalign  )
+        .def_readwrite ("lau",                &Model::lau     )
+        .def_readwrite ("lal",                &Model::lal     )
+        .def_readwrite ("lcu",                &Model::lcu     )
+        .def_readwrite ("lcl",                &Model::lcl     )
+        .def_readwrite ("j_lev",              &Model::j_lev   )
+        .def_readwrite ("a_lev",              &Model::a_lev   )
+        .def_readwrite ("J0",                 &Model::J0      )
+        .def_readwrite ("J2",                 &Model::J2      )
+        .def_readwrite ("rp",                 &Model::rp      )
+        .def_readwrite ("rm",                 &Model::rm      )
+        .def_readwrite ("tp",                 &Model::tp      )
+        .def_readwrite ("t_A",                &Model::t_A     )
+        .def_readwrite ("up_loc",             &Model::up_loc  )
+        .def_readwrite ("down_loc",           &Model::down_loc)
+        .def_readwrite ("M",                  &Model::M)
+        .def_readwrite ("b",                  &Model::b)
+        .def_readwrite ("population_align",   &Model::population_align)
+        .def_readwrite ("k_abs_0",            &Model::k_abs_0)
+        .def_readwrite ("k_stm_0",            &Model::k_stm_0)
+        .def_readwrite ("k_abs_2",            &Model::k_abs_2)
+        .def_readwrite ("k_stm_2",            &Model::k_stm_2)
         .def_readonly  (
             "error_mean",
             &Model::error_mean,
@@ -165,6 +191,8 @@ PYBIND11_MODULE (core, module)
             "Max relative error in the level populaitons."
         )
         // functions
+        .def ("PORTAL_solve_statistical_equilibrium", &Model::PORTAL_solve_statistical_equilibrium)
+        .def ("PORTAL_image",        &Model::PORTAL_image)
         .def (
             "read",
             (void (Model::*)(void)) &Model::read,
@@ -494,6 +522,16 @@ PYBIND11_MODULE (core, module)
         .def_readwrite ("RT",               &LineProducingSpecies::RT)
         .def_readwrite ("LambdaStar",       &LineProducingSpecies::LambdaStar)
         .def_readwrite ("LambdaTest",       &LineProducingSpecies::LambdaTest)
+        .def_readwrite ("nalign",           &LineProducingSpecies::nalign  )
+        .def_readwrite ("j_lev",            &LineProducingSpecies::j_lev   )
+        .def_readwrite ("a_lev",            &LineProducingSpecies::a_lev   )
+        .def_readwrite ("J0",               &LineProducingSpecies::J0      )
+        .def_readwrite ("J2",               &LineProducingSpecies::J2      )
+        .def_readwrite ("rp",               &LineProducingSpecies::rp      )
+        .def_readwrite ("rm",               &LineProducingSpecies::rm      )
+        .def_readwrite ("tp",               &LineProducingSpecies::tp      )
+        .def_readwrite ("M",                &LineProducingSpecies::M)
+        .def_readwrite ("rho",              &LineProducingSpecies::rho)
         // functions
         .def ("read",                       &LineProducingSpecies::read, "Read object from file.")
         .def ("write",                      &LineProducingSpecies::write, "Write object to file.")

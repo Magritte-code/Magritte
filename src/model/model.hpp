@@ -108,4 +108,39 @@ struct Model
     Matrix<Real> column;
 
     int set_column ();
+
+
+    // PORTAL extension
+    ////////////////////////////////
+    Size  nalign;
+    Size1 lau;
+    Size1 lal;
+    Size1 lcu;
+    Size1 lcl;
+    Size1 j_lev;
+    Size2 a_lev;
+    Double2 J0;
+    Double2 J2;
+    Double5 rp;
+    Double5 rm;
+    Double2 tp;
+    Double1 t_A;
+    Double1 up_loc;
+    Double1 down_loc;
+
+    MatrixXd M;
+
+    Vector <Vector3D> b;
+
+    Double2 population_align;
+
+    Real1 k_abs_0;
+    Real1 k_stm_0;
+    Real1 k_abs_2;
+    Real1 k_stm_2;
+
+
+    int PORTAL_solve_statistical_equilibrium ();
+    int PORTAL_image                         (const Size ray_nr, const Size l);
+    ////////////////////////////////
 };

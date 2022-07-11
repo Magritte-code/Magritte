@@ -1,3 +1,6 @@
+#include <Eigen/Core>
+#include <Eigen/Dense>
+
 #include "paracabs.hpp"
 #include "model.hpp"
 #include "tools/heapsort.hpp"
@@ -751,6 +754,30 @@ int Model :: set_column ()
 {
     Solver solver;
     solver.set_column (*this);
+
+    return (0);
+}
+
+
+int Model :: PORTAL_solve_statistical_equilibrium ()
+{
+    lines.PORTAL_solve_statistical_equilibrium(
+        chemistry.species.abundance,
+        thermodynamics.temperature.gas);
+
+    return (0);
+}
+
+
+///  Computer for the radiation field
+/////////////////////////////////////
+int Model :: PORTAL_image (const Size ray_nr, const Size l)
+{
+    cout << "Computing polarization image..." << endl;
+
+    Solver solver;
+    solver.setup <Rest> (*this);
+    solver.PORTAL_image (*this, ray_nr, l );
 
     return (0);
 }

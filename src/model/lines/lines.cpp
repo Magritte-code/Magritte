@@ -139,6 +139,17 @@ void Lines :: iteration_using_statistical_equilibrium_sparse (
 }
 
 
+void Lines :: PORTAL_solve_statistical_equilibrium (
+    const Double2      &abundance,
+    const Vector<Real> &temperature )
+{
+    for (LineProducingSpecies &lspec : lineProducingSpecies)
+    {
+        lspec.PORTAL_solve_statistical_equilibrium (abundance, temperature);
+    }
+}
+
+
 // DEPRECATED: Now try to keep emissivities and opacities local.
 //
 // void Lines :: gather_emissivities_and_opacities ()

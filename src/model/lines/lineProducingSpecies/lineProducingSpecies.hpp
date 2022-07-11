@@ -58,6 +58,23 @@ struct LineProducingSpecies
     SparseMatrix<Real> LambdaStar;
 
 
+    // PORTAL extension
+    ////////////////////////////////
+    Size  nalign;
+    Size1 j_lev;
+    Size2 a_lev;
+    Double2 J0;
+    Double2 J2;
+    Double5 rp;
+    Double5 rm;
+    Double2 tp;
+
+    MatrixXd M;
+
+    Double2 rho;
+    ////////////////////////////////
+
+
     LineProducingSpecies (std::shared_ptr<Parameters> params)
     : parameters (params)
     , quadrature (params)
@@ -91,6 +108,10 @@ struct LineProducingSpecies
 
     inline void update_using_Ng_acceleration ();
     inline void update_using_acceleration (const Size order);
+
+    inline void PORTAL_solve_statistical_equilibrium (
+        const Double2      &abundance,
+        const Vector<Real> &temperature );
 };
 
 

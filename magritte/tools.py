@@ -6,6 +6,7 @@ from time              import perf_counter
 from astropy.io        import fits
 from astropy           import units, constants
 from scipy.interpolate import griddata, interp1d
+from scipy.spatial     import cKDTree
 
 
 # Physical constants
@@ -716,6 +717,57 @@ def extract_spectrum_from_FITS (fits_file, aperture):
     return (vs, spec)
 
 
+def extract_level_pops(model_1, model_2):
+    """
+    Extracts and (nearest neighbor) interpolates level populations from model_2 into model_1.
+    
+    Parameters
+    ----------
+    model_1 : magritte model object
+        Model to which the level populations are interpolated.
+    model_2 : magritte model object
+        Model from which the level populations are extracted.
+        
+    Returns
+    -------
+    model_1 with the (interpolated) level populations form model_2.
+    """
+    
+    if model_1.parameters.nlspecs() != model_2.parameters.nlspecs():
+        raise ValueError('The two models have different numbers of line producing species!')
+
+    pos_1 = np.array(model_1.geometry.points.position)
+    pos_2 = np.array(model_2.geometry.points.position)
+
+    # Find the indices in model_2 corresponding to the ones in model_1
+    corresponding_indices = cKDTree(pos_2).query(pos_1)[1]
+    
+    npoints_1 = model_1.parameters.npoints()
+    npoints_2 = model_2.parameters.npoints()
+    
+    for l in range(model_1.parameters.nlspecs()):
+        
+        if model_1.lines.lineProducingSpecies[l].linedata.sym != model_2.lines.lineProducingSpecies[l].linedata.sym:
+            raise ValueError('Different line producing species!')
+        
+        nlev_1 = model_1.lines.lineProducingSpecies[l].linedata.nlev
+        nlev_2 = model_2.lines.lineProducingSpecies[l].linedata.nlev
+        
+        if nlev_1 != nlev_2:
+            raise ValueError('Different number of levels!')
+
+        # Extract level populations
+        pop_2 = np.array(model_2.lines.lineProducingSpecies[l].population).reshape((npoints_2, nlev_2))
+
+        # Compute/interpolate the new populations
+        pop_1     = pop_2[corresponding_indices,:]
+        pop_1_tot = np.sum(pop_1, axis=1)
+
+        # Set the new populations in the model
+        model_1.lines.lineProducingSpecies[0].population     = pop_1.ravel()
+        model_1.lines.lineProducingSpecies[0].population_tot = pop_1_tot
+
+    return model_1
 
 
 def check_one_line_approximation(model):
