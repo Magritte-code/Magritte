@@ -135,16 +135,17 @@ def run_model (nosave=False):
         else:
             return r * np.cos(theta) + np.sqrt(L   **2 - (r*np.sin(theta))**2)
 
-    def tau(nu, r0, r, theta):
-        l0  = r0
+    def tau(nu, r, theta):
         l   = float (z_max(r, theta))
         arg = float ((nu - frq) / dnu)
         fct = float (vmax * nu / dnu)
-        return chi*L / (fct*dnu) * 0.5 * (sp.special.erf(arg-fct*l0/L) - sp.special.erf(arg-fct*l/L))
+        tauup=chi*L / (fct*dnu) * 0.5 * (sp.special.erf(arg) - sp.special.erf(arg-fct*l/L))
+        taudown=chi*L / (-fct*dnu) * 0.5 * (sp.special.erf(arg) - sp.special.erf(arg+fct*l/L))
+        return tauup+taudown
 
     def I_im (nu, r):
         nu = nu + vmax/magritte.CC*frq
-        return src + (bdy(nu)-src)*np.exp(-2.0*tau(nu, r, 0.5*np.pi))
+        return src + (bdy(nu)-src)*np.exp(-tau(nu, r, 0.5*np.pi))
 
     im_a = np.array([[I_im(f,r) for f in nu] for r in rs])
     fs   = (nu-frq)/frq*magritte.CC
