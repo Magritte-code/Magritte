@@ -1676,6 +1676,7 @@ inline void Solver :: PORTAL_image (Model& model, const Size rr, const Size l)
 
     const Size ar = model.geometry.rays.antipod[rr];
 
+    // Size o = 0;
     accelerated_for (o, model.parameters->npoints(),
     {
         const Real dshift_max = get_dshift_max (model, o);
@@ -1703,6 +1704,8 @@ inline void Solver :: PORTAL_image (Model& model, const Size rr, const Size l)
             Real Q = 0.0;
             Real U = 0.0;
 
+            // cout << "I = " << I << "    Q = " << Q << "    U = " << U << endl;
+
             for (Size n = first; n <= last; n++)
             {
                 const Real k_abs_0 = model.k_abs_0[nr[n]];
@@ -1712,6 +1715,8 @@ inline void Solver :: PORTAL_image (Model& model, const Size rr, const Size l)
 
                 const Real cos_t = model.geometry.rays.direction[rr].dot(model.b[nr[n]]);
                 const Real fac   = inv_sqrt2 * (three * cos_t * cos_t - two);
+
+                // cout << "cos_t = " << cos_t << endl;
 
                 const Real k_abs_p = k_abs_0 + k_abs_2 * fac;
                 const Real k_stm_p = k_stm_0 + k_stm_2 * fac;
@@ -1728,18 +1733,31 @@ inline void Solver :: PORTAL_image (Model& model, const Size rr, const Size l)
                 const Real S_p = pre * k_stm_p / k_p;
                 const Real S_o = pre * k_stm_o / k_o;
 
+                // cout << "S_p = " << S_p << endl;
+                // cout << "S_o = " << S_o << endl;
+
                 const Real diff = freq*shift[n] - freq_ij;
                 const Real prof = gaussian (model.lines.inverse_width(nr[n], l), diff);
+
+                // cout << "prof = " << prof << endl;
+                // cout << "diff = " << diff << endl;
 
                 const Real ds_nu = prof * dZ[n];
 
                 const Real dtau_p = k_p * ds_nu;
                 const Real dtau_o = k_o * ds_nu;
 
+                // cout << "dtau_o = " << dtau_o << endl;
+                // cout << "dtau_p = " << dtau_p << endl;
+
                 // Compute angle
                 const Real   x = std::atan2(image.ny.dot(model.b[nr[n]]), image.nx.dot(model.b[nr[n]]));
                 const Real c2x = std::cos  (two * x);
                 const Real s2x = std::sin  (two * x);
+
+                // cout << "x = " << x << endl;
+                // cout << "c2x = " << c2x << endl;
+                // cout << "s2x = " << s2x << endl;
 
                 // Rotate from global to magnetic field frame
                 Real Q_m = Q * c2x + U * s2x;
@@ -1757,6 +1775,8 @@ inline void Solver :: PORTAL_image (Model& model, const Size rr, const Size l)
                 Q_m = I_p - I_o;
                 Q   = Q_m * c2x - U_m * s2x;
                 U   = U_m * c2x - Q_m * s2x;
+
+                // cout << "I = " << I << "    Q = " << Q << "    U = " << U << endl;
             }
 
             image.I(o,f) = I;

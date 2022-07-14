@@ -897,6 +897,8 @@ inline void LineProducingSpecies :: PORTAL_solve_statistical_equilibrium_for_poi
             colpar.adjust_abundance_for_ortho_or_para (tmp, abn);
             colpar.interpolate_collision_coefficients (tmp);
 
+            cout << "abn = " << abn << endl;
+
             for (Size t = 0; t < colpar.ncol; t++)
             {
                 const Size k  = colpar.icol[t];
@@ -916,6 +918,9 @@ inline void LineProducingSpecies :: PORTAL_solve_statistical_equilibrium_for_poi
                 mtrx(k_a,k_l) += g * colpar.Ce_intpld[t] * abn;
                 mtrx(k_l,k_a) +=     colpar.Cd_intpld[t] * abn / g;
 
+                cout << k_a << " " << k_l << " " << g * colpar.Ce_intpld[t] * abn     << endl;
+                cout << k_l << " " << k_a << " " <<     colpar.Cd_intpld[t] * abn / g << endl;
+
                 // BL: if j < 1, then no alignment state (k=2) is possible.
                 Size km1 = 1;
                 Size km2 = 1;
@@ -930,6 +935,8 @@ inline void LineProducingSpecies :: PORTAL_solve_statistical_equilibrium_for_poi
                     k_a = a_lev[k][k1];
                     // BL: superelastic jk --> jl
                     mtrx(k_a,k_a) -= colpar.Cd_intpld[t] * abn;
+
+                    cout << k_a << " " << k_a << " " << colpar.Cd_intpld[t] * abn << endl;
                 }
 
                 // BL: transitions j2 > j1
@@ -939,6 +946,8 @@ inline void LineProducingSpecies :: PORTAL_solve_statistical_equilibrium_for_poi
                     k_l = a_lev[l][k1];
                     // BL: inelastic jl --> jk
                     mtrx(k_l,k_l) -= colpar.Ce_intpld[t] * abn;
+
+                    cout << k_l << " " << k_l << " " << colpar.Ce_intpld[t] * abn << endl;
                 }
             }
         }

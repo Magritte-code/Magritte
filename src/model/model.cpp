@@ -270,7 +270,16 @@ int Model :: compute_spectral_discretisation (
 {
     cout << "Computing spectral discretisation..." << endl;
 
-    const long double dnu = (nu_max - nu_min) / (parameters->nfreqs() - 1);
+    long double dnu;
+
+    if (parameters->nfreqs() == 1)
+    {
+        dnu = 0.0;
+    }
+    else
+    {
+        dnu = (nu_max - nu_min) / (parameters->nfreqs() - 1);
+    }
 
     threaded_for (p, parameters->npoints(),
     {
