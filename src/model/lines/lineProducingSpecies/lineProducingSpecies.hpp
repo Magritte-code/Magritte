@@ -112,6 +112,11 @@ struct LineProducingSpecies
     inline void PORTAL_solve_statistical_equilibrium (
         const Double2      &abundance,
         const Vector<Real> &temperature );
+
+    inline void PORTAL_solve_statistical_equilibrium_for_point (
+        const Double2      &abundance,
+        const Vector<Real> &temperature,
+        const Size          p           );
 };
 
 

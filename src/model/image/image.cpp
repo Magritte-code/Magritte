@@ -22,16 +22,12 @@ Image :: Image (const Geometry& geometry, const ImageType it, const Size rr) : i
     ImX.resize (geometry.parameters->npoints());
     ImY.resize (geometry.parameters->npoints());
 
+    I.resize (geometry.parameters->npoints(), geometry.parameters->nfreqs());
 
     if (it == PolarizedIntensity)
     {
-        I_p.resize (geometry.parameters->npoints(), geometry.parameters->nfreqs());
-        I_o.resize (geometry.parameters->npoints(), geometry.parameters->nfreqs());
-        U  .resize (geometry.parameters->npoints(), geometry.parameters->nfreqs());
-    }
-    else
-    {
-        I.resize (geometry.parameters->npoints(), geometry.parameters->nfreqs());
+        Q.resize (geometry.parameters->npoints(), geometry.parameters->nfreqs());
+        U.resize (geometry.parameters->npoints(), geometry.parameters->nfreqs());
     }
 
     set_coordinates (geometry);
@@ -45,7 +41,7 @@ Image :: Image (const Image& image) : imageType(image.imageType), ray_nr (image.
     ImX = image.ImX;
     ImY = image.ImY;
 
-    // Deep copy of I
+    // Deep copies of I, Q, and U.
     I.nrows          = image.I.nrows;
     I.ncols          = image.I.ncols;
     I.vec            = image.I.vec;
@@ -53,19 +49,12 @@ Image :: Image (const Image& image) : imageType(image.imageType), ray_nr (image.
     I.allocated_size = 0;
     I.set_dat ();
 
-    I_p.nrows          = image.I_p.nrows;
-    I_p.ncols          = image.I_p.ncols;
-    I_p.vec            = image.I_p.vec;
-    I_p.allocated      = false;
-    I_p.allocated_size = 0;
-    I_p.set_dat ();
-
-    I_o.nrows          = image.I_o.nrows;
-    I_o.ncols          = image.I_o.ncols;
-    I_o.vec            = image.I_o.vec;
-    I_o.allocated      = false;
-    I_o.allocated_size = 0;
-    I_o.set_dat ();
+    Q.nrows          = image.Q.nrows;
+    Q.ncols          = image.Q.ncols;
+    Q.vec            = image.Q.vec;
+    Q.allocated      = false;
+    Q.allocated_size = 0;
+    Q.set_dat ();
 
     U.nrows          = image.U.nrows;
     U.ncols          = image.U.ncols;
@@ -112,6 +101,10 @@ void Image :: set_coordinates (const Geometry& geometry)
 {
     if (geometry.parameters->dimension() == 1)
     {
+        // Note: nx and ny are not well-defined in 1D!
+        nx = Vector3D(0.0, 0.0, 0.0);
+        ny = Vector3D(0.0, 0.0, 0.0);
+
         threaded_for (p, geometry.parameters->npoints(),
         {
             ImX[p] = geometry.points.position[p].x();
@@ -137,6 +130,9 @@ void Image :: set_coordinates (const Geometry& geometry)
 
         if (denominator >= 1.0e-9)
         {
+            nx = Vector3D(ix, iy, 0.0);
+            ny = Vector3D(jx, jy, jz );
+
             threaded_for (p, geometry.parameters->npoints(),
             {
                 ImX[p] =   ix * geometry.points.position[p].x()
@@ -149,6 +145,9 @@ void Image :: set_coordinates (const Geometry& geometry)
         }
         else
         {
+            nx = Vector3D(1.0, 0.0, 0.0);
+            ny = Vector3D(0.0, 1.0, 0.0);
+
             threaded_for (p, geometry.parameters->npoints(),
             {
                 ImX[p] = geometry.points.position[p].x();

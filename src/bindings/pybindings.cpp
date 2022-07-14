@@ -132,9 +132,8 @@ PYBIND11_MODULE (core, module)
         .def_readonly  ("ImX",       &Image::ImX,       "X-coordinates of the points in the image plane.")
         .def_readonly  ("ImY",       &Image::ImY,       "Y-coordinates of the points in the image plane.")
         .def_readonly  ("I",         &Image::I,         "Intensity of the points in the image (for each frequency bin).")
-        .def_readonly  ("I_o",       &Image::I_o,       "Intensity of the points in the image (for each frequency bin).")
-        .def_readonly  ("I_p",       &Image::I_p,       "Intensity of the points in the image (for each frequency bin).")
-        .def_readonly  ("U",         &Image::U,         "Intensity of the points in the image (for each frequency bin).")
+        .def_readonly  ("Q",         &Image::Q,         "Stokes parameter Q of the points in the image (for each frequency bin).")
+        .def_readonly  ("U",         &Image::U,         "Stokes parameter U of the points in the image (for each frequency bin).")
         // constructor
         .def (py::init<const Geometry&, const ImageType&, const Size&>());
 
@@ -191,7 +190,8 @@ PYBIND11_MODULE (core, module)
             "Max relative error in the level populaitons."
         )
         // functions
-        .def ("PORTAL_solve_statistical_equilibrium", &Model::PORTAL_solve_statistical_equilibrium)
+        .def ("PORTAL_solve_statistical_equilibrium",           &Model::PORTAL_solve_statistical_equilibrium)
+        .def ("PORTAL_solve_statistical_equilibrium_for_point", &Model::PORTAL_solve_statistical_equilibrium_for_point)
         .def ("PORTAL_image",        &Model::PORTAL_image)
         .def (
             "read",
@@ -599,6 +599,8 @@ PYBIND11_MODULE (core, module)
         .def_readwrite ("tmp",             &CollisionPartner::tmp, "Array with temperatures corresponding to the collisional data.")
         .def_readwrite ("Ce",              &CollisionPartner::Ce, "Array with collisional excitation rates.")
         .def_readwrite ("Cd",              &CollisionPartner::Cd, "Array with collisional de-excitation rates.")
+        .def_readwrite ("Cd_intpld",       &CollisionPartner::Cd_intpld, "Temporary array with  interpolated collisional de-excitation rates.")
+        .def_readwrite ("Ce_intpld",       &CollisionPartner::Ce_intpld, "Temporary array with  interpolated collisional excitation rates.")
         // functions
         .def ("read",                      &CollisionPartner::read, "Read object from file.")
         .def ("write",                     &CollisionPartner::write, "Write object to file.")

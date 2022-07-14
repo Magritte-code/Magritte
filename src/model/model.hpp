@@ -141,6 +141,7 @@ struct Model
 
 
     int PORTAL_solve_statistical_equilibrium ();
+    int PORTAL_solve_statistical_equilibrium_for_point (const Size p);
     int PORTAL_image                         (const Size ray_nr, const Size l);
     ////////////////////////////////
 };

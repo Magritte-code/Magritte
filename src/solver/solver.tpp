@@ -1699,9 +1699,9 @@ inline void Solver :: PORTAL_image (Model& model, const Size rr, const Size l)
             Vector<Size>& nr    = nr_   ();
             Vector<Real>& shift = shift_();
 
-            image.I_p(o,f) = 0.5*boundary_intensity (model, nr[first], freq*shift[first]);
-            image.I_o(o,f) = 0.5*boundary_intensity (model, nr[first], freq*shift[first]);
-            image.U  (o,f) = 0.0;
+            Real I = boundary_intensity (model, nr[first], freq*shift[first]);
+            Real Q = 0.0;
+            Real U = 0.0;
 
             for (Size n = first; n <= last; n++)
             {
@@ -1736,10 +1736,32 @@ inline void Solver :: PORTAL_image (Model& model, const Size rr, const Size l)
                 const Real dtau_p = k_p * ds_nu;
                 const Real dtau_o = k_o * ds_nu;
 
-                image.I_p(o,f) += (image.I_p(o,f) - S_p) * expm1(-dtau_p);
-                image.I_o(o,f) += (image.I_o(o,f) - S_o) * expm1(-dtau_o);
-                image.U  (o,f) *= exp(-half*(dtau_p + dtau_o));
+                // Compute angle
+                const Real   x = std::atan2(image.ny.dot(model.b[nr[n]]), image.nx.dot(model.b[nr[n]]));
+                const Real c2x = std::cos  (two * x);
+                const Real s2x = std::sin  (two * x);
+
+                // Rotate from global to magnetic field frame
+                Real Q_m = Q * c2x + U * s2x;
+                Real U_m = U * c2x - Q * s2x;
+                Real I_p = half * (I + Q_m);
+                Real I_o = half * (I - Q_m);
+
+                // Propagate along ray
+                I_p += (I_p - S_p) * expm1(-dtau_p);
+                I_o += (I_o - S_o) * expm1(-dtau_o);
+                U_m *= exp(-half*(dtau_p + dtau_o));
+
+                // Rotate from magnetic field to global frame
+                I   = I_p + I_o;
+                Q_m = I_p - I_o;
+                Q   = Q_m * c2x - U_m * s2x;
+                U   = U_m * c2x - Q_m * s2x;
             }
+
+            image.I(o,f) = I;
+            image.Q(o,f) = Q;
+            image.U(o,f) = U;
         }
     })
 

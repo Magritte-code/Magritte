@@ -20,11 +20,12 @@ struct Image
     Double1 ImX;                 ///< x coordinate of point in image
     Double1 ImY;                 ///< y coordinate of point in image
 
-    Matrix<Real> I;              ///< intensity out along ray (index(p,f))
+    Vector3D nx;                 ///< direction of the image x axis
+    Vector3D ny;                 ///< direction of the image y axis
 
-    Matrix<Real> I_p;            ///< intensity parallel (index(p,f))
-    Matrix<Real> I_o;            ///< intensity orthogonal (index(p,f))
-    Matrix<Real> U;              ///< intensity orthogonal (index(p,f))
+    Matrix<Real> I;              ///< intensity out along ray (index(p,f))
+    Matrix<Real> Q;              ///< Stokes parameter Q      (index(p,f))
+    Matrix<Real> U;              ///< Stokes parameter U      (index(p,f))
 
     Image (const Geometry& geometry, const ImageType, const Size ray_nr);
     Image (const Image& image);

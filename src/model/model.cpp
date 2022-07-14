@@ -769,6 +769,18 @@ int Model :: PORTAL_solve_statistical_equilibrium ()
 }
 
 
+int Model :: PORTAL_solve_statistical_equilibrium_for_point (const Size p)
+{
+    lines.lineProducingSpecies[0].PORTAL_solve_statistical_equilibrium_for_point(
+        chemistry.species.abundance,
+        thermodynamics.temperature.gas,
+        p
+    );
+
+    return (0);
+}
+
+
 ///  Computer for the radiation field
 /////////////////////////////////////
 int Model :: PORTAL_image (const Size ray_nr, const Size l)
