@@ -87,15 +87,6 @@ struct Solver
               Size      id1,
               Size      id2 );
 
-    template <Frame frame>
-    accel inline Size trace_ray_single_line (
-        const Geometry& geometry,
-        const Size      o,
-        const Size      r,
-        const double    dshift_max,
-        const int       increment,
-              Size      id1,
-              Size      id2 );
 
     accel inline void set_data (
         const Size   crt,
@@ -108,15 +99,6 @@ struct Solver
               Size&  id1,
               Size&  id2 );
 
-    accel inline void set_data_single_line (
-        const Size   crt,
-        const Size   nxt,
-        const double shift_crt,
-        const double shift_nxt,
-        const double dZ_loc,
-        const int    increment,
-              Size&  id1,
-              Size&  id2 );
 
     accel inline Real gaussian (const Real width, const Real diff) const;
     accel inline Real planck   (const Real temp,  const Real freq) const;

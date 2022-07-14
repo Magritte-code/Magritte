@@ -337,6 +337,7 @@ int Model :: compute_radiation_field_feautrier_order_2 ()
     return (0);
 }
 
+
 ///  Computer for the radiation field
 /////////////////////////////////////
 int Model :: compute_radiation_field_feautrier_order_2_uv ()

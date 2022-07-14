@@ -1447,7 +1447,6 @@ accel inline void Solver :: image_feautrier_order_2_for_point_loc (Model& model,
          eta_c =  eta_n;
          chi_c =  chi_n;
 
-        //FIXME: current inspection thingy does not actually work with the new dtau!
         dshift     = shift[n+1]-shift[n];
         dshift_abs = fabs (dshift);//TODO: replace with pointwise dshift computation
         using_large_shift = (dshift_abs > dshift_max);

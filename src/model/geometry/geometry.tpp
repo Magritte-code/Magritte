@@ -156,11 +156,7 @@ accel inline Size Geometry :: get_n_interpl (
     const double shift_nxt,
     const double dshift_max                 ) const
 {
-    // const double dshift_abs = fabs (shift_nxt - shift_crt);
-    //
-    // if (dshift_abs > dshift_max) {return dshift_abs/dshift_max + 1;}
-    // else                         {return 1;                        }
-    return 1;//TODO: if using the half switching thing, set to 1 or 2 depending on the exact shift
+    return 1;// currently no interpolation is allowed; if we decide using frequency interpolation again, compute the correct value instead
 }
 
 
