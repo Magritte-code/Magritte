@@ -41,7 +41,9 @@ struct Parameters
 
 
     Size n_off_diag                  = 0;
-    Real max_width_fraction          = 0.5;
+    // diff can by computed by comparing trapezoidal rule (w*(exp-(x)^2+exp-(x+w)^2)/2) and cdf of normal (std dev=1/sqrt pi) from x to x+w
+    // Real max_width_fraction          = 0.5;//max diff between the normal cdf and trapezoidal rule is +-5%
+    Real max_width_fraction          = 0.3;//max diff is +-0.2%
     Real convergence_fraction        = 0.995;
     Real min_rel_pop_for_convergence = 1.0e-10;
     Real pop_prec                    = 1.0e-6;
