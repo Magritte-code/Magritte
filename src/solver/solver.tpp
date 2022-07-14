@@ -1774,7 +1774,7 @@ inline void Solver :: PORTAL_image (Model& model, const Size rr, const Size l)
                 I   = I_p + I_o;
                 Q_m = I_p - I_o;
                 Q   = Q_m * c2x - U_m * s2x;
-                U   = U_m * c2x - Q_m * s2x;
+                U   = U_m * c2x + Q_m * s2x;
 
                 // cout << "I = " << I << "    Q = " << Q << "    U = " << U << endl;
             }
