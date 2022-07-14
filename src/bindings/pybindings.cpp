@@ -232,11 +232,6 @@ PYBIND11_MODULE (core, module)
             "Compute the radiation field for the modle using the 2nd-order Feautrier solver."
         )
         .def (
-            "compute_radiation_field_feautrier_order_2_sparse_single_line",
-            &Model::compute_radiation_field_feautrier_order_2_sparse_single_line,
-            "Compute the radiation field for the modle using the 2nd-order Feautrier solver, optimized for large doppler shifts using the single line approximation."
-        )
-        .def (
             "compute_radiation_field_feautrier_order_2_uv",
             &Model::compute_radiation_field_feautrier_order_2_uv,
             "Compute the radiation field for the modle using the 2nd-order Feautrier solver."

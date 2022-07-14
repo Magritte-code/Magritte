@@ -184,11 +184,6 @@ struct Solver
     template <ApproximationType approx>
     accel inline void solve_feautrier_order_2 (Model& model, const Size o, const Size f, const Real dshift_max);
 
-    //only valid for single line approximation
-    inline void solve_feautrier_order_2_sparse_single_line (Model& model);
-    accel inline void solve_feautrier_order_2_single_line (Model& model, const Size o, const Size f);
-
-
     // Solvers for both u and v
     ///////////////////////////
     template <ApproximationType approx>
