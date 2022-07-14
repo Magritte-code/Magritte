@@ -2027,7 +2027,7 @@ accel inline void Solver :: image_feautrier_order_2_for_point_loc (Model& model,
 
         // model. chi_ray(n+1-first, f) =  chi_n;
         // model. eta_ray(n+1-first, f) =  eta_n;
-        model. S_ray(n+1-first, f) =  SnextTODO;
+        model. S_ray(n+1-first, f) =  term_n;
         model.dtau_ray(n+1-first, f) = dtau_n;
 
         A[n] = one / inverse_A[n];
