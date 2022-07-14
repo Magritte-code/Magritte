@@ -87,7 +87,6 @@ struct Solver
               Size      id1,
               Size      id2 );
 
-
     accel inline void set_data (
         const Size   crt,
         const Size   nxt,
@@ -98,7 +97,6 @@ struct Solver
         const int    increment,
               Size&  id1,
               Size&  id2 );
-
 
     accel inline Real gaussian (const Real width, const Real diff) const;
     accel inline Real planck   (const Real temp,  const Real freq) const;
