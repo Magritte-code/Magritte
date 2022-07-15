@@ -126,14 +126,24 @@ def run_model (nosave=False):
     r_out = rs[-1]
 
     def bdy (nu, r, theta):
-        # shift at position r is quite simple (just cos(θ)*v)
-        r_shift=np.cos(theta)*v_(r)
-        #for computing the shift at the edge, one need to compute first the closest distance to the center (of the ray); this is L=r*sin(θ)
-        #then one realizes that the sin of the angle α one needs corresponds with L/r_out (so cos(α)=√(1-sin^2(α))
-        #finally one evidently needs to multiply with the velocity at the boundary
-        r_out_shift=np.sqrt(1- ( (r/r_out)*np.abs(np.sin(theta)) )**2)*v_(r_out)
-        nu_shifted=nu* (1.0-(r_out_shift - r_shift))
-        return tools.I_CMB (nu_shifted)
+        if (theta < np.arcsin(r_in/r)):#inside bdy condition
+            # shift at position r is quite simple (just cos(θ)*v)
+            r_shift=np.cos(theta)*v_(r)
+            #for computing the shift at the edge, one need to compute first the closest distance to the center (of the ray); this is L=r*sin(θ)
+            #then one realizes that the sin of the angle α one needs corresponds with L/r_out (so cos(α)=√(1-sin^2(α))
+            #finally one evidently needs to multiply with the velocity at the boundary
+            r_in_shift=np.sqrt(1- ( (r/r_in)*np.abs(np.sin(theta)) )**2)*v_(r_in)
+            nu_shifted=nu* (1.0-(r_in_shift - r_shift))
+            return tools.I_CMB (nu_shifted)
+        else:#outside bdy condition
+            # shift at position r is quite simple (just cos(θ)*v)
+            r_shift=np.cos(theta)*v_(r)
+            #for computing the shift at the edge, one need to compute first the closest distance to the center (of the ray); this is L=r*sin(θ)
+            #then one realizes that the sin of the angle α one needs corresponds with L/r_out (so cos(α)=√(1-sin^2(α))
+            #finally one evidently needs to multiply with the velocity at the boundary
+            r_out_shift=np.sqrt(1- ( (r/r_out)*np.abs(np.sin(theta)) )**2)*v_(r_out)
+            nu_shifted=nu* (1.0-(r_out_shift - r_shift))
+            return tools.I_CMB (nu_shifted)
 
     def z_max(r, theta):
         if (theta < np.arcsin(r_in/r)):
