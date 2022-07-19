@@ -330,7 +330,13 @@ int Model :: compute_radiation_field_comoving ()
     std::cout<< "Computing radiation field..." <<std::endl;
     Solver solver;
     solver.setup_comoving(*this);
-    // paracabs::multi_threading::set_n_threads_avail(1);
+
+    // Sperical symmetry is not supported due to changing angles
+    if (parameters->spherical_symmetry() == true)
+    {
+        throw std::runtime_error ("Sperical symmetry is not supported for the comoving solver.");
+    }
+
     if (parameters->one_line_approximation)
     {
         solver.solve_comoving_order_2_sparse<OneLine>(*this);
