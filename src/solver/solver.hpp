@@ -121,7 +121,7 @@ struct Solver
     inline Real compute_dtau_single_line(Model& model, Size curridx, Size nextidx, Size lineidx, Real curr_freq, Real next_freq, Real dz);
 
     template<ApproximationType approx>
-    accel inline void compute_source_dtau (Model& model, bool using_large_shift, Size currpoint, Size nextpoint, Size line, Real curr_freq, Real next_freq, Real dZ, bool& compute_curr_opacity, Real& dtaunext, Real& chicurr, Real& chinext, Real& Scurr, Real& Snext);
+    accel inline void compute_source_dtau (Model& model, Size currpoint, Size nextpoint, Size line, Real curr_freq, Real next_freq, double curr_shift, double next_shift, Real dZ, bool& compute_curr_opacity, Real& dtaunext, Real& chicurr, Real& chinext, Real& Scurr, Real& Snext);
 
 
     accel inline void update_Lambda (
@@ -134,17 +134,16 @@ struct Solver
     accel inline void solve_shortchar_order_0 (
               Model& model,
         const Size   o,
-        const Size   r,
-        const double dshift_max );
+        const Size   r);
 
 
     // Solvers for images
     /////////////////////
     accel inline void image_feautrier_order_2 (Model& model, const Size rr);
-    accel inline void image_feautrier_order_2 (Model& model, const Size o, const Size f, const Real dshift_max);
+    accel inline void image_feautrier_order_2 (Model& model, const Size o, const Size f);
 
     accel inline void image_feautrier_order_2_for_point     (Model& model, const Size rr, const Size p);
-    accel inline void image_feautrier_order_2_for_point_loc (Model& model, const Size o,  const Size f, const Real dshift_max);
+    accel inline void image_feautrier_order_2_for_point_loc (Model& model, const Size o,  const Size f);
 
     accel inline void image_optical_depth (Model& model, const Size rr);
     accel inline void image_optical_depth (Model& model, const Size o, const Size f);
@@ -162,7 +161,7 @@ struct Solver
     accel inline void solve_feautrier_order_2_anis (Model& model);
 
     template <ApproximationType approx>
-    accel inline void solve_feautrier_order_2 (Model& model, const Size o, const Size f, const Real dshift_max);
+    accel inline void solve_feautrier_order_2 (Model& model, const Size o, const Size f);
 
     // Solvers for both u and v
     ///////////////////////////
@@ -170,7 +169,7 @@ struct Solver
     accel inline void solve_feautrier_order_2_uv (Model& model);
 
     template <ApproximationType approx>
-    accel inline void solve_feautrier_order_2_uv (Model& model, const Size o, const Size f, const Real dshift_max);
+    accel inline void solve_feautrier_order_2_uv (Model& model, const Size o, const Size f);
 
 
     // Getters for emissivities, opacities, and boundary conditions

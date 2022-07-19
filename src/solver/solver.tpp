@@ -147,8 +147,8 @@ inline void Solver :: solve_shortchar_order_0 (Model& model)
             // const Real dshift_max = get_dshift_max (o);
             const Real dshift_max = 1.0e+99;
 
-            solve_shortchar_order_0 (model, o, rr, dshift_max);
-            solve_shortchar_order_0 (model, o, ar, dshift_max);
+            solve_shortchar_order_0 (model, o, rr);
+            solve_shortchar_order_0 (model, o, ar);
 
             for (Size f = 0; f < model.parameters->nfreqs(); f++)
             {
@@ -198,7 +198,7 @@ inline void Solver :: solve_feautrier_order_2_uv (Model& model)
             {
                 for (Size f = 0; f < model.parameters->nfreqs(); f++)
                 {
-                    solve_feautrier_order_2_uv <approx> (model, o, f, dshift_max);
+                    solve_feautrier_order_2_uv <approx> (model, o, f);
 
                     model.radiation.u(rr,o,f)  = Su_()[centre];
                     model.radiation.v(rr,o,f)  = Sv_()[centre];
@@ -271,7 +271,7 @@ inline void Solver :: solve_feautrier_order_2_sparse (Model& model)
                         // Integrate over the line
                         for (Size z = 0; z < model.parameters->nquads(); z++)
                         {
-                            solve_feautrier_order_2 <approx> (model, o,  lspec.nr_line[o][k][z], dshift_max);
+                            solve_feautrier_order_2 <approx> (model, o,  lspec.nr_line[o][k][z]);
 
                             lspec.J(o,k) += lspec.quadrature.weights[z] * wt * Su_()[centre];
 
@@ -359,7 +359,7 @@ inline void Solver :: solve_feautrier_order_2_anis (Model& model)
                         // Integrate over the line
                         for (Size z = 0; z < model.parameters->nquads(); z++)
                         {
-                            solve_feautrier_order_2 <approx> (model, o, lspec.nr_line[o][k][z], dshift_max);
+                            solve_feautrier_order_2 <approx> (model, o, lspec.nr_line[o][k][z]);
 
                             const Real du = lspec.quadrature.weights[z] * wt * Su_()[centre];
 
@@ -434,7 +434,7 @@ inline void Solver :: solve_feautrier_order_2 (Model& model)
             {
                 for (Size f = 0; f < model.parameters->nfreqs(); f++)
                 {
-                    solve_feautrier_order_2 <approx> (model, o, f, dshift_max);
+                    solve_feautrier_order_2 <approx> (model, o, f);
 
                     model.radiation.u(rr_loc,o,f)  = Su_()[centre];
                     model.radiation.J(       o,f) += Su_()[centre] * two * model.geometry.rays.weight[rr];
@@ -490,7 +490,7 @@ inline void Solver :: image_feautrier_order_2 (Model& model, const Size rr)
         {
             for (Size f = 0; f < model.parameters->nfreqs(); f++)
             {
-                image_feautrier_order_2 (model, o, f, dshift_max);
+                image_feautrier_order_2 (model, o, f);
 
                 image.I(o,f) = two*Su_()[last_()] - boundary_intensity(model, nr_()[last_()], model.radiation.frequencies.nu(o, f));
             }
@@ -535,7 +535,7 @@ inline void Solver :: image_feautrier_order_2_for_point (Model& model, const Siz
     {
         for (Size f = 0; f < model.parameters->nfreqs(); f++)
         {
-            image_feautrier_order_2_for_point_loc (model, o, f, dshift_max);
+            image_feautrier_order_2_for_point_loc (model, o, f);
         }
     }
 
@@ -766,8 +766,7 @@ accel inline Real trap (const Real x_crt, const Real x_nxt, const double dZ)
 accel inline void Solver :: solve_shortchar_order_0 (
           Model& model,
     const Size   o,
-    const Size   r,
-    const double dshift_max)
+    const Size   r)
 {
     Vector<Real>& eta_c = eta_c_();
     Vector<Real>& eta_n = eta_n_();
@@ -789,9 +788,10 @@ accel inline void Solver :: solve_shortchar_order_0 (
         double shift_c = 1.0;
         double shift_n = model.geometry.get_shift <CoMoving> (o, r, nxt, Z);
 
-        double dshift     = shift_n-shift_c;
-        double dshift_abs = fabs (dshift);
-        bool using_large_shift = (dshift_abs > dshift_max);
+        // double dshift     = shift_n-shift_c;
+        // double dshift_abs = fabs (dshift);
+        // double dshift_max = std::min(model.dshift_max[crt],model.dshift_max[nxt]);
+        // bool using_large_shift = (dshift_abs > dshift_max);
         bool compute_curr_opacity;
         Real term_c, term_n, dtau;
 
@@ -802,13 +802,13 @@ accel inline void Solver :: solve_shortchar_order_0 (
 
             compute_curr_opacity = true; // for the first point, we need to compute both the curr and next opacity (and source)
 
-            compute_source_dtau<None>(model, using_large_shift, crt, nxt, l, freq*shift_c, freq*shift_n, dZ, compute_curr_opacity, dtau, chi_c[f], chi_n[f], term_c, term_n);
+            compute_source_dtau<None>(model, crt, nxt, l, freq*shift_c, freq*shift_n, shift_c, shift_n, dZ, compute_curr_opacity, dtau, chi_c[f], chi_n[f], term_c, term_n);
 
             tau[f]                   = dtau;
             //ignoring effect of self on intensity
             model.radiation.I(r,o,f) = term_n * dtau * expf(-tau[f]);
         }
-
+        //FIXME: compute_curr_opacity should be saved per point!
         while (model.geometry.not_on_boundary (nxt))
         {
             crt     = nxt;
@@ -823,7 +823,7 @@ accel inline void Solver :: solve_shortchar_order_0 (
                 const Real freq = model.radiation.frequencies.nu(o, f);
                 const Size l    = model.radiation.frequencies.corresponding_line[f];
 
-                compute_source_dtau<None>(model, using_large_shift, crt, nxt, l, freq*shift_c, freq*shift_n, dZ, compute_curr_opacity, dtau, chi_c[f], chi_n[f], term_c, term_n);
+                compute_source_dtau<None>(model, crt, nxt, l, freq*shift_c, freq*shift_n, shift_c, shift_n, dZ, compute_curr_opacity, dtau, chi_c[f], chi_n[f], term_c, term_n);
 
                 tau[f]                   += dtau;
                 //ignoring effect of self on intensity
@@ -973,20 +973,27 @@ inline void Solver :: compute_S_dtau_line_integrated <None> (Model& model, Size 
 }
 
 /// Computes the opacity and optical depth in a hybrid manner
-///    @param [in] using_large_shift: denotes whether we are using a large shift (and should switch to the fancy integral method of computing the optical depth)
 ///    @param[in/out] compute_curr_opacity: for deciding whether we need to compute the current opacity when using the trapezoidal rule
-///    @param[in] curr_point : index of current point
-///    @param[in] next_point : index of next point
+///    @param[in] currpoint : index of current point
+///    @param[in] nextpoint : index of next point
 ///    @param[in] lineidx : index of line to integrate over
 ///    @param[in] currfreq : frequency at current point (in comoving frame)
 ///    @param[in] nextfreq : frequency at next point (in comoving frame)
+///    @param[in] currshift : shift at curr point
+///    @param[in] nextshift : shift at next point
 ///    @param[in] dZ : position increment
 ///    @param[out] dtau : optical depth increment to compute
 ///    @param[out] Scurr : source function at current point to compute
 ///    @param[out] Snext : source function at next point to compute
 template<ApproximationType approx>
-accel inline void Solver :: compute_source_dtau (Model& model, bool using_large_shift, Size currpoint, Size nextpoint, Size line, Real curr_freq, Real next_freq, Real dZ, bool& compute_curr_opacity, Real& dtaunext, Real& chicurr, Real& chinext, Real& Scurr, Real& Snext)
+accel inline void Solver :: compute_source_dtau (Model& model, Size currpoint, Size nextpoint, Size line, Real curr_freq, Real next_freq, double curr_shift, double next_shift, Real dZ, bool& compute_curr_opacity, Real& dtaunext, Real& chicurr, Real& chinext, Real& Scurr, Real& Snext)
 {
+    //deciding which optical depth computation to use, depending on the doppler shift
+    const double dshift     = next_shift-curr_shift;//shift[first+1]-shift[first];TODO
+    const double dshift_abs = fabs (dshift);
+    const double dshift_max = std::min(model.dshift_max[currpoint],model.dshift_max[nextpoint]);
+    const bool using_large_shift = (dshift_abs > dshift_max);
+
     //fancy computation for large doppler shifts
     if (using_large_shift)
     {
@@ -1020,7 +1027,7 @@ accel inline void Solver :: compute_source_dtau (Model& model, bool using_large_
 ///    @param[in] w : width index
 ///////////////////////////////////////////////////////////////////////
 template<ApproximationType approx>
-accel inline void Solver :: solve_feautrier_order_2 (Model& model, const Size o, const Size f, const Real dshift_max)
+accel inline void Solver :: solve_feautrier_order_2 (Model& model, const Size o, const Size f)
 {
     const Real freq = model.radiation.frequencies.nu(o, f);
     const Size l    = model.radiation.frequencies.corresponding_line[f];
@@ -1056,12 +1063,13 @@ accel inline void Solver :: solve_feautrier_order_2 (Model& model, const Size o,
     Matrix<Real>& L_upper = L_upper_();
     Matrix<Real>& L_lower = L_lower_();
 
-    double dshift     = shift[first+1]-shift[first];
-    double dshift_abs = fabs (dshift);
-    bool using_large_shift = (dshift_abs > dshift_max);
+    // double dshift     = shift[first+1]-shift[first];
+    // double dshift_abs = fabs (dshift);
+    // double dshift_max = std::min(model.dshift_max[nr[first]],model.dshift_max[nr[first+1]]);
+    // bool using_large_shift = (dshift_abs > dshift_max);
     bool compute_curr_opacity = true; // for the first point, we need to compute both the curr and next opacity (and source)
 
-    compute_source_dtau<approx>(model, using_large_shift, nr[first], nr[first+1], l, freq*shift[first], freq*shift[first+1], dZ[first], compute_curr_opacity, dtau_n, chi_c, chi_n, term_c, term_n);
+    compute_source_dtau<approx>(model, nr[first], nr[first+1], l, freq*shift[first], freq*shift[first+1], shift[first], shift[first+1], dZ[first], compute_curr_opacity, dtau_n, chi_c, chi_n, term_c, term_n);
 
     // Set boundary conditions
     const Real inverse_dtau_f = one / dtau_n;
@@ -1089,11 +1097,12 @@ accel inline void Solver :: solve_feautrier_order_2 (Model& model, const Size o,
          eta_c =  eta_n;
          chi_c =  chi_n;
 
-        dshift     = shift[n+1]-shift[n];
-        dshift_abs = fabs (dshift);//TODO: replace with pointwise dshift computation
-        using_large_shift = (dshift_abs > dshift_max);
+        // dshift     = shift[n+1]-shift[n];
+        // dshift_abs = fabs (dshift);
+        // ddshift_max = std::min(model.dshift_max[nr[n]],model.dshift_max[nr[n+1]]);
+        // using_large_shift = (dshift_abs > dshift_max);
 
-        compute_source_dtau<approx>(model, using_large_shift, nr[n], nr[n+1], l, freq*shift[n], freq*shift[n+1], dZ[n], compute_curr_opacity, dtau_n, chi_c, chi_n, term_c, term_n);
+        compute_source_dtau<approx>(model, nr[n], nr[n+1], l, freq*shift[n], freq*shift[n+1], shift[n], shift[n+1], dZ[n], compute_curr_opacity, dtau_n, chi_c, chi_n, term_c, term_n);
 
         const Real dtau_avg = half * (dtau_c + dtau_n);
         inverse_A[n] = dtau_avg * dtau_c;
@@ -1252,7 +1261,7 @@ inline Real Solver :: compute_dtau_single_line(Model& model, Size curridx, Size 
 ///  2nd-order solver, without adaptive optical depth increments
 ///    @param[in] w : width index
 ///////////////////////////////////////////////////////////////////////
-accel inline void Solver :: image_feautrier_order_2 (Model& model, const Size o, const Size f, const Real dshift_max)
+accel inline void Solver :: image_feautrier_order_2 (Model& model, const Size o, const Size f)
 {
     const Real freq = model.radiation.frequencies.nu(o, f);
     const Size l    = model.radiation.frequencies.corresponding_line[f];
@@ -1288,12 +1297,13 @@ accel inline void Solver :: image_feautrier_order_2 (Model& model, const Size o,
     Matrix<Real>& L_upper = L_upper_();
     Matrix<Real>& L_lower = L_lower_();
 
-    double dshift     = shift[first+1]-shift[first];
-    double dshift_abs = fabs (dshift);
-    bool using_large_shift = (dshift_abs > dshift_max);
+    // double dshift     = shift[first+1]-shift[first];
+    // double dshift_abs = fabs (dshift);
+    // double dshift_max = std::min(model.dshift_max[nr[first]],model.dshift_max[nr[first+1]]);
+    // bool using_large_shift = (dshift_abs > dshift_max);
     bool compute_curr_opacity = true; // for the first point, we need to compute both the curr and next opacity (and source)
 
-    compute_source_dtau<None>(model, using_large_shift, nr[first], nr[first+1], l, freq*shift[first], freq*shift[first+1], dZ[first], compute_curr_opacity, dtau_n, chi_c, chi_n, term_c, term_n);
+    compute_source_dtau<None>(model, nr[first], nr[first+1], l, freq*shift[first], freq*shift[first+1], shift[first], shift[first+1], dZ[first], compute_curr_opacity, dtau_n, chi_c, chi_n, term_c, term_n);
 
     // Set boundary conditions
     const Real inverse_dtau_f = one / dtau_n;
@@ -1320,11 +1330,12 @@ accel inline void Solver :: image_feautrier_order_2 (Model& model, const Size o,
          eta_c =  eta_n;
          chi_c =  chi_n;
 
-        dshift     = shift[n+1]-shift[n];
-        dshift_abs = fabs (dshift);//TODO: replace with pointwise dshift computation
-        using_large_shift = (dshift_abs > dshift_max);
+        // dshift     = shift[n+1]-shift[n];
+        // dshift_abs = fabs (dshift);//TODO: replace with pointwise dshift computation
+        // dshift_max = std::min(model.dshift_max[nr[n]],model.dshift_max[nr[n+1]]);
+        // using_large_shift = (dshift_abs > dshift_max);
 
-        compute_source_dtau<None>(model, using_large_shift, nr[n], nr[n+1], l, freq*shift[n], freq*shift[n+1], dZ[n], compute_curr_opacity, dtau_n, chi_c, chi_n, term_c, term_n);
+        compute_source_dtau<None>(model, nr[n], nr[n+1], l, freq*shift[n], freq*shift[n+1], shift[first], shift[first+1], dZ[n], compute_curr_opacity, dtau_n, chi_c, chi_n, term_c, term_n);
 
         const Real dtau_avg = half * (dtau_c + dtau_n);
         inverse_A[n] = dtau_avg * dtau_c;
@@ -1371,7 +1382,7 @@ accel inline void Solver :: image_feautrier_order_2 (Model& model, const Size o,
 ///  2nd-order solver, without adaptive optical depth increments
 ///    @param[in] w : width index
 ///////////////////////////////////////////////////////////////////////
-accel inline void Solver :: image_feautrier_order_2_for_point_loc (Model& model, const Size o, const Size f, const Real dshift_max)
+accel inline void Solver :: image_feautrier_order_2_for_point_loc (Model& model, const Size o, const Size f)
 {
     const Real freq = model.radiation.frequencies.nu(o, f);
     const Size l    = model.radiation.frequencies.corresponding_line[f];
@@ -1407,12 +1418,13 @@ accel inline void Solver :: image_feautrier_order_2_for_point_loc (Model& model,
     Matrix<Real>& L_upper = L_upper_();
     Matrix<Real>& L_lower = L_lower_();
 
-    double dshift     = shift[first+1]-shift[first];
-    double dshift_abs = fabs (dshift);
-    bool using_large_shift = (dshift_abs > dshift_max);
+    // double dshift     = shift[first+1]-shift[first];
+    // double dshift_abs = fabs (dshift);
+    // double dshift_max = std::min(model.dshift_max[nr[first]],model.dshift_max[nr[first+1]]);
+    // bool using_large_shift = (dshift_abs > dshift_max);
     bool compute_curr_opacity = true; // for the first point, we need to compute both the curr and next opacity (and source)
 
-    compute_source_dtau<None>(model, using_large_shift, nr[first], nr[first+1], l, freq*shift[first], freq*shift[first+1], dZ[first], compute_curr_opacity, dtau_n, chi_c, chi_n, term_c, term_n);
+    compute_source_dtau<None>(model, nr[first], nr[first+1], l, freq*shift[first], freq*shift[first+1], shift[first], shift[first+1], dZ[first], compute_curr_opacity, dtau_n, chi_c, chi_n, term_c, term_n);
 
     //err, source function might be slightly different when looking at it from curr and next point
     // this is due to the weighting by the line optical depths; this might not be saved TODO think whether this is correct
@@ -1447,11 +1459,12 @@ accel inline void Solver :: image_feautrier_order_2_for_point_loc (Model& model,
          eta_c =  eta_n;
          chi_c =  chi_n;
 
-        dshift     = shift[n+1]-shift[n];
-        dshift_abs = fabs (dshift);//TODO: replace with pointwise dshift computation
-        using_large_shift = (dshift_abs > dshift_max);
+        // dshift     = shift[n+1]-shift[n];
+        // dshift_abs = fabs (dshift);//TODO: replace with pointwise dshift computation
+        // double dshift_max = std::min(model.dshift_max[nr[n]],model.dshift_max[nr[n+1]]);
+        // using_large_shift = (dshift_abs > dshift_max);
 
-        compute_source_dtau<None>(model, using_large_shift, nr[n], nr[n+1], l, freq*shift[n], freq*shift[n+1], dZ[n], compute_curr_opacity, dtau_n, chi_c, chi_n, term_c, term_n);
+        compute_source_dtau<None>(model, nr[n], nr[n+1], l, freq*shift[n], freq*shift[n+1], shift[n], shift[n+1], dZ[n], compute_curr_opacity, dtau_n, chi_c, chi_n, term_c, term_n);
 
         const Real dtau_avg = half * (dtau_c + dtau_n);
         inverse_A[n] = dtau_avg * dtau_c;
@@ -1550,7 +1563,7 @@ accel inline void Solver :: image_optical_depth (Model& model, const Size o, con
 ///  2nd-order solver, without adaptive optical depth increments
 ///////////////////////////////////////////////////////////////////////
 template<ApproximationType approx>
-accel inline void Solver :: solve_feautrier_order_2_uv (Model& model, const Size o, const Size f, const Real dshift_max)
+accel inline void Solver :: solve_feautrier_order_2_uv (Model& model, const Size o, const Size f)
 {
     const Real freq = model.radiation.frequencies.nu(o, f);
     const Size l    = model.radiation.frequencies.corresponding_line[f];
@@ -1579,12 +1592,13 @@ accel inline void Solver :: solve_feautrier_order_2_uv (Model& model, const Size
     Vector<Real>& FF = FF_();
     Vector<Real>& FI = FI_();
 
-    double dshift     = shift[first+1]-shift[first];
-    double dshift_abs = fabs (dshift);
-    bool using_large_shift = (dshift_abs > dshift_max);
+    // double dshift     = shift[first+1]-shift[first];
+    // double dshift_abs = fabs (dshift);
+    // double dshift_max = std::min(model.dshift_max[crt],model.dshift_max[nxt]);
+    // bool using_large_shift = (dshift_abs > dshift_max);
     bool compute_curr_opacity = true; // for the first point, we need to compute both the curr and next opacity (and source)
 
-    compute_source_dtau<approx>(model, using_large_shift, nr[first], nr[first+1], l, freq*shift[first], freq*shift[first+1], dZ[first], compute_curr_opacity, dtau_n, chi_c, chi_n, term_c, term_n);
+    compute_source_dtau<approx>(model, nr[first], nr[first+1], l, freq*shift[first], freq*shift[first+1], shift[first], shift[first+1], dZ[first], compute_curr_opacity, dtau_n, chi_c, chi_n, term_c, term_n);
 
     // Set boundary conditions
     const Real inverse_dtau_f = one / dtau_n;
@@ -1615,11 +1629,11 @@ accel inline void Solver :: solve_feautrier_order_2_uv (Model& model, const Size
          eta_c =  eta_n;
          chi_c =  chi_n;
 
-        dshift     = shift[n+1]-shift[n];
-        dshift_abs = fabs (dshift);//TODO: replace with pointwise dshift computation
-        using_large_shift = (dshift_abs > dshift_max);
+        // dshift     = shift[n+1]-shift[n];
+        // dshift_abs = fabs (dshift);//TODO: replace with pointwise dshift computation
+        // using_large_shift = (dshift_abs > dshift_max);
 
-        compute_source_dtau<approx>(model, using_large_shift, nr[n], nr[n+1], l, freq*shift[n], freq*shift[n+1], dZ[n], compute_curr_opacity, dtau_n, chi_c, chi_n, term_c, term_n);
+        compute_source_dtau<approx>(model, nr[n], nr[n+1], l, freq*shift[n], freq*shift[n+1], shift[n], shift[n+1], dZ[n], compute_curr_opacity, dtau_n, chi_c, chi_n, term_c, term_n);
 
         const Real dtau_avg = half * (dtau_c + dtau_n);
         inverse_A[n] = dtau_avg * dtau_c;
