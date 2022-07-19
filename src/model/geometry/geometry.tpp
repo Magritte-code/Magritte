@@ -156,7 +156,10 @@ accel inline Size Geometry :: get_n_interpl (
     const double shift_nxt,
     const double dshift_max                 ) const
 {
-    return 1;// currently no interpolation is allowed; if we decide using frequency interpolation again, compute the correct value instead
+    const double dshift_abs = fabs (shift_nxt - shift_crt);
+
+    if (dshift_abs > dshift_max) {return dshift_abs/dshift_max + 1;}
+    else                         {return 1;                        }
 }
 
 
@@ -179,7 +182,7 @@ accel inline Size Geometry :: get_ray_length (
         double shift_crt = get_shift <frame> (o, r, crt, 0.0);
         double shift_nxt = get_shift <frame> (o, r, nxt, Z);
 
-        l += get_n_interpl (shift_crt, shift_nxt, dshift_max);
+        l += 1;//no interpolation means only a single point added to the ray each time
 
         while (not_on_boundary(nxt))
         {
@@ -189,7 +192,7 @@ accel inline Size Geometry :: get_ray_length (
                   nxt = get_next          (o, r, nxt, Z, dZ);
             shift_nxt = get_shift <frame> (o, r, nxt, Z    );
 
-            l += get_n_interpl (shift_crt, shift_nxt, dshift_max);
+            l += 1;//no interpolation means only a single point added to the ray each time
 
             if (!valid_point(nxt))
             {
