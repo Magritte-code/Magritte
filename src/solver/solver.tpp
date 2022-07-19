@@ -5,6 +5,8 @@ inline void Solver :: setup (Model& model)
     const Size  width = model.parameters->nfreqs();
     const Size  n_o_d = model.parameters->n_off_diag;
 
+    model.set_dshift_max();//err, probably belongs somewhere else, but we need to compute the max shift for each point
+
     setup (length, width, n_o_d);
 }
 
@@ -1325,7 +1327,7 @@ accel inline void Solver :: image_feautrier_order_2 (Model& model, const Size o,
          eta_c =  eta_n;
          chi_c =  chi_n;
 
-        compute_source_dtau<None>(model, nr[n], nr[n+1], l, freq*shift[n], freq*shift[n+1], shift[first], shift[first+1], dZ[n], compute_curr_opacity, dtau_n, chi_c, chi_n, term_c, term_n);
+        compute_source_dtau<None>(model, nr[n], nr[n+1], l, freq*shift[n], freq*shift[n+1], shift[n], shift[n+1], dZ[n], compute_curr_opacity, dtau_n, chi_c, chi_n, term_c, term_n);
 
         const Real dtau_avg = half * (dtau_c + dtau_n);
         inverse_A[n] = dtau_avg * dtau_c;
