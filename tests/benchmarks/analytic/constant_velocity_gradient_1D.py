@@ -125,8 +125,25 @@ def run_model (nosave=False):
     r_in  = rs[ 0]
     r_out = rs[-1]
 
-    def bdy (nu):
-        return tools.I_CMB (nu)
+    def bdy (nu, r, theta):
+        if (theta < np.arcsin(r_in/r)):#inside bdy condition
+            # shift at position r is quite simple (just cos(θ)*v)
+            r_shift=np.cos(theta)*v_(r)
+            #for computing the shift at the edge, one need to compute first the closest distance to the center (of the ray); this is L=r*sin(θ)
+            #then one realizes that the sin of the angle α one needs corresponds with L/r_out (so cos(α)=√(1-sin^2(α))
+            #finally one evidently needs to multiply with the velocity at the boundary
+            r_in_shift=np.sqrt(1- ( (r/r_in)*np.abs(np.sin(theta)) )**2)*v_(r_in)
+            nu_shifted=nu* (1.0-(r_in_shift - r_shift))
+            return tools.I_CMB (nu_shifted)
+        else:#outside bdy condition
+            # shift at position r is quite simple (just cos(θ)*v)
+            r_shift=np.cos(theta)*v_(r)
+            #for computing the shift at the edge, one need to compute first the closest distance to the center (of the ray); this is L=r*sin(θ)
+            #then one realizes that the sin of the angle α one needs corresponds with L/r_out (so cos(α)=√(1-sin^2(α))
+            #finally one evidently needs to multiply with the velocity at the boundary
+            r_out_shift=np.sqrt(1- ( (r/r_out)*np.abs(np.sin(theta)) )**2)*v_(r_out)
+            nu_shifted=nu* (1.0-(r_out_shift - r_shift))
+            return tools.I_CMB (nu_shifted)
 
     def z_max(r, theta):
         if (theta < np.arcsin(r_in/r)):
@@ -141,10 +158,13 @@ def run_model (nosave=False):
         return chi*L / (fct*dnu) * 0.5 * (sp.special.erf(arg) + sp.special.erf(fct*l/L-arg))
 
     def I_ (nu, r, theta):
-        return src + (bdy(nu)-src)*np.exp(-tau(nu, r, theta))
+        return src + (bdy(nu, r, theta)-src)*np.exp(-tau(nu, r, theta))
+
+    def v_(r):
+        return dv*(1+(r-r_in)/dx)
 
     def u_ (nu, r, theta):
-        return 0.5 * (I_(nu, r, theta) + I_(nu, r, np.pi-theta))
+        return 0.5 * (I_(nu, r, theta) + I_(nu, r, np.pi+theta))
 
     rx, ry, rz = np.array(model.geometry.rays.direction).T
     angles     = np.arctan2(ry,rx)
