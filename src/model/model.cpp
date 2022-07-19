@@ -754,3 +754,33 @@ int Model :: set_column ()
 
     return (0);
 }
+
+
+// /  Setter for the maximum allowed shift value determined by the smallest line
+// /////////////////////////////////////////////////////////////////////////////
+int Model :: set_dshift_max ()
+{
+    // Allocate memory
+    dshift_max.resize(parameters->npoints());
+
+    // For all points
+    threaded_for(o, parameters->npoints(),
+    {
+        dshift_max[o] = std::numeric_limits<Real>::max();
+
+        for (const LineProducingSpecies &lspec : lines.lineProducingSpecies)
+        {
+            const Real inverse_mass   = lspec.linedata.inverse_mass;
+            const Real new_dshift_max = parameters->max_width_fraction
+                                        * thermodynamics.profile_width (inverse_mass, o);
+
+            if (dshift_max[o] > new_dshift_max)
+            {
+                dshift_max[o] = new_dshift_max;
+            }
+        }
+    })
+
+    return (0);
+}
+

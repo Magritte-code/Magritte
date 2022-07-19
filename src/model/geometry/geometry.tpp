@@ -176,7 +176,7 @@ accel inline Size Geometry :: get_ray_length (
     if (valid_point(nxt))
     {
         Size         crt = o;
-        double shift_crt = get_shift <frame> (o, r, crt, Z);
+        double shift_crt = get_shift <frame> (o, r, crt, 0.0);
         double shift_nxt = get_shift <frame> (o, r, nxt, Z);
 
         l += get_n_interpl (shift_crt, shift_nxt, dshift_max);
