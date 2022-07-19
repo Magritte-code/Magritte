@@ -796,9 +796,45 @@ int Model :: PORTAL_image (const Size ray_nr, const Size l)
 {
     cout << "Computing polarization image..." << endl;
 
+    // Create an image object
+    Image image = Image(geometry, PolarizedIntensity, ray_nr);
+
+    // Set the maximum allowed Doppler shifts
+    set_dshift_max();
+
+    // Solve for image
     Solver solver;
-    solver.setup <Rest> (*this);
-    solver.PORTAL_image (*this, ray_nr, l );
+    solver.PORTAL_setup <Rest> (*this, image);
+    solver.PORTAL_image (*this, image, ray_nr, l);
+
+    return (0);
+}
+
+
+// /  Setter for the maximum allowed shift value determined by the smallest line
+// /////////////////////////////////////////////////////////////////////////////
+int Model :: set_dshift_max ()
+{
+    // Allocate memory
+    dshift_max.resize(parameters->npoints());
+
+    // For all points
+    threaded_for(o, parameters->npoints(),
+    {
+        dshift_max[o] = std::numeric_limits<Real>::max();
+
+        for (const LineProducingSpecies &lspec : lines.lineProducingSpecies)
+        {
+            const Real inverse_mass   = lspec.linedata.inverse_mass;
+            const Real new_dshift_max = parameters->max_width_fraction
+                                        * thermodynamics.profile_width (inverse_mass, o);
+
+            if (dshift_max[o] > new_dshift_max)
+            {
+                dshift_max[o] = new_dshift_max;
+            }
+        }
+    })
 
     return (0);
 }

@@ -42,6 +42,8 @@ struct Parameters
 
     Size n_off_diag                  = 0;
     Real max_width_fraction          = 0.5;
+    Real max_cos_t                   = 0.1;
+    Real max_two_x                   = 0.2;
     Real convergence_fraction        = 0.995;
     Real min_rel_pop_for_convergence = 1.0e-10;
     Real pop_prec                    = 1.0e-6;

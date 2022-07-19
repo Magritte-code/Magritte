@@ -9,6 +9,17 @@ inline void Solver :: setup (Model& model)
 }
 
 
+template <Frame frame>
+inline void Solver :: PORTAL_setup (Model& model, Image& image)
+{
+    const Size length = 2 * PORTAL_get_ray_lengths_max <frame> (model, image) + 1;
+    const Size  width = model.parameters->nfreqs();
+    const Size  n_o_d = model.parameters->n_off_diag;
+
+    setup (length, width, n_o_d);
+}
+
+
 inline void Solver :: setup (const Size l, const Size w, const Size n_o_d)
 {
     length     = l;
@@ -21,6 +32,8 @@ inline void Solver :: setup (const Size l, const Size w, const Size n_o_d)
         dZ_          (i).resize (length);
         nr_          (i).resize (length);
         shift_       (i).resize (length);
+        cos_t_       (i).resize (length);
+        two_x_       (i).resize (length);
 
         eta_c_       (i).resize (width);
         eta_n_       (i).resize (width);
@@ -106,7 +119,46 @@ inline void Solver :: get_ray_lengths (Model& model)
 template <Frame frame>
 inline Size Solver :: get_ray_lengths_max (Model& model)
 {
+
     get_ray_lengths <frame> (model);
+
+    Geometry& geo = model.geometry;
+
+    geo.lengths_max = *std::max_element(geo.lengths.vec.begin(),
+                                        geo.lengths.vec.end()   );
+
+    return geo.lengths_max;
+}
+
+
+template <Frame frame>
+inline void Solver :: PORTAL_get_ray_lengths (Model& model, const Image& image)
+{
+    for (Size rr = 0; rr < model.parameters->hnrays(); rr++)
+    {
+        const Size ar = model.geometry.rays.antipod[rr];
+
+        accelerated_for (o, model.parameters->npoints(),
+        {
+            const Real dshift_max = get_dshift_max (model, o);
+
+            model.geometry.lengths(rr,o) =
+                PORTAL_get_ray_length <frame> (model, image, o, rr)
+              + PORTAL_get_ray_length <frame> (model, image, o, ar);
+        })
+
+        pc::accelerator::synchronize();
+    }
+
+    model.geometry.lengths.copy_ptr_to_vec();
+}
+
+
+template <Frame frame>
+inline Size Solver :: PORTAL_get_ray_lengths_max (Model& model, const Image& image)
+{
+
+    PORTAL_get_ray_lengths <frame> (model, image);
 
     Geometry& geo = model.geometry;
 
@@ -125,7 +177,7 @@ inline void Solver :: solve_shortchar_order_0 (Model& model)
         model.radiation.I.resize (model.parameters->nrays(),  model.parameters->npoints(), model.parameters->nfreqs());
         model.radiation.u.resize (model.parameters->hnrays(), model.parameters->npoints(), model.parameters->nfreqs());
         model.radiation.v.resize (model.parameters->hnrays(), model.parameters->npoints(), model.parameters->nfreqs());
-        model.radiation.J.resize (                           model.parameters->npoints(), model.parameters->nfreqs());
+        model.radiation.J.resize (                            model.parameters->npoints(), model.parameters->nfreqs());
     }
 
     // Initialise Lambda operator
@@ -651,7 +703,8 @@ accel inline void Solver :: set_data (
 
         if (n_interpl > 10000)
         {
-            printf ("ERROR (n_intpl > 10 000) || (dshift_max < 0, probably due to overflow)\n");
+            printf ("ERROR (n_intpl > 10 000) or (dshift_max < 0, probably due to overflow)\n");
+
         }
 
         // Assign current cell to first half of interpolation points
@@ -686,6 +739,255 @@ accel inline void Solver :: set_data (
         id1 += increment;
         id2 += increment;
     }
+}
+
+
+template <Frame frame>
+accel inline Size Solver :: PORTAL_trace_ray (
+    const Model& model,
+    const Image& image,
+    const Size   o,
+    const Size   r,
+    const int    increment,
+          Size   id1,
+          Size   id2 )
+{
+    Real  Z = 0.0;   // distance from origin (o)
+    Real dZ = 0.0;   // last increment in Z
+
+    Size nxt = model.geometry.get_next (o, r, o, Z, dZ);
+
+    if (model.geometry.valid_point(nxt))
+    {
+        Size       crt = o;
+        Real shift_crt = model.geometry.get_shift <frame> (o, r, crt, 0.0);
+        Real cos_t_crt = model.geometry.rays.direction[r].dot(model.b[crt]);
+        Real two_x_crt = two * std::atan2(image.ny.dot(model.b[crt]), image.nx.dot(model.b[crt]));
+
+        Real shift_nxt = model.geometry.get_shift <frame> (o, r, nxt, Z  );
+        Real cos_t_nxt = model.geometry.rays.direction[r].dot(model.b[nxt]);
+        Real two_x_nxt = two * std::atan2(image.ny.dot(model.b[nxt]), image.nx.dot(model.b[nxt]));
+
+        const Real dcos_t_max = model.parameters->max_cos_t;
+        const Real dtwo_x_max = model.parameters->max_two_x;
+              Real dshift_max = std::min(model.dshift_max[crt], model.dshift_max[nxt]);
+
+        PORTAL_set_data (crt, nxt, shift_crt, shift_nxt,
+                                   cos_t_crt, cos_t_nxt,
+                                   two_x_crt, two_x_nxt, dZ,
+                                   dshift_max,
+                                   dcos_t_max,
+                                   dtwo_x_max, increment, id1, id2);
+
+        while (model.geometry.not_on_boundary(nxt))
+        {
+                  crt =       nxt;
+            shift_crt = shift_nxt;
+            cos_t_crt = cos_t_nxt;
+            two_x_crt = two_x_nxt;
+
+                  nxt = model.geometry.get_next          (o, r, nxt, Z, dZ);
+            shift_nxt = model.geometry.get_shift <frame> (o, r, nxt, Z    );
+            cos_t_nxt = model.geometry.rays.direction[r].dot(model.b[nxt]);
+            two_x_nxt = two * std::atan2(image.ny.dot(model.b[nxt]), image.nx.dot(model.b[nxt]));
+
+            dshift_max = std::min(model.dshift_max[crt], model.dshift_max[nxt]);
+
+            PORTAL_set_data (crt, nxt, shift_crt, shift_nxt,
+                                       cos_t_crt, cos_t_nxt,
+                                       two_x_crt, two_x_nxt, dZ,
+                                       dshift_max,
+                                       dcos_t_max,
+                                       dtwo_x_max, increment, id1, id2);
+        }
+    }
+
+    return id1;
+}
+
+
+accel inline void Solver :: PORTAL_set_data (
+    const Size  crt,
+    const Size  nxt,
+    const Real  shift_crt,
+    const Real  shift_nxt,
+    const Real  cos_t_crt,
+    const Real  cos_t_nxt,
+    const Real  two_x_crt,
+    const Real  two_x_nxt,
+    const Real  dZ_loc,
+    const Real  dshift_max,
+    const Real  dcos_t_max,
+    const Real  dtwo_x_max,
+    const int   increment,
+          Size& id1,
+          Size& id2 )
+{
+    Vector<Real>& dZ    = dZ_   ();
+    Vector<Size>& nr    = nr_   ();
+    Vector<Real>& shift = shift_();
+    Vector<Real>& cos_t = cos_t_();
+    Vector<Real>& two_x = two_x_();
+
+    const Real dshift     = shift_nxt - shift_crt;
+    const Real dshift_abs = fabs (dshift);
+    const Real dcos_t     = cos_t_nxt - cos_t_crt;
+    const Real dcos_t_abs = fabs (dcos_t);
+    const Real dtwo_x     = two_x_nxt - two_x_crt;
+    const Real dtwo_x_abs = fabs (dtwo_x);
+
+    const Size N_shift = dshift_abs / dshift_max + 1;
+    const Size N_cos_t = dcos_t_abs / dcos_t_max + 1;
+    const Size N_two_x = dtwo_x_abs / dtwo_x_max + 1;
+
+    const Size n_interpl = std::max(N_shift, std::max(N_cos_t, N_two_x));
+
+
+    if (n_interpl > 1) // If velocity gradient is not well-sampled enough
+    {
+        const Real one_over_n_interpl = one / n_interpl;
+
+        // Interpolate velocity gradient field
+        const Size half_n_interpl =    0.5 *          n_interpl;
+        const Real     dZ_interpl = dZ_loc * one_over_n_interpl;
+        const Real dshift_interpl = dshift * one_over_n_interpl;
+        const Real dcos_t_interpl = dcos_t * one_over_n_interpl;
+        const Real dtwo_x_interpl = dtwo_x * one_over_n_interpl;
+
+        if (n_interpl > 10000)
+        {
+            printf ("ERROR (n_intpl > 10 000) or (dshift_max < 0, probably due to overflow)\n");
+
+        }
+
+        // Assign current cell to first half of interpolation points
+        for (Size m = 1; m < half_n_interpl; m++)
+        {
+            nr   [id1] = crt;
+            shift[id1] = shift_crt + m*dshift_interpl;
+            cos_t[id1] = cos_t_crt + m*dcos_t_interpl;
+            two_x[id1] = two_x_crt + m*dtwo_x_interpl;
+            dZ   [id2] = dZ_interpl;
+
+            id1 += increment;
+            id2 += increment;
+        }
+
+        // Assign next cell to second half of interpolation points
+        for (Size m = half_n_interpl; m <= n_interpl; m++)
+        {
+            nr   [id1] = nxt;
+            shift[id1] = shift_crt + m*dshift_interpl;
+            cos_t[id1] = cos_t_crt + m*dcos_t_interpl;
+            two_x[id1] = two_x_crt + m*dtwo_x_interpl;
+            dZ   [id2] = dZ_interpl;
+
+            id1 += increment;
+            id2 += increment;
+        }
+    }
+
+    else
+    {
+        nr   [id1] = nxt;
+        shift[id1] = shift_nxt;
+        cos_t[id1] = cos_t_nxt;
+        two_x[id1] = two_x_nxt;
+        dZ   [id2] = dZ_loc;
+
+        id1 += increment;
+        id2 += increment;
+    }
+}
+
+
+template <Frame frame>
+accel inline Size Solver :: PORTAL_get_ray_length (
+    const Model& model,
+    const Image& image,
+    const Size   o,
+    const Size   r )
+{
+    Size  l =   0;   // ray length
+    Real  Z = 0.0;   // distance from origin (o)
+    Real dZ = 0.0;   // last increment in Z
+
+    Size nxt = model.geometry.get_next (o, r, o, Z, dZ);
+
+    if (model.geometry.valid_point(nxt))
+    {
+        Size       crt = o;
+        Real shift_crt = model.geometry.get_shift <frame> (o, r, crt, 0.0);
+        Real cos_t_crt = model.geometry.rays.direction[r].dot(model.b[crt]);
+        Real two_x_crt = two * std::atan2(image.ny.dot(model.b[crt]), image.nx.dot(model.b[crt]));
+
+        Real shift_nxt = model.geometry.get_shift <frame> (o, r, nxt, Z  );
+        Real cos_t_nxt = model.geometry.rays.direction[r].dot(model.b[nxt]);
+        Real two_x_nxt = two * std::atan2(image.ny.dot(model.b[nxt]), image.nx.dot(model.b[nxt]));
+
+        const Real dcos_t_max = model.parameters->max_cos_t;
+        const Real dtwo_x_max = model.parameters->max_two_x;
+              Real dshift_max = std::min(model.dshift_max[crt], model.dshift_max[nxt]);
+
+        l += PORTAL_get_n_interpl (shift_crt, shift_nxt,
+                                   cos_t_crt, cos_t_nxt,
+                                   two_x_crt, two_x_nxt,
+                                   dshift_max,
+                                   dcos_t_max,
+                                   dtwo_x_max );
+
+        while (model.geometry.not_on_boundary(nxt))
+        {
+                  crt =       nxt;
+            shift_crt = shift_nxt;
+            cos_t_crt = cos_t_nxt;
+            two_x_crt = two_x_nxt;
+
+                  nxt = model.geometry.get_next          (o, r, nxt, Z, dZ);
+            shift_nxt = model.geometry.get_shift <frame> (o, r, nxt, Z    );
+            cos_t_nxt = model.geometry.rays.direction[r].dot(model.b[nxt]);
+            two_x_nxt = two * std::atan2(image.ny.dot(model.b[nxt]), image.nx.dot(model.b[nxt]));
+
+            dshift_max = std::min(model.dshift_max[crt], model.dshift_max[nxt]);
+
+            l += PORTAL_get_n_interpl (shift_crt, shift_nxt,
+                                       cos_t_crt, cos_t_nxt,
+                                       two_x_crt, two_x_nxt,
+                                       dshift_max,
+                                       dcos_t_max,
+                                       dtwo_x_max );
+        }
+    }
+
+    return l;
+}
+
+
+accel inline Size Solver :: PORTAL_get_n_interpl (
+    const Real  shift_crt,
+    const Real  shift_nxt,
+    const Real  cos_t_crt,
+    const Real  cos_t_nxt,
+    const Real  two_x_crt,
+    const Real  two_x_nxt,
+    const Real  dshift_max,
+    const Real  dcos_t_max,
+    const Real  dtwo_x_max )
+{
+    const Real dshift     = shift_nxt - shift_crt;
+    const Real dshift_abs = fabs (dshift);
+    const Real dcos_t     = cos_t_nxt - cos_t_crt;
+    const Real dcos_t_abs = fabs (dcos_t);
+    const Real dtwo_x     = two_x_nxt - two_x_crt;
+    const Real dtwo_x_abs = fabs (dtwo_x);
+
+    const Size N_shift = dshift_abs / dshift_max + 1;
+    const Size N_cos_t = dcos_t_abs / dcos_t_max + 1;
+    const Size N_two_x = dtwo_x_abs / dtwo_x_max + 1;
+
+    const Size n_interpl = std::max(N_shift, std::max(N_cos_t, N_two_x));
+
+    return n_interpl;
 }
 
 
@@ -1670,22 +1972,21 @@ accel inline Real Solver :: get_column (const Model& model, const Size o, const 
 
 ///  PPORTAL imager
 ///////////////////
-inline void Solver :: PORTAL_image (Model& model, const Size rr, const Size l)
+inline void Solver :: PORTAL_image (Model& model, Image& image, const Size rr, const Size l)
 {
-    Image image = Image(model.geometry, PolarizedIntensity, rr);
-
     const Size ar = model.geometry.rays.antipod[rr];
 
-    // Size o = 0;
+
+    // For all points
     accelerated_for (o, model.parameters->npoints(),
     {
-        const Real dshift_max = get_dshift_max (model, o);
-
         nr_   ()[centre] = o;
-        shift_()[centre] = model.geometry.get_shift <Rest> (o, rr, o, 0.0);;
+        shift_()[centre] = model.geometry.get_shift <Rest> (o, rr, o, 0.0);
+        cos_t_()[centre] = model.geometry.rays.direction[rr].dot(model.b[o]);
+        two_x_()[centre] = two * std::atan2(image.ny.dot(model.b[o]), image.nx.dot(model.b[o]));
 
-        first_() = trace_ray <Rest> (model.geometry, o, rr, dshift_max, -1, centre-1, centre-1) + 1;
-        last_ () = trace_ray <Rest> (model.geometry, o, ar, dshift_max, +1, centre+1, centre  ) - 1;
+        first_() = PORTAL_trace_ray <Rest> (model, image, o, rr, -1, centre-1, centre-1) + 1;
+        last_ () = PORTAL_trace_ray <Rest> (model, image, o, ar, +1, centre+1, centre  ) - 1;
         n_tot_() = (last_()+1) - first_();
 
         for (Size f = 0; f < model.parameters->nfreqs(); f++)
@@ -1699,6 +2000,8 @@ inline void Solver :: PORTAL_image (Model& model, const Size rr, const Size l)
             Vector<Real>& dZ    = dZ_   ();
             Vector<Size>& nr    = nr_   ();
             Vector<Real>& shift = shift_();
+            Vector<Real>& cos_t = cos_t_();
+            Vector<Real>& two_x = two_x_();
 
             Real I = boundary_intensity (model, nr[first], freq*shift[first]);
             Real Q = 0.0;
@@ -1713,8 +2016,7 @@ inline void Solver :: PORTAL_image (Model& model, const Size rr, const Size l)
                 const Real k_abs_2 = model.k_abs_2[nr[n]];
                 const Real k_stm_2 = model.k_stm_2[nr[n]];
 
-                const Real cos_t = model.geometry.rays.direction[rr].dot(model.b[nr[n]]);
-                const Real fac   = inv_sqrt2 * (three * cos_t * cos_t - two);
+                const Real fac = inv_sqrt2 * (three * cos_t[n] * cos_t[n] - two);
 
                 // cout << "cos_t = " << cos_t << endl;
 
@@ -1751,9 +2053,8 @@ inline void Solver :: PORTAL_image (Model& model, const Size rr, const Size l)
                 // cout << "dtau_p = " << dtau_p << endl;
 
                 // Compute angle
-                const Real   x = std::atan2(image.ny.dot(model.b[nr[n]]), image.nx.dot(model.b[nr[n]]));
-                const Real c2x = std::cos  (two * x);
-                const Real s2x = std::sin  (two * x);
+                const Real c2x = std::cos(two_x[n]);
+                const Real s2x = std::sin(two_x[n]);
 
                 // cout << "x = " << x << endl;
                 // cout << "c2x = " << c2x << endl;

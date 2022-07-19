@@ -181,6 +181,7 @@ PYBIND11_MODULE (core, module)
         .def_readwrite ("k_stm_0",            &Model::k_stm_0)
         .def_readwrite ("k_abs_2",            &Model::k_abs_2)
         .def_readwrite ("k_stm_2",            &Model::k_stm_2)
+        .def_readwrite ("dshift_max",         &Model::dshift_max)
         .def_readonly  (
             "error_mean",
             &Model::error_mean,
@@ -195,6 +196,7 @@ PYBIND11_MODULE (core, module)
         .def ("PORTAL_solve_statistical_equilibrium",           &Model::PORTAL_solve_statistical_equilibrium)
         .def ("PORTAL_solve_statistical_equilibrium_for_point", &Model::PORTAL_solve_statistical_equilibrium_for_point)
         .def ("PORTAL_image",        &Model::PORTAL_image)
+        .def ("set_dshift_max", &Model::set_dshift_max)
         .def (
             "read",
             (void (Model::*)(void)) &Model::read,

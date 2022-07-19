@@ -15,6 +15,11 @@ struct Solver
     pc::multi_threading::ThreadPrivate<Vector<Size>> nr_;      ///< corresponding point number on the ray
     pc::multi_threading::ThreadPrivate<Vector<Real>> shift_;   ///< Doppler shift along the ray
 
+    // PORTAL
+    pc::multi_threading::ThreadPrivate<Vector<Real>> cos_t_;   ///< Doppler shift along the ray
+    pc::multi_threading::ThreadPrivate<Vector<Real>> two_x_;   ///< Doppler shift along the ray
+    /////////
+
     pc::multi_threading::ThreadPrivate<Vector<Real>> eta_c_;
     pc::multi_threading::ThreadPrivate<Vector<Real>> eta_n_;
 
@@ -49,10 +54,6 @@ struct Solver
 
     pc::multi_threading::ThreadPrivate<Real> optical_depth_;
 
-    pc::multi_threading::ThreadPrivate<Real> I_p_;
-    pc::multi_threading::ThreadPrivate<Real> I_o_;
-    pc::multi_threading::ThreadPrivate<Real> U_;
-
 
     Vector<Real> eta;
     Vector<Real> chi;
@@ -79,7 +80,6 @@ struct Solver
 
     template <Frame frame>
     inline Size get_ray_lengths_max (Model& model);
-
 
     template <Frame frame>
     accel inline Size trace_ray (
@@ -183,7 +183,61 @@ struct Solver
 
     // Solvers for PORTAL
     /////////////////////
-    inline void PORTAL_image (Model& model, const Size rr, const Size l);
+    template <Frame frame>
+    void PORTAL_setup (Model& model, Image& image);
+
+    template <Frame frame>
+    inline void PORTAL_get_ray_lengths (Model& model, const Image& image);
+
+    template <Frame frame>
+    inline Size PORTAL_get_ray_lengths_max (Model& model, const Image& image);
+
+    inline void PORTAL_image (Model& model, Image& image, const Size rr, const Size l);
+
+    template <Frame frame>
+    accel inline Size PORTAL_trace_ray (
+        const Model& model,
+        const Image& image,
+        const Size   o,
+        const Size   r,
+        const int    increment,
+              Size   id1,
+              Size   id2 );
+
+    template <Frame frame>
+    accel inline Size PORTAL_get_ray_length (
+        const Model& model,
+        const Image& image,
+        const Size   o,
+        const Size   r );
+
+    accel inline Size PORTAL_get_n_interpl (
+        const Real  shift_crt,
+        const Real  shift_nxt,
+        const Real  cos_t_crt,
+        const Real  cos_t_nxt,
+        const Real  two_x_crt,
+        const Real  two_x_nxt,
+        const Real  dshift_max,
+        const Real  dcos_t_max,
+        const Real  dtwo_x_max );
+
+    accel inline void PORTAL_set_data (
+        const Size  crt,
+        const Size  nxt,
+        const Real  shift_crt,
+        const Real  shift_nxt,
+        const Real  cos_t_crt,
+        const Real  cos_t_nxt,
+        const Real  two_x_crt,
+        const Real  two_x_nxt,
+        const Real  dZ_loc,
+        const Real  dshift_max,
+        const Real  dcos_t_max,
+        const Real  dtwo_x_max,
+        const int   increment,
+              Size& id1,
+              Size& id2 );
 };
 
 

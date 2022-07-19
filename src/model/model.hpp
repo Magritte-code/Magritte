@@ -110,6 +110,11 @@ struct Model
     int set_column ();
 
 
+    Vector<Real> dshift_max;
+
+    int set_dshift_max ();
+
+
     // PORTAL extension
     ////////////////////////////////
     Size  nalign;

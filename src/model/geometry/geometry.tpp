@@ -170,7 +170,7 @@ accel inline Size Geometry :: get_ray_length (
     const Size   r,
     const double dshift_max                  ) const
 {
-    Size    l = 0;     // ray length
+    Size    l =   0;   // ray length
     double  Z = 0.0;   // distance from origin (o)
     double dZ = 0.0;   // last increment in Z
 
