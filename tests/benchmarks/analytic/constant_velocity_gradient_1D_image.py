@@ -73,7 +73,7 @@ def create_model ():
     return #magritte.Model (modelFile)
 
 
-def run_model (nosave=False, benchindex=0):
+def run_model (nosave=False, benchindex=0, use_widgets=True):
 
     modelName = f'constant_velocity_gradient_1D_image'
     modelFile = f'{moddir}{modelName}.hdf5'
@@ -164,7 +164,10 @@ def run_model (nosave=False, benchindex=0):
         plt.figure(dpi=150)
         plt.plot(fs, im  [p,:], marker='.')
         plt.plot(fs, im_a[p,:])
-    widgets.interact(plot, p=(0,npoints-1,1))
+
+    #during automated testing, the widgets only consume time to create
+    if use_widgets:
+        widgets.interact(plot, p=(0,npoints-1,1))
 
     error = np.abs(tools.relative_error(im, im_a))[:-1]
 
@@ -209,11 +212,11 @@ def run_model (nosave=False, benchindex=0):
     FEAUTRIER_AS_EXPECTED=True
     #if we are actually doing benchmarks, the accuracy will depend on how accurately we compute the optical depth
     if (benchindex==1):
-        FEAUTRIER_AS_EXPECTED=(np.mean(error_u_2f)<1.8e-5)
+        FEAUTRIER_AS_EXPECTED=(np.max(error)<1.8e-5)
     elif(benchindex==2):
-        FEAUTRIER_AS_EXPECTED=(np.mean(error_u_2f)<8e-6)
+        FEAUTRIER_AS_EXPECTED=(np.max(error)<8e-6)
     elif(benchindex==3):
-        FEAUTRIER_AS_EXPECTED=(np.mean(error_u_2f)<2e-8)
+        FEAUTRIER_AS_EXPECTED=(np.max(error)<2e-8)
 
     if not FEAUTRIER_AS_EXPECTED:
         print("Feautrier solver mean error too large: ", np.mean(error_u_2f), "bench nr: ", benchindex)

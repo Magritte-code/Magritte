@@ -83,7 +83,7 @@ def create_model (a_or_b):
     return #magritte.Model (modelFile)
 
 
-def run_model (a_or_b, nosave=False):
+def run_model (a_or_b, nosave=False, use_widgets=True):
 
     modelName = f'density_distribution_VZ{a_or_b}_1D_image'
     modelFile = f'{moddir}{modelName}.hdf5'
@@ -167,7 +167,10 @@ def run_model (a_or_b, nosave=False):
         plt.plot(fs,           tools.I_CMB(nu),                 label='CMB')
         plt.yscale('log')
         plt.legend()
-    widgets.interact(plot, p=(0,npoints-1,1))
+        
+    #during automated testing, the widgets only consume time to create
+    if use_widgets:
+        widgets.interact(plot, p=(0,npoints-1,1))
 
     error = np.abs(tools.relative_error(im, im_a))[:-1]
 

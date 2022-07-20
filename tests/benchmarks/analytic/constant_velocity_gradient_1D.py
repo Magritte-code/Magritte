@@ -73,7 +73,7 @@ def create_model ():
     return #magritte.Model (modelFile)
 
 
-def run_model (nosave=False, benchindex=1):
+def run_model (nosave=False, benchindex=0, use_widgets=True):
 
     modelName = f'constant_velocity_gradient_1D'
     modelFile = f'{moddir}{modelName}.hdf5'
@@ -189,7 +189,10 @@ def run_model (nosave=False, benchindex=1):
         plt.figure(dpi=150)
         plt.plot(fs, us  [r,p,:], marker='.')
         plt.plot(fs, u_2f[r,p,:])
-    widgets.interact(plot, r=(0,hnrays-1,1), p=(0,npoints-1,1))
+
+    #during automated testing, the widgets only consume time to create
+    if use_widgets:
+        widgets.interact(plot, r=(0,hnrays-1,1), p=(0,npoints-1,1))
 
     error_u_0s = np.abs(tools.relative_error(us, u_0s))
     error_u_2f = np.abs(tools.relative_error(us, u_2f))

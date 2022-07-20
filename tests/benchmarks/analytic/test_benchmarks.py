@@ -41,7 +41,7 @@ class TestAnalytic:
             density_dist_image_setup('a')
 
         def test_density_distribution1D_image_run(self):
-            assert density_dist_image_run('a', nosave=True)
+            assert density_dist_image_run('a', nosave=True, use_widgets=False)
 
     @pytest.mark.incremental
     class TestVelocityGradient1D:
@@ -50,11 +50,11 @@ class TestAnalytic:
 
         class TestVelocityGradient1DBenchmarks:
             def test_velocity_gradient_1D_run_bench1(self):
-                assert velocity_gradient_run(nosave=True, benchindex=1)
+                assert velocity_gradient_run(nosave=True, benchindex=1, use_widgets=False)
             def test_velocity_gradient_1D_run_bench2(self):
-                assert velocity_gradient_run(nosave=True, benchindex=2)
+                assert velocity_gradient_run(nosave=True, benchindex=2, use_widgets=False)
             def test_velocity_gradient_1D_run_bench3(self):
-                assert velocity_gradient_run(nosave=True, benchindex=3)
+                assert velocity_gradient_run(nosave=True, benchindex=3, use_widgets=False)
 
     @pytest.mark.incremental
     class TestVelocityGradient1DImage:
@@ -63,11 +63,11 @@ class TestAnalytic:
 
         class TestVelocityGradient1DImageBenchmarks:
             def test_velocity_gradient_1D_image_run_bench1(self):
-                assert velocity_gradient_run(nosave=True, benchindex=1)
+                assert velocity_gradient_image_run(nosave=True, benchindex=1, use_widgets=False)
             def test_velocity_gradient_1D_image_run_bench2(self):
-                assert velocity_gradient_run(nosave=True, benchindex=2)
+                assert velocity_gradient_image_run(nosave=True, benchindex=2, use_widgets=False)
             def test_velocity_gradient_1D_image_run_bench3(self):
-                assert velocity_gradient_run(nosave=True, benchindex=3)
+                assert velocity_gradient_image_run(nosave=True, benchindex=3, use_widgets=False)
 
 
 
