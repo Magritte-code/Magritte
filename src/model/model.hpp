@@ -88,8 +88,7 @@ struct Model
     Matrix<Real> eta;
     Matrix<Real> chi;
 
-    Matrix<Real>  eta_ray;
-    Matrix<Real>  chi_ray;
+    Matrix<Real>    S_ray;
     Matrix<Real> dtau_ray;
     Matrix<Real>    u_ray;
 

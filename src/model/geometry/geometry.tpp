@@ -182,7 +182,7 @@ accel inline Size Geometry :: get_ray_length (
         double shift_crt = get_shift <frame> (o, r, crt, 0.0);
         double shift_nxt = get_shift <frame> (o, r, nxt, Z);
 
-        l += get_n_interpl (shift_crt, shift_nxt, dshift_max);
+        l += 1;//no interpolation means only a single point added to the ray each time
 
         while (not_on_boundary(nxt))
         {
@@ -192,7 +192,7 @@ accel inline Size Geometry :: get_ray_length (
                   nxt = get_next          (o, r, nxt, Z, dZ);
             shift_nxt = get_shift <frame> (o, r, nxt, Z    );
 
-            l += get_n_interpl (shift_crt, shift_nxt, dshift_max);
+            l += 1;//no interpolation means only a single point added to the ray each time
 
             if (!valid_point(nxt))
             {
