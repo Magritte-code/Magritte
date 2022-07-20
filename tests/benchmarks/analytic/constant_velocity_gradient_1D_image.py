@@ -73,7 +73,7 @@ def create_model ():
     return #magritte.Model (modelFile)
 
 
-def run_model (nosave=False):
+def run_model (nosave=False, benchindex=0):
 
     modelName = f'constant_velocity_gradient_1D_image'
     modelFile = f'{moddir}{modelName}.hdf5'
@@ -83,6 +83,16 @@ def run_model (nosave=False):
     timer1.start()
     model = magritte.Model (modelFile)
     timer1.stop()
+
+    #by default, benchmark uses default magritte settings for max_width_fraction; denotes when to switch over to more expensive, more accurate way of computing optical depths when encountering doppler shifts
+    model.parameters.max_width_fraction=0.5;
+    #for controlling accuracy of optical depth computation during benchmark runs
+    if (benchindex==1):
+        model.parameters.max_width_fraction=0.5;#fast, but slightly inaccurate
+    elif (benchindex==2):
+        model.parameters.max_width_fraction=0.35;#more reasonably accurate, but minor performance hit
+    elif (benchindex==3):
+        model.parameters.max_width_fraction=0.10;#major performance hit, very accurate
 
     fcen = model.lines.lineProducingSpecies[0].linedata.frequency[0]
     dd = 1.0e+4 / magritte.CC
@@ -196,7 +206,19 @@ def run_model (nosave=False):
         plt.xscale('log')
         plt.savefig(f'{resdir}{modelName}_cumu-{timestamp}.png', dpi=150)
 
-    return
+    FEAUTRIER_AS_EXPECTED=True
+    #if we are actually doing benchmarks, the accuracy will depend on how accurately we compute the optical depth
+    if (benchindex==1):
+        FEAUTRIER_AS_EXPECTED=(np.mean(error_u_2f)<1.8e-5)
+    elif(benchindex==2):
+        FEAUTRIER_AS_EXPECTED=(np.mean(error_u_2f)<8e-6)
+    elif(benchindex==3):
+        FEAUTRIER_AS_EXPECTED=(np.mean(error_u_2f)<2e-8)
+
+    if not FEAUTRIER_AS_EXPECTED:
+        print("Feautrier solver mean error too large: ", np.mean(error_u_2f), "bench nr: ", benchindex)
+
+    return (FEAUTRIER_AS_EXPECTED)
 
 
 def run_test (nosave=False):

@@ -73,7 +73,7 @@ def create_model ():
     return #magritte.Model (modelFile)
 
 
-def run_model (nosave=False):
+def run_model (nosave=False, benchindex=1):
 
     modelName = f'constant_velocity_gradient_1D'
     modelFile = f'{moddir}{modelName}.hdf5'
@@ -83,6 +83,17 @@ def run_model (nosave=False):
     timer1.start()
     model = magritte.Model (modelFile)
     timer1.stop()
+
+    #by default, benchmark uses default magritte settings for max_width_fraction; denotes when to switch over to more expensive, more accurate way of computing optical depths when encountering doppler shifts
+
+    #for controlling accuracy of optical depth computation during benchmark runs
+    if (benchindex==1):
+        model.parameters.max_width_fraction=0.5;#fast, but slightly inaccurate
+    elif (benchindex==2):
+        model.parameters.max_width_fraction=0.35;#more reasonably accurate, but minor performance hit
+    elif (benchindex==3):
+        model.parameters.max_width_fraction=0.10;#major performance hit, very accurate
+
 
     timer2 = tools.Timer('setting model')
     timer2.start()
@@ -173,6 +184,7 @@ def run_model (nosave=False):
     us = np.array([[[u_(f,r,a) for f in nu] for r in rs] for a in angles])
     fs = (nu-frq)/frq*magritte.CC
 
+    #hmm, do we need this widget if we are not plotting it?
     def plot (r, p):
         plt.figure(dpi=150)
         plt.plot(fs, us  [r,p,:], marker='.')
@@ -226,25 +238,37 @@ def run_model (nosave=False):
         plt.savefig(f'{resdir}{modelName}_cumu-{timestamp}.png', dpi=150)
 
 
-
-    #error bounds are chosen somewhat arbitrarily, based on previously obtained results; this should prevent serious regressions.
-    #feautrier should be quite accurate, so we take 1e-5 as maximal max error
-    FEAUTRIER_AS_EXPECTED=(np.mean(error_u_2f)<5e-5)
-    #somewhat less accurate solver
-    FIRSTORDER_AS_EXPECTED=(np.mean(error_u_0s)<1.5e-4)
+    FEAUTRIER_AS_EXPECTED=True
+    FIRSTORDER_AS_EXPECTED=True
+    #if we are actually doing benchmarks, the accuracy will depend on how accurately we compute the optical depth
+    if (benchindex==1):
+        #feautrier should be quite accurate
+        FEAUTRIER_AS_EXPECTED=(np.mean(error_u_2f)<1e-6)
+        #somewhat less accurate solver
+        FIRSTORDER_AS_EXPECTED=(np.mean(error_u_0s)<1.5e-5)
+    elif(benchindex==2):
+        #feautrier should be quite accurate
+        FEAUTRIER_AS_EXPECTED=(np.mean(error_u_2f)<5e-7)
+        #somewhat less accurate solver
+        FIRSTORDER_AS_EXPECTED=(np.mean(error_u_0s)<8e-6)
+    elif(benchindex==3):
+        #feautrier should be quite accurate
+        FEAUTRIER_AS_EXPECTED=(np.mean(error_u_2f)<1.5e-8)
+        #somewhat less accurate solver
+        FIRSTORDER_AS_EXPECTED=(np.mean(error_u_0s)<2e-8)
 
     if not FIRSTORDER_AS_EXPECTED:
-        print("First order solver mean error too large: ", np.mean(error_u_0s))
+        print("First order solver mean error too large: ", np.mean(error_u_0s), "bench nr: ", benchindex)
     if not FEAUTRIER_AS_EXPECTED:
-        print("Feautrier solver mean error too large: ", np.mean(error_u_2f))
+        print("Feautrier solver mean error too large: ", np.mean(error_u_2f), "bench nr: ", benchindex)
 
     return (FEAUTRIER_AS_EXPECTED&FIRSTORDER_AS_EXPECTED)
 
 
-def run_test (nosave=False):
+def run_test (nosave=False, max_width_fraction=0.35):
 
     create_model     ()
-    run_model (nosave)
+    run_model (nosave, max_width_fraction)
 
     return
 
@@ -252,5 +276,6 @@ def run_test (nosave=False):
 if __name__ == '__main__':
 
     nosave = (len(sys.argv) > 1) and (sys.argv[1] == 'nosave')
+
 
     run_test (nosave)

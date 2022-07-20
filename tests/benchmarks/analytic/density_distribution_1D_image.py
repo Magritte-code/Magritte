@@ -209,6 +209,15 @@ def run_model (a_or_b, nosave=False):
         plt.xscale('log')
         plt.savefig(f'{resdir}{modelName}_cumu-{timestamp}.png', dpi=150)
 
+    #setting 'b' not yet used for testing
+    if a_or_b == 'a':
+        #error bounds are chosen somewhat arbitrarily, based on previously obtained results; this should prevent serious regressions.
+        FEAUTRIER_AS_EXPECTED=(np.mean(error)<2e-3)
+        if not FEAUTRIER_AS_EXPECTED:
+            print("Feautrier solver mean error too large: ", np.mean(error))
+
+        return (FEAUTRIER_AS_EXPECTED)
+
     return
 
 
