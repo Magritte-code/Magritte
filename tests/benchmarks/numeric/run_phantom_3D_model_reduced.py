@@ -46,7 +46,7 @@ def run_model (nosave=True):
 
     timer3 = tools.Timer('running model')
     timer3.start()
-    model.compute_level_populations (True, 10)
+    model.compute_level_populations_sparse (True, 10)
     # sum_J_2f=np.array(model.lines.lineProducingSpecies[0].Jlin)
 
     # model = magritte.Model (modelFile)
