@@ -5,7 +5,7 @@ channels:
   - defaults
 # The order of the channels above is critical!!!
 dependencies:
-  - python
+  - python=3.9
   - cmake
   - k3d
   - numpy
