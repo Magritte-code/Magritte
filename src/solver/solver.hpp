@@ -299,7 +299,6 @@ struct Solver
               Size&  id1,
               Size&  id2 );
 
-
     // Solvers for images
     /////////////////////
     accel inline void image_feautrier_order_2 (Model& model, const Size rr);
