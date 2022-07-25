@@ -75,5 +75,5 @@ setup(
         "Topic :: Scientific/Engineering :: Astronomy",
         "Topic :: Scientific/Engineering :: Physics"
     ],
-    python_requires='>=3.7',
+    python_requires='>=3.8',
 )
