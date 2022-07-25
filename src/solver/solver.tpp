@@ -85,6 +85,8 @@ inline void Solver :: setup_comoving (Model& model)
     centre     = length/2;
     width      = model.parameters->nfreqs();
 
+    model.set_dshift_max();//err, probably belongs somewhere else, but we need to compute the max shift for each point
+
     std::cout<<"setup length: "<<length<<std::endl;
     std::cout<<"setup width: "<<width<<std::endl;
 
