@@ -83,7 +83,7 @@ def create_model (a_or_b):
     return #magritte.Model (modelFile)
 
 
-def run_model (a_or_b, nosave=False):
+def run_model (a_or_b, nosave=False, use_widgets=True):
 
     modelName = f'density_distribution_VZ{a_or_b}_1D_image'
     modelFile = f'{moddir}{modelName}.hdf5'
@@ -167,7 +167,10 @@ def run_model (a_or_b, nosave=False):
         plt.plot(fs,           tools.I_CMB(nu),                 label='CMB')
         plt.yscale('log')
         plt.legend()
-    widgets.interact(plot, p=(0,npoints-1,1))
+        
+    #during automated testing, the widgets only consume time to create
+    if use_widgets:
+        widgets.interact(plot, p=(0,npoints-1,1))
 
     error = np.abs(tools.relative_error(im, im_a))[:-1]
 
@@ -208,6 +211,15 @@ def run_model (a_or_b, nosave=False):
         plt.hist(error.ravel(), bins=bins, histtype='step', cumulative=True)
         plt.xscale('log')
         plt.savefig(f'{resdir}{modelName}_cumu-{timestamp}.png', dpi=150)
+
+    #setting 'b' not yet used for testing
+    if a_or_b == 'a':
+        #error bounds are chosen somewhat arbitrarily, based on previously obtained results; this should prevent serious regressions.
+        FEAUTRIER_AS_EXPECTED=(np.mean(error)<2e-3)
+        if not FEAUTRIER_AS_EXPECTED:
+            print("Feautrier solver mean error too large: ", np.mean(error))
+
+        return (FEAUTRIER_AS_EXPECTED)
 
     return
 

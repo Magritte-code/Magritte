@@ -14,4 +14,7 @@ cd $DIR
 python -m pip uninstall magritte
 
 # echo "Installing magritte python package..."
-python setup.py install
+# python setup.py install
+bash compile.sh
+#setup.py install is deprecated
+python -m pip install .
