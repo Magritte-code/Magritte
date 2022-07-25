@@ -4,6 +4,7 @@
 #include "model/model.hpp"
 #include "tools/types.hpp"
 #include <map>
+#include <deque>
 #include <tuple>
 
 ///  Approximation used in the solver
@@ -112,7 +113,18 @@ struct Solver
     pc::multi_threading::ThreadPrivate<Matrix<Real>> S_curr_;//for every point, for every frequency, storing source function; might be fiddled with to set boundary conditions
     pc::multi_threading::ThreadPrivate<Matrix<Real>> S_next_;//for every point, for every frequency, storing source function; might be fiddled with to set boundary conditions
 
-    const Real COMOVING_MIN_DTAU=1.0e-10;
+    // const Real COMOVING_MIN_DTAU=1.0e-14;
+    const Real COMOVING_MIN_DTAU=1.0e-12;
+
+    //For containing the boundary conditions efficiently (for each line)
+    pc::multi_threading::ThreadPrivate<Vector<std::deque<Real>>> left_bdy_deque_frequencies_;//contains the boundary frequencies
+    pc::multi_threading::ThreadPrivate<Vector<std::deque<Size>>> left_bdy_deque_rayposidx_;//contains the boundary frequencies ray position indices
+    pc::multi_threading::ThreadPrivate<Vector<std::deque<Size>>> left_bdy_deque_freq_idx_;//contains the boundary frequencies frequency indices
+
+    pc::multi_threading::ThreadPrivate<Vector<std::deque<Real>>> right_bdy_deque_frequencies_;//contains the boundary frequencies
+    pc::multi_threading::ThreadPrivate<Vector<std::deque<Size>>> right_bdy_deque_rayposidx_;//contains the boundary frequencies ray position indices
+    pc::multi_threading::ThreadPrivate<Vector<std::deque<Size>>> right_bdy_deque_freq_idx_;//contains the boundary frequencies frequency indices
+
 
     //For computing the second order accurate frequency derivative
     //Cant we just compute is during the main computation? I see no reason to store it now?

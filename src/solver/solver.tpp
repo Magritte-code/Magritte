@@ -1,4 +1,5 @@
 #include <map>
+#include <deque>
 #include <tuple>
 
 template <Frame frame>
@@ -152,6 +153,16 @@ inline void Solver :: setup_comoving (Model& model)
         dIdnu_index1_next_(i).resize(length, width);
         dIdnu_index2_next_(i).resize(length, width);
         dIdnu_index3_next_(i).resize(length, width);
+
+        //For containing the boundary conditions efficiently (for each line)
+        left_bdy_deque_frequencies_(i).resize(model.parameters->nlines());//contains the boundary frequencies
+        left_bdy_deque_rayposidx_(i).resize(model.parameters->nlines());//contains the boundary frequencies ray position indices
+        left_bdy_deque_freq_idx_(i).resize(model.parameters->nlines());//contains the boundary frequencies frequency indices
+
+        right_bdy_deque_frequencies_(i).resize(model.parameters->nlines());//contains the boundary frequencies
+        right_bdy_deque_rayposidx_(i).resize(model.parameters->nlines());//contains the boundary frequencies ray position indices
+        right_bdy_deque_freq_idx_(i).resize(model.parameters->nlines());//contains the boundary frequencies frequency indices
+
 
 
     }
@@ -1255,7 +1266,7 @@ inline void Solver :: comoving_ray_bdy_setup_forward(Model& model)
 
     std::multimap<Real, std::tuple<Size, Size>> multimap_freq_to_bdy_index;//boundary conditions can overlap, so multimap it is
 
-
+    bool computing_curr_opacity=true;
     // std::cout<<"starting iteration"<<std::endl;
     //Yes, for determining boundary conditions, we are going backwards; this seems strange, but is a result of easier treatment of the spatial boundary conditions at the end
     while (rayposidx>first_())
@@ -1283,6 +1294,7 @@ inline void Solver :: comoving_ray_bdy_setup_forward(Model& model)
 
         // std::cout<<"before setting default computation values"<<std::endl;
 
+        bool compute_curr_opacity;
         //Now compute all default stuff, computing bogus for the non-matched indices (but as these correspond to boundary indices, we will overwrite this anyway)
         for (Size next_freq_idx=0; next_freq_idx<model.parameters->nfreqs(); next_freq_idx++)
         {
@@ -1291,22 +1303,36 @@ inline void Solver :: comoving_ray_bdy_setup_forward(Model& model)
             const Real currfreq=model.radiation.frequencies.nu(currpoint, curr_freq_idx);//
             //technically, we also need to read the point index from this start_indices_ (start_indices_()(rayposidx, next_freq_idx)[0]), but this should still correspond to currpoint at this moment in time
             const Size nextlineidx=model.radiation.frequencies.corresponding_line_matrix(nextpoint, next_freq_idx);
-            get_eta_and_chi<approx>(model, nextpoint, nextlineidx, nextfreq, eta_next, chi_next);//no shift necessary, as the frequencies are matched
+            // get_eta_and_chi<approx>(model, nextpoint, nextlineidx, nextfreq, eta_next, chi_next);//no shift necessary, as the frequencies are matched
+
+            Real dtau, Snext, Scurr;
+            Real chicurr, chinext;//dummy stuff
+            //new method for computing S, dtau
+            compute_curr_opacity=computing_curr_opacity;
+            compute_curr_opacity=true;//due to some shenanigans with the boundary conditions, I'll probably need to compute all sources, dtau's twice
+            //OTHERWISE TODO: add some way to remember previous source function, dtau (if boundary condition implementation is flexible enough)
+            //needs default doppler shift defined in default direction; err, line index might also not be 100% correct; it can change easily with a large doppler shift...
+            // compute_source_dtau<approx>(model, currpoint, nextpoint, nextlineidx, currfreq, nextfreq, 2.0-shift_curr, 2.0-shift_next, dZ, compute_curr_opacity, dtau, chicurr, chinext, Scurr, Snext);
+            //only using the old method for computing dtau
+            compute_source_dtau<approx>(model, currpoint, nextpoint, nextlineidx, currfreq, nextfreq, 1.0, 1.0, dZ, compute_curr_opacity, dtau, chicurr, chinext, Scurr, Snext);
+            // compute_source_dtau<approx>(model, currpoint, nextpoint, nextlineidx, currfreq, nextfreq, shift_curr, shift_next, dZ, compute_curr_opacity, dtau, chicurr, chinext, Scurr, Snext);
             //Possible optimization, only query eta/chi_curr once for each point, as the next value is the same either way when traversing through this ray
             const Size currlineidx=model.radiation.frequencies.corresponding_line_matrix(currpoint, curr_freq_idx);
-            get_eta_and_chi<approx>(model, currpoint, currlineidx, currfreq, eta_curr, chi_curr);
-            const Real Snext=eta_next/chi_next;
-            const Real Scurr=eta_curr/chi_curr;
+            // get_eta_and_chi<approx>(model, currpoint, currlineidx, currfreq, eta_curr, chi_curr);
+            // const Real Snext=eta_next/chi_next;
+            // const Real Scurr=eta_curr/chi_curr;
             S_next_()(rayposidx, next_freq_idx)=Snext;
             S_curr_()(rayposidx, next_freq_idx)=Scurr;
             // Floor dtau by COMOVING_MIN_DTAU, due to division by dtau^2
-            const Real dtau = std::max(trap(chi_curr, chi_next, dZ), COMOVING_MIN_DTAU);
+            // const Real dtau = std::max(trap(chi_curr, chi_next, dZ), COMOVING_MIN_DTAU);
             delta_tau_()(rayposidx, next_freq_idx)=dtau;
             // std::cout<<"setting dtau: "<<delta_tau_()(rayposidx, next_freq_idx)<<std::endl;
             // std::cout<<"chi_next: "<<chi_next<<std::endl;
             // std::cout<<"chi_curr: "<<chi_curr<<std::endl;
             // std::cout<<"rayposidx: "<<rayposidx<<std::endl;
         }
+        //for the next point, we need to know whether to compute
+        computing_curr_opacity=compute_curr_opacity;
 
         // std::cout<<"setting derivative coeffs"<<std::endl;
 
@@ -1479,6 +1505,7 @@ inline void Solver :: comoving_ray_bdy_setup_backward(Model& model)
     //POSSIBLE OPTIMIZATION: only query them once, moving ..._curr to ..._next after each rayposidx change
     //But then this should change to a vector holding these values...
 
+    bool computing_curr_opacity=true;
     std::multimap<Real, std::tuple<Size, Size>> multimap_freq_to_bdy_index;//boundary conditions can overlap, so multimap it is
     //Yes, for determining boundary conditions, we are going backwards; this seems strange, but is a result of easier treatment of the spatial boundary conditions at the end
     while (rayposidx<last_())
@@ -1502,6 +1529,7 @@ inline void Solver :: comoving_ray_bdy_setup_backward(Model& model)
         //First, we match all frequency indices as good as possible.
         match_frequency_indices(model, nextpoint, currpoint, rayposidx, rayposidx+1, is_upward_disc);//O(nfreqs)
 
+        bool compute_curr_opacity;
         //Now compute all default stuff, computing bogus for the non-matched indices (but as these correspond to boundary indices, we will overwrite this anyway)
         for (Size next_freq_idx=0; next_freq_idx<model.parameters->nfreqs(); next_freq_idx++)
         {
@@ -1510,17 +1538,28 @@ inline void Solver :: comoving_ray_bdy_setup_backward(Model& model)
             const Real currfreq=model.radiation.frequencies.nu(currpoint, curr_freq_idx);//
             //technically, we also need to read the point index from this start_indices_ (start_indices_()(rayposidx, next_freq_idx)[0]), but this should still correspond to currpoint at this moment in time
             const Size nextlineidx=model.radiation.frequencies.corresponding_line_matrix(nextpoint, next_freq_idx);
-            get_eta_and_chi<approx>(model, nextpoint, nextlineidx, nextfreq, eta_next, chi_next);//no shift necessary, as the frequencies are matched
+            // get_eta_and_chi<approx>(model, nextpoint, nextlineidx, nextfreq, eta_next, chi_next);//no shift necessary, as the frequencies are matched
+            Real dtau, Snext, Scurr;
+            Real chicurr, chinext;//dummy stuff
+            //new method for computing S, dtau
+            compute_curr_opacity=computing_curr_opacity;
+            compute_curr_opacity=true;//due to some shenanigans with the boundary conditions, I'll probably need to compute all sources, dtau's twice
+            //OTHERWISE TODO: add some way to remember previous source function, dtau (if boundary condition implementation is flexible enough)
+            //needs default doppler shift defined in default direction; err, line index might also not be 100% correct; it can change easily with a large doppler shift...
+            // compute_source_dtau<approx>(model, currpoint, nextpoint, nextlineidx, currfreq, nextfreq, 2.0-shift_curr, 2.0-shift_next, dZ, compute_curr_opacity, dtau, chicurr, chinext, Scurr, Snext);
+            //only using the old method for computing dtau
+            compute_source_dtau<approx>(model, currpoint, nextpoint, nextlineidx, currfreq, nextfreq, 1.0, 1.0, dZ, compute_curr_opacity, dtau, chicurr, chinext, Scurr, Snext);
+            // compute_source_dtau<approx>(model, currpoint, nextpoint, nextlineidx, currfreq, nextfreq, shift_curr, shift_next, dZ, compute_curr_opacity, dtau, chicurr, chinext, Scurr, Snext);
             //Possible optimization, only query eta/chi_curr once for each point, as the next value is the same either way when traversing through this ray
-            const Size currlineidx=model.radiation.frequencies.corresponding_line_matrix(currpoint, curr_freq_idx);
-            get_eta_and_chi<approx>(model, currpoint, currlineidx, currfreq, eta_curr, chi_curr);
-            const Real Snext=eta_next/chi_next;
-            const Real Scurr=eta_curr/chi_curr;
+            // const Size currlineidx=model.radiation.frequencies.corresponding_line_matrix(currpoint, curr_freq_idx);
+            // get_eta_and_chi<approx>(model, currpoint, currlineidx, currfreq, eta_curr, chi_curr);
+            // const Real Snext=eta_next/chi_next;
+            // const Real Scurr=eta_curr/chi_curr;
             S_next_()(rayposidx, next_freq_idx)=Snext;
             S_curr_()(rayposidx, next_freq_idx)=Scurr;
             // std::cout<<"setting curr source: "<<Scurr<<std::endl;
             // Floor dtau by COMOVING_MIN_DTAU, due to division by dtau^2
-            const Real dtau = std::max(trap (chi_curr, chi_next, dZ), COMOVING_MIN_DTAU);
+            // const Real dtau = std::max(trap (chi_curr, chi_next, dZ), COMOVING_MIN_DTAU);
             delta_tau_()(rayposidx, next_freq_idx)=dtau;
             // std::cout<<"setting dtau: "<<delta_tau_()(rayposidx, next_freq_idx)<<std::endl;
             // std::cout<<"chi_next: "<<chi_next<<std::endl;
@@ -1528,6 +1567,7 @@ inline void Solver :: comoving_ray_bdy_setup_backward(Model& model)
             // std::cout<<"dZ: "<<dZ<<std::endl;
             // std::cout<<"rayposidx: "<<rayposidx<<std::endl;
         }
+        computing_curr_opacity=compute_curr_opacity;
 
         //This part precomputes the frequency derivative coefficients (and corresponding indices), conveniently ignoring the fact that for some outermost line quadrature frequencies, we must do more complicated stuff.
         // However, the complicated stuff is handled by the boundary conditions.
@@ -1909,7 +1949,8 @@ inline void Solver :: solve_comoving_single_step (Model& model, const Size raypo
     // std::cout<<"incrementing J"<<std::endl;
 
     //Finally increment J if and real point check if closest ray
-    if (real_pt[rayposidx]&&closest_ray(rr, nextpointidx)==rayidx)
+    // if (real_pt[rayposidx]&&closest_ray(rr, nextpointidx)==rayidx)
+    if (closest_ray(rr, nextpointidx)==rayidx)
     {
         // std::cout<<"rayposidx: "<<rayposidx<<std::endl;
         // std::cout<<"adding to J at rayposidx: "<<rayposidx<<std::endl;
@@ -1973,9 +2014,16 @@ inline void Solver :: solve_comoving_order_2_sparse (
 
     // std::cout<<"before tracing rays"<<std::endl;
 
+    // //trace the ray, getting all points on the ray and indicating whether they are real
+    // first_() = trace_ray_indicate_point(model.geometry, o, rr, dshift_max, -1, centre-1, centre-1) + 1;
+    // last_ () = trace_ray_indicate_point(model.geometry, o, ar, dshift_max, +1, centre+1, centre  ) - 1;
+
     //trace the ray, getting all points on the ray and indicating whether they are real
-    first_() = trace_ray_indicate_point(model.geometry, o, rr, dshift_max, -1, centre-1, centre-1) + 1;
-    last_ () = trace_ray_indicate_point(model.geometry, o, ar, dshift_max, +1, centre+1, centre  ) - 1;
+    //no more interpolations, so no more checking which points are real
+    first_() = trace_ray<Rest>(model.geometry, o, rr, dshift_max, -1, centre-1, centre-1) + 1;
+    last_ () = trace_ray<Rest>(model.geometry, o, ar, dshift_max, +1, centre+1, centre  ) - 1;
+
+
     //also set ray start as real point; accidentally forgot
     real_pt_()[centre]=true;
 
@@ -2486,6 +2534,7 @@ accel inline void Solver :: set_data (
 }
 
 // Comoving solver also needs to know which points are real points in the grid, to be able to compute J from the correct intensity
+//Err, no more interpolation necessary
 accel inline void Solver :: set_data_indicate_point (
     const Size   crt,
     const Size   nxt,
@@ -2505,57 +2554,57 @@ accel inline void Solver :: set_data_indicate_point (
     const double dshift     = shift_nxt - shift_crt;
     const double dshift_abs = fabs (dshift);
 
-    if (dshift_abs > dshift_max) // If velocity gradient is not well-sampled enough
-    {
-        // Interpolate velocity gradient field
-        const Size        n_interpl = dshift_abs / dshift_max + 1;
-        const Size   half_n_interpl = 0.5 * n_interpl;
-        const double     dZ_interpl =     dZ_loc / n_interpl;
-        const double dshift_interpl =     dshift / n_interpl;
+    // if (dshift_abs > dshift_max) // If velocity gradient is not well-sampled enough
+    // {
+    //     // Interpolate velocity gradient field
+    //     const Size        n_interpl = dshift_abs / dshift_max + 1;
+    //     const Size   half_n_interpl = 0.5 * n_interpl;
+    //     const double     dZ_interpl =     dZ_loc / n_interpl;
+    //     const double dshift_interpl =     dshift / n_interpl;
+    //
+    //     if (n_interpl > 10000)
+    //     {
+    //         printf ("ERROR (n_intpl > 10 000) || (dshift_max < 0, probably due to overflow)\n");
+    //     }
+    //
+    //     Size startid1=id1;
+    //     // Assign current cell to first half of interpolation points
+    //     for (Size m = 1; m < half_n_interpl; m++)
+    //     {
+    //         nr   [id1] = crt;
+    //         real_pt[id1]= false;
+    //         shift[id1] = shift_crt + m*dshift_interpl;
+    //         dZ   [id2] = dZ_interpl;
+    //
+    //         id1 += increment;
+    //         id2 += increment;
+    //     }
+    //
+    //     // Assign next cell to second half of interpolation points
+    //     for (Size m = half_n_interpl; m <= n_interpl; m++)
+    //     {
+    //         nr   [id1] = nxt;
+    //         real_pt[id1]= false;
+    //         shift[id1] = shift_crt + m*dshift_interpl;
+    //         dZ   [id2] = dZ_interpl;
+    //
+    //         id1 += increment;
+    //         id2 += increment;
+    //     }
+    //     //The last point of the interpolation segment is evidently a real point
+    //     real_pt[id1-increment]=true;
+    // }
+    //
+    // else
+    // {
+    nr   [id1] = nxt;
+    real_pt[id1]= true;
+    shift[id1] = shift_nxt;
+    dZ   [id2] = dZ_loc;
 
-        if (n_interpl > 10000)
-        {
-            printf ("ERROR (n_intpl > 10 000) || (dshift_max < 0, probably due to overflow)\n");
-        }
-
-        Size startid1=id1;
-        // Assign current cell to first half of interpolation points
-        for (Size m = 1; m < half_n_interpl; m++)
-        {
-            nr   [id1] = crt;
-            real_pt[id1]= false;
-            shift[id1] = shift_crt + m*dshift_interpl;
-            dZ   [id2] = dZ_interpl;
-
-            id1 += increment;
-            id2 += increment;
-        }
-
-        // Assign next cell to second half of interpolation points
-        for (Size m = half_n_interpl; m <= n_interpl; m++)
-        {
-            nr   [id1] = nxt;
-            real_pt[id1]= false;
-            shift[id1] = shift_crt + m*dshift_interpl;
-            dZ   [id2] = dZ_interpl;
-
-            id1 += increment;
-            id2 += increment;
-        }
-        //The last point of the interpolation segment is evidently a real point
-        real_pt[id1-increment]=true;
-    }
-
-    else
-    {
-        nr   [id1] = nxt;
-        real_pt[id1]= true;
-        shift[id1] = shift_nxt;
-        dZ   [id2] = dZ_loc;
-
-        id1 += increment;
-        id2 += increment;
-    }
+    id1 += increment;
+    id2 += increment;
+    // }
 }
 
 
