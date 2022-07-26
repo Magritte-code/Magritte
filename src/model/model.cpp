@@ -436,8 +436,12 @@ int Model :: compute_Jeff ()
                     diff += lspec.lambda.get_Ls(p,k,m) * lspec.population[I];
                 }
 
-                lspec.Jeff[p][k] = lspec.Jlin[p][k] - HH_OVER_FOUR_PI * diff;
-                lspec.Jdif[p][k] = HH_OVER_FOUR_PI * diff;
+                // lspec.Jeff[p][k] = lspec.Jlin[p][k] - HH_OVER_FOUR_PI * diff;
+                // lspec.Jdif[p][k] = HH_OVER_FOUR_PI * diff;
+                lspec.Jeff[p][k] = lspec.Jlin[p][k] - diff;
+                lspec.Jdif[p][k] = diff;
+                std::cout<<"Jeff: "<<lspec.Jeff[p][k]<<std::endl;
+                std::cout<<"Jdif: "<<lspec.Jdif[p][k]<<std::endl;
             }
         })
     }
@@ -783,4 +787,3 @@ int Model :: set_dshift_max ()
 
     return (0);
 }
-

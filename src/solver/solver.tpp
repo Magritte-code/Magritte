@@ -892,10 +892,12 @@ accel inline void Solver :: update_Lambda (Model &model, const Size rr, const Si
         const Real freq_line = lspec.linedata.frequency[k];
         const Real invr_mass = lspec.linedata.inverse_mass;
         const Real constante = lspec.linedata.A[k] * lspec.quadrature.weights[z] * w_ang;
+        Real inverse_opacity = HH_OVER_FOUR_PI/model.lines.opacity (nr[centre], k); //Inverse line opacity; no longer includes 1/HH_OVER_FOUR_PI
 
-        Real frq = freqs.nu(nr[centre], f) * shift[centre];
-        Real phi = thermodyn.profile(invr_mass, nr[centre], freq_line, frq);
-        Real L   = constante * frq * phi * L_diag[centre] * inverse_chi[centre];
+        // Real frq = freqs.nu(nr[centre], f) * shift[centre];
+        // Real phi = thermodyn.profile(invr_mass, nr[centre], freq_line, frq);
+        // Real L   = constante * frq * phi * L_diag[centre] * inverse_chi[centre];
+        Real L   = constante * L_diag[centre] * inverse_opacity;
 
         lspec.lambda.add_element(nr[centre], k, nr[centre], L);
 
@@ -905,9 +907,12 @@ accel inline void Solver :: update_Lambda (Model &model, const Size rr, const Si
             {
                 const long n = centre-m-1;
 
-                frq = freqs.nu(nr[n], f) * shift[n];
-                phi = thermodyn.profile (invr_mass, nr[n], freq_line, frq);
-                L   = constante * frq * phi * L_lower(m,n) * inverse_chi[n];
+                // frq = freqs.nu(nr[n], f) * shift[n];
+                // phi = thermodyn.profile (invr_mass, nr[n], freq_line, frq);
+                // inverse_opacity = HH_OVER_FOUR_PI/model.lines.opacity (nr[n], k); //Inverse line opacity; no longer includes 1/HH_OVER_FOUR_PI
+
+                // L   = constante * frq * phi * L_lower(m,n) * inverse_chi[n];
+                L   = constante * L_lower(m,n) * inverse_opacity;
 
                 lspec.lambda.add_element(nr[centre], k, nr[n], L);
             }
@@ -916,9 +921,12 @@ accel inline void Solver :: update_Lambda (Model &model, const Size rr, const Si
             {
                 const long n = centre+m+1;
 
-                frq = freqs.nu(nr[n], f) * shift[n];
-                phi = thermodyn.profile (invr_mass, nr[n], freq_line, frq);
-                L   = constante * frq * phi * L_upper(m,n) * inverse_chi[n];
+                // frq = freqs.nu(nr[n], f) * shift[n];
+                // phi = thermodyn.profile (invr_mass, nr[n], freq_line, frq);
+                // inverse_opacity = HH_OVER_FOUR_PI/model.lines.opacity (nr[n], k); //Inverse line opacity; no longer includes 1/HH_OVER_FOUR_PI
+
+                // L   = constante * frq * phi * L_upper(m,n) * inverse_chi[n];
+                L   = constante * L_upper(m,n) * inverse_opacity;
 
                 lspec.lambda.add_element(nr[centre], k, nr[n], L);
             }
