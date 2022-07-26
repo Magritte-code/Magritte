@@ -1118,6 +1118,8 @@ inline void Solver :: match_overlapping_boundary_conditions(Model& model, const 
 
             //Set frequency derivative correctly
 
+            //Note: the actual factor with which to multiply is Δτ^2/(1-exp(-Δτ)-Δτ*exp(-Δτ)), which in the limit Δτ→0 corresponds to 2 (wait, I did forget a factor exp(-Δτ) in front due to optical depth itself)
+            //So in total, the multiplication factor is exp(-Δτ)*Δτ^2/(1-exp(-Δτ)-Δτ*exp(-Δτ))
             //Set explicit coefficents to TWICE the normal 1/Δν value (as we are only treating the explicit part)
             dIdnu_coef1_curr_()(bdy_point_on_ray_idx, bdy_freq_idx)=-2/deltafreq;
             dIdnu_coef2_curr_()(bdy_point_on_ray_idx, bdy_freq_idx)=+2/deltafreq;
@@ -1141,6 +1143,8 @@ inline void Solver :: match_overlapping_boundary_conditions(Model& model, const 
             delta_tau_()(bdy_point_on_ray_idx, bdy_freq_idx)=model.parameters->comoving_min_dtau;//should be small enough, but not small enough to crash my solver (due to /Δτ^2 necessary)
             // std::cout<<"bdy delta_tau: "<<COMOVING_MIN_DTAU<<std::endl;
             //set S? (nah just ignore the existence, as dtau≃0)
+            //In case of large doppler shifts, we might need to rethink setting dtau→0; as this will underestimate the optical depth (and influence of source)
+            //Concretely, we would need to use the optical depth of the last segment, and somehow incorporate the interpolated intensity of way earlier
 
             //pop value from iterator
             it=multimap_freq_to_bdy_index.erase(it);
@@ -1995,7 +1999,26 @@ inline void Solver :: solve_comoving_single_step (Model& model, const Size raypo
             // std::cout<<"adding: "<<lspec.quadrature.weights[z] * wt * intensities(rayposidx, freqid)<<std::endl;
             // std::cout<<"intensity: "<<intensities(rayposidx, freqid)<<std::endl;
             lspec.J(nextpointidx,k) += lspec.quadrature.weights[z] * wt * intensities(rayposidx, freqid);// Su_()[centre];
-            //TODO: compute lambda term
+
+            //Computing the ALI element
+
+            //TODO: check whether this is correct (print out Jeff, Jlin in optically thick model)
+            const Size curr_point_on_ray_index=start_indices_()(rayposidx, freqid)[0];
+            const Size curr_point_idx=nr[curr_point_on_ray_index];
+            const Size curr_freq_idx=start_indices_()(rayposidx, freqid)[1];
+            const Real curr_shift=(forward_ray) ? 2.0-shift[curr_point_on_ray_index] : shift[curr_point_on_ray_index];//absolute shift, versus static frame
+            const Real deltanu=model.radiation.frequencies.nu(nextpointidx, freqid)*next_shift-model.radiation.frequencies.nu(curr_point_idx, curr_freq_idx)*curr_shift;
+            const Real dtau=delta_tau(rayposidx, freqid);
+            const Real constant = lspec.linedata.A[k] * lspec.quadrature.weights[z] * model.geometry.rays.weight[rr];//for integrating over both frequency (weighted with profile function) and angle. We also need the einstein A coefficient
+
+            const Real source_term=(dtau+expm1(-dtau));// '/dtau' has already been applied to simplify the fraction
+            const Real lambdaterm=constant*source_term/(dtau-dIdnu_coef1_next(rayposidx, freqid)*source_term*deltanu);
+
+            // frq = freqs.nu(nr[n], f) * shift[n];
+            // phi = thermodyn.profile (invr_mass, nr[n], freq_line, frq);
+            // L   = constante * frq * phi * L_lower(m,n) * inverse_chi[n];
+
+            lspec.lambda.add_element(nextpointidx, k, nextpointidx, lambdaterm);
         }
     }
 }
