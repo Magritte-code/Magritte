@@ -259,17 +259,18 @@ accel inline void Solver :: trace_ray_points (
 
     if (geometry.valid_point(nxt))
     {
-        n_rays_through_point(rsav,nxt)++;
 
         // get distance and check if closest ray
         // TODO: maybe write optimize function which also returns the distance, as we are currently doing some minor work twice
         Real dist2 = geometry.get_dist2_ray_point(o, nxt, rdir);
-
-        if (dist2<min_ray_distsqr(rsav,nxt))
+        //If it is the first time we encounter this point, or this is the closest ray: assign this ray to compute the stuff (J, lambda) of the point
+        if (n_rays_through_point(rsav,nxt)==0||dist2<min_ray_distsqr(rsav,nxt))
         {
             min_ray_distsqr(rsav,nxt)=dist2;
             closest_ray(rsav,nxt)=rayidx;
         }
+
+        n_rays_through_point(rsav,nxt)++;
 
         Size crt = o;
 
@@ -278,16 +279,16 @@ accel inline void Solver :: trace_ray_points (
             crt =       nxt;
             nxt = geometry.get_next(o, rdir, nxt, Z, dZ);
 
-            n_rays_through_point(rsav,nxt)++;
-
             // get distance and check if closest ray
             Real dist2 = geometry.get_dist2_ray_point(o, nxt, rdir);
 
-            if (dist2<min_ray_distsqr(rsav,nxt))
+            if (n_rays_through_point(rsav,nxt)==0||dist2<min_ray_distsqr(rsav,nxt))
             {
                 min_ray_distsqr(rsav,nxt)=dist2;
                 closest_ray(rsav,nxt)=rayidx;
             }
+
+            n_rays_through_point(rsav,nxt)++;
         }
     }
 }
@@ -304,6 +305,7 @@ inline void Solver :: get_static_rays_to_trace (Model& model)
             // std::cout<<"n_rays_through_point: "<<n_rays_through_point(rr,o)<<std::endl;
             // TODO?: maybe replace with some boolean-like thing, as we do not actually care (aside from debugging)
             // how much rays are traced through a point
+            //DEBUG: commenting this out results in tracing through all points
             if (n_rays_through_point(rr,o)>0)
             {continue;}
 
@@ -317,10 +319,10 @@ inline void Solver :: get_static_rays_to_trace (Model& model)
 
             // For generality, I assign a ray index to each ray of a given direction rsav
             // Also the ray direction is identified with the forward dir
-            closest_ray(rr,o)=rr;
+            closest_ray(rr,o)=n_rays_to_trace;
             min_ray_distsqr(rr,o)=0.0;
 
-            //now trace rest of rays
+            //now trace ray through rest of model
             trace_ray_points(model.geometry, o, rr, rr, n_rays_to_trace);
             trace_ray_points(model.geometry, o, ar, rr, n_rays_to_trace);
 
@@ -342,6 +344,7 @@ inline void Solver :: get_static_rays_to_trace (Model& model)
         // std::cout<<"number of rays per point"<<std::endl;
         for (Size p=0; p<model.parameters->npoints(); p++)
         {
+            // std::cout<<"closest ray: "<<closest_ray(rr,p)<<std::endl;
             // std::cout<<"point: "<<p<<"#: "<<n_rays_through_point(rr, p)<<std::endl;
         }
 
@@ -1135,7 +1138,7 @@ inline void Solver :: match_overlapping_boundary_conditions(Model& model, const 
             dIdnu_index3_next_()(bdy_point_on_ray_idx, bdy_freq_idx)=bdy_freq_idx;
 
             //set dtau to approx 0
-            delta_tau_()(bdy_point_on_ray_idx, bdy_freq_idx)=COMOVING_MIN_DTAU;//should be small enough, but not small enough to crash my solver (due to /Δτ^2 necessary)
+            delta_tau_()(bdy_point_on_ray_idx, bdy_freq_idx)=model.parameters->comoving_min_dtau;//should be small enough, but not small enough to crash my solver (due to /Δτ^2 necessary)
             // std::cout<<"bdy delta_tau: "<<COMOVING_MIN_DTAU<<std::endl;
             //set S? (nah just ignore the existence, as dtau≃0)
 
@@ -1190,6 +1193,14 @@ inline void Solver :: set_initial_boundary_conditions(Model& model, const Size c
         S_curr_()(bdy_point_on_ray_idx, bdy_freq_idx)=bdy_intensity;
         S_next_()(bdy_point_on_ray_idx, bdy_freq_idx)=bdy_intensity;
         // std::cout<<"initial bdy intensity: "<<bdy_intensity<<std::endl;
+
+        //Hmm, if we were to compute S, Δτ (only using the last part), we might be able to get far better results in case of extreme velocity gradients (and limited quadrature points)
+        //However, this does not protect against using far too large doppler shifts... (when going back and forth, might jump into a non-computed part; however then +- bdy intensity applies either way?)
+        // Size prevpoint=start_indices_()(bdy_point_on_ray_idx, bdy_freq_idx)[0];
+        // bool compute_curr_opacity=true;
+        // Size initial_point_index=ARGUMENT
+        // compute_source_dtau<approx>(model, currpoint, nextpoint, nextlineidx, currfreq, nextfreq, shift_curr, shift_next, dZ, compute_curr_opacity, dtau, chicurr, chinext, Scurr, Snext);
+
 
         //pop value from iterator
         it=multimap_freq_to_bdy_index.erase(it);
@@ -1300,9 +1311,9 @@ inline void Solver :: comoving_ray_bdy_setup_forward(Model& model)
         //Now compute all default stuff, computing bogus for the non-matched indices (but as these correspond to boundary indices, we will overwrite this anyway)
         for (Size next_freq_idx=0; next_freq_idx<model.parameters->nfreqs(); next_freq_idx++)
         {
-            const Real nextfreq=model.radiation.frequencies.nu(nextpoint, next_freq_idx);//=comoving frame freq
+            const Real nextfreq=model.radiation.frequencies.nu(nextpoint, next_freq_idx);//=comoving frame freq at next point
             const Size curr_freq_idx=start_indices_()(rayposidx, next_freq_idx)[1];
-            const Real currfreq=model.radiation.frequencies.nu(currpoint, curr_freq_idx);//
+            const Real currfreq=model.radiation.frequencies.nu(currpoint, curr_freq_idx);//=comoving frame freq at curr point (different frame)
             //technically, we also need to read the point index from this start_indices_ (start_indices_()(rayposidx, next_freq_idx)[0]), but this should still correspond to currpoint at this moment in time
             const Size nextlineidx=model.radiation.frequencies.corresponding_line_matrix(nextpoint, next_freq_idx);
             // get_eta_and_chi<approx>(model, nextpoint, nextlineidx, nextfreq, eta_next, chi_next);//no shift necessary, as the frequencies are matched
@@ -1313,10 +1324,15 @@ inline void Solver :: comoving_ray_bdy_setup_forward(Model& model)
             compute_curr_opacity=computing_curr_opacity;
             compute_curr_opacity=true;//due to some shenanigans with the boundary conditions, I'll probably need to compute all sources, dtau's twice
             //OTHERWISE TODO: add some way to remember previous source function, dtau (if boundary condition implementation is flexible enough)
-            //needs default doppler shift defined in default direction; err, line index might also not be 100% correct; it can change easily with a large doppler shift...
-            // compute_source_dtau<approx>(model, currpoint, nextpoint, nextlineidx, currfreq, nextfreq, 2.0-shift_curr, 2.0-shift_next, dZ, compute_curr_opacity, dtau, chicurr, chinext, Scurr, Snext);
+            //needs doppler shift difference, so definition of direction does not matter; err, line index might also not be 100% correct; it can change easily with a large doppler shift...
+            //FIXME: shift to same frame! e.g. shift curr point to frame of next point for computing dtau
+            // const Real relshift=shift_curr-shift_next;//TODO: check sign; I think it needs to be the default shift computation
+            // compute_source_dtau<approx>(model, currpoint, nextpoint, nextlineidx, currfreq*relshift, nextfreq, shift_curr, shift_next, dZ, compute_curr_opacity, dtau, chicurr, chinext, Scurr, Snext);
+            compute_source_dtau<approx>(model, currpoint, nextpoint, nextlineidx, currfreq, nextfreq, shift_curr, shift_next, dZ, compute_curr_opacity, dtau, chicurr, chinext, Scurr, Snext);
             //only using the old method for computing dtau
-            compute_source_dtau<approx>(model, currpoint, nextpoint, nextlineidx, currfreq, nextfreq, 1.0, 1.0, dZ, compute_curr_opacity, dtau, chicurr, chinext, Scurr, Snext);
+            // compute_source_dtau<approx>(model, currpoint, nextpoint, nextlineidx, currfreq, nextfreq, 1.0, 1.0, dZ, compute_curr_opacity, dtau, chicurr, chinext, Scurr, Snext);
+            //using only new method for computing dtau
+            // compute_source_dtau<approx>(model, currpoint, nextpoint, nextlineidx, currfreq, nextfreq, 0.0, 1.0, dZ, compute_curr_opacity, dtau, chicurr, chinext, Scurr, Snext);
             // compute_source_dtau<approx>(model, currpoint, nextpoint, nextlineidx, currfreq, nextfreq, shift_curr, shift_next, dZ, compute_curr_opacity, dtau, chicurr, chinext, Scurr, Snext);
             //Possible optimization, only query eta/chi_curr once for each point, as the next value is the same either way when traversing through this ray
             const Size currlineidx=model.radiation.frequencies.corresponding_line_matrix(currpoint, curr_freq_idx);
@@ -1325,8 +1341,9 @@ inline void Solver :: comoving_ray_bdy_setup_forward(Model& model)
             // const Real Scurr=eta_curr/chi_curr;
             S_next_()(rayposidx, next_freq_idx)=Snext;
             S_curr_()(rayposidx, next_freq_idx)=Scurr;
-            // Floor dtau by COMOVING_MIN_DTAU, due to division by dtau^2
             // const Real dtau = std::max(trap(chi_curr, chi_next, dZ), COMOVING_MIN_DTAU);
+            // Floor dtau by COMOVING_MIN_DTAU, due to division by dtau^2
+            dtau = std::max(dtau, model.parameters->comoving_min_dtau);
             delta_tau_()(rayposidx, next_freq_idx)=dtau;
             // std::cout<<"setting dtau: "<<delta_tau_()(rayposidx, next_freq_idx)<<std::endl;
             // std::cout<<"chi_next: "<<chi_next<<std::endl;
@@ -1547,10 +1564,15 @@ inline void Solver :: comoving_ray_bdy_setup_backward(Model& model)
             compute_curr_opacity=computing_curr_opacity;
             compute_curr_opacity=true;//due to some shenanigans with the boundary conditions, I'll probably need to compute all sources, dtau's twice
             //OTHERWISE TODO: add some way to remember previous source function, dtau (if boundary condition implementation is flexible enough)
-            //needs default doppler shift defined in default direction; err, line index might also not be 100% correct; it can change easily with a large doppler shift...
-            // compute_source_dtau<approx>(model, currpoint, nextpoint, nextlineidx, currfreq, nextfreq, 2.0-shift_curr, 2.0-shift_next, dZ, compute_curr_opacity, dtau, chicurr, chinext, Scurr, Snext);
+            //needs doppler shift difference, so definition of direction does not matter; err, line index might also not be 100% correct; it can change easily with a large doppler shift...
+            //FIXME: shift to same frame! e.g. shift curr point to frame of next point for computing dtau
+            // const Real relshift=shift_curr-shift_next;//TODO: check sign; I think it needs to be the default shift computation
+            // compute_source_dtau<approx>(model, currpoint, nextpoint, nextlineidx, currfreq*relshift, nextfreq, shift_curr, shift_next, dZ, compute_curr_opacity, dtau, chicurr, chinext, Scurr, Snext);
+            compute_source_dtau<approx>(model, currpoint, nextpoint, nextlineidx, currfreq, nextfreq, shift_curr, shift_next, dZ, compute_curr_opacity, dtau, chicurr, chinext, Scurr, Snext);
             //only using the old method for computing dtau
-            compute_source_dtau<approx>(model, currpoint, nextpoint, nextlineidx, currfreq, nextfreq, 1.0, 1.0, dZ, compute_curr_opacity, dtau, chicurr, chinext, Scurr, Snext);
+            // compute_source_dtau<approx>(model, currpoint, nextpoint, nextlineidx, currfreq, nextfreq, 1.0, 1.0, dZ, compute_curr_opacity, dtau, chicurr, chinext, Scurr, Snext);
+            //using only new method for computing dtau
+            // compute_source_dtau<approx>(model, currpoint, nextpoint, nextlineidx, currfreq, nextfreq, 0.0, 1.0, dZ, compute_curr_opacity, dtau, chicurr, chinext, Scurr, Snext);
             // compute_source_dtau<approx>(model, currpoint, nextpoint, nextlineidx, currfreq, nextfreq, shift_curr, shift_next, dZ, compute_curr_opacity, dtau, chicurr, chinext, Scurr, Snext);
             //Possible optimization, only query eta/chi_curr once for each point, as the next value is the same either way when traversing through this ray
             // const Size currlineidx=model.radiation.frequencies.corresponding_line_matrix(currpoint, curr_freq_idx);
@@ -1560,8 +1582,9 @@ inline void Solver :: comoving_ray_bdy_setup_backward(Model& model)
             S_next_()(rayposidx, next_freq_idx)=Snext;
             S_curr_()(rayposidx, next_freq_idx)=Scurr;
             // std::cout<<"setting curr source: "<<Scurr<<std::endl;
-            // Floor dtau by COMOVING_MIN_DTAU, due to division by dtau^2
             // const Real dtau = std::max(trap (chi_curr, chi_next, dZ), COMOVING_MIN_DTAU);
+            // Floor dtau by COMOVING_MIN_DTAU, due to division by dtau^2
+            dtau = std::max(dtau, model.parameters->comoving_min_dtau);
             delta_tau_()(rayposidx, next_freq_idx)=dtau;
             // std::cout<<"setting dtau: "<<delta_tau_()(rayposidx, next_freq_idx)<<std::endl;
             // std::cout<<"chi_next: "<<chi_next<<std::endl;
@@ -1719,7 +1742,7 @@ inline void Solver :: solve_comoving_order_2_sparse (Model& model)
         // std::cout<<"thread id: "<<paracabs::multi_threading::thread_id()<<std::endl;
 
         //for every ray to trace
-        const Size n_rays_to_trace=points_to_trace_ray_through.size();
+        const Size n_rays_to_trace=points_to_trace_ray_through[rr].size();
         for (Size rayidx=0; rayidx<n_rays_to_trace; rayidx++)
         {
         // accelerated_for (rayidx, n_rays_to_trace,
@@ -1988,7 +2011,9 @@ inline void Solver :: solve_comoving_order_2_sparse (
 {
     const Size rr=r;
     const Size ar=model.geometry.rays.antipod[rr];
-    //FIXME: during setup, check if not spherically symmetric model!!
+
+    // std::cout<<"solving for point: "<<o<<std::endl;
+    // std::cout<<"solving for rayindex: "<<rayidx<<std::endl;
 
     // Vector<Real>& eta_c = eta_c_();//current emissivity for all freqs
     // Vector<Real>& eta_n = eta_n_();//next emissivity    for all freqs
@@ -2118,8 +2143,8 @@ inline void Solver :: solve_comoving_order_2_sparse (
     // std::cout<<"after backwards boundary thing"<<std::endl;
 
     rayposidx=last_()-1;//ray position index -> point index through nr[rayposidx]
-    //from last_()-1 to first_ index, trace the ray backwards
-    while (rayposidx>=first_())
+    //from last_()-1 to first_ index, trace the ray backwards; Warning: rayposidx is an unsigned int, so +1 necessary to both sides
+    while (rayposidx+1>=first_()+1)
     {
         const Real shift_next=shift_()[rayposidx];
         const Real shift_curr=shift_()[rayposidx+1];

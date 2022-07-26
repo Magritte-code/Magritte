@@ -326,6 +326,7 @@ PYBIND11_MODULE (core, module)
         .def_readwrite ("store_intensities",           &Parameters::store_intensities          , "Whether or not to store intensities.")
         .def_readwrite ("use_Ng_acceleration",         &Parameters::use_Ng_acceleration        , "Whether or not to use Ng acceleration.")
         .def_readwrite ("one_line_approximation",      &Parameters::one_line_approximation     , "Whether or not to use one line approximation.")
+        .def_readwrite ("comoving_min_dtau",           &Parameters::comoving_min_dtau          , "Minimum optical depth that will be assumed in the comoving solver.")
         // setters
         .def ("set_model_name",               &Parameters::set_model_name          , "Set model name.")
         .def ("set_dimension",                &Parameters::set_dimension           , "Set spatial dimension of the model.")

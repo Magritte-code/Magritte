@@ -114,7 +114,8 @@ struct Solver
     pc::multi_threading::ThreadPrivate<Matrix<Real>> S_next_;//for every point, for every frequency, storing source function; might be fiddled with to set boundary conditions
 
     // const Real COMOVING_MIN_DTAU=1.0e-14;
-    const Real COMOVING_MIN_DTAU=1.0e-12;
+    // const Real COMOVING_MIN_DTAU=1.0e-12;
+    // const Real COMOVING_MIN_DTAU=1.0e-17;
 
     //For containing the boundary conditions efficiently (for each line)
     pc::multi_threading::ThreadPrivate<Vector<std::deque<Real>>> left_bdy_deque_frequencies_;//contains the boundary frequencies
