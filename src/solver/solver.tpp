@@ -892,7 +892,9 @@ accel inline void Solver :: update_Lambda (Model &model, const Size rr, const Si
         const Real freq_line = lspec.linedata.frequency[k];
         const Real invr_mass = lspec.linedata.inverse_mass;
         const Real constante = lspec.linedata.A[k] * lspec.quadrature.weights[z] * w_ang;
-        Real inverse_opacity = HH_OVER_FOUR_PI/model.lines.opacity (nr[centre], k); //Inverse line opacity; no longer includes 1/HH_OVER_FOUR_PI
+        //Warning: does not yet work with multiple lines at the same position!!
+        // Real inverse_opacity = HH_OVER_FOUR_PI/model.lines.opacity (nr[centre], k); //Inverse line opacity; no longer includes 1/HH_OVER_FOUR_PI
+        Real inverse_opacity = 1.0/model.lines.opacity (nr[centre], k); //Inverse line opacity; includes 1/HH_OVER_FOUR_PI
 
         // Real frq = freqs.nu(nr[centre], f) * shift[centre];
         // Real phi = thermodyn.profile(invr_mass, nr[centre], freq_line, frq);
