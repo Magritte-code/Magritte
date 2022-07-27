@@ -438,10 +438,6 @@ int Model :: compute_Jeff ()
 
                 lspec.Jeff[p][k] = lspec.Jlin[p][k] - HH_OVER_FOUR_PI * diff;
                 lspec.Jdif[p][k] = HH_OVER_FOUR_PI * diff;
-                // lspec.Jeff[p][k] = lspec.Jlin[p][k] - diff;
-                // lspec.Jdif[p][k] = diff;
-                // std::cout<<"Jeff: "<<lspec.Jeff[p][k]<<std::endl;
-                // std::cout<<"Jdif: "<<lspec.Jdif[p][k]<<std::endl;
             }
         })
     }
