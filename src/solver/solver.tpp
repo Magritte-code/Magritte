@@ -914,6 +914,8 @@ accel inline void Solver :: update_Lambda (Model &model, const Size rr, const Si
                 //TODO: approximation if we do not have overlapping lines // also check which opacity we need (centre?)
                 // inverse_opacity = 1.0/model.lines.opacity (nr[n], k); //Inverse line opacity; no longer 1/HH_OVER_FOUR_PI
                 // L   = constante * L_lower(m,n) * inverse_opacity;
+                get_eta_and_chi <None>(model, nr[n], k, freq_line, eta, chi);
+                Real inverse_chi=1.0/chi;
 
                 frq = freqs.nu(nr[n], f) * shift[n];
                 phi = thermodyn.profile (invr_mass, nr[n], freq_line, frq);
@@ -929,6 +931,8 @@ accel inline void Solver :: update_Lambda (Model &model, const Size rr, const Si
                 //TODO: approximation if we do not have overlapping lines
                 // inverse_opacity = 1.0/model.lines.opacity (nr[n], k); //Inverse line opacity; no includes 1/HH_OVER_FOUR_PI
                 // L   = constante * L_upper(m,n) * inverse_opacity;
+                get_eta_and_chi <None>(model, nr[n], k, freq_line, eta, chi);
+                Real inverse_chi=1.0/chi;
 
                 frq = freqs.nu(nr[n], f) * shift[n];
                 phi = thermodyn.profile (invr_mass, nr[n], freq_line, frq);
