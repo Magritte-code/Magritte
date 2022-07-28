@@ -123,7 +123,7 @@ struct Solver
     template<ApproximationType approx>
     accel inline void compute_source_dtau (Model& model, Size currpoint, Size nextpoint, Size line, Real curr_freq, Real next_freq, double curr_shift, double next_shift, Real dZ, bool& compute_curr_opacity, Real& dtaunext, Real& chicurr, Real& chinext, Real& Scurr, Real& Snext);
 
-
+    template<ApproximationType approx>
     accel inline void update_Lambda (
               Model &model,
         const Size   rr,
