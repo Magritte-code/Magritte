@@ -277,7 +277,7 @@ inline void Solver :: solve_feautrier_order_2_sparse (Model& model)
 
                             lspec.J(o,k) += lspec.quadrature.weights[z] * wt * Su_()[centre];
 
-                            update_Lambda (model, rr, lspec.nr_line[o][k][z]);
+                            update_Lambda<approx> (model, rr, lspec.nr_line[o][k][z]);
                         }
                     }
                 }
@@ -441,7 +441,7 @@ inline void Solver :: solve_feautrier_order_2 (Model& model)
                     model.radiation.u(rr_loc,o,f)  = Su_()[centre];
                     model.radiation.J(       o,f) += Su_()[centre] * two * model.geometry.rays.weight[rr];
 
-                    update_Lambda (model, rr, f);
+                    update_Lambda<approx> (model, rr, f);
                 }
             }
             else
@@ -863,6 +863,7 @@ accel inline void Solver :: solve_shortchar_order_0 (
 }
 
 
+template<ApproximationType approx>
 accel inline void Solver :: update_Lambda (Model &model, const Size rr, const Size f)
 {
     const Frequencies    &freqs     = model.radiation.frequencies;
@@ -879,7 +880,7 @@ accel inline void Solver :: update_Lambda (Model &model, const Size rr, const Si
         Vector<Real  >& L_diag      = L_diag_     ();
         Matrix<Real  >& L_upper     = L_upper_    ();
         Matrix<Real  >& L_lower     = L_lower_    ();
-        Vector<Real  >& inverse_chi = inverse_chi_();
+        // Vector<Real  >& inverse_chi = inverse_chi_();
 
         const Real w_ang = two * model.geometry.rays.weight[rr];
 
@@ -892,10 +893,16 @@ accel inline void Solver :: update_Lambda (Model &model, const Size rr, const Si
         const Real freq_line = lspec.linedata.frequency[k];
         const Real invr_mass = lspec.linedata.inverse_mass;
         const Real constante = lspec.linedata.A[k] * lspec.quadrature.weights[z] * w_ang;
+        //TODO: approximation if we do not have overlapping lines
+        // Real inverse_opacity = 1.0/model.lines.opacity (nr[centre], k); //Inverse line opacity; includes 1/HH_OVER_FOUR_PI
+        // Real L   = constante * L_diag[centre] * inverse_opacity;
+        Real eta, chi;//eta is dummy var
+        get_eta_and_chi <approx>(model, nr[centre], k, freq_line, eta, chi);
+        Real inverse_chi=1.0/chi;
 
         Real frq = freqs.nu(nr[centre], f) * shift[centre];
         Real phi = thermodyn.profile(invr_mass, nr[centre], freq_line, frq);
-        Real L   = constante * frq * phi * L_diag[centre] * inverse_chi[centre];
+        Real L   = constante * frq * phi * L_diag[centre] * inverse_chi;
 
         lspec.lambda.add_element(nr[centre], k, nr[centre], L);
 
@@ -905,9 +912,15 @@ accel inline void Solver :: update_Lambda (Model &model, const Size rr, const Si
             {
                 const long n = centre-m-1;
 
+                //TODO: approximation if we do not have overlapping lines // also check which opacity we need (centre?)
+                // inverse_opacity = 1.0/model.lines.opacity (nr[n], k); //Inverse line opacity; no longer 1/HH_OVER_FOUR_PI
+                // L   = constante * L_lower(m,n) * inverse_opacity;
+                get_eta_and_chi <approx>(model, nr[n], k, freq_line, eta, chi);
+                Real inverse_chi=1.0/chi;
+
                 frq = freqs.nu(nr[n], f) * shift[n];
                 phi = thermodyn.profile (invr_mass, nr[n], freq_line, frq);
-                L   = constante * frq * phi * L_lower(m,n) * inverse_chi[n];
+                L   = constante * frq * phi * L_lower(m,n) * inverse_chi;
 
                 lspec.lambda.add_element(nr[centre], k, nr[n], L);
             }
@@ -916,9 +929,15 @@ accel inline void Solver :: update_Lambda (Model &model, const Size rr, const Si
             {
                 const long n = centre+m+1;
 
+                //TODO: approximation if we do not have overlapping lines
+                // inverse_opacity = 1.0/model.lines.opacity (nr[n], k); //Inverse line opacity; no includes 1/HH_OVER_FOUR_PI
+                // L   = constante * L_upper(m,n) * inverse_opacity;
+                get_eta_and_chi <approx>(model, nr[n], k, freq_line, eta, chi);
+                Real inverse_chi=1.0/chi;
+
                 frq = freqs.nu(nr[n], f) * shift[n];
                 phi = thermodyn.profile (invr_mass, nr[n], freq_line, frq);
-                L   = constante * frq * phi * L_upper(m,n) * inverse_chi[n];
+                L   = constante * frq * phi * L_upper(m,n) * inverse_chi;
 
                 lspec.lambda.add_element(nr[centre], k, nr[n], L);
             }

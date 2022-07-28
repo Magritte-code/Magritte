@@ -783,4 +783,3 @@ int Model :: set_dshift_max ()
 
     return (0);
 }
-
