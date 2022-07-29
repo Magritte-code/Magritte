@@ -50,6 +50,7 @@ struct Parameters
     Real min_rel_pop_for_convergence = 1.0e-10;
     Real pop_prec                    = 1.0e-6;
     Real min_opacity                 = 1.0e-26;
+    Real min_dtau                    = 1.0e-12;
     bool store_intensities           = false;
     bool use_Ng_acceleration         = true;
     bool one_line_approximation      = false;
