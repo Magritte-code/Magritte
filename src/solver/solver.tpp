@@ -152,43 +152,47 @@ inline void Solver :: solve_shortchar_order_0 (Model& model)
             // const Real dshift_max = get_dshift_max (o);
             // const Real dshift_max = 1.0e+99;
 
-            // solve_shortchar_order_0 (model, o, rr);
-            // solve_shortchar_order_0 (model, o, ar);
+            //approach which just accumulates the intensity contributions as the ray is traced
+
+            solve_shortchar_order_0 (model, o, rr);
+            solve_shortchar_order_0 (model, o, ar);
+
+            for (Size f = 0; f < model.parameters->nfreqs(); f++)
+            {
+                model.radiation.u(rr,o,f) = 0.5 * (model.radiation.I(rr,o,f) + model.radiation.I(ar,o,f));
+                model.radiation.v(rr,o,f) = 0.5 * (model.radiation.I(rr,o,f) - model.radiation.I(ar,o,f));
+            }
+
+            //Approach which first traces a ray
+
+            // const Real dshift_max = get_dshift_max (model, o);
             //
-            // for (Size f = 0; f < model.parameters->nfreqs(); f++)
+            // nr_   ()[centre] = o;
+            // shift_()[centre] = 1.0;
+            //
+            // first_() = trace_ray <CoMoving> (model.geometry, o, rr, dshift_max, -1, centre-1, centre-1) + 1;
+            // last_ () = trace_ray <CoMoving> (model.geometry, o, ar, dshift_max, +1, centre+1, centre  ) - 1;
+            // n_tot_() = (last_()+1) - first_();
+            //
+            // if (n_tot_() > 1)
             // {
-            //     model.radiation.u(rr,o,f) = 0.5 * (model.radiation.I(rr,o,f) + model.radiation.I(ar,o,f));
-            //     // model.radiation.v(rr,o,f) = 0.5 * (model.radiation.I(rr,o,f) - model.radiation.I(ar,o,f));
+            //     solve_shortchar_order_0_ray_forward (model, o, rr);
+            //     solve_shortchar_order_0_ray_backward (model, o, ar);
+            //
+            //     for (Size f = 0; f < model.parameters->nfreqs(); f++)
+            //     {
+            //         model.radiation.u(rr,o,f) = 0.5 * (model.radiation.I(rr,o,f) + model.radiation.I(ar,o,f));
+            //         model.radiation.v(rr,o,f) = 0.5 * (model.radiation.I(rr,o,f) - model.radiation.I(ar,o,f));
+            //     }
             // }
-
-            const Real dshift_max = get_dshift_max (model, o);
-
-            nr_   ()[centre] = o;
-            shift_()[centre] = 1.0;
-
-            first_() = trace_ray <CoMoving> (model.geometry, o, rr, dshift_max, -1, centre-1, centre-1) + 1;
-            last_ () = trace_ray <CoMoving> (model.geometry, o, ar, dshift_max, +1, centre+1, centre  ) - 1;
-            n_tot_() = (last_()+1) - first_();
-
-            if (n_tot_() > 1)
-            {
-                solve_shortchar_order_0_ray_forward (model, o, rr);
-                solve_shortchar_order_0_ray_backward (model, o, ar);
-
-                for (Size f = 0; f < model.parameters->nfreqs(); f++)
-                {
-                    model.radiation.u(rr,o,f) = 0.5 * (model.radiation.I(rr,o,f) + model.radiation.I(ar,o,f));
-                    // model.radiation.v(rr,o,f) = 0.5 * (model.radiation.I(rr,o,f) - model.radiation.I(ar,o,f));
-                }
-            }
-            else
-            {
-                for (Size f = 0; f < model.parameters->nfreqs(); f++)
-                {
-                    model.radiation.u(rr,o,f)  = boundary_intensity(model, o, model.radiation.frequencies.nu(o, f));
-                    // model.radiation.v(rr,o,f)  = 0.0;
-                }
-            }
+            // else
+            // {
+            //     for (Size f = 0; f < model.parameters->nfreqs(); f++)
+            //     {
+            //         model.radiation.u(rr,o,f)  = boundary_intensity(model, o, model.radiation.frequencies.nu(o, f));
+            //         model.radiation.v(rr,o,f)  = 0.0;
+            //     }
+            // }
         })
 
         pc::accelerator::synchronize();
@@ -866,8 +870,8 @@ accel inline void Solver :: solve_shortchar_order_0 (
         {
             crt     = nxt;
             shift_c = shift_n;
-              eta_c =   eta_n;
-              chi_c =   chi_n;
+              // eta_c =   eta_n;
+              // chi_c =   chi_n;
 
             model.geometry.get_next (o, r, crt, nxt, Z, dZ, shift_n);
             // shift_n = 2.0-shift_n;
@@ -875,6 +879,7 @@ accel inline void Solver :: solve_shortchar_order_0 (
             for (Size f = 0; f < model.parameters->nfreqs(); f++)
             {
                 source_c[f]=source_n[f];
+                chi_c[f]=chi_n[f];
                 const Real freq = model.radiation.frequencies.nu(o, f);
                 const Size l    = model.radiation.frequencies.corresponding_line[f];
 
