@@ -138,14 +138,14 @@ struct Solver
               Model& model,
         const Size   o,
         const Size   r);
-    accel inline void solve_shortchar_order_0_ray_forward (
-              Model& model,
-              const Size   o,
-              const Size   r);
-    accel inline void solve_shortchar_order_0_ray_backward (
-              Model& model,
-              const Size   o,
-              const Size   r);
+    // accel inline void solve_shortchar_order_0_ray_forward (
+    //           Model& model,
+    //           const Size   o,
+    //           const Size   r);
+    // accel inline void solve_shortchar_order_0_ray_backward (
+    //           Model& model,
+    //           const Size   o,
+    //           const Size   r);
 
     // Solvers for images
     /////////////////////
