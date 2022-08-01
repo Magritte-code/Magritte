@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 import magritte.tools    as tools
 import magritte.setup    as setup
 import magritte.core     as magritte
+import ipywidgets        as widgets
 
 
 dimension = 1
@@ -82,7 +83,7 @@ def create_model (a_or_b):
     return #magritte.Model (modelFile)
 
 
-def run_model (a_or_b, nosave=False):
+def run_model (a_or_b, nosave=False, use_widgets=True):
 
     modelName = f'density_distribution_VZ{a_or_b}_1D'
     modelFile = f'{moddir}{modelName}.hdf5'
@@ -141,26 +142,52 @@ def run_model (a_or_b, nosave=False):
     def tau (nu, r, theta):
         pref = chi * phi(nu) * r_in**2
         if (theta == 0.0):
-            return pref * (2.0/r_in - 1.0/r - 1.0/r_out)
+            return pref * (1.0/r_in - 1.0/r)
         if (theta == np.pi):
             return pref * (1.0/r - 1.0/r_out)
+        #if intersecting with the inner core
+        if (theta < np.arcsin(r_in/r)):
+            closest = r * np.sin(theta)
+            in_vertical = np.sqrt(r_in**2 - closest**2)
+            out_vertical = np.sqrt(r**2 - closest**2)
+            return pref * (np.arctan(out_vertical/closest) - np.arctan(in_vertical/closest)) / closest
         else:
+            #Other derivation: results in exactly the same error, so should be equivalent
+            # closest = r * np.sin(theta)
+            # out_vertical = np.sqrt(r_out**2 - closest**2)
+            # start_vertical = np.sqrt(r**2 - closest**2)
+            # if np.abs(theta)<np.pi/2:
+            #     return pref * (np.arctan(out_vertical/closest) + np.arctan(start_vertical/closest)) / closest
+            # else:
+            #     return pref * (np.arctan(out_vertical/closest) - np.arctan(start_vertical/closest)) / closest
+
+            #Old derivation
             factor = np.arccos(r*np.sin(theta)/r_out) + 0.5*np.pi - theta
-            # if (theta < np.arcsin(r_in/r)):
-                # factor = factor - np.arccos(r*np.sin(theta)/r_in)
             return pref / (r*np.sin(theta)) * factor
 
     def I_ (nu, r, theta):
         return src + (bdy(nu)-src)*np.exp(-tau(nu, r, theta))
 
     def u_ (nu, r, theta):
-        return 0.5 * (I_(nu, r, theta) + I_(nu, r, np.pi-theta))
+        return 0.5 * (I_(nu, r, theta) + I_(nu, r, np.pi+theta))
 
     rx, ry, rz = np.array(model.geometry.rays.direction).T
     angles     = np.arctan2(ry,rx)
     angles     = angles[:hnrays]
 
     us = np.array([[[u_(f,r,a) for f in nu] for r in rs] for a in angles])
+
+    fs = (nu-frq)/frq*magritte.CC
+    #hmm, do we need this widget if we are not plotting it?
+    def plot (r, p):
+        plt.figure(dpi=150)
+        plt.plot(fs, us  [r,p,:], marker='.')
+        plt.plot(fs, u_2f[r,p,:])
+        # plt.plot(fs, u_0s[r,p,:])
+
+    #during automated testing, the widgets only consume time to create
+    if use_widgets:
+        widgets.interact(plot, r=(0,hnrays-1,1), p=(0,npoints-1,1))
 
     error_u_0s = np.abs(tools.relative_error(us, u_0s)[:-1, :-1, :])
     error_u_2f = np.abs(tools.relative_error(us, u_2f)[:-1, :-1, :])
@@ -211,9 +238,9 @@ def run_model (a_or_b, nosave=False):
     #setting 'b' not yet used for testing
     if a_or_b == 'a':
         #error bounds are chosen somewhat arbitrarily, based on previously obtained results; this should prevent serious regressions.
-        FEAUTRIER_AS_EXPECTED=(np.mean(error_u_2f)<0.05)
+        FEAUTRIER_AS_EXPECTED=(np.mean(error_u_2f)<3e-4)
         #not that well implmented, so less accurate
-        FIRSTORDER_AS_EXPECTED=(np.mean(error_u_0s)<0.1)
+        FIRSTORDER_AS_EXPECTED=(np.mean(error_u_0s)<0.015)
 
         if not FIRSTORDER_AS_EXPECTED:
             print("First order solver mean error too large: ", np.mean(error_u_0s))
