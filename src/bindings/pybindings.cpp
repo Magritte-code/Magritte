@@ -352,6 +352,10 @@ PYBIND11_MODULE (core, module)
         .def ("read",                         &Parameters::read                    , "Rread object from file.")
         .def ("write",                        &Parameters::write                   , "Write object to file.");
 
+    // Cooling
+    py::class_<Cooling> (module, "Cooling", "Class containing cooling information.")
+        // attributes
+        .def_readonly ("cooling_rate", &Cooling::cooling_rate, "Array containing the computed cooling rates for each point")
 
     // Geometry
     py::class_<Geometry> (module, "Geometry", "Class containing the model geometry.")
