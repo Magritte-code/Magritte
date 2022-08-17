@@ -33,7 +33,7 @@ class TestAnalytic:
             density_dist_setup('a')
 
         def test_density_distribution1D_run(self):
-            assert density_dist_run('a', nosave=True)
+            assert density_dist_run('a', nosave=True, use_widgets=False)
 
     @pytest.mark.incremental
     class TestDensityDistribution1DImage:
