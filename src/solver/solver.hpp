@@ -21,6 +21,9 @@ struct Solver
     pc::multi_threading::ThreadPrivate<Vector<Real>> chi_c_;
     pc::multi_threading::ThreadPrivate<Vector<Real>> chi_n_;
 
+    pc::multi_threading::ThreadPrivate<Vector<Real>> source_c_;
+    pc::multi_threading::ThreadPrivate<Vector<Real>> source_n_;
+
     pc::multi_threading::ThreadPrivate<Vector<Real>> inverse_chi_;
 
     pc::multi_threading::ThreadPrivate<Vector<Real>> tau_;
@@ -135,7 +138,14 @@ struct Solver
               Model& model,
         const Size   o,
         const Size   r);
-
+    // accel inline void solve_shortchar_order_0_ray_forward (
+    //           Model& model,
+    //           const Size   o,
+    //           const Size   r);
+    // accel inline void solve_shortchar_order_0_ray_backward (
+    //           Model& model,
+    //           const Size   o,
+    //           const Size   r);
 
     // Solvers for images
     /////////////////////
