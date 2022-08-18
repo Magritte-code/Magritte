@@ -245,19 +245,13 @@ def run_model (nosave=False, benchindex=0, use_widgets=True):
     FIRSTORDER_AS_EXPECTED=True
     #if we are actually doing benchmarks, the accuracy will depend on how accurately we compute the optical depth
     if (benchindex==1):
-        #feautrier should be quite accurate
         FEAUTRIER_AS_EXPECTED=(np.mean(error_u_2f)<1e-6)
-        #somewhat less accurate solver
-        FIRSTORDER_AS_EXPECTED=(np.mean(error_u_0s)<1.5e-5)
+        FIRSTORDER_AS_EXPECTED=(np.mean(error_u_0s)<1e-6)
     elif(benchindex==2):
-        #feautrier should be quite accurate
         FEAUTRIER_AS_EXPECTED=(np.mean(error_u_2f)<5e-7)
-        #somewhat less accurate solver
-        FIRSTORDER_AS_EXPECTED=(np.mean(error_u_0s)<8e-6)
+        FIRSTORDER_AS_EXPECTED=(np.mean(error_u_0s)<5e-7)
     elif(benchindex==3):
-        #feautrier should be quite accurate
-        FEAUTRIER_AS_EXPECTED=(np.mean(error_u_2f)<1.5e-8)
-        #somewhat less accurate solver
+        FEAUTRIER_AS_EXPECTED=(np.mean(error_u_2f)<1.1e-8)
         FIRSTORDER_AS_EXPECTED=(np.mean(error_u_0s)<2e-8)
 
     if not FIRSTORDER_AS_EXPECTED:
@@ -268,10 +262,10 @@ def run_model (nosave=False, benchindex=0, use_widgets=True):
     return (FEAUTRIER_AS_EXPECTED&FIRSTORDER_AS_EXPECTED)
 
 
-def run_test (nosave=False, max_width_fraction=0.35):
+def run_test (nosave=False):
 
-    create_model     ()
-    run_model (nosave, max_width_fraction)
+    create_model    ()
+    run_model (nosave)
 
     return
 

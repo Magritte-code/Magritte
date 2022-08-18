@@ -138,8 +138,8 @@ def run_model (a_or_b, nosave=False):
     def u_ (x):
         return 0.5 * (I_0(x) + I_1(x))
 
-    error_u_0s = tools.relative_error (u_(x), u_0s[0,:,0])
-    error_u_2f = tools.relative_error (u_(x), u_2f[0,:,0])
+    error_u_0s = np.abs(tools.relative_error (u_(x), u_0s[0,:,0]))
+    error_u_2f = np.abs(tools.relative_error (u_(x), u_2f[0,:,0]))
 
     result  = f'--- Benchmark name ----------------------------\n'
     result += f'{modelName                                    }\n'
@@ -150,7 +150,9 @@ def run_model (a_or_b, nosave=False):
     result += f'nquads    = {model.parameters.nquads   ()     }\n'
     result += f'--- Accuracy ----------------------------------\n'
     result += f'max error in shortchar 0 = {np.max(error_u_0s)}\n'
+    result += f'mean error in shortchar 0 = {np.mean(error_u_0s)}\n'
     result += f'max error in feautrier 2 = {np.max(error_u_2f)}\n'
+    result += f'mean error in feautrier 2 = {np.mean(error_u_2f)}\n'
     result += f'--- Timers ------------------------------------\n'
     result += f'{timer1.print()                               }\n'
     result += f'{timer2.print()                               }\n'

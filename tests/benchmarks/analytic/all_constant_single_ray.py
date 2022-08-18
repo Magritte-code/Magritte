@@ -123,8 +123,8 @@ def run_model (nosave=False):
     def u_ (x):
         return 0.5 * (I_0(x) + I_1(x))
 
-    error_u_0s = tools.relative_error (u_(x), u_0s[0,:,0])
-    error_u_2f = tools.relative_error (u_(x), u_2f[0,:,0])
+    error_u_0s = np.abs(tools.relative_error (u_(x), u_0s[0,:,0]))
+    error_u_2f = np.abs(tools.relative_error (u_(x), u_2f[0,:,0]))
 
     result  = f'--- Benchmark name ----------------------------\n'
     result += f'{modelName                                    }\n'
@@ -166,10 +166,8 @@ def run_model (nosave=False):
     #error should at max be proportional to max diff? only maybe for testing non analytic models
 
     #error bounds are chosen somewhat arbitrarily, based on previously obtained results; this should prevent serious regressions.
-    #feautrier should be quite accurate, so we take 1e-5 as maximal max error
-    FEAUTRIER_AS_EXPECTED=(np.max(error_u_2f)<1e-5)
-    #not that well implmented, so less accurate
-    FIRSTORDER_AS_EXPECTED=(np.max(error_u_0s)<0.1)
+    FEAUTRIER_AS_EXPECTED=(np.max(error_u_2f)<1.7e-4)
+    FIRSTORDER_AS_EXPECTED=(np.max(error_u_0s)<6.0e-9)
 
     if not FIRSTORDER_AS_EXPECTED:
         print("First order solver max error too large: ", np.max(error_u_0s))
