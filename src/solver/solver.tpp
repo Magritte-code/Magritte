@@ -692,7 +692,7 @@ accel inline Real Solver :: gaussian (const Real inverse_width, const Real diff)
 {
     const Real sqrt_exp = inverse_width * diff;
 
-    return inverse_width * INVERSE_SQRT_PI * exp (-sqrt_exp*sqrt_exp);
+    return inverse_width * INVERSE_SQRT_PI * expf (-sqrt_exp*sqrt_exp);
 }
 
 
@@ -703,7 +703,7 @@ accel inline Real Solver :: gaussian (const Real inverse_width, const Real diff)
 ///////////////////////////////////////////////////////////////////////////
 accel inline Real Solver :: planck (const Real temp, const Real freq) const
 {
-    return TWO_HH_OVER_CC_SQUARED * (freq*freq*freq) / expm1 (HH_OVER_KB*freq/temp);
+    return TWO_HH_OVER_CC_SQUARED * (freq*freq*freq) / expm1f (HH_OVER_KB*freq/temp);
 }
 
 
@@ -842,7 +842,7 @@ accel inline void Solver :: solve_shortchar_order_0 (
             // model.radiation.I(r,o,f) = term_c * (expm1(-dtau)+dtau) / dtau
             //                          + term_n * (-expm1(-dtau)-dtau*expf(-dtau)) /dtau;
             //Rewrite, trying to use less exponentials
-            const Real factor = expm1(-dtau)/dtau;
+            const Real factor = expm1f(-dtau)/dtau;
 
             model.radiation.I(r,o,f) = factor*(source_c[f]-source_n[f]*(1.0+dtau))
                                      + source_c[f] - source_n[f];
@@ -893,8 +893,8 @@ accel inline void Solver :: solve_shortchar_order_0 (
                 //                          ( term_c * (expm1(-dtau)+dtau) / dtau
                 //                          + term_n * (-expm1(-dtau)-dtau*expf(-dtau)) /dtau);
                 //Rewrite, trying to use less exponentials
-                model.radiation.I(r,o,f) += std::exp(-tau[f]) *
-                                           (expm1(-dtau)/dtau*(source_c[f]-source_n[f]*(1.0+dtau))
+                model.radiation.I(r,o,f) += expf(-tau[f]) *
+                                           (expm1f(-dtau)/dtau*(source_c[f]-source_n[f]*(1.0+dtau))
                                            + source_c[f] - source_n[f]);
                 //TODO: check order of addition, as we might be starting with the largest contributions, before adding the smaller ones...
                 tau[f] += dtau;
@@ -1480,7 +1480,7 @@ inline Real Solver :: compute_dtau_single_line(Model& model, Size curridx, Size 
 
     //If we instead use an average opacity, the computation is quite a bit faster
     const Real average_opacity=(next_line_opacity+curr_line_opacity)/2.0;
-    const Real erfterm=average_opacity/diff_pos/2.0*(std::erf(next_pos)-std::erf(curr_pos));
+    const Real erfterm=average_opacity/diff_pos/2.0*(std::erff(next_pos)-std::erff(curr_pos));
     //correcting to bound opacity from below to the minimum opacity (assumes positive opacities occuring in the model)
     return dz*(average_inverse_line_width*erfterm+model.parameters->min_opacity);
 

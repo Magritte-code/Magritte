@@ -216,10 +216,10 @@ def run_model (nosave=False, benchindex=0, use_widgets=True):
     elif(benchindex==2):
         FEAUTRIER_AS_EXPECTED=(np.max(error)<8e-6)
     elif(benchindex==3):
-        FEAUTRIER_AS_EXPECTED=(np.max(error)<2e-8)
+        FEAUTRIER_AS_EXPECTED=(np.max(error)<3.5e-7)
 
     if not FEAUTRIER_AS_EXPECTED:
-        print("Feautrier solver mean error too large: ", np.mean(error_u_2f), "bench nr: ", benchindex)
+        print("Feautrier solver max error too large: ", np.max(error), "bench nr: ", benchindex)
 
     return (FEAUTRIER_AS_EXPECTED)
 
