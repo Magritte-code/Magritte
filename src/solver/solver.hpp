@@ -159,16 +159,16 @@ struct Solver
     accel inline void image_optical_depth (Model& model, const Size o, const Size f);
 
 
-    //TEMPLATE PARAMS for Feautrier solver
+    // TEMPLATE PARAMS for Feautrier solver
     // IS_SPARSE: denotes whether to use the sparse version (no longer computing I and the mean intensity at each freq, but directly storing into the mean line intensity)
     // COMPUTE_LAMBDA: denotes whether to compute the lambda elements
     // COMPUTE_UV: denotes whether to also compute v (the intensity flux)
     // COMPUTE_ANIS: denotes whether to store anisotropic values
-    // ?COMPUTE_J:? denotes whether to compute the mean intensity; err, we will compute it either way (but store in a different location depending on whether we use a sparse solver)
     // probably needs some dependency management; based on whether the solver is sparse
     // -uv -> not sparse
     // -lambda -> both possible
     // -anis -> sparse
+    // -uv-> no lambda computation
     // Later: compute_cooling? TODO: decide on whether to support sparse solvers
     // Later: also do the same for shortchar?
 

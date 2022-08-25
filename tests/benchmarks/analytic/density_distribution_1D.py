@@ -114,27 +114,11 @@ def run_model (a_or_b, nosave=False, use_widgets=True):
     timer3.stop()
     u_0s = np.array(model.radiation.u)
 
-    timer6 = tools.Timer('feautrier 2 uv ')
-    timer6.start()
-    model.compute_radiation_field_feautrier_order_2_uv ()
-    timer6.stop()
-    u_uv= np.array(model.radiation.u)
-
     timer4 = tools.Timer('feautrier 2  ')
     timer4.start()
     model.compute_radiation_field_feautrier_order_2 ()
     timer4.stop()
     u_2f = np.array(model.radiation.u)
-
-    timer5 = tools.Timer('feautrier 2 anis ')
-    timer5.start()
-    model.compute_radiation_field_feautrier_order_2_anis ()
-    timer5.stop()
-
-    timer7 = tools.Timer('feautrier 2 sparse ')
-    timer7.start()
-    model.compute_radiation_field_feautrier_order_2_sparse ()
-    timer7.stop()
 
     rs = np.array(model.geometry.points.position)[:,0]
     nu = np.array(model.radiation.frequencies.nu)[0]
@@ -202,12 +186,11 @@ def run_model (a_or_b, nosave=False, use_widgets=True):
         # plt.plot(fs, u_0s[r,p,:])
 
     #during automated testing, the widgets only consume time to create
-    # if use_widgets:
-        # widgets.interact(plot, r=(0,hnrays-1,1), p=(0,npoints-1,1))
+    if use_widgets:
+        widgets.interact(plot, r=(0,hnrays-1,1), p=(0,npoints-1,1))
 
     error_u_0s = np.abs(tools.relative_error(us, u_0s)[:-1, :-1, :])
     error_u_2f = np.abs(tools.relative_error(us, u_2f)[:-1, :-1, :])
-    error_u_uv = np.abs(tools.relative_error(us, u_uv)[:-1, :-1, :])
 
     log_err_min = np.log10(np.min([error_u_0s, error_u_2f]))
     log_err_max = np.log10(np.max([error_u_0s, error_u_2f]))
@@ -224,39 +207,33 @@ def run_model (a_or_b, nosave=False, use_widgets=True):
     result += f'--- Accuracy ------------------------------------\n'
     result += f'mean error in shortchar 0 = {np.mean(error_u_0s)}\n'
     result += f'mean error in feautrier 2 = {np.mean(error_u_2f)}\n'
-    result += f'mean error in feautrier uv= {np.mean(error_u_uv)}\n'
     result += f'--- Timers --------------------------------------\n'
     result += f'{timer1.print()                                 }\n'
     result += f'{timer2.print()                                 }\n'
     result += f'{timer3.print()                                 }\n'
     result += f'{timer4.print()                                 }\n'
-    result += f'{timer5.print()                                 }\n'
-    result += f'{timer6.print()                                 }\n'
-    result += f'{timer7.print()                                 }\n'
     result += f'-------------------------------------------------\n'
 
     print(result)
 
     if not nosave:
-        # with open(f'{resdir}{modelName}-{timestamp}.log' ,'w') as log:
-        #     log.write(result)
+        with open(f'{resdir}{modelName}-{timestamp}.log' ,'w') as log:
+            log.write(result)
 
         plt.figure()
         plt.title(modelName)
         plt.hist(error_u_0s.ravel(), bins=bins, histtype='step', label='0s')
         plt.hist(error_u_2f.ravel(), bins=bins, histtype='step', label='2f')
-        plt.hist(error_u_uv.ravel(), bins=bins, histtype='step', label='uv')
         plt.xscale('log')
         plt.legend()
-        plt.show()
-        # plt.savefig(f'{resdir}{modelName}_hist-{timestamp}.png', dpi=150)
+        plt.savefig(f'{resdir}{modelName}_hist-{timestamp}.png', dpi=150)
 
         plt.figure()
         plt.hist(error_u_0s.ravel(), bins=bins, histtype='step', label='0s', cumulative=True)
         plt.hist(error_u_2f.ravel(), bins=bins, histtype='step', label='2f', cumulative=True)
         plt.xscale('log')
         plt.legend()
-        # plt.savefig(f'{resdir}{modelName}_cumu-{timestamp}.png', dpi=150)
+        plt.savefig(f'{resdir}{modelName}_cumu-{timestamp}.png', dpi=150)
 
     #setting 'b' not yet used for testing
     if a_or_b == 'a':

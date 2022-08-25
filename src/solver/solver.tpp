@@ -205,6 +205,7 @@ inline void Solver :: solve_feautrier_order_2 (Model& model)
     // A few things do currently not make sense, as not everything is implemented in case of sparse/non-sparse solvers
     static_assert(!((!IS_SPARSE)&&(COMPUTE_ANIS)), "Anisotropy not implemented in non-sparse solver.");
     static_assert(!((IS_SPARSE)&&(COMPUTE_UV)), "Computing v not implemented in sparse solver.");
+    static_assert(!((COMPUTE_UV)&&(COMPUTE_LAMBDA)), "Computing lambda elements not implemented in uv solver.");
 
     ///Intialization for the feautrier solvers
     //Lambda elements need to be cleared before every computation (otherwise we might accidentally sum then with the previous iteration lambda elements)
@@ -2044,6 +2045,8 @@ accel inline void Solver :: solve_feautrier_order_2_uv (Model& model, const Size
     Vector<Real>& C         = C_        ();
     Vector<Real>& inverse_A = inverse_A_();
     Vector<Real>& inverse_C = inverse_C_();
+
+    //a bit fewer vectors are defined than in the default case
 
     Vector<Real>& FF = FF_();
     Vector<Real>& FI = FI_();
