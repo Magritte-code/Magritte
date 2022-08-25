@@ -199,6 +199,250 @@ inline void Solver :: solve_shortchar_order_0 (Model& model)
     model.radiation.J.copy_ptr_to_vec();
 }
 
+template<ApproximationType approx, bool IS_SPARSE, bool COMPUTE_UV, bool COMPUTE_ANIS, bool COMPUTE_LAMBDA>
+inline void Solver :: solve_feautrier_order_2 (Model& model)
+{
+    // A few things do currently not make sense, as not everything is implemented in case of sparse/non-sparse solvers
+    static_assert(!((!IS_SPARSE)&&(COMPUTE_ANIS)), "Anisotropy not implemented in non-sparse solver.");
+    static_assert(!((IS_SPARSE)&&(COMPUTE_UV)), "Computing v not implemented in sparse solver.");
+
+    ///Intialization for the feautrier solvers
+    //Lambda elements need to be cleared before every computation (otherwise we might accidentally sum then with the previous iteration lambda elements)
+    if constexpr(COMPUTE_LAMBDA)
+    {
+        for (auto &lspec : model.lines.lineProducingSpecies) {lspec.lambda.clear();}
+    }else{}
+
+    if constexpr(IS_SPARSE)
+    {
+        //Initialise values for the anisotropic solver
+        if constexpr(COMPUTE_ANIS)
+        {
+            for (LineProducingSpecies &lspec : model.lines.lineProducingSpecies)
+            {
+                lspec.J      .resize(model.parameters->npoints(), lspec.linedata.nrad);
+                lspec.J2_0   .resize(model.parameters->npoints(), lspec.linedata.nrad);
+                lspec.J2_1_Re.resize(model.parameters->npoints(), lspec.linedata.nrad);
+                lspec.J2_1_Im.resize(model.parameters->npoints(), lspec.linedata.nrad);
+                lspec.J2_2_Re.resize(model.parameters->npoints(), lspec.linedata.nrad);
+                lspec.J2_2_Im.resize(model.parameters->npoints(), lspec.linedata.nrad);
+                threaded_for (o, model.parameters->npoints(),
+                {
+                    for (Size k = 0; k < lspec.linedata.nrad; k++)
+                    {
+                        lspec.J       (o,k) = 0.0;
+                        lspec.J2_0    (o,k) = 0.0;
+                        lspec.J2_1_Re (o,k) = 0.0;
+                        lspec.J2_1_Im (o,k) = 0.0;
+                        lspec.J2_2_Re (o,k) = 0.0;
+                        lspec.J2_2_Im (o,k) = 0.0;
+                    }
+                })
+            }
+        }
+        else
+        {
+            // Initialise variables for simple sparse solver
+            for (LineProducingSpecies &lspec : model.lines.lineProducingSpecies)
+            {
+                lspec.J.resize(model.parameters->npoints(), lspec.linedata.nrad);
+
+                threaded_for (o, model.parameters->npoints(),
+                {
+                    for (Size k = 0; k < lspec.linedata.nrad; k++)
+                    {
+                        lspec.J(o,k) = 0.0;
+                    }
+                })
+            }
+        }
+    }
+    else
+    {
+        //for the non-sparse solvers
+        if constexpr(COMPUTE_UV)
+        {
+            //initialization for the uv solver
+            // Allocate memory if not pre-allocated
+            if (!model.parameters->store_intensities)
+            {
+                model.radiation.u.resize (model.parameters->hnrays(), model.parameters->npoints(), model.parameters->nfreqs());
+                model.radiation.v.resize (model.parameters->hnrays(), model.parameters->npoints(), model.parameters->nfreqs());
+            }
+        }
+        else
+        {
+            //initialization for the simplest feautrier solver
+            // Allocate memory if not pre-allocated
+            if (!model.parameters->store_intensities)
+            {
+                model.radiation.u.resize (model.parameters->hnrays(), model.parameters->npoints(), model.parameters->nfreqs());
+                model.radiation.J.resize (                            model.parameters->npoints(), model.parameters->nfreqs());
+            }
+
+            // Initialise mean intensity
+            model.radiation.initialize_J();
+        }
+    }
+
+    /// Solving the transfer equation for each ray
+    for (Size rr = 0; rr < model.parameters->hnrays(); rr++)
+    {
+        const Size ar = model.geometry.rays.antipod[rr];//index of antipod ray
+
+        //c++ being annoying again: constexpr if does introduce local scopes, so I cannot just conditionally declares these variables...
+        //But at the same time, it takes almost no time to compute them (and in the base case, the compiler optimizes them away)
+        // IDEALLY, something like this would be valid c++ for predefining these variables
+        // if constexpr(IS_SPARSE)
+        // {
+        //     //angular weights for the sparse solvers
+        //     const Real wt = model.geometry.rays.weight[rr];//TODO: check if this is the correct weight for the angle
+        //     if constexpr(COMPUTE_ANIS)//anisotropic solver needs some extra weights
+        //     {
+        //         const Vector3D nn = model.geometry.rays.direction[rr];
+        //         const Real wt_0    =     inv_sqrt2 * (three * nn.z() * nn.z() - one);
+        //         const Real wt_1_Re =        -sqrt3 *          nn.x() * nn.z();
+        //         const Real wt_1_Im =        -sqrt3 *          nn.y() * nn.z();
+        //         const Real wt_2_Re =  half * sqrt3 * (nn.x() * nn.x() - nn.y() * nn.y());
+        //         const Real wt_2_Im =         sqrt3 *          nn.x() * nn.y();
+        //     }
+        //     else{}
+        // }else{}
+
+        //Angular weights for the sparse solvers
+        const Real wt      = model.geometry.rays.weight[rr];//TODO: check if this is the correct weight for the angle
+        const Vector3D nn  = model.geometry.rays.direction[rr];
+        const Real wt_0    =     inv_sqrt2 * (three * nn.z() * nn.z() - one);
+        const Real wt_1_Re =        -sqrt3 *          nn.x() * nn.z();
+        const Real wt_1_Im =        -sqrt3 *          nn.y() * nn.z();
+        const Real wt_2_Re =  half * sqrt3 * (nn.x()* nn.x() - nn.y() * nn.y());
+        const Real wt_2_Im =         sqrt3 *          nn.x() * nn.y();
+
+
+        cout << "--- rr = " << rr << endl;
+
+        for (LineProducingSpecies &lspec : model.lines.lineProducingSpecies)
+        {
+            threaded_for (o, model.parameters->npoints(),
+            {
+                const Real dshift_max = get_dshift_max (model, o);
+
+                nr_   ()[centre] = o;
+                shift_()[centre] = 1.0;
+
+                first_() = trace_ray <CoMoving> (model.geometry, o, rr, dshift_max, -1, centre-1, centre-1) + 1;
+                last_ () = trace_ray <CoMoving> (model.geometry, o, ar, dshift_max, +1, centre+1, centre  ) - 1;
+                n_tot_() = (last_()+1) - first_();
+
+                //for the sparse solvers, we iterate over the lines and their quadrature elements
+                if constexpr(IS_SPARSE)
+                {
+                    if (n_tot_() > 1)
+                    {
+                        for (Size k = 0; k < lspec.linedata.nrad; k++)
+                        {
+                            // Integrate over the line
+                            for (Size z = 0; z < model.parameters->nquads(); z++)
+                            {
+                                //default feautrier solver is used for sparse solvers
+                                solve_feautrier_order_2 <approx> (model, o, lspec.nr_line[o][k][z]);
+                                const Real du = lspec.quadrature.weights[z] * wt * Su_()[centre];
+                                //For the sparse solvers, we need to compute J (lmean line intensity)
+                                lspec.J (o,k) += two * du;
+                                if constexpr(COMPUTE_ANIS)
+                                {
+                                    lspec.J2_0    (o,k) += wt_0    * du;
+                                    lspec.J2_1_Re (o,k) += wt_1_Re * du;
+                                    lspec.J2_1_Im (o,k) += wt_1_Im * du;
+                                    lspec.J2_2_Re (o,k) += wt_2_Re * du;
+                                    lspec.J2_2_Im (o,k) += wt_2_Im * du;
+                                }
+                                else{}
+
+                                //after the solver has done its computations on a single ray, we can compute the lambda values
+                                if constexpr(COMPUTE_LAMBDA)
+                                {
+                                    update_Lambda<approx> (model, rr, lspec.nr_line[o][k][z]);
+                                }else{}
+                            }
+                        }
+                    }
+                    else
+                    {
+                        //In case we need a boundary condition for a ray with a single point
+                        for (Size k = 0; k < lspec.linedata.nrad; k++)
+                        {
+                            // Integrate over the line
+                            for (Size z = 0; z < model.parameters->nquads(); z++)
+                            {
+                                const Real du = lspec.quadrature.weights[z] * wt * boundary_intensity(model, o, model.radiation.frequencies.nu(o, lspec.nr_line[o][k][z]));
+                                //For the sparse solvers, we need to compute J (lmean line intensity)
+                                lspec.J (o,k) += two * du;
+                                if constexpr(COMPUTE_ANIS)
+                                {
+                                    lspec.J2_0    (o,k) += wt_0    * du;
+                                    lspec.J2_1_Re (o,k) += wt_1_Re * du;
+                                    lspec.J2_1_Im (o,k) += wt_1_Im * du;
+                                    lspec.J2_2_Re (o,k) += wt_2_Re * du;
+                                    lspec.J2_2_Im (o,k) += wt_2_Im * du;
+                                }
+                                else{}
+                            }
+                        }
+                    }
+                }
+                //for the non-sparse solvers, we iterate over all frequencies instead
+                else
+                {
+                    if (n_tot_() > 1)
+                    {
+                        for (Size f = 0; f < model.parameters->nfreqs(); f++)
+                        {
+                            if constexpr(COMPUTE_UV)
+                            {
+                                solve_feautrier_order_2_uv <approx> (model, o, f);
+
+                                model.radiation.u(rr,o,f)  = Su_()[centre];
+                                model.radiation.v(rr,o,f)  = Sv_()[centre];
+                            }
+                            else
+                            {
+                                solve_feautrier_order_2 <approx> (model, o, f);
+
+                                model.radiation.u(rr,o,f)  = Su_()[centre];
+                                model.radiation.J(   o,f) += Su_()[centre] * two * model.geometry.rays.weight[rr];
+                            }
+
+                            //after the solver has done its computations on a single ray, we can compute the lambda values
+                            if constexpr(COMPUTE_LAMBDA)
+                            {
+                                update_Lambda<approx> (model, rr, f);
+                            }else{};
+                        }
+                    }
+                    else
+                    {
+                        for (Size f = 0; f < model.parameters->nfreqs(); f++)
+                        {
+                            model.radiation.u(rr,o,f)  = boundary_intensity(model, o, model.radiation.frequencies.nu(o, f));
+                            if constexpr(COMPUTE_UV)
+                            {
+                                model.radiation.v(rr,o,f)  = 0.0;
+                            }
+                            else
+                            {
+                                model.radiation.J(o,f) += two * model.geometry.rays.weight[rr] * model.radiation.u(rr,o,f);
+                            }
+                        }
+                    }
+                }
+            })
+        }
+    }
+
+    /// Post-processing // only necessary if we decide to readd a distributed_for loop
+}
+
 
 template<ApproximationType approx>
 inline void Solver :: solve_feautrier_order_2_uv (Model& model)

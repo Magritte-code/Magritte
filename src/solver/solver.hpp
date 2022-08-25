@@ -159,6 +159,23 @@ struct Solver
     accel inline void image_optical_depth (Model& model, const Size o, const Size f);
 
 
+    //TEMPLATE PARAMS for Feautrier solver
+    // IS_SPARSE: denotes whether to use the sparse version (no longer computing I and the mean intensity at each freq, but directly storing into the mean line intensity)
+    // COMPUTE_LAMBDA: denotes whether to compute the lambda elements
+    // COMPUTE_UV: denotes whether to also compute v (the intensity flux)
+    // COMPUTE_ANIS: denotes whether to store anisotropic values
+    // ?COMPUTE_J:? denotes whether to compute the mean intensity; err, we will compute it either way (but store in a different location depending on whether we use a sparse solver)
+    // probably needs some dependency management; based on whether the solver is sparse
+    // -uv -> not sparse
+    // -lambda -> both possible
+    // -anis -> sparse
+    // Later: compute_cooling? TODO: decide on whether to support sparse solvers
+    // Later: also do the same for shortchar?
+
+
+    template <ApproximationType approx, bool IS_SPARSE, bool COMPUTE_UV, bool COMPUTE_ANIS, bool COMPUTE_LAMBDA>
+    accel inline void solve_feautrier_order_2 (Model& model);
+
     // Solvers only computing u
     ///////////////////////////
     template <ApproximationType approx>
@@ -169,6 +186,7 @@ struct Solver
 
     template <ApproximationType approx>
     accel inline void solve_feautrier_order_2_anis (Model& model);
+    //stuff above will get refactored
 
     template <ApproximationType approx>
     accel inline void solve_feautrier_order_2 (Model& model, const Size o, const Size f);
