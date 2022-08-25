@@ -860,9 +860,14 @@ accel inline void Solver :: solve_shortchar_order_0 (
             const Real invr_mass = lspec.linedata.inverse_mass;
             const Real constante = lspec.linedata.A[k] * lspec.quadrature.weights[z] * w_ang;
 
-            Real inverse_chi=1.0/chi_c[f];
+            Real eta, chi;//eta is dummy var
+            //chi is not necessarily computed, so compute it to be sure
+            get_eta_and_chi <None>(model, o, k, freq_line, eta, chi);
+            Real inverse_chi=1.0/chi;
             Real phi = model.thermodynamics.profile(invr_mass, o, freq_line, freq);
-            Real L   = constante * freq * phi * (factor + 1.0) * inverse_chi;
+            // const Real lambda_factor = (dtau+expm1f(-dtau))/dtau;// If one wants to compute lambda a bit more accurately in case of dtau≃0.
+            // Real L   = constante * freq * phi * lambda_factor * inverse_chi;
+            Real L   = constante * freq * phi * (factor + 1.0) * inverse_chi;//using factor+1.0, the computed lambda elements can be negative if dtau very small; but then the lambda elements are also negligible
             lspec.lambda.add_element(o, k, o, L);
 
             //TODO: possible nonlocal lambda part // FIXME: probably incorrect chi used
@@ -1216,7 +1221,7 @@ inline void Solver :: compute_S_dtau_line_integrated <None> (Model& model, Size 
     //note: due to interaction with dtau when computing all sources individually, we do need to recompute Scurr and Snext for all position increments
 }
 
-/// Computes the opacity and optical depth in a hybrid manner
+/// Computes the source function and optical depth in a hybrid manner
 ///    @param[in/out] compute_curr_opacity: for deciding whether we need to compute the current opacity when using the trapezoidal rule
 ///    @param[in] currpoint : index of current point
 ///    @param[in] nextpoint : index of next point
@@ -1229,6 +1234,7 @@ inline void Solver :: compute_S_dtau_line_integrated <None> (Model& model, Size 
 ///    @param[out] dtau : optical depth increment to compute
 ///    @param[out] Scurr : source function at current point to compute
 ///    @param[out] Snext : source function at next point to compute
+/// Warning: depending on how large the doppler shift is, the opacity is NOT computed.
 template<ApproximationType approx>
 accel inline void Solver :: compute_source_dtau (Model& model, Size currpoint, Size nextpoint, Size line, Real curr_freq, Real next_freq, double curr_shift, double next_shift, Real dZ, bool& compute_curr_opacity, Real& dtaunext, Real& chicurr, Real& chinext, Real& Scurr, Real& Snext)
 {
@@ -1243,6 +1249,7 @@ accel inline void Solver :: compute_source_dtau (Model& model, Size currpoint, S
     {
         compute_curr_opacity=true;
         compute_S_dtau_line_integrated <approx> (model, currpoint, nextpoint, line, curr_freq, next_freq, dZ, dtaunext, Scurr, Snext);
+        //OPACITY IS NOT COMPUTED IN THIS BRANCH!
     }
     else
     {
