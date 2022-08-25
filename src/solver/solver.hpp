@@ -176,25 +176,10 @@ struct Solver
     template <ApproximationType approx, bool IS_SPARSE, bool COMPUTE_UV, bool COMPUTE_ANIS, bool COMPUTE_LAMBDA>
     accel inline void solve_feautrier_order_2 (Model& model);
 
-    // Solvers only computing u
-    ///////////////////////////
-    template <ApproximationType approx>
-    accel inline void solve_feautrier_order_2 (Model& model);
-
-    template <ApproximationType approx>
-    accel inline void solve_feautrier_order_2_sparse (Model& model);
-
-    template <ApproximationType approx>
-    accel inline void solve_feautrier_order_2_anis (Model& model);
-    //stuff above will get refactored
-
+    // The actual feautrier solvers
+    ///////////////////////////////
     template <ApproximationType approx>
     accel inline void solve_feautrier_order_2 (Model& model, const Size o, const Size f);
-
-    // Solvers for both u and v
-    ///////////////////////////
-    template <ApproximationType approx>
-    accel inline void solve_feautrier_order_2_uv (Model& model);
 
     template <ApproximationType approx>
     accel inline void solve_feautrier_order_2_uv (Model& model, const Size o, const Size f);
