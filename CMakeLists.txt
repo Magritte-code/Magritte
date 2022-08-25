@@ -31,10 +31,11 @@ set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 set (CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 
-# Use C++11
-set (CMAKE_C_FLAGS          "${CMAKE_C_FLAGS}          -std=c++11")
-set (CMAKE_CXX_FLAGS        "${CMAKE_CXX_FLAGS}        -std=c++11")
-set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -std=c++11")
+# Use C++17
+set (CMAKE_CXX_STANDARD 17 CACHE STRING "C++ version selection")
+set (CMAKE_C_FLAGS          "${CMAKE_C_FLAGS}          -std=c++17")
+set (CMAKE_CXX_FLAGS        "${CMAKE_CXX_FLAGS}        -std=c++17")
+set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -std=c++17")
 
 # Build options
 option (PYTHON_IO        "Handling all io through python (slow)" ON)
