@@ -325,13 +325,18 @@ int Model :: compute_radiation_field_feautrier_order_2 ()
     Solver solver;
     solver.setup <CoMoving> (*this);
 
+    const bool IS_SPARSE=false;
+    const bool COMPUTE_UV=false;
+    const bool COMPUTE_ANIS=false;
+    const bool COMPUTE_LAMBDA=true;
+
     if (parameters->one_line_approximation)
     {
-        solver.solve_feautrier_order_2 <OneLine> (*this);
+        solver.solve_feautrier_order_2 <OneLine, IS_SPARSE, COMPUTE_UV, COMPUTE_ANIS, COMPUTE_LAMBDA> (*this);
     }
     else
     {
-        solver.solve_feautrier_order_2 <None> (*this);
+        solver.solve_feautrier_order_2 <None, IS_SPARSE, COMPUTE_UV, COMPUTE_ANIS, COMPUTE_LAMBDA> (*this);
     }
 
     return (0);
@@ -347,13 +352,19 @@ int Model :: compute_radiation_field_feautrier_order_2_uv ()
     Solver solver;
     solver.setup <CoMoving>                  (*this);
 
+
+    const bool IS_SPARSE=false;
+    const bool COMPUTE_UV=true;
+    const bool COMPUTE_ANIS=false;
+    const bool COMPUTE_LAMBDA=false;
+
     if (parameters->one_line_approximation)
     {
-        solver.solve_feautrier_order_2_uv <OneLine> (*this);
+        solver.solve_feautrier_order_2 <OneLine, IS_SPARSE, COMPUTE_UV, COMPUTE_ANIS, COMPUTE_LAMBDA> (*this);
     }
     else
     {
-        solver.solve_feautrier_order_2_uv <None> (*this);
+        solver.solve_feautrier_order_2 <None, IS_SPARSE, COMPUTE_UV, COMPUTE_ANIS, COMPUTE_LAMBDA> (*this);
     }
 
     return (0);
@@ -369,13 +380,18 @@ int Model :: compute_radiation_field_feautrier_order_2_anis ()
     Solver solver;
     solver.setup <CoMoving>                    (*this);
 
+    const bool IS_SPARSE=true;
+    const bool COMPUTE_UV=false;
+    const bool COMPUTE_ANIS=true;
+    const bool COMPUTE_LAMBDA=false;
+
     if (parameters->one_line_approximation)
     {
-        solver.solve_feautrier_order_2_anis <OneLine> (*this);
+        solver.solve_feautrier_order_2 <OneLine, IS_SPARSE, COMPUTE_UV, COMPUTE_ANIS, COMPUTE_LAMBDA> (*this);
     }
     else
     {
-        solver.solve_feautrier_order_2_anis <None> (*this);
+        solver.solve_feautrier_order_2 <None, IS_SPARSE, COMPUTE_UV, COMPUTE_ANIS, COMPUTE_LAMBDA> (*this);
     }
 
     return (0);
@@ -391,13 +407,18 @@ int Model :: compute_radiation_field_feautrier_order_2_sparse ()
     Solver solver;
     solver.setup <CoMoving>                      (*this);
 
+    const bool IS_SPARSE=true;
+    const bool COMPUTE_UV=false;
+    const bool COMPUTE_ANIS=false;
+    const bool COMPUTE_LAMBDA=true;
+
     if (parameters->one_line_approximation)
     {
-        solver.solve_feautrier_order_2_sparse <OneLine> (*this);
+        solver.solve_feautrier_order_2 <OneLine, IS_SPARSE, COMPUTE_UV, COMPUTE_ANIS, COMPUTE_LAMBDA> (*this);
     }
     else
     {
-        solver.solve_feautrier_order_2_sparse <None> (*this);
+        solver.solve_feautrier_order_2 <None, IS_SPARSE, COMPUTE_UV, COMPUTE_ANIS, COMPUTE_LAMBDA> (*this);
     }
 
     return (0);
