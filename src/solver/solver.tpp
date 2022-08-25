@@ -848,21 +848,25 @@ accel inline void Solver :: solve_shortchar_order_0 (
                                      + source_c[f] - source_n[f];
             tau[f] = dtau;
 
-            //Compute local lambda operator // TODO: check this implementatino when actually using this as a solver for NLTE intensities
-            // const Size k = model.radiation.frequencies.corresponding_k_for_tran[f];   // index of transition
-            // const Size z = model.radiation.frequencies.corresponding_z_for_line[f];   // index of quadrature point
-            // const Real w_ang = model.geometry.rays.weight[r];
-            //
-            // LineProducingSpecies &lspec = model.lines.lineProducingSpecies[l];
-            //
-            // const Real freq_line = lspec.linedata.frequency[k];
-            // const Real invr_mass = lspec.linedata.inverse_mass;
-            // const Real constante = lspec.linedata.A[k] * lspec.quadrature.weights[z] * w_ang;
-            //
-            // Real inverse_chi=1.0/chi_c[f];
-            // Real phi = model.thermodynamics.profile(invr_mass, o, freq_line, freq);
-            // Real L   = constante * freq * phi * (factor + 1.0) * inverse_chi;
-            // lspec.lambda.add_element(o, k, o, L);
+            //Compute local lambda operator // TODO: check this implementation when actually using this as a solver for NLTE intensities
+            const Size k = model.radiation.frequencies.corresponding_k_for_tran[f];   // index of transition
+            const Size z = model.radiation.frequencies.corresponding_z_for_line[f];   // index of quadrature point
+            const Real w_ang = model.geometry.rays.weight[r];
+
+            LineProducingSpecies &lspec = model.lines.lineProducingSpecies[l];
+
+            const Real freq_line = lspec.linedata.frequency[k];
+            const Real invr_mass = lspec.linedata.inverse_mass;
+            const Real constante = lspec.linedata.A[k] * lspec.quadrature.weights[z] * w_ang;
+
+            Real inverse_chi=1.0/chi_c[f];
+            Real phi = model.thermodynamics.profile(invr_mass, o, freq_line, freq);
+            Real L   = constante * freq * phi * (factor + 1.0) * inverse_chi;
+            lspec.lambda.add_element(o, k, o, L);
+
+            //TODO: possible nonlocal lambda part // FIXME: probably incorrect chi used
+            // L   = constante * freq * phi * (-factor * (1.0+dtau) - 1.0) * inverse_chi;
+            // lspec.lambda.add_element(o, k, nxt, L);
         }
 
         //For all frequencies, we need to use the same method for computing the optical depth
