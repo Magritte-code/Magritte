@@ -831,7 +831,7 @@ accel inline void Solver :: solve_shortchar_order_0 (
         for (Size f = 0; f < model.parameters->nfreqs(); f++)
         {
             const Real freq = model.radiation.frequencies.nu(o, f);
-            const Size l    = model.radiation.frequencies.corresponding_line[f];
+            const Size l    = model.radiation.frequencies.corresponding_line[f];//line index
 
             compute_curr_opacity = true; // for the first point, we need to compute both the curr and next opacity (and source)
 
@@ -848,12 +848,13 @@ accel inline void Solver :: solve_shortchar_order_0 (
                                      + source_c[f] - source_n[f];
             tau[f] = dtau;
 
-            //Compute local lambda operator // TODO: check this implementation when actually using this as a solver for NLTE intensities
+            //Compute local lambda operator
+            const Size l_spec = model.radiation.frequencies.corresponding_l_for_spec[f];   // index of species
             const Size k = model.radiation.frequencies.corresponding_k_for_tran[f];   // index of transition
             const Size z = model.radiation.frequencies.corresponding_z_for_line[f];   // index of quadrature point
             const Real w_ang = model.geometry.rays.weight[r];
 
-            LineProducingSpecies &lspec = model.lines.lineProducingSpecies[l];
+            LineProducingSpecies &lspec = model.lines.lineProducingSpecies[l_spec];
 
             const Real freq_line = lspec.linedata.frequency[k];
             const Real invr_mass = lspec.linedata.inverse_mass;
