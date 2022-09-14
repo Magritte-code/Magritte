@@ -8,7 +8,7 @@ inline void Cooling :: compute_cooling_collisional(Model& model)
     Double2 abundance=model.chemistry.species.abundance;
 
     //for every point, compute the cooling rate independently
-    threaded_for(p, parameters->npoints(),
+    threaded_for(p, model.parameters->npoints(),
     {
         Real temp_cooling_rate=0.0;
         const Real tmp = temperature[p];
@@ -54,14 +54,15 @@ inline void Cooling :: compute_cooling_flux(Model& model)
     // SO IMPLEMENT THIS (after discussing with frederik on how to handle post-processing on rays)
     //OR use the mean line intensity as a substitute
     // Matrix<Real>& J=model.radiation.J; Err, is not used in every solver..., also contains the mean (not line) intensity at each frequency
+    //TODO: after refactor, add options to enable cooling computation for each solver
     Matrix<Real>& emissivity=model.lines.emissivity;
     Matrix<Real>& opacity=model.lines.opacity;
     //for every point, compute the cooling rate independently
-    threaded_for(p, parameters->npoints(),
+    threaded_for(p, model.parameters->npoints(),
     {
         Real temp_cooling_rate=0.0;
         //err, we use the mean line intensity instead
-        for (Size l = 0; l < parameters->nlspecs(); l++)
+        for (Size l = 0; l < model.parameters->nlspecs(); l++)
         {
             for (Size k = 0; k < lineProducingSpecies[l].linedata.nrad; k++)
             {
@@ -84,11 +85,11 @@ inline void Cooling :: compute_cooling_flux(Model& model)
 inline void Cooling :: compute_cooling_grad_I(Model& model)
 {
     //FIXME: For now the gradient has not yet been computed. This still has to be done!
-    threaded_for(p, parameters->npoints(),
+    threaded_for(p, model.parameters->npoints(),
     {
         Real temp_cooling_rate=0.0;
         //err, we use the mean line intensity instead
-        for (Size l = 0; l < parameters->nlspecs(); l++)
+        for (Size l = 0; l < model.parameters->nlspecs(); l++)
         {
             for (Size k = 0; k < lineProducingSpecies[l].linedata.nrad; k++)
             {

@@ -2,6 +2,7 @@
 #include "model.hpp"
 #include "tools/heapsort.hpp"
 #include "solver/solver.hpp"
+#include "cooling/cooling.hpp"
 
 
 void Model :: read (const Io& io)

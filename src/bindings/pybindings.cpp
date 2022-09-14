@@ -7,6 +7,7 @@
 #include "io/python/io_python.hpp"
 #include "model/model.hpp"
 #include "solver/solver.hpp"
+#include "cooling/cooling.cpp"
 
 #include "pybind11/pybind11.h"
 #include "pybind11/stl_bind.h"
@@ -356,6 +357,8 @@ PYBIND11_MODULE (core, module)
     py::class_<Cooling> (module, "Cooling", "Class containing cooling information.")
         // attributes
         .def_readonly ("cooling_rate", &Cooling::cooling_rate, "Array containing the computed cooling rates for each point")
+        // .def ("write", &Cooling::write, "Writes the computed cooling rates to file.");
+        .def ("write",              &Cooling::write, "Write cooling rates to file.");
 
     // Geometry
     py::class_<Geometry> (module, "Geometry", "Class containing the model geometry.")

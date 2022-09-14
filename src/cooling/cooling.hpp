@@ -3,6 +3,7 @@
 
 #include "io/io.hpp"
 #include "tools/types.hpp"
+// #include "cooling.tpp"
 
 
 // will contain structures with cooling rates
@@ -10,7 +11,8 @@
 
 struct Cooling
 {
-    std::shared_ptr<Parameters> parameters;   ///< data structure containing model
+    // No longer a subclass of Model, so no direct access to the model parameters
+    // std::shared_ptr<Parameters> parameters;   ///< data structure containing model
     Vector<Real> cooling_rate;//< for each point, contains the cooling rate
     Vector<Real> mean_chiI;//< contains the angle_integrate mean intensity times opacity for each point, necessary for the flux version of the cooling computation
     //TODO: think about removing mean_chiI, as the cooling rate can as well be derived using ∑_l χ_l J_l, in which χ_l is the integrated line opacity and J_l is the line integrated opacity
@@ -18,12 +20,14 @@ struct Cooling
     //TODO: think about defining the cooling rate per line, in addition to total cooling rate
     Vector<Real> mean_grad_I;//< contains the (integrated over angle, frequency) intensity gradient for each point, necessary for the
     Matrix<Real> line_grad_I;//< contains the (integrated over angle, frequency) line intensity gradient (=intensity gradient times line profile function, divided by opacity)
+    //After the feautrier refactor, add options to choose which things need to be computed
 
-    void read  (const Io& io);
+    // void read  (const Io& io);
+    void setup (Model& model);
     void write (const Io& io) const;
 
     inline void compute_cooling_collisional(Model& model);
     inline void compute_cooling_flux(Model& model);
     inline void compute_cooling_grad_I(Model& model);
 
-}
+};
