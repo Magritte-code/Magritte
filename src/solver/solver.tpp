@@ -205,19 +205,30 @@ inline void Solver :: solve_shortchar_order_0 (Model& model)
 //  -COMPUTE_UV: whether to compute u, v
 //  -COMPUTE_ANIS: whether to compute anisotropic intensity
 //  -COMPUTE_LAMBDA: whether to compute the lambda operator
-template<ApproximationType approx, bool IS_SPARSE, bool COMPUTE_UV, bool COMPUTE_ANIS, bool COMPUTE_LAMBDA>
+//  -COMPUTE_COOLING_J: whether to compute the mean intensity to compute the cooling rates
+template<ApproximationType approx, bool IS_SPARSE, bool COMPUTE_UV, bool COMPUTE_ANIS, bool COMPUTE_LAMBDA, bool COMPUTE_COOLING>
 inline void Solver :: solve_feautrier_order_2 (Model& model)
 {
     // A few things do currently not make sense, as not everything is implemented in case of sparse/non-sparse solvers
     static_assert(!((!IS_SPARSE)&&(COMPUTE_ANIS)), "Anisotropy not implemented in non-sparse solver.");
     static_assert(!((IS_SPARSE)&&(COMPUTE_UV)), "Computing v not implemented in sparse solver.");
     static_assert(!((COMPUTE_UV)&&(COMPUTE_LAMBDA)), "Computing lambda elements not implemented in uv solver.");
+    static_assert(!((COMPUTE_UV)&&(COMPUTE_COOLING)), "Computing cooling not implemented in uv solver");//note: this is due to us not actually computing an angle integrated mean intensity
 
     ///Intialization for the feautrier solvers
     //Lambda elements need to be cleared before every computation (otherwise we might accidentally sum then with the previous iteration lambda elements)
     if constexpr(COMPUTE_LAMBDA)
     {
         for (auto &lspec : model.lines.lineProducingSpecies) {lspec.lambda.clear();}
+    }else{}
+
+    if constexpr(COMPUTE_COOLING)
+    {
+        //reset cooling rates
+        for (Size p = 0; p < model.parameters->npoints(); p++)
+        {
+            model.cooling.cooling_rate[p]=0.0;
+        }
     }else{}
 
     if constexpr(IS_SPARSE)
@@ -447,7 +458,56 @@ inline void Solver :: solve_feautrier_order_2 (Model& model)
         }
     }
 
-    /// Post-processing // only necessary if we decide to readd a distributed_for loop
+    /// Post-processing
+
+    if constexpr(COMPUTE_COOLING)
+    {
+        // J contains right the correct amount of information to compute line cooling
+        if constexpr(IS_SPARSE)
+        {
+            threaded_for (p, model.parameters->npoints(),
+            {
+                for (Size l = 0; l < model.parameters->nlspecs(); l++)
+                {
+                    const LineProducingSpecies& lspec=model.lines.lineProducingSpecies[l];
+                    for (Size k = 0; k < lspec.linedata.nrad; k++)
+                    {
+                        const Size lid = model.lines.line_index(l, k);
+                        //line cooling rate maybe gives some useful diagonstics, but can be implemented later on.
+                        //line_cooling_rate=same formula
+                        model.cooling.cooling_rate[p]+=model.lines.emissivity(p, lid)-lspec.J(p,k)*model.lines.opacity(p, lid);
+                    }
+                }
+            });
+        }
+        else
+        {
+            threaded_for (p, model.parameters->npoints(),
+            {
+                for (Size l = 0; l < model.parameters->nlspecs(); l++)
+                {
+                    const LineProducingSpecies& lspec=model.lines.lineProducingSpecies[l];
+                    for (Size k = 0; k < lspec.linedata.nrad; k++)
+                    {
+                        //quicky compute mean line intensity by integrating over the quadrature
+                        //this is much cheaper than evaluating the profile functions all the time
+                        Real Jlin=0.0;
+                        const Size lid = model.lines.line_index(l, k);
+                        for (Size z = 0; z < model.parameters->nquads(); z++)
+                        {
+                            Jlin += lspec.quadrature.weights[z] * model.radiation.J(p, lspec.nr_line[p][k][z]);
+                        }
+                        //line cooling rate maybe gives useful diagonstic, but can be implemented later on.
+                        //line_cooling_rate=same formula
+                        model.cooling.cooling_rate[p]+=model.lines.emissivity(p, lid)-Jlin*model.lines.opacity(p, lid);
+                    }
+                }
+            });
+        }
+        //cooling per line is just some manner of diagnostic; total cooling rate might be more interesting
+
+    }else{};
+
 }
 
 

@@ -20,6 +20,7 @@ void Model :: read (const Io& io)
     thermodynamics.read (io);
     lines         .read (io);
     radiation     .read (io);
+    cooling       .read (io);
 
     cout << "                                           " << endl;
     cout << "-------------------------------------------" << endl;
@@ -49,6 +50,7 @@ void Model :: write (const Io& io) const
         thermodynamics.write (io);
         lines         .write (io);
         radiation     .write (io);
+        cooling       .write (io);
     }
 }
 
@@ -317,6 +319,7 @@ int Model :: compute_radiation_field_shortchar_order_0 ()
 }
 
 
+/// NOTE TO SELF: I might need to template this up if I also add radiative pressure
 ///  Computer for the radiation field
 /////////////////////////////////////
 int Model :: compute_radiation_field_feautrier_order_2 ()
@@ -330,14 +333,15 @@ int Model :: compute_radiation_field_feautrier_order_2 ()
     const bool COMPUTE_UV=false;
     const bool COMPUTE_ANIS=false;
     const bool COMPUTE_LAMBDA=true;
+    const bool COMPUTE_COOLING=false;
 
     if (parameters->one_line_approximation)
     {
-        solver.solve_feautrier_order_2 <OneLine, IS_SPARSE, COMPUTE_UV, COMPUTE_ANIS, COMPUTE_LAMBDA> (*this);
+        solver.solve_feautrier_order_2 <OneLine, IS_SPARSE, COMPUTE_UV, COMPUTE_ANIS, COMPUTE_LAMBDA, COMPUTE_COOLING> (*this);
     }
     else
     {
-        solver.solve_feautrier_order_2 <None, IS_SPARSE, COMPUTE_UV, COMPUTE_ANIS, COMPUTE_LAMBDA> (*this);
+        solver.solve_feautrier_order_2 <None, IS_SPARSE, COMPUTE_UV, COMPUTE_ANIS, COMPUTE_LAMBDA, COMPUTE_COOLING> (*this);
     }
 
     return (0);
@@ -358,14 +362,15 @@ int Model :: compute_radiation_field_feautrier_order_2_uv ()
     const bool COMPUTE_UV=true;
     const bool COMPUTE_ANIS=false;
     const bool COMPUTE_LAMBDA=false;
+    const bool COMPUTE_COOLING=false;
 
     if (parameters->one_line_approximation)
     {
-        solver.solve_feautrier_order_2 <OneLine, IS_SPARSE, COMPUTE_UV, COMPUTE_ANIS, COMPUTE_LAMBDA> (*this);
+        solver.solve_feautrier_order_2 <OneLine, IS_SPARSE, COMPUTE_UV, COMPUTE_ANIS, COMPUTE_LAMBDA, COMPUTE_COOLING> (*this);
     }
     else
     {
-        solver.solve_feautrier_order_2 <None, IS_SPARSE, COMPUTE_UV, COMPUTE_ANIS, COMPUTE_LAMBDA> (*this);
+        solver.solve_feautrier_order_2 <None, IS_SPARSE, COMPUTE_UV, COMPUTE_ANIS, COMPUTE_LAMBDA, COMPUTE_COOLING> (*this);
     }
 
     return (0);
@@ -385,14 +390,15 @@ int Model :: compute_radiation_field_feautrier_order_2_anis ()
     const bool COMPUTE_UV=false;
     const bool COMPUTE_ANIS=true;
     const bool COMPUTE_LAMBDA=false;
+    const bool COMPUTE_COOLING=false;
 
     if (parameters->one_line_approximation)
     {
-        solver.solve_feautrier_order_2 <OneLine, IS_SPARSE, COMPUTE_UV, COMPUTE_ANIS, COMPUTE_LAMBDA> (*this);
+        solver.solve_feautrier_order_2 <OneLine, IS_SPARSE, COMPUTE_UV, COMPUTE_ANIS, COMPUTE_LAMBDA, COMPUTE_COOLING> (*this);
     }
     else
     {
-        solver.solve_feautrier_order_2 <None, IS_SPARSE, COMPUTE_UV, COMPUTE_ANIS, COMPUTE_LAMBDA> (*this);
+        solver.solve_feautrier_order_2 <None, IS_SPARSE, COMPUTE_UV, COMPUTE_ANIS, COMPUTE_LAMBDA, COMPUTE_COOLING> (*this);
     }
 
     return (0);
@@ -412,14 +418,15 @@ int Model :: compute_radiation_field_feautrier_order_2_sparse ()
     const bool COMPUTE_UV=false;
     const bool COMPUTE_ANIS=false;
     const bool COMPUTE_LAMBDA=true;
+    const bool COMPUTE_COOLING=false;
 
     if (parameters->one_line_approximation)
     {
-        solver.solve_feautrier_order_2 <OneLine, IS_SPARSE, COMPUTE_UV, COMPUTE_ANIS, COMPUTE_LAMBDA> (*this);
+        solver.solve_feautrier_order_2 <OneLine, IS_SPARSE, COMPUTE_UV, COMPUTE_ANIS, COMPUTE_LAMBDA, COMPUTE_COOLING> (*this);
     }
     else
     {
-        solver.solve_feautrier_order_2 <None, IS_SPARSE, COMPUTE_UV, COMPUTE_ANIS, COMPUTE_LAMBDA> (*this);
+        solver.solve_feautrier_order_2 <None, IS_SPARSE, COMPUTE_UV, COMPUTE_ANIS, COMPUTE_LAMBDA, COMPUTE_COOLING> (*this);
     }
 
     return (0);

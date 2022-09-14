@@ -173,7 +173,7 @@ struct Solver
     // Later: also do the same for shortchar?
 
 
-    template <ApproximationType approx, bool IS_SPARSE, bool COMPUTE_UV, bool COMPUTE_ANIS, bool COMPUTE_LAMBDA>
+    template <ApproximationType approx, bool IS_SPARSE, bool COMPUTE_UV, bool COMPUTE_ANIS, bool COMPUTE_LAMBDA, bool COMPUTE_COOLING>
     accel inline void solve_feautrier_order_2 (Model& model);
 
     // The actual feautrier solvers

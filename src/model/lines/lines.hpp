@@ -5,6 +5,7 @@
 #include "tools/types.hpp"
 #include "lineProducingSpecies/lineProducingSpecies.hpp"
 #include "model/thermodynamics/thermodynamics.hpp"
+#include "model/cooling/cooling.hpp"
 
 
 struct Lines
@@ -19,6 +20,9 @@ struct Lines
     Matrix<Real> emissivity;                 ///< line emissivity    (p, lid)
     Matrix<Real> opacity;                    ///< line opacity       (p, lid)
     Matrix<Real> inverse_width;              ///< inverse line width (p, lid)
+
+    Matrix<Real> line_cooling_rate;          ///< cooling rate per line (p, lid) UNITS TODO
+    Vector<Real> total_cooling_rate;         ///< cooling rate per point (p)
 
 
     Lines (std::shared_ptr<Parameters> params)
@@ -55,6 +59,9 @@ struct Lines
     {
         lineProducingSpecies.resize (parameters->nlspecs(), LineProducingSpecies(parameters));
     }
+
+    //Compute the cooling rates using the collisional formulation
+    void compute_cooling_collisional(Cooling& cooling, const Double2& abundance, const Vector<Real>& temperature);
 
     void gather_emissivities_and_opacities ();
 };
