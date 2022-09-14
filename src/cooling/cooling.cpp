@@ -1,4 +1,5 @@
 #include "cooling.hpp"
+#include "io/io.hpp"
 const string prefix = "cooling/";
 
 // should contain the setup for the cooling storage
@@ -9,14 +10,20 @@ const string prefix = "cooling/";
 // currently, option (2) seems best.
 
 
-///  read: read in data structure
-///    @param[in] io: io object
-/////////////////////////////////
-void Cooling :: read (const Io& io)
-{
-    cooling_rate.resize(parameters.npoints());
-    io.read_list(prefix+"cooling_rate", cooling_rate)
+// ///  read: read in data structure
+// ///    @param[in] io: io object
+// /////////////////////////////////
+// void Cooling :: read (const Io& io)
+// {
+//     cooling_rate.resize(parameters.npoints());
+//     io.read_list(prefix+"cooling_rate", cooling_rate)
+//
+// }
 
+// Initialises the structure for computing the cooling rates
+void Cooling :: setup (Model& model)
+{
+    cooling_rate.resize(model.parameters->npoints());
 }
 
 
