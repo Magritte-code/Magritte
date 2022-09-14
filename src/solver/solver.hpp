@@ -21,6 +21,9 @@ struct Solver
     pc::multi_threading::ThreadPrivate<Vector<Real>> chi_c_;
     pc::multi_threading::ThreadPrivate<Vector<Real>> chi_n_;
 
+    pc::multi_threading::ThreadPrivate<Vector<Real>> source_c_;
+    pc::multi_threading::ThreadPrivate<Vector<Real>> source_n_;
+
     pc::multi_threading::ThreadPrivate<Vector<Real>> inverse_chi_;
 
     pc::multi_threading::ThreadPrivate<Vector<Real>> tau_;
@@ -135,7 +138,14 @@ struct Solver
               Model& model,
         const Size   o,
         const Size   r);
-
+    // accel inline void solve_shortchar_order_0_ray_forward (
+    //           Model& model,
+    //           const Size   o,
+    //           const Size   r);
+    // accel inline void solve_shortchar_order_0_ray_backward (
+    //           Model& model,
+    //           const Size   o,
+    //           const Size   r);
 
     // Solvers for images
     /////////////////////
@@ -149,24 +159,27 @@ struct Solver
     accel inline void image_optical_depth (Model& model, const Size o, const Size f);
 
 
-    // Solvers only computing u
-    ///////////////////////////
-    template <ApproximationType approx>
+    // TEMPLATE PARAMS for Feautrier solver
+    // IS_SPARSE: denotes whether to use the sparse version (no longer computing I and the mean intensity at each freq, but directly storing into the mean line intensity)
+    // COMPUTE_LAMBDA: denotes whether to compute the lambda elements
+    // COMPUTE_UV: denotes whether to also compute v (the intensity flux)
+    // COMPUTE_ANIS: denotes whether to store anisotropic values
+    // probably needs some dependency management; based on whether the solver is sparse
+    // -uv -> not sparse
+    // -lambda -> both possible
+    // -anis -> sparse
+    // -uv-> no lambda computation
+    // Later: compute_cooling? TODO: decide on whether to support sparse solvers
+    // Later: also do the same for shortchar?
+
+
+    template <ApproximationType approx, bool IS_SPARSE, bool COMPUTE_UV, bool COMPUTE_ANIS, bool COMPUTE_LAMBDA>
     accel inline void solve_feautrier_order_2 (Model& model);
 
-    template <ApproximationType approx>
-    accel inline void solve_feautrier_order_2_sparse (Model& model);
-
-    template <ApproximationType approx>
-    accel inline void solve_feautrier_order_2_anis (Model& model);
-
+    // The actual feautrier solvers
+    ///////////////////////////////
     template <ApproximationType approx>
     accel inline void solve_feautrier_order_2 (Model& model, const Size o, const Size f);
-
-    // Solvers for both u and v
-    ///////////////////////////
-    template <ApproximationType approx>
-    accel inline void solve_feautrier_order_2_uv (Model& model);
 
     template <ApproximationType approx>
     accel inline void solve_feautrier_order_2_uv (Model& model, const Size o, const Size f);
