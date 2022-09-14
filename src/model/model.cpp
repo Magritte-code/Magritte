@@ -20,6 +20,7 @@ void Model :: read (const Io& io)
     thermodynamics.read (io);
     lines         .read (io);
     radiation     .read (io);
+    cooling       .read (io);
 
     cout << "                                           " << endl;
     cout << "-------------------------------------------" << endl;
@@ -49,6 +50,7 @@ void Model :: write (const Io& io) const
         thermodynamics.write (io);
         lines         .write (io);
         radiation     .write (io);
+        cooling       .write (io);
     }
 }
 
@@ -317,6 +319,7 @@ int Model :: compute_radiation_field_shortchar_order_0 ()
 }
 
 
+/// NOTE TO SELF: I might need to template this up if I also add radiative pressure
 ///  Computer for the radiation field
 /////////////////////////////////////
 int Model :: compute_radiation_field_feautrier_order_2 ()

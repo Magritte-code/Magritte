@@ -12,6 +12,7 @@
 #include "lines/lines.hpp"
 #include "radiation/radiation.hpp"
 #include "image/image.hpp"
+#include "cooling/cooling.hpp"
 
 
 struct Model
@@ -24,6 +25,7 @@ struct Model
     Lines          lines;
     Radiation      radiation;
     vector<Image>  images;
+    Cooling        cooling;
 
     enum SpectralDiscretisation {SD_None, SD_Lines, SD_Image}
          spectralDiscretisation = SD_None;
