@@ -7,7 +7,7 @@
 #include "io/python/io_python.hpp"
 #include "model/model.hpp"
 #include "solver/solver.hpp"
-// #include "cooling/cooling.cpp"
+#include "model/cooling/cooling.hpp"
 
 #include "pybind11/pybind11.h"
 #include "pybind11/stl_bind.h"
@@ -154,6 +154,7 @@ PYBIND11_MODULE (core, module)
         .def_readwrite ("boundary_condition", &Model::boundary_condition)
         .def_readwrite ("column",             &Model::column)
         .def_readwrite ("density",            &Model::density)
+        .def_readonly  ("cooling",            &Model::cooling)
         .def_readonly  (
             "error_mean",
             &Model::error_mean,
@@ -281,6 +282,16 @@ PYBIND11_MODULE (core, module)
             "Compute an image of the optical depth for the model along the given ray."
         )
         .def (
+            "compute_cooling_collisional",
+            &Model::compute_cooling_collisional,
+            "Computes the cooling rates using the collisional formulation"
+        )
+        .def (
+            "compute_cooling_radiative",
+            &Model::compute_cooling_radiative,
+            "Computes the cooling rates using the radiative formulation, using a single radiative transfer computation"
+        )
+        .def (
             "set_eta_and_chi",
             &Model::set_eta_and_chi,
             "Set latest emissivity and opacity for the model in the eta and chi variables respectively."
@@ -358,6 +369,8 @@ PYBIND11_MODULE (core, module)
         // attributes
         .def_readonly ("cooling_rate", &Cooling::cooling_rate, "Array containing the computed cooling rates for each point")
         // .def ("write", &Cooling::write, "Writes the computed cooling rates to file.");
+        // TODO: figure out why the compiler complains about linker errors...
+        .def ("read",               &Cooling::read, "Read cooling rates from file.")
         .def ("write",              &Cooling::write, "Write cooling rates to file.");
 
     // Geometry

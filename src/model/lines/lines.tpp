@@ -1,6 +1,5 @@
 #include "paracabs.hpp"
 #include "tools/types.hpp"
-#include "model/cooling/cooling.hpp"
 
 
 ///  Indexer for point and line indices

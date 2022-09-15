@@ -9,10 +9,10 @@
 #include "geometry/geometry.hpp"
 #include "chemistry/chemistry.hpp"
 #include "thermodynamics/thermodynamics.hpp"
+#include "cooling/cooling.hpp"
 #include "lines/lines.hpp"
 #include "radiation/radiation.hpp"
 #include "image/image.hpp"
-#include "cooling/cooling.hpp"
 
 
 struct Model
@@ -38,6 +38,7 @@ struct Model
     , thermodynamics (    parameters  )
     , lines          (    parameters  )
     , radiation      (    parameters  )
+    , cooling        (    parameters  )
     {};
 
     Model (const string name)
@@ -47,6 +48,7 @@ struct Model
     , thermodynamics (    parameters  )
     , lines          (    parameters  )
     , radiation      (    parameters  )
+    , cooling        (    parameters  )
     {
         parameters->set_model_name (name);
         read ();
@@ -86,6 +88,8 @@ struct Model
         const long  max_niterations     );
     int compute_image                             (const Size ray_nr);
     int compute_image_optical_depth               (const Size ray_nr);
+    int compute_cooling_collisional ();
+    int compute_cooling_radiative ();//using a single iteration
 
     Double1 error_max;
     Double1 error_mean;
