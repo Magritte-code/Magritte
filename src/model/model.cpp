@@ -770,9 +770,10 @@ int Model :: compute_cooling_collisional ()
 int Model :: compute_cooling_radiative ()
 {
       Solver solver;
+      solver.setup <CoMoving> (*this);
       const bool IS_SPARSE=true;
       const bool COMPUTE_UV=false;
-      const bool COMPUTE_ANIS=true;
+      const bool COMPUTE_ANIS=false;
       const bool COMPUTE_LAMBDA=false;
       const bool COMPUTE_COOLING=true;
 

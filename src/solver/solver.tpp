@@ -229,6 +229,7 @@ inline void Solver :: solve_feautrier_order_2 (Model& model)
         {
             model.cooling.cooling_rate[p]=0.0;
         }
+        std::cout<<"reinitialized cooling rates to 0"<<std::endl;
     }else{}
 
     if constexpr(IS_SPARSE)
@@ -473,9 +474,13 @@ inline void Solver :: solve_feautrier_order_2 (Model& model)
                     for (Size k = 0; k < lspec.linedata.nrad; k++)
                     {
                         const Size lid = model.lines.line_index(l, k);
+                        const Real linefreq = lspec.linedata.frequency[k];
                         //line cooling rate maybe gives some useful diagonstics, but can be implemented later on.
                         //line_cooling_rate=same formula
-                        model.cooling.cooling_rate[p]+=model.lines.emissivity(p, lid)-lspec.J(p,k)*model.lines.opacity(p, lid);
+                        // stored emissitivities and opacities do not include the frequency factor, as this technically changes within the very small frequency range
+                        //Thus this is actually a very minor approximation, replacing the ∫νIϕ_l(ν)dν≃ν_lJ_l
+                        //Also we must integrate over all directions, so times 4π
+                        model.cooling.cooling_rate[p]+=FOUR_PI*linefreq*(model.lines.emissivity(p, lid)-lspec.J(p,k)*model.lines.opacity(p, lid));
                     }
                 }
             });
@@ -493,13 +498,18 @@ inline void Solver :: solve_feautrier_order_2 (Model& model)
                         //this is much cheaper than evaluating the profile functions all the time
                         Real Jlin=0.0;
                         const Size lid = model.lines.line_index(l, k);
+                        const Real linefreq = lspec.linedata.frequency[k];
                         for (Size z = 0; z < model.parameters->nquads(); z++)
                         {
                             Jlin += lspec.quadrature.weights[z] * model.radiation.J(p, lspec.nr_line[p][k][z]);
+                            //Note: more correct would be to add the frequency here,
                         }
                         //line cooling rate maybe gives useful diagonstic, but can be implemented later on.
                         //line_cooling_rate=same formula
-                        model.cooling.cooling_rate[p]+=model.lines.emissivity(p, lid)-Jlin*model.lines.opacity(p, lid);
+                        // stored emissitivities and opacities do not include the frequency factor, as this technically changes within the very small frequency range
+                        //Thus this is actually a very minor approximation, replacing the ∫νIϕ_l(ν)dν≃ν_lJ_l
+                        //Also we must integrate over all directions, so times 4π
+                        model.cooling.cooling_rate[p]+=FOUR_PI*linefreq*(model.lines.emissivity(p, lid)-Jlin*model.lines.opacity(p, lid));
                     }
                 }
             });
