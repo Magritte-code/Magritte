@@ -229,7 +229,6 @@ inline void Solver :: solve_feautrier_order_2 (Model& model)
         {
             model.cooling.cooling_rate[p]=0.0;
         }
-        std::cout<<"reinitialized cooling rates to 0"<<std::endl;
     }else{}
 
     if constexpr(IS_SPARSE)

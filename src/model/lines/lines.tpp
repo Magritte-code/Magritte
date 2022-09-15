@@ -85,7 +85,8 @@ inline void Lines :: compute_cooling_collisional(Cooling& cooling, const Double2
     // Double2 abundance=model.chemistry.species.abundance;
 
     //for every point, compute the cooling rate independently
-    threaded_for(p, parameters->npoints(),
+    // threaded_for(p, parameters->npoints(), //WARNING: a part of this is not thread safe; do not parallelize this
+    for (Size p=0; p<parameters->npoints(); p++)
     {
         Real temp_cooling_rate=0.0;
         const Real tmp = temperature[p];
@@ -100,7 +101,7 @@ inline void Lines :: compute_cooling_collisional(Cooling& cooling, const Double2
                 Real abn = abundance[p][colpar.num_col_partner];
 
                 colpar.adjust_abundance_for_ortho_or_para (tmp, abn);
-                colpar.interpolate_collision_coefficients (tmp);
+                colpar.interpolate_collision_coefficients (tmp);//NOT THREAD SAFE!
 
                 for (Size k = 0; k < colpar.ncol; k++)
                 {
@@ -110,14 +111,19 @@ inline void Lines :: compute_cooling_collisional(Cooling& cooling, const Double2
                     const Size I = lspec.index (p, colpar.icol[k]);
                     const Size J = lspec.index (p, colpar.jcol[k]);
 
+                    // ... icol and jcol correspond to the COLLISIONAL TRANSITION INDEX ...
                     const Real energy_diff=lspec.linedata.energy[colpar.icol[k]]-lspec.linedata.energy[colpar.jcol[k]];
                     // std::cout<<"energy_diff: "<<energy_diff<<std::endl;
 
                     temp_cooling_rate-=lspec.population[I]*collision_rate_ij*energy_diff;
                     temp_cooling_rate+=lspec.population[J]*collision_rate_ji*energy_diff;
+
+                    // possible error in defining the collisional rates
+                    // temp_cooling_rate+=lspec.population[J]*collision_rate_ij*energy_diff;
+                    // temp_cooling_rate-=lspec.population[I]*collision_rate_ji*energy_diff;
                 }
             }
         }
         cooling.cooling_rate[p]=temp_cooling_rate;
-    });
+    }//);
 }
