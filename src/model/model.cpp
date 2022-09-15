@@ -757,6 +757,30 @@ int Model :: compute_image_optical_depth (const Size ray_nr)
     return (0);
 }
 
+int Model :: compute_cooling_collisional ()
+{
+    Vector<Real>& gas_temperature=thermodynamics.temperature.gas;
+    Double2 abundance=chemistry.species.abundance;
+
+    lines.compute_cooling_collisional(cooling, abundance, gas_temperature);
+
+    return (0);
+}
+
+int Model :: compute_cooling_radiative ()
+{
+      Solver solver;
+      const bool IS_SPARSE=true;
+      const bool COMPUTE_UV=false;
+      const bool COMPUTE_ANIS=true;
+      const bool COMPUTE_LAMBDA=false;
+      const bool COMPUTE_COOLING=true;
+
+      solver.solve_feautrier_order_2 <None, IS_SPARSE, COMPUTE_UV, COMPUTE_ANIS, COMPUTE_LAMBDA, COMPUTE_COOLING> (*this);
+
+      return (0);
+}
+
 
 int Model :: set_eta_and_chi (const Size rr)
 {
