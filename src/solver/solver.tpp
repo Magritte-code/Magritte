@@ -744,7 +744,8 @@ accel inline void Solver :: get_eta_and_chi <None> (
 {
     // Initialize
     eta = 0.0;
-    chi = model.parameters->min_opacity;
+    chi = 0.0;
+    // chi = model.parameters->min_opacity;
 
     // Set line emissivity and opacity
     for (Size l = 0; l < model.parameters->nlines(); l++)
@@ -755,6 +756,13 @@ accel inline void Solver :: get_eta_and_chi <None> (
         eta += prof * model.lines.emissivity(p, l);
         chi += prof * model.lines.opacity   (p, l);
     }
+    if (chi<0.0)
+    {chi-=model.parameters->min_opacity;}
+    else
+    {chi+=model.parameters->min_opacity;}
+    // {chi=std::min(-model.parameters->min_opacity, chi);}
+    // else
+    // {chi=std::max( model.parameters->min_opacity, chi);}
 }
 
 
@@ -780,6 +788,8 @@ accel inline void Solver :: get_eta_and_chi <OneLine> (
 
     eta = prof * model.lines.emissivity(p, l);
     chi = prof * model.lines.opacity   (p, l) + model.parameters->min_opacity;
+
+
 }
 
 
