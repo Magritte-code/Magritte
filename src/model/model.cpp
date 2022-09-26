@@ -777,7 +777,14 @@ int Model :: compute_cooling_radiative ()
       const bool COMPUTE_LAMBDA=false;
       const bool COMPUTE_COOLING=true;
 
-      solver.solve_feautrier_order_2 <None, IS_SPARSE, COMPUTE_UV, COMPUTE_ANIS, COMPUTE_LAMBDA, COMPUTE_COOLING> (*this);
+      if (parameters->one_line_approximation)
+      {
+          solver.solve_feautrier_order_2 <OneLine, IS_SPARSE, COMPUTE_UV, COMPUTE_ANIS, COMPUTE_LAMBDA, COMPUTE_COOLING> (*this);
+      }
+      else
+      {
+          solver.solve_feautrier_order_2 <None, IS_SPARSE, COMPUTE_UV, COMPUTE_ANIS, COMPUTE_LAMBDA, COMPUTE_COOLING> (*this);
+      }
 
       return (0);
 }

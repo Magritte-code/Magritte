@@ -480,6 +480,7 @@ inline void Solver :: solve_feautrier_order_2 (Model& model)
                         //Thus this is actually a very minor approximation, replacing the ∫νIϕ_l(ν)dν≃ν_lJ_l
                         //Also we must integrate over all directions, so times 4π
                         model.cooling.cooling_rate[p]+=FOUR_PI*linefreq*(model.lines.emissivity(p, lid)-lspec.J(p,k)*model.lines.opacity(p, lid));
+                        // std::cout<<"J: "<<lspec.J(p,k)<<std::endl;
                     }
                 }
             });
@@ -503,6 +504,7 @@ inline void Solver :: solve_feautrier_order_2 (Model& model)
                             Jlin += lspec.quadrature.weights[z] * model.radiation.J(p, lspec.nr_line[p][k][z]);
                             //Note: more correct would be to add the frequency here,
                         }
+                        // std::cout<<"Jlin: "<<Jlin<<std::endl;
                         //line cooling rate maybe gives useful diagonstic, but can be implemented later on.
                         //line_cooling_rate=same formula
                         // stored emissitivities and opacities do not include the frequency factor, as this technically changes within the very small frequency range
@@ -772,10 +774,15 @@ accel inline void Solver :: get_eta_and_chi <None> (
         eta += prof * model.lines.emissivity(p, l);
         chi += prof * model.lines.opacity   (p, l);
     }
-    if (chi<0.0)
-    {chi-=model.parameters->min_opacity;}
-    else
-    {chi+=model.parameters->min_opacity;}
+    //Correct way of bounding from below; should be able to deal with very minor computation errors around 0.
+    if (-model.parameters->min_opacity<chi)
+    {
+        chi=std::max(model.parameters->min_opacity, chi);
+        // chi+=model.parameters->min_opacity+std::max((Real) 0.0,-chi);
+    }
+    // {chi-=model.parameters->min_opacity;}
+    // else
+    // {chi+=model.parameters->min_opacity;}
     // {chi=std::min(-model.parameters->min_opacity, chi);}
     // else
     // {chi=std::max( model.parameters->min_opacity, chi);}
@@ -1139,6 +1146,7 @@ accel inline void Solver :: update_Lambda (Model &model, const Size rr, const Si
         Real frq = freqs.nu(nr[centre], f) * shift[centre];
         Real phi = thermodyn.profile(invr_mass, nr[centre], freq_line, frq);
         Real L   = constante * frq * phi * L_diag[centre] * inverse_chi;
+        L=0;
 
         lspec.lambda.add_element(nr[centre], k, nr[centre], L);
 
