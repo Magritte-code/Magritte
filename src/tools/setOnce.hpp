@@ -43,7 +43,7 @@ class SetOnce
             value       (s.value),
 						var_name(s.var_name) {};
 
-        inline void set (const type new_value)
+        inline void set (const type new_value, const string name)
         {
             if (already_set)
             {
@@ -55,13 +55,14 @@ class SetOnce
             }
             else
             {
+								var_name = name;
                 already_set = true;
                 value       = new_value;
             }
         }
 
 
-        inline void set_default (const type new_value)
+        inline void set_default (const type new_value, const string name)
         {
             if (already_set)
             {
@@ -73,6 +74,7 @@ class SetOnce
             }
             else
             {
+								var_name = name;
                 default_set = true;
                 value       = new_value;
             }
