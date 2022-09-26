@@ -32,44 +32,48 @@ class SetOnce
         bool already_set = false;
         bool default_set = false;
         type value;
+				string var_name;//should be set when setting the parameter
 
     public:
         inline SetOnce () {}
-        inline SetOnce (const type new_value): value (new_value) {}
+        inline SetOnce (const type new_value, const string name): value (new_value), var_name(name) {}
         inline SetOnce (const SetOnce& s):
             already_set (s.already_set),
-            value       (s.value) {};
+            value       (s.value),
+						var_name(s.var_name) {};
 
-        inline void set (const type new_value)
+        inline void set (const type new_value, const string name)
         {
             if (already_set)
             {
                 if (value != new_value)
                 {
-                    std::cout << "ERROR value = " << value << " new value = " << new_value << std::endl;
+                    std::cout << "variable: " << var_name << " ERROR value = " << value << " new value = " << new_value << std::endl;
                     throw DoubleSetException ();
                 }
             }
             else
             {
+								var_name = name;
                 already_set = true;
                 value       = new_value;
             }
         }
 
 
-        inline void set_default (const type new_value)
+        inline void set_default (const type new_value, const string name)
         {
             if (already_set)
             {
                 if (value != new_value)
                 {
-                    std::cout << "ERROR value = " << value << " new value = " << new_value << std::endl;
+                    std::cout << "variable: " << var_name << " ERROR value = " << value << " new value = " << new_value << std::endl;
                     throw DoubleSetException ();
                 }
             }
             else
             {
+								var_name = name;
                 default_set = true;
                 value       = new_value;
             }
