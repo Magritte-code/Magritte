@@ -756,10 +756,15 @@ accel inline void Solver :: get_eta_and_chi <None> (
         eta += prof * model.lines.emissivity(p, l);
         chi += prof * model.lines.opacity   (p, l);
     }
-    if (chi<0.0)
-    {chi-=model.parameters->min_opacity;}
-    else
-    {chi+=model.parameters->min_opacity;}
+    //Correct way of bounding from below; should be able to deal with very minor computation errors around 0.
+    if (-model.parameters->min_opacity<chi)
+    {
+        chi=std::max(model.parameters->min_opacity, chi);
+        // chi+=model.parameters->min_opacity+std::max((Real) 0.0,-chi);
+    }
+    // {chi-=model.parameters->min_opacity;}
+    // else
+    // {chi+=model.parameters->min_opacity;}
     // {chi=std::min(-model.parameters->min_opacity, chi);}
     // else
     // {chi=std::max( model.parameters->min_opacity, chi);}
