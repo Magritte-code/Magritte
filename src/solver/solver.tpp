@@ -750,10 +750,16 @@ accel inline void Solver :: get_eta_and_chi <None> (
     for (Size l = 0; l < model.parameters->nlines(); l++)
     {
         const Real diff = freq - model.lines.line[l];
-        const Real prof = freq * gaussian (model.lines.inverse_width(p, l), diff);
+        const Real inv_width = model.lines.inverse_width(p, l);
+        //TODO: precompute this/use cheap heuristic/search the useful lines, instead of doing all the if-clauses inside
+        //gaussians might be too expensive to compute, so not computing almost zero contributions is better
+        if (std::abs(diff*inv_width)<model.parameters->max_distance_opacity_contribution)
+        {
+            const Real prof = freq * gaussian (model.lines.inverse_width(p, l), diff);
+            eta += prof * model.lines.emissivity(p, l);
+            chi += prof * model.lines.opacity   (p, l);
+        }
 
-        eta += prof * model.lines.emissivity(p, l);
-        chi += prof * model.lines.opacity   (p, l);
     }
 }
 
