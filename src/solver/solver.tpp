@@ -726,6 +726,92 @@ accel inline Real Solver :: boundary_intensity (const Model& model, const Size p
 }
 
 
+//Linearly searching the lines for heuristically finding lines closeby to freq
+//uses previous information in order to speed up the search; should be almost (O(N close lines))
+//supports setting two frequencies (+ standard overestimation of the line width) to search inbetween
+//TODO: figure out whether this paralellizes fine on a gpu
+accel inline void Solver :: set_sorted_line_bounds(const Model& model, Real left_freq, Real right_freq, Size p)
+{
+
+    //Note: approximates the line frequencies by taking the requested frequency instead
+    // Should not be an issue, as the line widths are typically tiny, compared to the line frequency itself
+    // using right_freq, as it should still be an overestimate
+    Real upper_bound_line_width = model.parameters->max_distance_opacity_contribution * model.thermodynamics.profile_width_upper_bound_with_linefreq(p, right_freq);
+    // Vector<Real>& sorted_line_freqs = model.lines.sorted_line;
+    //get left line bound
+    Real left_freq_bound = left_freq - upper_bound_line_width;
+    Real right_freq_bound = right_freq + upper_bound_line_width;
+
+    //or just use default search algorithms
+    left_line_bound_()=std::lower_bound(model.lines.sorted_line.begin(), model.lines.sorted_line.end(), left_freq_bound) - model.lines.sorted_line.begin();
+    right_line_bound_()=std::upper_bound(model.lines.sorted_line.begin(), model.lines.sorted_line.end(), right_freq_bound) - model.lines.sorted_line.begin();
+
+    // // Size& left_line_bound = left_line_bound_();
+    // // Size& right_line_bound = right_line_bound_();
+    // //Note: approximates the line frequencies by taking the requested frequency instead
+    // // Should not be an issue, as the line widths are typically tiny, compared to the line frequency itself
+    // // using right_freq, as it should still be an overestimate
+    // Real upper_bound_line_width = model.parameters->max_distance_opacity_contribution * model.thermodynamics.profile_width_upper_bound_with_linefreq(p, right_freq);
+    // // Vector<Real>& sorted_line_freqs = model.lines.sorted_line;
+    // //get left line bound
+    // Real left_freq_bound = left_freq - upper_bound_line_width;
+    // Real right_freq_bound = right_freq + upper_bound_line_width;
+    // //using the previous left line index to start the linear search
+    // Size temp_line_index = left_line_bound_();
+    // Real temp_line_freq = model.lines.sorted_line[temp_line_index];
+    //
+    // //if the left index needs to search to the left, go left
+    // if (left_freq_bound < temp_line_freq)
+    // {
+    //     while (temp_line_index>0)
+    //     {
+    //         temp_line_index--;
+    //         temp_line_freq = model.lines.sorted_line[temp_line_index];
+    //         //testing out next index
+    //         if (temp_line_freq < left_freq_bound)
+    //         {
+    //             //index we needed was the previous one, as this one is too far to the left
+    //             temp_line_index++;
+    //             break;
+    //         }
+    //     }
+    // }
+    // else
+    // {//otherwise go right
+    //     while (temp_line_index<model.parameters->nlines())
+    //     {
+    //         temp_line_index++;
+    //         temp_line_freq = model.lines.sorted_line[temp_line_index];
+    //         if (temp_line_freq >= left_freq_bound)//as soon as we reach the minimum freq, stop
+    //         {
+    //             break;
+    //         }
+    //     }
+    // }
+    // left_line_bound_() = temp_line_index;
+    //
+    // //It is a given that the right bound index should be >= than the left bound index
+    // // so we only need to search to the right of that index
+    // // temp_right_line_index = left_line_bound;
+    //
+    // while (temp_line_index<=model.parameters->nlines())
+    // {
+    //     temp_line_freq = model.lines.sorted_line[temp_line_index];
+    //     if (temp_line_freq > right_freq_bound)
+    //     {
+    //         temp_line_index--;
+    //         break;
+    //     }
+    //     temp_line_index++;//we want the right line bound to be greater than the last last available index
+    // }
+    //
+    // right_line_bound_() = temp_line_index;
+}
+
+
+
+
+
 ///  Getter for the emissivity (eta) and the opacity (chi)
 ///    @param[in]  model : reference to model object
 ///    @param[in]  p     : index of the point
@@ -740,27 +826,73 @@ accel inline void Solver :: get_eta_and_chi <None> (
     const Size   ll,  // dummy variable
     const Real   freq,
           Real&  eta,
-          Real&  chi ) const
+          Real&  chi )
 {
     // Initialize
     eta = 0.0;
     chi = model.parameters->min_opacity;
 
-    // Set line emissivity and opacity
-    for (Size l = 0; l < model.parameters->nlines(); l++)
-    {
-        const Real diff = freq - model.lines.line[l];
-        const Real inv_width = model.lines.inverse_width(p, l);
-        //TODO: precompute this/use cheap heuristic/search the useful lines, instead of doing all the if-clauses inside
-        //gaussians might be too expensive to compute, so not computing almost zero contributions is better
-        if (std::abs(diff*inv_width)<model.parameters->max_distance_opacity_contribution)
-        {
-            const Real prof = freq * gaussian (model.lines.inverse_width(p, l), diff);
-            eta += prof * model.lines.emissivity(p, l);
-            chi += prof * model.lines.opacity   (p, l);
-        }
+    // set_sorted_line_bounds(model, freq, freq, p);
+    //
+    // const Size left_line_bound = left_line_bound_();
+    // const Size right_line_bound = right_line_bound_();
+    // for (Size sort_l = left_line_bound; sort_l < right_line_bound; sort_l++)
+    // {
+    //     // TODO: map sorted line index to original line index
+    //     const Size l = model.lines.sorted_line_map[sort_l];
+    //     const Real diff = freq - model.lines.line[l];
+    //     const Real inv_width = model.lines.inverse_width(p, l);
+    //     const Real prof = freq * gaussian (model.lines.inverse_width(p, l), diff);
+    //     eta += prof * model.lines.emissivity(p, l);
+    //     chi += prof * model.lines.opacity   (p, l);
+    // }
 
+
+    // set_sorted_line_bounds(model, freq, freq, p);
+
+    const Real upper_bound_line_width = model.parameters->max_distance_opacity_contribution * model.thermodynamics.profile_width_upper_bound_with_linefreq(p, freq);
+    const Real left_freq_bound = freq - upper_bound_line_width;
+    const Real right_freq_bound = freq + upper_bound_line_width;
+
+    //or just use default search algorithms, obtaining iterators
+    auto left_line_bound=std::lower_bound(model.lines.sorted_line.begin(), model.lines.sorted_line.end(), left_freq_bound);
+    auto right_line_bound=std::upper_bound(model.lines.sorted_line.begin(), model.lines.sorted_line.end(), right_freq_bound);
+
+    // std::cout<<"left: "<<left_line_bound-model.lines.sorted_line.begin()<<std::endl;
+    // std::cout<<"right: "<<right_line_bound-model.lines.sorted_line.begin()<<std::endl;
+
+    for (auto freq_sort_l = left_line_bound; freq_sort_l != right_line_bound; freq_sort_l++)
+    {
+        const Size sort_l = freq_sort_l-model.lines.sorted_line.begin();
+        // std::cout<<"sort_l: "<<sort_l<<std::endl;
+        // mapping sorted line index to original line index
+        const Size l = model.lines.sorted_line_map[sort_l];
+        // const Real diff = freq - model.lines.line[l];
+        const Real diff = freq - *freq_sort_l; //should be equal to the previous line of code
+        const Real inv_width = model.lines.inverse_width(p, l);
+        const Real prof = freq * gaussian (model.lines.inverse_width(p, l), diff);
+        eta += prof * model.lines.emissivity(p, l);
+        chi += prof * model.lines.opacity   (p, l);
     }
+
+
+    // // non-fancy version (evaluating single if seems to be way faster than actively searching the close indices)
+    // // Set line emissivity and opacity
+    // for (Size l = 0; l < model.parameters->nlines(); l++)
+    // {
+    //     const Real diff = freq - model.lines.line[l];
+    //     const Real inv_width = model.lines.inverse_width(p, l);
+    //     //TODO: precompute this/use cheap heuristic/search the useful lines, instead of doing all the if-clauses inside
+    //     //as gaussians might be too expensive to compute, not computing almost zero contributions is better
+    //
+    //     // if (std::abs(diff*inv_width)<model.parameters->max_distance_opacity_contribution)
+    //     // {
+    //         const Real prof = freq * gaussian (model.lines.inverse_width(p, l), diff);
+    //         eta += prof * model.lines.emissivity(p, l);
+    //         chi += prof * model.lines.opacity   (p, l);
+    //     // }
+    //
+    // }
 }
 
 
@@ -779,7 +911,7 @@ accel inline void Solver :: get_eta_and_chi <OneLine> (
     const Size   l,
     const Real   freq,
           Real&  eta,
-          Real&  chi ) const
+          Real&  chi )
 {
     const Real diff = freq - model.lines.line[l];
     const Real prof = freq * gaussian (model.lines.inverse_width(p, l), diff);
@@ -1199,9 +1331,51 @@ inline void Solver :: compute_S_dtau_line_integrated <OneLine> (Model& model, Si
 template<>
 inline void Solver :: compute_S_dtau_line_integrated <None> (Model& model, Size currpoint, Size nextpoint, Size lineidx, Real currfreq, Real nextfreq, Real dZ, Real& dtau, Real& Scurr, Real& Snext)
 {
-    Real sum_dtau=0.0;
+    Real sum_dtau=0.0; //division by zero might occur otherwise
+    // Real sum_dtau=model.parameters->min_dtau; //division by zero might occur otherwise
     Real sum_dtau_times_Scurr=0.0;
     Real sum_dtau_times_Snext=0.0;
+
+    // TODO: figure out how to include the simple approximation of not using all ... in this thing
+    //  The main problem is that we will return 0 sources functions...
+    // Real left_freq;
+    // Real right_freq;
+    //
+    // //err, compiler will probably figure out that I just want these two values ordered
+    // if (currfreq < nextfreq)
+    // {
+    //     left_freq = currfreq;
+    //     right_freq = nextfreq;
+    // }
+    // else
+    // {
+    //     right_freq = currfreq;
+    //     left_freq = nextfreq;
+    // }
+    //
+    // //using maximum of bounds on the two points to get an upper bound for the line width
+    // const Real curr_bound_line_width = model.parameters->max_distance_opacity_contribution * model.thermodynamics.profile_width_upper_bound_with_linefreq(currpoint, right_freq);
+    // const Real next_bound_line_width = model.parameters->max_distance_opacity_contribution * model.thermodynamics.profile_width_upper_bound_with_linefreq(nextpoint, right_freq);
+    // const Real upper_bound_line_width = std::max(curr_bound_line_width, next_bound_line_width);
+    //
+    // const Real left_freq_bound = left_freq - upper_bound_line_width;
+    // const Real right_freq_bound = right_freq + upper_bound_line_width;
+    //
+    // //apply default search algorithms on the bounds, obtaining iterators
+    // auto left_line_bound=std::lower_bound(model.lines.sorted_line.begin(), model.lines.sorted_line.end(), left_freq_bound);
+    // auto right_line_bound=std::upper_bound(model.lines.sorted_line.begin(), model.lines.sorted_line.end(), right_freq_bound);
+    //
+    // for (auto freq_sort_l = left_line_bound; freq_sort_l != right_line_bound; freq_sort_l++)
+    // {
+    //     const Size sort_l = freq_sort_l - model.lines.sorted_line.begin();
+    //     // const Real freq = *freq_sort_l;
+    //     // TODO: map sorted line index to original line index
+    //     const Size l = model.lines.sorted_line_map[sort_l];
+
+    //
+    // //TODO: do this only for lines close to the requested frequencies
+    // //TODO: define 'close', as we need two frequencies at least
+    // //OR just refactor searching thing to accept a lower and higher frequency
     for (Size l=0; l<model.parameters->nlines(); l++)
     {
         Real line_dtau=compute_dtau_single_line(model, currpoint, nextpoint, l, currfreq, nextfreq, dZ);
@@ -1892,7 +2066,7 @@ accel inline void Solver :: solve_feautrier_order_2_uv (Model& model, const Size
 }
 
 
-accel inline void Solver :: set_eta_and_chi (Model& model, const Size rr) const
+accel inline void Solver :: set_eta_and_chi (Model& model, const Size rr)
 {
     model.eta.resize (model.parameters->npoints(), model.parameters->nfreqs());
     model.chi.resize (model.parameters->npoints(), model.parameters->nfreqs());
