@@ -55,7 +55,6 @@ class SetOnce
             }
             else
             {
-								// var_name = name;
                 already_set = true;
                 value       = new_value;
             }
@@ -74,7 +73,6 @@ class SetOnce
             }
             else
             {
-								// var_name = name;
                 default_set = true;
                 value       = new_value;
             }
