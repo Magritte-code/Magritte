@@ -59,14 +59,14 @@ struct Parameters
     Parameters ()
     {
         // Disable scattering
-        use_scattering__.set (false, "use_scattering");
+        use_scattering__.set (false);
 
         // Set version
-        version__.set (MAGRITTE_VERSION, "version");
+        version__.set (MAGRITTE_VERSION);
 
         // Set defaults
-        spherical_symmetry__  .set_default (false, "spherical_symmetry");
-        adaptive_ray_tracing__.set_default (false, "adaptive_ray_tracing");
+        spherical_symmetry__  .set_default (false);
+        adaptive_ray_tracing__.set_default (false);
     };
 
 
