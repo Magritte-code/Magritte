@@ -239,8 +239,7 @@ def run_model (a_or_b, nosave=False, use_widgets=True):
     if a_or_b == 'a':
         #error bounds are chosen somewhat arbitrarily, based on previously obtained results; this should prevent serious regressions.
         FEAUTRIER_AS_EXPECTED=(np.mean(error_u_2f)<3e-4)
-        #not that well implmented, so less accurate
-        FIRSTORDER_AS_EXPECTED=(np.mean(error_u_0s)<0.015)
+        FIRSTORDER_AS_EXPECTED=(np.mean(error_u_0s)<2.7e-4)
 
         if not FIRSTORDER_AS_EXPECTED:
             print("First order solver mean error too large: ", np.mean(error_u_0s))
