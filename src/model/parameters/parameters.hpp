@@ -10,9 +10,9 @@
 
 #define CREATE_PARAMETER(type, x)                                               \
     private:                                                                    \
-        SetOnce<type> x##__;                                                    \
+        SetOnce<type> x##__{#x};                                                \
     public:                                                                     \
-        inline void set_##x (const type value)       {       x##__.set(value);};\
+        inline void set_##x (const type value)       {x##__.set(value);};\
         inline type       x (                ) const {return x##__.get(     );};
 
 

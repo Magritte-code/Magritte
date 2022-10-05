@@ -167,7 +167,7 @@ def run_model (nosave=False):
 
     #error bounds are chosen somewhat arbitrarily, based on previously obtained results; this should prevent serious regressions.
     FEAUTRIER_AS_EXPECTED=(np.max(error_u_2f)<1.7e-4)
-    FIRSTORDER_AS_EXPECTED=(np.max(error_u_0s)<6.0e-9)
+    FIRSTORDER_AS_EXPECTED=(np.max(error_u_0s)<5.1e-8)
 
     if not FIRSTORDER_AS_EXPECTED:
         print("First order solver max error too large: ", np.max(error_u_0s))

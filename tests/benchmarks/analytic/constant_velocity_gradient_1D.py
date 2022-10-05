@@ -251,8 +251,8 @@ def run_model (nosave=False, benchindex=0, use_widgets=True):
         FEAUTRIER_AS_EXPECTED=(np.mean(error_u_2f)<5e-7)
         FIRSTORDER_AS_EXPECTED=(np.mean(error_u_0s)<5e-7)
     elif(benchindex==3):
-        FEAUTRIER_AS_EXPECTED=(np.mean(error_u_2f)<1.1e-8)
-        FIRSTORDER_AS_EXPECTED=(np.mean(error_u_0s)<2e-8)
+        FEAUTRIER_AS_EXPECTED=(np.mean(error_u_2f)<5.3e-8)
+        FIRSTORDER_AS_EXPECTED=(np.mean(error_u_0s)<5.4e-8)
 
     if not FIRSTORDER_AS_EXPECTED:
         print("First order solver mean error too large: ", np.mean(error_u_0s), "bench nr: ", benchindex)

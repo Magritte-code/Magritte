@@ -138,18 +138,18 @@ PYBIND11_MODULE (core, module)
     // Model
     py::class_<Model> (module, "Model", "Class containing the Magritte model.")
         // attributes
-        .def_readwrite ("parameters",         &Model::parameters)
-        .def_readwrite ("geometry",           &Model::geometry)
-        .def_readwrite ("chemistry",          &Model::chemistry)
-        .def_readwrite ("lines",              &Model::lines)
-        .def_readwrite ("thermodynamics",     &Model::thermodynamics)
-        .def_readwrite ("radiation",          &Model::radiation)
+        .def_readonly  ("parameters",         &Model::parameters)
+        .def_readonly  ("geometry",           &Model::geometry)
+        .def_readonly  ("chemistry",          &Model::chemistry)
+        .def_readonly  ("lines",              &Model::lines)
+        .def_readonly  ("thermodynamics",     &Model::thermodynamics)
+        .def_readonly  ("radiation",          &Model::radiation)
         .def_readonly  ("images",             &Model::images)
         .def_readwrite ("eta",                &Model::eta)
         .def_readwrite ("chi",                &Model::chi)
-        .def_readwrite ( "S_ray",             &Model::   S_ray)
-        .def_readwrite ("dtau_ray",           &Model::dtau_ray)
-        .def_readwrite (   "u_ray",           &Model::   u_ray)
+        .def_readonly  ( "S_ray",             &Model::   S_ray)
+        .def_readonly  ("dtau_ray",           &Model::dtau_ray)
+        .def_readonly  (   "u_ray",           &Model::   u_ray)
         .def_readwrite ("boundary_condition", &Model::boundary_condition)
         .def_readwrite ("column",             &Model::column)
         .def_readwrite ("density",            &Model::density)
@@ -328,8 +328,8 @@ PYBIND11_MODULE (core, module)
         .def ("set_spherical_symmetry",       &Parameters::set_spherical_symmetry  , "Set whether or not to use spherical symmetry")
         .def ("set_adaptive_ray_tracing",     &Parameters::set_adaptive_ray_tracing, "Set whether or not to use adaptive ray tracing.")
         // getters
-		.def ("version",                      &Parameters::version                 , "Magritte version number.")
-		.def ("model_name",                   &Parameters::model_name              , "Model name.")
+		    .def ("version",                      &Parameters::version                 , "Magritte version number.")
+		    .def ("model_name",                   &Parameters::model_name              , "Model name.")
         .def ("dimension",                    &Parameters::dimension               , "Spatial dimension of the model.")
         .def ("npoints",                      &Parameters::npoints                 , "Number of points.")
         .def ("nrays",                        &Parameters::nrays                   , "Number of rays.")
@@ -351,10 +351,10 @@ PYBIND11_MODULE (core, module)
     // Geometry
     py::class_<Geometry> (module, "Geometry", "Class containing the model geometry.")
         // attributes
-        .def_readwrite ("points",   &Geometry::points,   "Points object.")
-        .def_readwrite ("rays",     &Geometry::rays,     "Rays object.")
-        .def_readwrite ("boundary", &Geometry::boundary, "Boundary object")
-        .def_readwrite ("lengths",  &Geometry::lengths,  "Array containing the lengths of the rays for each direction and point.")
+        .def_readonly ("points",   &Geometry::points,   "Points object.")
+        .def_readonly ("rays",     &Geometry::rays,     "Rays object.")
+        .def_readonly ("boundary", &Geometry::boundary, "Boundary object")
+        .def_readonly ("lengths",  &Geometry::lengths,  "Array containing the lengths of the rays for each direction and point.")
         // io
         .def ("read",               &Geometry::read, "Read object from file.")
         .def ("write",              &Geometry::write, "Write object to file.");
@@ -367,7 +367,7 @@ PYBIND11_MODULE (core, module)
         .def_readwrite ("velocity",        &Points::velocity, "Array with velocity vectors of the points (as a fraction of the speed of light).")
         .def_readwrite ("neighbors",       &Points::neighbors, "Linearised array of neighbours of each point.")
         .def_readwrite ("n_neighbors",     &Points::n_neighbors, "Number of neighbours of each point.")
-        .def_readwrite ("cum_n_neighbors", &Points::cum_n_neighbors, "Cumulative number of neighbours of each point.")
+        .def_readonly  ("cum_n_neighbors", &Points::cum_n_neighbors, "Cumulative number of neighbours of each point.")
         // io
         .def ("read",                      &Points::read, "Read object from file.")
         .def ("write",                     &Points::write, "Write object to file.");
@@ -377,7 +377,7 @@ PYBIND11_MODULE (core, module)
     py::class_<Rays> (module, "Rays", "Class containing the (light) rays (directional discretisation).")
         // attributes
         .def_readwrite ("direction", &Rays::direction, "Array with direction vector of each ray.")
-        .def_readwrite ("antipod",   &Rays::antipod, "Array with the number of the antipodal ray for each ray.")
+        .def_readonly  ("antipod",   &Rays::antipod, "Array with the number of the antipodal ray for each ray.")
         .def_readwrite ("weight",    &Rays::weight, "Array with the weights that each ray contributes in integrals over directions.")
         // io
         .def ("read",                &Rays::read, "Read object from file.")
@@ -396,7 +396,7 @@ PYBIND11_MODULE (core, module)
     py::class_<Boundary> (module, "Boundary", "Class containing the model boundary.")
         // attributes
         .def_readwrite ("boundary2point",       &Boundary::boundary2point, "Array with point index for each boundary point.")
-        .def_readwrite ("point2boundary",       &Boundary::point2boundary, "Array with boundary index for each point.")
+        .def_readonly  ("point2boundary",       &Boundary::point2boundary, "Array with boundary index for each point.")
         .def_readwrite ("boundary_temperature", &Boundary::boundary_temperature, "Array with radiative temperature for each boundary point (only relevant for thermal boundary conditions).")
         // functions
         .def ("set_boundary_condition",         &Boundary::set_boundary_condition, "Setter for the boundary condition.")
@@ -409,8 +409,8 @@ PYBIND11_MODULE (core, module)
     // Thermodynamics
     py::class_<Thermodynamics> (module, "Thermodynamics", "Class containing the thermodynamics.")
         // attributes
-        .def_readwrite ("temperature", &Thermodynamics::temperature, "Temperature object.")
-        .def_readwrite ("turbulence",  &Thermodynamics::turbulence, "Turbulence object.")
+        .def_readonly ("temperature", &Thermodynamics::temperature, "Temperature object.")
+        .def_readonly ("turbulence",  &Thermodynamics::turbulence, "Turbulence object.")
         // io
         .def ("read",                  &Thermodynamics::read, "Read object from file.")
         .def ("write",                 &Thermodynamics::write, "Write object to file.");
@@ -437,7 +437,7 @@ PYBIND11_MODULE (core, module)
     // Chemistry
     py::class_<Chemistry> (module, "Chemistry", "Class containing the chemistry.")
         // attributes
-        .def_readwrite ("species", &Chemistry::species, "Species object.")
+        .def_readonly ("species", &Chemistry::species, "Species object.")
         // functions
         .def ("read",              &Chemistry::read,  "Read object from file.")
         .def ("write",             &Chemistry::write, "Write object to file.");
@@ -456,11 +456,11 @@ PYBIND11_MODULE (core, module)
     // Lines
     py::class_<Lines> (module, "Lines", "Class containing the lines and their data.")
         // attributes
-        .def_readwrite ("lineProducingSpecies", &Lines::lineProducingSpecies, "Vector of LineProducingSpecies.")
-        .def_readwrite ("emissivity",           &Lines::emissivity, "Array with emissivities for each point and frequency bin.")
-        .def_readwrite ("opacity",              &Lines::opacity, "Array with opacities for each point and frequency bin.")
-        .def_readwrite ("inverse_width",        &Lines::inverse_width, "Array with the inverse widths for each line at each point.")
-        .def_readwrite ("line",                 &Lines::line, "Array with the line (centre) frequencies.")
+        .def_readonly ("lineProducingSpecies", &Lines::lineProducingSpecies, "Vector of LineProducingSpecies.")
+        .def_readonly ("emissivity",           &Lines::emissivity, "Array with emissivities for each point and frequency bin.")
+        .def_readonly ("opacity",              &Lines::opacity, "Array with opacities for each point and frequency bin.")
+        .def_readonly ("inverse_width",        &Lines::inverse_width, "Array with the inverse widths for each line at each point.")
+        .def_readonly ("line",                 &Lines::line, "Array with the line (centre) frequencies.")
         // functions
         .def ("read",                           &Lines::read, "Read object from file.")
         .def ("write",                          &Lines::write, "Write object to file.")
@@ -471,29 +471,29 @@ PYBIND11_MODULE (core, module)
     // LineProducingSpecies
     py::class_<LineProducingSpecies> (module, "LineProducingSpecies", "Class containing a line producing species.")
         // attributes
-        .def_readwrite ("linedata",         &LineProducingSpecies::linedata, "Linedata object.")
-        .def_readwrite ("quadrature",       &LineProducingSpecies::quadrature, "Quadrature object.")
-        .def_readwrite ("Lambda",           &LineProducingSpecies::lambda) // "lambda" is invalid in Python, use "Lambda"
+        .def_readonly  ("linedata",         &LineProducingSpecies::linedata, "Linedata object.")
+        .def_readonly  ("quadrature",       &LineProducingSpecies::quadrature, "Quadrature object.")
+        .def_readonly  ("Lambda",           &LineProducingSpecies::lambda, "Lambda object") // "lambda" is invalid in Python, use "Lambda"
         .def_readwrite ("Jeff",             &LineProducingSpecies::Jeff, "Array with effective mean intensities in the lines.")
-        .def_readwrite ("Jdif",             &LineProducingSpecies::Jdif)
         .def_readwrite ("Jlin",             &LineProducingSpecies::Jlin)
+        .def_readonly  ("Jdif",             &LineProducingSpecies::Jdif)
 
-        .def_readwrite ("J",                &LineProducingSpecies::J,       "Isotropic radiation field.")
-        .def_readwrite ("J2_0",             &LineProducingSpecies::J2_0,    "Anisotropic radiation field tensor element 0")
-        .def_readwrite ("J2_1_Re",          &LineProducingSpecies::J2_1_Re, "Anisotropic radiation field tensor element 1 (real part)")
-        .def_readwrite ("J2_1_Im",          &LineProducingSpecies::J2_1_Im, "Anisotropic radiation field tensor element 1 (imaginary part)")
-        .def_readwrite ("J2_2_Re",          &LineProducingSpecies::J2_2_Re, "Anisotropic radiation field tensor element 2 (real part)")
-        .def_readwrite ("J2_2_Im",          &LineProducingSpecies::J2_2_Im, "Anisotropic radiation field tensor element 2 (imaginary part)")
+        .def_readonly  ("J",                &LineProducingSpecies::J,       "Isotropic radiation field.")
+        .def_readonly  ("J2_0",             &LineProducingSpecies::J2_0,    "Anisotropic radiation field tensor element 0")
+        .def_readonly  ("J2_1_Re",          &LineProducingSpecies::J2_1_Re, "Anisotropic radiation field tensor element 1 (real part)")
+        .def_readonly  ("J2_1_Im",          &LineProducingSpecies::J2_1_Im, "Anisotropic radiation field tensor element 1 (imaginary part)")
+        .def_readonly  ("J2_2_Re",          &LineProducingSpecies::J2_2_Re, "Anisotropic radiation field tensor element 2 (real part)")
+        .def_readonly  ("J2_2_Im",          &LineProducingSpecies::J2_2_Im, "Anisotropic radiation field tensor element 2 (imaginary part)")
         .def_readwrite ("nr_line",          &LineProducingSpecies::nr_line)
         .def_readwrite ("population",       &LineProducingSpecies::population, "Array with level populations for each point.")
         .def_readwrite ("population_tot",   &LineProducingSpecies::population_tot, "Array with the sum of all level populations at each point. (Should be equal to the abundance of the species.)")
-        .def_readwrite ("population_prev1", &LineProducingSpecies::population_prev1)
-        .def_readwrite ("population_prev2", &LineProducingSpecies::population_prev2)
-        .def_readwrite ("population_prev3", &LineProducingSpecies::population_prev3)
-        .def_readwrite ("populations",      &LineProducingSpecies::populations)
-        .def_readwrite ("RT",               &LineProducingSpecies::RT)
-        .def_readwrite ("LambdaStar",       &LineProducingSpecies::LambdaStar)
-        .def_readwrite ("LambdaTest",       &LineProducingSpecies::LambdaTest)
+        .def_readonly  ("population_prev1", &LineProducingSpecies::population_prev1)
+        .def_readonly  ("population_prev2", &LineProducingSpecies::population_prev2)
+        .def_readonly  ("population_prev3", &LineProducingSpecies::population_prev3)
+        .def_readonly  ("populations",      &LineProducingSpecies::populations)
+        .def_readonly  ("RT",               &LineProducingSpecies::RT)
+        .def_readonly  ("LambdaStar",       &LineProducingSpecies::LambdaStar)
+        .def_readonly  ("LambdaTest",       &LineProducingSpecies::LambdaTest)
         // functions
         .def ("read",                       &LineProducingSpecies::read, "Read object from file.")
         .def ("write",                      &LineProducingSpecies::write, "Write object to file.")
@@ -503,11 +503,11 @@ PYBIND11_MODULE (core, module)
     // Lambda
     py::class_<Lambda> (module, "Lambda")
         // attributes
-        .def_readwrite ("Ls",   &Lambda::Ls)
-        .def_readwrite ("nr",   &Lambda::nr)
+        .def_readonly ("Ls",   &Lambda::Ls)
+        .def_readonly ("nr",   &Lambda::nr)
         // .def_readwrite ("size", &Lambda::size)
-        .def_readwrite ("Lss",  &Lambda::Lss)
-        .def_readwrite ("nrs",  &Lambda::nrs)
+        .def_readonly ("Lss",  &Lambda::Lss)
+        .def_readonly ("nrs",  &Lambda::nrs)
         // functions
         .def ("add_element",    &Lambda::add_element)
         .def ("linearize_data", &Lambda::linearize_data)
@@ -571,11 +571,11 @@ PYBIND11_MODULE (core, module)
     // Radiation
     py::class_<Radiation> (module, "Radiation", "Class containing the radiation field.")
         // attributes
-        .def_readwrite ("frequencies", &Radiation::frequencies, "Frequencies object.")
-        .def_readwrite ("I",           &Radiation::I, "Array containing the intensity for each ray, point, and frequency bin.")
-        .def_readwrite ("u",           &Radiation::u, "Array containing the mean intensity up and down a ray for each ray pair, point, and frequency bin.")
-        .def_readwrite ("v",           &Radiation::v, "Array containing the flux up and down a ray for each ray pair, point, and frequency bin.")
-        .def_readwrite ("J",           &Radiation::J, "Array containing the mean intensity for each point and frequency bin.")
+        .def_readonly ("frequencies", &Radiation::frequencies, "Frequencies object.")
+        .def_readonly ("I",           &Radiation::I, "Array containing the intensity for each ray, point, and frequency bin.")
+        .def_readonly ("u",           &Radiation::u, "Array containing the mean intensity up and down a ray for each ray pair, point, and frequency bin.")
+        .def_readonly ("v",           &Radiation::v, "Array containing the flux up and down a ray for each ray pair, point, and frequency bin.")
+        .def_readonly ("J",           &Radiation::J, "Array containing the mean intensity for each point and frequency bin.")
         // functions
         .def ("read",                  &Radiation::read, "Read object from file.")
         .def ("write",                 &Radiation::write, "Write object to file.");
@@ -584,7 +584,7 @@ PYBIND11_MODULE (core, module)
     // Frequencies
     py::class_<Frequencies> (module, "Frequencies", "Class containing the (local) frequency bins.")
         // attributes
-        .def_readwrite ("nu", &Frequencies::nu, "Array of frequency bins for each point in the model.")
+        .def_readonly ("nu", &Frequencies::nu, "Array of frequency bins for each point in the model.")
         // functions
         .def ("read",         &Frequencies::read, "Read object from file.")
         .def ("write",        &Frequencies::write, "Write object to file.");
