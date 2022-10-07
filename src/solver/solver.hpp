@@ -120,7 +120,7 @@ struct Solver
         const Size   l,
         const Real   freq,
               Real&  eta,
-              Real&  chi );
+              Real&  chi ) const;
 
     accel inline void set_sorted_line_bounds(const Model& model, Real left_freq, Real right_freq, Size p);
 
@@ -190,7 +190,7 @@ struct Solver
 
     // Getters for emissivities, opacities, and boundary conditions
     ///////////////////////////////////////////////////////////////
-    accel inline void set_eta_and_chi        (Model& model, const Size rr);
+    accel inline void set_eta_and_chi        (Model& model, const Size rr) const;
     accel inline void set_boundary_condition (Model& model) const;
 
 

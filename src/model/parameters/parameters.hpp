@@ -54,7 +54,7 @@ struct Parameters
     bool store_intensities           = false;
     bool use_Ng_acceleration         = true;
     bool one_line_approximation      = false;
-    Real max_distance_opacity_contribution = 5.0;//maximal distance at which a line can contribute to a frequency
+    Real max_distance_opacity_contribution = 10.0;//maximal distance at which a line can contribute to a frequency
 
 
     Parameters ()
