@@ -746,12 +746,10 @@ accel inline void Solver :: get_eta_and_chi <None> (
     eta = 0.0;
     chi = model.parameters->min_opacity;
 
-
     // Set line emissivity and opacity
     for (Size l = 0; l < model.parameters->nlines(); l++)
     {
         const Real diff = freq - model.lines.line[l];
-        const Real inv_width = model.lines.inverse_width(p, l);
         const Real prof = freq * gaussian (model.lines.inverse_width(p, l), diff);
 
         eta += prof * model.lines.emissivity(p, l);
@@ -1224,7 +1222,6 @@ inline void Solver :: compute_S_dtau_line_integrated <OneLine> (Model& model, Si
     //note: due to interaction with dtau when computing all sources individually, we do need to recompute Scurr and Snext for all position increments
 }
 
-
 ///  Computer for the optical depth and source function when computing using the formal line integration
 ///  In case of low velocity differences, almost two times slower
 ///  For high velocity increments however, this does not need any extra interpolation points (-> way faster) (and some extra optimizations are made in the limit of extremely large doppler shift (as erf goes to its limit value)
@@ -1241,11 +1238,9 @@ inline void Solver :: compute_S_dtau_line_integrated <OneLine> (Model& model, Si
 template<>
 inline void Solver :: compute_S_dtau_line_integrated <None> (Model& model, Size currpoint, Size nextpoint, Size lineidx, Real currfreq, Real nextfreq, Real dZ, Real& dtau, Real& Scurr, Real& Snext)
 {
-    Real sum_dtau=0.0; //division by zero might occur otherwise
-    // Real sum_dtau=model.parameters->min_dtau; //division by zero might occur otherwise
+    Real sum_dtau=0.0;
     Real sum_dtau_times_Scurr=0.0;
     Real sum_dtau_times_Snext=0.0;
-
     for (Size l=0; l<model.parameters->nlines(); l++)
     {
         Real line_dtau=compute_dtau_single_line(model, currpoint, nextpoint, l, currfreq, nextfreq, dZ);
@@ -1256,20 +1251,8 @@ inline void Solver :: compute_S_dtau_line_integrated <None> (Model& model, Size 
         sum_dtau_times_Snext+=line_dtau*line_Snext;
     }
     dtau=sum_dtau;
-    const Real bound_min_dtau = model.parameters->min_opacity * dZ;
-    //Correct way of bounding from below; should be able to deal with very minor computation errors around 0.
-    if (-bound_min_dtau<dtau)
-    {
-        dtau=std::max(bound_min_dtau, dtau);
-    }
-    Scurr=sum_dtau_times_Scurr/dtau;
-    Snext=sum_dtau_times_Snext/dtau;
-
-    // std::cout<<"dtau: "<<dtau<<std::endl;
-    // std::cout<<"Scurr: "<<Scurr<<std::endl;
-    // std::cout<<"Snext: "<<Snext<<std::endl;
-
-    //note: due to interaction with dtau when computing all sources individually, we do need to recompute Scurr and Snext for all position increments
+    Scurr=sum_dtau_times_Scurr/sum_dtau;
+    Snext=sum_dtau_times_Snext/sum_dtau;
 }
 
 ///  Computer for the optical depth and source function when computing using the formal line integration
