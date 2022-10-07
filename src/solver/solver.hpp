@@ -6,7 +6,7 @@
 
 ///  Approximation used in the solver
 /////////////////////////////////////
-enum ApproximationType {None, OneLine};
+enum ApproximationType {None, OneLine, CloseLines};
 
 
 struct Solver
@@ -31,10 +31,6 @@ struct Solver
     pc::multi_threading::ThreadPrivate<Size> first_;
     pc::multi_threading::ThreadPrivate<Size> last_;
     pc::multi_threading::ThreadPrivate<Size> n_tot_;
-
-    //indices of the sorted lines (for determining which lines to take into account when computing the opacity)
-    pc::multi_threading::ThreadPrivate<Size> left_line_bound_;
-    pc::multi_threading::ThreadPrivate<Size> right_line_bound_;
 
     pc::multi_threading::ThreadPrivate<Vector<Real>> Su_;
     pc::multi_threading::ThreadPrivate<Vector<Real>> Sv_;
@@ -121,8 +117,6 @@ struct Solver
         const Real   freq,
               Real&  eta,
               Real&  chi ) const;
-
-    accel inline void set_sorted_line_bounds(const Model& model, Real left_freq, Real right_freq, Size p);
 
     template <ApproximationType approx>
     inline void compute_S_dtau_line_integrated (Model& model, Size currpoint, Size nextpoint, Size lineidx, Real currfreq, Real nextfreq, Real dZ, Real& dtau, Real& Scurr, Real& Snext);
