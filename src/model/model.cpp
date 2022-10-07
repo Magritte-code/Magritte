@@ -331,7 +331,7 @@ int Model :: compute_radiation_field_feautrier_order_2 ()
     }
     else
     {
-        if (parameters->nlines()<=1)
+        if (parameters->sum_opacity_emissivity_over_all_lines)
         {
             solver.solve_feautrier_order_2 <None> (*this);
         }
@@ -360,7 +360,7 @@ int Model :: compute_radiation_field_feautrier_order_2_uv ()
     }
     else
     {
-        if (parameters->nlines()<=1)
+        if (parameters->sum_opacity_emissivity_over_all_lines)
         {
             solver.solve_feautrier_order_2_uv <None> (*this);
         }
@@ -389,7 +389,7 @@ int Model :: compute_radiation_field_feautrier_order_2_anis ()
     }
     else
     {
-        if (parameters->nlines()<=1)
+        if (parameters->sum_opacity_emissivity_over_all_lines)
         {
             solver.solve_feautrier_order_2_anis <None> (*this);
         }
@@ -418,7 +418,7 @@ int Model :: compute_radiation_field_feautrier_order_2_sparse ()
     }
     else
     {
-        if (parameters->nlines()<=1)
+        if (parameters->sum_opacity_emissivity_over_all_lines)
         {
             solver.solve_feautrier_order_2_sparse <None> (*this);
         }
