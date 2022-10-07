@@ -781,7 +781,7 @@ accel inline void Solver :: get_eta_and_chi <CloseLines> (
     eta = 0.0;
     chi = model.parameters->min_opacity;
 
-    const Real upper_bound_line_width = model.parameters->max_distance_opacity_contribution * model.thermodynamics.profile_width_upper_bound_with_linefreq(p, freq);
+    const Real upper_bound_line_width = model.parameters->max_distance_opacity_contribution * model.thermodynamics.profile_width_upper_bound_with_linefreq(p, freq, model.lines.max_inverse_mass);
     const Real left_freq_bound = freq - upper_bound_line_width;
     const Real right_freq_bound = freq + upper_bound_line_width;
 
@@ -1310,8 +1310,8 @@ inline void Solver :: compute_S_dtau_line_integrated <CloseLines> (Model& model,
     }
 
     //using maximum of bounds on the two points to get an upper bound for the line width
-    const Real curr_bound_line_width = model.parameters->max_distance_opacity_contribution * model.thermodynamics.profile_width_upper_bound_with_linefreq(currpoint, right_freq);
-    const Real next_bound_line_width = model.parameters->max_distance_opacity_contribution * model.thermodynamics.profile_width_upper_bound_with_linefreq(nextpoint, right_freq);
+    const Real curr_bound_line_width = model.parameters->max_distance_opacity_contribution * model.thermodynamics.profile_width_upper_bound_with_linefreq(currpoint, right_freq, model.lines.max_inverse_mass);
+    const Real next_bound_line_width = model.parameters->max_distance_opacity_contribution * model.thermodynamics.profile_width_upper_bound_with_linefreq(nextpoint, right_freq, model.lines.max_inverse_mass);
     const Real upper_bound_line_width = std::max(curr_bound_line_width, next_bound_line_width);
 
     const Real left_freq_bound = left_freq - upper_bound_line_width;
