@@ -90,6 +90,7 @@ struct Model
     int compute_image_optical_depth               (const Size ray_nr);
     int compute_cooling_collisional ();
     int compute_cooling_radiative ();//using a single iteration
+    int compute_cooling_radiative_shortchar ();//using a single iteration with the short characteristics method
 
     Double1 error_max;
     Double1 error_mean;

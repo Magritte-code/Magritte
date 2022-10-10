@@ -313,7 +313,17 @@ int Model :: compute_radiation_field_shortchar_order_0 ()
 
     Solver solver;
     solver.setup <CoMoving>        (*this);
-    solver.solve_shortchar_order_0 (*this);
+
+    const bool COMPUTE_COOLING = false;
+
+    if (parameters->one_line_approximation)
+    {
+        solver.solve_shortchar_order_0<OneLine, COMPUTE_COOLING> (*this);
+    }
+    else
+    {
+        solver.solve_shortchar_order_0<None, COMPUTE_COOLING> (*this);
+    }
 
     return (0);
 }
@@ -863,6 +873,25 @@ int Model :: compute_cooling_radiative ()
       }
 
       return (0);
+}
+
+int Model :: compute_cooling_radiative_shortchar ()
+{
+    Solver solver;
+    solver.setup <CoMoving>(*this);
+
+    const bool COMPUTE_COOLING = true;
+
+    if (parameters->one_line_approximation)
+    {
+        solver.solve_shortchar_order_0<OneLine, COMPUTE_COOLING> (*this);
+    }
+    else
+    {
+        solver.solve_shortchar_order_0<None, COMPUTE_COOLING> (*this);
+    }
+    
+    return (0);
 }
 
 

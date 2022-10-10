@@ -121,7 +121,7 @@ inline Size Solver :: get_ray_lengths_max (Model& model)
     return geo.lengths_max;
 }
 
-
+template <ApproximationType approx, bool COMPUTE_COOLING>
 inline void Solver :: solve_shortchar_order_0 (Model& model)
 {
     // Allocate memory if not pre-allocated
@@ -132,6 +132,15 @@ inline void Solver :: solve_shortchar_order_0 (Model& model)
         model.radiation.v.resize (model.parameters->hnrays(), model.parameters->npoints(), model.parameters->nfreqs());
         model.radiation.J.resize (                           model.parameters->npoints(), model.parameters->nfreqs());
     }
+
+    if constexpr(COMPUTE_COOLING)
+    {
+        //reset cooling rates
+        for (Size p = 0; p < model.parameters->npoints(); p++)
+        {
+            model.cooling.cooling_rate[p]=0.0;
+        }
+    }else{}
 
     // Initialise Lambda operator
     for (auto &lspec : model.lines.lineProducingSpecies) {lspec.lambda.clear();}
@@ -151,8 +160,8 @@ inline void Solver :: solve_shortchar_order_0 (Model& model)
         {
             //Approach which just accumulates the intensity contributions as the ray is traced
 
-            solve_shortchar_order_0 (model, o, rr);
-            solve_shortchar_order_0 (model, o, ar);
+            solve_shortchar_order_0<approx> (model, o, rr);
+            solve_shortchar_order_0<approx> (model, o, ar);
 
             for (Size f = 0; f < model.parameters->nfreqs(); f++)
             {
@@ -197,6 +206,37 @@ inline void Solver :: solve_shortchar_order_0 (Model& model)
 
     model.radiation.I.copy_ptr_to_vec();
     model.radiation.J.copy_ptr_to_vec();
+
+    if constexpr(COMPUTE_COOLING)
+    {
+        threaded_for (p, model.parameters->npoints(),
+        {
+            for (Size l = 0; l < model.parameters->nlspecs(); l++)
+            {
+                const LineProducingSpecies& lspec=model.lines.lineProducingSpecies[l];
+                for (Size k = 0; k < lspec.linedata.nrad; k++)
+                {
+                    //quicky compute mean line intensity by integrating over the quadrature
+                    //this is much cheaper than evaluating the profile functions all the time
+                    Real Jlin=0.0;
+                    const Size lid = model.lines.line_index(l, k);
+                    const Real linefreq = lspec.linedata.frequency[k];
+                    for (Size z = 0; z < model.parameters->nquads(); z++)
+                    {
+                      Jlin += lspec.quadrature.weights[z] * model.radiation.J(p, lspec.nr_line[p][k][z]);
+                      //Note: more correct would be to add the frequency here,
+                    }
+                    // std::cout<<"Jlin: "<<Jlin<<std::endl;
+                    //line cooling rate maybe gives useful diagonstic, but can be implemented later on.
+                    //line_cooling_rate=same formula
+                    // stored emissitivities and opacities do not include the frequency factor, as this technically changes within the very small frequency range
+                    //Thus this is actually a very minor approximation, replacing the ∫νIϕ_l(ν)dν≃ν_lJ_l
+                    //Also we must integrate over all directions, so times 4π
+                    model.cooling.cooling_rate[p]+=FOUR_PI*linefreq*(model.lines.emissivity(p, lid)-Jlin*model.lines.opacity(p, lid));
+                }
+            }
+        });
+    }
 }
 
 
@@ -812,7 +852,7 @@ accel inline Real trap (const Real x_crt, const Real x_nxt, const double dZ)
 
 
 
-
+template <ApproximationType approx>
 accel inline void Solver :: solve_shortchar_order_0 (
           Model& model,
     const Size   o,
@@ -850,7 +890,7 @@ accel inline void Solver :: solve_shortchar_order_0 (
 
             compute_curr_opacity = true; // for the first point, we need to compute both the curr and next opacity (and source)
 
-            compute_source_dtau<None>(model, crt, nxt, l, freq*shift_c, freq*shift_n, shift_c, shift_n, dZ, compute_curr_opacity, dtau, chi_c[f], chi_n[f], source_c[f], source_n[f]);
+            compute_source_dtau<approx>(model, crt, nxt, l, freq*shift_c, freq*shift_n, shift_c, shift_n, dZ, compute_curr_opacity, dtau, chi_c[f], chi_n[f], source_c[f], source_n[f]);
             dtau = std::max(model.parameters->min_dtau, dtau);
 
             //proper implementation of 2nd order shortchar (not yet times reducing factor of exp(-tau))
@@ -877,12 +917,16 @@ accel inline void Solver :: solve_shortchar_order_0 (
 
             Real eta, chi;//eta is dummy var
             //chi is not necessarily computed, so compute it to be sure
-            get_eta_and_chi <None>(model, o, k, freq_line, eta, chi);
+            get_eta_and_chi <approx>(model, o, k, freq_line, eta, chi);
             Real inverse_chi=1.0/chi;
             Real phi = model.thermodynamics.profile(invr_mass, o, freq_line, freq);
             // const Real lambda_factor = (dtau+expm1f(-dtau))/dtau;// If one wants to compute lambda a bit more accurately in case of dtau≃0.
             // Real L   = constante * freq * phi * lambda_factor * inverse_chi;
-            Real L   = constante * freq * phi * (factor + 1.0) * inverse_chi;//using factor+1.0, the computed lambda elements can be negative if dtau very small; but then the lambda elements are also negligible
+            //In order to max sure that ALI cannot do to much nonsense, we bound the local contribution to only 1 times the source function
+            // this is the reason why this std::min is in that equation
+            //TODO: figure out way to make sure this only needs to be bounded if necessary
+            Real L   = constante * freq * phi * (std::min(factor, (Real)0.0) + 1.0) * inverse_chi;//using factor+1.0, the computed lambda elements can be negative if dtau very small; but then the lambda elements are also negligible
+            // Real L   = constante * freq * phi * (factor + 1.0) * inverse_chi;//using factor+1.0, the computed lambda elements can be negative if dtau very small; but then the lambda elements are also negligible
             lspec.lambda.add_element(o, k, o, L);
 
             //TODO: possible nonlocal lambda part // FIXME: probably incorrect chi used
@@ -910,7 +954,7 @@ accel inline void Solver :: solve_shortchar_order_0 (
 
                 compute_curr_opacity=prev_compute_curr_opacity;
 
-                compute_source_dtau<None>(model, crt, nxt, l, freq*shift_c, freq*shift_n, shift_c, shift_n, dZ, compute_curr_opacity, dtau, chi_c[f], chi_n[f], source_c[f], source_n[f]);
+                compute_source_dtau<approx>(model, crt, nxt, l, freq*shift_c, freq*shift_n, shift_c, shift_n, dZ, compute_curr_opacity, dtau, chi_c[f], chi_n[f], source_c[f], source_n[f]);
                 dtau = std::max(model.parameters->min_dtau, dtau);
 
                 //proper implementation of 2nd order shortchar (not yet times reducing factor of exp(-tau))
