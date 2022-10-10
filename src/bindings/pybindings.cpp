@@ -292,6 +292,11 @@ PYBIND11_MODULE (core, module)
             "Computes the cooling rates using the radiative formulation, using a single radiative transfer computation"
         )
         .def (
+            "compute_cooling_radiative_shortchar",
+            &Model::compute_cooling_radiative,
+            "Computes the cooling rates using the radiative formulation, using a single radiative transfer computation with the short characteristics method"
+        )
+        .def (
             "set_eta_and_chi",
             &Model::set_eta_and_chi,
             "Set latest emissivity and opacity for the model in the eta and chi variables respectively."
