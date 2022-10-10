@@ -909,7 +909,14 @@ accel inline void Solver :: solve_shortchar_order_0 (
             compute_curr_opacity = true; // for the first point, we need to compute both the curr and next opacity (and source)
 
             compute_source_dtau<approx>(model, crt, nxt, l, freq*shift_c, freq*shift_n, shift_c, shift_n, dZ, compute_curr_opacity, dtau, chi_c[f], chi_n[f], source_c[f], source_n[f]);
-            dtau = std::max(model.parameters->min_dtau, dtau);
+
+            //Correct way of bounding from below; should be able to deal with very minor computation errors around 0.
+            if (-model.parameters->min_dtau<dtau)
+            {
+                dtau=std::max(model.parameters->min_dtau, dtau);
+            }
+            //Wrong bounding method below
+            // dtau = std::max(model.parameters->min_dtau, dtau);
 
             //proper implementation of 2nd order shortchar (not yet times reducing factor of exp(-tau))
             // model.radiation.I(r,o,f) = term_c * (expm1(-dtau)+dtau) / dtau
@@ -919,6 +926,7 @@ accel inline void Solver :: solve_shortchar_order_0 (
 
             model.radiation.I(r,o,f) = factor*(source_c[f]-source_n[f]*(1.0+dtau))
                                      + source_c[f] - source_n[f];
+
             tau[f] = dtau;
 
             //Compute local lambda operator
@@ -943,8 +951,8 @@ accel inline void Solver :: solve_shortchar_order_0 (
             //In order to max sure that ALI cannot do to much nonsense, we bound the local contribution to only 1 times the source function
             // this is the reason why this std::min is in that equation
             //TODO: figure out way to make sure this only needs to be bounded if necessary
-            Real L   = constante * freq * phi * (std::min(factor, (Real)0.0) + 1.0) * inverse_chi;//using factor+1.0, the computed lambda elements can be negative if dtau very small; but then the lambda elements are also negligible
-            // Real L   = constante * freq * phi * (factor + 1.0) * inverse_chi;//using factor+1.0, the computed lambda elements can be negative if dtau very small; but then the lambda elements are also negligible
+            // Real L   = constante * freq * phi * (std::min(factor, (Real)0.0) + 1.0) * inverse_chi;//using factor+1.0, the computed lambda elements can be negative if dtau very small; but then the lambda elements are also negligible
+            Real L   = constante * freq * phi * (factor + 1.0) * inverse_chi;//using factor+1.0, the computed lambda elements can be negative if dtau very small; but then the lambda elements are also negligible
             lspec.lambda.add_element(o, k, o, L);
 
             //TODO: possible nonlocal lambda part // FIXME: probably incorrect chi used
@@ -973,7 +981,16 @@ accel inline void Solver :: solve_shortchar_order_0 (
                 compute_curr_opacity=prev_compute_curr_opacity;
 
                 compute_source_dtau<approx>(model, crt, nxt, l, freq*shift_c, freq*shift_n, shift_c, shift_n, dZ, compute_curr_opacity, dtau, chi_c[f], chi_n[f], source_c[f], source_n[f]);
-                dtau = std::max(model.parameters->min_dtau, dtau);
+
+                // wrong bounding method
+                // dtau = std::max(model.parameters->min_dtau, dtau);
+
+                //Correct way of bounding from below; should be able to deal with very minor computation errors around 0.
+                if (-model.parameters->min_dtau<dtau)
+                {
+                    dtau=std::max(model.parameters->min_dtau, dtau);
+                    // chi+=model.parameters->min_opacity+std::max((Real) 0.0,-chi);
+                }
 
                 //proper implementation of 2nd order shortchar (not yet times reducing factor of exp(-tau))
                 // model.radiation.I(r,o,f) += expf(-tau[f]) *
