@@ -32,13 +32,16 @@ class SetOnce
         bool already_set = false;
         bool default_set = false;
         type value;
+				const string var_name;//should be set when setting the parameter
 
     public:
-        inline SetOnce () {}
-        inline SetOnce (const type new_value): value (new_value) {}
+				inline SetOnce () {}
+        inline SetOnce (const string name): var_name(name) {}
+        inline SetOnce (const type new_value, const string name): value (new_value), var_name(name) {}
         inline SetOnce (const SetOnce& s):
             already_set (s.already_set),
-            value       (s.value) {};
+            value       (s.value),
+						var_name(s.var_name) {};
 
         inline void set (const type new_value)
         {
@@ -46,7 +49,7 @@ class SetOnce
             {
                 if (value != new_value)
                 {
-                    std::cout << "ERROR value = " << value << " new value = " << new_value << std::endl;
+                    std::cout << "variable: " << var_name << " ERROR value = " << value << " new value = " << new_value << std::endl;
                     throw DoubleSetException ();
                 }
             }
@@ -64,7 +67,7 @@ class SetOnce
             {
                 if (value != new_value)
                 {
-                    std::cout << "ERROR value = " << value << " new value = " << new_value << std::endl;
+                    std::cout << "variable: " << var_name << " ERROR value = " << value << " new value = " << new_value << std::endl;
                     throw DoubleSetException ();
                 }
             }

@@ -61,7 +61,7 @@ def create_model (a_or_b):
     model.parameters.set_nquads            (nquads)
 
     model.parameters.one_line_approximation = True
-    
+
     model.geometry.points.position.set([[r, 0, 0] for r in rs])
     model.geometry.points.velocity.set([[v, 0, 0] for v in vs])
 
@@ -121,11 +121,11 @@ def run_model (a_or_b, nosave=False):
     interp_3 = interp1d(0.5*(ra+rb), lp3, fill_value='extrapolate')
     interp_4 = interp1d(0.5*(ra+rb), lp4, fill_value='extrapolate')
 
-    error_0 = tools.relative_error(pops[:,0]/abun, interp_0(rs))
-    error_1 = tools.relative_error(pops[:,1]/abun, interp_1(rs))
-    error_2 = tools.relative_error(pops[:,2]/abun, interp_2(rs))
-    error_3 = tools.relative_error(pops[:,3]/abun, interp_3(rs))
-    error_4 = tools.relative_error(pops[:,4]/abun, interp_4(rs))
+    error_0 = np.abs(tools.relative_error(pops[:,0]/abun, interp_0(rs)))
+    error_1 = np.abs(tools.relative_error(pops[:,1]/abun, interp_1(rs)))
+    error_2 = np.abs(tools.relative_error(pops[:,2]/abun, interp_2(rs)))
+    error_3 = np.abs(tools.relative_error(pops[:,3]/abun, interp_3(rs)))
+    error_4 = np.abs(tools.relative_error(pops[:,4]/abun, interp_4(rs)))
 
     result  = f'--- Benchmark name -----------------------\n'
     result += f'{modelName                               }\n'

@@ -83,6 +83,9 @@ struct Model
     int compute_level_populations_sparse          (
         const bool  use_Ng_acceleration,
         const long  max_niterations     );
+    int compute_level_populations_shortchar       (
+        const bool  use_Ng_acceleration,
+        const long  max_niterations     );
     int compute_image                             (const Size ray_nr);
     int compute_image_optical_depth               (const Size ray_nr);
     int compute_cooling_collisional ();

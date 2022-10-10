@@ -117,8 +117,8 @@ def run_model (a_or_b, nosave=False):
     interp_0 = interp1d(0.5*(ra+rb), lp0, fill_value='extrapolate')
     interp_1 = interp1d(0.5*(ra+rb), lp1, fill_value='extrapolate')
 
-    error_0 = tools.relative_error(pops[:,0]/abun, interp_0(rs))
-    error_1 = tools.relative_error(pops[:,1]/abun, interp_1(rs))
+    error_0 = np.abs(tools.relative_error(pops[:,0]/abun, interp_0(rs)))
+    error_1 = np.abs(tools.relative_error(pops[:,1]/abun, interp_1(rs)))
 
     result  = f'--- Benchmark name -----------------------\n'
     result += f'{modelName                               }\n'
