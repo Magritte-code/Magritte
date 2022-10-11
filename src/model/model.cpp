@@ -179,7 +179,7 @@ int Model :: compute_spectral_discretisation (const Real width)
     threaded_for (p, parameters->npoints(),
     {
         Real1 freqs (parameters->nfreqs());
-        Size1 nmbrs (parameters->nfreqs());
+        // Size1 nmbrs (parameters->nfreqs());
 
         Size index0 = 0;
         Size index1 = 0;
@@ -197,7 +197,7 @@ int Model :: compute_spectral_discretisation (const Real width)
                     const Real root = lines.lineProducingSpecies[l].quadrature.roots[z];
 
                     freqs[index1] = freqs_line + freqs_line * width * root;
-                    nmbrs[index1] = index1;
+                    // nmbrs[index1] = index1;
 
                     index1++;
                 }
@@ -208,7 +208,7 @@ int Model :: compute_spectral_discretisation (const Real width)
 
 
         // Sort frequencies
-        heapsort (freqs, nmbrs);
+        // heapsort (freqs, nmbrs);
 
 
         // Set all frequencies nu
@@ -220,11 +220,11 @@ int Model :: compute_spectral_discretisation (const Real width)
 
 
         // Create lookup table for the frequency corresponding to each line
-        Size1 nmbrs_inverted (parameters->nfreqs());
+        // Size1 nmbrs_inverted (parameters->nfreqs());
 
         for (Size fl = 0; fl < parameters->nfreqs(); fl++)
         {
-            nmbrs_inverted[nmbrs[fl]] = fl;
+            // nmbrs_inverted[nmbrs[fl]] = fl;
 
             radiation.frequencies.appears_in_line_integral[fl] = false;;
             radiation.frequencies.corresponding_l_for_spec[fl] = parameters->nfreqs();
@@ -240,7 +240,8 @@ int Model :: compute_spectral_discretisation (const Real width)
             {
                 for (Size z = 0; z < lines.lineProducingSpecies[l].nr_line[p][k].size(); z++)
                 {
-                    lines.lineProducingSpecies[l].nr_line[p][k][z] = nmbrs_inverted[index2];
+                    // lines.lineProducingSpecies[l].nr_line[p][k][z] = nmbrs_inverted[index2];
+                    lines.lineProducingSpecies[l].nr_line[p][k][z] = index2;
 
                     radiation.frequencies.appears_in_line_integral[index2] = true;
                     radiation.frequencies.corresponding_l_for_spec[index2] = l;
