@@ -121,7 +121,7 @@ inline Size Solver :: get_ray_lengths_max (Model& model)
     return geo.lengths_max;
 }
 
-template <ApproximationType approx, bool COMPUTE_COOLING>
+template <ApproximationType approx>
 inline void Solver :: solve_shortchar_order_0 (Model& model)
 {
     // Allocate memory if not pre-allocated
@@ -132,15 +132,6 @@ inline void Solver :: solve_shortchar_order_0 (Model& model)
         model.radiation.v.resize (model.parameters->hnrays(), model.parameters->npoints(), model.parameters->nfreqs());
         model.radiation.J.resize (                           model.parameters->npoints(), model.parameters->nfreqs());
     }
-
-    if constexpr(COMPUTE_COOLING)
-    {
-        //reset cooling rates
-        for (Size p = 0; p < model.parameters->npoints(); p++)
-        {
-            model.cooling.cooling_rate[p]=0.0;
-        }
-    }else{}
 
     // Initialise Lambda operator
     for (auto &lspec : model.lines.lineProducingSpecies) {lspec.lambda.clear();}
@@ -207,36 +198,6 @@ inline void Solver :: solve_shortchar_order_0 (Model& model)
     model.radiation.I.copy_ptr_to_vec();
     model.radiation.J.copy_ptr_to_vec();
 
-    if constexpr(COMPUTE_COOLING)
-    {
-        threaded_for (p, model.parameters->npoints(),
-        {
-            for (Size l = 0; l < model.parameters->nlspecs(); l++)
-            {
-                const LineProducingSpecies& lspec=model.lines.lineProducingSpecies[l];
-                for (Size k = 0; k < lspec.linedata.nrad; k++)
-                {
-                    //quicky compute mean line intensity by integrating over the quadrature
-                    //this is much cheaper than evaluating the profile functions all the time
-                    Real Jlin=0.0;
-                    const Size lid = model.lines.line_index(l, k);
-                    const Real linefreq = lspec.linedata.frequency[k];
-                    for (Size z = 0; z < model.parameters->nquads(); z++)
-                    {
-                      Jlin += lspec.quadrature.weights[z] * model.radiation.J(p, lspec.nr_line[p][k][z]);
-                      //Note: more correct would be to add the frequency here,
-                    }
-                    // std::cout<<"Jlin: "<<Jlin<<std::endl;
-                    //line cooling rate maybe gives useful diagonstic, but can be implemented later on.
-                    //line_cooling_rate=same formula
-                    // stored emissitivities and opacities do not include the frequency factor, as this technically changes within the very small frequency range
-                    //Thus this is actually a very minor approximation, replacing the ∫νIϕ_l(ν)dν≃ν_lJ_l
-                    //Also we must integrate over all directions, so times 4π
-                    model.cooling.cooling_rate[p]+=FOUR_PI*linefreq*(model.lines.emissivity(p, lid)-Jlin*model.lines.opacity(p, lid));
-                }
-            }
-        });
-    }
 }
 
 

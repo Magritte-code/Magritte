@@ -314,15 +314,13 @@ int Model :: compute_radiation_field_shortchar_order_0 ()
     Solver solver;
     solver.setup <CoMoving>        (*this);
 
-    const bool COMPUTE_COOLING = false;
-
     if (parameters->one_line_approximation)
     {
-        solver.solve_shortchar_order_0<OneLine, COMPUTE_COOLING> (*this);
+        solver.solve_shortchar_order_0<OneLine> (*this);
     }
     else
     {
-        solver.solve_shortchar_order_0<None, COMPUTE_COOLING> (*this);
+        solver.solve_shortchar_order_0<None> (*this);
     }
 
     return (0);
@@ -857,20 +855,20 @@ int Model :: compute_cooling_radiative ()
 {
       Solver solver;
       solver.setup <CoMoving> (*this);
-      const bool IS_SPARSE=true;
-      const bool COMPUTE_UV=false;
-      const bool COMPUTE_ANIS=false;
-      const bool COMPUTE_LAMBDA=false;
-      const bool COMPUTE_COOLING=true;
 
       if (parameters->one_line_approximation)
       {
-          solver.solve_feautrier_order_2 <OneLine, IS_SPARSE, COMPUTE_UV, COMPUTE_ANIS, COMPUTE_LAMBDA, COMPUTE_COOLING> (*this);
+          solver.solve_feautrier_order_2_sparse <OneLine> (*this);
       }
       else
       {
-          solver.solve_feautrier_order_2 <None, IS_SPARSE, COMPUTE_UV, COMPUTE_ANIS, COMPUTE_LAMBDA, COMPUTE_COOLING> (*this);
+          solver.solve_feautrier_order_2_sparse <None> (*this);
       }
+
+      //from the sparse solver, we get J as a result
+      //Thus we can compute the cooling rates
+
+      lines.compute_line_cooling_radiative_sparse(cooling);
 
       return (0);
 }
@@ -880,17 +878,17 @@ int Model :: compute_cooling_radiative_shortchar ()
     Solver solver;
     solver.setup <CoMoving>(*this);
 
-    const bool COMPUTE_COOLING = true;
-
     if (parameters->one_line_approximation)
     {
-        solver.solve_shortchar_order_0<OneLine, COMPUTE_COOLING> (*this);
+        solver.solve_shortchar_order_0<OneLine> (*this);
     }
     else
     {
-        solver.solve_shortchar_order_0<None, COMPUTE_COOLING> (*this);
+        solver.solve_shortchar_order_0<None> (*this);
     }
-    
+
+    lines.compute_line_cooling_radiative(cooling, radiation);
+
     return (0);
 }
 

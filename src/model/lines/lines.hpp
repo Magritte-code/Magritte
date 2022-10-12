@@ -6,6 +6,7 @@
 #include "lineProducingSpecies/lineProducingSpecies.hpp"
 #include "model/thermodynamics/thermodynamics.hpp"
 #include "model/cooling/cooling.hpp"
+#include "model/radiation/radiation.hpp"
 
 
 struct Lines
@@ -62,6 +63,8 @@ struct Lines
 
     //Compute the cooling rates using the collisional formulation
     void compute_cooling_collisional(Cooling& cooling, const Double2& abundance, const Vector<Real>& temperature);
+    void compute_line_cooling_radiative(Cooling& cooling, Radiation& radiation);
+    void compute_line_cooling_radiative_sparse(Cooling& cooling);
 
     void gather_emissivities_and_opacities ();
 };

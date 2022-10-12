@@ -132,7 +132,7 @@ struct Solver
         const Size   rr,
         const Size   f  );
 
-    template<ApproximationType approx, bool COMPUTE_COOLING>
+    template<ApproximationType approx>
     accel inline void solve_shortchar_order_0 (Model& model);
 
     template<ApproximationType approx>

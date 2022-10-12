@@ -127,3 +127,70 @@ inline void Lines :: compute_cooling_collisional(Cooling& cooling, const Double2
         cooling.cooling_rate[p]=temp_cooling_rate;
     }//);
 }
+
+/// Computes the line cooling rates using the radiative approach
+inline void Lines :: compute_line_cooling_radiative(Cooling& cooling, Radiation& radiation)
+{
+    //reset cooling rates before computing them
+    for (Size p=0; p<parameters->npoints(); p++)
+    {
+        cooling.cooling_rate[p]=0;
+    }
+
+    threaded_for (p, parameters->npoints(),
+    {
+        for (Size l = 0; l < parameters->nlspecs(); l++)
+        {
+            const LineProducingSpecies& lspec=lineProducingSpecies[l];
+            for (Size k = 0; k < lspec.linedata.nrad; k++)
+            {
+                //quicky compute mean line intensity by integrating over the quadrature
+                //this is much cheaper than evaluating the profile functions all the time
+                Real Jlin=0.0;
+                const Size lid = line_index(l, k);
+                const Real linefreq = lspec.linedata.frequency[k];
+                for (Size z = 0; z < parameters->nquads(); z++)
+                {
+                    Jlin += lspec.quadrature.weights[z] * radiation.J(p, lspec.nr_line[p][k][z]);
+                    //Note: more correct would be to add the frequency here, but this is fine
+                }
+                //line cooling rate maybe gives useful diagonstic, but can be implemented later on.
+                //line_cooling_rate=same formula
+                // stored emissitivities and opacities do not include the frequency factor, as this technically changes within the very small frequency range
+                //Thus this is actually a very minor approximation, replacing the ∫νIϕ_l(ν)dν≃ν_lJ_l
+                //Also we must integrate over all directions, so times 4π
+                cooling.cooling_rate[p]+=FOUR_PI*linefreq*(emissivity(p, lid)-Jlin*opacity(p, lid));
+            }
+        }
+    });
+}
+
+
+inline void Lines :: compute_line_cooling_radiative_sparse(Cooling& cooling)
+{
+    //reset cooling rates before computing them
+    for (Size p=0; p<parameters->npoints(); p++)
+    {
+        cooling.cooling_rate[p]=0;
+    }
+    
+    threaded_for (p, parameters->npoints(),
+    {
+        for (Size l = 0; l < parameters->nlspecs(); l++)
+        {
+            const LineProducingSpecies& lspec=lineProducingSpecies[l];
+            for (Size k = 0; k < lspec.linedata.nrad; k++)
+            {
+                const Size lid = line_index(l, k);
+                const Real linefreq = lspec.linedata.frequency[k];
+                //line cooling rate maybe gives some useful diagonstics, but can be implemented later on.
+                //line_cooling_rate=same formula
+                // stored emissitivities and opacities do not include the frequency factor, as this technically changes within the very small frequency range
+                //Thus this is actually a very minor approximation, replacing the ∫νIϕ_l(ν)dν≃ν_lJ_l
+                //Also we must integrate over all directions, so times 4π
+                cooling.cooling_rate[p]+=FOUR_PI*linefreq*(emissivity(p, lid)-lspec.J(p,k)*opacity(p, lid));
+                // std::cout<<"J: "<<lspec.J(p,k)<<std::endl;
+            }
+        }
+    });
+}
