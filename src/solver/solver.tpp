@@ -860,7 +860,7 @@ accel inline void Solver :: solve_shortchar_order_0 (
             }
 
             //also bound dtau from below to prevent very negative opacities
-            dtau = std::max((Real) -10.0, dtau);
+            dtau = std::max(model.parameters->min_negative_dtau, dtau);
 
 
             //Wrong bounding method below
@@ -952,7 +952,7 @@ accel inline void Solver :: solve_shortchar_order_0 (
                 }
 
                 //also bound dtau from below to prevent very negative opacities
-                dtau = std::max((Real)-10.0, dtau);
+                dtau = std::max(model.parameters->min_negative_dtau, dtau);
 
                 //proper implementation of 2nd order shortchar (not yet times reducing factor of exp(-tau))
                 // model.radiation.I(r,o,f) += expf(-tau[f]) *
