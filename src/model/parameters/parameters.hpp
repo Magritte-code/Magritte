@@ -51,7 +51,7 @@ struct Parameters
     Real pop_prec                    = 1.0e-6;
     Real min_opacity                 = 1.0e-26;
     Real min_dtau                    = 1.0e-15;
-    Real min_negative_dtau           = -20.0;
+    Real min_negative_dtau           = -10.0;
     bool store_intensities           = false;
     bool use_Ng_acceleration         = true;
     bool one_line_approximation      = false;

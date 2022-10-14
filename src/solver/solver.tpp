@@ -874,6 +874,17 @@ accel inline void Solver :: solve_shortchar_order_0 (
 
             model.radiation.I(r,o,f) = factor*(source_c[f]-source_n[f]*(1.0+dtau))
                                      + source_c[f] - source_n[f];
+            //Hmm, due to rounding errors in the limit of Δτ→±0, this might produce some (small?) negative numbers.
+            //This is probably not an issue, as this small value will never be amplified. (only the other addition terms might get smaller (for thermal lines))
+
+            // TODO:CHECK EQUATIONS
+            // const Real expm1dtau = expm1f(-dtau);
+            // const Real factor = expm1dtau/dtau;
+            //Reordered equation once again to make sure that no negative intensities can be computed
+            //Note: contains extra exponential, so will be slower
+            // model.radiation.I(r,o,f) =( source_c[f] * (expm1dtau + dtau)
+            //                             - source_n[f] * (expm1dtau + dtau * expf(-dtau)) )
+            //                            / dtau;
 
 
             // if (model.radiation.I(r,o,f)<0.0)
