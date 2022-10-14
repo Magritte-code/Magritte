@@ -62,7 +62,7 @@ void Lines :: read (const Io& io)
     opacity      .resize (parameters->npoints(), parameters->nlines());
     inverse_width.resize (parameters->npoints(), parameters->nlines());
 
-    tabulated_gaussians.resize(parameters->n_tabulated_profile_funs);
+    tabulated_gaussians.resize(N_TABULATED_PROFILE_FUNS);
     set_tabulated_gaussians();
 }
 

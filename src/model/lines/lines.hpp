@@ -9,6 +9,13 @@
 
 struct Lines
 {
+    const Size LOG2_N_TABULED_PROFILE_FUNS_M1=14;//=2^12+1
+    const Size N_TABULATED_PROFILE_FUNS = std::pow(2, LOG2_N_TABULED_PROFILE_FUNS_M1) + 1;
+    const Size LOG2_MAX_DISTANCE_INTERVAL=4;//=2^4=16
+    const double MAX_DISTANCE_INTERVAL = std::pow(2, LOG2_MAX_DISTANCE_INTERVAL-1);//=2^3
+    const Size NET_LEFT_SHIFT = LOG2_N_TABULED_PROFILE_FUNS_M1 - LOG2_MAX_DISTANCE_INTERVAL;
+    const Size MULTIPLICATION_FACTOR = std::pow(2, NET_LEFT_SHIFT);
+
     std::shared_ptr<Parameters> parameters;   ///< data structure containing model parameters
 
     vector <LineProducingSpecies> lineProducingSpecies;
@@ -55,9 +62,9 @@ struct Lines
     inline void set_emissivity_and_opacity ();
     inline void set_inverse_width (const Thermodynamics& thermodynamics);
 
-    inline Size convert_to_table_index (Real x) const;
+    inline Size convert_to_table_index (double x) const;
     inline void set_tabulated_gaussians ();
-    inline Real compute_tabulated_gaussian (Real x) const;
+    inline Real compute_tabulated_gaussian (double x) const;
 
     void resize_LineProducingSpecies(const Size nlspec)
     {

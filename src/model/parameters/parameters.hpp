@@ -40,7 +40,7 @@ struct Parameters
     CREATE_PARAMETER (bool, adaptive_ray_tracing  );
 
 
-    Size n_tabulated_profile_funs    = std::pow(2,14)+1;
+    // Size n_tabulated_profile_funs    = std::pow(2,14)+1;
     Size n_off_diag                  = 0;
     // diff can by computed by comparing trapezoidal rule (w*(exp-(x)^2+exp-(x+w)^2)/2) and cdf of normal (std dev=1/sqrt pi) from x to x+w
     // Real max_width_fraction          = 0.5;//max diff between the normal cdf and trapezoidal rule is +-5%
@@ -57,7 +57,7 @@ struct Parameters
     bool one_line_approximation      = false;
 
     //When summing over the nearby lines, this parameter controls in what range we consider the lines to lie close
-    Real max_distance_opacity_contribution = 10.0;//maximal distance at which a line can contribute to a frequency
+    // Real max_distance_opacity_contribution = 10.0;//maximal distance at which a line can contribute to a frequency
 
 
     Parameters ()

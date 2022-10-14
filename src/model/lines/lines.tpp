@@ -77,29 +77,34 @@ inline void Lines :: set_inverse_width (const Thermodynamics& thermodynamics)
 
 
 
-inline Size Lines :: convert_to_table_index (Real x) const
+inline Size Lines :: convert_to_table_index (double x) const
 {
     //convert to int/size, then clamp?
     // const Real clamped_x = std::clamp(x, -parameters->max_distance_opacity_contribution, parameters->max_distance_opacity_contribution);
-    return std::clamp((Size) std::round((x + parameters->max_distance_opacity_contribution) * (parameters->n_tabulated_profile_funs - 1)/(2.0*parameters->max_distance_opacity_contribution))
-                            , (Size) 0, parameters->n_tabulated_profile_funs - 1);
+    // return std::clamp((Size) std::round((x + parameters->max_distance_opacity_contribution) * (parameters->n_tabulated_profile_funs - 1)/(2.0*parameters->max_distance_opacity_contribution))
+    //                         , (Size) 0, parameters->n_tabulated_profile_funs - 1);
+
+    const Real clamped_x = std::clamp(x + MAX_DISTANCE_INTERVAL, 0.0, 2.0*MAX_DISTANCE_INTERVAL);
+    // std::cout<<"x: "<<x<<" index: "<<((Size) std::round(clamped_x*MULTIPLICATION_FACTOR))<<std::endl;
+    // return ((Size) std::round(clamped_x*MULTIPLICATION_FACTOR));
+    return (Size) (clamped_x*MULTIPLICATION_FACTOR + 0.5);
 }
 
 
 ///   Precomputes gaussians for removing evaluation
 inline void Lines :: set_tabulated_gaussians ()
 {
-    threaded_for (i, parameters->n_tabulated_profile_funs,
+    threaded_for (i, N_TABULATED_PROFILE_FUNS,
     {
-        const Real x = -parameters->max_distance_opacity_contribution
-        + (Real)i /((Real)(parameters->n_tabulated_profile_funs - 1)) * 2.0 * parameters->max_distance_opacity_contribution;
+        const Real x = -MAX_DISTANCE_INTERVAL
+        + (Real)i /((Real)(N_TABULATED_PROFILE_FUNS - 1)) * 2.0 * MAX_DISTANCE_INTERVAL;
         // std::cout<<"x: "<<x<<std::endl;
         const Real minxsqaured = -std::pow(x,2);
         tabulated_gaussians[i] = exp(minxsqaured);
     })
 }
 
-inline Real Lines :: compute_tabulated_gaussian (Real x) const
+inline Real Lines :: compute_tabulated_gaussian (double x) const
 {
     return tabulated_gaussians[convert_to_table_index(x)];
 }
