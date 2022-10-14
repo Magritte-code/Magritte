@@ -30,6 +30,8 @@ struct Lines
 
     Vector<Real> tabulated_gaussians;         ///< Table containing tabulated values for gaussians (the e^(-x^2) part)
                                               /// Computed at each x in a linear interval [-parameters.max_distance_opacity_contribution, +parameters.max_distance_opacity_contribution]
+    Vector<Real> tabulated_erfs;              ///< Table containing tabulated values for gaussians (the e^(-x^2) part)
+                                              /// Computed at each x in a linear interval [-parameters.max_distance_opacity_contribution, +parameters.max_distance_opacity_contribution]
 
 
     Lines (std::shared_ptr<Parameters> params)
@@ -64,7 +66,9 @@ struct Lines
 
     inline Size convert_to_table_index (double x) const;
     inline void set_tabulated_gaussians ();
+    inline void set_tabulated_erfs ();
     inline Real compute_tabulated_gaussian (double x) const;
+    inline Real compute_tabulated_erf (double x) const;
 
     void resize_LineProducingSpecies(const Size nlspec)
     {

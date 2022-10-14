@@ -104,7 +104,24 @@ inline void Lines :: set_tabulated_gaussians ()
     })
 }
 
+///   Precomputes gaussians for removing evaluation
+inline void Lines :: set_tabulated_erfs ()
+{
+    threaded_for (i, N_TABULATED_PROFILE_FUNS,
+    {
+        const Real x = -MAX_DISTANCE_INTERVAL
+        + (Real)i /((Real)(N_TABULATED_PROFILE_FUNS - 1)) * 2.0 * MAX_DISTANCE_INTERVAL;
+        // std::cout<<"x: "<<x<<std::endl;
+        tabulated_erfs[i] = erf(x);
+    })
+}
+
 inline Real Lines :: compute_tabulated_gaussian (double x) const
 {
     return tabulated_gaussians[convert_to_table_index(x)];
+}
+
+inline Real Lines :: compute_tabulated_erf (double x) const
+{
+    return tabulated_erfs[convert_to_table_index(x)];
 }

@@ -103,6 +103,7 @@ struct Solver
 
     accel inline Real gaussian (const Model& model, const Real width, const Real diff) const;
     accel inline Real planck   (const Real temp,  const Real freq) const;
+    accel inline Real tabulated_erf(const Model& model, const Real x) const;
 
     accel inline Real boundary_intensity (
         const Model& model,

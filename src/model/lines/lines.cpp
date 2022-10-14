@@ -63,7 +63,9 @@ void Lines :: read (const Io& io)
     inverse_width.resize (parameters->npoints(), parameters->nlines());
 
     tabulated_gaussians.resize(N_TABULATED_PROFILE_FUNS);
+    tabulated_erfs.resize(N_TABULATED_PROFILE_FUNS);
     set_tabulated_gaussians();
+    set_tabulated_erfs();
 }
 
 
