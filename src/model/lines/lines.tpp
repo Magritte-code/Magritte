@@ -74,3 +74,32 @@ inline void Lines :: set_inverse_width (const Thermodynamics& thermodynamics)
         }
     })
 }
+
+
+
+inline Size Lines :: convert_to_table_index (Real x) const
+{
+    //convert to int/size, then clamp?
+    // const Real clamped_x = std::clamp(x, -parameters->max_distance_opacity_contribution, parameters->max_distance_opacity_contribution);
+    return std::clamp((Size) std::round((x + parameters->max_distance_opacity_contribution) * (parameters->n_tabulated_profile_funs - 1)/(2.0*parameters->max_distance_opacity_contribution))
+                            , (Size) 0, parameters->n_tabulated_profile_funs - 1);
+}
+
+
+///   Precomputes gaussians for removing evaluation
+inline void Lines :: set_tabulated_gaussians ()
+{
+    threaded_for (i, parameters->n_tabulated_profile_funs,
+    {
+        const Real x = -parameters->max_distance_opacity_contribution
+        + (Real)i /((Real)(parameters->n_tabulated_profile_funs - 1)) * 2.0 * parameters->max_distance_opacity_contribution;
+        // std::cout<<"x: "<<x<<std::endl;
+        const Real minxsqaured = -std::pow(x,2);
+        tabulated_gaussians[i] = exp(minxsqaured);
+    })
+}
+
+inline Real Lines :: compute_tabulated_gaussian (Real x) const
+{
+    return tabulated_gaussians[convert_to_table_index(x)];
+}

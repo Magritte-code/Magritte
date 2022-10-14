@@ -21,6 +21,10 @@ struct Lines
     Matrix<Real> inverse_width;              ///< inverse line width (p, lid)
 
 
+    Vector<Real> tabulated_gaussians;         ///< Table containing tabulated values for gaussians (the e^(-x^2) part)
+                                              /// Computed at each x in a linear interval [-parameters.max_distance_opacity_contribution, +parameters.max_distance_opacity_contribution]
+
+
     Lines (std::shared_ptr<Parameters> params)
     : parameters (params) {};
 
@@ -50,6 +54,10 @@ struct Lines
 
     inline void set_emissivity_and_opacity ();
     inline void set_inverse_width (const Thermodynamics& thermodynamics);
+
+    inline Size convert_to_table_index (Real x) const;
+    inline void set_tabulated_gaussians ();
+    inline Real compute_tabulated_gaussian (Real x) const;
 
     void resize_LineProducingSpecies(const Size nlspec)
     {

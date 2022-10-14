@@ -688,11 +688,12 @@ accel inline void Solver :: set_data (
 ///    @param[in] diff  : frequency difference with line centre
 ///    @return profile function evaluated with this frequency difference
 ////////////////////////////////////////////////////////////////////////
-accel inline Real Solver :: gaussian (const Real inverse_width, const Real diff) const
+accel inline Real Solver :: gaussian (const Model& model, const Real inverse_width, const Real diff) const
 {
     const Real sqrt_exp = inverse_width * diff;
 
-    return inverse_width * INVERSE_SQRT_PI * expf (-sqrt_exp*sqrt_exp);
+    // return inverse_width * INVERSE_SQRT_PI * expf (-sqrt_exp*sqrt_exp);
+    return inverse_width * INVERSE_SQRT_PI * model.lines.compute_tabulated_gaussian(sqrt_exp);
 }
 
 
@@ -750,7 +751,7 @@ accel inline void Solver :: get_eta_and_chi <None> (
     for (Size l = 0; l < model.parameters->nlines(); l++)
     {
         const Real diff = freq - model.lines.line[l];
-        const Real prof = freq * gaussian (model.lines.inverse_width(p, l), diff);
+        const Real prof = freq * gaussian (model, model.lines.inverse_width(p, l), diff);
 
         eta += prof * model.lines.emissivity(p, l);
         chi += prof * model.lines.opacity   (p, l);
@@ -776,7 +777,7 @@ accel inline void Solver :: get_eta_and_chi <OneLine> (
           Real&  chi ) const
 {
     const Real diff = freq - model.lines.line[l];
-    const Real prof = freq * gaussian (model.lines.inverse_width(p, l), diff);
+    const Real prof = freq * gaussian (model, model.lines.inverse_width(p, l), diff);
 
     eta = prof * model.lines.emissivity(p, l);
     chi = prof * model.lines.opacity   (p, l) + model.parameters->min_opacity;
@@ -1463,7 +1464,7 @@ inline Real Solver :: compute_dtau_single_line(Model& model, Size curridx, Size 
     {
         //doing the default computation instead (no shifting)
         const Real diff = curr_freq - model.lines.line[lineidx];//curr_freq==next_freq, so choice is arbitrary
-        const Real prof = gaussian(average_inverse_line_width, diff);
+        const Real prof = gaussian(model, average_inverse_line_width, diff);
         const Real average_opacity = (curr_line_opacity+next_line_opacity)/2.0;
 
         return dz * (prof * average_opacity + model.parameters->min_opacity);

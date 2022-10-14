@@ -101,7 +101,7 @@ struct Solver
               Size&  id1,
               Size&  id2 );
 
-    accel inline Real gaussian (const Real width, const Real diff) const;
+    accel inline Real gaussian (const Model& model, const Real width, const Real diff) const;
     accel inline Real planck   (const Real temp,  const Real freq) const;
 
     accel inline Real boundary_intensity (
