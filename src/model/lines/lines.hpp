@@ -9,7 +9,7 @@
 
 struct Lines
 {
-    const Size LOG2_N_TABULED_PROFILE_FUNS_M1=14;//=2^12+1
+    const Size LOG2_N_TABULED_PROFILE_FUNS_M1=14;//=2^14+1
     const Size N_TABULATED_PROFILE_FUNS = std::pow(2, LOG2_N_TABULED_PROFILE_FUNS_M1) + 1;
     const Size LOG2_MAX_DISTANCE_INTERVAL=4;//=2^4=16
     const double MAX_DISTANCE_INTERVAL = std::pow(2, LOG2_MAX_DISTANCE_INTERVAL-1);//=2^3
