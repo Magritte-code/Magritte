@@ -40,6 +40,16 @@ struct Thermodynamics
     inline Real profile_width (
         const Real inverse_mass,
         const Size p ) const;
+
+
+    inline Real profile_width_upper_bound_with_linefreq (
+        const Size p,
+        const Real freq_line,
+        const Real inverse_mass) const;
+
+    inline Real profile_width_upper_bound (
+        const Size p,
+        const Real inverse_mass) const;
 };
 
 

@@ -331,7 +331,14 @@ int Model :: compute_radiation_field_feautrier_order_2 ()
     }
     else
     {
-        solver.solve_feautrier_order_2 <None> (*this);
+        if (parameters->sum_opacity_emissivity_over_all_lines)
+        {
+            solver.solve_feautrier_order_2 <None> (*this);
+        }
+        else
+        {
+            solver.solve_feautrier_order_2 <CloseLines> (*this);
+        }
     }
 
     return (0);
@@ -353,7 +360,14 @@ int Model :: compute_radiation_field_feautrier_order_2_uv ()
     }
     else
     {
-        solver.solve_feautrier_order_2_uv <None> (*this);
+        if (parameters->sum_opacity_emissivity_over_all_lines)
+        {
+            solver.solve_feautrier_order_2_uv <None> (*this);
+        }
+        else
+        {
+            solver.solve_feautrier_order_2_uv <CloseLines> (*this);
+        }
     }
 
     return (0);
@@ -375,7 +389,14 @@ int Model :: compute_radiation_field_feautrier_order_2_anis ()
     }
     else
     {
-        solver.solve_feautrier_order_2_anis <None> (*this);
+        if (parameters->sum_opacity_emissivity_over_all_lines)
+        {
+            solver.solve_feautrier_order_2_anis <None> (*this);
+        }
+        else
+        {
+            solver.solve_feautrier_order_2_anis <CloseLines> (*this);
+        }
     }
 
     return (0);
@@ -397,7 +418,14 @@ int Model :: compute_radiation_field_feautrier_order_2_sparse ()
     }
     else
     {
-        solver.solve_feautrier_order_2_sparse <None> (*this);
+        if (parameters->sum_opacity_emissivity_over_all_lines)
+        {
+            solver.solve_feautrier_order_2_sparse <None> (*this);
+        }
+        else
+        {
+            solver.solve_feautrier_order_2_sparse <CloseLines> (*this);
+        }
     }
 
     return (0);
