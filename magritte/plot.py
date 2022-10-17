@@ -62,7 +62,7 @@ def image_mpl(
     ):
     """
     Create plots of the channel maps of a synthetic observation (image) with matplotlib.
-
+    
     Parameters
     ----------
     model : object
@@ -81,7 +81,7 @@ def image_mpl(
         Unit of length for the vertical (y) axis.
     method : str
         Method to interpolate the scattered intensity data onto a regular image grid.
-
+    
     Returns
     -------
     None
@@ -90,16 +90,16 @@ def image_mpl(
     if (len(model.images) < 1):
         print('No images in model.')
         return
-
+    
     # Get path of image directory
     im_dir = os.path.dirname(os.path.abspath(model.parameters.model_name())) + '/images/'
-
+    
     # If no image directory exists yet
     if not os.path.exists(im_dir):
         # Create image directory
         os.makedirs(im_dir)
         print('Created image directory:', im_dir)
-
+    
     # Extract data of last image
     imx = np.array(model.images[image_nr].ImX)
     imy = np.array(model.images[image_nr].ImY)
@@ -108,7 +108,7 @@ def image_mpl(
 
     # Extract the number of frequency bins
     nfreqs = model.parameters.nfreqs()
-
+    
     # Set image boundaries
     x_min, x_max = np.min(imx)/zoom, np.max(imx)/zoom
     y_min, y_max = np.min(imy)/zoom, np.max(imy)/zoom
@@ -116,10 +116,9 @@ def image_mpl(
     # Create image grid values
     xs = np.linspace(x_min, x_max, npix_x)
     ys = np.linspace(y_min, y_max, npix_y)
-
+    
     # Extract the spectral / velocity data
     freqs = np.array(model.radiation.frequencies.nu)[0]
-    sorted_freq_range = np.argsort(freqs)
     f_ij  = np.mean(freqs)
     velos = (freqs - f_ij) / f_ij * constants.c.to(v_unit).value
 
@@ -136,7 +135,7 @@ def image_mpl(
         )
         Is[f] = np.sum(zs[f])
     Is = Is / np.max(Is)
-
+    
     # Put zero-values to the smallest non-zero value
     zs[zs==0.0] = np.min(zs[zs!=0.0])
 
@@ -144,7 +143,7 @@ def image_mpl(
     log_zs     = np.log10(zs)
     log_zs_min = np.min(log_zs)
     log_zs_max = np.max(log_zs)
-
+    
     lzmin = ceil (log_zs_min)
     lzmax = floor(log_zs_max)
 
@@ -154,11 +153,11 @@ def image_mpl(
 
     ticks  = [lzmin, lz_25, lz_50, lz_75, lzmax]
     levels = np.linspace(log_zs_min, log_zs_max, 250)
-
+    
     figs = []
     gs   = GridSpec(1,2, wspace=.1, width_ratios=[2, 1])
 
-    for f in tqdm(sorted_freq_range): #in order to add the images in a sorted order
+    for f in tqdm(range(nfreqs)):
         fig = plt.figure(dpi=300)
         ax1 = fig.add_subplot(gs[0])
         ax  = ax1.contourf(
@@ -177,17 +176,17 @@ def image_mpl(
                   bbox_transform=ax1.transAxes,
                   borderpad=0
         )
-
+        
         cbar = fig.colorbar(ax, cax=ax0, orientation="horizontal")
         ax0.xaxis.set_ticks_position('top')
         ax0.xaxis.set_label_position('top')
         ax0.xaxis.set_ticks         (ticks)
         ax0.xaxis.set_ticklabels    ([f'$10^{{{t}}}$' for t in ticks])
-
+        
         ax1.set_aspect('equal')
         ax1.set_xlabel(f'image x [{x_unit}]', labelpad = 10)
         ax1.set_ylabel(f'image y [{x_unit}]', labelpad = 10)
-
+    
         ax2 = fig.add_subplot(gs[1])
         ax2.plot(velos, Is/np.max(Is))
         ax2.yaxis.set_label_position("right")
@@ -196,7 +195,7 @@ def image_mpl(
         ax2.set_xlabel(f'velocity [{v_unit}]', labelpad=10)
         asp = 2*np.diff(ax2.get_xlim())[0] / np.diff(ax2.get_ylim())[0]
         ax2.set_aspect(asp)
-
+        
         if   (model.images[image_nr].imageType == ImageType.Intensity):
             ax0.set_xlabel('Intensity [W m$^{-2}$ sr$^{-1}$ Hz$^{-1}$]', labelpad=11)
             ax2.set_ylabel('Relative intensity',                         labelpad=15)
@@ -205,14 +204,14 @@ def image_mpl(
             ax2.set_ylabel('Relative optical depth', labelpad=15)
 
         plt.savefig(f"{im_dir}/image_{f:0>3d}.png", bbox_inches='tight')
-
+    
         figs.append(fig)
-
+    
         plt.close()
-
+    
     # Create a widget for plots
     widget = interact(lambda v: figs[v], v=(0, len(figs)-1))
-
+        
     return widget
 
 
@@ -230,7 +229,7 @@ def image_plotly(
     ):
     """
     Create plots of the channel maps of a synthetic observation (image) with plotly.
-
+    
     Parameters
     ----------
     model : object
@@ -253,7 +252,7 @@ def image_plotly(
         Width of the resulting figure.
     height : float
         Height of the resulting figure.
-
+    
     Returns
     -------
     None
@@ -262,16 +261,16 @@ def image_plotly(
     if (len(model.images) < 1):
         print('No images in model.')
         return
-
+    
     # Get path of image directory
     im_dir = os.path.dirname(os.path.abspath(model.parameters.model_name())) + '/images/'
-
+    
     # If no image directory exists yet
     if not os.path.exists(im_dir):
         # Create image directory
         os.makedirs(im_dir)
         print('Created image directory:', im_dir)
-
+    
     # Extract data of last image
     imx = np.array(model.images[image_nr].ImX)
     imy = np.array(model.images[image_nr].ImY)
@@ -280,7 +279,7 @@ def image_plotly(
 
     # Extract the number of frequency bins
     nfreqs = model.parameters.nfreqs()
-
+    
     # Set image boundaries
     x_min, x_max = np.min(imx)/zoom, np.max(imx)/zoom
     y_min, y_max = np.min(imy)/zoom, np.max(imy)/zoom
@@ -288,13 +287,11 @@ def image_plotly(
     # Create image grid values
     xs = np.linspace(x_min, x_max, npix_x)
     ys = np.linspace(y_min, y_max, npix_y)
-
+    
     # Extract the spectral / velocity data
     freqs = np.array(model.radiation.frequencies.nu)[0]
-    sorted_freq_range = np.argsort(freqs)
     f_ij  = np.mean(freqs)
     velos = (freqs - f_ij) / f_ij * constants.c.to(v_unit).value
-
 
     # Interpolate the scattered data to an image (regular grid)
     Is = np.zeros((nfreqs))
@@ -309,19 +306,19 @@ def image_plotly(
         )
         Is[f] = np.sum(zs[f])
     Is = Is / np.max(Is)
-
+    
     # Put zero-values to the smallest non-zero value
     zs[zs==0.0] = np.min(zs[zs!=0.0])
-
+    
     # Get the logarithm of the data (matplotlib has a hard time handling logarithmic data.)
     log_zs     = np.log10(zs)
     log_zs_min = np.min(log_zs)
     log_zs_max = np.max(log_zs)
-
+    
     if   (model.images[image_nr].imageType == ImageType.Intensity):
         # Create plotly plot
         fig = make_subplots(
-            rows               = 1,
+            rows               = 1, 
             cols               = 2,
             column_widths      = [0.7, 0.3],
             horizontal_spacing = 0.05,
@@ -330,13 +327,13 @@ def image_plotly(
     elif (model.images[image_nr].imageType == ImageType.OpticalDepth):
         # Create plotly plot
         fig = make_subplots(
-            rows               = 1,
+            rows               = 1, 
             cols               = 2,
             column_widths      = [0.7, 0.3],
             horizontal_spacing = 0.05,
             subplot_titles     = ['Optical depth', ''],
         )
-
+    
 
     fig.add_vrect(
         row        = 1,
@@ -350,15 +347,15 @@ def image_plotly(
     # Convert to given units
     xs = xs / (1.0 * x_unit).si.value
     ys = ys / (1.0 * x_unit).si.value
-
+    
     # Convert to given units
     x_max = np.max(xs)
     x_min = np.min(xs)
     y_max = np.max(ys)
     x_min = np.min(xs)
-
+    
     # Build up plot
-    for f in sorted_freq_range: #in order to add the images in a sorted order
+    for f in range(nfreqs):
         fig.add_trace(
             go.Heatmap(
                 x          = xs       .astype(float),
@@ -369,12 +366,12 @@ def image_plotly(
                 zmin       = log_zs_min.astype(float),
                 zmax       = log_zs_max.astype(float),
                 colorscale = cubehelix2_16_plotly,
-                showscale  = False
+                showscale  = False  
             ),
             row = 1,
             col = 1
         )
-
+    
         fig.add_trace(
             go.Scatter(
                 x          = (velos)        .astype(float),
@@ -447,7 +444,7 @@ def image_plotly(
         title_text = f'velocity [{v_unit}]',
         range      = [v_min, v_max]
     )
-
+    
     if   (model.images[image_nr].imageType == ImageType.Intensity):
         fig.update_yaxes(
             row        = 1,
@@ -464,7 +461,7 @@ def image_plotly(
             side       = 'right',
             range      = [-0.05, +1.05]
         )
-
+        
     # Subplot titles are annotations
     fig.update_annotations(
         font_size = 16,
@@ -518,17 +515,17 @@ def image_plotly(
         "modeBarButtonsToRemove": modeBarButtonsToRemove,
         "scrollZoom": True
     }
-
+    
     # Save figure as html file
     fig.write_html(f"{im_dir}/image.html", config=config)
-
+    
     return fig.show(config=config)
 
 
 def plot_velocity_1D(model, xscale='log', yscale='linear'):
     """
     Plot the velocity profile of the model (in 1D, radially).
-
+    
     Parameters
     ----------
     model : object
@@ -537,7 +534,7 @@ def plot_velocity_1D(model, xscale='log', yscale='linear'):
         Scale of the xaxis ("linear", "log", "symlog", "logit", ...)
     yscale : str
         Scale of the yaxis ("linear", "log", "symlog", "logit", ...)
-
+    
     Returns
     -------
     None
@@ -552,12 +549,12 @@ def plot_velocity_1D(model, xscale='log', yscale='linear'):
     plt.xscale(xscale)
     plt.yscale(yscale)
     plt.show  ()
-
+    
 
 def plot_temperature_1D(model, xscale='log', yscale='linear'):
     """
     Plot the temperature profile of the model (in 1D, radially).
-
+    
     Parameters
     ----------
     model : object
@@ -566,11 +563,11 @@ def plot_temperature_1D(model, xscale='log', yscale='linear'):
         Scale of the xaxis ("linear", "log", "symlog", "logit", ...)
     yscale : str
         Scale of the yaxis ("linear", "log", "symlog", "logit", ...)
-
+    
     Returns
     -------
     None
-    """
+    """    
     rs   = np.linalg.norm(model.geometry.points.position, axis=1)
     temp = np.array      (model.thermodynamics.temperature.gas)
 
@@ -581,12 +578,12 @@ def plot_temperature_1D(model, xscale='log', yscale='linear'):
     plt.xscale(xscale)
     plt.yscale(yscale)
     plt.show  ()
-
+    
 
 def plot_turbulence_1D(model, xscale='log', yscale='linear'):
     """
     Plot the (micro) turbulence profile of the model (in 1D, radially).
-
+    
     Parameters
     ----------
     model : object
@@ -595,11 +592,11 @@ def plot_turbulence_1D(model, xscale='log', yscale='linear'):
         Scale of the xaxis ("linear", "log", "symlog", "logit", ...)
     yscale : str
         Scale of the yaxis ("linear", "log", "symlog", "logit", ...)
-
+    
     Returns
     -------
     None
-    """
+    """    
     rs     = np.linalg.norm(model.geometry.points.position, axis=1)
     vturb2 = np.array      (model.thermodynamics.turbulence.vturb2)
 
@@ -610,12 +607,12 @@ def plot_turbulence_1D(model, xscale='log', yscale='linear'):
     plt.xscale(xscale)
     plt.yscale(yscale)
     plt.show  ()
-
-
+    
+    
 def plot_number_densities_1D(model, xscale='log', yscale='log'):
     """
     Plot the number densities of all species in the model (in 1D, radially).
-
+    
     Parameters
     ----------
     model : object
@@ -624,11 +621,11 @@ def plot_number_densities_1D(model, xscale='log', yscale='log'):
         Scale of the xaxis ("linear", "log", "symlog", "logit", ...)
     yscale : str
         Scale of the yaxis ("linear", "log", "symlog", "logit", ...)
-
+    
     Returns
     -------
     None
-    """
+    """    
     rs   = np.linalg.norm(model.geometry.points.position, axis=1)
     abns = np.array      (model.chemistry.species.abundance)
     syms = np.array      (model.chemistry.species.symbol)
@@ -641,12 +638,12 @@ def plot_number_densities_1D(model, xscale='log', yscale='log'):
         plt.xscale(xscale)
         plt.yscale(yscale)
         plt.show  ()
-
-
+        
+        
 def plot_populations_1D(model, lev_max=7, xscale='log', yscale='log'):
     """
     Plot the relative populations in the model (in 1D, radially).
-
+    
     Parameters
     ----------
     model : object
@@ -657,7 +654,7 @@ def plot_populations_1D(model, lev_max=7, xscale='log', yscale='log'):
         Scale of the xaxis ("linear", "log", "symlog", "logit", ...)
     yscale : str
         Scale of the yaxis ("linear", "log", "symlog", "logit", ...)
-
+    
     Returns
     -------
     None
@@ -669,9 +666,9 @@ def plot_populations_1D(model, lev_max=7, xscale='log', yscale='log'):
         nlev     = lspec.linedata.nlev
         pops     = np.array(lspec.population).reshape((npoints,nlev))
         pops_tot = np.array(lspec.population_tot)
-
+    
         plt.figure(dpi=300)
-
+    
         for i in range(min([lev_max, nlev])):
             plt.plot  (rs, pops[:,i]/pops_tot, label=f'i={i}')
             plt.ylabel('fractional level populations [.]', labelpad=10)
