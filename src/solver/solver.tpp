@@ -122,6 +122,7 @@ inline Size Solver :: get_ray_lengths_max (Model& model)
 }
 
 
+template<ApproximationType approx>
 inline void Solver :: solve_shortchar_order_0 (Model& model)
 {
     // Allocate memory if not pre-allocated
@@ -151,8 +152,8 @@ inline void Solver :: solve_shortchar_order_0 (Model& model)
         {
             //Approach which just accumulates the intensity contributions as the ray is traced
 
-            solve_shortchar_order_0 (model, o, rr);
-            solve_shortchar_order_0 (model, o, ar);
+            solve_shortchar_order_0<approx> (model, o, rr);
+            solve_shortchar_order_0<approx> (model, o, ar);
 
             for (Size f = 0; f < model.parameters->nfreqs(); f++)
             {
@@ -503,7 +504,7 @@ inline void Solver :: solve_feautrier_order_2 (Model& model)
     cout << "Done MPI gathering Lambda." << endl;
 }
 
-
+template<ApproximationType approx>
 inline void Solver :: image_feautrier_order_2 (Model& model, const Size rr)
 {
     Image image = Image(model.geometry, Intensity, rr);
@@ -525,7 +526,7 @@ inline void Solver :: image_feautrier_order_2 (Model& model, const Size rr)
         {
             for (Size f = 0; f < model.parameters->nfreqs(); f++)
             {
-                image_feautrier_order_2 (model, o, f);
+                image_feautrier_order_2<approx> (model, o, f);
 
                 image.I(o,f) = two*Su_()[last_()] - boundary_intensity(model, nr_()[last_()], model.radiation.frequencies.nu(o, f));
             }
@@ -544,7 +545,7 @@ inline void Solver :: image_feautrier_order_2 (Model& model, const Size rr)
     model.images.push_back (image);
 }
 
-
+template<ApproximationType approx>
 inline void Solver :: image_feautrier_order_2_for_point (Model& model, const Size rr, const Size p)
 {
     // Redefine p to keep everything as similar to image_feautrier_order_2 as possible
@@ -570,13 +571,14 @@ inline void Solver :: image_feautrier_order_2_for_point (Model& model, const Siz
     {
         for (Size f = 0; f < model.parameters->nfreqs(); f++)
         {
-            image_feautrier_order_2_for_point_loc (model, o, f);
+            image_feautrier_order_2_for_point_loc<approx> (model, o, f);
         }
     }
 
 }
 
 
+template<ApproximationType approx>
 inline void Solver :: image_optical_depth (Model& model, const Size rr)
 {
     Image image = Image(model.geometry, OpticalDepth, rr);
@@ -598,7 +600,7 @@ inline void Solver :: image_optical_depth (Model& model, const Size rr)
         {
             for (Size f = 0; f < model.parameters->nfreqs(); f++)
             {
-                image_optical_depth (model, o, f);
+                image_optical_depth<approx> (model, o, f);
 
                 image.I(o,f) = optical_depth_();
             }
@@ -842,7 +844,7 @@ accel inline Real trap (const Real x_crt, const Real x_nxt, const double dZ)
 
 
 
-
+template<ApproximationType approx>
 accel inline void Solver :: solve_shortchar_order_0 (
           Model& model,
     const Size   o,
@@ -880,7 +882,7 @@ accel inline void Solver :: solve_shortchar_order_0 (
 
             compute_curr_opacity = true; // for the first point, we need to compute both the curr and next opacity (and source)
 
-            compute_source_dtau<None>(model, crt, nxt, l, freq*shift_c, freq*shift_n, shift_c, shift_n, dZ, compute_curr_opacity, dtau, chi_c[f], chi_n[f], source_c[f], source_n[f]);
+            compute_source_dtau<approx>(model, crt, nxt, l, freq*shift_c, freq*shift_n, shift_c, shift_n, dZ, compute_curr_opacity, dtau, chi_c[f], chi_n[f], source_c[f], source_n[f]);
             dtau = std::max(model.parameters->min_dtau, dtau);
 
             //proper implementation of 2nd order shortchar (not yet times reducing factor of exp(-tau))
@@ -907,7 +909,7 @@ accel inline void Solver :: solve_shortchar_order_0 (
 
             Real eta, chi;//eta is dummy var
             //chi is not necessarily computed, so compute it to be sure
-            get_eta_and_chi <None>(model, o, k, freq_line, eta, chi);
+            get_eta_and_chi <approx>(model, o, k, freq_line, eta, chi);
             Real inverse_chi=1.0/chi;
             Real phi = model.thermodynamics.profile(invr_mass, o, freq_line, freq);
             // const Real lambda_factor = (dtau+expm1f(-dtau))/dtau;// If one wants to compute lambda a bit more accurately in case of dtau≃0.
@@ -940,7 +942,7 @@ accel inline void Solver :: solve_shortchar_order_0 (
 
                 compute_curr_opacity=prev_compute_curr_opacity;
 
-                compute_source_dtau<None>(model, crt, nxt, l, freq*shift_c, freq*shift_n, shift_c, shift_n, dZ, compute_curr_opacity, dtau, chi_c[f], chi_n[f], source_c[f], source_n[f]);
+                compute_source_dtau<approx>(model, crt, nxt, l, freq*shift_c, freq*shift_n, shift_c, shift_n, dZ, compute_curr_opacity, dtau, chi_c[f], chi_n[f], source_c[f], source_n[f]);
                 dtau = std::max(model.parameters->min_dtau, dtau);
 
                 //proper implementation of 2nd order shortchar (not yet times reducing factor of exp(-tau))
@@ -1624,6 +1626,7 @@ inline Real Solver :: compute_dtau_single_line(Model& model, Size curridx, Size 
 ///  2nd-order solver, without adaptive optical depth increments
 ///    @param[in] w : width index
 ///////////////////////////////////////////////////////////////////////
+template<ApproximationType approx>
 accel inline void Solver :: image_feautrier_order_2 (Model& model, const Size o, const Size f)
 {
     const Real freq = model.radiation.frequencies.nu(o, f);
@@ -1662,7 +1665,7 @@ accel inline void Solver :: image_feautrier_order_2 (Model& model, const Size o,
 
     bool compute_curr_opacity = true; // for the first point, we need to compute both the curr and next opacity (and source)
 
-    compute_source_dtau<None>(model, nr[first], nr[first+1], l, freq*shift[first], freq*shift[first+1], shift[first], shift[first+1], dZ[first], compute_curr_opacity, dtau_n, chi_c, chi_n, term_c, term_n);
+    compute_source_dtau<approx>(model, nr[first], nr[first+1], l, freq*shift[first], freq*shift[first+1], shift[first], shift[first+1], dZ[first], compute_curr_opacity, dtau_n, chi_c, chi_n, term_c, term_n);
 
     // Set boundary conditions
     const Real inverse_dtau_f = one / dtau_n;
@@ -1689,7 +1692,7 @@ accel inline void Solver :: image_feautrier_order_2 (Model& model, const Size o,
          eta_c =  eta_n;
          chi_c =  chi_n;
 
-        compute_source_dtau<None>(model, nr[n], nr[n+1], l, freq*shift[n], freq*shift[n+1], shift[n], shift[n+1], dZ[n], compute_curr_opacity, dtau_n, chi_c, chi_n, term_c, term_n);
+        compute_source_dtau<approx>(model, nr[n], nr[n+1], l, freq*shift[n], freq*shift[n+1], shift[n], shift[n+1], dZ[n], compute_curr_opacity, dtau_n, chi_c, chi_n, term_c, term_n);
 
         const Real dtau_avg = half * (dtau_c + dtau_n);
         inverse_A[n] = dtau_avg * dtau_c;
@@ -1736,6 +1739,7 @@ accel inline void Solver :: image_feautrier_order_2 (Model& model, const Size o,
 ///  2nd-order solver, without adaptive optical depth increments
 ///    @param[in] w : width index
 ///////////////////////////////////////////////////////////////////////
+template<ApproximationType approx>
 accel inline void Solver :: image_feautrier_order_2_for_point_loc (Model& model, const Size o, const Size f)
 {
     const Real freq = model.radiation.frequencies.nu(o, f);
@@ -1774,7 +1778,7 @@ accel inline void Solver :: image_feautrier_order_2_for_point_loc (Model& model,
 
     bool compute_curr_opacity = true; // for the first point, we need to compute both the curr and next opacity (and source)
 
-    compute_source_dtau<None>(model, nr[first], nr[first+1], l, freq*shift[first], freq*shift[first+1], shift[first], shift[first+1], dZ[first], compute_curr_opacity, dtau_n, chi_c, chi_n, term_c, term_n);
+    compute_source_dtau<approx>(model, nr[first], nr[first+1], l, freq*shift[first], freq*shift[first+1], shift[first], shift[first+1], dZ[first], compute_curr_opacity, dtau_n, chi_c, chi_n, term_c, term_n);
 
     //err, source function might be slightly different when looking at it from curr and next point
     // this is due to the weighting by the line optical depths; this might not be saved TODO think whether this is correct
@@ -1809,7 +1813,7 @@ accel inline void Solver :: image_feautrier_order_2_for_point_loc (Model& model,
          eta_c =  eta_n;
          chi_c =  chi_n;
 
-        compute_source_dtau<None>(model, nr[n], nr[n+1], l, freq*shift[n], freq*shift[n+1], shift[n], shift[n+1], dZ[n], compute_curr_opacity, dtau_n, chi_c, chi_n, term_c, term_n);
+        compute_source_dtau<approx>(model, nr[n], nr[n+1], l, freq*shift[n], freq*shift[n+1], shift[n], shift[n+1], dZ[n], compute_curr_opacity, dtau_n, chi_c, chi_n, term_c, term_n);
 
         const Real dtau_avg = half * (dtau_c + dtau_n);
         inverse_A[n] = dtau_avg * dtau_c;
@@ -1862,6 +1866,7 @@ accel inline void Solver :: image_feautrier_order_2_for_point_loc (Model& model,
 
 /// Image the optical depth
 ///////////////////////////////////////////////////////////////////////
+template<ApproximationType approx>
 accel inline void Solver :: image_optical_depth (Model& model, const Size o, const Size f)
 {
     const Real freq = model.radiation.frequencies.nu(o, f);
@@ -1882,8 +1887,8 @@ accel inline void Solver :: image_optical_depth (Model& model, const Size o, con
 
 
     // Get optical properties for first two elements
-    get_eta_and_chi <None> (model, nr[first  ], l, freq*shift[first  ], eta_c, chi_c);
-    get_eta_and_chi <None> (model, nr[first+1], l, freq*shift[first+1], eta_n, chi_n);
+    get_eta_and_chi <approx> (model, nr[first  ], l, freq*shift[first  ], eta_c, chi_c);
+    get_eta_and_chi <approx> (model, nr[first+1], l, freq*shift[first+1], eta_n, chi_n);
 
     tau += half * (chi_c + chi_n) * dZ[first];
 
@@ -1895,7 +1900,7 @@ accel inline void Solver :: image_optical_depth (Model& model, const Size o, con
         chi_c = chi_n;
 
         // Get new radiative properties
-        get_eta_and_chi <None> (model, nr[n+1], l, freq*shift[n+1], eta_n, chi_n);
+        get_eta_and_chi <approx> (model, nr[n+1], l, freq*shift[n+1], eta_n, chi_n);
 
         tau += half * (chi_c + chi_n) * dZ[n];
     }

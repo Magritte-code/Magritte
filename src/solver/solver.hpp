@@ -132,8 +132,9 @@ struct Solver
         const Size   rr,
         const Size   f  );
 
-
+    template<ApproximationType approx>
     accel inline void solve_shortchar_order_0 (Model& model);
+    template<ApproximationType approx>
     accel inline void solve_shortchar_order_0 (
               Model& model,
         const Size   o,
@@ -149,13 +150,20 @@ struct Solver
 
     // Solvers for images
     /////////////////////
+    template<ApproximationType approx>
     accel inline void image_feautrier_order_2 (Model& model, const Size rr);
+    template<ApproximationType approx>
     accel inline void image_feautrier_order_2 (Model& model, const Size o, const Size f);
 
+    template<ApproximationType approx>
     accel inline void image_feautrier_order_2_for_point     (Model& model, const Size rr, const Size p);
+    template<ApproximationType approx>
     accel inline void image_feautrier_order_2_for_point_loc (Model& model, const Size o,  const Size f);
 
+    //TODO: switch these to compute_S_dtau internally; currently just uses trapezoidal rule
+    template<ApproximationType approx>
     accel inline void image_optical_depth (Model& model, const Size rr);
+    template<ApproximationType approx>
     accel inline void image_optical_depth (Model& model, const Size o, const Size f);
 
 
