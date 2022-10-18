@@ -49,3 +49,27 @@ inline Real Thermodynamics :: profile_width (
     return sqrt (TWO_KB_OVER_AMU_CC_SQUARED * inverse_mass * temperature.gas[p]
                  + turbulence.vturb2[p]);
 }
+
+
+/// Returns an upper bound on the profile width
+///    @param[in] temperature_gas: temperature of the gas at this cell
+///    @param[in] freq_line: frequency of the line under consideration
+///    @return upper bound on width of line profiles
+//////////////////////////////////////////////////////////////////////////////////
+inline Real Thermodynamics :: profile_width_upper_bound_with_linefreq (
+  const Size p,
+  const Real freq_line,
+  const Real max_inverse_mass = 1.0/1.0) const
+{
+    return freq_line * profile_width_upper_bound (p, max_inverse_mass);
+}
+
+/// upper bound for profile width
+/// assumes that the minimal mass is 1.0 (in Atomic Mass Units)
+inline Real Thermodynamics :: profile_width_upper_bound (
+    const Size p,
+    const Real max_inverse_mass = 1.0/1.0) const
+{
+    return sqrt (TWO_KB_OVER_AMU_CC_SQUARED * max_inverse_mass * temperature.gas[p]
+                 + turbulence.vturb2[p]);
+}

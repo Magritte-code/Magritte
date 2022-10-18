@@ -6,7 +6,7 @@
 
 ///  Approximation used in the solver
 /////////////////////////////////////
-enum ApproximationType {None, OneLine};
+enum ApproximationType {None, OneLine, CloseLines};
 
 
 struct Solver

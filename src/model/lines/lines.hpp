@@ -18,6 +18,10 @@ struct Lines
     Vector<Real> line;                       ///< [Hz] line center frequencies (NOT ordered!)
     Vector<Size> nrad_cum;                   ///< Cumulative number of radiative transitions
 
+    Real1 sorted_line;                       ///< [Hz] sorted line center frequencies (ordered)
+    Size1 sorted_line_map;                   ///< Mapping from sorted line indices to the default ones
+    Real max_inverse_mass;                   ///< [1/AMU] maximal inverse mass of all line species
+
     Matrix<Real> emissivity;                 ///< line emissivity    (p, lid)
     Matrix<Real> opacity;                    ///< line opacity       (p, lid)
     Matrix<Real> inverse_width;              ///< inverse line width (p, lid)

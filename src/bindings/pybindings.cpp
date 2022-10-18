@@ -335,6 +335,8 @@ PYBIND11_MODULE (core, module)
         .def_readwrite ("store_intensities",           &Parameters::store_intensities          , "Whether or not to store intensities.")
         .def_readwrite ("use_Ng_acceleration",         &Parameters::use_Ng_acceleration        , "Whether or not to use Ng acceleration.")
         .def_readwrite ("one_line_approximation",      &Parameters::one_line_approximation     , "Whether or not to use one line approximation.")
+        .def_readwrite ("sum_opacity_emissivity_over_all_lines", &Parameters::sum_opacity_emissivity_over_all_lines, "Whether or not to sum the opacity, emissivity over all lines (including the zero contributions).")
+        .def_readwrite ("max_distance_opacity_contribution", &Parameters::max_distance_opacity_contribution, "The distance (scaled to line width) at which we ignore the opacity/emissivity contribution.")
         // setters
         .def ("set_model_name",               &Parameters::set_model_name          , "Set model name.")
         .def ("set_dimension",                &Parameters::set_dimension           , "Set spatial dimension of the model.")

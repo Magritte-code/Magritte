@@ -20,9 +20,11 @@ void Lines :: read (const Io& io)
     // lineProducingSpecies.resize (parameters->nlspecs(), LineProducingSpecies(parameters));
     resize_LineProducingSpecies (parameters->nlspecs());
 
+    max_inverse_mass = 0.0;
     for (Size l = 0; l < parameters->nlspecs(); l++)
     {
         lineProducingSpecies[l].read (io, l);
+        max_inverse_mass = std::max(lineProducingSpecies[l].linedata.inverse_mass, max_inverse_mass);
     }
 
     /// Set nrad_cum, a helper variable for determining indices
@@ -47,6 +49,9 @@ void Lines :: read (const Io& io)
     /// Set and sort lines and their indices
     line.resize (parameters->nlines());
 
+    sorted_line.resize (parameters->nlines());
+    sorted_line_map.resize (parameters->nlines());
+
     Size index = 0;
 
     for (const LineProducingSpecies &lspec : lineProducingSpecies)
@@ -54,9 +59,14 @@ void Lines :: read (const Io& io)
         for (Size k = 0; k < lspec.linedata.nrad; k++)
         {
             line[index] = lspec.linedata.frequency[k];
+            sorted_line[index] = lspec.linedata.frequency[k];
+            sorted_line_map[index] = index;
             index++;
         }
     }
+
+    // Sort line frequencies
+    heapsort (sorted_line, sorted_line_map);
 
     emissivity   .resize (parameters->npoints(), parameters->nlines());
     opacity      .resize (parameters->npoints(), parameters->nlines());

@@ -54,7 +54,18 @@ struct Parameters
     Real min_negative_dtau           = -10.0;
     bool store_intensities           = false;
     bool use_Ng_acceleration         = true;
+
+    ///Approximations for summing over lines; by default, we only sum over the close lines in order to compute opacity/emissivity (leading to O(Nline * ln(Nlines)) scaling behavior)
+
+    //Warning: although this has O(Nlines) scaling behavior, one must check that no lines can overlap
     bool one_line_approximation      = false;
+
+    //Warning: this is has O(Nlines^2) scaling behavior, so it is slow when computing using a lot of lines
+    //Note: this is just legacy behavior, for those who wish to compare the obtained results to previous results
+    bool sum_opacity_emissivity_over_all_lines = false;
+
+    //When summing over the nearby lines, this parameter controls in what range we consider the lines to lie close
+    Real max_distance_opacity_contribution = 10.0;//maximal distance at which a line can contribute to a frequency
 
 
     Parameters ()

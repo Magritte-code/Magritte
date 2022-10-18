@@ -772,6 +772,51 @@ accel inline void Solver :: get_eta_and_chi <None> (
 }
 
 
+///  Getter for the emissivity (eta) and the opacity (chi)
+///  function uses only the nearby lines to save computation time
+///    @param[in]  model : reference to model object
+///    @param[in]  p     : index of the point
+///    @param[in]  freq  : frequency (in co-moving frame)
+///    @param[out] eta   : emissivity
+///    @param[out] chi   : opacity
+//////////////////////////////////////////////////////////
+template<>
+accel inline void Solver :: get_eta_and_chi <CloseLines> (
+    const Model& model,
+    const Size   p,
+    const Size   ll,  // dummy variable
+    const Real   freq,
+          Real&  eta,
+          Real&  chi ) const
+{
+    // Initialize
+    eta = 0.0;
+    chi = model.parameters->min_opacity;
+
+    const Real upper_bound_line_width = model.parameters->max_distance_opacity_contribution * model.thermodynamics.profile_width_upper_bound_with_linefreq(p, freq, model.lines.max_inverse_mass);
+    const Real left_freq_bound = freq - upper_bound_line_width;
+    const Real right_freq_bound = freq + upper_bound_line_width;
+
+    //Just using default search algorithms, obtaining iterators
+    auto left_line_bound=std::lower_bound(model.lines.sorted_line.begin(), model.lines.sorted_line.end(), left_freq_bound);
+    auto right_line_bound=std::upper_bound(model.lines.sorted_line.begin(), model.lines.sorted_line.end(), right_freq_bound);
+
+
+    for (auto freq_sort_l = left_line_bound; freq_sort_l != right_line_bound; freq_sort_l++)
+    {
+        const Size sort_l = freq_sort_l-model.lines.sorted_line.begin();
+        // mapping sorted line index to original line index
+        const Size l = model.lines.sorted_line_map[sort_l];
+        // const Real diff = freq - model.lines.line[l];
+        const Real diff = freq - *freq_sort_l; //should be equal to the previous line of code
+        const Real inv_width = model.lines.inverse_width(p, l);
+        const Real prof = freq * gaussian (model.lines.inverse_width(p, l), diff);
+        eta += prof * model.lines.emissivity(p, l);
+        chi += prof * model.lines.opacity   (p, l);
+    }
+}
+
+
 ///  Getter for the emissivity (eta) and the opacity (chi) in the "one line" approixmation
 ///    @param[in]  model : reference to model object
 ///    @param[in]  p     : index of the point
@@ -1285,6 +1330,82 @@ inline void Solver :: compute_S_dtau_line_integrated <None> (Model& model, Size 
     dtau=sum_dtau;
     Scurr=sum_dtau_times_Scurr/sum_dtau;
     Snext=sum_dtau_times_Snext/sum_dtau;
+}
+
+///  Computer for the optical depth and source function when computing using the formal line integration
+///  In case of low velocity differences, almost two times slower
+///  For high velocity increments however, this does not need any extra interpolation points (-> way faster) (and some extra optimizations are made in the limit of extremely large doppler shift (as erf goes to its limit value)
+///  This function only takes into account the nearby lines, saving some computation time
+///    @param[in] curr_point : index of current point
+///    @param[in] next_point : index of next point
+///    @param[in] lineidx : index of line to integrate over
+///    @param[in] currfreq : frequency at current point (in comoving frame)
+///    @param[in] nextfreq : frequency at next point (in comoving frame)
+///    @param[in] dZ : position increment
+///    @param[out] dtau : optical depth increment to compute
+///    @param[out] Scurr : source function at current point to compute
+///    @param[out] Snext : source function at next point to compute
+/////////////////////////////////////////////////////////////////////
+template<>
+inline void Solver :: compute_S_dtau_line_integrated <CloseLines> (Model& model, Size currpoint, Size nextpoint, Size lineidx, Real currfreq, Real nextfreq, Real dZ, Real& dtau, Real& Scurr, Real& Snext)
+{
+    Real sum_dtau=0.0; //division by zero might occur otherwise
+    // Real sum_dtau=model.parameters->min_dtau; //division by zero might occur otherwise
+    Real sum_dtau_times_Scurr=0.0;
+    Real sum_dtau_times_Snext=0.0;
+
+    Real left_freq;
+    Real right_freq;
+
+    //err, compiler will probably figure out that I just want these two values ordered
+    if (currfreq < nextfreq)
+    {
+        left_freq = currfreq;
+        right_freq = nextfreq;
+    }
+    else
+    {
+        right_freq = currfreq;
+        left_freq = nextfreq;
+    }
+
+    //using maximum of bounds on the two points to get an upper bound for the line width
+    const Real curr_bound_line_width = model.parameters->max_distance_opacity_contribution * model.thermodynamics.profile_width_upper_bound_with_linefreq(currpoint, right_freq, model.lines.max_inverse_mass);
+    const Real next_bound_line_width = model.parameters->max_distance_opacity_contribution * model.thermodynamics.profile_width_upper_bound_with_linefreq(nextpoint, right_freq, model.lines.max_inverse_mass);
+    const Real upper_bound_line_width = std::max(curr_bound_line_width, next_bound_line_width);
+
+    const Real left_freq_bound = left_freq - upper_bound_line_width;
+    const Real right_freq_bound = right_freq + upper_bound_line_width;
+
+    //apply default search algorithms on the bounds, obtaining iterators
+    auto left_line_bound=std::lower_bound(model.lines.sorted_line.begin(), model.lines.sorted_line.end(), left_freq_bound);
+    auto right_line_bound=std::upper_bound(model.lines.sorted_line.begin(), model.lines.sorted_line.end(), right_freq_bound);
+
+    for (auto freq_sort_l = left_line_bound; freq_sort_l != right_line_bound; freq_sort_l++)
+    {
+        const Size sort_l = freq_sort_l - model.lines.sorted_line.begin();
+        // Map sorted line index to original line index
+        const Size l = model.lines.sorted_line_map[sort_l];
+
+        Real line_dtau=compute_dtau_single_line(model, currpoint, nextpoint, l, currfreq, nextfreq, dZ);
+        Real line_Scurr=model.lines.emissivity(currpoint, l)/model.lines.opacity(currpoint, l);//current source
+        Real line_Snext=model.lines.emissivity(nextpoint, l)/model.lines.opacity(nextpoint, l);//next source
+        sum_dtau+=line_dtau;
+        sum_dtau_times_Scurr+=line_dtau*line_Scurr;
+        sum_dtau_times_Snext+=line_dtau*line_Snext;
+    }
+    dtau=sum_dtau;
+    //needs extra bounding, as nothing may be added in the first place (above for loop may have looped over 0 elements)
+    const Real bound_min_dtau = model.parameters->min_opacity * dZ;
+    //Correct way of bounding from below; should be able to deal with very minor computation errors around 0.
+    if (-bound_min_dtau<dtau)
+    {
+        dtau=std::max(bound_min_dtau, dtau);
+    }
+    //Note: 0 source functions can be returned if no lines are nearby; but then the negligible lower bound gets returned
+    Scurr=sum_dtau_times_Scurr/dtau;
+    Snext=sum_dtau_times_Snext/dtau;
+
     //note: due to interaction with dtau when computing all sources individually, we do need to recompute Scurr and Snext for all position increments
 }
 
