@@ -7,6 +7,9 @@ from import_phantom_3D_model import import_phantom
 from reduce_phantom_3D_model import reduce_phantom
 from run_phantom_3D_model_reduced import run_model as run_phantom
 
+from read_shuffled_lines_one_line_approx import create_model as shuffled_lines_setup
+from read_shuffled_lines_one_line_approx import run_model as shuffled_lines_run
+
 import pytest
 
 # @contextmanager
@@ -16,6 +19,15 @@ import pytest
 class TestNumeric:
 
     #incremental testing; see conftest.py or pytest.ini
+    @pytest.mark.incremental
+    class TestShuffledLines:
+        def test_shuffledlines_setup(self):
+            shuffled_lines_setup()
+
+        def test_shuffledlines_run(self):
+            assert shuffled_lines_run()
+
+
     @pytest.mark.incremental
     class TestVanZadelhoff1D:
         def test_vanZadelhoff1D_setup(self):
