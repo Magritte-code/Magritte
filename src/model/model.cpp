@@ -315,7 +315,21 @@ int Model :: compute_radiation_field_shortchar_order_0 ()
 
     Solver solver;
     solver.setup <CoMoving>        (*this);
-    solver.solve_shortchar_order_0 (*this);
+    if (parameters->one_line_approximation)
+    {
+        solver.solve_shortchar_order_0 <OneLine> (*this);
+    }
+    else
+    {
+        if (parameters->sum_opacity_emissivity_over_all_lines)
+        {
+            solver.solve_shortchar_order_0 <None> (*this);
+        }
+        else
+        {
+            solver.solve_shortchar_order_0 <CloseLines> (*this);
+        }
+    }
 
     return (0);
 }
@@ -831,7 +845,21 @@ int Model :: compute_image (const Size ray_nr)
 
     Solver solver;
     solver.setup <Rest>            (*this);
-    solver.image_feautrier_order_2 (*this, ray_nr);
+    if (parameters->one_line_approximation)
+    {
+        solver.image_feautrier_order_2 <OneLine> (*this, ray_nr);
+    }
+    else
+    {
+        if (parameters->sum_opacity_emissivity_over_all_lines)
+        {
+            solver.image_feautrier_order_2 <None> (*this, ray_nr);
+        }
+        else
+        {
+            solver.image_feautrier_order_2 <CloseLines> (*this, ray_nr);
+        }
+    }
 
     return (0);
 }
@@ -845,7 +873,21 @@ int Model :: compute_image_for_point (const Size ray_nr, const Size p)
 
     Solver solver;
     solver.setup <Rest>                      (*this);
-    solver.image_feautrier_order_2_for_point (*this, ray_nr, p);
+    if (parameters->one_line_approximation)
+    {
+        solver.image_feautrier_order_2_for_point <OneLine> (*this, ray_nr, p);
+    }
+    else
+    {
+        if (parameters->sum_opacity_emissivity_over_all_lines)
+        {
+            solver.image_feautrier_order_2_for_point <None> (*this, ray_nr, p);
+        }
+        else
+        {
+            solver.image_feautrier_order_2_for_point <CloseLines> (*this, ray_nr, p);
+        }
+    }
 
     return (0);
 }
@@ -857,7 +899,21 @@ int Model :: compute_image_optical_depth (const Size ray_nr)
 {
     Solver solver;
     solver.setup <Rest>        (*this);
-    solver.image_optical_depth (*this, ray_nr);
+    if (parameters->one_line_approximation)
+    {
+        solver.image_optical_depth <OneLine> (*this, ray_nr);
+    }
+    else
+    {
+        if (parameters->sum_opacity_emissivity_over_all_lines)
+        {
+            solver.image_optical_depth <None> (*this, ray_nr);
+        }
+        else
+        {
+            solver.image_optical_depth <CloseLines> (*this, ray_nr);
+        }
+    }
 
     return (0);
 }
