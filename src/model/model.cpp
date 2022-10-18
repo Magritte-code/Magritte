@@ -315,22 +315,20 @@ int Model :: compute_radiation_field_shortchar_order_0 ()
 
     Solver solver;
     solver.setup <CoMoving>        (*this);
+
     if (parameters->one_line_approximation)
     {
         solver.solve_shortchar_order_0 <OneLine> (*this);
-    }
-    else
-    {
-        if (parameters->sum_opacity_emissivity_over_all_lines)
-        {
-            solver.solve_shortchar_order_0 <None> (*this);
-        }
-        else
-        {
-            solver.solve_shortchar_order_0 <CloseLines> (*this);
-        }
+        return (0);
     }
 
+    if (parameters->sum_opacity_emissivity_over_all_lines)
+    {
+        solver.solve_shortchar_order_0 <None> (*this);
+        return (0);
+    }
+
+    solver.solve_shortchar_order_0 <CloseLines> (*this);
     return (0);
 }
 
@@ -347,19 +345,16 @@ int Model :: compute_radiation_field_feautrier_order_2 ()
     if (parameters->one_line_approximation)
     {
         solver.solve_feautrier_order_2 <OneLine> (*this);
-    }
-    else
-    {
-        if (parameters->sum_opacity_emissivity_over_all_lines)
-        {
-            solver.solve_feautrier_order_2 <None> (*this);
-        }
-        else
-        {
-            solver.solve_feautrier_order_2 <CloseLines> (*this);
-        }
+        return (0);
     }
 
+    if (parameters->sum_opacity_emissivity_over_all_lines)
+    {
+        solver.solve_feautrier_order_2 <None> (*this);
+        return (0);
+    }
+
+    solver.solve_feautrier_order_2 <CloseLines> (*this);
     return (0);
 }
 
@@ -376,19 +371,16 @@ int Model :: compute_radiation_field_feautrier_order_2_uv ()
     if (parameters->one_line_approximation)
     {
         solver.solve_feautrier_order_2_uv <OneLine> (*this);
-    }
-    else
-    {
-        if (parameters->sum_opacity_emissivity_over_all_lines)
-        {
-            solver.solve_feautrier_order_2_uv <None> (*this);
-        }
-        else
-        {
-            solver.solve_feautrier_order_2_uv <CloseLines> (*this);
-        }
+        return (0);
     }
 
+    if (parameters->sum_opacity_emissivity_over_all_lines)
+    {
+        solver.solve_feautrier_order_2_uv <None> (*this);
+        return (0);
+    }
+
+    solver.solve_feautrier_order_2_uv <CloseLines> (*this);
     return (0);
 }
 
@@ -405,19 +397,16 @@ int Model :: compute_radiation_field_feautrier_order_2_anis ()
     if (parameters->one_line_approximation)
     {
         solver.solve_feautrier_order_2_anis <OneLine> (*this);
-    }
-    else
-    {
-        if (parameters->sum_opacity_emissivity_over_all_lines)
-        {
-            solver.solve_feautrier_order_2_anis <None> (*this);
-        }
-        else
-        {
-            solver.solve_feautrier_order_2_anis <CloseLines> (*this);
-        }
+        return (0);
     }
 
+    if (parameters->sum_opacity_emissivity_over_all_lines)
+    {
+        solver.solve_feautrier_order_2_anis <None> (*this);
+        return (0);
+    }
+
+    solver.solve_feautrier_order_2_anis <CloseLines> (*this);
     return (0);
 }
 
@@ -434,19 +423,16 @@ int Model :: compute_radiation_field_feautrier_order_2_sparse ()
     if (parameters->one_line_approximation)
     {
         solver.solve_feautrier_order_2_sparse <OneLine> (*this);
-    }
-    else
-    {
-        if (parameters->sum_opacity_emissivity_over_all_lines)
-        {
-            solver.solve_feautrier_order_2_sparse <None> (*this);
-        }
-        else
-        {
-            solver.solve_feautrier_order_2_sparse <CloseLines> (*this);
-        }
+        return (0);
     }
 
+    if (parameters->sum_opacity_emissivity_over_all_lines)
+    {
+        solver.solve_feautrier_order_2_sparse <None> (*this);
+        return (0);
+    }
+
+    solver.solve_feautrier_order_2_sparse <CloseLines> (*this);
     return (0);
 }
 
@@ -848,19 +834,16 @@ int Model :: compute_image (const Size ray_nr)
     if (parameters->one_line_approximation)
     {
         solver.image_feautrier_order_2 <OneLine> (*this, ray_nr);
-    }
-    else
-    {
-        if (parameters->sum_opacity_emissivity_over_all_lines)
-        {
-            solver.image_feautrier_order_2 <None> (*this, ray_nr);
-        }
-        else
-        {
-            solver.image_feautrier_order_2 <CloseLines> (*this, ray_nr);
-        }
+        return (0);
     }
 
+    if (parameters->sum_opacity_emissivity_over_all_lines)
+    {
+        solver.image_feautrier_order_2 <None> (*this, ray_nr);
+        return (0);
+    }
+
+    solver.image_feautrier_order_2 <CloseLines> (*this, ray_nr);
     return (0);
 }
 
@@ -876,19 +859,16 @@ int Model :: compute_image_for_point (const Size ray_nr, const Size p)
     if (parameters->one_line_approximation)
     {
         solver.image_feautrier_order_2_for_point <OneLine> (*this, ray_nr, p);
-    }
-    else
-    {
-        if (parameters->sum_opacity_emissivity_over_all_lines)
-        {
-            solver.image_feautrier_order_2_for_point <None> (*this, ray_nr, p);
-        }
-        else
-        {
-            solver.image_feautrier_order_2_for_point <CloseLines> (*this, ray_nr, p);
-        }
+        return (0);
     }
 
+    if (parameters->sum_opacity_emissivity_over_all_lines)
+    {
+        solver.image_feautrier_order_2_for_point <None> (*this, ray_nr, p);
+        return (0);
+    }
+
+    solver.image_feautrier_order_2_for_point <CloseLines> (*this, ray_nr, p);
     return (0);
 }
 
@@ -902,19 +882,16 @@ int Model :: compute_image_optical_depth (const Size ray_nr)
     if (parameters->one_line_approximation)
     {
         solver.image_optical_depth <OneLine> (*this, ray_nr);
-    }
-    else
-    {
-        if (parameters->sum_opacity_emissivity_over_all_lines)
-        {
-            solver.image_optical_depth <None> (*this, ray_nr);
-        }
-        else
-        {
-            solver.image_optical_depth <CloseLines> (*this, ray_nr);
-        }
+        return (0);
     }
 
+    if (parameters->sum_opacity_emissivity_over_all_lines)
+    {
+        solver.image_optical_depth <None> (*this, ray_nr);
+        return (0);
+    }
+
+    solver.image_optical_depth <CloseLines> (*this, ray_nr);
     return (0);
 }
 
