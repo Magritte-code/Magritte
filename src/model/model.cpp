@@ -325,7 +325,14 @@ int Model :: compute_radiation_field_shortchar_order_0 ()
     }
     else
     {
-        solver.solve_shortchar_order_0<None> (*this);
+        if (parameters->sum_opacity_emissivity_over_all_lines)
+        {
+            solver.solve_shortchar_order_0 <None> (*this);
+        }
+        else
+        {
+            solver.solve_shortchar_order_0 <CloseLines> (*this);
+        }
     }
 
     return (0);
@@ -895,7 +902,14 @@ int Model :: compute_cooling_radiative ()
       }
       else
       {
-          solver.solve_feautrier_order_2_sparse <None> (*this);
+          if (parameters->sum_opacity_emissivity_over_all_lines)
+          {
+              solver.solve_feautrier_order_2_sparse <None> (*this);
+          }
+          else
+          {
+              solver.solve_feautrier_order_2_sparse <CloseLines> (*this);
+          }
       }
 
       //from the sparse solver, we get J as a result
@@ -917,7 +931,14 @@ int Model :: compute_cooling_radiative_shortchar ()
     }
     else
     {
-        solver.solve_shortchar_order_0<None> (*this);
+        if (parameters->sum_opacity_emissivity_over_all_lines)
+        {
+            solver.solve_shortchar_order_0 <None> (*this);
+        }
+        else
+        {
+            solver.solve_shortchar_order_0 <CloseLines> (*this);
+        }
     }
 
     lines.compute_line_cooling_radiative(cooling, radiation);
