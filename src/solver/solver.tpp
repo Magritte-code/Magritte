@@ -925,8 +925,8 @@ accel inline void Solver :: solve_shortchar_order_0 (
             //proper implementation of 2nd order shortchar (not yet times reducing factor of exp(-tau))
             // model.radiation.I(r,o,f) = term_c * (expm1(-dtau)+dtau) / dtau
             //                          + term_n * (-expm1(-dtau)-dtau*expf(-dtau)) /dtau;
-            //Rewrite, trying to use less exponentials
-            const Real factor = expm1f(-dtau)/dtau;
+            //Rewrite, trying to use less exponentials //exponential will be evaluated at least as a double, a float is too inaccurates
+            const Real factor = expm1(-dtau)/dtau;
 
             model.radiation.I(r,o,f) = factor*(source_c[f]-source_n[f]*(1.0+dtau))
                                      + source_c[f] - source_n[f];
@@ -934,12 +934,13 @@ accel inline void Solver :: solve_shortchar_order_0 (
             //This is probably not an issue, as this small value will never be amplified. (only the other addition terms might get smaller (for thermal lines))
 
             // TODO:CHECK EQUATIONS
-            // const Real expm1dtau = expm1f(-dtau);
+            // const Real expm1dtau = expm1(-dtau);
             // const Real factor = expm1dtau/dtau;
-            //Reordered equation once again to make sure that no negative intensities can be computed
-            //Note: contains extra exponential, so will be slower
+            // // const Real first_term = expm1(-dtau)
+            // // Reordered equation once again to make sure that no negative intensities can be computed
+            // // Note: contains extra exponential, so will be slower
             // model.radiation.I(r,o,f) =( source_c[f] * (expm1dtau + dtau)
-            //                             - source_n[f] * (expm1dtau + dtau * expf(-dtau)) )
+            //                             - source_n[f] * (expm1dtau + dtau * exp(-dtau)) )
             //                            / dtau;
 
 
@@ -1027,8 +1028,8 @@ accel inline void Solver :: solve_shortchar_order_0 (
                 //                          ( term_c * (expm1(-dtau)+dtau) / dtau
                 //                          + term_n * (-expm1(-dtau)-dtau*expf(-dtau)) /dtau);
                 //Rewrite, trying to use less exponentials
-                model.radiation.I(r,o,f) += expf(-tau[f]) *
-                                           (expm1f(-dtau)/dtau*(source_c[f]-source_n[f]*(1.0+dtau))
+                model.radiation.I(r,o,f) += exp(-tau[f]) *
+                                           (expm1(-dtau)/dtau*(source_c[f]-source_n[f]*(1.0+dtau))
                                            + source_c[f] - source_n[f]);
                 //TODO: check order of addition, as we might be starting with the largest contributions, before adding the smaller ones...
                 tau[f] += dtau;
