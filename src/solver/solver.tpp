@@ -791,7 +791,8 @@ accel inline void Solver :: get_eta_and_chi <CloseLines> (
 {
     // Initialize
     eta = 0.0;
-    chi = model.parameters->min_opacity;
+    chi = 0.0;
+    // chi = model.parameters->min_opacity;
 
     const Real upper_bound_line_width = model.parameters->max_distance_opacity_contribution * model.thermodynamics.profile_width_upper_bound_with_linefreq(p, freq, model.lines.max_inverse_mass);
     const Real left_freq_bound = freq - upper_bound_line_width;
@@ -813,6 +814,11 @@ accel inline void Solver :: get_eta_and_chi <CloseLines> (
         const Real prof = freq * gaussian (model.lines.inverse_width(p, l), diff);
         eta += prof * model.lines.emissivity(p, l);
         chi += prof * model.lines.opacity   (p, l);
+    }
+
+    if (std::abs(chi)<model.parameters->min_opacity)
+    {
+       chi = chi>=0.0 ? model.parameters->min_opacity : -model.parameters->min_opacity;
     }
 }
 
@@ -838,9 +844,13 @@ accel inline void Solver :: get_eta_and_chi <OneLine> (
     const Real prof = freq * gaussian (model.lines.inverse_width(p, l), diff);
 
     eta = prof * model.lines.emissivity(p, l);
-    chi = prof * model.lines.opacity   (p, l) + model.parameters->min_opacity;
+    chi = prof * model.lines.opacity   (p, l);
+    // chi = prof * model.lines.opacity   (p, l) + model.parameters->min_opacity;
 
-
+    if (std::abs(chi)<model.parameters->min_opacity)
+    {
+       chi = chi>=0.0 ? model.parameters->min_opacity : -model.parameters->min_opacity;
+    }
 }
 
 
@@ -898,11 +908,12 @@ accel inline void Solver :: solve_shortchar_order_0 (
 
             compute_source_dtau<approx>(model, crt, nxt, l, freq*shift_c, freq*shift_n, shift_c, shift_n, dZ, compute_curr_opacity, dtau, chi_c[f], chi_n[f], source_c[f], source_n[f]);
 
+            //dtau should be correctly bounded from below by now
             //Correct way of bounding from below; should be able to deal with very minor computation errors around 0.
-            if (-model.parameters->min_dtau<dtau)
-            {
-                dtau=std::max(model.parameters->min_dtau, dtau);
-            }
+            // if (-model.parameters->min_dtau<dtau)
+            // {
+            //     dtau=std::max(model.parameters->min_dtau, dtau);
+            // }
 
             //also bound dtau from below to prevent very negative opacities
             dtau = std::max(model.parameters->min_negative_dtau, dtau);
@@ -1000,12 +1011,13 @@ accel inline void Solver :: solve_shortchar_order_0 (
                 // wrong bounding method
                 // dtau = std::max(model.parameters->min_dtau, dtau);
 
+                //dtau should be correctly bounded from below by now
                 //Correct way of bounding from below; should be able to deal with very minor computation errors around 0.
-                if (-model.parameters->min_dtau<dtau)
-                {
-                    dtau=std::max(model.parameters->min_dtau, dtau);
-                    // chi+=model.parameters->min_opacity+std::max((Real) 0.0,-chi);
-                }
+                // if (-model.parameters->min_dtau<dtau)
+                // {
+                //     dtau=std::max(model.parameters->min_dtau, dtau);
+                //     // chi+=model.parameters->min_opacity+std::max((Real) 0.0,-chi);
+                // }
 
                 //also bound dtau from below to prevent very negative opacities
                 dtau = std::max(model.parameters->min_negative_dtau, dtau);
@@ -1398,9 +1410,9 @@ inline void Solver :: compute_S_dtau_line_integrated <CloseLines> (Model& model,
     //needs extra bounding, as nothing may be added in the first place (above for loop may have looped over 0 elements)
     const Real bound_min_dtau = model.parameters->min_opacity * dZ;
     //Correct way of bounding from below; should be able to deal with very minor computation errors around 0.
-    if (-bound_min_dtau<dtau)
+    if (std::abs(dtau)<bound_min_dtau)
     {
-        dtau=std::max(bound_min_dtau, dtau);
+        dtau= dtau>=0.0 ? bound_min_dtau : -bound_min_dtau;
     }
     //Note: 0 source functions can be returned if no lines are nearby; but then the negligible lower bound gets returned
     Scurr=sum_dtau_times_Scurr/dtau;
@@ -1458,6 +1470,12 @@ accel inline void Solver :: compute_source_dtau (Model& model, Size currpoint, S
         Snext = eta_n / chinext;
 
         dtaunext = half * (chicurr + chinext) * dZ;
+
+        //this should only matter if the sign of the opacity changes
+        if (std::abs(dtaunext)<model.parameters->min_dtau)
+        {
+            dtaunext = dtaunext>=0.0 ? model.parameters->min_dtau : -model.parameters->min_dtau;
+        }
     }
 }
 
@@ -1682,7 +1700,13 @@ inline Real Solver :: compute_dtau_single_line(Model& model, Size curridx, Size 
     const Real average_opacity=(next_line_opacity+curr_line_opacity)/2.0;
     const Real erfterm=average_opacity/diff_pos/2.0*(std::erff(next_pos)-std::erff(curr_pos));
     //correcting to bound opacity from below to the minimum opacity (assumes positive opacities occuring in the model)
-    return dz*(average_inverse_line_width*erfterm+model.parameters->min_opacity);
+    // return dz*(average_inverse_line_width*erfterm+model.parameters->min_opacity);
+    Real dtau = dz*(average_inverse_line_width*erfterm);
+    if (dtau < model.parameters->min_opacity*dz)
+    {
+        dtau = dtau>=0.0 ? model.parameters->min_opacity*dz : -model.parameters->min_opacity*dz;
+    }
+    return dtau;
 
 }
 
