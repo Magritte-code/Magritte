@@ -978,7 +978,7 @@ accel inline void Solver :: solve_shortchar_order_0 (
             //In order to max sure that ALI cannot do to much nonsense, we bound the local contribution to only 1 times the source function
             // this is the reason why this std::min is in that equation
             //TODO: figure out way to make sure this only needs to be bounded if necessary
-            Real L   = constante * freq * phi * (std::min(factor, (Real)0.0) + 1.0) * inverse_chi;//using factor+1.0, the computed lambda elements can be negative if dtau very small; but then the lambda elements are also negligible
+            Real L   = constante * freq * phi * (std::max(factor, -1.0) + 1.0) * inverse_chi;//using factor+1.0, the computed lambda elements can be negative if dtau very small; but then the lambda elements are also negligible
             // Real L   = constante * freq * phi * (factor + 1.0) * inverse_chi;//using factor+1.0, the computed lambda elements can be negative if dtau very small; but then the lambda elements are also negligible
             lspec.lambda.add_element(o, k, o, L);
 
