@@ -27,7 +27,7 @@ inline Real LineProducingSpecies :: get_emissivity (const Size p, const Size k) 
 {
   const Size i = index (p, linedata.irad[k]);
 
-  return HH_OVER_FOUR_PI * linedata.A[k] * population(i);
+  return std::max(HH_OVER_FOUR_PI * linedata.A[k] * population(i), 0.0);
 }
 
 
