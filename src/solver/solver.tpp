@@ -918,73 +918,116 @@ accel inline void Solver :: solve_shortchar_order_0 (
             //also bound dtau from below to prevent very negative opacities
             dtau = std::max(model.parameters->min_negative_dtau, dtau);
 
-
             //Wrong bounding method below
             // dtau = std::max(model.parameters->min_dtau, dtau);
 
-            //proper implementation of 2nd order shortchar (not yet times reducing factor of exp(-tau))
-            // model.radiation.I(r,o,f) = term_c * (expm1(-dtau)+dtau) / dtau
-            //                          + term_n * (-expm1(-dtau)-dtau*expf(-dtau)) /dtau;
-            //Rewrite, trying to use less exponentials //exponential will be evaluated at least as a double, a float is too inaccurates
-            const Real factor = expm1(-dtau)/dtau;
+            // If the source functions have opposite signs, we need to cross some region where the sign changes
+            //Define some corrected sign sources; to do this, define some constant?
+            // Real source_curr = source_c[f];
+            // Real source_next = source_n[f];
+            // model.radiation.I(r,o,f) = 0.0;
+            if (source_c[f] * source_n[f] < 0.0)
+            {
+                const Size k = model.radiation.frequencies.corresponding_k_for_tran[f];   // index of transition
 
-            model.radiation.I(r,o,f) = factor*(source_c[f]-source_n[f]*(1.0+dtau))
-                                     + source_c[f] - source_n[f];
-            //Hmm, due to rounding errors in the limit of Δτ→±0, this might produce some (small?) negative numbers.
-            //This is probably not an issue, as this small value will never be amplified. (only the other addition terms might get smaller (for thermal lines))
+                // const bool curr_greater = std::abs(source_curr)>=std::abs(source_next);
+                // source_curr = curr_greater ? -source_curr : source_curr;
+                // source_next = curr_greater ? source_next : -source_next;
 
-            // TODO:CHECK EQUATIONS
-            // const Real expm1dtau = expm1(-dtau);
-            // const Real factor = expm1dtau/dtau;
-            // // const Real first_term = expm1(-dtau)
-            // // Reordered equation once again to make sure that no negative intensities can be computed
-            // // Note: contains extra exponential, so will be slower
-            // model.radiation.I(r,o,f) =( source_c[f] * (expm1dtau + dtau)
-            //                             - source_n[f] * (expm1dtau + dtau * exp(-dtau)) )
-            //                            / dtau;
+                // source_curr = curr_greater ? source_curr : -source_curr;
+                // source_next = curr_greater ? -source_next : source_next;
+
+                Real eta, chi;//chi is dummy var
+                //chi is not necessarily computed, so compute it to be sure
+                get_eta_and_chi <approx>(model, o, k, freq, eta, chi);
+
+                // const Real fraction_inversion_region = 2.0 * std::min(std::abs(source_curr), std::abs(source_next)) / std::abs(source_curr+source_next);
+
+                // model.radiation.I(r,o,f) += eta * fraction_inversion_region * dZ;
+                model.radiation.I(r,o,f) = eta * dZ;
+                // std::cout<<"inversion I: "<<model.radiation.I(r,o,f)<<std::endl;
+            }
+
+            else
+            {
+                //proper implementation of 2nd order shortchar (not yet times reducing factor of exp(-tau))
+                // model.radiation.I(r,o,f) = term_c * (expm1(-dtau)+dtau) / dtau
+                //                          + term_n * (-expm1(-dtau)-dtau*expf(-dtau)) /dtau;
+                //Rewrite, trying to use less exponentials //exponential will be evaluated at least as a double, a float is too inaccurates
+                const Real factor = expm1(-dtau)/dtau;
+
+                // model.radiation.I(r,o,f) += factor*(source_curr-source_next*(1.0+dtau))
+                // + source_curr - source_next;
+                model.radiation.I(r,o,f) = factor*(source_c[f]-source_n[f]*(1.0+dtau))
+                                         + source_c[f] - source_n[f];
+                //Hmm, due to rounding errors in the limit of Δτ→±0, this might produce some (small?) negative numbers.
+                //This is probably not an issue, as this small value will never be amplified. (only the other addition terms might get smaller (for thermal lines))
+
+                // TODO:CHECK EQUATIONS
+                // const Real expm1dtau = expm1(-dtau);
+                // const Real factor = expm1dtau/dtau;
+                // // const Real first_term = expm1(-dtau)
+                // // Reordered equation once again to make sure that no negative intensities can be computed
+                // // Note: contains extra exponential, so will be slower
+                // model.radiation.I(r,o,f) =( source_c[f] * (expm1dtau + dtau)
+                //                             - source_n[f] * (expm1dtau + dtau * exp(-dtau)) )
+                //                            / dtau;
 
 
-            // if (model.radiation.I(r,o,f)<0.0)
-            // {
-            //     //somehow, we computed completely wrong results
-            //     //replacing computation by zeroth order formulation
-            //     std::cout<<"factor: "<<factor<<std::endl;
-            //     std::cout<<"first term: "<<factor*(source_c[f]-source_n[f]*(1.0+dtau))<<std::endl;
-            //     std::cout<<"second term: "<<source_c[f] - source_n[f]<<std::endl;
-            //     std::cout<<"Error: I: "<<model.radiation.I(r,o,f)<<" r: "<<r<<" o: "<<o<<" f: "<<f<<std::endl;
-            // }
 
-            tau[f] = dtau;
+                tau[f] = dtau;
 
-            //Compute local lambda operator
-            const Size l_spec = model.radiation.frequencies.corresponding_l_for_spec[f];   // index of species
-            const Size k = model.radiation.frequencies.corresponding_k_for_tran[f];   // index of transition
-            const Size z = model.radiation.frequencies.corresponding_z_for_line[f];   // index of quadrature point
-            const Real w_ang = model.geometry.rays.weight[r];
+                //Compute local lambda operator
+                const Size l_spec = model.radiation.frequencies.corresponding_l_for_spec[f];   // index of species
+                const Size k = model.radiation.frequencies.corresponding_k_for_tran[f];   // index of transition
+                const Size z = model.radiation.frequencies.corresponding_z_for_line[f];   // index of quadrature point
+                const Real w_ang = model.geometry.rays.weight[r];
 
-            LineProducingSpecies &lspec = model.lines.lineProducingSpecies[l_spec];
+                LineProducingSpecies &lspec = model.lines.lineProducingSpecies[l_spec];
 
-            const Real freq_line = lspec.linedata.frequency[k];
-            const Real invr_mass = lspec.linedata.inverse_mass;
-            const Real constante = lspec.linedata.A[k] * lspec.quadrature.weights[z] * w_ang;
+                const Real freq_line = lspec.linedata.frequency[k];
+                const Real invr_mass = lspec.linedata.inverse_mass;
+                const Real constante = lspec.linedata.A[k] * lspec.quadrature.weights[z] * w_ang;
 
-            Real eta, chi;//eta is dummy var
-            //chi is not necessarily computed, so compute it to be sure
-            get_eta_and_chi <approx>(model, o, k, freq_line, eta, chi);
-            Real inverse_chi=1.0/chi;
-            Real phi = model.thermodynamics.profile(invr_mass, o, freq_line, freq);
-            // const Real lambda_factor = (dtau+expm1f(-dtau))/dtau;// If one wants to compute lambda a bit more accurately in case of dtau≃0.
-            // Real L   = constante * freq * phi * lambda_factor * inverse_chi;
-            //In order to max sure that ALI cannot do to much nonsense, we bound the local contribution to only 1 times the source function
-            // this is the reason why this std::min is in that equation
-            //TODO: figure out way to make sure this only needs to be bounded if necessary
-            Real L   = constante * freq * phi * (std::max(factor, -1.0) + 1.0) * inverse_chi;//using factor+1.0, the computed lambda elements can be negative if dtau very small; but then the lambda elements are also negligible
-            // Real L   = constante * freq * phi * (factor + 1.0) * inverse_chi;//using factor+1.0, the computed lambda elements can be negative if dtau very small; but then the lambda elements are also negligible
-            lspec.lambda.add_element(o, k, o, L);
+                Real eta, chi;//eta is dummy var
+                //chi is not necessarily computed, so compute it to be sure
+                get_eta_and_chi <approx>(model, o, k, freq_line, eta, chi);
+                Real inverse_chi=1.0/chi;
+                Real phi = model.thermodynamics.profile(invr_mass, o, freq_line, freq);
+                // const Real lambda_factor = (dtau+expm1f(-dtau))/dtau;// If one wants to compute lambda a bit more accurately in case of dtau≃0.
+                // Real L   = constante * freq * phi * lambda_factor * inverse_chi;
+                //In order to max sure that ALI cannot do to much nonsense, we bound the local contribution to only 1 times the source function
+                // this is the reason why this std::min is in that equation
+                //TODO: figure out way to make sure this only needs to be bounded if necessary
+                Real L   = constante * freq * phi * (std::max(factor, -1.0) + 1.0) * inverse_chi;//using factor+1.0, the computed lambda elements can be negative if dtau very small; but then the lambda elements are also negligible
+                // Real L   = constante * freq * phi * (factor + 1.0) * inverse_chi;//using factor+1.0, the computed lambda elements can be negative if dtau very small; but then the lambda elements are also negligible
+                lspec.lambda.add_element(o, k, o, L);
 
-            //TODO: possible nonlocal lambda part // FIXME: probably incorrect chi used
-            // L   = constante * freq * phi * (-factor * (1.0+dtau) - 1.0) * inverse_chi;
-            // lspec.lambda.add_element(o, k, nxt, L);
+                //TODO: possible nonlocal lambda part // FIXME: probably incorrect chi used
+                // L   = constante * freq * phi * (-factor * (1.0+dtau) - 1.0) * inverse_chi;
+                // lspec.lambda.add_element(o, k, nxt, L);
+
+
+            }
+
+            if (model.radiation.I(r,o,f)<0.0)
+            {
+              //somehow, we computed completely wrong results
+              //replacing computation by zeroth order formulation
+              // std::cout<<"factor: "<<factor<<std::endl;
+              // std::cout<<"first term: "<<factor*(source_curr-source_next*(1.0+dtau))<<std::endl;
+              // std::cout<<"second term: "<<source_curr - source_next<<std::endl;
+              // std::cout<<"first term: "<<factor*(source_c[f]-source_n[f]*(1.0+dtau))<<std::endl;
+              // std::cout<<"second term: "<<source_c[f] - source_n[f]<<std::endl;
+              // std::cout<<"first term: "<<source_c[f] * (expm1dtau + dtau)<<std::endl;
+              // std::cout<<"second term: "<<- source_n[f] * (expm1dtau + dtau * exp(-dtau))<<std::endl;
+              std::cout<<"source_c: "<<source_c[f]<<std::endl;
+              std::cout<<"source_n: "<<source_n[f]<<std::endl;
+              // std::cout<<"source_curr: "<<source_curr<<std::endl;
+              // std::cout<<"source_next: "<<source_next<<std::endl;
+              std::cout<<"dtau: "<<dtau<<std::endl;
+              std::cout<<"Error: I: "<<model.radiation.I(r,o,f)<<" r: "<<r<<" o: "<<o<<" f: "<<f<<std::endl;
+            }
         }
 
         //For all frequencies, we need to use the same method for computing the optical depth
@@ -1012,27 +1055,77 @@ accel inline void Solver :: solve_shortchar_order_0 (
                 // wrong bounding method
                 // dtau = std::max(model.parameters->min_dtau, dtau);
 
-                //dtau should be correctly bounded from below by now
-                //Correct way of bounding from below; should be able to deal with very minor computation errors around 0.
-                // if (-model.parameters->min_dtau<dtau)
-                // {
-                //     dtau=std::max(model.parameters->min_dtau, dtau);
-                //     // chi+=model.parameters->min_opacity+std::max((Real) 0.0,-chi);
-                // }
+                // If the source functions have opposite signs, we need to cross some region where the sign changes
+                //Define some corrected sign sources; to do this, define some constant?
+                // Real source_curr = source_c[f];
+                // Real source_next = source_n[f];
+                if (source_c[f] * source_n[f] < 0.0)
+                {
+                    const Size l_spec = model.radiation.frequencies.corresponding_l_for_spec[f];   // index of species
+                    LineProducingSpecies &lspec = model.lines.lineProducingSpecies[l_spec];
+                    const Size k = model.radiation.frequencies.corresponding_k_for_tran[f];   // index of transition
+                    const Real freq_line = lspec.linedata.frequency[k];
 
-                //also bound dtau from below to prevent very negative opacities
-                dtau = std::max(model.parameters->min_negative_dtau, dtau);
+                    // const bool curr_greater = std::abs(source_curr)>=std::abs(source_next);
+                    // source_curr = curr_greater ? source_curr : -source_curr;
+                    // source_next = curr_greater ? -source_next : source_next;
 
-                //proper implementation of 2nd order shortchar (not yet times reducing factor of exp(-tau))
-                // model.radiation.I(r,o,f) += expf(-tau[f]) *
-                //                          ( term_c * (expm1(-dtau)+dtau) / dtau
-                //                          + term_n * (-expm1(-dtau)-dtau*expf(-dtau)) /dtau);
-                //Rewrite, trying to use less exponentials
-                model.radiation.I(r,o,f) += exp(-tau[f]) *
-                                           (expm1(-dtau)/dtau*(source_c[f]-source_n[f]*(1.0+dtau))
-                                           + source_c[f] - source_n[f]);
-                //TODO: check order of addition, as we might be starting with the largest contributions, before adding the smaller ones...
-                tau[f] += dtau;
+                    Real eta, chi;//chi is dummy var
+                    //chi is not necessarily computed, so compute it to be sure
+                    get_eta_and_chi <approx>(model, crt, k, freq*shift_c, eta, chi);
+
+                    // const Real fraction_inversion_region = 2.0 * std::min(std::abs(source_curr), std::abs(source_next)) / std::abs(source_curr+source_next);
+                    //
+                    // model.radiation.I(r,o,f) += exp(-tau[f]) * chi * fraction_inversion_region * dZ;
+                    model.radiation.I(r,o,f) += exp(-tau[f]) * eta * dZ;
+                }
+                else
+                {
+                    //dtau should be correctly bounded from below by now
+                    //Correct way of bounding from below; should be able to deal with very minor computation errors around 0.
+                    // if (-model.parameters->min_dtau<dtau)
+                    // {
+                      //     dtau=std::max(model.parameters->min_dtau, dtau);
+                      //     // chi+=model.parameters->min_opacity+std::max((Real) 0.0,-chi);
+                      // }
+
+                      //also bound dtau from below to prevent very negative opacities
+                      dtau = std::max(model.parameters->min_negative_dtau, dtau);
+
+                      //proper implementation of 2nd order shortchar (not yet times reducing factor of exp(-tau))
+                      // model.radiation.I(r,o,f) += expf(-tau[f]) *
+                      //                          ( term_c * (expm1(-dtau)+dtau) / dtau
+                      //                          + term_n * (-expm1(-dtau)-dtau*expf(-dtau)) /dtau);
+                      //Rewrite, trying to use less exponentials
+                      // model.radiation.I(r,o,f) += exp(-tau[f]) *
+                      //                            (expm1(-dtau)/dtau*(source_curr-source_next*(1.0+dtau))
+                      //                             + source_curr - source_next);
+                      model.radiation.I(r,o,f) += exp(-tau[f]) *
+                                                 (expm1(-dtau)/dtau*(source_c[f]-source_n[f]*(1.0+dtau))
+                                                 + source_c[f] - source_n[f]);
+                      //TODO: check order of addition, as we might be starting with the largest contributions, before adding the smaller ones...
+                      tau[f] += dtau;
+                }
+
+                if (model.radiation.I(r,o,f)<0.0)
+                {
+                  //somehow, we computed completely wrong results
+                  //replacing computation by zeroth order formulation
+                  // std::cout<<"factor: "<<factor<<std::endl;
+                  // std::cout<<"first term: "<<factor*(source_curr-source_next*(1.0+dtau))<<std::endl;
+                  // std::cout<<"second term: "<<source_curr - source_next<<std::endl;
+                  // std::cout<<"first term: "<<factor*(source_c[f]-source_n[f]*(1.0+dtau))<<std::endl;
+                  // std::cout<<"second term: "<<source_c[f] - source_n[f]<<std::endl;
+                  // std::cout<<"first term: "<<source_c[f] * (expm1dtau + dtau)<<std::endl;
+                  // std::cout<<"second term: "<<- source_n[f] * (expm1dtau + dtau * exp(-dtau))<<std::endl;
+                  std::cout<<"source_c: "<<source_c[f]<<std::endl;
+                  std::cout<<"source_n: "<<source_n[f]<<std::endl;
+                  // std::cout<<"source_curr: "<<source_curr<<std::endl;
+                  // std::cout<<"source_next: "<<source_next<<std::endl;
+                  std::cout<<"dtau: "<<dtau<<std::endl;
+                  std::cout<<"Error: I: "<<model.radiation.I(r,o,f)<<" r: "<<r<<" o: "<<o<<" f: "<<f<<" nxt: "<<nxt<<std::endl;
+                }
+
             }
 
             //save setting for use for all frequencies for the next interval
@@ -1475,7 +1568,16 @@ accel inline void Solver :: compute_source_dtau (Model& model, Size currpoint, S
         //this should only matter if the sign of the opacity changes
         if (std::abs(dtaunext)<model.parameters->min_dtau)
         {
-            dtaunext = dtaunext>=0.0 ? model.parameters->min_dtau : -model.parameters->min_dtau;
+            // std::cout<<"original dtau: "<<dtaunext<<std::endl;
+            // dtaunext = dtaunext>=0.0 ? model.parameters->min_dtau : -model.parameters->min_dtau;
+            //err, the minimal chi's can cancel out if we have a very small negative source + a very small positive source
+            //So we use the sign of the average source instead.
+            dtaunext = Scurr+Snext>=0.0 ? model.parameters->min_dtau : -model.parameters->min_dtau;
+            // std::cout<<"rounding dtau: "<<dtaunext<<std::endl;
+            // std::cout<<"Snext: "<<Snext<<std::endl;
+            // std::cout<<"Scurr: "<<Scurr<<std::endl;
+            // std::cout<<"eta_n: "<<eta_n<<std::endl;
+            // std::cout<<"chinext: "<<chinext<<std::endl;
         }
     }
 }
