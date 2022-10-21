@@ -926,7 +926,9 @@ accel inline void Solver :: solve_shortchar_order_0 (
             // Real source_curr = source_c[f];
             // Real source_next = source_n[f];
             // model.radiation.I(r,o,f) = 0.0;
-            if (source_c[f] * source_n[f] < 0.0)
+            //Err, if we encounter a zero source function, that means the level populations are doing something weird, being almost zero
+            // So I will assume the opacity to be negligible too
+            if (source_c[f] * source_n[f] <= 0.0)
             {
                 const Size k = model.radiation.frequencies.corresponding_k_for_tran[f];   // index of transition
 
@@ -937,14 +939,17 @@ accel inline void Solver :: solve_shortchar_order_0 (
                 // source_curr = curr_greater ? source_curr : -source_curr;
                 // source_next = curr_greater ? -source_next : source_next;
 
-                Real eta, chi;//chi is dummy var
+                Real eta_c, eta_n, chi;//chi is dummy var
                 //chi is not necessarily computed, so compute it to be sure
-                get_eta_and_chi <approx>(model, o, k, freq, eta, chi);
+                get_eta_and_chi <approx>(model, o, k, freq, eta_c, chi);
+                get_eta_and_chi <approx>(model, nxt, k, freq*shift_n, eta_n, chi);
 
                 // const Real fraction_inversion_region = 2.0 * std::min(std::abs(source_curr), std::abs(source_next)) / std::abs(source_curr+source_next);
 
                 // model.radiation.I(r,o,f) += eta * fraction_inversion_region * dZ;
-                model.radiation.I(r,o,f) = eta * dZ;
+                // Opacity is approximately zero in this case, so we can use the following approximations
+                tau[f] = 0.0;
+                model.radiation.I(r,o,f) = (eta_c + eta_n) / 2.0 * dZ;
                 // std::cout<<"inversion I: "<<model.radiation.I(r,o,f)<<std::endl;
             }
 
@@ -1010,8 +1015,17 @@ accel inline void Solver :: solve_shortchar_order_0 (
 
             }
 
-            if (model.radiation.I(r,o,f)<0.0)
+            if (model.radiation.I(r,o,f)<0.0 || std::isnan(model.radiation.I(r,o,f)))
             {
+              const Size k = model.radiation.frequencies.corresponding_k_for_tran[f];   // index of transition
+              Real eta, chi;
+              get_eta_and_chi <approx>(model, o, k, freq, eta, chi);
+              std::cout<<"eta_curr: "<<eta<<std::endl;
+              std::cout<<"chi_curr: "<<chi<<std::endl;
+              // Real eta, chi;
+              get_eta_and_chi <approx>(model, nxt, k, freq*shift_n, eta, chi);
+              std::cout<<"eta_curr: "<<eta<<std::endl;
+              std::cout<<"chi_curr: "<<chi<<std::endl;
               //somehow, we computed completely wrong results
               //replacing computation by zeroth order formulation
               // std::cout<<"factor: "<<factor<<std::endl;
@@ -1059,7 +1073,7 @@ accel inline void Solver :: solve_shortchar_order_0 (
                 //Define some corrected sign sources; to do this, define some constant?
                 // Real source_curr = source_c[f];
                 // Real source_next = source_n[f];
-                if (source_c[f] * source_n[f] < 0.0)
+                if (source_c[f] * source_n[f] <= 0.0)
                 {
                     const Size l_spec = model.radiation.frequencies.corresponding_l_for_spec[f];   // index of species
                     LineProducingSpecies &lspec = model.lines.lineProducingSpecies[l_spec];
@@ -1070,14 +1084,15 @@ accel inline void Solver :: solve_shortchar_order_0 (
                     // source_curr = curr_greater ? source_curr : -source_curr;
                     // source_next = curr_greater ? -source_next : source_next;
 
-                    Real eta, chi;//chi is dummy var
+                    Real eta_c, eta_n, chi;//chi is dummy var
                     //chi is not necessarily computed, so compute it to be sure
-                    get_eta_and_chi <approx>(model, crt, k, freq*shift_c, eta, chi);
+                    get_eta_and_chi <approx>(model, crt, k, freq*shift_c, eta_c, chi);
+                    get_eta_and_chi <approx>(model, nxt, k, freq*shift_n, eta_n, chi);
 
                     // const Real fraction_inversion_region = 2.0 * std::min(std::abs(source_curr), std::abs(source_next)) / std::abs(source_curr+source_next);
                     //
                     // model.radiation.I(r,o,f) += exp(-tau[f]) * chi * fraction_inversion_region * dZ;
-                    model.radiation.I(r,o,f) += exp(-tau[f]) * eta * dZ;
+                    model.radiation.I(r,o,f) += exp(-tau[f]) * (eta_c + eta_n) / 2.0 * dZ;
                 }
                 else
                 {
@@ -1095,7 +1110,6 @@ accel inline void Solver :: solve_shortchar_order_0 (
                       if (dtau + tau[f] < model.parameters->min_negative_dtau)
                       {
                           dtau = model.parameters->min_negative_dtau - tau[f] -model.parameters->min_dtau;
-                          std::cout<<"truncated dtau"<<std::endl;
                       }
 
 
@@ -1114,8 +1128,17 @@ accel inline void Solver :: solve_shortchar_order_0 (
                       tau[f] += dtau;
                 }
 
-                if (model.radiation.I(r,o,f)<0.0)
+                if (model.radiation.I(r,o,f)<0.0 || std::isnan(model.radiation.I(r,o,f)))
                 {
+                  const Size k = model.radiation.frequencies.corresponding_k_for_tran[f];   // index of transition
+                  Real eta, chi;
+                  get_eta_and_chi <approx>(model, crt, k, freq*shift_c, eta, chi);
+                  std::cout<<"eta_curr: "<<eta<<std::endl;
+                  std::cout<<"chi_curr: "<<chi<<std::endl;
+                  // Real eta, chi;
+                  get_eta_and_chi <approx>(model, nxt, k, freq*shift_n, eta, chi);
+                  std::cout<<"eta_curr: "<<eta<<std::endl;
+                  std::cout<<"chi_curr: "<<chi<<std::endl;
                   //somehow, we computed completely wrong results
                   //replacing computation by zeroth order formulation
                   // std::cout<<"factor: "<<factor<<std::endl;
