@@ -293,7 +293,7 @@ PYBIND11_MODULE (core, module)
         )
         .def (
             "compute_cooling_radiative_shortchar",
-            &Model::compute_cooling_radiative,
+            &Model::compute_cooling_radiative_shortchar,
             "Computes the cooling rates using the radiative formulation, using a single radiative transfer computation with the short characteristics method"
         )
         .def (
