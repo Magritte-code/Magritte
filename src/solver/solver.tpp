@@ -1091,6 +1091,13 @@ accel inline void Solver :: solve_shortchar_order_0 (
 
                       //also bound dtau from below to prevent very negative opacities
                       dtau = std::max(model.parameters->min_negative_dtau, dtau);
+                      //min_dtau required for avoiding division by zero
+                      if (dtau + tau[f] < model.parameters->min_negative_dtau)
+                      {
+                          dtau = model.parameters->min_negative_dtau - tau[f] -model.parameters->min_dtau;
+                          std::cout<<"truncated dtau"<<std::endl;
+                      }
+
 
                       //proper implementation of 2nd order shortchar (not yet times reducing factor of exp(-tau))
                       // model.radiation.I(r,o,f) += expf(-tau[f]) *
