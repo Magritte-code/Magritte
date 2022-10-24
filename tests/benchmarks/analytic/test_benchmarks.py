@@ -1,5 +1,7 @@
 from all_constant_single_ray import create_model as all_constant_setup
 from all_constant_single_ray import run_model as all_constant_run
+from all_zero_single_ray import create_model as all_zero_setup
+from all_zero_single_ray import run_model as all_zero_run
 from density_distribution_1D import create_model as density_dist_setup
 from density_distribution_1D import run_model as density_dist_run
 from density_distribution_1D_image import create_model as density_dist_image_setup
@@ -26,6 +28,18 @@ class TestAnalytic:
         #testing whether we get the correct result
         def test_all_constant_run(self):
             assert all_constant_run(nosave=True)
+
+
+    @pytest.mark.incremental
+    class TestAllZero:
+        #testing whether the setup runs
+        def test_all_zero_setup(self):
+            all_zero_setup()
+
+        #testing whether we get the correct result
+        def test_all_zero_run(self):
+            assert all_zero_run(nosave=True)
+
 
     @pytest.mark.incremental
     class TestDensityDistribution1D:
