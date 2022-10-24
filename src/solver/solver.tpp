@@ -1229,8 +1229,8 @@ template<>
 inline void Solver :: compute_S_dtau_line_integrated <OneLine> (Model& model, Size currpoint, Size nextpoint, Size lineidx, Real currfreq, Real nextfreq, Real dZ, Real& dtau, Real& Scurr, Real& Snext)
 {
     dtau=compute_dtau_single_line(model, currpoint, nextpoint, lineidx, currfreq, nextfreq, dZ);
-    Scurr=model.lines.emissivity(currpoint, lineidx)/model.lines.opacity(currpoint, lineidx);//current source
-    Snext=model.lines.emissivity(nextpoint, lineidx)/model.lines.opacity(nextpoint, lineidx);//next source
+    Scurr=model.lines.emissivity(currpoint, lineidx)/(model.lines.opacity(currpoint, lineidx)+model.parameters->min_opacity);//current source
+    Snext=model.lines.emissivity(nextpoint, lineidx)/(model.lines.opacity(nextpoint, lineidx)+model.parameters->min_opacity);//next source
     //note: due to interaction with dtau when computing all sources individually, we do need to recompute Scurr and Snext for all position increments
 }
 
@@ -1256,8 +1256,8 @@ inline void Solver :: compute_S_dtau_line_integrated <None> (Model& model, Size 
     for (Size l=0; l<model.parameters->nlines(); l++)
     {
         Real line_dtau=compute_dtau_single_line(model, currpoint, nextpoint, l, currfreq, nextfreq, dZ);
-        Real line_Scurr=model.lines.emissivity(currpoint, l)/model.lines.opacity(currpoint, l);//current source
-        Real line_Snext=model.lines.emissivity(nextpoint, l)/model.lines.opacity(nextpoint, l);//next source
+        Real line_Scurr=model.lines.emissivity(currpoint, l)/(model.lines.opacity(currpoint, l)+model.parameters->min_opacity);//current source
+        Real line_Snext=model.lines.emissivity(nextpoint, l)/(model.lines.opacity(nextpoint, l)+model.parameters->min_opacity);//next source
         sum_dtau+=line_dtau;
         sum_dtau_times_Scurr+=line_dtau*line_Scurr;
         sum_dtau_times_Snext+=line_dtau*line_Snext;
@@ -1323,8 +1323,8 @@ inline void Solver :: compute_S_dtau_line_integrated <CloseLines> (Model& model,
         const Size l = model.lines.sorted_line_map[sort_l];
 
         Real line_dtau=compute_dtau_single_line(model, currpoint, nextpoint, l, currfreq, nextfreq, dZ);
-        Real line_Scurr=model.lines.emissivity(currpoint, l)/model.lines.opacity(currpoint, l);//current source
-        Real line_Snext=model.lines.emissivity(nextpoint, l)/model.lines.opacity(nextpoint, l);//next source
+        Real line_Scurr=model.lines.emissivity(currpoint, l)/(model.lines.opacity(currpoint, l)+model.parameters->min_opacity);//current source
+        Real line_Snext=model.lines.emissivity(nextpoint, l)/(model.lines.opacity(nextpoint, l)+model.parameters->min_opacity);//next source
         sum_dtau+=line_dtau;
         sum_dtau_times_Scurr+=line_dtau*line_Scurr;
         sum_dtau_times_Snext+=line_dtau*line_Snext;
