@@ -24,10 +24,10 @@ with open(os.path.join(this_dir, "../version.txt"), "r+") as file:
     msg=sys.argv[1]#commit msg
 
     #matching word exactly (no exact letters directly afterwards, then any number of characters)
-    #ofcourse, only the word itself may also be matched
-    major_reg=re.compile(r'^.*\(increase version major\).*$', re.IGNORECASE)
-    minor_reg=re.compile(r'^.*\(increase version minor\).*$', re.IGNORECASE)
-    patch_reg=re.compile(r'^.*\(increase version patch\).*$', re.IGNORECASE)
+    #ofcourse, only the word itself may also be matched; removed end- and start-of-line tokens, as the commit messages can get too long
+    major_reg=re.compile(r'.*\(increase version major\).*', re.IGNORECASE)
+    minor_reg=re.compile(r'.*\(increase version minor\).*', re.IGNORECASE)
+    patch_reg=re.compile(r'.*\(increase version patch\).*', re.IGNORECASE)
     #python 3.10 would enable us to use fancy switch statements; for now, we use if-else statements
     if re.match(major_reg, msg):
         #increment major version
