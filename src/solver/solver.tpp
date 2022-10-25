@@ -1902,7 +1902,7 @@ accel inline void Solver :: image_optical_depth (Model& model, const Size o, con
         chi_c = chi_n;
 
         // Get new radiative properties
-        compute_source_dtau<approx>(model, nr[first], nr[first+1], l, freq*shift[first], freq*shift[first+1], shift[first], shift[first+1], dZ[first], compute_curr_opacity, dtau_n, chi_c, chi_n, term_c, term_n);
+        compute_source_dtau<approx>(model, nr[n], nr[n+1], l, freq*shift[n], freq*shift[n+1], shift[n], shift[n+1], dZ[n], compute_curr_opacity, dtau_n, chi_c, chi_n, term_c, term_n);
 
         tau += dtau_n;
     }
