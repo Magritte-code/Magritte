@@ -1882,15 +1882,17 @@ accel inline void Solver :: image_optical_depth (Model& model, const Size o, con
 
     Real eta_c, chi_c;
     Real eta_n, chi_n;
+    Real dtau_n;
+    Real term_n, term_c;
 
     Real tau = 0.0;
 
 
     // Get optical properties for first two elements
-    get_eta_and_chi <approx> (model, nr[first  ], l, freq*shift[first  ], eta_c, chi_c);
-    get_eta_and_chi <approx> (model, nr[first+1], l, freq*shift[first+1], eta_n, chi_n);
+    bool compute_curr_opacity = true; // for the first point, we need to compute both the curr and next opacity (and source)
+    compute_source_dtau<approx>(model, nr[first], nr[first+1], l, freq*shift[first], freq*shift[first+1], shift[first], shift[first+1], dZ[first], compute_curr_opacity, dtau_n, chi_c, chi_n, term_c, term_n);
 
-    tau += half * (chi_c + chi_n) * dZ[first];
+    tau += dtau_n;
 
 
     /// Set body of Feautrier matrix
@@ -1900,9 +1902,9 @@ accel inline void Solver :: image_optical_depth (Model& model, const Size o, con
         chi_c = chi_n;
 
         // Get new radiative properties
-        get_eta_and_chi <approx> (model, nr[n+1], l, freq*shift[n+1], eta_n, chi_n);
+        compute_source_dtau<approx>(model, nr[first], nr[first+1], l, freq*shift[first], freq*shift[first+1], shift[first], shift[first+1], dZ[first], compute_curr_opacity, dtau_n, chi_c, chi_n, term_c, term_n);
 
-        tau += half * (chi_c + chi_n) * dZ[n];
+        tau += dtau_n;
     }
 
     optical_depth_() = tau;
