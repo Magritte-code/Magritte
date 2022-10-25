@@ -1867,7 +1867,8 @@ inline Real Solver :: compute_dtau_single_line(Model& model, Size curridx, Size 
 
     //If we instead use an average opacity, the computation is quite a bit faster
     const Real average_opacity=(next_line_opacity+curr_line_opacity)/2.0;
-    const Real erfterm=average_opacity/diff_pos/2.0*(std::erff(next_pos)-std::erff(curr_pos));
+    // const Real erfterm=average_opacity/diff_pos/2.0*(std::erff(next_pos)-std::erff(curr_pos));
+    const Real erfterm=average_opacity/diff_pos/2.0*(std::erf(next_pos)-std::erf(curr_pos));
     //correcting to bound opacity from below to the minimum opacity (assumes positive opacities occuring in the model)
     // return dz*(average_inverse_line_width*erfterm+model.parameters->min_opacity);
     Real dtau = dz*(average_inverse_line_width*erfterm);
