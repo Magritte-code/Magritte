@@ -1556,7 +1556,7 @@ inline void Solver :: compute_S_dtau_line_integrated <CloseLines> (Model& model,
         {
             curr_line_opacity= curr_line_opacity>=0.0 ? model.parameters->min_opacity/linefreq : -model.parameters->min_opacity/linefreq;
         }
-        if (std::abs(next_line_opacity)<model.parameters->min_opacity)
+        if (std::abs(next_line_opacity)<model.parameters->min_opacity/linefreq)
         {
             next_line_opacity= next_line_opacity>=0.0 ? model.parameters->min_opacity/linefreq : -model.parameters->min_opacity/linefreq;
         }
