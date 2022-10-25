@@ -928,7 +928,11 @@ accel inline void Solver :: solve_shortchar_order_0 (
             // model.radiation.I(r,o,f) = 0.0;
             //Err, if we encounter a zero source function, that means the level populations are doing something weird, being almost zero
             // So I will assume the opacity to be negligible too
-            if (source_c[f] * source_n[f] <= 0.0)
+            //No, if we have velocity gradients, this can be entirely different...
+            //err, it is probably more correct to also ignore the optical depth in case of very low optical depths
+            // if (source_c[f] * source_n[f] <= 0.0)
+            // if (std::abs(dtau)< 1.0e-7)
+            if (std::abs(dtau)< 1.0e-10 || source_c[f] * source_n[f] <= 0.0)
             {
                 const Size k = model.radiation.frequencies.corresponding_k_for_tran[f];   // index of transition
 
@@ -1073,7 +1077,10 @@ accel inline void Solver :: solve_shortchar_order_0 (
                 //Define some corrected sign sources; to do this, define some constant?
                 // Real source_curr = source_c[f];
                 // Real source_next = source_n[f];
-                if (source_c[f] * source_n[f] <= 0.0)
+                //err, it is probably more correct to also ignore the optical depth in case of very low optical depths
+                // if (std::abs(dtau)< 1.0e-7)
+                // if (source_c[f] * source_n[f] <= 0.0)
+                if (std::abs(dtau)< 1.0e-10 || source_c[f] * source_n[f] <= 0.0)
                 {
                     const Size l_spec = model.radiation.frequencies.corresponding_l_for_spec[f];   // index of species
                     LineProducingSpecies &lspec = model.lines.lineProducingSpecies[l_spec];
