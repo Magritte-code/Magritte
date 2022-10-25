@@ -1874,7 +1874,9 @@ inline Real Solver :: compute_dtau_single_line(Model& model, Size curridx, Size 
     Real dtau = dz*(average_inverse_line_width*erfterm);
     if (dtau < model.parameters->min_opacity*dz)
     {
-        dtau = dtau>=0.0 ? model.parameters->min_opacity*dz : -model.parameters->min_opacity*dz;
+        //average opacity will determine the sign of dtau, as (erf stuff)/diff_pos>0, average_inverse_line_width>0; the problem is that the erf stuff can be numerically 0.
+        dtau = average_opacity>=0.0 ? model.parameters->min_opacity*dz : -model.parameters->min_opacity*dz;
+        // dtau = dtau>=0.0 ? model.parameters->min_opacity*dz : -model.parameters->min_opacity*dz;
     }
     return dtau;
 
