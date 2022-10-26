@@ -930,9 +930,9 @@ accel inline void Solver :: solve_shortchar_order_0 (
             // So I will assume the opacity to be negligible too
             //No, if we have velocity gradients, this can be entirely different...
             //err, it is probably more correct to also ignore the optical depth in case of very low optical depths
-            // if (source_c[f] * source_n[f] <= 0.0)
+            // if (std::abs(dtau)< 1.0e-10 || source_c[f] * source_n[f] <= 0.0)
             // if (std::abs(dtau)< 1.0e-7)
-            if (std::abs(dtau)< 1.0e-10 || source_c[f] * source_n[f] <= 0.0)
+            if (source_c[f] * source_n[f] <= 0.0)
             {
                 const Size k = model.radiation.frequencies.corresponding_k_for_tran[f];   // index of transition
 
@@ -953,7 +953,12 @@ accel inline void Solver :: solve_shortchar_order_0 (
                 // model.radiation.I(r,o,f) += eta * fraction_inversion_region * dZ;
                 // Opacity is approximately zero in this case, so we can use the following approximations
                 tau[f] = 0.0;
-                model.radiation.I(r,o,f) = (eta_c + eta_n) / 2.0 * dZ;
+                //err, this is the trapezoidal rule, which does not hold at all in case of high velocity gradients...
+                // model.radiation.I(r,o,f) = (eta_c + eta_n) / 2.0 * dZ;
+                // more accurate way of computing the integral of the emissivity
+                model.radiation.I(r,o,f) = compute_integral_emissivity(model, crt, nxt, freq*shift_c, freq*shift_n, dZ);
+                // TEST: putting extra contribution to zero
+                // model.radiation.I(r,o,f) = 0;
                 // std::cout<<"inversion I: "<<model.radiation.I(r,o,f)<<std::endl;
             }
 
@@ -1078,9 +1083,9 @@ accel inline void Solver :: solve_shortchar_order_0 (
                 // Real source_curr = source_c[f];
                 // Real source_next = source_n[f];
                 //err, it is probably more correct to also ignore the optical depth in case of very low optical depths
+                // if (std::abs(dtau)< 1.0e-10 || source_c[f] * source_n[f] <= 0.0)
                 // if (std::abs(dtau)< 1.0e-7)
-                // if (source_c[f] * source_n[f] <= 0.0)
-                if (std::abs(dtau)< 1.0e-10 || source_c[f] * source_n[f] <= 0.0)
+                if (source_c[f] * source_n[f] <= 0.0)
                 {
                     const Size l_spec = model.radiation.frequencies.corresponding_l_for_spec[f];   // index of species
                     LineProducingSpecies &lspec = model.lines.lineProducingSpecies[l_spec];
@@ -1099,7 +1104,11 @@ accel inline void Solver :: solve_shortchar_order_0 (
                     // const Real fraction_inversion_region = 2.0 * std::min(std::abs(source_curr), std::abs(source_next)) / std::abs(source_curr+source_next);
                     //
                     // model.radiation.I(r,o,f) += exp(-tau[f]) * chi * fraction_inversion_region * dZ;
-                    model.radiation.I(r,o,f) += exp(-tau[f]) * (eta_c + eta_n) / 2.0 * dZ;
+                    // model.radiation.I(r,o,f) += exp(-tau[f]) * (eta_c + eta_n) / 2.0 * dZ;
+                    // more accurate way of computing the integral of eta
+                    model.radiation.I(r,o,f) += exp(-tau[f]) * compute_integral_emissivity(model, crt, nxt, freq*shift_c, freq*shift_n, dZ);
+                    //TEST: putting extra contribution to zero
+                    // model.radiation.I(r,o,f) += 0;
                 }
                 else
                 {
@@ -1572,15 +1581,22 @@ inline void Solver :: compute_S_dtau_line_integrated <CloseLines> (Model& model,
         sum_dtau+=line_dtau;
         sum_dtau_times_Scurr+=line_dtau*line_Scurr;
         sum_dtau_times_Snext+=line_dtau*line_Snext;
+
+        // std::cout<<"sum_dtau: "<<sum_dtau<<" sum_dtau_times_Scurr: "<<sum_dtau_times_Scurr<<" sum_dtau_times_Snext: "<<sum_dtau_times_Snext<<" curr_line_opacity: "<<curr_line_opacity<<" next_line_opacity: "<<next_line_opacity<<std::endl;
     }
     dtau=sum_dtau;
     //needs extra bounding, as nothing may be added in the first place (above for loop may have looped over 0 elements)
     const Real bound_min_dtau = model.parameters->min_opacity * dZ;
     //Correct way of bounding from below; should be able to deal with very minor computation errors around 0.
+
     if (std::abs(dtau)<bound_min_dtau)
-    {
+    {   //making sure that the optical depth has the same sign as the source functions
+        //Wait what? S times dtau (∝ η*dZ) should always be positive, no matter what; the issue is then that we do no longer know which sign to assign...
+        // dtau= sum_dtau_times_Scurr+sum_dtau_times_Snext>=0.0 ? bound_min_dtau : -bound_min_dtau;
         dtau= dtau>=0.0 ? bound_min_dtau : -bound_min_dtau;
     }
+    // std::cout<<"dtau close line: "<<dtau<<" bound min dtau: "<<bound_min_dtau<<std::endl;
+    // std::cout<<"sum_dtau_times_Scurr: "<<sum_dtau_times_Scurr<<" sum_dtau_times_Snext: "<<sum_dtau_times_Snext<<std::endl;
     //Note: 0 source functions can be returned if no lines are nearby; but then the negligible lower bound gets returned
     Scurr=sum_dtau_times_Scurr/dtau;
     Snext=sum_dtau_times_Snext/dtau;
@@ -1879,15 +1895,131 @@ inline Real Solver :: compute_dtau_single_line(Model& model, Size curridx, Size 
     //correcting to bound opacity from below to the minimum opacity (assumes positive opacities occuring in the model)
     // return dz*(average_inverse_line_width*erfterm+model.parameters->min_opacity);
     Real dtau = dz*(average_inverse_line_width*erfterm);
+    // std::cout<<"dtau: "<<dtau<<" dz: "<<dz<<" average_inverse_line_width: "<<average_inverse_line_width<<std::endl;
+    // std::cout<<"dtau: "<<dtau<<" diff_pos: "<<diff_pos<<" erf diff: "<<(std::erff(next_pos)-std::erff(curr_pos))<<" erf diff double: "<<(std::erf(next_pos)-std::erf(curr_pos))<<std::endl;
     if (dtau < model.parameters->min_opacity*dz)
     {
         //average opacity will determine the sign of dtau, as (erf stuff)/diff_pos>0, average_inverse_line_width>0; the problem is that the erf stuff can be numerically 0.
         dtau = average_opacity>=0.0 ? model.parameters->min_opacity*dz : -model.parameters->min_opacity*dz;
         // dtau = dtau>=0.0 ? model.parameters->min_opacity*dz : -model.parameters->min_opacity*dz;
     }
+    // std::cout<<"average_opacity: "<<average_opacity<<" erfterm: "<<erfterm<<" dtau: "<<dtau<<std::endl;
     return dtau;
 
 }
+
+
+///   Computes the optical depth assuming only a single line exists.
+///    @param[in] curridx: index of the current point
+///    @param[in] nextidx: index of the next point
+///    @param[in] lineidx: index of the line for which to compute the optical depth
+///    @param[in] curr_freq: current frequency (in comoving frame)
+///    @param[in] next_freq: next frequency (in comoving frame)
+///    @param[in] dz: distance increment
+inline Real Solver :: compute_integral_emissivity_single_line(Model& model, Size curridx, Size nextidx, Size lineidx, Real curr_freq, Real next_freq, Real dz)
+{
+    const Real linefreq=model.lines.line[lineidx];
+    const Real average_inverse_line_width=(model.lines.inverse_width(curridx, lineidx)+model.lines.inverse_width(nextidx, lineidx))/2.0;
+
+    //opacity is stored divided by the linefreq, so multiply by it
+    const Real curr_line_emissivity=linefreq*model.lines.emissivity(curridx, lineidx);
+    const Real next_line_emissivity=linefreq*model.lines.emissivity(nextidx, lineidx);
+
+    //if frequencies are equal, division by zero (due to the optical depth formula) happens if we were not to use this branch
+    if (curr_freq==next_freq)
+    {
+        //doing the default computation instead (no shifting)
+        const Real diff = curr_freq - model.lines.line[lineidx];//curr_freq==next_freq, so choice is arbitrary
+        const Real prof = gaussian(average_inverse_line_width, diff);
+        const Real average_emissivity = (curr_line_emissivity+next_line_emissivity)/2.0;
+
+        return dz * prof * average_emissivity;
+    }
+
+    //We assume a linear interpolation of these dimensionless frequency positions
+    //We will also assume the line width to be somewhat constant, replacing the values with the averages
+    const Real next_pos=(linefreq-next_freq)*average_inverse_line_width;
+    const Real curr_pos=(linefreq-curr_freq)*average_inverse_line_width;
+
+    //In this way, the diff_pos can be computed quite simple, and we do not have a discrepancy between the interpolation and the bounds
+    const Real diff_pos=next_pos-curr_pos;
+
+    /// the more correct approach, taking into account also the line opacity change; however, it does not make too much of a difference in the actual result and is quite a bit slower
+    // const Real delta_opacity=(next_line_opacity-curr_line_opacity);
+    // const Real deltanu=-next_freq+curr_freq;//differences in curr freqs; +-1 due to shift being defined in the other direction
+    //
+    // //note: opacity can also be extrapolated; however the correction term (expterm) accounts for that
+    // const Real interp_opacity=curr_line_opacity+delta_opacity*(curr_freq-linefreq)/deltanu;
+    //
+    // //This term is a constant term, giving the usual ... as if the opacity were static
+    // const Real erfterm=interp_opacity/diff_pos/2.0*(std::erf(next_pos)-std::erf(curr_pos));
+    // //This term corrects for the fact that the opacity between points changes
+    // const Real expterm=delta_opacity/2.0*INVERSE_SQRT_PI/diff_pos/diff_pos*(std::exp(-curr_pos*curr_pos)-std::exp(-next_pos*next_pos));
+    // return dz*std::max(average_inverse_line_width*(erfterm+expterm), model.parameters->min_opacity);
+
+    //If we instead use an average opacity, the computation is quite a bit faster
+    const Real average_emissivity=(next_line_emissivity+curr_line_emissivity)/2.0;
+    // const Real erfterm=average_opacity/diff_pos/2.0*(std::erff(next_pos)-std::erff(curr_pos));
+    const Real erfterm=average_emissivity/diff_pos/2.0*(std::erf(next_pos)-std::erf(curr_pos));
+    //correcting to bound opacity from below to the minimum opacity (assumes positive opacities occuring in the model)
+    // return dz*(average_inverse_line_width*erfterm+model.parameters->min_opacity);
+    Real integral_eta = dz*(average_inverse_line_width*erfterm);
+    // std::cout<<"dtau: "<<dtau<<" dz: "<<dz<<" average_inverse_line_width: "<<average_inverse_line_width<<std::endl;
+    // std::cout<<"dtau: "<<dtau<<" diff_pos: "<<diff_pos<<" erf diff: "<<(std::erff(next_pos)-std::erff(curr_pos))<<" erf diff double: "<<(std::erf(next_pos)-std::erf(curr_pos))<<std::endl;
+    // if (dtau < model.parameters->min_opacity*dz)
+    // {
+    //     //average opacity will determine the sign of dtau, as (erf stuff)/diff_pos>0, average_inverse_line_width>0; the problem is that the erf stuff can be numerically 0.
+    //     dtau = average_opacity>=0.0 ? model.parameters->min_opacity*dz : -model.parameters->min_opacity*dz;
+    //     // dtau = dtau>=0.0 ? model.parameters->min_opacity*dz : -model.parameters->min_opacity*dz;
+    // }
+    // std::cout<<"average_opacity: "<<average_opacity<<" erfterm: "<<erfterm<<" dtau: "<<dtau<<std::endl;
+    return integral_eta;
+
+}
+
+/// Computes the integral of the emissivity
+/// useful in the case of very low optical depths in maser lines, as there the opacity is approximately 0
+inline Real Solver :: compute_integral_emissivity(Model& model, Size curridx, Size nextidx, Real curr_freq, Real next_freq, Real dz)
+{
+    Real sum_eta = 0.0;
+    Real left_freq;
+    Real right_freq;
+
+    //err, compiler will probably figure out that I just want these two values ordered
+    if (curr_freq < next_freq)
+    {
+        left_freq = curr_freq;
+        right_freq = next_freq;
+    }
+    else
+    {
+        right_freq = curr_freq;
+        left_freq = next_freq;
+    }
+
+    //using maximum of bounds on the two points to get an upper bound for the line width
+    const Real curr_bound_line_width = model.parameters->max_distance_opacity_contribution * model.thermodynamics.profile_width_upper_bound_with_linefreq(curridx, right_freq, model.lines.max_inverse_mass);
+    const Real next_bound_line_width = model.parameters->max_distance_opacity_contribution * model.thermodynamics.profile_width_upper_bound_with_linefreq(nextidx, right_freq, model.lines.max_inverse_mass);
+    const Real upper_bound_line_width = std::max(curr_bound_line_width, next_bound_line_width);
+
+    const Real left_freq_bound = left_freq - upper_bound_line_width;
+    const Real right_freq_bound = right_freq + upper_bound_line_width;
+
+    //apply default search algorithms on the bounds, obtaining iterators
+    auto left_line_bound=std::lower_bound(model.lines.sorted_line.begin(), model.lines.sorted_line.end(), left_freq_bound);
+    auto right_line_bound=std::upper_bound(model.lines.sorted_line.begin(), model.lines.sorted_line.end(), right_freq_bound);
+
+    for (auto freq_sort_l = left_line_bound; freq_sort_l != right_line_bound; freq_sort_l++)
+    {
+        const Size sort_l = freq_sort_l - model.lines.sorted_line.begin();
+        // Map sorted line index to original line index
+        const Size l = model.lines.sorted_line_map[sort_l];
+        sum_eta += compute_integral_emissivity_single_line(model, curridx, nextidx, l, curr_freq, next_freq, dz);
+    }
+
+    return sum_eta;
+}
+
 
 
 ///  Solver for Feautrier equation along ray pairs using the (ordinary)
@@ -2147,16 +2279,21 @@ accel inline void Solver :: image_optical_depth (Model& model, const Size o, con
 
     Real eta_c, chi_c;
     Real eta_n, chi_n;
+    Real dtau_n;
+    Real term_n, term_c;
 
     Real tau = 0.0;
 
 
     // Get optical properties for first two elements
-    get_eta_and_chi <None> (model, nr[first  ], l, freq*shift[first  ], eta_c, chi_c);
-    get_eta_and_chi <None> (model, nr[first+1], l, freq*shift[first+1], eta_n, chi_n);
+    // get_eta_and_chi <None> (model, nr[first  ], l, freq*shift[first  ], eta_c, chi_c);
+    // get_eta_and_chi <None> (model, nr[first+1], l, freq*shift[first+1], eta_n, chi_n);
+    //
+    // tau += half * (chi_c + chi_n) * dZ[first];
+    bool compute_curr_opacity = true; // for the first point, we need to compute both the curr and next opacity (and source)
+    compute_source_dtau<CloseLines>(model, nr[first], nr[first+1], l, freq*shift[first], freq*shift[first+1], shift[first], shift[first+1], dZ[first], compute_curr_opacity, dtau_n, chi_c, chi_n, term_c, term_n);
 
-    tau += half * (chi_c + chi_n) * dZ[first];
-
+    tau += dtau_n;
 
     /// Set body of Feautrier matrix
     for (Size n = first+1; n < last; n++)
@@ -2165,9 +2302,12 @@ accel inline void Solver :: image_optical_depth (Model& model, const Size o, con
         chi_c = chi_n;
 
         // Get new radiative properties
-        get_eta_and_chi <None> (model, nr[n+1], l, freq*shift[n+1], eta_n, chi_n);
+        // get_eta_and_chi <None> (model, nr[n+1], l, freq*shift[n+1], eta_n, chi_n);
+        //
+        // tau += half * (chi_c + chi_n) * dZ[n];
+        compute_source_dtau<CloseLines>(model, nr[n], nr[n+1], l, freq*shift[n], freq*shift[n+1], shift[n], shift[n+1], dZ[n], compute_curr_opacity, dtau_n, chi_c, chi_n, term_c, term_n);
 
-        tau += half * (chi_c + chi_n) * dZ[n];
+        tau += dtau_n;
     }
 
     optical_depth_() = tau;

@@ -30,12 +30,12 @@ r_out  = 7.8E16 * 100   # [m]
 r_mid1 = 2.0E15
 r_mid2 = 8.0E16
 # nH2_in = 2.0E28 * 100  # [m^-3]
-nH2_in = 2.0E12   # [m^-3]
+nH2_in = 8.0E13   # [m^-3]
 temp   =  20.00   # [K]
 # temp   =  200.00   # [K]
 turb   = 150.00   # [.]
 dv = 0.0
-# dv   = 2.5E+03 / magritte.CC   # [fraction of speed of light]
+dv   = 1.5E+02 / magritte.CC   # [fraction of speed of light]
 
 get_X_mol = {
     'a' : 1.0E-8,
@@ -147,7 +147,7 @@ def run_models (a_or_b, nosave=False):
     cooling_rates = np.array([])
     abundances = np.array([])
 
-    magritte.pcmt_set_n_threads_avail(1)
+    # magritte.pcmt_set_n_threads_avail(1)
     for i in range(1):
         modelName = f'vanZadelhoff_1{a_or_b}_1D_testmol{i}temp'
         modelFile = f'{moddir}{modelName}.hdf5'
@@ -160,7 +160,7 @@ def run_models (a_or_b, nosave=False):
 
         model.parameters.convergence_fraction=0.9995
         model.parameters.pop_prec=1e-7
-        # model.parameters.min_negative_dtau = -5.0;
+        model.parameters.min_negative_dtau = -5.0;
 
         timer2 = tools.Timer('setting model')
         timer2.start()
@@ -182,10 +182,10 @@ def run_models (a_or_b, nosave=False):
         print("minimal diff: ", np.diff(np.sort(lines)).min())
 
         timer3 = tools.Timer('running model')
-        model.parameters.one_line_approximation = True
+        # model.parameters.one_line_approximation = True
         timer3.start()
         # model.compute_level_populations (True, 100)
-        model.compute_level_populations_shortchar (True, 400)
+        model.compute_level_populations_shortchar (True, 2000)
         # model.parameters.one_line_approximation = False
         # model.compute_level_populations_shortchar (True, 100)
 

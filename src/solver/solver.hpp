@@ -120,8 +120,10 @@ struct Solver
 
     template <ApproximationType approx>
     inline void compute_S_dtau_line_integrated (Model& model, Size currpoint, Size nextpoint, Size lineidx, Real currfreq, Real nextfreq, Real dZ, Real& dtau, Real& Scurr, Real& Snext);
+    inline Real compute_integral_emissivity(Model& model, Size curridx, Size nextidx, Real curr_freq, Real next_freq, Real dz);
 
     inline Real compute_dtau_single_line(Model& model, Size curridx, Size nextidx, Size lineidx, Real curr_freq, Real next_freq, Real dz);
+    inline Real compute_integral_emissivity_single_line(Model& model, Size curridx, Size nextidx, Size lineidx, Real curr_freq, Real next_freq, Real dz);
 
     template<ApproximationType approx>
     accel inline void compute_source_dtau (Model& model, Size currpoint, Size nextpoint, Size line, Real curr_freq, Real next_freq, double curr_shift, double next_shift, Real dZ, bool& compute_curr_opacity, Real& dtaunext, Real& chicurr, Real& chinext, Real& Scurr, Real& Snext);
