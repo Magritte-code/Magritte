@@ -53,6 +53,7 @@ struct Parameters
     Real min_dtau                    = 1.0e-15;
     bool store_intensities           = false;
     bool use_Ng_acceleration         = true;
+    bool use_smoothing               = true;
 
     ///Approximations for summing over lines; by default, we only sum over the close lines in order to compute opacity/emissivity (leading to O(Nline * ln(Nlines)) scaling behavior)
 

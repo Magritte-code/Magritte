@@ -96,11 +96,11 @@ struct Model
     Matrix<Real>    u_ray;
 
     Matrix<Real> boundary_condition;
-   
+
     Vector<Real> dshift_max;
 
     int set_dshift_max ();
-    
+
 
     int compute_image_for_point (const Size ray_nr, const Size p);
 
@@ -115,4 +115,9 @@ struct Model
     Matrix<Real> column;
 
     int set_column ();
+
+    // Smooting stuff
+    void smooth_J ();
+    void smooth_J_sparse ();
+    void smooth_Jeff_Jdif();
 };

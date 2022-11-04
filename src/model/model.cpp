@@ -2,6 +2,7 @@
 #include "model.hpp"
 #include "tools/heapsort.hpp"
 #include "solver/solver.hpp"
+#include <tuple>
 
 
 void Model :: read (const Io& io)
@@ -441,6 +442,7 @@ int Model :: compute_radiation_field_feautrier_order_2_sparse ()
 ///////////////////////////////////////////////////
 int Model :: compute_Jeff ()
 {
+    // smooth_J();
     for (LineProducingSpecies &lspec : lines.lineProducingSpecies)
     {
         threaded_for (p, parameters->npoints(),
@@ -474,6 +476,10 @@ int Model :: compute_Jeff ()
             }
         })
     }
+    if (parameters->use_smoothing)
+    {
+        smooth_Jeff_Jdif();
+    }
 
     return (0);
 }
@@ -483,6 +489,7 @@ int Model :: compute_Jeff ()
 ///////////////////////////////////////////////////
 int Model :: compute_Jeff_sparse ()
 {
+    // smooth_J_sparse();
     for (LineProducingSpecies &lspec : lines.lineProducingSpecies)
     {
         threaded_for (p, parameters->npoints(),
@@ -503,6 +510,10 @@ int Model :: compute_Jeff_sparse ()
                 lspec.Jeff[p][k] = lspec.Jlin[p][k] - HH_OVER_FOUR_PI * diff;
             }
         })
+    }
+    if (parameters->use_smoothing)
+    {
+        smooth_Jeff_Jdif();
     }
 
     return (0);
@@ -949,4 +960,142 @@ int Model :: set_dshift_max ()
     })
 
     return (0);
+}
+
+
+//Simple smoothing procedure for decreasing directional artifacts at the cost of some spatial accuracy
+void Model :: smooth_J ()
+{
+    //construct temporary matrix (use for each species/line/? to store temp data)
+    Matrix<Real> temp_J;
+    temp_J.resize(parameters->npoints(), parameters->nfreqs());//Possible memory improvement: actually resize for each line producing species/use max size of nrad over all species
+    for (LineProducingSpecies &lspec : lines.lineProducingSpecies)
+    {
+        //for all points, copy the intensities temporarily
+        threaded_for (p, parameters->npoints(),
+        {
+            for (Size k = 0; k < lspec.linedata.nrad; k++)
+            {
+                const Size1 freq_nrs = lspec.nr_line[p][k];
+                // Integrate over the line
+                for (Size z = 0; z < parameters->nquads(); z++)
+                {
+                    temp_J(p,freq_nrs[z]) = radiation.J(p, freq_nrs[z]);
+                    //also reinitialize J, adding its own fraction
+                    Size n_neighbors = geometry.points.n_neighbors[p];
+                    radiation.J(p,freq_nrs[z]) /= (n_neighbors + 1.0);
+                }
+            }
+        })
+
+        threaded_for (p, parameters->npoints(),
+        {
+            //get neighbors of point
+            Size neighbors_start_index;
+            Size n_neighbors;
+            std::tie(neighbors_start_index, n_neighbors) = geometry.points.get_neighbors(p);
+            const Size index_end = neighbors_start_index + n_neighbors;
+
+            for (Size index = neighbors_start_index; index<index_end; index++)
+            {
+                const Size neighbor = geometry.points.neighbors[index];
+                for (Size k = 0; k < lspec.linedata.nrad; k++)
+                {
+                    const Size1 freq_nrs = lspec.nr_line[p][k];
+                    for (Size z = 0; z < parameters->nquads(); z++)
+                    {
+                        // averaging the J (smoothing it out a bit)
+                        radiation.J(p,freq_nrs[z])+=temp_J(p,freq_nrs[z])/(n_neighbors+1.0);
+                    }
+                }
+            }
+        })
+    }
+}
+
+//Simple smoothing procedure for decreasing directional artifacts at the cost of some spatial accuracy
+void Model :: smooth_J_sparse ()
+{
+    //construct temporary matrix (use for each species/line/? to store temp data)
+    Matrix<Real> temp_J;
+    temp_J.resize(parameters->npoints(), parameters->nlines());//Possible memory improvement: actually resize for each line producing species/use max size of nrad over all species
+    for (LineProducingSpecies &lspec : lines.lineProducingSpecies)
+    {
+        //for all points, copy the intensities temporarily
+        threaded_for (p, parameters->npoints(),
+        {
+            for (Size k = 0; k < lspec.linedata.nrad; k++)
+            {
+                temp_J(p,k) = lspec.J(p,k);
+                //also reinitialize J, adding its own fraction
+                Size n_neighbors = geometry.points.n_neighbors[p];
+                lspec.J(p,k) /= (n_neighbors + 1.0);
+            }
+        })
+
+        threaded_for (p, parameters->npoints(),
+        {
+            //get neighbors of point
+            Size neighbors_start_index;
+            Size n_neighbors;
+            std::tie(neighbors_start_index, n_neighbors) = geometry.points.get_neighbors(p);
+            const Size index_end = neighbors_start_index + n_neighbors;
+
+            for (Size index = neighbors_start_index; index<index_end; index++)
+            {
+                const Size neighbor = geometry.points.neighbors[index];
+                for (Size k = 0; k < lspec.linedata.nrad; k++)
+                {
+                    // averaging the J (smoothing it out a bit)
+                    lspec.J(p,k)+=temp_J(p,k)/(n_neighbors+1.0);
+                }
+            }
+        })
+    }
+}
+
+
+void Model :: smooth_Jeff_Jdif ()
+{
+    //construct temporary matrix (use for each species/line/? to store temp data)
+    Matrix<Real> temp_Jeff;
+    Matrix<Real> temp_Jdif;
+    temp_Jeff.resize(parameters->npoints(), parameters->nlines());//Possible memory improvement: actually resize for each line producing species/use max size of nrad over all species
+    temp_Jdif.resize(parameters->npoints(), parameters->nlines());//Possible memory improvement: actually resize for each line producing species/use max size of nrad over all species
+    for (LineProducingSpecies &lspec : lines.lineProducingSpecies)
+    {
+        //for all points, copy the intensities temporarily
+        threaded_for (p, parameters->npoints(),
+        {
+            for (Size k = 0; k < lspec.linedata.nrad; k++)
+            {
+                temp_Jeff(p,k) = lspec.Jeff[p][k];
+                temp_Jdif(p,k) = lspec.Jdif[p][k];
+                //also reinitialize J, adding its own fraction
+                Size n_neighbors = geometry.points.n_neighbors[p];
+                lspec.Jeff[p][k] /= (n_neighbors + 1.0);
+                lspec.Jdif[p][k] /= (n_neighbors + 1.0);
+            }
+        })
+
+        threaded_for (p, parameters->npoints(),
+        {
+            //get neighbors of point
+            Size neighbors_start_index;
+            Size n_neighbors;
+            std::tie(neighbors_start_index, n_neighbors) = geometry.points.get_neighbors(p);
+            const Size index_end = neighbors_start_index + n_neighbors;
+
+            for (Size index = neighbors_start_index; index<index_end; index++)
+            {
+                const Size neighbor = geometry.points.neighbors[index];
+                for (Size k = 0; k < lspec.linedata.nrad; k++)
+                {
+                    // averaging the J (smoothing it out a bit)
+                    lspec.Jeff[p][k]+=temp_Jeff(p,k)/(n_neighbors+1.0);
+                    lspec.Jdif[p][k]+=temp_Jdif(p,k)/(n_neighbors+1.0);
+                }
+            }
+        })
+    }
 }
