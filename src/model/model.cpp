@@ -442,7 +442,11 @@ int Model :: compute_radiation_field_feautrier_order_2_sparse ()
 ///////////////////////////////////////////////////
 int Model :: compute_Jeff ()
 {
-    // smooth_J();
+    if (parameters->use_smoothing)
+    {
+        smooth_J();
+    }
+
     for (LineProducingSpecies &lspec : lines.lineProducingSpecies)
     {
         threaded_for (p, parameters->npoints(),
@@ -478,6 +482,7 @@ int Model :: compute_Jeff ()
     }
     if (parameters->use_smoothing)
     {
+        std::cout<<"smoothing J"<<std::endl;
         smooth_Jeff_Jdif();
     }
 
@@ -489,7 +494,11 @@ int Model :: compute_Jeff ()
 ///////////////////////////////////////////////////
 int Model :: compute_Jeff_sparse ()
 {
-    // smooth_J_sparse();
+    if (parameters->use_smoothing)
+    {
+        smooth_J_sparse();
+    }
+
     for (LineProducingSpecies &lspec : lines.lineProducingSpecies)
     {
         threaded_for (p, parameters->npoints(),
@@ -511,10 +520,10 @@ int Model :: compute_Jeff_sparse ()
             }
         })
     }
-    if (parameters->use_smoothing)
-    {
-        smooth_Jeff_Jdif();
-    }
+    // if (parameters->use_smoothing)
+    // {
+    //     smooth_Jeff_Jdif();
+    // }
 
     return (0);
 }
@@ -1005,7 +1014,7 @@ void Model :: smooth_J ()
                     for (Size z = 0; z < parameters->nquads(); z++)
                     {
                         // averaging the J (smoothing it out a bit)
-                        radiation.J(p,freq_nrs[z])+=temp_J(p,freq_nrs[z])/(n_neighbors+1.0);
+                        radiation.J(p,freq_nrs[z])+=temp_J(neighbor,freq_nrs[z])/(n_neighbors+1.0);
                     }
                 }
             }
@@ -1047,7 +1056,7 @@ void Model :: smooth_J_sparse ()
                 for (Size k = 0; k < lspec.linedata.nrad; k++)
                 {
                     // averaging the J (smoothing it out a bit)
-                    lspec.J(p,k)+=temp_J(p,k)/(n_neighbors+1.0);
+                    lspec.J(p,k)+=temp_J(neighbor,k)/(n_neighbors+1.0);
                 }
             }
         })
@@ -1092,8 +1101,8 @@ void Model :: smooth_Jeff_Jdif ()
                 for (Size k = 0; k < lspec.linedata.nrad; k++)
                 {
                     // averaging the J (smoothing it out a bit)
-                    lspec.Jeff[p][k]+=temp_Jeff(p,k)/(n_neighbors+1.0);
-                    lspec.Jdif[p][k]+=temp_Jdif(p,k)/(n_neighbors+1.0);
+                    lspec.Jeff[p][k]+=temp_Jeff(neighbor,k)/(n_neighbors+1.0);
+                    lspec.Jdif[p][k]+=temp_Jdif(neighbor,k)/(n_neighbors+1.0);
                 }
             }
         })
