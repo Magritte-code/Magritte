@@ -176,6 +176,32 @@ void LineProducingSpecies :: update_using_Ng_acceleration ()
         population_prev2 = population_prev1;
         population_prev1 = pop_tmp;
     }
+
+    //at all points, check if the ng acceleration for this line producing species results in positive level populations
+    for (Size p = 0; p<parameters->npoints(); p++)
+    {
+        if (population_tot[p]>0.0)//making sure that we do not divide by zero if the density is 0 somewhere
+        {
+            Real total_positive_population = 0.0;
+            for (Size i = 0; i < linedata.nlev; i++)
+            {
+                if (population(p*linedata.nlev+i)<0.0)
+                {
+                    population(p*linedata.nlev+i)=0.0;
+                }
+                else
+                {
+                    total_positive_population+=population(p*linedata.nlev+i);
+                }
+            }
+            //and renormalize the level populations
+            for (Size i = 0; i < linedata.nlev; i++)
+            { //TODO: use more fancy operation to divide entire column at once
+              //Also just floor the entire vector by 0
+                population(p*linedata.nlev+i) = population(p*linedata.nlev+i) * population_tot[p] / total_positive_population;
+            }
+        }
+    }
 }
 
 
