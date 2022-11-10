@@ -134,7 +134,7 @@ def run_model (a_or_b, nosave=False):
 
     timer3 = tools.Timer('running model')
     timer3.start()
-    model.compute_level_populations (True, 100)
+    model.compute_level_populations_comoving (True, 100)
     timer3.stop()
 
     pops = np.array(model.lines.lineProducingSpecies[0].population).reshape((model.parameters.npoints(), 2))

@@ -14,11 +14,11 @@ import magritte.core     as magritte
 
 
 dimension = 1
-npoints   = 120#50
+npoints   = 25#50
 nrays     = 2
 nspecs    = 5
 nlspecs   = 1
-nquads    = 125#1
+nquads    = 79#1
 
 nH2  = 1.0E+12                 # [m^-3]
 nTT  = 1.0E+03                 # [m^-3]
@@ -26,9 +26,9 @@ temp = 4.5E+00                 # [K]
 turb = 0.0E+00                 # [m/s]
 dx   = 1.0E+12                 # [m]
 # dv   = 0.0E+00 / magritte.CC   # [fraction of speed of light]
-dv   = 5.5E+03 / magritte.CC   # [fraction of speed of light]
-vmax = 5.0E+02 / magritte.CC
-period = 40
+dv   = 1.0E+02 / magritte.CC   # [fraction of speed of light]
+vmax = 1.0E+02 / magritte.CC
+period = 20
 
 
 def create_model ():
@@ -53,9 +53,9 @@ def create_model ():
 
 
     model.geometry.points.position.set([[i*dx, 0, 0] for i in range(npoints)])
-    # model.geometry.points.velocity.set([[i*dv, 0, 0] for i in range(npoints)])
-    vsin = [[vmax*np.sin(2.0*np.pi*i/period), 0, 0] for i in range (npoints)]
-    model.geometry.points.velocity.set(vsin)
+    model.geometry.points.velocity.set([[i*dv, 0, 0] for i in range(npoints)])
+    # vsin = [[vmax*np.sin(2.0*np.pi*i/period), 0, 0] for i in range (npoints)]
+    # model.geometry.points.velocity.set(vsin)
 
 
     model.chemistry.species.abundance = [[     0.0,    nTT,  nH2,  0.0,      1.0] for _ in range(npoints)]
@@ -87,7 +87,9 @@ def run_model (nosave=False):
     timer1.start()
     model = magritte.Model (modelFile)
     timer1.stop()
-    magritte.pcmt_set_n_threads_avail(6)
+    magritte.pcmt_set_n_threads_avail(1)
+
+    model.parameters.comoving_min_dtau=1e-12;
 
     timer2 = tools.Timer('setting model')
     timer2.start()
@@ -124,6 +126,7 @@ def run_model (nosave=False):
     print(J_2f)
     print(J_co)
 
+
     x  = np.array(model.geometry.points.position)[:,0]
     nu = np.array(model.radiation.frequencies.nu)
 
@@ -138,6 +141,8 @@ def run_model (nosave=False):
     chi = tools.lineOpacity    (ld, pop)[k] * phi
     src = tools.lineSource     (ld, pop)[k]
     bdy = tools.I_CMB          (frq)
+
+    print("bdy intensity: ", bdy)
 
     def I_0 (x):
         return src + (bdy-src)*np.exp(-chi*x)

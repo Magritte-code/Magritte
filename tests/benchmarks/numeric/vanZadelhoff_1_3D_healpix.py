@@ -18,8 +18,9 @@ from scipy.interpolate import interp1d
 
 
 dimension = 3
-nshells   = 20
+nshells   = 25
 nrays     = 12*2**2 #reduced number of rays to speed up test
+nrays     = 12*1**2 #reduced number of rays to speed up test
 nspecs    = 5
 nlspecs   = 1
 nquads    = 11
@@ -110,6 +111,8 @@ def run_model (a_or_b, nosave=False):
     modelFile = f'{moddir}{modelName}.hdf5'
     timestamp = tools.timestamp()
 
+    # magritte.pcmt_set_n_threads_avail(1)
+
     timer1 = tools.Timer('reading model')
     timer1.start()
     model = magritte.Model (modelFile)
@@ -122,10 +125,15 @@ def run_model (a_or_b, nosave=False):
     model.compute_LTE_level_populations   ()
     timer2.stop()
 
-    timer3 = tools.Timer('running model')
+    timer3 = tools.Timer('running model comoving')
     timer3.start()
-    model.compute_level_populations (True, 100)
+    model.compute_level_populations_comoving (True, 1)
     timer3.stop()
+
+    timer4 = tools.Timer('running model')
+    timer4.start()
+    model.compute_level_populations (True, 1)
+    timer4.stop()
 
     pops = np.array(model.lines.lineProducingSpecies[0].population).reshape((model.parameters.npoints(), 2))
     abun = np.array(model.chemistry.species.abundance)[:,1]
@@ -153,6 +161,7 @@ def run_model (a_or_b, nosave=False):
     result += f'{timer1.print()                          }\n'
     result += f'{timer2.print()                          }\n'
     result += f'{timer3.print()                          }\n'
+    result += f'{timer4.print()                          }\n'
     result += f'------------------------------------------\n'
 
     print(result)
@@ -170,7 +179,8 @@ def run_model (a_or_b, nosave=False):
         plt.xscale('log')
         plt.xlabel('r [m]')
         plt.ylabel('fractional level populations [.]')
-        plt.savefig(f'{resdir}{modelName}-{timestamp}.png', dpi=150)
+        # plt.savefig(f'{resdir}{modelName}-{timestamp}.png', dpi=150)
+        plt.show()
 
     #note: as some randomness is involved in the setup (random orientation of the shells), the error bound is taken somewhat more loose (~10%)
     FEAUTRIER_AS_EXPECTED=((np.max(error_0[1:])<0.2)&(np.max(error_1[1:])<0.2))
