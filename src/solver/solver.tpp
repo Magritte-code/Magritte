@@ -712,119 +712,205 @@ inline void Solver :: match_overlapping_boundary_conditions(Model& model, const 
     Real curr_range_max=right_bound[curr_range_index];
     Real curr_range_freq=curr_range_min;
 
-
-    //TODO: also add frequencies!
-    //sorted iterating over all boundary frequencies
-    //TODO: just get iterator over multimap and simulataneously check for end of ranges too!
-    std::multimap<Real, std::tuple<Size, Size>>::iterator it=multimap_freq_to_bdy_index.begin();
+    //By just using the builtin lower_bound, one can easily find the boundary conditions overlapping with the current ranges
+    std::multimap<Real, std::tuple<Size, Size>>::iterator it=multimap_freq_to_bdy_index.lower_bound(curr_range_min);
     while (it!=multimap_freq_to_bdy_index.end()&&curr_range_index<nb_ranges)
     {
-        // std::cout<<"start of large while loop"<<std::endl;
         const Real bdy_freq=it->first;//get boundary freq
         const Size bdy_point_on_ray_idx=std::get<0>(it->second);//get corresponding point index on ray
         const Size bdy_freq_idx=std::get<1>(it->second);//get corresponding freq index
-        // std::cout<<"left bound of range: "<<left_bound[curr_range_index]<<std::endl;
-        // std::cout<<"right bound of range: "<<right_bound[curr_range_index]<<std::endl;
-        // std::cout<<"bdy_freq: "<<bdy_freq<<std::endl;
-
-
-        //compare the frequency to the max freq of current range; if larger, then we need to compare against the next range
-        while (right_bound[curr_range_index]<bdy_freq)
+        //check if bdy freq is smaller than the right bound
+        if (bdy_freq>curr_range_max)
         {
-            // std::cout<<"nb_ranges: "<<nb_ranges<<std::endl;
-            // std::cout<<"curr_range_index"<<curr_range_index<<std::endl;
-            if (curr_range_index==nb_ranges-1)//curr_range_index∈[0,...,nb_ranges-1]
-            {
-                // std::cout<<"stopping matching bdy conditions due to limited ranges"<<std::endl;
-                //if curr_range_index==nb_ranges, then all remaining boundary frequencies lie outside of the ranges
-                //so we do not need to waste any more time on trying to match them
+            curr_range_index++;
+            if (curr_range_index==nb_ranges)
+            {   //all other boundary freqs lie outside the last range, so returning
                 return;
             }
-            curr_range_index++;
             //update info about ranges
             curr_range_min=left_bound[curr_range_index];
             curr_range_max=right_bound[curr_range_index];
             curr_range_freq=curr_range_min;
             curr_freq_index=left_bound_index[curr_range_index];//stores the freq index of curr point
+            it=multimap_freq_to_bdy_index.lower_bound(curr_range_min);//and adjust iterator accordingly
+            continue;
+        }
+        //the bdy frequency now lies within the bounds, so just linearly iterate until we find the correct freqs of the ranges (static frame) to interpolate with
+
+        //Find which freq bounds at curr_point exactly correspond to the bdy freq (enclosing it from the right)
+        while (bdy_freq>curr_range_freq&&curr_range_freq<curr_range_max)
+        {
             // std::cout<<"curr_freq_idx: "<<curr_freq_index<<std::endl;
-            // std::cout<<"looping first while loop"<<std::endl;
+            curr_freq_index++;
+            curr_range_freq=model.radiation.frequencies.sorted_nu(currpoint, curr_freq_index)*curr_shift;//in static frame
+            // std::cout<<"looping second while loop"<<std::endl;
         }
-        // std::cout<<"after correctly setting right_bound"<<std::endl;
-        //now it is guaranteed that rightbound>=bdy_freq, so we only need to check whether leftbound<=bdy_freq
-        if (curr_range_min<=bdy_freq)
+        Size left_curr_freq_idx=curr_freq_index-1;
+        Size right_curr_freq_idx=curr_freq_index;
+        //the curr range freq should now be larger/equal to the bdy freq
+        //In the case that bdy_freq lies on the left bound, doing left_bound-1 makes no sense as index for interpolation, so use curr_index as left bound instead
+        if (curr_freq_index==left_bound_index[curr_range_index])
         {
-            // std::cout<<"curr range min: "<<curr_range_min<<std::endl;
-            // std::cout<<"bdy freq: "<<bdy_freq<<std::endl;
-            //Do the boundary stuff
-            //but first check which freqs are exactly in front or behind the bdy freq
-            //Start with the leftmost index of the range
-
-            //while(&& <) looping
-            //Find which freq bounds at curr_point exactly correspond to the bdy freq (enclosing it)
-            while (bdy_freq>curr_range_freq&&curr_range_freq<curr_range_max)
-            {
-                // std::cout<<"curr_freq_idx: "<<curr_freq_index<<std::endl;
-                curr_freq_index++;
-                curr_range_freq=model.radiation.frequencies.sorted_nu(currpoint, curr_freq_index)*curr_shift;//in static frame
-                // std::cout<<"looping second while loop"<<std::endl;
-            }
-            Size left_curr_freq_idx=curr_freq_index-1;
-            Size right_curr_freq_idx=curr_freq_index;
-            //the curr range freq should now be larger/equal to the bdy freq
-            //In the case that bdy_freq lies on the left bound, doing left_bound-1 makes no sense as index for interpolation, so use curr_index as left bound instead
-            if (curr_freq_index==left_bound_index[curr_range_index])
-            {
-                left_curr_freq_idx=curr_freq_index;
-                right_curr_freq_idx=curr_freq_index+1;
-            }
-            const Real deltafreq=(model.radiation.frequencies.sorted_nu(currpoint, right_curr_freq_idx)
-                                  -model.radiation.frequencies.sorted_nu(currpoint, left_curr_freq_idx))*curr_shift;//in static frame
-
-            //Set starting index correctly
-            start_indices_()(bdy_point_on_ray_idx, bdy_freq_idx)[0]=curr_point_on_ray_index;
-            start_indices_()(bdy_point_on_ray_idx, bdy_freq_idx)[1]=left_curr_freq_idx;
-
-            //Set frequency derivative correctly
-
-            //Note: the actual factor with which to multiply is Δτ^2/(1-exp(-Δτ)-Δτ*exp(-Δτ)), which in the limit Δτ→0 corresponds to 2 (wait, I did forget a factor exp(-Δτ) in front due to optical depth itself)
-            //So in total, the multiplication factor is exp(-Δτ)*Δτ^2/(1-exp(-Δτ)-Δτ*exp(-Δτ))
-            //Set explicit coefficents to TWICE the normal 1/Δν value (as we are only treating the explicit part)
-            dIdnu_coef1_curr_()(bdy_point_on_ray_idx, bdy_freq_idx)=-2/deltafreq;
-            dIdnu_coef2_curr_()(bdy_point_on_ray_idx, bdy_freq_idx)=+2/deltafreq;
-            dIdnu_coef3_curr_()(bdy_point_on_ray_idx, bdy_freq_idx)=0.0;
-
-            dIdnu_index1_curr_()(bdy_point_on_ray_idx, bdy_freq_idx)=left_curr_freq_idx;
-            dIdnu_index2_curr_()(bdy_point_on_ray_idx, bdy_freq_idx)=right_curr_freq_idx;
-            dIdnu_index3_curr_()(bdy_point_on_ray_idx, bdy_freq_idx)=right_curr_freq_idx;
-            //as the coefficient for the last on is 0, no effort should be made to renumber that last index
-
-            //Implicit part coefs are set to 0. (as long as the corresponding indicies are in bounds, i do not particularly care about the exact values)
-            dIdnu_coef1_next_()(bdy_point_on_ray_idx, bdy_freq_idx)=0.0;
-            dIdnu_coef2_next_()(bdy_point_on_ray_idx, bdy_freq_idx)=0.0;
-            dIdnu_coef3_next_()(bdy_point_on_ray_idx, bdy_freq_idx)=0.0;
-            //exact indices do not matter, as long as they are in bounds
-            dIdnu_index1_next_()(bdy_point_on_ray_idx, bdy_freq_idx)=bdy_freq_idx;
-            dIdnu_index2_next_()(bdy_point_on_ray_idx, bdy_freq_idx)=bdy_freq_idx;
-            dIdnu_index3_next_()(bdy_point_on_ray_idx, bdy_freq_idx)=bdy_freq_idx;
-
-            //set dtau to approx 0
-            delta_tau_()(bdy_point_on_ray_idx, bdy_freq_idx)=model.parameters->comoving_min_dtau;//should be small enough, but not small enough to crash my solver (due to /Δτ^2 necessary)
-            // std::cout<<"bdy delta_tau: "<<COMOVING_MIN_DTAU<<std::endl;
-            //set S? (nah just ignore the existence, as dtau≃0)
-            //In case of large doppler shifts, we might need to rethink setting dtau→0; as this will underestimate the optical depth (and influence of source)
-            //Concretely, we would need to use the optical depth of the last segment, and somehow incorporate the interpolated intensity of way earlier
-
-            //pop value from iterator
-            it=multimap_freq_to_bdy_index.erase(it);
-            //TODO NOT HERE: for the INITIAL BOUNDARY CONDITIONS, maybe let the function choose the TYPE OF BOUNDARY CONDITION to use!!!
-            // std::cout<<"popping iterator"<<std::endl;
+            left_curr_freq_idx=curr_freq_index;
+            right_curr_freq_idx=curr_freq_index+1;
         }
-        else
-        {
-            // std::cout<<"incrementing iterator"<<std::endl;
-            it++;
-        }
+        ///setting interpolating boundary condition
+        const Real deltafreq=(model.radiation.frequencies.sorted_nu(currpoint, right_curr_freq_idx)
+                              -model.radiation.frequencies.sorted_nu(currpoint, left_curr_freq_idx))*curr_shift;//in static frame
+
+        //Set starting index correctly
+        start_indices_()(bdy_point_on_ray_idx, bdy_freq_idx)[0]=curr_point_on_ray_index;
+        start_indices_()(bdy_point_on_ray_idx, bdy_freq_idx)[1]=left_curr_freq_idx;
+
+        //Set frequency derivative correctly
+
+        //Note: the actual factor with which to multiply is Δτ^2/(1-exp(-Δτ)-Δτ*exp(-Δτ)), which in the limit Δτ→0 corresponds to 2 (wait, I did forget a factor exp(-Δτ) in front due to optical depth itself)
+        //So in total, the multiplication factor is exp(-Δτ)*Δτ^2/(1-exp(-Δτ)-Δτ*exp(-Δτ))
+        //Set explicit coefficents to TWICE the normal 1/Δν value (as we are only treating the explicit part)
+        dIdnu_coef1_curr_()(bdy_point_on_ray_idx, bdy_freq_idx)=-2/deltafreq;
+        dIdnu_coef2_curr_()(bdy_point_on_ray_idx, bdy_freq_idx)=+2/deltafreq;
+        dIdnu_coef3_curr_()(bdy_point_on_ray_idx, bdy_freq_idx)=0.0;
+
+        dIdnu_index1_curr_()(bdy_point_on_ray_idx, bdy_freq_idx)=left_curr_freq_idx;
+        dIdnu_index2_curr_()(bdy_point_on_ray_idx, bdy_freq_idx)=right_curr_freq_idx;
+        dIdnu_index3_curr_()(bdy_point_on_ray_idx, bdy_freq_idx)=right_curr_freq_idx;
+        //as the coefficient for the last on is 0, no effort should be made to renumber that last index
+
+        //Implicit part coefs are set to 0. (as long as the corresponding indicies are in bounds, i do not particularly care about the exact values)
+        dIdnu_coef1_next_()(bdy_point_on_ray_idx, bdy_freq_idx)=0.0;
+        dIdnu_coef2_next_()(bdy_point_on_ray_idx, bdy_freq_idx)=0.0;
+        dIdnu_coef3_next_()(bdy_point_on_ray_idx, bdy_freq_idx)=0.0;
+        //exact indices do not matter, as long as they are in bounds
+        dIdnu_index1_next_()(bdy_point_on_ray_idx, bdy_freq_idx)=bdy_freq_idx;
+        dIdnu_index2_next_()(bdy_point_on_ray_idx, bdy_freq_idx)=bdy_freq_idx;
+        dIdnu_index3_next_()(bdy_point_on_ray_idx, bdy_freq_idx)=bdy_freq_idx;
+
+        //set dtau to approx 0
+        delta_tau_()(bdy_point_on_ray_idx, bdy_freq_idx)=model.parameters->comoving_min_dtau;//should be small enough, but not small enough to crash my solver (due to /Δτ^2 necessary)
+        // std::cout<<"bdy delta_tau: "<<COMOVING_MIN_DTAU<<std::endl;
+        //set S? (nah just ignore the existence, as dtau≃0)
+        //In case of large doppler shifts, we might need to rethink setting dtau→0; as this will underestimate the optical depth (and influence of source)
+        //Concretely, we would need to use the optical depth of the last segment, and somehow incorporate the interpolated intensity of way earlier
+
+        //pop value from iterator
+        it=multimap_freq_to_bdy_index.erase(it);
+
     }
+
+
+    // //SLOW way of doing this
+    // //TODO: also add frequencies!
+    // //sorted iterating over all boundary frequencies
+    // //TODO: just get iterator over multimap and simulataneously check for end of ranges too!
+    // std::multimap<Real, std::tuple<Size, Size>>::iterator it=multimap_freq_to_bdy_index.begin();
+    // while (it!=multimap_freq_to_bdy_index.end()&&curr_range_index<nb_ranges)
+    // {
+    //     // std::cout<<"start of large while loop"<<std::endl;
+    //     const Real bdy_freq=it->first;//get boundary freq
+    //     const Size bdy_point_on_ray_idx=std::get<0>(it->second);//get corresponding point index on ray
+    //     const Size bdy_freq_idx=std::get<1>(it->second);//get corresponding freq index
+    //     // std::cout<<"left bound of range: "<<left_bound[curr_range_index]<<std::endl;
+    //     // std::cout<<"right bound of range: "<<right_bound[curr_range_index]<<std::endl;
+    //     // std::cout<<"bdy_freq: "<<bdy_freq<<std::endl;
+    //
+    //
+    //     //compare the frequency to the max freq of current range; if larger, then we need to compare against the next range
+    //     while (right_bound[curr_range_index]<bdy_freq)
+    //     {
+    //         // std::cout<<"nb_ranges: "<<nb_ranges<<std::endl;
+    //         // std::cout<<"curr_range_index"<<curr_range_index<<std::endl;
+    //         if (curr_range_index==nb_ranges-1)//curr_range_index∈[0,...,nb_ranges-1]
+    //         {
+    //             // std::cout<<"stopping matching bdy conditions due to limited ranges"<<std::endl;
+    //             //if curr_range_index==nb_ranges, then all remaining boundary frequencies lie outside of the ranges
+    //             //so we do not need to waste any more time on trying to match them
+    //             return;
+    //         }
+    //         curr_range_index++;
+    //         //update info about ranges
+    //         curr_range_min=left_bound[curr_range_index];
+    //         curr_range_max=right_bound[curr_range_index];
+    //         curr_range_freq=curr_range_min;
+    //         curr_freq_index=left_bound_index[curr_range_index];//stores the freq index of curr point
+    //         // std::cout<<"curr_freq_idx: "<<curr_freq_index<<std::endl;
+    //         // std::cout<<"looping first while loop"<<std::endl;
+    //     }
+    //     // std::cout<<"after correctly setting right_bound"<<std::endl;
+    //     //now it is guaranteed that rightbound>=bdy_freq, so we only need to check whether leftbound<=bdy_freq
+    //     if (curr_range_min<=bdy_freq)
+    //     {
+    //         // std::cout<<"curr range min: "<<curr_range_min<<std::endl;
+    //         // std::cout<<"bdy freq: "<<bdy_freq<<std::endl;
+    //         //Do the boundary stuff
+    //         //but first check which freqs are exactly in front or behind the bdy freq
+    //         //Start with the leftmost index of the range
+    //
+    //         //while(&& <) looping
+    //         //Find which freq bounds at curr_point exactly correspond to the bdy freq (enclosing it)
+    //         while (bdy_freq>curr_range_freq&&curr_range_freq<curr_range_max)
+    //         {
+    //             // std::cout<<"curr_freq_idx: "<<curr_freq_index<<std::endl;
+    //             curr_freq_index++;
+    //             curr_range_freq=model.radiation.frequencies.sorted_nu(currpoint, curr_freq_index)*curr_shift;//in static frame
+    //             // std::cout<<"looping second while loop"<<std::endl;
+    //         }
+    //         Size left_curr_freq_idx=curr_freq_index-1;
+    //         Size right_curr_freq_idx=curr_freq_index;
+    //         //the curr range freq should now be larger/equal to the bdy freq
+    //         //In the case that bdy_freq lies on the left bound, doing left_bound-1 makes no sense as index for interpolation, so use curr_index as left bound instead
+    //         if (curr_freq_index==left_bound_index[curr_range_index])
+    //         {
+    //             left_curr_freq_idx=curr_freq_index;
+    //             right_curr_freq_idx=curr_freq_index+1;
+    //         }
+    //         const Real deltafreq=(model.radiation.frequencies.sorted_nu(currpoint, right_curr_freq_idx)
+    //                               -model.radiation.frequencies.sorted_nu(currpoint, left_curr_freq_idx))*curr_shift;//in static frame
+    //
+    //         //Set starting index correctly
+    //         start_indices_()(bdy_point_on_ray_idx, bdy_freq_idx)[0]=curr_point_on_ray_index;
+    //         start_indices_()(bdy_point_on_ray_idx, bdy_freq_idx)[1]=left_curr_freq_idx;
+    //
+    //         //Set frequency derivative correctly
+    //
+    //         //Note: the actual factor with which to multiply is Δτ^2/(1-exp(-Δτ)-Δτ*exp(-Δτ)), which in the limit Δτ→0 corresponds to 2 (wait, I did forget a factor exp(-Δτ) in front due to optical depth itself)
+    //         //So in total, the multiplication factor is exp(-Δτ)*Δτ^2/(1-exp(-Δτ)-Δτ*exp(-Δτ))
+    //         //Set explicit coefficents to TWICE the normal 1/Δν value (as we are only treating the explicit part)
+    //         dIdnu_coef1_curr_()(bdy_point_on_ray_idx, bdy_freq_idx)=-2/deltafreq;
+    //         dIdnu_coef2_curr_()(bdy_point_on_ray_idx, bdy_freq_idx)=+2/deltafreq;
+    //         dIdnu_coef3_curr_()(bdy_point_on_ray_idx, bdy_freq_idx)=0.0;
+    //
+    //         dIdnu_index1_curr_()(bdy_point_on_ray_idx, bdy_freq_idx)=left_curr_freq_idx;
+    //         dIdnu_index2_curr_()(bdy_point_on_ray_idx, bdy_freq_idx)=right_curr_freq_idx;
+    //         dIdnu_index3_curr_()(bdy_point_on_ray_idx, bdy_freq_idx)=right_curr_freq_idx;
+    //         //as the coefficient for the last on is 0, no effort should be made to renumber that last index
+    //
+    //         //Implicit part coefs are set to 0. (as long as the corresponding indicies are in bounds, i do not particularly care about the exact values)
+    //         dIdnu_coef1_next_()(bdy_point_on_ray_idx, bdy_freq_idx)=0.0;
+    //         dIdnu_coef2_next_()(bdy_point_on_ray_idx, bdy_freq_idx)=0.0;
+    //         dIdnu_coef3_next_()(bdy_point_on_ray_idx, bdy_freq_idx)=0.0;
+    //         //exact indices do not matter, as long as they are in bounds
+    //         dIdnu_index1_next_()(bdy_point_on_ray_idx, bdy_freq_idx)=bdy_freq_idx;
+    //         dIdnu_index2_next_()(bdy_point_on_ray_idx, bdy_freq_idx)=bdy_freq_idx;
+    //         dIdnu_index3_next_()(bdy_point_on_ray_idx, bdy_freq_idx)=bdy_freq_idx;
+    //
+    //         //set dtau to approx 0
+    //         delta_tau_()(bdy_point_on_ray_idx, bdy_freq_idx)=model.parameters->comoving_min_dtau;//should be small enough, but not small enough to crash my solver (due to /Δτ^2 necessary)
+    //         // std::cout<<"bdy delta_tau: "<<COMOVING_MIN_DTAU<<std::endl;
+    //         //set S? (nah just ignore the existence, as dtau≃0)
+    //         //In case of large doppler shifts, we might need to rethink setting dtau→0; as this will underestimate the optical depth (and influence of source)
+    //         //Concretely, we would need to use the optical depth of the last segment, and somehow incorporate the interpolated intensity of way earlier
+    //
+    //         //pop value from iterator
+    //         it=multimap_freq_to_bdy_index.erase(it);
+    //         //TODO NOT HERE: for the INITIAL BOUNDARY CONDITIONS, maybe let the function choose the TYPE OF BOUNDARY CONDITION to use!!!
+    //         // std::cout<<"popping iterator"<<std::endl;
+    //     }
+    //     else
+    //     {
+    //         // std::cout<<"incrementing iterator"<<std::endl;
+    //         it++;
+    //     }
+    // }
 }
 
 
