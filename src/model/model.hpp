@@ -70,6 +70,7 @@ struct Model
     int compute_radiation_field                   ();
     int compute_radiation_field_feautrier_order_2 ();
     int compute_radiation_field_shortchar_order_0 ();
+    int compute_radiation_field_comoving          ();
     int compute_Jeff                              ();
     int compute_Jeff_sparse                       ();
     int compute_level_populations_from_stateq     ();
@@ -82,6 +83,9 @@ struct Model
     int compute_level_populations_shortchar       (
         const bool  use_Ng_acceleration,
         const long  max_niterations     );
+    int compute_level_populations_comoving (
+        const bool use_Ng_acceleration,
+        const long max_niterations     );
     int compute_image                             (const Size ray_nr);
     int compute_image_optical_depth               (const Size ray_nr);
 

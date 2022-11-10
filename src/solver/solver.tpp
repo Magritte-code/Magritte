@@ -59,6 +59,104 @@ inline void Solver :: setup (const Size l, const Size w, const Size n_o_d)
 }
 
 
+//l=max length of ray, w=nfreqs, n_o_d is number of off-diagonals; will be ignored
+// inline void Solver :: setup_comoving (Model& model, const Size l, const Size w)
+inline void Solver :: setup_comoving (Model& model)
+{
+    length     = 2 * get_ray_lengths_max <Rest> (model) + 1;
+    centre     = length/2;
+    width      = model.parameters->nfreqs();
+
+    model.set_dshift_max();//err, probably belongs somewhere else, but we need to compute the max shift for each point
+
+    std::cout<<"setup length: "<<length<<std::endl;
+    std::cout<<"setup width: "<<width<<std::endl;
+
+
+    points_to_trace_ray_through.resize(model.parameters->hnrays());
+    for (Size i = 0; i < model.parameters->hnrays(); i ++)
+    {
+        points_to_trace_ray_through[i].resize(model.parameters->npoints());
+    }
+
+    //
+    n_rays_through_point.resize(model.parameters->hnrays(), model.parameters->npoints());
+    min_ray_distsqr     .resize(model.parameters->hnrays(), model.parameters->npoints());
+    closest_ray         .resize(model.parameters->hnrays(), model.parameters->npoints());
+
+    for (Size i = 0; i < pc::multi_threading::n_threads_avail(); i++)
+    {
+        dZ_          (i).resize (length);
+        nr_          (i).resize (length);
+        shift_       (i).resize (length);
+
+        // eta_c_       (i).resize (width);
+        // eta_n_       (i).resize (width);
+        //
+        // chi_c_       (i).resize (width);
+        // chi_n_       (i).resize (width);
+        //
+        // tau_         (i).resize (width);
+
+        // real_pt_     (i).resize (length);
+        start_indices_(i).resize(length, width);
+        for (Size j=0; j<length; j++)
+        {
+            for (Size k=0; k<width; k++)
+            {
+                start_indices_(i)(j,k).resize(2);
+            }
+        }
+
+        line_quad_discdir_overlap_(i).resize(model.parameters->nlines());
+        left_bound_(i).resize(model.parameters->nlines());
+        right_bound_(i).resize(model.parameters->nlines());
+        left_bound_index_(i).resize(model.parameters->nlines());
+        right_bound_index_(i).resize(model.parameters->nlines());
+
+        line_count_(i).resize(model.parameters->nlines());
+        quad_range_weight_(i).resize(model.parameters->nquads());
+
+        intensities_(i).resize(length, width);
+        delta_tau_(i).resize(length, width);
+        S_curr_(i).resize(length, width);
+        S_next_(i).resize(length, width);
+
+        dIdnu_coef1_curr_(i).resize(length, width);
+        dIdnu_coef2_curr_(i).resize(length, width);
+        dIdnu_coef3_curr_(i).resize(length, width);
+
+        dIdnu_index1_curr_(i).resize(length, width);
+        dIdnu_index2_curr_(i).resize(length, width);
+        dIdnu_index3_curr_(i).resize(length, width);
+
+        dIdnu_coef1_next_(i).resize(length, width);
+        dIdnu_coef2_next_(i).resize(length, width);
+        dIdnu_coef3_next_(i).resize(length, width);
+
+        dIdnu_index1_next_(i).resize(length, width);
+        dIdnu_index2_next_(i).resize(length, width);
+        dIdnu_index3_next_(i).resize(length, width);
+
+        //For containing the boundary conditions efficiently (for each line)
+        // left_bdy_deque_frequencies_(i).resize(model.parameters->nlines());//contains the boundary frequencies
+        // left_bdy_deque_rayposidx_(i).resize(model.parameters->nlines());//contains the boundary frequencies ray position indices
+        // left_bdy_deque_freq_idx_(i).resize(model.parameters->nlines());//contains the boundary frequencies frequency indices
+        //
+        // right_bdy_deque_frequencies_(i).resize(model.parameters->nlines());//contains the boundary frequencies
+        // right_bdy_deque_rayposidx_(i).resize(model.parameters->nlines());//contains the boundary frequencies ray position indices
+        // right_bdy_deque_freq_idx_(i).resize(model.parameters->nlines());//contains the boundary frequencies frequency indices
+
+
+
+    }
+
+    //Finally also trace the rays in advance to prune the unnecessary ones.
+    get_static_rays_to_trace(model);
+
+}
+
+
 // /  Getter for the maximum allowed shift value determined by the smallest line
 // /    @param[in] o : number of point under consideration
 // /    @retrun maximum allowed shift value determined by the smallest line
@@ -120,6 +218,1563 @@ inline Size Solver :: get_ray_lengths_max (Model& model)
 
     return geo.lengths_max;
 }
+
+
+//traces all points on a given ray (should be called in both directions)
+//but as tracing antipodal rays should be symmetric, we only need to keep track of one direction
+accel inline void Solver :: trace_ray_points (
+    const Geometry& geometry,
+    const Size      o,//origin point of ray
+    const Size      rdir,//ray direction to trace
+    const Size      rsav,//ray index save direction
+    const Size      rayidx)//for indexing the rays (counts from 0 to total number of rays traced through the domain
+{
+    double  Z = 0.0;   // distance from origin (o)
+    double dZ = 0.0;   // last increment in Z
+
+    Size nxt = geometry.get_next (o, rdir, o, Z, dZ);
+
+    // // For generality, I assign a ray index to each ray of a given direction rsav
+    // // TODO: maybe change this if we were to allow arbitrary rays to be traced
+    // // Also the ray direction is identified with the forward dir
+    // closest_ray(rsav,o)=rayidx;
+    // min_ray_distsqr(rsav,o)=0.0;
+
+    if (geometry.valid_point(nxt))
+    {
+
+        // get distance and check if closest ray
+        // TODO: maybe write optimize function which also returns the distance, as we are currently doing some minor work twice
+        Real dist2 = geometry.get_dist2_ray_point(o, nxt, rdir);
+        //If it is the first time we encounter this point, or this is the closest ray: assign this ray to compute the stuff (J, lambda) of the point
+        if (n_rays_through_point(rsav,nxt)==0||dist2<min_ray_distsqr(rsav,nxt))
+        {
+            min_ray_distsqr(rsav,nxt)=dist2;
+            closest_ray(rsav,nxt)=rayidx;
+        }
+
+        n_rays_through_point(rsav,nxt)++;
+
+        Size crt = o;
+
+        while (geometry.not_on_boundary(nxt))
+        {
+            crt =       nxt;
+            nxt = geometry.get_next(o, rdir, nxt, Z, dZ);
+
+            // get distance and check if closest ray
+            Real dist2 = geometry.get_dist2_ray_point(o, nxt, rdir);
+
+            if (n_rays_through_point(rsav,nxt)==0||dist2<min_ray_distsqr(rsav,nxt))
+            {
+                min_ray_distsqr(rsav,nxt)=dist2;
+                closest_ray(rsav,nxt)=rayidx;
+            }
+
+            n_rays_through_point(rsav,nxt)++;
+        }
+    }
+}
+
+// For all directions, determines a ray covering of the points
+inline void Solver :: get_static_rays_to_trace (Model& model)
+{
+    accelerated_for (rr, model.parameters->hnrays(),
+    {
+        Size n_rays_to_trace=0;
+        const Size ar=model.geometry.rays.antipod[rr];
+        for (Size o=0; o<model.parameters->npoints(); o++)
+        {
+            // std::cout<<"n_rays_through_point: "<<n_rays_through_point(rr,o)<<std::endl;
+            // TODO?: maybe replace with some boolean-like thing, as we do not actually care (aside from debugging)
+            // how much rays are traced through a point
+            //DEBUG: commenting this out results in tracing through all points
+            if (n_rays_through_point(rr,o)>0)
+            {continue;}
+
+            //seemingly no ray has been traced through this point, so we must trace a ray through it
+            points_to_trace_ray_through[rr][n_rays_to_trace]=o;
+            //tracing rays is symmetric, so only keep for the first half of the ray directions
+
+            //trace ray through point
+            n_rays_through_point(rr,o)++;
+            //antipod has exactly same number of rays through the point, so do not save
+
+            // For generality, I assign a ray index to each ray of a given direction rsav
+            // Also the ray direction is identified with the forward dir
+            closest_ray(rr,o)=n_rays_to_trace;
+            min_ray_distsqr(rr,o)=0.0;
+
+            //now trace ray through rest of model
+            trace_ray_points(model.geometry, o, rr, rr, n_rays_to_trace);
+            trace_ray_points(model.geometry, o, ar, rr, n_rays_to_trace);
+
+            n_rays_to_trace++;
+        }
+        // n_points_to_trace_ray_through[rr]=n_rays_to_trace;
+        points_to_trace_ray_through[rr].resize(n_rays_to_trace);//and now the correct size, instead of parameters->npoints()
+
+    })
+
+    //debug print stuff
+    for (Size rr=0; rr<model.parameters->hnrays(); rr++)
+    {
+        std::cout<<"rr: "<<rr<<" size points_to_trace_ray_through: "<<points_to_trace_ray_through[rr].size()<<std::endl;
+        for (Size idx=0; idx<points_to_trace_ray_through[rr].size(); idx++)
+        {
+            // std::cout<<"point: "<<points_to_trace_ray_through[rr][idx]<<std::endl;
+        }
+        // std::cout<<"number of rays per point"<<std::endl;
+        for (Size p=0; p<model.parameters->npoints(); p++)
+        {
+            // std::cout<<"closest ray: "<<closest_ray(rr,p)<<std::endl;
+            // std::cout<<"point: "<<p<<"#: "<<n_rays_through_point(rr, p)<<std::endl;
+        }
+
+    }
+
+}
+
+
+// Matches the sorted frequency indices such that the frequency difference is minimal
+// ALSO relies on the current frequency split
+// ERR, should just iterate over all frequencies, ignoring those different splits. Boundary conditions
+// is_upward_disc denotes whether we want an upward discretization
+// nextpointonrayindex should denote how far the next point lies on the ray
+// currpointonrayindex should do the same, but for the previous point
+inline void Solver :: match_frequency_indices(Model& model, const Size nextpoint, const Size currpoint, const Real next_shift, const Real curr_shift, Size nextpointonrayindex, Size currpointonrayindex, bool is_upward_disc)
+{//, const Size splitindex
+    //if upward discretization, we start from the uppermost part
+    if (is_upward_disc)
+    {
+        //Starting from the highest frequency
+        //+1 to all indices due to using unsigned ints when looping down (overflow otherwise)
+        Size curr_freq_idx=model.parameters->nfreqs()-1+1;
+        Size next_freq_idx=model.parameters->nfreqs()-1+1;
+        const Size min_freq_idx=0+1;
+        //assumes at least a single frequency will not be a boundary condition (is reasonable if we limit the doppler shift)
+        //NOTE: oob freqs should be dealt with later on
+        while (curr_freq_idx>=min_freq_idx && next_freq_idx>=min_freq_idx)
+        {
+            //check if the frequency at the previous point index is higher than this frequency (in static frame)
+            if (model.radiation.frequencies.sorted_nu(currpoint, curr_freq_idx-1)*curr_shift>
+                model.radiation.frequencies.sorted_nu(nextpoint, next_freq_idx-1)*next_shift)
+            {
+                curr_freq_idx--;
+                // freq_matching_()[next_freq_idx]=curr_freq_idx;
+            }
+            else//freq matching index must be determined if it is just higher than the freq at the previous point
+            {
+                // freq_matching_()[next_freq_idx-1]=curr_freq_idx-1;
+                start_indices_()(nextpointonrayindex,next_freq_idx-1)[0]=currpointonrayindex;//stores point on ray index
+                start_indices_()(nextpointonrayindex,next_freq_idx-1)[1]=curr_freq_idx-1;//stores freq
+                //for the sake of boundary conditions, these start_indices_ might be overwritten later
+                next_freq_idx--;
+            }
+        }
+        //match remaining points as best as possible (with the outermost point)
+        while (next_freq_idx>=min_freq_idx)
+        {
+            start_indices_()(nextpointonrayindex,next_freq_idx-1)[0]=currpointonrayindex;//stores point
+            start_indices_()(nextpointonrayindex,next_freq_idx-1)[1]=min_freq_idx-1;//stores freq
+            next_freq_idx--;
+        }
+
+
+    }
+    else
+    {
+        //Starting from the lowest frequency
+        Size curr_freq_idx = 0;
+        Size next_freq_idx = 0;
+        const Size max_freq_idx = model.parameters->nfreqs()-1;
+        //assumes at least a single frequency will not be a boundary condition (is reasonable if we limit the doppler shift)
+        while (curr_freq_idx<=max_freq_idx && next_freq_idx<=max_freq_idx)
+        {
+            //check if a previous frequency index exists which is higher than this (in static frame)
+            if (model.radiation.frequencies.sorted_nu(currpoint, curr_freq_idx)*curr_shift<
+                model.radiation.frequencies.sorted_nu(nextpoint, next_freq_idx)*next_shift)
+            {
+                curr_freq_idx++;
+                // freq_matching_()[next_freq_idx]=curr_freq_idx;
+            }
+            else//freq matching index must be determined if it is just higher than the freq at the previous point
+            {
+                // freq_matching_()[next_freq_idx]=curr_freq_idx;
+                start_indices_()(nextpointonrayindex,next_freq_idx)[0]=currpointonrayindex;//stores point
+                start_indices_()(nextpointonrayindex,next_freq_idx)[1]=curr_freq_idx;//stores freq
+                //for the sake of boundary conditions, these start_indices_ might be overwritten later
+                next_freq_idx++;
+            }
+        }
+        //match remaining points as best as possible (with the outermost point)
+        while (next_freq_idx<=max_freq_idx)
+        {
+            start_indices_()(nextpointonrayindex,next_freq_idx)[0]=currpointonrayindex;//stores point
+            start_indices_()(nextpointonrayindex,next_freq_idx)[1]=max_freq_idx;//stores freq
+            next_freq_idx++;
+        }
+    }
+//? should also return the number/indices of boundary frequencies
+}
+
+
+//Computes which lines are overlapping at the given point (next point)
+//might not be useful, better to determine covering; although we might need it anyway for determining the freq der boundary conditions
+//TODO: determine both (and define data struct for the overlap stuff) technically a simple Vector should work fine (even/odd indices respectively denotes start and end of intervals)
+//err, we do need them at different points (overlap at curr point, freq der at next point hmm, also at curr?)
+//USING THE SINGLE LINE APPROX, THIS CAN BE SIMPLIFIED
+inline void Solver :: get_overlapping_lines(Model& model, const Size nextpoint, bool is_upward_disc)
+{
+    //Copied logic from get_line_ranges, as this should do similar things
+    //Should be conceptually more simple than using the line centers and widths to figure out whether they overlap
+    Vector<unsigned char>& line_quad_discdir_overlap=line_quad_discdir_overlap_();
+    for (Size lineidx=0; lineidx<model.parameters->nlines(); lineidx++)
+    {
+        line_quad_discdir_overlap[lineidx]=false;//initialize to no overlap
+    }
+
+    //TODO: use heuristic with max line width and quadrature.roots to determine whether successive lines might overlap
+    //Then if the heuristic says maybe, do a proper search as below (for that single line)
+    //This currently implemented method could be too slow
+
+    Vector<Size>& line_count=line_count_();//counts the number of quadratures encountered for each line
+    //This can get complicated due to having no requirement to use the same quadrature for all lines...
+    //Due to having no requirement that all lines should use the same quadrature, we will just try to compute continguous ranges by iterating over the frequencies itself.
+    //Thus we iterate over all freqs, and count the occurences of the lines; if we encounter a line the maximal number of times, set line count to zero and check if continguous region has ended
+    // if not, then we evidently have an overlap
+    //This only works because the frequencies themselves are sorted
+    if (is_upward_disc)
+    {
+        for (Size freqidx=0; freqidx<model.parameters->nfreqs(); freqidx++)
+        {
+            //get corresponding line of the freq
+            // const Size lineidx=model.radiation.frequencies.corresponding_line_matrix(nextpoint, freqidx);
+            const Size unsorted_freqidx=model.radiation.frequencies.corresponding_nu_index(nextpoint, freqidx);//arbitrary frame, as within a single point, one does not need to care about doppler shifts
+            const Size lineidx=model.radiation.frequencies.corresponding_line[unsorted_freqidx];
+            //increment number of freqs of line quadrature encountered
+            line_count[lineidx]++;
+            //if we have counted all relevant quads belonging to a specific line:
+            if (line_count[lineidx]==model.parameters->nfreqs())
+            {
+                line_count[lineidx]=0;//reset the index (as counting this line is no longer needed)
+                //Then if no other lines are currently being counted (i.e. entire count vectors is zero),
+                // we conclude that the current continguous range has ended
+                if (!std::all_of(line_count.vec.begin(), line_count.vec.end(), [](int i) { return i==0; }))
+                {
+                    //just set curr line index to be overlapping (on the right side)
+                    line_quad_discdir_overlap[lineidx]=true;
+                }
+            }
+        }
+    }
+    else
+    {   //long for more easily handling reverse loops
+        for (long freqidx=model.parameters->nfreqs()-1; freqidx>=0; freqidx--)
+        {
+            //get corresponding line of the freq
+            // const Size lineidx=model.radiation.frequencies.corresponding_line_matrix(nextpoint, freqidx);
+            const Size unsorted_freqidx=model.radiation.frequencies.corresponding_nu_index(nextpoint, freqidx);//arbitrary frame, as within a single point, one does not need to care about doppler shifts
+            const Size lineidx=model.radiation.frequencies.corresponding_line[unsorted_freqidx];
+            //increment number of freqs of line quadrature encountered
+            line_count[lineidx]++;
+            //if we have counted all relevant quads belonging to a specific line:
+            if (line_count[lineidx]==model.parameters->nfreqs())
+            {
+                line_count[lineidx]=0;//reset the index (as counting this line is no longer needed)
+                //Then if no other lines are currently being counted (i.e. entire count vectors is zero),
+                // we conclude that the current continguous range has ended
+                if (!std::all_of(line_count.vec.begin(), line_count.vec.end(), [](int i) { return i==0; }))
+                {
+                    //just set curr line index to be overlapping (on the right side)
+                    line_quad_discdir_overlap[lineidx]=true;
+                }
+            }
+        }
+    }
+    //TODO: check line_count to be uniformly 0!!
+}
+
+
+//Computes the continguous ranges spanned by the line quadratures
+//excludes some part of the frequency quadrature (2 farthest freq quads) due to imposed boundary conditions
+//USING THE SINGLE LINE APPROX, THIS CAN BE SIMPLIFIED ENORMOUSLY (just use all individual line quadratures)
+inline void Solver :: get_line_ranges(Model& model, const Size curr_point, bool is_upward_disc, Real curr_shift)
+{
+    Vector<Real>& left_bound=left_bound_();//Specifies the left bounds of the ranges in [Hz]
+    Vector<Real>& right_bound=right_bound_();//Specifies the right bounds of the ranges in [Hz]
+    Size& nb_ranges=nb_ranges_();//contains the number of ranges
+    Vector<Size>& left_bound_index=left_bound_index_();//Specifies the corresponding freq index to the left bounds of the ranges
+    Vector<Size>& right_bound_index=right_bound_index_();//Specifies the corresponding freq index to the right bounds of the ranges
+
+    nb_ranges=0;
+    //First, we specify which quadratues are counted (every one except the outmost 2 ones depending on discretization direction)
+    Vector<Size>& quad_range_weight=quad_range_weight_();
+    Size& tot_quad_range_weight=tot_quad_range_weight_();
+    tot_quad_range_weight=model.parameters->nquads()-2;//Number of used quadratures is the same for both cases, so we do not need to worry about this
+    if (is_upward_disc)
+    {//then everything except the final two quads may be used for determining the range
+        Size quadidx=0;
+        while (quadidx<model.parameters->nquads()-2)
+        {
+            quad_range_weight[quadidx]=1;
+            quadidx++;
+        }
+
+        while (quadidx<model.parameters->nquads())
+        {
+            quad_range_weight[quadidx]=0;
+            quadidx++;
+        }
+    }
+    else
+    {//then everything except the first two quads may be used for determining the range
+        Size quadidx=0;
+        while (quadidx<2)
+        {
+            quad_range_weight[quadidx]=0;
+            quadidx++;
+        }
+
+        while (quadidx<model.parameters->nquads())
+        {
+            quad_range_weight[quadidx]=1;
+            quadidx++;
+        }
+    }
+
+    //TODO: also add heuristic with max line width and quadrature.roots to determine whether successive lines might overlap
+    //Then if the heuristic says maybe, do a proper search as below (for that single line), otherwise just construct range from the single line
+    //This currently implemented method could be too slow
+
+    //Dummy initialization, as we do not know a priori what the first counted quadrature will be
+    Real leftbound=0.0;
+    Real rightbound=0.0;
+    Size leftboundidx=0;
+    Size rightboundidx=0;
+
+    bool leftbound_specified=false;//Specifies whether the left bound for the current range has already been set
+
+    Vector<Size>& line_count=line_count_();//counts the number of quadratures encountered for each line
+    //This can get complicated due to having no requirement to use the same quadrature for all lines...
+    //Due to having no requirement that all lines should use the same quadrature, we will just try to compute continguous ranges by iterating over the frequencies itself.
+    //Thus we iterate over all freqs, and count the occurences of the lines; if we encounter a line the maximal number of times, set line count to zero and check if continguous region has ended
+    //new range gets added if no other line is overlapping.
+    //This only works because the frequencies themselves are sorted
+    for (Size freqidx=0; freqidx<model.parameters->nfreqs(); freqidx++)
+    {
+        //get corresponding line of the freq
+        // const Size lineidx=model.radiation.frequencies.corresponding_line_matrix(curr_point, freqidx);
+        //FIXME: REPLACE corresponding_z_for_line WITH FUTURE VERSION WHICH ALSO TAKES INTO ACCOUNT THE POINT INDEX
+        // const Size quadidx=model.radiation.frequencies.corresponding_z_for_line[freqidx];
+        const Size unsorted_freqidx=model.radiation.frequencies.corresponding_nu_index(curr_point, freqidx);
+        const Size lineidx=model.radiation.frequencies.corresponding_line[unsorted_freqidx];
+        const Size quadidx=model.radiation.frequencies.corresponding_z_for_line[unsorted_freqidx];
+        const Real curr_freq=model.radiation.frequencies.sorted_nu(curr_point, freqidx)*curr_shift;//in static frame
+
+        if (!leftbound_specified&&(quad_range_weight[quadidx]))
+        {//specify left bound if not yet done so (and the point actually belongs to any of our ranges)
+            leftbound_specified=true;
+            leftbound=curr_freq;
+            leftboundidx=freqidx;
+        }
+        rightbound=curr_freq;
+        rightboundidx=freqidx;
+        //increment number of freqs encountered // not incrementing the if boundary quadratures are encountered
+        line_count[lineidx]+=quad_range_weight[quadidx];
+        //if we have counted all relevant quads belonging to a specific line:
+        if (line_count[lineidx]==tot_quad_range_weight)
+        {
+            line_count[lineidx]=0;
+            //Then if no other lines are currently being counted (i.e. entire count is zero),
+            // we conclude that the current continguous range has ended
+            if (std::all_of(line_count.vec.begin(), line_count.vec.end(), [](int i) { return i==0; }))
+            {
+                //add range
+                left_bound[nb_ranges]=leftbound;
+                right_bound[nb_ranges]=rightbound;
+                left_bound_index[nb_ranges]=leftboundidx;
+                right_bound_index[nb_ranges]=rightboundidx;
+                nb_ranges++;
+
+                //set flag for new left bound
+                leftbound_specified=false;
+            }
+        }
+    }
+    //TODO: check line_count to be uniformly 0!!
+}
+
+
+
+//Sets all implicit boundary conditions, using the computed frequency ranges for currpoint and overlaps for nextpoint
+inline void Solver :: set_implicit_boundary_frequencies(Model& model, const Size nextpoint, const Size nextpointonrayindex, Real shift_next,
+                std::multimap<Real, std::tuple<Size, Size>>& multimap_freq_to_bdy_index, bool is_upward_disc)
+{
+    Size curr_range_index=0;
+    Vector<Real>& left_bound=left_bound_();
+    Vector<Real>& right_bound=right_bound_();
+    Vector<unsigned char>& line_quad_overlap=line_quad_discdir_overlap_();
+    Size nb_ranges=nb_ranges_();
+    Real left_bound_freq=left_bound[curr_range_index];
+    Real right_bound_freq=right_bound[curr_range_index];
+    //Or just do all at once, checking the properties of each freq sequentially
+    //duplicated due to difference due to discretization direction
+    //TODO: bounds are only put at last two (is_upward_disc) or first two (!is_upward_disc) quadratures of each line.
+    //This logic can therefore be simplified if we compute the inverse mapping from the unsorted frequencies to the sorted frequencies
+    //+this might make the deque implementation feasible; err, that might not be able to handle general shrinking/growing of line width due to temperature decrase/increase
+    if (is_upward_disc)
+    {
+        for (Size freqidx=0; freqidx<model.parameters->nfreqs(); freqidx++)
+        {
+            // Real next_freq=model.radiation.frequencies.nu(nextpoint, freqidx)*shift_next;
+            Real next_freq=model.radiation.frequencies.sorted_nu(nextpoint, freqidx)*shift_next;//in static frame
+            const Size unsorted_freqidx=model.radiation.frequencies.corresponding_nu_index(nextpoint, freqidx);
+            const Size lineidx=model.radiation.frequencies.corresponding_line[unsorted_freqidx];
+            const Size quadidx=model.radiation.frequencies.corresponding_z_for_line[unsorted_freqidx];
+            // (quadidx==model.parameters->nquads()-1||quadidx==model.parameters->nquads()-2)
+            // replaced by quadidx>=nquads()-2
+            // Nonoverlapping edges of a line quadrature need boundary conditions
+            if (quadidx>=model.parameters->nquads()-2&&!line_quad_overlap[lineidx])
+            {
+                //then is required boundary condition
+                multimap_freq_to_bdy_index.emplace(next_freq, std::make_tuple(nextpointonrayindex, freqidx));
+                continue;
+            }
+            //ranges are sorted, just like the freqs; therefore we can relatively efficently compare the non-overlap
+            // by just advancing the index for the ranges
+            while(right_bound_freq<next_freq && curr_range_index<nb_ranges-1)
+            {
+                curr_range_index++;
+                Real left_bound_freq=left_bound[curr_range_index];
+                Real right_bound_freq=right_bound[curr_range_index];
+            }
+            //freq outside range if <left_bound || >right_bound
+            if (next_freq<left_bound_freq || next_freq>right_bound_freq)
+            {
+                //then is required boundary condition
+                multimap_freq_to_bdy_index.emplace(next_freq, std::make_tuple(nextpointonrayindex, freqidx));
+            }
+        }
+    }
+    else
+    {
+        for (Size freqidx=0; freqidx<model.parameters->nfreqs(); freqidx++)
+        {
+            // Real next_freq=model.radiation.frequencies.nu(nextpoint, freqidx)*shift_next;
+            Real next_freq=model.radiation.frequencies.sorted_nu(nextpoint, freqidx)*shift_next;//in static frame
+            const Size unsorted_freqidx=model.radiation.frequencies.corresponding_nu_index(nextpoint, freqidx);
+            const Size lineidx=model.radiation.frequencies.corresponding_line[unsorted_freqidx];
+            const Size quadidx=model.radiation.frequencies.corresponding_z_for_line[unsorted_freqidx];
+            // (quadidx==0||quadidx==1)
+            // replaced by quadidx<2
+            // Nonoverlapping edges of a line quadrature need boundary conditions
+            if (quadidx<2&&!line_quad_overlap[lineidx])
+            {
+                //then is required boundary condition
+                multimap_freq_to_bdy_index.emplace(next_freq, std::make_tuple(nextpointonrayindex, freqidx));
+                continue;
+            }
+            //ranges are sorted, just like the freqs; therefore we can relatively efficently compare the non-overlap
+            while(right_bound_freq<next_freq && curr_range_index<nb_ranges-1)
+            {
+                curr_range_index++;
+                Real left_bound_freq=left_bound[curr_range_index];
+                Real right_bound_freq=right_bound[curr_range_index];
+            }
+            //freq outside range if <left_bound || >right_bound
+            if (next_freq<left_bound_freq || next_freq>right_bound_freq)
+            {
+                //then is required boundary condition
+                multimap_freq_to_bdy_index.emplace(next_freq, std::make_tuple(nextpointonrayindex, freqidx));
+            }
+        }
+    }
+}
+
+
+// Matches the overlapping boundary conditions, using the currently computed ranges
+inline void Solver :: match_overlapping_boundary_conditions(Model& model, const Size currpoint, const Size curr_point_on_ray_index,
+                                                            const Real curr_shift, std::multimap<Real, std::tuple<Size, Size>>& multimap_freq_to_bdy_index)
+{
+    //just iterate simultaneously over the ranges and frequencies
+    //TPDO first define the indices corresponding to the ranges//DONE
+    Vector<Real>& left_bound=left_bound_();//Specifies the left bounds of the ranges in [Hz]
+    Vector<Real>& right_bound=right_bound_();//Specifies the right bounds of the ranges in [Hz]
+    Size& nb_ranges=nb_ranges_();//contains the number of ranges
+    Vector<Size>& left_bound_index=left_bound_index_();//Specifies the corresponding freq index to the left bounds of the ranges
+    Vector<Size>& right_bound_index=right_bound_index_();//Specifies the corresponding freq index to the right bounds of the ranges
+
+    Size curr_range_index=0;
+    Size curr_freq_index=left_bound_index[curr_range_index];//contains the current frequency index
+    //Assumption: at least a single line exists -> a single range exists
+    Real curr_range_min=left_bound[curr_range_index];
+    Real curr_range_max=right_bound[curr_range_index];
+    Real curr_range_freq=curr_range_min;
+
+
+    //TODO: also add frequencies!
+    //sorted iterating over all boundary frequencies
+    //TODO: just get iterator over multimap and simulataneously check for end of ranges too!
+    std::multimap<Real, std::tuple<Size, Size>>::iterator it=multimap_freq_to_bdy_index.begin();
+    while (it!=multimap_freq_to_bdy_index.end()&&curr_range_index<nb_ranges)
+    {
+        // std::cout<<"start of large while loop"<<std::endl;
+        const Real bdy_freq=it->first;//get boundary freq
+        const Size bdy_point_on_ray_idx=std::get<0>(it->second);//get corresponding point index on ray
+        const Size bdy_freq_idx=std::get<1>(it->second);//get corresponding freq index
+        // std::cout<<"left bound of range: "<<left_bound[curr_range_index]<<std::endl;
+        // std::cout<<"right bound of range: "<<right_bound[curr_range_index]<<std::endl;
+        // std::cout<<"bdy_freq: "<<bdy_freq<<std::endl;
+
+
+        //compare the frequency to the max freq of current range; if larger, then we need to compare against the next range
+        while (right_bound[curr_range_index]<bdy_freq)
+        {
+            // std::cout<<"nb_ranges: "<<nb_ranges<<std::endl;
+            // std::cout<<"curr_range_index"<<curr_range_index<<std::endl;
+            if (curr_range_index==nb_ranges-1)//curr_range_index∈[0,...,nb_ranges-1]
+            {
+                // std::cout<<"stopping matching bdy conditions due to limited ranges"<<std::endl;
+                //if curr_range_index==nb_ranges, then all remaining boundary frequencies lie outside of the ranges
+                //so we do not need to waste any more time on trying to match them
+                return;
+            }
+            curr_range_index++;
+            //update info about ranges
+            curr_range_min=left_bound[curr_range_index];
+            curr_range_max=right_bound[curr_range_index];
+            curr_range_freq=curr_range_min;
+            curr_freq_index=left_bound_index[curr_range_index];//stores the freq index of curr point
+            // std::cout<<"curr_freq_idx: "<<curr_freq_index<<std::endl;
+            // std::cout<<"looping first while loop"<<std::endl;
+        }
+        // std::cout<<"after correctly setting right_bound"<<std::endl;
+        //now it is guaranteed that rightbound>=bdy_freq, so we only need to check whether leftbound<=bdy_freq
+        if (curr_range_min<=bdy_freq)
+        {
+            // std::cout<<"curr range min: "<<curr_range_min<<std::endl;
+            // std::cout<<"bdy freq: "<<bdy_freq<<std::endl;
+            //Do the boundary stuff
+            //but first check which freqs are exactly in front or behind the bdy freq
+            //Start with the leftmost index of the range
+
+            //while(&& <) looping
+            //Find which freq bounds at curr_point exactly correspond to the bdy freq (enclosing it)
+            while (bdy_freq>curr_range_freq&&curr_range_freq<curr_range_max)
+            {
+                // std::cout<<"curr_freq_idx: "<<curr_freq_index<<std::endl;
+                curr_freq_index++;
+                curr_range_freq=model.radiation.frequencies.sorted_nu(currpoint, curr_freq_index)*curr_shift;//in static frame
+                // std::cout<<"looping second while loop"<<std::endl;
+            }
+            Size left_curr_freq_idx=curr_freq_index-1;
+            Size right_curr_freq_idx=curr_freq_index;
+            //the curr range freq should now be larger/equal to the bdy freq
+            //In the case that bdy_freq lies on the left bound, doing left_bound-1 makes no sense as index for interpolation, so use curr_index as left bound instead
+            if (curr_freq_index==left_bound_index[curr_range_index])
+            {
+                left_curr_freq_idx=curr_freq_index;
+                right_curr_freq_idx=curr_freq_index+1;
+            }
+            const Real deltafreq=(model.radiation.frequencies.sorted_nu(currpoint, right_curr_freq_idx)
+                                  -model.radiation.frequencies.sorted_nu(currpoint, left_curr_freq_idx))*curr_shift;//in static frame
+
+            //Set starting index correctly
+            start_indices_()(bdy_point_on_ray_idx, bdy_freq_idx)[0]=curr_point_on_ray_index;
+            start_indices_()(bdy_point_on_ray_idx, bdy_freq_idx)[1]=left_curr_freq_idx;
+
+            //Set frequency derivative correctly
+
+            //Note: the actual factor with which to multiply is Δτ^2/(1-exp(-Δτ)-Δτ*exp(-Δτ)), which in the limit Δτ→0 corresponds to 2 (wait, I did forget a factor exp(-Δτ) in front due to optical depth itself)
+            //So in total, the multiplication factor is exp(-Δτ)*Δτ^2/(1-exp(-Δτ)-Δτ*exp(-Δτ))
+            //Set explicit coefficents to TWICE the normal 1/Δν value (as we are only treating the explicit part)
+            dIdnu_coef1_curr_()(bdy_point_on_ray_idx, bdy_freq_idx)=-2/deltafreq;
+            dIdnu_coef2_curr_()(bdy_point_on_ray_idx, bdy_freq_idx)=+2/deltafreq;
+            dIdnu_coef3_curr_()(bdy_point_on_ray_idx, bdy_freq_idx)=0.0;
+
+            dIdnu_index1_curr_()(bdy_point_on_ray_idx, bdy_freq_idx)=left_curr_freq_idx;
+            dIdnu_index2_curr_()(bdy_point_on_ray_idx, bdy_freq_idx)=right_curr_freq_idx;
+            dIdnu_index3_curr_()(bdy_point_on_ray_idx, bdy_freq_idx)=right_curr_freq_idx;
+            //as the coefficient for the last on is 0, no effort should be made to renumber that last index
+
+            //Implicit part coefs are set to 0. (as long as the corresponding indicies are in bounds, i do not particularly care about the exact values)
+            dIdnu_coef1_next_()(bdy_point_on_ray_idx, bdy_freq_idx)=0.0;
+            dIdnu_coef2_next_()(bdy_point_on_ray_idx, bdy_freq_idx)=0.0;
+            dIdnu_coef3_next_()(bdy_point_on_ray_idx, bdy_freq_idx)=0.0;
+            //exact indices do not matter, as long as they are in bounds
+            dIdnu_index1_next_()(bdy_point_on_ray_idx, bdy_freq_idx)=bdy_freq_idx;
+            dIdnu_index2_next_()(bdy_point_on_ray_idx, bdy_freq_idx)=bdy_freq_idx;
+            dIdnu_index3_next_()(bdy_point_on_ray_idx, bdy_freq_idx)=bdy_freq_idx;
+
+            //set dtau to approx 0
+            delta_tau_()(bdy_point_on_ray_idx, bdy_freq_idx)=model.parameters->comoving_min_dtau;//should be small enough, but not small enough to crash my solver (due to /Δτ^2 necessary)
+            // std::cout<<"bdy delta_tau: "<<COMOVING_MIN_DTAU<<std::endl;
+            //set S? (nah just ignore the existence, as dtau≃0)
+            //In case of large doppler shifts, we might need to rethink setting dtau→0; as this will underestimate the optical depth (and influence of source)
+            //Concretely, we would need to use the optical depth of the last segment, and somehow incorporate the interpolated intensity of way earlier
+
+            //pop value from iterator
+            it=multimap_freq_to_bdy_index.erase(it);
+            //TODO NOT HERE: for the INITIAL BOUNDARY CONDITIONS, maybe let the function choose the TYPE OF BOUNDARY CONDITION to use!!!
+            // std::cout<<"popping iterator"<<std::endl;
+        }
+        else
+        {
+            // std::cout<<"incrementing iterator"<<std::endl;
+            it++;
+        }
+    }
+}
+
+
+//As currpoint lies on the boundary, use currpoint to derive the necessary boundary conditions!
+inline void Solver :: set_initial_boundary_conditions(Model& model, const Size currpoint, const Real curr_shift, std::multimap<Real, std::tuple<Size, Size>>& multimap_freq_to_bdy_index)
+{
+    std::multimap<Real, std::tuple<Size, Size>>::iterator it=multimap_freq_to_bdy_index.begin();
+    while (it!=multimap_freq_to_bdy_index.end())
+    {
+        const Real bdy_freq=it->first;//get boundary freq (in static frame)
+        const Size bdy_point_on_ray_idx=std::get<0>(it->second);//get corresponding point index on ray
+        const Size bdy_freq_idx=std::get<1>(it->second);//get corresponding freq index
+
+        //For using somewhat reasonable frequency indices
+        Size curr_freq_idx=start_indices_()(bdy_point_on_ray_idx, bdy_freq_idx)[1];
+
+        //Compute boundary intensity
+        Real bdy_intensity=boundary_intensity(model, currpoint, bdy_freq);
+
+        //Set the frequency derivative coefficients to 0
+        dIdnu_coef1_curr_()(bdy_point_on_ray_idx, bdy_freq_idx)=0.0;
+        dIdnu_coef2_curr_()(bdy_point_on_ray_idx, bdy_freq_idx)=0.0;
+        dIdnu_coef3_curr_()(bdy_point_on_ray_idx, bdy_freq_idx)=0.0;
+
+        dIdnu_index1_curr_()(bdy_point_on_ray_idx, bdy_freq_idx)=curr_freq_idx;
+        dIdnu_index2_curr_()(bdy_point_on_ray_idx, bdy_freq_idx)=curr_freq_idx;
+        dIdnu_index3_curr_()(bdy_point_on_ray_idx, bdy_freq_idx)=curr_freq_idx;
+
+        dIdnu_coef1_next_()(bdy_point_on_ray_idx, bdy_freq_idx)=0.0;
+        dIdnu_coef2_next_()(bdy_point_on_ray_idx, bdy_freq_idx)=0.0;
+        dIdnu_coef3_next_()(bdy_point_on_ray_idx, bdy_freq_idx)=0.0;
+
+        dIdnu_index1_next_()(bdy_point_on_ray_idx, bdy_freq_idx)=bdy_freq_idx;
+        dIdnu_index2_next_()(bdy_point_on_ray_idx, bdy_freq_idx)=bdy_freq_idx;
+        dIdnu_index3_next_()(bdy_point_on_ray_idx, bdy_freq_idx)=bdy_freq_idx;
+
+        // Set S and dtau such that the resulting intensity will be (approximately) equal to the initial boundary intensity
+        delta_tau_()(bdy_point_on_ray_idx, bdy_freq_idx)=50.0;//should be large enough
+        S_curr_()(bdy_point_on_ray_idx, bdy_freq_idx)=bdy_intensity;
+        S_next_()(bdy_point_on_ray_idx, bdy_freq_idx)=bdy_intensity;
+        // std::cout<<"initial bdy intensity: "<<bdy_intensity<<std::endl;
+
+        //Hmm, if we were to compute S, Δτ (only using the last part), we might be able to get far better results in case of extreme velocity gradients (and limited quadrature points)
+        //However, this does not protect against using far too large doppler shifts... (when going back and forth, might jump into a non-computed part; however then +- bdy intensity applies either way?)
+        // Size prevpoint=start_indices_()(bdy_point_on_ray_idx, bdy_freq_idx)[0];
+        // bool compute_curr_opacity=true;
+        // Size initial_point_index=ARGUMENT
+        // compute_source_dtau<approx>(model, currpoint, nextpoint, nextlineidx, currfreq, nextfreq, shift_curr, shift_next, dZ, compute_curr_opacity, dtau, chicurr, chinext, Scurr, Snext);
+
+
+        //pop value from iterator
+        it=multimap_freq_to_bdy_index.erase(it);
+    }
+}
+
+
+//Computes the setup and the boundary conditions for the comoving solver for the forward ray direction
+//Assumes we have already traced the ray
+//TODO: do MORE specialization for the single line approx (taking inspiration from far too complex deque stuff?)
+template<ApproximationType approx>
+inline void Solver :: comoving_ray_bdy_setup_forward(Model& model)
+{
+    // std::cout<<"entering forward setup"<<std::endl;
+    //Note: this assumes forward ray, not backward ray
+    // the only practical differences lie in the shift direction and the traversal direction of the ray
+    Matrix<Real>& intensities=intensities_();
+
+    Size first_index=first_();//index of first point on ray
+    Real shift_first=2.0-shift_()[first_()];
+    Size rayposidx=last_();//ray position index -> point index through nr_()[rayposidx]
+    // std::cout<<"setting bdy intensities at rayposidx= "<<first_index<<std::endl;
+    //TODO: do we want the bdy frequencies in static (is current option) or comoving frame?
+    for (Size freqid=0; freqid<model.parameters->nfreqs(); freqid++)
+    {
+        intensities(first_index, freqid)=boundary_intensity(model, nr_()[first_index], model.radiation.frequencies.sorted_nu(nr_()[first_index], freqid)*shift_first);
+    }
+
+    //from first_+1 to last_ index, trace the ray in reverse direction to treat the boundary conditions
+
+    //dummy initialization; just need some references to Reals for get_eta_and_chi
+    //Previously defined vectors are not of the right size for me (O(npointsonray) instead of O(nfreqs))//
+    //Wrong: eta_c_, ... are the correct dimension, however I see no reason to use them. (as the values will be directly used)
+    //So I just compute per point individually (however the compiler should notice and loop unrolling could still happen)
+    Real eta_next=0.0;//get_eta_and_chi<TODO APPROX>(model, nextpoint, ll?, nextfreq, eta, chi);
+    Real chi_next=0.0;//get_eta_and_chi<TODO APPROX>(model, nextpoint, ll?, nextfreq, eta, chi);
+    Real eta_curr=0.0;
+    Real chi_curr=0.0;
+    //TODO: use same data struct as current shortchar method; err, might not be possible due to matching arbitrary frequencies with eachother
+
+    //helper values for computing the freq derivative terms
+    Real dfreqsmall=0.0;
+    Real dfreqlarge=0.0;
+
+    //POSSIBLE OPTIMIZATION: only query them once, moving ..._curr to ..._next after each rayposidx change
+    //But then this should change to a vector holding these values...
+
+    std::multimap<Real, std::tuple<Size, Size>> multimap_freq_to_bdy_index;//boundary conditions can overlap, so multimap it is
+
+    bool computing_curr_opacity=true;
+    // std::cout<<"starting iteration"<<std::endl;
+    //Yes, for determining boundary conditions, we are going backwards; this seems strange, but is a result of easier treatment of the spatial boundary conditions at the end
+    while (rayposidx>first_())
+    {
+        const Size nextpoint=nr_()[rayposidx];
+        const Size currpoint=nr_()[rayposidx-1];
+        const Real dZ=dZ_()[rayposidx-1];
+        //TODO: for less mistakes, redefine rayposidx, rayposidx-1 using different names
+
+        const Real shift_next=2.0-shift_()[rayposidx];//shift is by default defined backwards for the forward ray direction; so under the non-relativistic approx, we can just do 2-shift to get the shift in the other direction
+        const Real shift_curr=2.0-shift_()[rayposidx-1];//this is due to its meaning; it is the transformation from the static to the comoving frame of that specific point
+
+        //For the sake of accurately putting boundary conditions, this should point in the correct direction; otherwise we might accidentally put boundary conditions somewhat closer to the middle of a line
+        const bool is_upward_disc=(shift_next>=shift_curr);
+
+        //TODO: maybe refactor loop from this point onwards; should be the same for both forward and backward rays
+
+        // std::cout<<"before matching freq indices"<<std::endl;
+
+        //somewhere, we should also compute all of S, Δτ, dI/dν stuff
+        //this first part might be appropriate, as we can as well overwrite all this stuff later for the boundary conditions
+        //err, Δτ is not available until we know which freq matches which other freq
+        //First, we match all frequency indices as good as possible.
+        match_frequency_indices(model, nextpoint, currpoint, shift_next, shift_curr, rayposidx, rayposidx-1, is_upward_disc);//O(nfreqs)
+
+        // std::cout<<"before setting default computation values"<<std::endl;
+
+        bool compute_curr_opacity;
+        //Now compute all default stuff, computing bogus for the non-matched indices (but as these correspond to boundary indices, we will overwrite this anyway)
+        for (Size next_freq_idx=0; next_freq_idx<model.parameters->nfreqs(); next_freq_idx++)
+        {
+            const Real nextfreq=model.radiation.frequencies.sorted_nu(nextpoint, next_freq_idx);//=comoving frame freq at next point
+            const Size curr_freq_idx=start_indices_()(rayposidx, next_freq_idx)[1];
+            const Real currfreq=model.radiation.frequencies.sorted_nu(currpoint, curr_freq_idx);//=comoving frame freq at curr point (different frame)
+            //technically, we also need to read the point index from this start_indices_ (start_indices_()(rayposidx, next_freq_idx)[0]), but this should still correspond to currpoint at this moment in time
+            // const Size nextlineidx=model.radiation.frequencies.corresponding_line_matrix(nextpoint, next_freq_idx);
+            const Size unsorted_freqidx=model.radiation.frequencies.corresponding_nu_index(nextpoint, next_freq_idx);
+            const Size nextlineidx=model.radiation.frequencies.corresponding_line[unsorted_freqidx];
+            //only useful for single line approx
+
+            Real dtau, Snext, Scurr;
+            Real chicurr, chinext;//dummy stuff
+            //new method for computing S, dtau
+            compute_curr_opacity=computing_curr_opacity;
+            compute_curr_opacity=true;//due to some shenanigans with the boundary conditions, I'll probably need to compute all sources, dtau's twice
+            //OTHERWISE TODO: add some way to remember previous source function, dtau (if boundary condition implementation is flexible enough)
+            //needs doppler shift difference, so definition of direction does not matter; err, line index might also not be 100% correct; it can change easily with a large doppler shift...
+            //FIXME: shift to same frame! e.g. shift curr point to frame of next point for computing dtau
+            // const Real relshift=shift_curr-shift_next;//TODO: check sign; I think it needs to be the default shift computation
+            // compute_source_dtau<approx>(model, currpoint, nextpoint, nextlineidx, currfreq*relshift, nextfreq, shift_curr, shift_next, dZ, compute_curr_opacity, dtau, chicurr, chinext, Scurr, Snext);
+            compute_source_dtau<approx>(model, currpoint, nextpoint, nextlineidx, currfreq, nextfreq, shift_curr, shift_next, dZ, compute_curr_opacity, dtau, chicurr, chinext, Scurr, Snext);
+            //only using the old method for computing dtau
+            // compute_source_dtau<approx>(model, currpoint, nextpoint, nextlineidx, currfreq, nextfreq, 1.0, 1.0, dZ, compute_curr_opacity, dtau, chicurr, chinext, Scurr, Snext);
+            //using only new method for computing dtau
+            // compute_source_dtau<approx>(model, currpoint, nextpoint, nextlineidx, currfreq, nextfreq, 0.0, 1.0, dZ, compute_curr_opacity, dtau, chicurr, chinext, Scurr, Snext);
+            // compute_source_dtau<approx>(model, currpoint, nextpoint, nextlineidx, currfreq, nextfreq, shift_curr, shift_next, dZ, compute_curr_opacity, dtau, chicurr, chinext, Scurr, Snext);
+            //Possible optimization, only query eta/chi_curr once for each point, as the next value is the same either way when traversing through this ray
+            // const Size currlineidx=model.radiation.frequencies.corresponding_line_matrix(currpoint, curr_freq_idx);
+            // get_eta_and_chi<approx>(model, currpoint, currlineidx, currfreq, eta_curr, chi_curr);
+            S_next_()(rayposidx, next_freq_idx)=Snext;
+            S_curr_()(rayposidx, next_freq_idx)=Scurr;
+            // const Real dtau = std::max(trap(chi_curr, chi_next, dZ), COMOVING_MIN_DTAU);
+            // Floor dtau by COMOVING_MIN_DTAU, due to division by dtau^2
+            dtau = std::max(dtau, model.parameters->comoving_min_dtau);
+            delta_tau_()(rayposidx, next_freq_idx)=dtau;
+            // std::cout<<"setting dtau: "<<delta_tau_()(rayposidx, next_freq_idx)<<std::endl;
+            // std::cout<<"chi_next: "<<chi_next<<std::endl;
+            // std::cout<<"chi_curr: "<<chi_curr<<std::endl;
+            // std::cout<<"rayposidx: "<<rayposidx<<std::endl;
+        }
+        //for the next point, we need to know whether to compute
+        computing_curr_opacity=compute_curr_opacity;
+
+        // std::cout<<"setting derivative coeffs"<<std::endl;
+
+        //This part precomputes the frequency derivative coefficients (and corresponding indices), conveniently ignoring the fact that for some outermost line quadrature frequencies, we must do more complicated stuff.
+        // However, the complicated stuff is handled by the boundary conditions.
+        //The discretization is evidently depends on freq disc direction
+        if (is_upward_disc)
+        {
+            //Do not forget to exclude the last two frequencies, as these cannot have any freq der computation (should definitely bdy conditions)
+            //FIXME: replace with while loop to deal with nfreqs < 3!
+            for (Size next_freq_idx=0; next_freq_idx<model.parameters->nfreqs()-2; next_freq_idx++)
+            {
+                // std::cout<<"get start indices"<<std::endl;
+                Size curr_freq_idx=start_indices_()(rayposidx, next_freq_idx)[1];
+                // std::cout<<"getting start_indices_"<<std::endl;
+                //Modulo operator seems weird, but for the last few freqs, the corresponding freq might be the last one of currpoint == nfreqs()-1
+                //If we want to prevent oob accesses and divides by zero, we need to remap the oob indices (my choice is just using modelo)
+                //The exact remapped indices should not matter, as all of this will be overwritten when determining the boundary indices
+                Size curr_freq_idxp1=(curr_freq_idx+1)%model.parameters->nfreqs();//index+1
+                Size curr_freq_idxp2=(curr_freq_idx+2)%model.parameters->nfreqs();//index+2
+                // std::cout<<"freq+2: "<<curr_freq_idxp2<<" nfreqs: "<<model.parameters->nfreqs()<<std::endl;
+                // std::cout<<"computing curr coeffs"<<std::endl;
+                //first compute coefficents for the second order accurate freq derivative for the explicit part
+                dfreqsmall=(model.radiation.frequencies.sorted_nu(currpoint, curr_freq_idxp2)-model.radiation.frequencies.sorted_nu(currpoint, curr_freq_idxp1))
+                            *shift_curr;
+                dfreqlarge=(model.radiation.frequencies.sorted_nu(currpoint, curr_freq_idxp2)-model.radiation.frequencies.sorted_nu(currpoint, curr_freq_idx))
+                            *shift_curr;
+                // std::cout<<"setting curr coeffs and indices"<<std::endl;
+                dIdnu_coef3_curr_()(rayposidx, next_freq_idx) =-dfreqsmall/(std::pow(dfreqlarge, 2.0)-dfreqlarge*dfreqsmall);//farthest
+                dIdnu_coef2_curr_()(rayposidx, next_freq_idx) =dfreqlarge/(-std::pow(dfreqsmall, 2.0)+dfreqlarge*dfreqsmall);//nearer
+                dIdnu_coef1_curr_()(rayposidx, next_freq_idx) =-dIdnu_coef3_curr_()(rayposidx, next_freq_idx)-dIdnu_coef2_curr_()(rayposidx, next_freq_idx);//curr point itself
+                dIdnu_index3_curr_()(rayposidx, next_freq_idx)=curr_freq_idxp2;
+                dIdnu_index2_curr_()(rayposidx, next_freq_idx)=curr_freq_idxp1;
+                dIdnu_index1_curr_()(rayposidx, next_freq_idx)=curr_freq_idx;
+
+                // std::cout<<"computing next coeffs"<<std::endl;
+
+                //And now do the same (but simpler; less index management) for the implicit part
+                dfreqsmall=(model.radiation.frequencies.sorted_nu(nextpoint, next_freq_idx+2)-model.radiation.frequencies.sorted_nu(nextpoint, next_freq_idx+1))
+                            *shift_next;
+                dfreqlarge=(model.radiation.frequencies.sorted_nu(nextpoint, next_freq_idx+2)-model.radiation.frequencies.sorted_nu(nextpoint, next_freq_idx))
+                            *shift_next;
+
+                // std::cout<<"setting next coeffs and indices"<<std::endl;
+
+                dIdnu_coef3_next_()(rayposidx, next_freq_idx) =-dfreqsmall/(std::pow(dfreqlarge, 2.0)-dfreqlarge*dfreqsmall);//farthest
+                dIdnu_coef2_next_()(rayposidx, next_freq_idx) =dfreqlarge/(-std::pow(dfreqsmall, 2.0)+dfreqlarge*dfreqsmall);//nearer
+                dIdnu_coef1_next_()(rayposidx, next_freq_idx) =-dIdnu_coef3_next_()(rayposidx, next_freq_idx)-dIdnu_coef2_next_()(rayposidx, next_freq_idx);//curr point itself;
+                // std::cout<<"setting next indices"<<std::endl;
+                // std::cout<<"rayposidx: "<<rayposidx<<std::endl;
+                // std::cout<<"next_freq_idx: "<<next_freq_idx<<std::endl;
+                dIdnu_index3_next_()(rayposidx, next_freq_idx)=next_freq_idx+2;
+                dIdnu_index2_next_()(rayposidx, next_freq_idx)=next_freq_idx+1;
+                dIdnu_index1_next_()(rayposidx, next_freq_idx)=next_freq_idx;
+
+            }
+        }
+        else
+        {
+            //Do not forget to exclude the last two frequencies, as these cannot have any freq der computation (should definitely bdy conditions)
+            //Assumes nfreqs>=3
+            for (Size next_freq_idx=2; next_freq_idx<model.parameters->nfreqs(); next_freq_idx++)
+            {
+                Size curr_freq_idx=start_indices_()(rayposidx, next_freq_idx)[1];
+                //Modulo operator seems weird, but for the last few freqs, the corresponding freq might be the last one of currpoint == nfreqs()-1
+                //If we want to prevent oob accesses and divides by zero, we need to remap the oob indices (my choice is just using modelo)
+                //The exact remapped indices should not matter, as all of this will be overwritten when determining the boundary indices
+
+                //MODULUS FOR 'negative' (more like overflowing) unsigned integer is in general not that easy to compute
+                //However, as i know it only goes ever so slightly negative ('-1,-2'): (mod+i)%mod is sufficient for the computation (mod>=1,2)
+                Size curr_freq_idxm1=(curr_freq_idx-1+model.parameters->nfreqs())%model.parameters->nfreqs();//index-1
+                Size curr_freq_idxm2=(curr_freq_idx-2+model.parameters->nfreqs())%model.parameters->nfreqs();//index-2
+                //first compute coefficents for the second order accurate freq derivative for the explicit part
+                //Note: minus signs in front, as we are now computing the first derivative using points on the other side
+                dfreqsmall=-(model.radiation.frequencies.sorted_nu(currpoint, curr_freq_idxm1)-model.radiation.frequencies.sorted_nu(currpoint, curr_freq_idxm2))
+                *shift_curr;
+                dfreqlarge=-(model.radiation.frequencies.sorted_nu(currpoint, curr_freq_idx)-model.radiation.frequencies.sorted_nu(currpoint, curr_freq_idxm2))
+                *shift_curr;
+                dIdnu_coef3_curr_()(rayposidx, next_freq_idx) =-dfreqsmall/(std::pow(dfreqlarge, 2.0)-dfreqlarge*dfreqsmall);//farthest
+                dIdnu_coef2_curr_()(rayposidx, next_freq_idx) =dfreqlarge/(-std::pow(dfreqsmall, 2.0)+dfreqlarge*dfreqsmall);//nearer
+                dIdnu_coef1_curr_()(rayposidx, next_freq_idx) =-dIdnu_coef3_curr_()(rayposidx, next_freq_idx)-dIdnu_coef2_curr_()(rayposidx, next_freq_idx);//curr point itself
+                dIdnu_index3_curr_()(rayposidx, next_freq_idx)=curr_freq_idxm2;
+                dIdnu_index2_curr_()(rayposidx, next_freq_idx)=curr_freq_idxm1;
+                dIdnu_index1_curr_()(rayposidx, next_freq_idx)=curr_freq_idx;
+
+                //And now do the same (but simpler; less index management) for the implicit part
+                //Note: minus signs in front, as we are now computing the first derivative using points on the other side
+                dfreqsmall=-(model.radiation.frequencies.sorted_nu(nextpoint, next_freq_idx-1)-model.radiation.frequencies.sorted_nu(nextpoint, next_freq_idx-2))
+                *shift_next;
+                dfreqlarge=-(model.radiation.frequencies.sorted_nu(nextpoint, next_freq_idx)-model.radiation.frequencies.sorted_nu(nextpoint, next_freq_idx-2))
+                *shift_next;
+
+                dIdnu_coef3_next_()(rayposidx, next_freq_idx) =-dfreqsmall/(std::pow(dfreqlarge, 2.0)-dfreqlarge*dfreqsmall);//farthest
+                dIdnu_coef2_next_()(rayposidx, next_freq_idx) =dfreqlarge/(-std::pow(dfreqsmall, 2.0)+dfreqlarge*dfreqsmall);//nearer
+                dIdnu_coef1_next_()(rayposidx, next_freq_idx) =-dIdnu_coef3_next_()(rayposidx, next_freq_idx)-dIdnu_coef2_next_()(rayposidx, next_freq_idx);//curr point itself;
+                dIdnu_index3_next_()(rayposidx, next_freq_idx)=next_freq_idx-2;
+                dIdnu_index2_next_()(rayposidx, next_freq_idx)=next_freq_idx-1;
+                dIdnu_index1_next_()(rayposidx, next_freq_idx)=next_freq_idx;
+
+            }
+        }
+
+        //Note to self: we can just use all default freq derivative stuff, except for the 2 outermost points on the grid.
+        // Because I define every computation in terms of the next point index, I will have no problems with non-existant/too far frequencies, as I have made the computed curr regions slightly smaller
+        //Note: it might seem we will try to use oob values, but these should be overwritten anyway when setting boundary conditions
+        //CHECK THIS FOR A SIMPLE EXAMPLE!!!
+
+        // std::cout<<"getting line ranges"<<std::endl;
+
+        //now start classifying the new boundary points
+        //For this we first need to compute the ranges of curr_point (minus some boundary freqs)
+        get_line_ranges(model, currpoint, is_upward_disc, shift_curr);//for the current point, we definitely need the exact ranges (fiddled with to ensure enough bdy conditions)
+
+        // std::cout<<"getting overlapping lines"<<std::endl;
+        // and compute the overlap between lines on next_point to make sure we do not accidentally add extra boundary conditions where lines might overlap
+        get_overlapping_lines(model, nextpoint, is_upward_disc);//technically, we should compute which lines overlap only in this part
+
+        // std::cout<<"setting implicit boundary freqs"<<std::endl;
+        //First, we set boundary conditions by comparing the frequencies we have at next_point
+        // versus the range of frequencies we have a curr_point; any outside that range will be treated as boundary points
+        set_implicit_boundary_frequencies(model, nextpoint, rayposidx, shift_next, multimap_freq_to_bdy_index, is_upward_disc);
+
+        // std::cout<<"matching implicit boundary freqs"<<std::endl;
+        // And now we check what boundary conditions need to be evaluated using the intensities at curr_point
+        match_overlapping_boundary_conditions(model, currpoint, rayposidx-1, shift_curr, multimap_freq_to_bdy_index);
+        rayposidx--;
+    }
+    // std::cout<<"setting initial bounds"<<std::endl;
+    //After going through all points, the remaining boundary frequencies have not matched any frequencies near any line,
+    // so we will use initial boundary conditions computed at the first point to put on the ray
+    //note: currpoint should be point on boundary of domain; in this way, we can simply add the corresponding boundary conditions
+    set_initial_boundary_conditions(model, nr_()[first_index], shift_first, multimap_freq_to_bdy_index);
+}
+
+
+
+//Computes the setup and the boundary conditions for the comoving solver for the backward ray direction
+//Assumes we have already traced the ray
+//TODO: do MORE specialization for the single line approx (taking inspiration from far too complex deque stuff?)
+template<ApproximationType approx>
+inline void Solver :: comoving_ray_bdy_setup_backward(Model& model)
+{
+    //Note: this assumes backward ray, not forward ray
+    Matrix<Real>& intensities=intensities_();
+
+    Size first_index=last_();//index of first point on ray
+    Real shift_first=shift_()[first_index];//shift on backward ray is reverse of shift of forward ray (which itself is the reverse operation of mapping from comoving to static frame)
+    Size rayposidx=first_();//ray position index -> point index through nr_()[rayposidx]
+    for (Size freqid=0; freqid<model.parameters->nfreqs(); freqid++)
+    {
+        intensities(first_index, freqid)=boundary_intensity(model, nr_()[first_index], model.radiation.frequencies.sorted_nu(nr_()[first_index], freqid)*shift_first);
+    }
+
+    //from first_+1 to last_ index, trace the ray in reverse direction to treat the boundary conditions
+
+    //dummy initialization; just need some references to Reals for get_eta_and_chi
+    //Previously defined vectors are not of the right size for me (O(npointsonray) instead of O(nfreqs))
+    //So I just compute per point individually (however the compiler should notice and loop unrolling could still happen)
+    Real eta_next=0.0;//get_eta_and_chi<TODO APPROX>(model, nextpoint, ll?, nextfreq, eta, chi);
+    Real chi_next=0.0;//get_eta_and_chi<TODO APPROX>(model, nextpoint, ll?, nextfreq, eta, chi);
+    Real eta_curr=0.0;
+    Real chi_curr=0.0;
+
+    //helper values for computing the freq derivative terms
+    Real dfreqsmall=0.0;
+    Real dfreqlarge=0.0;
+
+    //POSSIBLE OPTIMIZATION: only query them once, moving ..._curr to ..._next after each rayposidx change
+    //But then this should change to a vector holding these values...
+
+    bool computing_curr_opacity=true;
+    std::multimap<Real, std::tuple<Size, Size>> multimap_freq_to_bdy_index;//boundary conditions can overlap, so multimap it is
+    //Yes, for determining boundary conditions, we are going backwards; this seems strange, but is a result of easier treatment of the spatial boundary conditions at the end
+    while (rayposidx<last_())
+    {
+        const Size nextpoint=nr_()[rayposidx];
+        const Size currpoint=nr_()[rayposidx+1];
+        const Real dZ=dZ_()[rayposidx];//dZ is stored somewhat finnicky, in locations [first_(),last_()[ (so not including last_())
+        //TODO: for less mistakes, redefine rayposidx, rayposidx+1 using different names
+
+        const Real shift_next=shift_()[rayposidx];//shift is by default defined backwards for the forward ray direction; so under the non-relativistic approx, we can just do 2-shift to get the shift in the other direction
+        const Real shift_curr=shift_()[rayposidx+1];
+
+        //For the sake of accurately putting boundary conditions, this should point in the correct direction; otherwise we might accidentally put boundary conditions somewhat closer to the middle of a line
+        const bool is_upward_disc=(shift_next>=shift_curr);
+
+        //TODO: maybe refactor loop from this point onwards; should be the same for both forward and backward rays
+
+        //somewhere, we should also compute all of S, Δτ, dI/dν stuff
+        //this first part might be appropriate, as we can as well overwrite all this stuff later for the boundary conditions
+        //err, Δτ is not available until we know which freq matches which other freq
+        //First, we match all frequency indices as good as possible.
+        match_frequency_indices(model, nextpoint, currpoint, shift_next, shift_curr, rayposidx, rayposidx+1, is_upward_disc);//O(nfreqs)
+
+        bool compute_curr_opacity;
+        //Now compute all default stuff, computing bogus for the non-matched indices (but as these correspond to boundary indices, we will overwrite this anyway)
+        for (Size next_freq_idx=0; next_freq_idx<model.parameters->nfreqs(); next_freq_idx++)
+        {
+            const Real nextfreq=model.radiation.frequencies.sorted_nu(nextpoint, next_freq_idx);//=comoving frame freq
+            const Size curr_freq_idx=start_indices_()(rayposidx, next_freq_idx)[1];
+            const Real currfreq=model.radiation.frequencies.sorted_nu(currpoint, curr_freq_idx);//
+            //technically, we also need to read the point index from this start_indices_ (start_indices_()(rayposidx, next_freq_idx)[0]), but this should still correspond to currpoint at this moment in time
+            // const Size nextlineidx=model.radiation.frequencies.corresponding_line_matrix(nextpoint, next_freq_idx);
+            const Size unsorted_freqidx=model.radiation.frequencies.corresponding_nu_index(nextpoint, next_freq_idx);
+            const Size nextlineidx=model.radiation.frequencies.corresponding_line[unsorted_freqidx];
+            Real dtau, Snext, Scurr;
+            Real chicurr, chinext;//dummy stuff
+            //new method for computing S, dtau
+            compute_curr_opacity=computing_curr_opacity;
+            compute_curr_opacity=true;//due to some shenanigans with the boundary conditions, I'll probably need to compute all sources, dtau's twice
+            //OTHERWISE TODO: add some way to remember previous source function, dtau (if boundary condition implementation is flexible enough)
+            //needs doppler shift difference, so definition of direction does not matter; err, line index might also not be 100% correct; it can change easily with a large doppler shift...
+            //FIXME: shift to same frame! e.g. shift curr point to frame of next point for computing dtau
+            // const Real relshift=shift_curr-shift_next;//TODO: check sign; I think it needs to be the default shift computation
+            // compute_source_dtau<approx>(model, currpoint, nextpoint, nextlineidx, currfreq*relshift, nextfreq, shift_curr, shift_next, dZ, compute_curr_opacity, dtau, chicurr, chinext, Scurr, Snext);
+            compute_source_dtau<approx>(model, currpoint, nextpoint, nextlineidx, currfreq, nextfreq, shift_curr, shift_next, dZ, compute_curr_opacity, dtau, chicurr, chinext, Scurr, Snext);
+            //only using the old method for computing dtau
+            // compute_source_dtau<approx>(model, currpoint, nextpoint, nextlineidx, currfreq, nextfreq, 1.0, 1.0, dZ, compute_curr_opacity, dtau, chicurr, chinext, Scurr, Snext);
+            //using only new method for computing dtau
+            // compute_source_dtau<approx>(model, currpoint, nextpoint, nextlineidx, currfreq, nextfreq, 0.0, 1.0, dZ, compute_curr_opacity, dtau, chicurr, chinext, Scurr, Snext);
+            // compute_source_dtau<approx>(model, currpoint, nextpoint, nextlineidx, currfreq, nextfreq, shift_curr, shift_next, dZ, compute_curr_opacity, dtau, chicurr, chinext, Scurr, Snext);
+            //Possible optimization, only query eta/chi_curr once for each point, as the next value is the same either way when traversing through this ray
+            // const Size currlineidx=model.radiation.frequencies.corresponding_line_matrix(currpoint, curr_freq_idx);
+            // get_eta_and_chi<approx>(model, currpoint, currlineidx, currfreq, eta_curr, chi_curr);
+            // const Real Snext=eta_next/chi_next;
+            // const Real Scurr=eta_curr/chi_curr;
+            S_next_()(rayposidx, next_freq_idx)=Snext;
+            S_curr_()(rayposidx, next_freq_idx)=Scurr;
+            // std::cout<<"setting curr source: "<<Scurr<<std::endl;
+            // const Real dtau = std::max(trap (chi_curr, chi_next, dZ), COMOVING_MIN_DTAU);
+            // Floor dtau by COMOVING_MIN_DTAU, due to division by dtau^2
+            dtau = std::max(dtau, model.parameters->comoving_min_dtau);
+            delta_tau_()(rayposidx, next_freq_idx)=dtau;
+            // std::cout<<"setting dtau: "<<delta_tau_()(rayposidx, next_freq_idx)<<std::endl;
+            // std::cout<<"chi_next: "<<chi_next<<std::endl;
+            // std::cout<<"chi_curr: "<<chi_curr<<std::endl;
+            // std::cout<<"dZ: "<<dZ<<std::endl;
+            // std::cout<<"rayposidx: "<<rayposidx<<std::endl;
+        }
+        computing_curr_opacity=compute_curr_opacity;
+
+        //This part precomputes the frequency derivative coefficients (and corresponding indices), conveniently ignoring the fact that for some outermost line quadrature frequencies, we must do more complicated stuff.
+        // However, the complicated stuff is handled by the boundary conditions.
+        //The discretization is evidently depends on freq disc direction
+        if (is_upward_disc)
+        {
+            //Do not forget to exclude the last two frequencies, as these cannot have any freq der computation (should definitely bdy conditions)
+            for (Size next_freq_idx=0; next_freq_idx<model.parameters->nfreqs()-2; next_freq_idx++)
+            {
+                Size curr_freq_idx=start_indices_()(rayposidx, next_freq_idx)[1];
+                //Modulo operator seems weird, but for the last few freqs, the corresponding freq might be the last one of currpoint == nfreqs()-1
+                //If we want to prevent oob accesses and divides by zero, we need to remap the oob indices (my choice is just using modelo)
+                //The exact remapped indices should not matter, as all of this will be overwritten when determining the boundary indices
+                Size curr_freq_idxp1=(curr_freq_idx+1)%model.parameters->nfreqs();//index+1
+                Size curr_freq_idxp2=(curr_freq_idx+2)%model.parameters->nfreqs();//index+2
+                //first compute coefficents for the second order accurate freq derivative for the explicit part
+                dfreqsmall=(model.radiation.frequencies.nu(currpoint, curr_freq_idxp2)-model.radiation.frequencies.nu(currpoint, curr_freq_idxp1))
+                            *shift_curr;
+                dfreqlarge=(model.radiation.frequencies.nu(currpoint, curr_freq_idxp2)-model.radiation.frequencies.nu(currpoint, curr_freq_idx))
+                            *shift_curr;
+                dIdnu_coef3_curr_()(rayposidx, next_freq_idx) =-dfreqsmall/(std::pow(dfreqlarge, 2.0)-dfreqlarge*dfreqsmall);//farthest
+                dIdnu_coef2_curr_()(rayposidx, next_freq_idx) =dfreqlarge/(-std::pow(dfreqsmall, 2.0)+dfreqlarge*dfreqsmall);//nearer
+                dIdnu_coef1_curr_()(rayposidx, next_freq_idx) =-dIdnu_coef3_curr_()(rayposidx, next_freq_idx)-dIdnu_coef2_curr_()(rayposidx, next_freq_idx);//curr point itself
+                dIdnu_index3_curr_()(rayposidx, next_freq_idx)=curr_freq_idxp2;
+                dIdnu_index2_curr_()(rayposidx, next_freq_idx)=curr_freq_idxp1;
+                dIdnu_index1_curr_()(rayposidx, next_freq_idx)=curr_freq_idx;
+
+                //And now do the same (but simpler; less index management) for the implicit part
+                dfreqsmall=(model.radiation.frequencies.nu(nextpoint, next_freq_idx+2)-model.radiation.frequencies.nu(nextpoint, next_freq_idx+1))
+                            *shift_next;
+                dfreqlarge=(model.radiation.frequencies.nu(nextpoint, next_freq_idx+2)-model.radiation.frequencies.nu(nextpoint, next_freq_idx))
+                            *shift_next;
+
+                dIdnu_coef3_next_()(rayposidx, next_freq_idx) =-dfreqsmall/(std::pow(dfreqlarge, 2.0)-dfreqlarge*dfreqsmall);//farthest
+                dIdnu_coef2_next_()(rayposidx, next_freq_idx) =dfreqlarge/(-std::pow(dfreqsmall, 2.0)+dfreqlarge*dfreqsmall);//nearer
+                dIdnu_coef1_next_()(rayposidx, next_freq_idx) =-dIdnu_coef3_next_()(rayposidx, next_freq_idx)-dIdnu_coef2_next_()(rayposidx, next_freq_idx);//curr point itself;
+                dIdnu_index3_next_()(rayposidx, next_freq_idx)=next_freq_idx+2;
+                dIdnu_index2_next_()(rayposidx, next_freq_idx)=next_freq_idx+1;
+                dIdnu_index1_next_()(rayposidx, next_freq_idx)=next_freq_idx;
+
+            }
+        }
+        else
+        {
+            //Do not forget to exclude the last two frequencies, as these cannot have any freq der computation (should definitely bdy conditions)
+            for (Size next_freq_idx=2; next_freq_idx<model.parameters->nfreqs(); next_freq_idx++)
+            {
+                Size curr_freq_idx=start_indices_()(rayposidx, next_freq_idx)[1];
+                //Modulo operator seems weird, but for the last few freqs, the corresponding freq might be the last one of currpoint == nfreqs()-1
+                //If we want to prevent oob accesses and divides by zero, we need to remap the oob indices (my choice is just using modelo)
+                //The exact remapped indices should not matter, as all of this will be overwritten when determining the boundary indices
+
+                //MODULUS FOR 'negative' (more like overflowing) unsigned integer is in general not that easy to compute
+                //However, as i know it only goes ever so slightly negative ('-1,-2'): (mod+i)%mod is sufficient for the computation (mod>=1,2)
+                Size curr_freq_idxm1=(curr_freq_idx-1+model.parameters->nfreqs())%model.parameters->nfreqs();//index-1
+                Size curr_freq_idxm2=(curr_freq_idx-2+model.parameters->nfreqs())%model.parameters->nfreqs();//index-2
+                //first compute coefficents for the second order accurate freq derivative for the explicit part
+                //Note: minus signs in front, as we are now computing the first derivative using points on the other side (switched order of term, making sign clearer; just compare to upward disc version)
+                dfreqsmall=-(model.radiation.frequencies.nu(currpoint, curr_freq_idxm1)-model.radiation.frequencies.nu(currpoint, curr_freq_idxm2))
+                *shift_curr;
+                dfreqlarge=-(model.radiation.frequencies.nu(currpoint, curr_freq_idx)-model.radiation.frequencies.nu(currpoint, curr_freq_idxm2))
+                *shift_curr;
+                dIdnu_coef3_curr_()(rayposidx, next_freq_idx) =-dfreqsmall/(std::pow(dfreqlarge, 2.0)-dfreqlarge*dfreqsmall);//farthest
+                dIdnu_coef2_curr_()(rayposidx, next_freq_idx) =dfreqlarge/(-std::pow(dfreqsmall, 2.0)+dfreqlarge*dfreqsmall);//nearer
+                dIdnu_coef1_curr_()(rayposidx, next_freq_idx) =-dIdnu_coef3_curr_()(rayposidx, next_freq_idx)-dIdnu_coef2_curr_()(rayposidx, next_freq_idx);//curr point itself
+                dIdnu_index3_curr_()(rayposidx, next_freq_idx)=curr_freq_idxm2;
+                dIdnu_index2_curr_()(rayposidx, next_freq_idx)=curr_freq_idxm1;
+                dIdnu_index1_curr_()(rayposidx, next_freq_idx)=curr_freq_idx;
+
+                //And now do the same (but simpler; less index management) for the implicit part
+                //Note: minus signs in front, as we are now computing the first derivative using points on the other side
+                dfreqsmall=-(model.radiation.frequencies.nu(nextpoint, next_freq_idx-1)-model.radiation.frequencies.nu(nextpoint, next_freq_idx-2))
+                *shift_next;
+                dfreqlarge=-(model.radiation.frequencies.nu(nextpoint, next_freq_idx)-model.radiation.frequencies.nu(nextpoint, next_freq_idx-2))
+                *shift_next;
+
+                dIdnu_coef3_next_()(rayposidx, next_freq_idx) =-dfreqsmall/(std::pow(dfreqlarge, 2.0)-dfreqlarge*dfreqsmall);//farthest
+                dIdnu_coef2_next_()(rayposidx, next_freq_idx) =dfreqlarge/(-std::pow(dfreqsmall, 2.0)+dfreqlarge*dfreqsmall);//nearer
+                dIdnu_coef1_next_()(rayposidx, next_freq_idx) =-dIdnu_coef3_next_()(rayposidx, next_freq_idx)-dIdnu_coef2_next_()(rayposidx, next_freq_idx);//curr point itself;
+                dIdnu_index3_next_()(rayposidx, next_freq_idx)=next_freq_idx-2;
+                dIdnu_index2_next_()(rayposidx, next_freq_idx)=next_freq_idx-1;
+                dIdnu_index1_next_()(rayposidx, next_freq_idx)=next_freq_idx;
+
+            }
+        }
+
+        //Note to self: we can just use all default freq derivative stuff, except for the 2 outermost points on the grid.
+        // Because I define every computation in terms of the next point index, I will have no problems with non-existant/too far frequencies, as I have made the computed curr regions slightly smaller
+        //Note: it might seem we will try to use oob values, but these should be overwritten anyway
+        //CHECK THIS FOR A SIMPLE EXAMPLE!!!
+
+        //now start classifying the new boundary points
+        //For this we first need to compute the ranges of curr_point (minus some boundary freqs)
+        get_line_ranges(model, currpoint, is_upward_disc, shift_curr);//for the current point, we definitely need the exact ranges (fiddled with to ensure enough bdy conditions)
+        // and compute the overlap between lines on next_point
+        get_overlapping_lines(model, nextpoint, is_upward_disc);//technically, we should compute which lines overlap only in this part
+
+        //First, we set boundary conditions by comparing the frequencies we have at next_point
+        // versus the range of frequencies we have a curr_point; any outside that range will be treated as boundary points
+        set_implicit_boundary_frequencies(model, nextpoint, rayposidx, shift_next, multimap_freq_to_bdy_index, is_upward_disc);
+        // And now we check what boundary conditions need to be evaluated using the intensities at curr_point
+        match_overlapping_boundary_conditions(model, currpoint, rayposidx+1, shift_curr, multimap_freq_to_bdy_index);
+        rayposidx++;
+    }
+    //After going through all points, the remaining boundary frequencies have not matched any frequencies near any line,
+    // so we will use initial boundary conditions computed at the first point to put on the ray
+    //note: nr_()[first_index] should be point on boundary of domain; in this way, we can simply add the corresponding boundary conditions
+    set_initial_boundary_conditions(model, nr_()[first_index], shift_first, multimap_freq_to_bdy_index);
+}
+
+
+
+// Note: single line approximation might be useful for determining the splits. IMPLEMENT FANCY VERSION
+//Note: first order accurate in space, second order accurate in frequency
+template<ApproximationType approx>
+inline void Solver :: solve_comoving_order_2_sparse (Model& model)
+{
+    // Initialise variables
+    for (LineProducingSpecies &lspec : model.lines.lineProducingSpecies)
+    {
+        lspec.lambda.clear();
+
+        lspec.J.resize(model.parameters->npoints(), lspec.linedata.nrad);
+
+        accelerated_for (o, model.parameters->npoints(),
+        {
+            for (Size k = 0; k < lspec.linedata.nrad; k++)
+            {
+                lspec.J(o,k) = 0.0;
+            }
+        })
+    }
+
+    std::cout<<"hnrays: "<<model.parameters->hnrays()<<std::endl;
+    std::cout<<"number threads: "<<paracabs::multi_threading::n_threads ()<<std::endl;
+    // For each ray, solve the radiative transfer equation in a comoving manner
+    accelerated_for (rr, model.parameters->hnrays(),
+    {
+        const Size     ar = model.geometry.rays.antipod  [rr];
+        // const Real     wt = model.geometry.rays.weight   [rr] * two;
+        // const Vector3D nn = model.geometry.rays.direction[rr];
+
+        std::cout << "--- rr = " << rr << std::endl;
+        // std::cout<<"number threads: "<<paracabs::multi_threading::n_threads ()<<std::endl;
+
+        // std::cout<<"thread id: "<<paracabs::multi_threading::thread_id()<<std::endl;
+
+        //for every ray to trace
+        const Size n_rays_to_trace=points_to_trace_ray_through[rr].size();
+        for (Size rayidx=0; rayidx<n_rays_to_trace; rayidx++)
+        {
+        // accelerated_for (rayidx, n_rays_to_trace,
+        // {
+            //get corresponding origins of the rays
+            const Size o = points_to_trace_ray_through[rr][rayidx];
+            const double dshift_max = get_dshift_max (model, o);
+            // std::cout<<"here"<<std::endl;
+            //FIXME: using dshift_max computed from a single point only works when the line width does not change too much; however, all other solvers are already using this bad approximation
+            //trace and solve over the ray in both directions, incrementing J as necessary
+            solve_comoving_order_2_sparse<approx>(model, o, rr, rayidx, dshift_max);//solves both for forward and backward ray
+            //complicated to decouple ray tracing from solving, so more logic is moved inside this functions
+        // })
+        }
+    })
+}
+
+
+
+//As stepping a single step should be exactly the same in both directions on the ray, we might as well refactor it out
+// //rayposidx==rayposidx_curr_point+-1
+//Ergo rayposidx stand for the ray position index of the next point
+//rr direction index necessary for determining whether to add intensity to J//TODO? replace with bool denoting whether to add it (precompute if clause somewhere else)
+//TODO: figure out whether rayposidx_currpoint is needed!! As it should be replaced with start_indices_...
+inline void Solver :: solve_comoving_single_step (Model& model, const Size rayposidx, const Size rayidx, const Size rr, const bool is_upward_disc, const bool forward_ray)
+{
+    Vector<Size>& nr=nr_();//stores the exact point indices
+    // Vector<unsigned char>& real_pt=real_pt_();//stores whether each point is real point (not added extra for interpolation purposes)
+    Vector<double>& shift=shift_();//stores the shifts versus the static frame; warning: for forward rays, this should be changed to 2.0-shift; for backward rays, it is correct
+    Matrix<Vector<Size>>& start_indices=start_indices_();//for getting the previous indices associated with computing the intensity for the next point
+    Matrix<Real>& delta_tau=delta_tau_();//stores the optical depths
+    Matrix<Real>& S_curr=S_curr_();
+    Matrix<Real>& S_next=S_next_();
+    Matrix<Real>& intensities=intensities_();
+
+    Matrix<Real>& dIdnu_coef1_curr=dIdnu_coef1_curr_();//coefficient of the freq point itself
+    Matrix<Real>& dIdnu_coef2_curr=dIdnu_coef2_curr_();
+    Matrix<Real>& dIdnu_coef3_curr=dIdnu_coef3_curr_();
+
+    Matrix<Size>& dIdnu_index1_curr=dIdnu_index1_curr_();
+    Matrix<Size>& dIdnu_index2_curr=dIdnu_index2_curr_();
+    Matrix<Size>& dIdnu_index3_curr=dIdnu_index3_curr_();
+
+    Matrix<Real>& dIdnu_coef1_next=dIdnu_coef1_next_();
+    Matrix<Real>& dIdnu_coef2_next=dIdnu_coef2_next_();
+    Matrix<Real>& dIdnu_coef3_next=dIdnu_coef3_next_();
+
+    Matrix<Size>& dIdnu_index1_next=dIdnu_index1_next_();
+    Matrix<Size>& dIdnu_index2_next=dIdnu_index2_next_();
+    Matrix<Size>& dIdnu_index3_next=dIdnu_index3_next_();
+
+    // std::cout<<"after renaming all vars"<<std::endl;
+    // std::cout<<"rayposidx=next point on ray idx= "<<rayposidx<<std::endl;
+
+    //rayposidx represents the next position on the ray
+    const Size nextpointidx=nr[rayposidx];
+    const Real next_shift=(forward_ray) ? 2.0-shift[rayposidx] : shift[rayposidx];//absolute shifts, versus static frame!
+
+    // std::cout<<"after getting shift"<<std::endl;
+
+    //Do the explicit part
+    for (Size next_freq_idx=0; next_freq_idx<model.parameters->nfreqs(); next_freq_idx++)
+    {
+        // std::cout<<"next_freq_idx: "<<next_freq_idx<<std::endl;
+        //Get the point indices
+        const Size curr_point_on_ray_index=start_indices_()(rayposidx, next_freq_idx)[0];
+        // std::cout<<"curr_point_on_ray_index: "<<curr_point_on_ray_index<<std::endl;
+        const Size curr_point_idx=nr[curr_point_on_ray_index];
+        const Size curr_freq_idx=start_indices_()(rayposidx, next_freq_idx)[1];
+        const Real curr_shift=(forward_ray) ? 2.0-shift[curr_point_on_ray_index] : shift[curr_point_on_ray_index];//absolute shift, versus static frame
+
+        // std::cout<<"after computing shift"<<std::endl;
+
+        const Real deltanu=model.radiation.frequencies.nu(nextpointidx, next_freq_idx)*next_shift-model.radiation.frequencies.nu(curr_point_idx, curr_freq_idx)*curr_shift;
+        const Real dtau=delta_tau(rayposidx, next_freq_idx);
+        // std::cout<<"dtau: "<<dtau<<std::endl;
+        // std::cout<<"rayposidx: "<<rayposidx<<std::endl;
+
+        // std::cout<<"after computing dtau"<<std::endl;
+
+        const Real expl_term=(-expm1(-dtau)-dtau*exp(-dtau))/dtau;
+        // std::cout<<"expl term: "<<expl_term<<std::endl;
+        // std::cout<<"curr source: "<<S_curr(rayposidx, next_freq_idx)<<std::endl;
+
+        const Real expl_freq_der=dIdnu_coef1_curr(rayposidx, next_freq_idx)*intensities(curr_point_on_ray_index, dIdnu_index1_curr(rayposidx, next_freq_idx))
+        +dIdnu_coef2_curr(rayposidx, next_freq_idx)*intensities(curr_point_on_ray_index, dIdnu_index2_curr(rayposidx, next_freq_idx))
+        +dIdnu_coef3_curr(rayposidx, next_freq_idx)*intensities(curr_point_on_ray_index, dIdnu_index3_curr(rayposidx, next_freq_idx));
+        // std::cout<<"curr freq der coef 1: "<<dIdnu_coef1_curr(rayposidx, next_freq_idx)<<std::endl;
+        // std::cout<<"curr freq der coef 2: "<<dIdnu_coef2_curr(rayposidx, next_freq_idx)<<std::endl;
+        // std::cout<<"curr freq der coef 3: "<<dIdnu_coef3_curr(rayposidx, next_freq_idx)<<std::endl;
+        // std::cout<<"curr_point_on_ray_index: "<<curr_point_on_ray_index<<std::endl;
+        // std::cout<<"respective freq index: "<<dIdnu_index1_curr(rayposidx, next_freq_idx)<<std::endl;
+        // std::cout<<"intensity coef 1: "<<intensities(curr_point_on_ray_index, dIdnu_index1_curr(rayposidx, next_freq_idx))<<std::endl;
+        // std::cout<<"intensity coef 2: "<<intensities(curr_point_on_ray_index, dIdnu_index2_curr(rayposidx, next_freq_idx))<<std::endl;
+        // std::cout<<"intensity coef 3: "<<intensities(curr_point_on_ray_index, dIdnu_index3_curr(rayposidx, next_freq_idx))<<std::endl;
+        // std::cout<<"expl_freq_der: "<<expl_freq_der<<std::endl;
+        // std::cout<<"full freq der term: "<<expl_term*expl_freq_der*deltanu/dtau<<std::endl;
+        //TODO: actually do the explicit part
+        // std::cout<<"intensities before explicit part: "<<intensities(curr_point_on_ray_index, curr_freq_idx)<<std::endl;
+        // std::cout<<"intensities after optical depth: "<<intensities(curr_point_on_ray_index, curr_freq_idx)*exp(-dtau)<<std::endl;
+        intensities(rayposidx, next_freq_idx)=intensities(curr_point_on_ray_index, curr_freq_idx)*exp(-dtau)
+        +expl_term*S_curr(rayposidx, next_freq_idx) //source term
+        +expl_term*expl_freq_der*deltanu/dtau;//frequency derivative term
+        // std::cout<<"explicit part intensities: "<<intensities(rayposidx, next_freq_idx)<<std::endl;
+    }
+
+    // std::cout<<"after explicit part"<<std::endl;
+
+    //Implicit part ordering depends on the discretization direction
+    if (is_upward_disc)
+    {
+        // std::cout<<"is_upward_disc"<<std::endl;
+        //in case of positive doppler shifts, we need to start from the largest frequencies (where we have extra boundary conditions on the end)
+        //reverse loop over unsigned int, so indices +1
+        for (Size next_freq_idx=model.parameters->nfreqs(); next_freq_idx>0; next_freq_idx--)
+        {
+            //TODO: actually do the implicit part
+            const Size curr_point_on_ray_index=start_indices_()(rayposidx, next_freq_idx-1)[0];
+            const Size curr_point_idx=nr[curr_point_on_ray_index];
+            const Size curr_freq_idx=start_indices_()(rayposidx, next_freq_idx-1)[1];
+            const Real curr_shift=(forward_ray) ? 2.0-shift[curr_point_on_ray_index] : shift[curr_point_on_ray_index];//absolute shift, versus static frame
+            const Real deltanu=model.radiation.frequencies.nu(nextpointidx, next_freq_idx-1)*next_shift-model.radiation.frequencies.nu(curr_point_idx, curr_freq_idx)*curr_shift;
+            const Real dtau=delta_tau(rayposidx, next_freq_idx-1);
+            // std::cout<<"dtau: "<<dtau<<std::endl;
+            // std::cout<<"next freq idx: "<<next_freq_idx-1<<std::endl;
+            // std::cout<<"rayposidx: "<<rayposidx<<std::endl;
+            const Real impl_term=(dtau+expm1(-dtau))/dtau;
+            // std::cout<<"impl term: "<<impl_term<<std::endl;
+            // std::cout<<"next source: "<<S_next(rayposidx, next_freq_idx-1)<<std::endl;
+            //only the parts of the other points (to subtract/add)
+            const Real impl_freq_der=dIdnu_coef2_next(rayposidx, next_freq_idx-1)*intensities(rayposidx, dIdnu_index2_next(rayposidx, next_freq_idx-1))
+            +dIdnu_coef3_next(rayposidx, next_freq_idx-1)*intensities(rayposidx, dIdnu_index3_next(rayposidx, next_freq_idx-1));
+            // std::cout<<"impl freq der: "<<impl_freq_der<<std::endl;
+
+            // std::cout<<"intensities before implicit part: "<<intensities(rayposidx, next_freq_idx-1)<<std::endl;
+
+            intensities(rayposidx, next_freq_idx-1)=(intensities(rayposidx, next_freq_idx-1)
+            +impl_term*S_next(rayposidx, next_freq_idx-1)//source term
+            +impl_term*impl_freq_der*deltanu/dtau)/(1.0-dIdnu_coef1_next(rayposidx, next_freq_idx-1)*impl_term*deltanu/dtau); //freq derivative term
+            // std::cout<<"implicit part intensities: "<<intensities(rayposidx, next_freq_idx-1)<<std::endl;
+        }
+    }
+    else
+    {
+        for (Size next_freq_idx=0; next_freq_idx<model.parameters->nfreqs(); next_freq_idx++)
+        {
+            //TODO: actually do the implicit part
+            const Size curr_point_on_ray_index=start_indices_()(rayposidx, next_freq_idx)[0];
+            const Size curr_point_idx=nr[curr_point_on_ray_index];
+            const Size curr_freq_idx=start_indices_()(rayposidx, next_freq_idx)[1];
+            const Real curr_shift=(forward_ray) ? 2.0-shift[curr_point_on_ray_index] : shift[curr_point_on_ray_index];//absolute shift, versus static frame
+            const Real deltanu=model.radiation.frequencies.nu(nextpointidx, next_freq_idx)*next_shift-model.radiation.frequencies.nu(curr_point_idx, curr_freq_idx)*curr_shift;
+            const Real dtau=delta_tau(rayposidx, next_freq_idx);
+            // std::cout<<"dtau: "<<dtau<<std::endl;
+            // std::cout<<"next freq idx: "<<next_freq_idx<<std::endl;
+            const Real impl_term=(dtau+expm1(-dtau))/dtau;
+            // std::cout<<"impl_term: "<<impl_term<<std::endl;
+            //only the parts of the other points (to subtract/add)
+            const Real impl_freq_der=dIdnu_coef2_next(rayposidx, next_freq_idx)*intensities(rayposidx, dIdnu_index2_next(rayposidx, next_freq_idx))
+            +dIdnu_coef3_next(rayposidx, next_freq_idx)*intensities(rayposidx, dIdnu_index3_next(rayposidx, next_freq_idx));
+            // std::cout<<"impl freq der: "<<impl_freq_der<<std::endl;
+            // std::cout<<"full freq der term: "<<impl_term*impl_freq_der*deltanu/dtau<<std::endl;
+            // std::cout<<"1.0-dIdnu coef times...: "<<1.0-dIdnu_coef1_next(rayposidx, next_freq_idx)*deltanu/dtau<<std::endl;
+            //
+            // std::cout<<"intensities before implicit part: "<<intensities(rayposidx, next_freq_idx)<<std::endl;
+
+            intensities(rayposidx, next_freq_idx)=(intensities(rayposidx, next_freq_idx)
+            +impl_term*S_next(rayposidx, next_freq_idx)//source term
+            +impl_term*impl_freq_der*deltanu/dtau)/(1.0-dIdnu_coef1_next(rayposidx, next_freq_idx)*impl_term*deltanu/dtau); //freq derivative term
+            // std::cout<<"implicit part intensities: "<<intensities(rayposidx, next_freq_idx)<<std::endl;
+        }
+    }
+
+    // std::cout<<"incrementing J"<<std::endl;
+
+    //Finally increment J if and real point check if closest ray
+    // if (real_pt[rayposidx]&&closest_ray(rr, nextpointidx)==rayidx)
+    if (closest_ray(rr, nextpointidx)==rayidx)
+    {
+        // std::cout<<"rayposidx: "<<rayposidx<<std::endl;
+        // std::cout<<"adding to J at rayposidx: "<<rayposidx<<std::endl;
+        const Real     wt = model.geometry.rays.weight   [rr];
+        //then obviously add (weighted) to J
+        for (Size freqid=0; freqid<model.parameters->nfreqs(); freqid++)
+        {
+            // Size1 corresponding_l_for_spec;           ///< number of line species corresponding to frequency
+            // Size1 corresponding_k_for_tran;           ///< number of transition corresponding to frequency
+            // Size1 corresponding_z_for_line;           ///< quadrature number corresponding to frequency
+            // TODO: replace with matrix variant when replacing these Vectors
+            const Size unsorted_freqidx=model.radiation.frequencies.corresponding_nu_index(nextpointidx, freqid);
+            const Size l=model.radiation.frequencies.corresponding_l_for_spec[unsorted_freqidx];
+            const Size k=model.radiation.frequencies.corresponding_k_for_tran[unsorted_freqidx];
+            const Size z=model.radiation.frequencies.corresponding_z_for_line[unsorted_freqidx];
+            LineProducingSpecies& lspec=model.lines.lineProducingSpecies[l];
+            // std::cout<<"freqid: "<<freqid<<std::endl;
+            // std::cout<<"adding: "<<lspec.quadrature.weights[z] * wt * intensities(rayposidx, freqid)<<std::endl;
+            // std::cout<<"intensity: "<<intensities(rayposidx, freqid)<<std::endl;
+            lspec.J(nextpointidx,k) += lspec.quadrature.weights[z] * wt * intensities(rayposidx, freqid);// Su_()[centre];
+
+            //Computing the ALI element
+
+            //TODO: check whether this is correct (print out Jeff, Jlin in optically thick model)
+            const Size curr_point_on_ray_index=start_indices_()(rayposidx, freqid)[0];
+            const Size curr_point_idx=nr[curr_point_on_ray_index];
+            const Size curr_freq_idx=start_indices_()(rayposidx, freqid)[1];
+            const Real curr_shift=(forward_ray) ? 2.0-shift[curr_point_on_ray_index] : shift[curr_point_on_ray_index];//absolute shift, versus static frame
+            const Real deltanu=model.radiation.frequencies.sorted_nu(nextpointidx, freqid)*next_shift-model.radiation.frequencies.sorted_nu(curr_point_idx, curr_freq_idx)*curr_shift;
+            const Real dtau=delta_tau(rayposidx, freqid);
+            const Real constant = lspec.linedata.A[k] * lspec.quadrature.weights[z] * model.geometry.rays.weight[rr];//for integrating over both frequency (weighted with profile function) and angle. We also need the einstein A coefficient
+
+            const Real source_term=(dtau+expm1(-dtau));// '/dtau' has already been applied to simplify the fraction
+            const Real lambdaterm=constant*source_term/(dtau-dIdnu_coef1_next(rayposidx, freqid)*source_term*deltanu);
+
+            // frq = freqs.nu(nr[n], f) * shift[n];
+            // phi = thermodyn.profile (invr_mass, nr[n], freq_line, frq);
+            // L   = constante * frq * phi * L_lower(m,n) * inverse_chi[n];
+
+            lspec.lambda.add_element(nextpointidx, k, nextpointidx, lambdaterm);
+        }
+    }
+}
+
+
+
+template<ApproximationType approx>
+inline void Solver :: solve_comoving_order_2_sparse (
+      Model& model,
+      const Size o,//ray origin point
+      const Size r,//ray direction index
+      const Size rayidx,//ray trace index
+      const double dshift_max)
+{
+    const Size rr=r;
+    const Size ar=model.geometry.rays.antipod[rr];
+
+    // std::cout<<"solving for point: "<<o<<std::endl;
+    // std::cout<<"solving for rayindex: "<<rayidx<<std::endl;
+
+    // Vector<Real>& eta_c = eta_c_();//current emissivity for all freqs
+    // Vector<Real>& eta_n = eta_n_();//next emissivity    for all freqs
+    //
+    // Vector<Real>& chi_c = chi_c_();//current opacity    for all freqs
+    // Vector<Real>& chi_n = chi_n_();//next opacity       for all freqs
+
+    // Vector<Real>& curr_intensity = curr_intensity_();//current intensity for all freqs
+    // Vector<Real>& next_intensity = next_intensity_();//storage for next intensity for all freqs
+
+    Matrix<Real>& intensities=intensities_();//will contain all computed intensities
+
+    // Vector<unsigned char>& real_pt= real_pt_();//for denoting whether the given point is a real point
+    Vector<Size>& nr=nr_();
+
+    Vector<double>& shift = shift_();// contains the doppler shifts for all points on the ray
+    //for the forward ray, do 2.0-shift to get the shift direction I want for my frequencies
+    //This is due to the default computed shift mapping from static frame to comoving frame (I want to do the reverse)
+    //for the backward ray, this should be correct (as we need to do the reverse)
+
+    // const Real     wt = model.geometry.rays.weight   [rr];//ray direction weight
+
+    double Z = 0.0; //distance along ray
+    double dZ= 0.0; //last distance increment
+
+    // std::cout<<"before tracing rays"<<std::endl;
+
+    // //trace the ray, getting all points on the ray and indicating whether they are real
+    // first_() = trace_ray_indicate_point(model.geometry, o, rr, dshift_max, -1, centre-1, centre-1) + 1;
+    // last_ () = trace_ray_indicate_point(model.geometry, o, ar, dshift_max, +1, centre+1, centre  ) - 1;
+
+    //trace the ray, getting all points on the ray and indicating whether they are real
+    //no more interpolations, so no more checking which points are real
+    //Note: technically, it does not matter which frame I use, as long as it is a fixed frame for the entire ray
+    first_() = trace_ray<Rest>(model.geometry, o, rr, dshift_max, -1, centre-1, centre-1) + 1;
+    last_ () = trace_ray<Rest>(model.geometry, o, ar, dshift_max, +1, centre+1, centre  ) - 1;
+
+    //old implementation
+    //also set ray start as real point; accidentally forgot
+    // real_pt_()[centre]=true;
+
+    nr_   ()[centre] = o;
+    shift_()[centre] = model.geometry.get_shift <Rest> (o, rr, o, 0);
+    // TODO: compute shift versus zero velocity!
+    n_tot_() = (last_()+1) - first_();
+
+    // std::cout<<"before forward setup"<<std::endl;
+
+    //Now is the perfect time to setup the boundary conditions and data for the forward ray
+    comoving_ray_bdy_setup_forward<approx>(model);
+
+    // std::cout<<"dtau first+1: "<<delta_tau_()(first_()+1, 0)<<std::endl;
+    //hmm, seem to be correct for now
+
+    // std::cout<<"after forward setup"<<std::endl;
+
+    //check if closest ray // maybe todo: replace with some weights 0/1 for eliminating the if-clause
+    if (closest_ray(rr, nr[first_()])==rayidx)
+    {
+        // std::cout<<"setting bdy intensities at first"<<std::endl;
+        const Real     wt = model.geometry.rays.weight   [rr];
+        //then obviously add (weighted) to J
+        for (Size freqid=0; freqid<model.parameters->nfreqs(); freqid++)
+        {
+            // Size1 corresponding_l_for_spec;           ///< number of line species corresponding to frequency
+            // Size1 corresponding_k_for_tran;           ///< number of transition corresponding to frequency
+            // Size1 corresponding_z_for_line;           ///< number of line number corresponding to frequency
+            const Size unsorted_freqidx=model.radiation.frequencies.corresponding_nu_index(nr[first_()], freqid);
+            const Size l=model.radiation.frequencies.corresponding_l_for_spec[unsorted_freqidx];
+            const Size k=model.radiation.frequencies.corresponding_k_for_tran[unsorted_freqidx];
+            const Size z=model.radiation.frequencies.corresponding_z_for_line[unsorted_freqidx];
+            LineProducingSpecies& lspec=model.lines.lineProducingSpecies[l];
+            lspec.J(nr[first_()],k) += lspec.quadrature.weights[z] * wt * intensities(first_(), freqid);// Su_()[centre];
+            //TODO: compute lambda term
+        }
+    }
+    // else
+    // {
+    //     std::cout<<"not setting bdy intensities at first"<<std::endl;
+    // }
+
+    // std::cout<<"after forward boundary thing"<<std::endl;
+
+    Size rayposidx=first_()+1;//ray position index -> point index through nr[rayposidx]
+    //from first_+1 to last_ index, trace the ray in
+    while (rayposidx<=last_())
+    {
+        const Real shift_next=2.0-shift_()[rayposidx];
+        const Real shift_curr=2.0-shift_()[rayposidx-1];
+        const bool is_upward_disc=(shift_next>=shift_curr);
+        // std::cout<<"solving single step"<<std::endl;
+        // std::cout<<"rayposidx: "<<rayposidx<<std::endl;
+        // std::cout<<"dtau rayposidx: "<<delta_tau_()(rayposidx, 0)<<std::endl;
+        solve_comoving_single_step (model, rayposidx, rayidx, r, is_upward_disc, true);
+        rayposidx++;
+    }
+
+    // std::cout<<"after forward iterations"<<std::endl;
+
+    //Same procedure for the backward ray
+    // std::cout<<"shift_()[last]: "<<shift_()[last_()]<<std::endl;
+
+    //Now is the perfect time to setup the boundary conditions and data for the backward ray
+    comoving_ray_bdy_setup_backward<approx>(model);
+
+    // std::cout<<"after backwards setup"<<std::endl;
+
+    //check if closest ray // maybe todo: replace with some weights 0/1 for eliminating the if-clause
+    if (closest_ray(rr, nr[last_()])==rayidx)
+    {
+        // std::cout<<"setting bdy intensities at last"<<std::endl;
+        const Real     wt = model.geometry.rays.weight   [rr];
+        //then obviously add (weighted) to J
+        for (Size freqid=0; freqid<model.parameters->nfreqs(); freqid++)
+        {
+            // Size1 corresponding_l_for_spec;           ///< number of line species corresponding to frequency
+            // Size1 corresponding_k_for_tran;           ///< number of transition corresponding to frequency
+            // Size1 corresponding_z_for_line;           ///< number of line number corresponding to frequency
+            const Size unsorted_freqidx=model.radiation.frequencies.corresponding_nu_index(nr[first_()], freqid);
+            const Size l=model.radiation.frequencies.corresponding_l_for_spec[unsorted_freqidx];
+            const Size k=model.radiation.frequencies.corresponding_k_for_tran[unsorted_freqidx];
+            const Size z=model.radiation.frequencies.corresponding_z_for_line[unsorted_freqidx];
+            LineProducingSpecies& lspec=model.lines.lineProducingSpecies[l];
+            lspec.J(nr[last_()],k) += lspec.quadrature.weights[z] * wt * intensities(last_(), freqid);// Su_()[centre];
+            //TODO: compute lambda term
+        }
+    }
+
+
+    // std::cout<<"after backwards boundary thing"<<std::endl;
+
+    rayposidx=last_()-1;//ray position index -> point index through nr[rayposidx]
+    //from last_()-1 to first_ index, trace the ray backwards; Warning: rayposidx is an unsigned int, so +1 necessary to both sides
+    while (rayposidx+1>=first_()+1)
+    {
+        const Real shift_next=shift_()[rayposidx];
+        const Real shift_curr=shift_()[rayposidx+1];
+        // std::cout<<"curr ray index: "<<rayposidx+1<<std::endl;
+        // std::cout<<"next ray index: "<<rayposidx<<std::endl;
+        const bool is_upward_disc=(shift_next>=shift_curr);
+        solve_comoving_single_step (model, rayposidx, rayidx, r, is_upward_disc, false);
+        rayposidx--;
+    }
+
+    // std::cout<<"first ray index: "<<first_()<<std::endl;
+    // std::cout<<"last ray index: "<<last_()<<std::endl;
+    // std::cout<<"total number points: "<<n_tot_()<<std::endl;
+
+    // std::cout<<"after backwards iteration"<<std::endl;
+}
+
+
+
 
 
 template<ApproximationType approx>

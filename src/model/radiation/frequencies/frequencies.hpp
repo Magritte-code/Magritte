@@ -11,8 +11,10 @@ struct Frequencies
 {
     std::shared_ptr<Parameters> parameters;   ///< data structure containing model parameters
 
-    Matrix<Real> nu;                          ///< [Hz] frequencies (ordered in f) (p,f)
-    Vector<Size> corresponding_line;          ///< [Hz] corresponding line to each frequency (f)
+    Matrix<Real> nu;                          ///< [Hz] frequencies (ordered in block of lines) (p,f)
+    Vector<Size> corresponding_line;          ///< corresponding line to each frequency (f)
+    Matrix<Real> sorted_nu;                   ///< [Hz] sorted frequencies (ordered in f at each point) (p,f)
+    Matrix<Size> corresponding_nu_index;      ///< corresponding (original) frequency index for each frequency at each point (p,f)
 
     Bool1 appears_in_line_integral;           ///< True if the frequency appears in line integral
     Size1 corresponding_l_for_spec;           ///< number of line species corresponding to frequency
