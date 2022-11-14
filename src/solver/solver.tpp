@@ -745,36 +745,111 @@ inline void Solver :: match_overlapping_boundary_conditions(Model& model, const 
             curr_range_freq=model.radiation.frequencies.sorted_nu(currpoint, curr_freq_index)*curr_shift;//in static frame
             // std::cout<<"looping second while loop"<<std::endl;
         }
+
+        ///zeroth order interpolation
+        // Size left_curr_freq_idx=curr_freq_index-1;
+        // Size right_curr_freq_idx=curr_freq_index;
+        //
+        // //the curr range freq should now be larger/equal to the bdy freq
+        // //In the case that bdy_freq lies on the left bound, doing left_bound-1 makes no sense as index for interpolation, so use curr_index as left bound instead
+        // if (curr_freq_index==left_bound_index[curr_range_index])
+        // {
+        //   left_curr_freq_idx=curr_freq_index;
+        //   right_curr_freq_idx=curr_freq_index+1;
+        // }
+        //
+        // const Real left_freq = model.radiation.frequencies.sorted_nu(currpoint, left_curr_freq_idx)*curr_shift;
+        // const Real right_freq = model.radiation.frequencies.sorted_nu(currpoint, right_curr_freq_idx)*curr_shift;
+        // Size zeroth_order_freq = 0;
+        //
+        // //get closest freq
+        // if (bdy_freq-left_freq<0.5*(right_freq-left_freq))
+        // {
+        //     zeroth_order_freq = left_curr_freq_idx;
+        // }
+        // else
+        // {
+        //     zeroth_order_freq = right_curr_freq_idx;
+        // }
+
+        ///first order interpolation
         Size left_curr_freq_idx=curr_freq_index-1;
         Size right_curr_freq_idx=curr_freq_index;
+
         //the curr range freq should now be larger/equal to the bdy freq
         //In the case that bdy_freq lies on the left bound, doing left_bound-1 makes no sense as index for interpolation, so use curr_index as left bound instead
         if (curr_freq_index==left_bound_index[curr_range_index])
         {
-            left_curr_freq_idx=curr_freq_index;
-            right_curr_freq_idx=curr_freq_index+1;
+          left_curr_freq_idx=curr_freq_index;
+          right_curr_freq_idx=curr_freq_index+1;
         }
-        ///setting interpolating boundary condition
+
         const Real deltafreq=(model.radiation.frequencies.sorted_nu(currpoint, right_curr_freq_idx)
                               -model.radiation.frequencies.sorted_nu(currpoint, left_curr_freq_idx))*curr_shift;//in static frame
 
-        //Set starting index correctly
-        start_indices_()(bdy_point_on_ray_idx, bdy_freq_idx)[0]=curr_point_on_ray_index;
-        start_indices_()(bdy_point_on_ray_idx, bdy_freq_idx)[1]=left_curr_freq_idx;
+        ///Second order interpolation
+        // Size left_curr_freq_idx=curr_freq_index-2;
+        // Size middle_curr_freq_idx=curr_freq_index-1;
+        // Size right_curr_freq_idx=curr_freq_index;
+        // //the curr range freq should now be larger/equal to the bdy freq
+        // //In the case that bdy_freq lies on the left bound, doing left_bound-1 makes no sense as index for interpolation, so use curr_index as left bound instead
+        // if (curr_freq_index==left_bound_index[curr_range_index]||middle_curr_freq_idx==left_bound_index[curr_range_index])
+        // {
+        //     left_curr_freq_idx=left_bound_index[curr_range_index];
+        //     middle_curr_freq_idx=left_bound_index[curr_range_index]+1;
+        //     right_curr_freq_idx=left_bound_index[curr_range_index]+2;
+        // }
+        //
+        // //first compute coefficents for the second order accurate freq derivative for the explicit part
+        // const Real dfreqsmall=(model.radiation.frequencies.sorted_nu(currpoint, right_curr_freq_idx)-model.radiation.frequencies.sorted_nu(currpoint, middle_curr_freq_idx))
+        //             *curr_shift;//in static frame
+        // const Real dfreqlarge=(model.radiation.frequencies.sorted_nu(currpoint, right_curr_freq_idx)-model.radiation.frequencies.sorted_nu(currpoint, left_curr_freq_idx))
+        //             *curr_shift;//in static frame
+
+
+        ///setting interpolating boundary condition
+
 
         //Set frequency derivative correctly
 
         //Note: the actual factor with which to multiply is Δτ^2/(1-exp(-Δτ)-Δτ*exp(-Δτ)), which in the limit Δτ→0 corresponds to 2 (wait, I did forget a factor exp(-Δτ) in front due to optical depth itself)
         //So in total, the multiplication factor is exp(-Δτ)*Δτ^2/(1-exp(-Δτ)-Δτ*exp(-Δτ))
         //Set explicit coefficents to TWICE the normal 1/Δν value (as we are only treating the explicit part)
-        dIdnu_coef1_curr_()(bdy_point_on_ray_idx, bdy_freq_idx)=-2/deltafreq;
-        dIdnu_coef2_curr_()(bdy_point_on_ray_idx, bdy_freq_idx)=+2/deltafreq;
+
+        ///zeroth order interpolation
+        // //set starting indices correctly for zeroth order interpolation
+        // start_indices_()(bdy_point_on_ray_idx, bdy_freq_idx)[0]=curr_point_on_ray_index;
+        // start_indices_()(bdy_point_on_ray_idx, bdy_freq_idx)[1]=zeroth_order_freq;
+        //
+        // dIdnu_coef1_curr_()(bdy_point_on_ray_idx, bdy_freq_idx)=0.0;
+        // dIdnu_coef2_curr_()(bdy_point_on_ray_idx, bdy_freq_idx)=0.0;
+        // dIdnu_coef3_curr_()(bdy_point_on_ray_idx, bdy_freq_idx)=0.0;
+        // //as the zeroth order does not use the freq derivative, the indices here do not matter
+        // dIdnu_index1_curr_()(bdy_point_on_ray_idx, bdy_freq_idx)=left_curr_freq_idx;
+        // dIdnu_index2_curr_()(bdy_point_on_ray_idx, bdy_freq_idx)=left_curr_freq_idx;
+        // dIdnu_index3_curr_()(bdy_point_on_ray_idx, bdy_freq_idx)=left_curr_freq_idx;
+
+        //Set starting index correctly (for first, second order interpolation)
+        start_indices_()(bdy_point_on_ray_idx, bdy_freq_idx)[0]=curr_point_on_ray_index;
+        start_indices_()(bdy_point_on_ray_idx, bdy_freq_idx)[1]=left_curr_freq_idx;
+        ///first order interpolation
+        dIdnu_coef1_curr_()(bdy_point_on_ray_idx, bdy_freq_idx)=-2.0/deltafreq;
+        dIdnu_coef2_curr_()(bdy_point_on_ray_idx, bdy_freq_idx)=2.0/deltafreq;
         dIdnu_coef3_curr_()(bdy_point_on_ray_idx, bdy_freq_idx)=0.0;
 
         dIdnu_index1_curr_()(bdy_point_on_ray_idx, bdy_freq_idx)=left_curr_freq_idx;
         dIdnu_index2_curr_()(bdy_point_on_ray_idx, bdy_freq_idx)=right_curr_freq_idx;
         dIdnu_index3_curr_()(bdy_point_on_ray_idx, bdy_freq_idx)=right_curr_freq_idx;
         //as the coefficient for the last on is 0, no effort should be made to renumber that last index
+
+        ///second order interpolation (might be worse due to trying to fit some discontinouous thing with a higher order polynomial)
+        // dIdnu_coef3_curr_()(bdy_point_on_ray_idx, bdy_freq_idx) =-2.0*dfreqsmall/(std::pow(dfreqlarge, 2.0)-dfreqlarge*dfreqsmall);//farthest
+        // dIdnu_coef2_curr_()(bdy_point_on_ray_idx, bdy_freq_idx) =2.0*dfreqlarge/(-std::pow(dfreqsmall, 2.0)+dfreqlarge*dfreqsmall);//nearer
+        // dIdnu_coef1_curr_()(bdy_point_on_ray_idx, bdy_freq_idx) =-dIdnu_coef3_curr_()(bdy_point_on_ray_idx, bdy_freq_idx)-dIdnu_coef2_curr_()(bdy_point_on_ray_idx, bdy_freq_idx);//curr point itself
+        //
+        // dIdnu_index1_curr_()(bdy_point_on_ray_idx, bdy_freq_idx)=left_curr_freq_idx;
+        // dIdnu_index2_curr_()(bdy_point_on_ray_idx, bdy_freq_idx)=middle_curr_freq_idx;
+        // dIdnu_index3_curr_()(bdy_point_on_ray_idx, bdy_freq_idx)=right_curr_freq_idx;
 
         //Implicit part coefs are set to 0. (as long as the corresponding indicies are in bounds, i do not particularly care about the exact values)
         dIdnu_coef1_next_()(bdy_point_on_ray_idx, bdy_freq_idx)=0.0;
@@ -788,7 +863,9 @@ inline void Solver :: match_overlapping_boundary_conditions(Model& model, const 
         //set dtau to approx 0
         delta_tau_()(bdy_point_on_ray_idx, bdy_freq_idx)=model.parameters->comoving_min_dtau;//should be small enough, but not small enough to crash my solver (due to /Δτ^2 necessary)
         // std::cout<<"bdy delta_tau: "<<COMOVING_MIN_DTAU<<std::endl;
-        //set S? (nah just ignore the existence, as dtau≃0)
+        //set S? (nah just ignore the existence, as dtau≃0, so the influence S*dtau is negligible)
+        S_curr_()(bdy_point_on_ray_idx, bdy_freq_idx)=0.0;
+        S_next_()(bdy_point_on_ray_idx, bdy_freq_idx)=0.0;
         //In case of large doppler shifts, we might need to rethink setting dtau→0; as this will underestimate the optical depth (and influence of source)
         //Concretely, we would need to use the optical depth of the last segment, and somehow incorporate the interpolated intensity of way earlier
 
