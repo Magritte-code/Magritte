@@ -165,11 +165,11 @@ def import_phantom():
     model.parameters.set_nboundary(boundary.shape[0])
     model.geometry.boundary.boundary2point.set(boundary)
 
-    direction = np.array([[0,0,+1], [0,0,-1]])            # Comment out to use all directions
-    model.geometry.rays.direction.set(direction)          # Comment out to use all directions
-    model.geometry.rays.weight   .set(0.5 * np.ones(2))   # Comment out to use all directions
+    # direction = np.array([[0,0,+1], [0,0,-1]])            # Comment out to use all directions
+    # model.geometry.rays.direction.set(direction)          # Comment out to use all directions
+    # model.geometry.rays.weight   .set(0.5 * np.ones(2))   # Comment out to use all directions
 
-    # model = setup.set_uniform_rays            (model)   # Uncomment to use all directions
+    model = setup.set_uniform_rays            (model)   # Uncomment to use all directions
     model = setup.set_boundary_condition_CMB  (model)
     model = setup.set_linedata_from_LAMDA_file(model, lamda_file, {'considered transitions': [0]})
     # model = setup.set_linedata_from_LAMDA_file(model, lamda_file)   # Consider all transitions
