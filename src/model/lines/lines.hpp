@@ -48,6 +48,12 @@ struct Lines
     void iteration_using_Ng_acceleration (
         const Real pop_prec              );
 
+    void iteration_using_Ng_acceleration (
+        const Real pop_prec,
+        const Size order                 );
+
+    void trial_iteration_using_adaptive_Ng_acceleration (const Real pop_prec, const Size order);
+
     inline Size      index (const Size p, const Size line_index     ) const;
     inline Size line_index (              const Size l, const Size k) const;
     inline Size      index (const Size p, const Size l, const Size k) const;
