@@ -221,6 +221,9 @@ void LineProducingSpecies :: update_using_Ng_acceleration ()
 ///////////////////////////////////////////////////////////////////////////
 void LineProducingSpecies :: update_using_acceleration (const Size order)
 {
+    population_prev3 = population_prev2;
+    population_prev2 = population_prev1;
+    population_prev1 = population;
 
     residuals  .push_back(population-populations.back());
     populations.push_back(population);
