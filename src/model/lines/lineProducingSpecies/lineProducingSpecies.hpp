@@ -48,6 +48,8 @@ struct LineProducingSpecies
     vector<VectorXr> populations;             ///< list of populations in previous iterations
     vector<VectorXr> residuals;               ///< list of residuals in the populations
 
+    VectorXr trial_population;                ///< level population generated in adaptive ng acceleration trial
+
 
     VectorXr population_prev1;                ///< level populations 1 iteration  back
     VectorXr population_prev2;                ///< level populations 2 iterations back
@@ -77,6 +79,9 @@ struct LineProducingSpecies
     inline void check_for_convergence (
         const Real pop_prec );
 
+    inline void check_for_convergence_trial (
+        const Real pop_prec );
+
     inline void update_using_LTE (
         const Double2      &abundance,
         const Vector<Real> &temperature );
@@ -91,6 +96,7 @@ struct LineProducingSpecies
 
     inline void update_using_Ng_acceleration ();
     inline void update_using_acceleration (const Size order);
+    inline void update_using_acceleration_trial (const Size order);
 };
 
 

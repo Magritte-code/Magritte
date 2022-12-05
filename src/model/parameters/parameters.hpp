@@ -52,7 +52,10 @@ struct Parameters
     Real min_opacity                 = 1.0e-26;
     Real min_dtau                    = 1.0e-15;
     bool store_intensities           = false;
-    bool use_Ng_acceleration         = true;
+    // bool use_Ng_acceleration         = true;//Not used, so may safely be removed
+    bool use_adaptive_Ng_acceleration= true;//whether to use an adaptive version of Ng acceleration; only relevant if use_Ng_acceleration = true
+    Size adaptive_Ng_acceleration_mem_limit = 8;//determines how many previous iterations we hold in memory when using adaptive ng-acceleration
+    //TODO: actually limit the memory usage
 
     ///Approximations for summing over lines; by default, we only sum over the close lines in order to compute opacity/emissivity (leading to O(Nline * ln(Nlines)) scaling behavior)
 
