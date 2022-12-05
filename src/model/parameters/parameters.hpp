@@ -54,7 +54,10 @@ struct Parameters
     Real comoving_min_dtau           = 1.0e-10;
     bool store_intensities           = false;
     bool use_Ng_acceleration         = true;
-    bool use_smoothing               = true;
+    bool use_smoothing               = false;
+    bool prune_zero_contribution_points = true; // this setting removes/does not include the points with a zero contribution
+    //This is done by checking whether any line lies close enough to the point; if not, we can safely ignore it when computing the intensity.
+    //Warning: this will introduce some complications if we implement continuum sources (e.g. dust)
 
     ///Approximations for summing over lines; by default, we only sum over the close lines in order to compute opacity/emissivity (leading to O(Nline * ln(Nlines)) scaling behavior)
 

@@ -41,12 +41,21 @@ def run_model (nosave=True):
     model.compute_LTE_level_populations   ()
     timer2.stop()
 
+    plt.figure()
+    velocity = np.array(model.geometry.points.velocity)
+    speed = np.sqrt(np.power(velocity[:,0], 2)+np.power(velocity[:,1], 2)+np.power(velocity[:,2], 2))
+    inv_widths = np.array(model.lines.inverse_width)[:, 0]*np.array(model.lines.line)[0]
+    plt.plot(speed*inv_widths)
+    plt.show()
     # opacities=np.array(model.lines.opacity)
     # print("opacities: ",opacities)
 
+    model.parameters.use_smoothing=False
+    model.parameters.max_distance_opacity_contribution = 3.0
+    # model.parameters.prune_zero_contribution_points=False
     timer3 = tools.Timer('running model')
     timer3.start()
-    model.compute_level_populations_sparse (True, 10)
+    # model.compute_level_populations_sparse (True, 10)
     # sum_J_2f=np.array(model.lines.lineProducingSpecies[0].Jlin)
 
     # model = magritte.Model (modelFile)
@@ -61,6 +70,8 @@ def run_model (nosave=True):
     pops = np.array(model.lines.lineProducingSpecies[0].population).reshape((model.parameters.npoints(), model.lines.lineProducingSpecies[0].linedata.nlev))
     abun = np.array(model.chemistry.species.abundance)[:,1]
     rs   = np.linalg.norm(np.array(model.geometry.points.position), axis=1)
+
+    np.save(f'pops_{modelName}_reduced_LTE.npy', pops)
 
     # (i,ra,rb,nh,tk,nm,vr,db,td,lp0,lp1) = np.loadtxt (f'{curdir}/Ratran_results/vanZadelhoff_1{a_or_b}.out', skiprows=14, unpack=True)
 

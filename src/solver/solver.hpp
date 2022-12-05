@@ -301,6 +301,26 @@ struct Solver
             Size&  id1,
             Size&  id2 );
 
+    // Point pruning solvers stuff
+    //////////////////////////////
+
+    accel inline bool check_close_line (const Real currfreq, const Real nextfreq, const Size currpoint, const Size nextpoint, const Model& model);
+    // accel inline bool check_close_line (const Real prevfreq, const Real currfreq, const Real nextfreq, const Size prevpoint, const Size currpoint, const Size nextpoint, const Model& model);
+    template <Frame frame>
+    accel inline Size trace_ray_pruned (
+        const Model&    model,
+        const Size      o,
+        const Size      r,
+        const double    dshift_max,
+        const int       increment,
+              Size      id1,
+              Size      id2,
+        const Real      freq );
+
+    template<ApproximationType approx>
+    inline void solve_feautrier_order_2_sparse_pruned_rays (Model& model);
+
+
     // Solvers for images
     /////////////////////
     template<ApproximationType approx>

@@ -336,6 +336,7 @@ PYBIND11_MODULE (core, module)
         .def_readwrite ("sum_opacity_emissivity_over_all_lines", &Parameters::sum_opacity_emissivity_over_all_lines, "Whether or not to sum the opacity, emissivity over all lines (including the zero contributions).")
         .def_readwrite ("max_distance_opacity_contribution", &Parameters::max_distance_opacity_contribution, "The distance (scaled to line width) at which we ignore the opacity/emissivity contribution.")
         .def_readwrite ("use_smoothing",               &Parameters::use_smoothing, "Whether to or not to use smoothing.")
+        .def_readwrite ("prune_zero_contribution_points", &Parameters::prune_zero_contribution_points, "Whether to or not to prune points to far from all lines.")
         // setters
         .def ("set_model_name",               &Parameters::set_model_name          , "Set model name.")
         .def ("set_dimension",                &Parameters::set_dimension           , "Set spatial dimension of the model.")

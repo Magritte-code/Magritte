@@ -457,6 +457,13 @@ int Model :: compute_radiation_field_feautrier_order_2_sparse ()
     Solver solver;
     solver.setup <CoMoving>                      (*this);
 
+    if (parameters->prune_zero_contribution_points)
+    {
+        std::cout<<"pruning points on rays"<<std::endl;
+        solver.solve_feautrier_order_2_sparse_pruned_rays <CloseLines> (*this);
+        return (0);
+    }
+
     if (parameters->one_line_approximation)
     {
         solver.solve_feautrier_order_2_sparse <OneLine> (*this);

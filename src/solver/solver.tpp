@@ -276,6 +276,9 @@ accel inline void Solver :: trace_ray_points (
     }
 }
 
+
+
+
 // For all directions, determines a ray covering of the points
 inline void Solver :: get_static_rays_to_trace (Model& model)
 {
@@ -2250,6 +2253,99 @@ inline void Solver :: solve_feautrier_order_2_anis (Model& model)
 }
 
 
+//sparse Feautrier solver, but now does not put point without close lines on the ray
+template<ApproximationType approx>
+inline void Solver :: solve_feautrier_order_2_sparse_pruned_rays (Model& model)
+{
+    // Initialise variables
+    for (LineProducingSpecies &lspec : model.lines.lineProducingSpecies)
+    {
+        lspec.lambda.clear();
+
+        lspec.J.resize(model.parameters->npoints(), lspec.linedata.nrad);
+
+        threaded_for (o, model.parameters->npoints(),
+        {
+            for (Size k = 0; k < lspec.linedata.nrad; k++)
+            {
+                lspec.J(o,k) = 0.0;
+            }
+        })
+    }
+
+
+    // For each ray, solve transfer equation
+    for (Size rr = 0; rr < model.parameters->hnrays(); rr++)
+    {
+        const Size     ar = model.geometry.rays.antipod  [rr];
+        const Real     wt = model.geometry.rays.weight   [rr] * two;
+        const Vector3D nn = model.geometry.rays.direction[rr];
+
+        cout << "--- rr = " << rr << endl;
+
+        for (LineProducingSpecies &lspec : model.lines.lineProducingSpecies)
+        {
+            threaded_for (o, model.parameters->npoints(),
+            {
+                const Real dshift_max = get_dshift_max (model, o);
+
+
+                // first_() = trace_ray <CoMoving> (model.geometry, o, rr, dshift_max, -1, centre-1, centre-1) + 1;
+                // last_ () = trace_ray <CoMoving> (model.geometry, o, ar, dshift_max, +1, centre+1, centre  ) - 1;
+                // n_tot_() = (last_()+1) - first_();
+
+                //Basic ray tracing to check if ray length is at least 2 (so no direct boundary condition required)
+                //By definition of the comoving frame, o defines the reference frame. To correctly compute the intensity,
+                // we will at least include the origin of the ray and the neighbors in the pruning process.
+                const Size tot_ray_length = 1 + model.geometry.get_ray_length <CoMoving>(o, rr, dshift_max) + model.geometry.get_ray_length <CoMoving>(o, ar, dshift_max);
+
+                // if (n_tot_() > 1)
+                if (tot_ray_length > 1)
+                {
+                    for (Size k = 0; k < lspec.linedata.nrad; k++)
+                    {
+                        const Real line_frequency = lspec.linedata.frequency[k];
+                        //Per line, trace which part we actually need to solve
+                        //Is identical for all pruned rays
+                        nr_   ()[centre] = o;
+                        shift_()[centre] = 1.0;
+
+                        first_() = trace_ray_pruned <CoMoving> (model, o, rr, dshift_max, -1, centre-1, centre-1, line_frequency) + 1;
+                        last_ () = trace_ray_pruned <CoMoving> (model, o, ar, dshift_max, +1, centre+1, centre  , line_frequency) - 1;
+                        n_tot_() = (last_()+1) - first_();
+                        // std::cout<<"ntot: "<<n_tot_()<<std::endl;
+
+                        // Integrate over the line
+                        for (Size z = 0; z < model.parameters->nquads(); z++)
+                        {
+                            solve_feautrier_order_2 <approx> (model, o,  lspec.nr_line[o][k][z]);
+
+                            lspec.J(o,k) += lspec.quadrature.weights[z] * wt * Su_()[centre];
+
+                            update_Lambda<approx> (model, rr, lspec.nr_line[o][k][z]);
+                        }
+                    }
+                }
+                else
+                {
+                    for (Size k = 0; k < lspec.linedata.nrad; k++)
+                    {
+                        // Integrate over the line
+                        for (Size z = 0; z < model.parameters->nquads(); z++)
+                        {
+                            lspec.J(o,k) += lspec.quadrature.weights[z] * wt * boundary_intensity(model, o, model.radiation.frequencies.nu(o, lspec.nr_line[o][k][z]));
+                        }
+                    }
+                }
+            })
+        }
+    }
+}
+
+
+
+
+
 template<ApproximationType approx>
 inline void Solver :: solve_feautrier_order_2 (Model& model)
 {
@@ -2475,6 +2571,113 @@ accel inline Size Solver :: trace_ray (
 
     return id1;
 }
+
+//Tracing the ray, ignoring all points for which the given CMF frequency lies too far from all line centers
+template <Frame frame>
+accel inline Size Solver :: trace_ray_pruned (
+    const Model&    model,
+    const Size      o,
+    const Size      r,
+    const double    dshift_max,
+    const int       increment,
+          Size      id1,
+          Size      id2,
+    const Real      freq )
+{
+    double  Z = 0.0;   // distance from origin (o)
+    double dZ = 0.0;   // last increment in Z
+    double dZcrt = dZ; //previous increment in dZ
+
+    bool is_crt_set = true; //Whether the current point is already set
+
+    Size nxt = model.geometry.get_next (o, r, o, Z, dZ);
+
+    if (model.geometry.valid_point(nxt))
+    {
+        Size         crt = o;
+        // Size         prv = crt;
+        double shift_crt = model.geometry.get_shift <frame> (o, r, crt, 0.0);
+        // double shift_prv = shift_crt;
+        double shift_nxt = model.geometry.get_shift <frame> (o, r, nxt, Z  );
+
+        //As we must make sure that all lines are traced fine
+        //check whether position increment has any close lines
+        if (check_close_line(shift_crt*freq, shift_nxt*freq, crt, nxt, model))
+        // if (check_close_line(shift_prv*freq, shift_crt*freq, shift_nxt*freq, prv, crt, nxt, model))
+        {
+            set_data (crt, nxt, shift_crt, shift_nxt, dZ, dshift_max, increment, id1, id2);
+            is_crt_set = true;
+        }
+        else
+        {
+            is_crt_set=false;
+        }
+
+        while (model.geometry.not_on_boundary(nxt))
+        {
+            //       prv =       crt;
+            // shift_prv = shift_crt;
+                  crt =       nxt;
+            shift_crt = shift_nxt;
+
+            dZcrt = dZ;//current dZ required
+
+                  nxt = model.geometry.get_next          (o, r, nxt, Z, dZ);
+            shift_nxt = model.geometry.get_shift <frame> (o, r, nxt, Z    );
+
+            //As we must make sure that all lines are traced fine
+            //check whether position increment has any close lines
+            if (check_close_line(shift_crt*freq, shift_nxt*freq, crt, nxt, model))
+            // if (check_close_line(shift_prv*freq, shift_crt*freq, shift_nxt*freq, prv, crt, nxt, model))
+            {
+                if (!is_crt_set)
+                {
+                    //FIXME: FIX FUNCTION DEFINITION SET_DATA
+                    set_data (crt, crt, shift_crt, shift_crt, dZcrt, dshift_max, increment, id1, id2);
+                }
+                set_data (crt, nxt, shift_crt, shift_nxt, dZ, dshift_max, increment, id1, id2);
+                is_crt_set = true;
+            }
+            else
+            {
+                is_crt_set = false;
+            }
+        }
+
+        //always set the boundary point (otherwise the boundary condition cannot be evaluated)
+        if (!is_crt_set)
+        {
+            set_data (crt, crt, shift_crt, shift_crt, dZcrt, dshift_max, increment, id1, id2);
+        }
+    }
+
+    return id1;
+}
+
+accel inline bool Solver :: check_close_line (const Real currfreq, const Real nextfreq, const Size currpoint, const Size nextpoint, const Model& model)
+// accel inline bool Solver :: check_close_line (const Real prevfreq, const Real currfreq, const Real nextfreq, const Size prevpoint, const Size currpoint, const Size nextpoint, const Model& model)
+{
+    const Real left_freq = std::min({currfreq, nextfreq});
+    const Real right_freq = std::max({currfreq, nextfreq});
+
+    //FIXME?: use wider bounds, as this is just for quantifying whether the line center lies close enough. mhh, the farther we lie from the line center, the less influence the evaluated frequency has on the mean line intensity...
+    //using maximum of bounds on the two points to get an upper bound for the line width
+    // const Real prev_bound_line_width = model.thermodynamics.profile_width_upper_bound_with_linefreq(prevpoint, right_freq, model.lines.max_inverse_mass);
+    const Real curr_bound_line_width = model.thermodynamics.profile_width_upper_bound_with_linefreq(currpoint, right_freq, model.lines.max_inverse_mass);
+    const Real next_bound_line_width = model.thermodynamics.profile_width_upper_bound_with_linefreq(nextpoint, right_freq, model.lines.max_inverse_mass);
+    const Real upper_bound_line_width = model.parameters->max_distance_opacity_contribution * std::max({curr_bound_line_width, next_bound_line_width});
+
+    const Real left_freq_bound = left_freq - upper_bound_line_width;
+    const Real right_freq_bound = right_freq + upper_bound_line_width;
+
+    //apply default search algorithms on the bounds, obtaining iterators
+    auto left_line_bound=std::lower_bound(model.lines.sorted_line.begin(), model.lines.sorted_line.end(), left_freq_bound);
+    auto right_line_bound=std::upper_bound(model.lines.sorted_line.begin(), model.lines.sorted_line.end(), right_freq_bound);
+    //yes, I am comparing pointers; I just want to know whether at least one line lies in the interval // see compute_S_dtau_line_integrated <CloseLines>
+    //TODO: refactor such that both trace_ray_pruned and compute_S_dtau_line_integrated <CloseLines> rely on the same code snippet (instead of duplicating this code)
+    return (left_line_bound!=right_line_bound);
+}
+
 
 //Because of the new method for computing the optical depth, adding extra frequency points for counteracting the large doppler shift is no longer necessary
 accel inline void Solver :: set_data (
