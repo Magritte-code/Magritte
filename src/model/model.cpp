@@ -533,16 +533,10 @@ std::tuple<bool, Size> Model :: ng_acceleration_criterion <Adaptive>(bool use_Ng
 {
     //Ng acceleration will not be used if we have no prior data (or the user does not allow it)
     //For useful acceleration steps, the order needs to be at least 2
-    if (use_Ng_acceleration == false || prior_normal_iterations <= 1)
+    if (use_Ng_acceleration == false || prior_normal_iterations < parameters->adaptive_Ng_acceleration_min_order)
     {
         return std::make_tuple(false, 0);
     }
-    //TODO: check (using some residuals in memory) whether doing ng accel is fine
-    //First define some temporary data structures (which can temporarily hold the current/ng-accelerated? data)
-    bool use_adaptive_Ng = false;
-
-    //the number of previous iterations to use is bounded by the memory limit
-    const Size nb_prev_iterations = std::min({parameters->adaptive_Ng_acceleration_mem_limit, prior_normal_iterations});
 
     //TODO: SAVE this value somewhere and use it here! This version might not be able to test out multiple trials?
     double sum_fnc_curr = 0.0; //(just grab from computed result)
@@ -552,24 +546,32 @@ std::tuple<bool, Size> Model :: ng_acceleration_criterion <Adaptive>(bool use_Ng
         sum_fnc_curr += fnc;
     }
 
-    lines.trial_iteration_using_adaptive_Ng_acceleration(parameters->pop_prec, nb_prev_iterations);
+    //the number of previous iterations to use is bounded by the memory limit
+    const Size nb_prev_iterations = std::min({parameters->adaptive_Ng_acceleration_mem_limit, prior_normal_iterations});
 
-    //Probably also define some ng_acceleration_trial function
-    //see lspec.update_using_acceleration
-    //for all levels, check fraction convergence; if more converged, t
-    double sum_fnc_ng = 0.0;
-    for (int l = 0; l < parameters->nlspecs(); l++)
+    for (Size order = nb_prev_iterations; order>=parameters->adaptive_Ng_acceleration_min_order; order--)
     {
-        const double fnc = lines.lineProducingSpecies[l].fraction_not_converged;
-        sum_fnc_ng += fnc;
+
+        lines.trial_iteration_using_adaptive_Ng_acceleration(parameters->pop_prec, order);
+
+        //Probably also define some ng_acceleration_trial function
+        //see lspec.update_using_acceleration
+        //for all levels, check fraction convergence; if more converged, t
+        double sum_fnc_ng = 0.0;
+        for (int l = 0; l < parameters->nlspecs(); l++)
+        {
+            const double fnc = lines.lineProducingSpecies[l].fraction_not_converged;
+            sum_fnc_ng += fnc;
+        }
+
+        //TODO: enforce max memory size somehow
+        std::cout<<"sum_fnc_ng: "<<sum_fnc_ng<<" sum_fnc_curr: "<<sum_fnc_curr<<std::endl;
+        if (sum_fnc_ng<sum_fnc_curr || prior_normal_iterations == parameters->adaptive_Ng_acceleration_mem_limit)
+        {
+            return std::make_tuple(true , order);
+        }
     }
 
-    //TODO: enforce max memory size somehow
-    std::cout<<"sum_fnc_ng: "<<sum_fnc_ng<<" sum_fnc_curr: "<<sum_fnc_curr<<std::endl;
-    if (sum_fnc_ng<sum_fnc_curr || prior_normal_iterations == parameters->adaptive_Ng_acceleration_mem_limit)
-    {
-        return std::make_tuple(true , nb_prev_iterations);
-    }
     return std::make_tuple(false , 0);
 
     //and then just do the if clause
@@ -633,6 +635,7 @@ int Model :: compute_level_populations (
         // if (use_Ng_acceleration && (iteration_normal == 4))
         if (use_ng_acceleration_step)
         {
+            std::cout<<"max order: "<<iteration_normal<<" used order: "<<ng_acceleration_order<<std::endl;
             // lines.iteration_using_Ng_acceleration (parameters->pop_prec);
             lines.iteration_using_Ng_acceleration (parameters->pop_prec, ng_acceleration_order);
 
