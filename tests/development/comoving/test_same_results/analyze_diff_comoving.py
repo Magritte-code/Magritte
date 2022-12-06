@@ -24,6 +24,7 @@ plt.yscale("log")
 plt.xlabel("Radius [m]")
 plt.ylabel("Relative difference")
 plt.title("Relative differences level populations")
+plt.savefig("Relative_diffs_feautrier_comoving_phantom.png")
 
 
 plt.figure()
@@ -33,6 +34,8 @@ plt.yscale("log")
 # plt.xscale("log")
 plt.xlabel("Radius [m]")
 plt.ylabel("Relative difference")
+plt.savefig("Relative_diffs_feautrier_LTE_phantom.png")
+
 
 plt.show()
 #the plot can be better by using the radial coordinate as x-axis
