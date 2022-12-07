@@ -542,35 +542,39 @@ std::tuple<bool, Size> Model :: ng_acceleration_criterion <Adaptive>(bool use_Ng
     double sum_fnc_curr = 0.0; //(just grab from computed result)
     for (int l = 0; l < parameters->nlspecs(); l++)
     {
-        const double fnc = lines.lineProducingSpecies[l].fraction_not_converged;
+        // const double fnc = lines.lineProducingSpecies[l].fraction_not_converged;
+        //TEST: check whether relative_change_mean is a better criterion; note:relative_change_max not used
+        const double fnc = lines.lineProducingSpecies[l].relative_change_mean;
         sum_fnc_curr += fnc;
     }
 
     //the number of previous iterations to use is bounded by the memory limit
     const Size nb_prev_iterations = std::min({parameters->adaptive_Ng_acceleration_mem_limit, prior_normal_iterations});
 
-    for (Size order = nb_prev_iterations; order>=parameters->adaptive_Ng_acceleration_min_order; order--)
+    // for (Size order = nb_prev_iterations; order>=parameters->adaptive_Ng_acceleration_min_order; order--)
+    // {
+
+    lines.trial_iteration_using_adaptive_Ng_acceleration(parameters->pop_prec, nb_prev_iterations);
+
+    //Probably also define some ng_acceleration_trial function
+    //see lspec.update_using_acceleration
+    //for all levels, check fraction convergence; if more converged, t
+    double sum_fnc_ng = 0.0;
+    for (int l = 0; l < parameters->nlspecs(); l++)
     {
-
-        lines.trial_iteration_using_adaptive_Ng_acceleration(parameters->pop_prec, order);
-
-        //Probably also define some ng_acceleration_trial function
-        //see lspec.update_using_acceleration
-        //for all levels, check fraction convergence; if more converged, t
-        double sum_fnc_ng = 0.0;
-        for (int l = 0; l < parameters->nlspecs(); l++)
-        {
-            const double fnc = lines.lineProducingSpecies[l].fraction_not_converged;
-            sum_fnc_ng += fnc;
-        }
-
-        //TODO: enforce max memory size somehow
-        std::cout<<"sum_fnc_ng: "<<sum_fnc_ng<<" sum_fnc_curr: "<<sum_fnc_curr<<std::endl;
-        if (sum_fnc_ng<sum_fnc_curr || prior_normal_iterations == parameters->adaptive_Ng_acceleration_mem_limit)
-        {
-            return std::make_tuple(true , order);
-        }
+        // const double fnc = lines.lineProducingSpecies[l].fraction_not_converged;
+        //TEST: check whether relative_change_mean is a better criterion; note:relative_change_max not used
+        const double fnc = lines.lineProducingSpecies[l].relative_change_mean;
+        sum_fnc_ng += fnc;
     }
+
+    //TODO: enforce max memory size somehow
+    std::cout<<"sum_fnc_ng: "<<sum_fnc_ng<<" sum_fnc_curr: "<<sum_fnc_curr<<std::endl;
+    if (sum_fnc_ng<sum_fnc_curr || prior_normal_iterations == parameters->adaptive_Ng_acceleration_mem_limit)
+    {
+        return std::make_tuple(true , order);
+    }
+    // }
 
     return std::make_tuple(false , 0);
 
