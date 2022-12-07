@@ -543,8 +543,9 @@ std::tuple<bool, Size> Model :: ng_acceleration_criterion <Adaptive>(bool use_Ng
     for (int l = 0; l < parameters->nlspecs(); l++)
     {
         // const double fnc = lines.lineProducingSpecies[l].fraction_not_converged;
-        //TEST: check whether relative_change_mean is a better criterion; note:relative_change_max not used
+        //TEST: check whether relative_change_mean is a better criterion; max relative change might also be used
         const double fnc = lines.lineProducingSpecies[l].relative_change_mean;
+        // const double fnc = lines.lineProducingSpecies[l].relative_change_max;
         sum_fnc_curr += fnc;
     }
 
@@ -563,8 +564,9 @@ std::tuple<bool, Size> Model :: ng_acceleration_criterion <Adaptive>(bool use_Ng
     for (int l = 0; l < parameters->nlspecs(); l++)
     {
         // const double fnc = lines.lineProducingSpecies[l].fraction_not_converged;
-        //TEST: check whether relative_change_mean is a better criterion; note:relative_change_max not used
+        //TEST: check whether relative_change_mean is a better criterion; max relative change might also be used
         const double fnc = lines.lineProducingSpecies[l].relative_change_mean;
+        // const double fnc = lines.lineProducingSpecies[l].relative_change_max;
         sum_fnc_ng += fnc;
     }
 
@@ -572,7 +574,7 @@ std::tuple<bool, Size> Model :: ng_acceleration_criterion <Adaptive>(bool use_Ng
     std::cout<<"sum_fnc_ng: "<<sum_fnc_ng<<" sum_fnc_curr: "<<sum_fnc_curr<<std::endl;
     if (sum_fnc_ng<sum_fnc_curr || prior_normal_iterations == parameters->adaptive_Ng_acceleration_mem_limit)
     {
-        return std::make_tuple(true , order);
+        return std::make_tuple(true , nb_prev_iterations);
     }
     // }
 
