@@ -100,10 +100,12 @@ inline void LineProducingSpecies :: check_for_convergence (const Real pop_prec)
 
             if (population(ind) > parameters->min_rel_pop_for_convergence * population_tot[p])
             {
-                Real relative_change = 2.0;
-
-                relative_change *= fabs (population (ind) - population_prev1 (ind));
-                relative_change /=      (population (ind) + population_prev1 (ind));
+                // Real relative_change = 2.0;
+                //
+                // relative_change *= std::abs(population (ind) - population_prev1 (ind));
+                // relative_change /= (population (ind) + population_prev1 (ind));
+                //minor computed negative level populations might result in negative values for this
+                const Real relative_change = 2.0*std::abs((population (ind) - population_prev1 (ind))/(population (ind) + population_prev1 (ind)));
 
                 if (relative_change > pop_prec)
                 {
@@ -136,10 +138,12 @@ inline void LineProducingSpecies :: check_for_convergence_trial (const Real pop_
 
             if (population(ind) > parameters->min_rel_pop_for_convergence * population_tot[p])
             {
-                Real relative_change = 2.0;
-
-                relative_change *= fabs (trial_population (ind) - population (ind));
-                relative_change /=      (trial_population (ind) + population (ind));
+                // Real relative_change = 2.0;
+                //
+                // relative_change *= std::abs(trial_population (ind) - population (ind));
+                // relative_change /= (trial_population (ind) + population (ind));
+                //minor computed negative level populations might result in negative values for this
+                const Real relative_change = 2.0*std::abs((trial_population (ind) - population (ind))/(trial_population (ind) + population (ind)));
 
                 if (relative_change > pop_prec)
                 {
