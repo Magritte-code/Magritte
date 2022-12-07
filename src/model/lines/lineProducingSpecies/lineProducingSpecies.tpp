@@ -92,10 +92,9 @@ inline void LineProducingSpecies :: check_for_convergence (const Real pop_prec)
     Real rcm = 0.0;
     Real rcmax = 0.0;
 
-#   pragma omp parallel for reduction (+: fnc, rcm) reduction (max : rcmax)
+#   pragma omp parallel for reduction (+: fnc, rcm) reduction (max: rcmax)
     for (Size p = 0; p < parameters->npoints(); p++)
     {
-        Real rcmax=0.0;
         for (Size i = 0; i < linedata.nlev; i++)
         {
             const Size ind = index (p, i);
@@ -115,7 +114,7 @@ inline void LineProducingSpecies :: check_for_convergence (const Real pop_prec)
                 }
 
                 rcm += (weight * relative_change);
-                rcmax = weight * relative_change > rcmax ? weight * relative_change : rcmax;
+                rcmax = std::max(relative_change, rcmax);
             }
         }
     }
@@ -134,10 +133,9 @@ inline void LineProducingSpecies :: check_for_convergence_trial (const Real pop_
     Real rcm = 0.0;
     Real rcmax = 0.0;
 
-#   pragma omp parallel for reduction (+: fnc, rcm) reduction (max : rcmax)
+#   pragma omp parallel for reduction (+: fnc, rcm) reduction (max: rcmax)
     for (Size p = 0; p < parameters->npoints(); p++)
     {
-        Real rcmax=0.0;
         for (Size i = 0; i < linedata.nlev; i++)
         {
             const Size ind = index (p, i);
@@ -157,7 +155,7 @@ inline void LineProducingSpecies :: check_for_convergence_trial (const Real pop_
                 }
 
                 rcm += (weight * relative_change);
-                rcmax = weight * relative_change > rcmax ? weight * relative_change : rcmax;
+                rcmax = std::max(relative_change, rcmax);
             }
         }
     }
