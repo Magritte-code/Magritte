@@ -570,7 +570,6 @@ std::tuple<bool, Size> Model :: ng_acceleration_criterion <Adaptive>(bool use_Ng
         sum_fnc_ng += fnc;
     }
 
-    //TODO: enforce max memory size somehow
     std::cout<<"sum_fnc_ng: "<<sum_fnc_ng<<" sum_fnc_curr: "<<sum_fnc_curr<<std::endl;
     if (sum_fnc_ng<sum_fnc_curr || prior_normal_iterations == parameters->adaptive_Ng_acceleration_mem_limit)
     {
