@@ -273,6 +273,12 @@ void LineProducingSpecies :: update_using_acceleration (const Size order)
     {
         population += populations[datasize-1-i] * coef[order-1-i];
     }
+
+    //enforcing memory limit by removing almost all previous information after (general) ng-acceleration
+    //Last population must be kept to compute residuals
+    residuals  .clear();
+    populations.erase(populations.begin(), populations.end()-1);
+
 }
 
 
