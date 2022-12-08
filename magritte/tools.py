@@ -63,6 +63,11 @@ class Timer ():
         Print the elapsed time.
         """
         return f'timer: {self.name} = {self.total}'
+    def get_interval (self):
+        """
+        Returns the elapsed time
+        """
+        return self.total
 
 
 def relative_error (a,b):
