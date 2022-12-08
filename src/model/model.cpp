@@ -531,9 +531,10 @@ std::tuple<bool, Size> Model :: ng_acceleration_criterion <Default>(bool use_Ng_
 template<>
 std::tuple<bool, Size> Model :: ng_acceleration_criterion <Adaptive>(bool use_Ng_acceleration, Size prior_normal_iterations)
 {
+    const Size skip_N_its = parameters->adaptive_Ng_acceleration_remove_N_its;
     //Ng acceleration will not be used if we have no prior data (or the user does not allow it)
     //For useful acceleration steps, the order needs to be at least 2
-    if (use_Ng_acceleration == false || prior_normal_iterations < parameters->adaptive_Ng_acceleration_min_order)
+    if (use_Ng_acceleration == false || prior_normal_iterations < parameters->adaptive_Ng_acceleration_min_order + skip_N_its)
     {
         return std::make_tuple(false, 0);
     }
@@ -544,18 +545,19 @@ std::tuple<bool, Size> Model :: ng_acceleration_criterion <Adaptive>(bool use_Ng
     {
         // const double fnc = lines.lineProducingSpecies[l].fraction_not_converged;
         //TEST: check whether relative_change_mean is a better criterion; max relative change might also be used
-        const double fnc = lines.lineProducingSpecies[l].relative_change_mean;
-        // const double fnc = lines.lineProducingSpecies[l].relative_change_max;
+        // const double fnc = lines.lineProducingSpecies[l].relative_change_mean;
+        const double fnc = parameters->adaptive_Ng_acceleration_use_max_criterion ? lines.lineProducingSpecies[l].relative_change_max : lines.lineProducingSpecies[l].relative_change_mean;
         sum_fnc_curr += fnc;
     }
 
     //the number of previous iterations to use is bounded by the memory limit
-    const Size nb_prev_iterations = std::min({parameters->adaptive_Ng_acceleration_mem_limit, prior_normal_iterations});
+    // const Size nb_prev_iterations = std::min({parameters->adaptive_Ng_acceleration_mem_limit, prior_normal_iterations});
+    const Size nb_prev_iterations = prior_normal_iterations;
 
     // for (Size order = nb_prev_iterations; order>=parameters->adaptive_Ng_acceleration_min_order; order--)
     // {
 
-    lines.trial_iteration_using_adaptive_Ng_acceleration(parameters->pop_prec, nb_prev_iterations);
+    lines.trial_iteration_using_adaptive_Ng_acceleration(parameters->pop_prec, nb_prev_iterations - skip_N_its);
 
     //Probably also define some ng_acceleration_trial function
     //see lspec.update_using_acceleration
@@ -565,15 +567,15 @@ std::tuple<bool, Size> Model :: ng_acceleration_criterion <Adaptive>(bool use_Ng
     {
         // const double fnc = lines.lineProducingSpecies[l].fraction_not_converged;
         //TEST: check whether relative_change_mean is a better criterion; max relative change might also be used
-        const double fnc = lines.lineProducingSpecies[l].relative_change_mean;
-        // const double fnc = lines.lineProducingSpecies[l].relative_change_max;
+        // const double fnc = lines.lineProducingSpecies[l].relative_change_mean;
+        const double fnc = parameters->adaptive_Ng_acceleration_use_max_criterion ? lines.lineProducingSpecies[l].relative_change_max : lines.lineProducingSpecies[l].relative_change_mean;
         sum_fnc_ng += fnc;
     }
 
     std::cout<<"sum_fnc_ng: "<<sum_fnc_ng<<" sum_fnc_curr: "<<sum_fnc_curr<<std::endl;
-    if (sum_fnc_ng<sum_fnc_curr || prior_normal_iterations == parameters->adaptive_Ng_acceleration_mem_limit)
+    if (sum_fnc_ng<sum_fnc_curr || prior_normal_iterations == (parameters->adaptive_Ng_acceleration_mem_limit + skip_N_its))
     {
-        return std::make_tuple(true , nb_prev_iterations);
+        return std::make_tuple(true , nb_prev_iterations - skip_N_its);
     }
     // }
 
