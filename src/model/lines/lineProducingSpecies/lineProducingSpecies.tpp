@@ -238,7 +238,8 @@ void LineProducingSpecies :: update_using_acceleration (const Size order)
     residuals  .push_back(population-populations.back());
     populations.push_back(population);
 
-    if (populations.size()!=(residuals.size()+1))
+    //inequality due to residuals needing to be computed from populations, but populations may be computed without computing residuals
+    if (populations.size()<(residuals.size()+1))
     {
       std::cout<<"Inconsistent data sizes for ng acceleration."<<std::endl;
       std::cout<<"Size populations: "<<populations.size()<<" Size residuals: "<<residuals.size()<<std::endl;
@@ -251,7 +252,8 @@ void LineProducingSpecies :: update_using_acceleration (const Size order)
       throw std::runtime_error("Error during ng acceleration; order of acceleration greather than data stored.");
     }
 
-    const Size datasize = populations.size();
+    const Size popsize = populations.size();
+    const Size ressize = residuals.size();
 
     MatrixXr RTR (order, order);
 
@@ -259,7 +261,7 @@ void LineProducingSpecies :: update_using_acceleration (const Size order)
     {
         for (Size j = 0; j < order; j++)
         {
-            RTR(i,j) = residuals[datasize-1-order+i].dot(residuals[datasize-1-order+j]);
+            RTR(i,j) = residuals[ressize-order+i].dot(residuals[ressize-order+j]);
         }
     }
 
@@ -271,7 +273,7 @@ void LineProducingSpecies :: update_using_acceleration (const Size order)
 
     for (Size i = 0; i < order; i++)
     {
-        population += populations[datasize-1-i] * coef[order-1-i];
+        population += populations[popsize-1-i] * coef[order-1-i];
     }
 
     //enforcing memory limit by removing almost all previous information after (general) ng-acceleration
@@ -292,7 +294,8 @@ void LineProducingSpecies :: update_using_acceleration_trial (const Size order)
     residuals  .push_back(population-populations.back());
     populations.push_back(population);
 
-    if (populations.size()!=(residuals.size()+1))
+    //inequality due to residuals needing to be computed from populations, but populations may be computed without computing residuals
+    if (populations.size()<(residuals.size()+1))
     {
         std::cout<<"Inconsistent data sizes for ng acceleration."<<std::endl;
         std::cout<<"Size populations: "<<populations.size()<<" Size residuals: "<<residuals.size()<<std::endl;
@@ -305,7 +308,8 @@ void LineProducingSpecies :: update_using_acceleration_trial (const Size order)
         throw std::runtime_error("Error during ng acceleration; order of acceleration greather than data stored.");
     }
 
-    const Size datasize = populations.size();
+    const Size popsize = populations.size();
+    const Size ressize = residuals.size();
 
     MatrixXr RTR (order, order);
 
@@ -313,7 +317,7 @@ void LineProducingSpecies :: update_using_acceleration_trial (const Size order)
     {
         for (Size j = 0; j < order; j++)
         {
-            RTR(i,j) = residuals[datasize-1-order+i].dot(residuals[datasize-1-order+j]);
+            RTR(i,j) = residuals[ressize-order+i].dot(residuals[ressize-order+j]);
         }
     }
 
@@ -326,7 +330,7 @@ void LineProducingSpecies :: update_using_acceleration_trial (const Size order)
 
     for (Size i = 0; i < order; i++)
     {
-        trial_population += populations[datasize-1-i] * coef[order-1-i];
+        trial_population += populations[popsize-1-i] * coef[order-1-i];
     }
 
     //as this is a trial, the last elements will now be deleted for consistency
