@@ -522,12 +522,21 @@ int Model :: compute_level_populations_from_stateq ()
 }
 
 //Default ng-acceleration used every 4 iteration steps
+//For testing, I quickly implement the option to vary the number of iteration steps
 template<>
 std::tuple<bool, Size> Model :: ng_acceleration_criterion <Default>(bool use_Ng_acceleration, Size prior_normal_iterations)
 {
-    return std::make_tuple((use_Ng_acceleration && (prior_normal_iterations == 4)), 4);
+    // return std::make_tuple((use_Ng_acceleration && (prior_normal_iterations == 4)), 4);
+
+    const Size skip_N_its = parameters->adaptive_Ng_acceleration_remove_N_its;
+    if (prior_normal_iterations == (parameters->adaptive_Ng_acceleration_mem_limit + skip_N_its))
+    {
+        return std::make_tuple(true , parameters->adaptive_Ng_acceleration_mem_limit);
+    }
+    return std::make_tuple(false , 0);
 }
 
+//Adaptive ng acceleration, similar to as described in F. De Ceusters thesis
 template<>
 std::tuple<bool, Size> Model :: ng_acceleration_criterion <Adaptive>(bool use_Ng_acceleration, Size prior_normal_iterations)
 {
