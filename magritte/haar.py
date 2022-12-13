@@ -747,3 +747,23 @@ class Haar():
 
 
         return approx
+
+
+    @staticmethod
+    def remesh(positions, data, q = 9, threshold = 1e-3):
+        '''
+        Wrapper for remeshing a point cloud (positions) based on the variations in data by thresholding the wavelet coefficients.
+        The maximum depth for the wavelets is given by q.
+        The returned vector of positions starts with the nb_boundary boundary points.
+        '''
+        # Initialize haar object, defining the rectangular wavelet grid
+        haar = Haar(positions, q=q)
+        # Map the data to every location
+        map_data = haar.map_data(data)
+        # Generate the wavelets from the mapped data, obtaining averages and coefficients for the wavelets
+        data_avg, data_wav = haar.get_Haar_wavelets(map_data)
+        # By thresholding the wavelet coefficients, a sparse grid of points can be obtained
+        # This also generates a boundary, putting these in the nb_boundary first positions of the vector haar_points
+        haar_positions, nb_boundary = haar.generate_points(data_avg, data_wav, threshold=threshold)
+
+        return (haar_positions, nb_boundary)
