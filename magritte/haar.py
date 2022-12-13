@@ -49,12 +49,12 @@ class Haar():
 
         Parameters
         ----------
-        points    : n by 3 array 
+        points    : n by 3 array
         q         : Maximum level of refinement (side of the cube is 2**q, number of volume elements 8**q)
         """
         # Store the maximum (finenst) level
         self.q = q
-        
+
         # Compute size of the box
         self.xyz_min = np.min(points, axis=0)
         self.xyz_max = np.max(points, axis=0)
@@ -71,7 +71,7 @@ class Haar():
         # Count the number of points in each octree grid cell
         self.num = Haar.get_number_matrices(self.points_normed, self.q)
 
-        # Compute cube (ix, iy, iz) indices in the linear representation 
+        # Compute cube (ix, iy, iz) indices in the linear representation
         self.ids = [np.array(Haar.__cub__(np.arange(8**k, dtype=np.int64)), dtype=np.int64).T for k in range(q)]
 
 
@@ -120,7 +120,7 @@ class Haar():
         # Return the number matrices
         return num
 
-    
+
     @staticmethod
     @numba.njit(parallel=True)
     def integrate_data(points_normed, q, data):
@@ -152,18 +152,63 @@ class Haar():
                 dat[ix, iy, iz] = dat_up[ix//2, iy//2, iz//2]
         # Return data cube
         return dat
-    
+
     def generate_points(self, avg, wav, threshold=1.0e-3):
         """
-        Generate points sampling the avg and wav data.
+        Generate points sampling the avg and wav data. Also generates corresponding boundary points.
         """
         points = []
+        bulk = []
+        boundary = []
         for k in range(self.q-1):
             pts = np.argwhere(np.sum(wav[k]/avg[k] > threshold, axis=0))
-            pts = (pts + 0.5) * (self.xyz_L / 2**k) + self.xyz_min
-            points.append(pts)
+            bulk_pts = (pts + 0.5) * (self.xyz_L / 2**k) + self.xyz_min
+            bulk.append(bulk_pts)
+            # Get subset of points on the edge, add projected versions to boundary
+            MIN_IDX = 0
+            MAX_IDX = 2**k - 1
+            ## get x=const plane
+            x_min_pts = pts[np.where(pts[:,0]==MIN_IDX)]#TODO MIGHT CONTAIN ERROR
+            x_max_pts = pts[np.where(pts[:,0]==MAX_IDX)]
+            # projecting onto the position of the bounds
+            x_min_pts = (x_min_pts + 0.5) * (self.xyz_L / 2**k) + self.xyz_min
+            x_max_pts = (x_max_pts + 0.5) * (self.xyz_L / 2**k) + self.xyz_min
+            x_min_pts[:, 0] = self.xyz_min[0]
+            x_max_pts[:, 0] = self.xyz_min[0] + self.xyz_L[0]
+            boundary.append(x_min_pts)
+            boundary.append(x_max_pts)
+            ## y = const plane
+            y_min_pts = pts[np.where(pts[:,1]==MIN_IDX)]#TODO MIGHT CONTAIN ERROR
+            y_max_pts = pts[np.where(pts[:,1]==MAX_IDX)]
+            # projecting onto the bounds
+            y_min_pts = (y_min_pts + 0.5) * (self.xyz_L / 2**k) + self.xyz_min
+            y_max_pts = (y_max_pts + 0.5) * (self.xyz_L / 2**k) + self.xyz_min
+            y_min_pts[:, 1] = self.xyz_min[1]
+            y_max_pts[:, 1] = self.xyz_min[1] + self.xyz_L[1]
+            boundary.append(y_min_pts)
+            boundary.append(y_max_pts)
+            ## z = const plane
+            z_min_pts = pts[np.where(pts[:,2]==MIN_IDX)]#TODO MIGHT CONTAIN ERROR
+            z_max_pts = pts[np.where(pts[:,2]==MAX_IDX)]
+            # projecting onto the bounds
+            z_min_pts = (z_min_pts + 0.5) * (self.xyz_L / 2**k) + self.xyz_min
+            z_max_pts = (z_max_pts + 0.5) * (self.xyz_L / 2**k) + self.xyz_min
+            z_min_pts[:, 2] = self.xyz_min[2]
+            z_max_pts[:, 2] = self.xyz_min[2] + self.xyz_L[2]
+            boundary.append(z_min_pts)
+            boundary.append(z_max_pts)
+
+        bulk = np.concatenate(bulk)
+        boundary = np.concatenate(boundary)
+
+        # get number of non-boundary points to return
+        nb_bulk_points = len(bulk)
+        nb_boundary_points = len(boundary)
+        print("number of bulk points: ", nb_bulk_points)
+        print("number of boundary points: ", nb_boundary_points)
+
         # Return a numpy array of points
-        return np.concatenate(points)
+        return (np.concatenate((boundary, bulk)), nb_boundary_points)
 
     # def map_data_sparse(self, data):
     #     """
@@ -181,13 +226,13 @@ class Haar():
     #     """
     #     data_mapped = np.zeros((Is_unique.shape[0],) + data.shape[1:], dtype=data.dtype)
     #     data        = data[order]
-    # 
+    #
     #     for i in numba.prange(data.shape[0]):
     #         data_mapped[Is_omap[i]] = data_mapped[Is_omap[i]] + data[i]
-    # 
+    #
     #     for i in numba.prange(data_mapped.shape[0]):
-    #         data_mapped[i] = data_mapped[i] / Is_count[i] 
-    #         
+    #         data_mapped[i] = data_mapped[i] / Is_count[i]
+    #
     #     return data_mapped
 
 
@@ -445,12 +490,12 @@ class Haar():
             P = 8*p
             # Get the cube triple index
             i0 = ids_down[P  ][0], ids_down[P  ][1], ids_down[P  ][2]
-            i1 = ids_down[P+1][0], ids_down[P+1][1], ids_down[P+1][2] 
-            i2 = ids_down[P+2][0], ids_down[P+2][1], ids_down[P+2][2] 
-            i3 = ids_down[P+3][0], ids_down[P+3][1], ids_down[P+3][2] 
-            i4 = ids_down[P+4][0], ids_down[P+4][1], ids_down[P+4][2] 
-            i5 = ids_down[P+5][0], ids_down[P+5][1], ids_down[P+5][2] 
-            i6 = ids_down[P+6][0], ids_down[P+6][1], ids_down[P+6][2] 
+            i1 = ids_down[P+1][0], ids_down[P+1][1], ids_down[P+1][2]
+            i2 = ids_down[P+2][0], ids_down[P+2][1], ids_down[P+2][2]
+            i3 = ids_down[P+3][0], ids_down[P+3][1], ids_down[P+3][2]
+            i4 = ids_down[P+4][0], ids_down[P+4][1], ids_down[P+4][2]
+            i5 = ids_down[P+5][0], ids_down[P+5][1], ids_down[P+5][2]
+            i6 = ids_down[P+6][0], ids_down[P+6][1], ids_down[P+6][2]
             i7 = ids_down[P+7][0], ids_down[P+7][1], ids_down[P+7][2]
 
             j = ids[p][0], ids[p][1], ids[p][2]
@@ -463,7 +508,7 @@ class Haar():
             wav[4][j] = 0.125 * (dat[i0] + dat[i1] - dat[i2] - dat[i3] - dat[i4] - dat[i5] + dat[i6] + dat[i7])
             wav[5][j] = 0.125 * (dat[i0] - dat[i1] + dat[i2] - dat[i3] - dat[i4] + dat[i5] - dat[i6] + dat[i7])
             wav[6][j] = 0.125 * (dat[i0] - dat[i1] - dat[i2] + dat[i3] - dat[i4] + dat[i5] + dat[i6] - dat[i7])
-            
+
         return avg, wav
 
 
@@ -492,12 +537,12 @@ class Haar():
             P = 8*p
             # Get the cube triple index
             i0 = ids[P  ][0], ids[P  ][1], ids[P  ][2]
-            i1 = ids[P+1][0], ids[P+1][1], ids[P+1][2] 
-            i2 = ids[P+2][0], ids[P+2][1], ids[P+2][2] 
-            i3 = ids[P+3][0], ids[P+3][1], ids[P+3][2] 
-            i4 = ids[P+4][0], ids[P+4][1], ids[P+4][2] 
-            i5 = ids[P+5][0], ids[P+5][1], ids[P+5][2] 
-            i6 = ids[P+6][0], ids[P+6][1], ids[P+6][2] 
+            i1 = ids[P+1][0], ids[P+1][1], ids[P+1][2]
+            i2 = ids[P+2][0], ids[P+2][1], ids[P+2][2]
+            i3 = ids[P+3][0], ids[P+3][1], ids[P+3][2]
+            i4 = ids[P+4][0], ids[P+4][1], ids[P+4][2]
+            i5 = ids[P+5][0], ids[P+5][1], ids[P+5][2]
+            i6 = ids[P+6][0], ids[P+6][1], ids[P+6][2]
             i7 = ids[P+7][0], ids[P+7][1], ids[P+7][2]
 
             j = ids_up[p][0], ids_up[p][1], ids_up[p][2]
@@ -545,12 +590,12 @@ class Haar():
             P = 8*p
             # Get the cube triple index
             i0 = ids[P  ][0], ids[P  ][1], ids[P  ][2]
-            i1 = ids[P+1][0], ids[P+1][1], ids[P+1][2] 
-            i2 = ids[P+2][0], ids[P+2][1], ids[P+2][2] 
-            i3 = ids[P+3][0], ids[P+3][1], ids[P+3][2] 
-            i4 = ids[P+4][0], ids[P+4][1], ids[P+4][2] 
-            i5 = ids[P+5][0], ids[P+5][1], ids[P+5][2] 
-            i6 = ids[P+6][0], ids[P+6][1], ids[P+6][2] 
+            i1 = ids[P+1][0], ids[P+1][1], ids[P+1][2]
+            i2 = ids[P+2][0], ids[P+2][1], ids[P+2][2]
+            i3 = ids[P+3][0], ids[P+3][1], ids[P+3][2]
+            i4 = ids[P+4][0], ids[P+4][1], ids[P+4][2]
+            i5 = ids[P+5][0], ids[P+5][1], ids[P+5][2]
+            i6 = ids[P+6][0], ids[P+6][1], ids[P+6][2]
             i7 = ids[P+7][0], ids[P+7][1], ids[P+7][2]
 
             j = ids_up[p][0], ids_up[p][1], ids_up[p][2]
@@ -582,7 +627,7 @@ class Haar():
 
             if (np.abs(wav[1][j]) > thres):
                 n += 1
-                app[i0] += wav[1][j]    
+                app[i0] += wav[1][j]
                 app[i1] += wav[1][j]
                 app[i2] -= wav[1][j]
                 app[i3] -= wav[1][j]
@@ -648,7 +693,7 @@ class Haar():
 
         return app, n
 
-    
+
     def wavelet_approx_2(self, averages, wavelets):
         """
         Wavelet approximation of the data.
@@ -702,4 +747,3 @@ class Haar():
 
 
         return approx
-
