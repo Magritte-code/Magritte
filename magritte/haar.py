@@ -159,7 +159,17 @@ class Haar():
         """
         points = []
         bulk = []
-        boundary = []
+        #start with 8 edge points of the cube as boundary
+        boundary = [
+            [self.xyz_min + np.array([0,0,0]) * self.xyz_L],
+            [self.xyz_min + np.array([0,0,1]) * self.xyz_L],
+            [self.xyz_min + np.array([0,1,0]) * self.xyz_L],
+            [self.xyz_min + np.array([0,1,1]) * self.xyz_L],
+            [self.xyz_min + np.array([1,0,0]) * self.xyz_L],
+            [self.xyz_min + np.array([1,0,1]) * self.xyz_L],
+            [self.xyz_min + np.array([1,1,0]) * self.xyz_L],
+            [self.xyz_min + np.array([1,1,1]) * self.xyz_L]]
+
         for k in range(self.q-1):
             pts = np.argwhere(np.sum(wav[k]/avg[k] > threshold, axis=0))
             bulk_pts = (pts + 0.5) * (self.xyz_L / 2**k) + self.xyz_min
