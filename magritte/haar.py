@@ -777,3 +777,107 @@ class Haar():
         haar_positions, nb_boundary = haar.generate_points(data_avg, data_wav, threshold=threshold)
 
         return (haar_positions, nb_boundary)
+
+
+
+def remesh_recursive(positions, data, q=9, threshold= 1e-2):
+    '''
+    Remeshing method by simply comparing the maximal variation of the data.
+    '''
+    new_positions = np.array([])
+    new_positions.resize(len(positions)*2)#should be large enough to contain the new positions
+    remesh_nb_points = 0
+
+    xyz_min = np.min(positions, axis=0)
+    xyz_max = np.max(positions, axis=0)
+
+    get_sum_remesh(positions, data, 0, q, threshold, xyz_min, xyz_max, new_positions, remesh_nb_points)
+
+    #shrink positions to actual ones
+    new_positions.resize(remesh_nb_points)
+
+    #TODO: add boundary points on the 8 points of the encompassing cube AND ALSO on the smaller cube-ish thing?
+    return new_positions#, nb_boundary_points
+
+
+
+def get_sum_remesh(positions, data, depth, max_depth, threshold, min_coord, max_coord, remesh_points, remesh_nb_points):
+    if len(data)==0 or depth==max_depth:
+        print("returning, no data or max depth")
+        return (np.sum(data), len(data))
+
+    delta_coord = (max_coord - min_coord) / 2.0
+    #defining coordinates for sub-boxes
+    def_mincoord = min_coord
+    def_maxcoord = min_coord + delta_coord
+
+    box1_mincoord = def_mincoord + np.array([0,0,0]) * delta_coord
+    box1_maxcoord = def_maxcoord + np.array([0,0,0]) * delta_coord
+    box2_mincoord = def_mincoord + np.array([0,0,1]) * delta_coord
+    box2_maxcoord = def_maxcoord + np.array([0,0,1]) * delta_coord
+    box3_mincoord = def_mincoord + np.array([0,1,0]) * delta_coord
+    box3_maxcoord = def_maxcoord + np.array([0,1,0]) * delta_coord
+    box4_mincoord = def_mincoord + np.array([0,1,1]) * delta_coord
+    box4_maxcoord = def_maxcoord + np.array([0,1,1]) * delta_coord
+    box5_mincoord = def_mincoord + np.array([1,0,0]) * delta_coord
+    box5_maxcoord = def_maxcoord + np.array([1,0,0]) * delta_coord
+    box6_mincoord = def_mincoord + np.array([1,0,1]) * delta_coord
+    box6_maxcoord = def_maxcoord + np.array([1,0,1]) * delta_coord
+    box7_mincoord = def_mincoord + np.array([1,1,0]) * delta_coord
+    box7_maxcoord = def_maxcoord + np.array([1,1,0]) * delta_coord
+    box8_mincoord = def_mincoord + np.array([1,1,1]) * delta_coord
+    box8_maxcoord = def_maxcoord + np.array([1,1,1]) * delta_coord
+
+    box1indices   = np.all((positions>=box1_mincoord) & (positions<=box1_maxcoord), axis=1)
+    box1positions = positions[box1indices]
+    box1data      = data[box1indices]
+    print("box 1 data: ", box1data)
+    box1sum, box1N = get_sum_remesh(box1positions, box1data, depth+1, max_depth, threshold, box1_mincoord, box1_maxcoord, remesh_points, remesh_nb_points)
+
+    box2indices   = np.any((positions>=box2_mincoord) & (positions<=box2_maxcoord), axis=1)
+    box2positions = positions[box2indices]
+    box2data      = data[box2indices]
+    box2sum, box2N = get_sum_remesh(box2positions, box2data, depth+1, max_depth, threshold, box2_mincoord, box2_maxcoord, remesh_points, remesh_nb_points)
+
+    box3indices   = np.any((positions>=box3_mincoord) & (positions<=box3_maxcoord), axis=1)
+    box3positions = positions[box3indices]
+    box3data      = data[box3indices]
+    box3sum, box3N = get_sum_remesh(box3positions, box3data, depth+1, max_depth, threshold, box3_mincoord, box3_maxcoord, remesh_points, remesh_nb_points)
+
+    box4indices   = np.any((positions>=box4_mincoord) & (positions<=box4_maxcoord), axis=1)
+    box4positions = positions[box4indices]
+    box4data      = data[box4indices]
+    box4sum, box4N = get_sum_remesh(box4positions, box4data, depth+1, max_depth, threshold, box4_mincoord, box4_maxcoord, remesh_points, remesh_nb_points)
+
+    box5indices   = np.any((positions>=box5_mincoord) & (positions<=box5_maxcoord), axis=1)
+    box5positions = positions[box5indices]
+    box5data      = data[box5indices]
+    box5sum, box5N = get_sum_remesh(box5positions, box5data, depth+1, max_depth, threshold, box5_mincoord, box5_maxcoord, remesh_points, remesh_nb_points)
+
+    box6indices   = np.any((positions>=box6_mincoord) & (positions<=box6_maxcoord), axis=1)
+    box6positions = positions[box6indices]
+    box6data      = data[box6indices]
+    box6sum, box6N = get_sum_remesh(box6positions, box6data, depth+1, max_depth, threshold, box6_mincoord, box6_maxcoord, remesh_points, remesh_nb_points)
+
+    box7indices   = np.any((positions>=box7_mincoord) & (positions<=box7_maxcoord), axis=1)
+    box7positions = positions[box7indices]
+    box7data      = data[box7indices]
+    box7sum, box7N = get_sum_remesh(box7positions, box7data, depth+1, max_depth, threshold, box7_mincoord, box7_maxcoord, remesh_points, remesh_nb_points)
+
+    box8indices   = np.any((positions>=box8_mincoord) & (positions<=box8_maxcoord), axis=1)
+    box8positions = positions[box8indices]
+    box8data      = data[box8indices]
+    box8sum, box8N = get_sum_remesh(box8positions, box8data, depth+1, max_depth, threshold, box8_mincoord, box8_maxcoord, remesh_points, remesh_nb_points)
+
+    print(data)
+    totN = box1N+box2N+box3N+box4N+box5N+box6N+box7N+box8N
+    print("totN: ", totN)
+    mean = (box1sum+box2sum+box3sum+box4sum+box5sum+box6sum+box7sum+box8sum)/totN
+    print("mean: ", mean)
+    variance = (box1sum**2/box1N+box2sum**2/box2N+box3sum**2/box3N+box4sum**2/box4N+box5sum**2/box5N+box6sum**2/box6N+box7sum**2/box7N+box8sum**2/box8N)/totN
+    stddev = np.sqrt(variance)
+
+    #add boxes to remeshed list if variance is deemed important enough/for now, I just add the current point
+    if (stddev/mean > threshold):
+        remesh_points[i] = def_maxcoord#coordinate of middle point
+        remesh_nb_points+=1
