@@ -778,32 +778,222 @@ class Haar():
 
         return (haar_positions, nb_boundary)
 
+import time
 
-
-def remesh_recursive(positions, data, q=9, threshold= 1e-2):
+def remesh_recursive(positions, data, q=9, threshold= 1e-2, hullorder = 3):
     '''
     Remeshing method by simply comparing the maximal variation of the data.
     '''
-    new_positions = np.zeros((8*len(positions), 3))
-    # new_positions.resize(len(positions)*2)#should be large enough to contain the new positions
+
+    # division_order = 1#TODO: improve script such that this can be better/automatically parallelized
+    # unidir_splits = 2**division_order
+    # n_threads = 8**division_order#should be power of 8, as we divide the domain into 8 equal pieces # == unidir_splits**3
+
+
+    # temp_positions = np.zeros((n_threads, 8*len(positions), 3))
+    # bdy_positions = np.zeros((8*len(positions), 3))#also allocate way too large size for bdy positions
+    new_positions = np.zeros((8*len(positions), 3))#should be large enough to contain the new positions
     remesh_nb_points = 0
+    # print("remesh: ", remesh_nb_points)
+    # bdy_nb_points = 0
 
     xyz_min = np.min(positions, axis=0)
     xyz_max = np.max(positions, axis=0)
 
-    _,_,remesh_nb_points = get_mean_remesh(positions, data, 0, q, threshold, xyz_min, xyz_max, new_positions, remesh_nb_points)
+    # xyzsplits = np.linspace(xyz_min, xyz_max, unidir_splits, endpoint=False)
+    # splitids = np.arange(unidir_splits)
+    # xyzdelta = (xyz_max - xyz_min) / unidir_splits
+    #
+    # print(xyzsplits)
+    #
+    # xsplits = xyzsplits[:,0]
+    # ysplits = xyzsplits[:,1]
+    # zsplits = xyzsplits[:,2]
+    #
+    #
+    #
+    # for xid in numba.prange(unidir_splits):
+    #     for yid in numba.prange(unidir_splits):
+    #         for zid in numba.prange(unidir_splits):
+    #             tid = unidir_splits**2*xid+unidir_splits*yid+zid
+    #             box_mincoord = np.array([xsplits[xid], ysplits[yid], zsplits[zid]])
+    #             box_maxcoord = np.array([xsplits[xid], ysplits[yid], zsplits[zid]]) + xyzdelta
+    #             boxindices   = np.sum((positions>=box_mincoord) & (positions<=box_maxcoord), axis=1) == 3
+    #             # print(box1indices)
+    #             boxpositions = positions[boxindices,:]
+    #             boxdata      = data[boxindices]
+    #             print(box_mincoord)
+    #             print(box_maxcoord)
+    #             _,_,remesh_nb_points[tid] = get_mean_remesh(boxpositions, boxdata, division_order, q, threshold, box_mincoord, box_maxcoord, temp_positions[tid,:,:], remesh_nb_points[tid])
+    #
+    #             # new_positions[tid,:,:].resize((remesh_nb_points[tid],3))
+    #
+    # #lazy concatenating is probably the simplest option
+    # new_positions = np.zeros((0,3))
+    # # print(new_positions.shape)
+    # # print(remesh_nb_points)
+    # for thread in range(n_threads):
+    #     # print(remesh_nb_points[thread])
+    #     # print(temp_positions[thread, 0:remesh_nb_points[thread], :])
+    #     slice = temp_positions[thread, 0:remesh_nb_points[thread], :]
+    #     # print(slice.shape)s
+    #     new_positions = np.concatenate((new_positions, slice), axis=0)
+    # sum_remesh_nb_points = np.sum(remesh_nb_points)
+    # # new_positions = new_positions.reshape(sum_remesh_nb_points, 3)
+    #
+    # print(new_positions)
 
-    print("new positions size: ", remesh_nb_points)
-    #shrink positions to actual ones
+    _,_,remesh_nb_points = get_mean_remesh(positions, data, 0, q, threshold, xyz_min, xyz_max, new_positions, remesh_nb_points)
+    print("new interior points: ", remesh_nb_points)
+    # #shrink positions to actual ones
     new_positions.resize((remesh_nb_points,3))
 
+    hull = create_cubic_uniform_hull(xyz_min, xyz_max, order=hullorder)
+    nb_boundary = hull.shape[0]
+    print("number boundary points: ", nb_boundary)
+    new_positions = np.concatenate((hull, new_positions), axis = 0)
+
     #TODO: add boundary points on the 8 points of the encompassing cube AND ALSO on the smaller cube-ish thing?
-    return new_positions#, nb_boundary_points
+
+    # (new_positions, nb_boundary) = remesh_recursive_numba(positions, data, xyz_min, xyz_max, q=9, threshold=threshold, hullorder=hullorder)
+    return (new_positions, nb_boundary)#, nb_boundary_points
+
+# # @numba.njit(parallel=True)
+# def remesh_recursive_numba(positions, data, xyz_min, xyz_max, q=9, threshold= 1e-2, hullorder = 3):
+#     division_order = 1#TODO: improve script such that this can be better/automatically parallelized
+#     unidir_splits = 2**division_order
+#     n_threads = 8**division_order#should be power of 8, as we divide the domain into 8 equal pieces # == unidir_splits**3
+#
+#     print("temp_positions")
+#
+#     temp_positions = np.zeros((len(positions)*n_threads, 3))
+#     # bdy_positions = np.zeros((8*len(positions), 3))#also allocate way too large size for bdy positions
+#     # new_positions.resize(len(positions)*2)#should be large enough to contain the new positions
+#     # remesh_nb_points = np.zeros((n_threads), dtype=int)
+#     #separating the starting positions of the flattened array
+#     start_indices = np.arange(n_threads)*len(positions)
+#     remesh_nb_points = np.arange(n_threads)*len(positions)
+#     print("remesh: ", remesh_nb_points)
+#     # bdy_nb_points = 0
+#
+#     # xyz_min = np.min(positions, axis=0)
+#     # xyz_max = np.max(positions, axis=0)
+#
+#     # xyzsplits = np.linspace(xyz_min, xyz_max, unidir_splits, endpoint=False)
+#     xsplits = np.linspace(xyz_min[0], xyz_max[0], unidir_splits+1)[:-1]
+#     ysplits = np.linspace(xyz_min[1], xyz_max[1], unidir_splits+1)[:-1]
+#     zsplits = np.linspace(xyz_min[2], xyz_max[2], unidir_splits+1)[:-1]
+#     splitids = np.arange(unidir_splits)
+#     xyzdelta = (xyz_max - xyz_min) / unidir_splits
+#
+#     print("xsplits: ", xsplits)
+#     #
+#     # xsplits = xyzsplits[:,0]
+#     # ysplits = xyzsplits[:,1]
+#     # zsplits = xyzsplits[:,2]
+#
+#
+#
+#     for xid in numba.prange(unidir_splits):
+#     # for xid in numba.prange(unidir_splits):
+#         for yid in numba.prange(unidir_splits):
+#         # for yid in numba.prange(unidir_splits):
+#             for zid in numba.prange(unidir_splits):
+#             # for zid in numba.prange(unidir_splits):
+#                 tid = unidir_splits**2*xid+unidir_splits*yid+zid
+#                 box_mincoord = np.array([xsplits[xid], ysplits[yid], zsplits[zid]])
+#                 box_maxcoord = np.array([xsplits[xid], ysplits[yid], zsplits[zid]]) + xyzdelta
+#                 boxindices   = np.sum((positions>=box_mincoord) & (positions<=box_maxcoord), axis=1) == 3
+#                 # print(box1indices)
+#                 boxpositions = positions[boxindices,:]
+#                 boxdata      = data[boxindices]
+#                 # print(box_mincoord)
+#                 # print(box_maxcoord)
+#                 _,_,remesh_nb_points[tid] = get_mean_remesh(boxpositions, boxdata, division_order, q, threshold, box_mincoord, box_maxcoord, temp_positions, remesh_nb_points[tid])
+#
+#                 # new_positions[tid,:,:].resize((remesh_nb_points[tid],3))
+#
+#     #lazy concatenating is probably the simplest option
+#     new_positions = np.zeros((0,3))
+#
+#     print("newpositions")
+#     # print(new_positions.shape)
+#     # print(remesh_nb_points)
+#     for thread in range(n_threads):
+#         # print(remesh_nb_points[thread])
+#         # print(temp_positions[thread, 0:remesh_nb_points[thread], :])
+#         print("start: ", start_indices[thread])
+#         print("end: ", remesh_nb_points[thread])
+#         slice = temp_positions[start_indices[thread]:remesh_nb_points[thread], :]
+#         # print(slice.shape)s
+#         new_positions = np.concatenate((new_positions, slice), axis=0)
+#     sum_remesh_nb_points = np.sum(remesh_nb_points)
+#     # new_positions = new_positions.reshape(sum_remesh_nb_points, 3)
+#
+#     print(new_positions)
+#
+#     # print("new interior points: ", remesh_nb_points)
+#     # #shrink positions to actual ones
+#     # new_positions.resize((remesh_nb_points,3))
+#
+#     hull = create_cubic_uniform_hull(xyz_min, xyz_max, order=hullorder)
+#     nb_boundary = hull.shape[0]
+#     print("number boundary points: ", nb_boundary)
+#     new_positions = np.concatenate((hull, new_positions), axis = 0)
+#
+#     #TODO: add boundary points on the 8 points of the encompassing cube AND ALSO on the smaller cube-ish thing?
+#     return (new_positions, nb_boundary)#, nb_boundary_points
+
+@numba.njit(cache=True)
+def create_cubic_uniform_hull(xyz_min, xyz_max, order=3):
+    # hull = np.zeros((1000, 3))#TODO: actually fill in correct value
+    nx, ny, nz = (2**order+1, 2**order+1, 2**order+1)
+    x_vector = np.linspace(xyz_min[0], xyz_max[0], nx)
+    y_vector = np.linspace(xyz_min[1], xyz_max[1], ny)
+    z_vector = np.linspace(xyz_min[2], xyz_max[2], nz)
+
+    #x plane does not yet intersect with other planes
+    xmin_plane = grid3D(np.array([xyz_min[0]]), y_vector, z_vector)
+    xmax_plane = grid3D(np.array([xyz_max[0]]), y_vector, z_vector)
+
+    #y plane intersects with x plane, so using reduced vectors for x coordinate
+    ymin_plane = grid3D(x_vector[1:nx-1], np.array([xyz_min[1]]), z_vector)
+    ymax_plane = grid3D(x_vector[1:nx-1], np.array([xyz_max[1]]), z_vector)
+
+    #z plane also intersects with x plane
+    zmin_plane = grid3D(x_vector[1:nx-1], y_vector[1:ny-1], np.array([xyz_min[2]]))
+    zmax_plane = grid3D(x_vector[1:nx-1], y_vector[1:ny-1], np.array([xyz_max[2]]))
+
+    #At the edges, the hull will contain duplicate points. These need to be removed
+    # hull = np.unique(np.concatenate((xmin_plane, xmax_plane, ymin_plane, ymax_plane, zmin_plane, zmax_plane), axis = 0), axis = 0)
+    hull = np.concatenate((xmin_plane, xmax_plane, ymin_plane, ymax_plane, zmin_plane, zmax_plane), axis = 0)
+
+    # print(hull)
+    return hull
+
+@numba.njit(cache=True)
+def grid3D(x, y, z):
+    xyz = np.empty(shape=(x.size*y.size*z.size, 3))
+    idx = 0
+    for k in range(x.size):
+        for j in range(y.size):
+            for i in range(z.size):
+                xyz[idx] = [x[k], y[j], z[i]]
+                idx+=1
+    return xyz
 
 
 # @numba.jit()
-@numba.njit(cache=True) #if I rewrite the .all stuff with sum < 3
+# @numba.njit(cache=True, fastmath=True) #if I rewrite the .all stuff with sum < 3
+# @numba.njit(cache=True, parallel=False)
+@numba.njit(cache=True)
 def get_mean_remesh(positions, data, depth, max_depth, threshold, min_coord, max_coord, remesh_points, remesh_nb_points):
+    '''
+    TODO EXPLAIN EVERY VARIABLE
+    bdy_... denotes whether to add a boundary on (when adding points)
+    '''
+
+    # print("here0")
     if len(data)==0:
         # print("returning, no data")
         return (0, 0, remesh_nb_points)
@@ -835,6 +1025,7 @@ def get_mean_remesh(positions, data, depth, max_depth, threshold, min_coord, max
     box7_maxcoord = def_maxcoord + np.array([1,1,0]) * delta_coord
     box8_mincoord = def_mincoord + np.array([1,1,1]) * delta_coord
     box8_maxcoord = def_maxcoord + np.array([1,1,1]) * delta_coord
+    # print("here")
 
     # box1indices   = np.all((positions>=box1_mincoord) & (positions<=box1_maxcoord), axis=1)
     box1indices   = np.sum((positions>=box1_mincoord) & (positions<=box1_maxcoord), axis=1) == 3
@@ -911,8 +1102,9 @@ def get_mean_remesh(positions, data, depth, max_depth, threshold, min_coord, max
     # sum = (box1mean*box1N + box2mean*box2N + box3mean*box3N + box4mean*box4N + box5mean*box5N + box6mean*box6N + box7mean*box7N + box8mean*box8N)
     # print("sum: ", sum)
     # print("mean: ", mean)
+    #Note: variance might be the wrong word: this is actually the variance if we replace the values in each box by their average
     variance = (box1mean**2*box1N+box2mean**2*box2N+box3mean**2*box3N+box4mean**2*box4N+box5mean**2*box5N+box6mean**2*box6N+box7mean**2*box7N+box8mean**2*box8N)/totN - mean**2
-    stddev = np.sqrt(variance)
+    stddev = np.sqrt(variance)#err, this is not correct in the slightest; give variance another name; units stddev are correct though
     # print("stddev: ", stddev)
 
     #add boxes to remeshed list if variance is deemed important enough/for now, I just add the current point
@@ -929,5 +1121,40 @@ def get_mean_remesh(positions, data, depth, max_depth, threshold, min_coord, max
         remesh_points[remesh_nb_points+7, :] = (box8_mincoord + box8_maxcoord) / 2.0
         remesh_nb_points+=8
         # print("adding points to array")
+
+
+    # this is an attempt at using decently defined quantities, instead of some undefined variance; this does not seem to work
+    # if (np.abs(box1mean-mean)/mean > threshold):
+    #     remesh_points[remesh_nb_points, :] = (box1_mincoord + box1_maxcoord) / 2.0
+    #     remesh_nb_points+=1
+    #
+    # if (np.abs(box2mean-mean)/mean > threshold):
+    #     remesh_points[remesh_nb_points, :] = (box2_mincoord + box2_maxcoord) / 2.0
+    #     remesh_nb_points+=1
+    #
+    # if (np.abs(box3mean-mean)/mean > threshold):
+    #     remesh_points[remesh_nb_points, :] = (box3_mincoord + box3_maxcoord) / 2.0
+    #     remesh_nb_points+=1
+    #
+    # if (np.abs(box4mean-mean)/mean > threshold):
+    #     remesh_points[remesh_nb_points, :] = (box4_mincoord + box4_maxcoord) / 2.0
+    #     remesh_nb_points+=1
+    #
+    # if (np.abs(box5mean-mean)/mean > threshold):
+    #     remesh_points[remesh_nb_points, :] = (box5_mincoord + box5_maxcoord) / 2.0
+    #     remesh_nb_points+=1
+    #
+    # if (np.abs(box6mean-mean)/mean > threshold):
+    #     remesh_points[remesh_nb_points, :] = (box6_mincoord + box6_maxcoord) / 2.0
+    #     remesh_nb_points+=1
+    #
+    # if (np.abs(box7mean-mean)/mean > threshold):
+    #     remesh_points[remesh_nb_points, :] = (box7_mincoord + box7_maxcoord) / 2.0
+    #     remesh_nb_points+=1
+    #
+    # if (np.abs(box8mean-mean)/mean > threshold):
+    #     remesh_points[remesh_nb_points, :] = (box8_mincoord + box8_maxcoord) / 2.0
+    #     remesh_nb_points+=1
+
 
     return (mean, totN, remesh_nb_points)
