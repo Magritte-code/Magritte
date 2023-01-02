@@ -843,7 +843,8 @@ def remesh_recursive(positions, data, q=9, threshold= 1e-2, hullorder = 3):
     #
     # print(new_positions)
 
-    _,_,remesh_nb_points = get_mean_remesh(positions, data, 0, q, threshold, xyz_min, xyz_max, new_positions, remesh_nb_points)
+    # _,_,remesh_nb_points = get_mean_remesh(positions, data, 0, q, threshold, xyz_min, xyz_max, new_positions, remesh_nb_points)
+    remesh_nb_points = get_mean_remesh_ver2(positions, data, 0, q, threshold, xyz_min, xyz_max, new_positions, remesh_nb_points)
     print("new interior points: ", remesh_nb_points)
     # #shrink positions to actual ones
     new_positions.resize((remesh_nb_points,3))
@@ -1158,3 +1159,124 @@ def get_mean_remesh(positions, data, depth, max_depth, threshold, min_coord, max
 
 
     return (mean, totN, remesh_nb_points)
+
+
+
+
+@numba.njit(cache=True)
+def get_mean_remesh_ver2(positions, data, depth, max_depth, threshold, min_coord, max_coord, remesh_points, remesh_nb_points):
+    '''
+    Uses recursion (uses all data to determine whether to recurse on a smaller scale)
+    '''
+
+    if len(data)<=1 or depth==max_depth:
+        #add this point to the list
+        remesh_points[remesh_nb_points, :] = (min_coord + max_coord) / 2.0
+        remesh_nb_points+=1
+        return remesh_nb_points
+
+    minval, maxval, meanval = np.min(data), np.max(data), np.mean(data)
+    # print(maxval, minval, meanval)
+
+    if (maxval-minval)<threshold*meanval:
+        #add this point to the list
+        remesh_points[remesh_nb_points, :] = (min_coord + max_coord) / 2.0
+        remesh_nb_points+=1
+        return remesh_nb_points
+
+    else:
+        #go and do some more recursive investigation
+        delta_coord = (max_coord - min_coord) / 2.0
+        #defining coordinates for sub-boxes
+        def_mincoord = min_coord
+        def_maxcoord = min_coord + delta_coord
+        #TODO: use max by starting from true maximum (otherwise rounding errors!)
+
+        box1_mincoord = def_mincoord + np.array([0,0,0]) * delta_coord
+        box1_maxcoord = def_maxcoord + np.array([0,0,0]) * delta_coord
+        box2_mincoord = def_mincoord + np.array([0,0,1]) * delta_coord
+        box2_maxcoord = def_maxcoord + np.array([0,0,1]) * delta_coord
+        box3_mincoord = def_mincoord + np.array([0,1,0]) * delta_coord
+        box3_maxcoord = def_maxcoord + np.array([0,1,0]) * delta_coord
+        box4_mincoord = def_mincoord + np.array([0,1,1]) * delta_coord
+        box4_maxcoord = def_maxcoord + np.array([0,1,1]) * delta_coord
+        box5_mincoord = def_mincoord + np.array([1,0,0]) * delta_coord
+        box5_maxcoord = def_maxcoord + np.array([1,0,0]) * delta_coord
+        box6_mincoord = def_mincoord + np.array([1,0,1]) * delta_coord
+        box6_maxcoord = def_maxcoord + np.array([1,0,1]) * delta_coord
+        box7_mincoord = def_mincoord + np.array([1,1,0]) * delta_coord
+        box7_maxcoord = def_maxcoord + np.array([1,1,0]) * delta_coord
+        box8_mincoord = def_mincoord + np.array([1,1,1]) * delta_coord
+        box8_maxcoord = def_maxcoord + np.array([1,1,1]) * delta_coord
+        # print("here")
+
+        # box1indices   = np.all((positions>=box1_mincoord) & (positions<=box1_maxcoord), axis=1)
+        box1indices   = np.sum((positions>=box1_mincoord) & (positions<=box1_maxcoord), axis=1) == 3
+        # print(box1indices)
+        box1positions = positions[box1indices,:]
+        box1data      = data[box1indices]
+        # print("box1: ", box1positions)
+        # print("box 1 data: ", box1data)
+        remesh_nb_points = get_mean_remesh_ver2(box1positions, box1data, depth+1, max_depth, threshold, box1_mincoord, box1_maxcoord, remesh_points, remesh_nb_points)
+
+        # box2indices   = np.all((positions>=box2_mincoord) & (positions<=box2_maxcoord), axis=1)/
+        box2indices   = np.sum((positions>=box2_mincoord) & (positions<=box2_maxcoord), axis=1) == 3
+        # print("2min: ", box2_mincoord)
+        # print("2max: ", box2_maxcoord)
+        box2positions = positions[box2indices,:]
+        box2data      = data[box2indices]
+        # print(box2indices)
+        # print("box2: ", box2positions)
+        # print("box 2 data: ", box2data)
+        remesh_nb_points = get_mean_remesh_ver2(box2positions, box2data, depth+1, max_depth, threshold, box2_mincoord, box2_maxcoord, remesh_points, remesh_nb_points)
+
+        # box3indices   = np.all((positions>=box3_mincoord) & (positions<=box3_maxcoord), axis=1)
+        box3indices   = np.sum((positions>=box3_mincoord) & (positions<=box3_maxcoord), axis=1) == 3
+        box3positions = positions[box3indices,:]
+        box3data      = data[box3indices]
+        # print("box3: ", box3positions)
+        # print("box 3 data: ", box3data)
+        remesh_nb_points = get_mean_remesh_ver2(box3positions, box3data, depth+1, max_depth, threshold, box3_mincoord, box3_maxcoord, remesh_points, remesh_nb_points)
+
+        # box4indices   = np.all((positions>=box4_mincoord) & (positions<=box4_maxcoord), axis=1)
+        box4indices   = np.sum((positions>=box4_mincoord) & (positions<=box4_maxcoord), axis=1) == 3
+        box4positions = positions[box4indices,:]
+        box4data      = data[box4indices]
+        # print("box4: ", box4positions)
+        # print("box 4 data: ", box4data)
+        remesh_nb_points = get_mean_remesh_ver2(box4positions, box4data, depth+1, max_depth, threshold, box4_mincoord, box4_maxcoord, remesh_points, remesh_nb_points)
+
+        # box5indices   = np.all((positions>=box5_mincoord) & (positions<=box5_maxcoord), axis=1)
+        box5indices   = np.sum((positions>=box5_mincoord) & (positions<=box5_maxcoord), axis=1) == 3
+        box5positions = positions[box5indices,:]
+        box5data      = data[box5indices]
+        # print("box5: ", box5positions)
+        # print("box 5 data: ", box5data)
+        remesh_nb_points = get_mean_remesh_ver2(box5positions, box5data, depth+1, max_depth, threshold, box5_mincoord, box5_maxcoord, remesh_points, remesh_nb_points)
+
+        # box6indices   = np.all((positions>=box6_mincoord) & (positions<=box6_maxcoord), axis=1)
+        box6indices   = np.sum((positions>=box6_mincoord) & (positions<=box6_maxcoord), axis=1) == 3
+        box6positions = positions[box6indices,:]
+        box6data      = data[box6indices]
+        # print("box6: ", box6positions)
+        # print("box 6 data: ", box6data)
+        remesh_nb_points = get_mean_remesh_ver2(box6positions, box6data, depth+1, max_depth, threshold, box6_mincoord, box6_maxcoord, remesh_points, remesh_nb_points)
+
+        # box7indices   = np.all((positions>=box7_mincoord) & (positions<=box7_maxcoord), axis=1)
+        box7indices   = np.sum((positions>=box7_mincoord) & (positions<=box7_maxcoord), axis=1) == 3
+        box7positions = positions[box7indices,:]
+        box7data      = data[box7indices]
+        # print("box7: ", box7positions)
+        # print("box 7 data: ", box7data)
+        remesh_nb_points = get_mean_remesh_ver2(box7positions, box7data, depth+1, max_depth, threshold, box7_mincoord, box7_maxcoord, remesh_points, remesh_nb_points)
+
+        # box8indices   = np.all((positions>=box8_mincoord) & (positions<=box8_maxcoord), axis=1)
+        box8indices   = np.sum((positions>=box8_mincoord) & (positions<=box8_maxcoord), axis=1) == 3
+        box8positions = positions[box8indices,:]
+        box8data      = data[box8indices]
+        # print("box8: ", box8positions)
+        # print("box 8 data: ", box8data)
+        remesh_nb_points = get_mean_remesh_ver2(box8positions, box8data, depth+1, max_depth, threshold, box8_mincoord, box8_maxcoord, remesh_points, remesh_nb_points)
+
+
+    return remesh_nb_points
