@@ -11,24 +11,24 @@ jobs:
       matrix:
         include:
           - os: macos-latest
-            PACKAGE_MANAGER: brew
-            INSTALL_COMMAND: install
-            DEPENDENCIES: gmsh #llvm libomp
             C-COMPILER: gcc-11
             CXX-COMPILER: g++-11
           - os: ubuntu-latest
-            PACKAGE_MANAGER: sudo apt-get
-            INSTALL_COMMAND: install -y
-            DEPENDENCIES: gmsh libegl1
             C-COMPILER: gcc
             CXX-COMPILER: g++
     defaults:
       run:
         shell: bash -l {0} #necessary for conda
     steps:
-      - run: ${{matrix.PACKAGE_MANAGER}} update
-      - name: install dependencies
-        run: ${{matrix.PACKAGE_MANAGER}} ${{matrix.INSTALL_COMMAND}} ${{matrix.DEPENDENCIES}}
+      - name: (linux) install libegl1
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libegl1
+      - name: install gmsh
+        run: |
+          bash ./dependencies/get_gmsh.sh
+          export PATH=${pwd}/gmsh/bin/:${PATH}
 
       - name: (temporary fix) set xcode version to latest  #due to xcode 14.0 being bugged, some issue with the linker exists when compiling
         if: matrix.os == 'macos-latest'
