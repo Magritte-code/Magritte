@@ -78,10 +78,11 @@ jobs:
       - name: install gmsh
         run: |
           bash ./dependencies/get_gmsh.sh
-          export PATH=${pwd}/gmsh/bin/:${PATH}
+          export PATH=${pwd}/dependencies/gmsh/bin/:${PATH}
+        #err, relies a bit too much on absolute path for which the script install gmsh
 
       - name: setup python
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v4
 
       # retrying setting up conda: 3 tries, with 5 seconds wait inbetween
       - name: Install conda packages (try 1)
