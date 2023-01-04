@@ -25,10 +25,6 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y libegl1
-      - name: install gmsh
-        run: |
-          bash ./dependencies/get_gmsh.sh
-          export PATH=${pwd}/gmsh/bin/:${PATH}
 
       - name: (temporary fix) set xcode version to latest  #due to xcode 14.0 being bugged, some issue with the linker exists when compiling
         if: matrix.os == 'macos-latest'
@@ -61,6 +57,10 @@ jobs:
         with: #no ref: thus checks out commit which triggered workflow
           submodules: true
       # end retrying checkout
+      - name: install gmsh
+        run: |
+          bash ./dependencies/get_gmsh.sh
+          export PATH=${pwd}/gmsh/bin/:${PATH}
 
       - name: setup python
         uses: actions/setup-python@v3
