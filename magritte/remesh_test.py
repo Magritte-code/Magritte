@@ -21,7 +21,7 @@ data = np.linalg.norm(rand_pos, axis=1)
 # data = np.ones(10)
 print(rand_pos)
 time_rec_start = time.time()
-remeshed_positions_rec, nb_boundary = remesh_recursive(rand_pos, data, q = 20, threshold = 4e-1, hullorder = 2)
+remeshed_positions_rec, nb_boundary = remesh_recursive(rand_pos, data, q = 20, threshold = 2e-1, hullorder = 2)
 time_rec_end = time.time()
 print(remeshed_positions_rec)
 
