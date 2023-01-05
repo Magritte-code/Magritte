@@ -62,7 +62,8 @@ jobs:
           bash ./dependencies/get_gmsh.sh
           echo "$GITHUB_WORKSPACE/dependencies/gmsh/bin/" >> $GITHUB_PATH
           echo $GITHUB_WORKSPACE
-          echo $GITHUB_PATH
+          ls $GITHUB_WORKSPACE/dependencies/gmsh
+          ls $GITHUB_WORKSPACE/dependencies/gmsh/bin
           gmsh --version
         #err, relies a bit too much on absolute path for which the script install gmsh
 
