@@ -62,12 +62,9 @@ jobs:
         run: |
           bash ./dependencies/get_gmsh.sh
           echo "$GITHUB_WORKSPACE/dependencies/gmsh/bin/" >> $GITHUB_PATH
-          echo $GITHUB_WORKSPACE
-          echo "$GITHUB_WORKSPACE/dependencies/gmsh/bin/"
-          ls $GITHUB_WORKSPACE/dependencies/gmsh
-          ls $GITHUB_WORKSPACE/dependencies/gmsh/bin
         #err, relies a bit too much on absolute path for which the script install gmsh
-      - run: gmsh --version
+      - name: gmsh version
+        run: gmsh --version
 
       - name: setup python
         uses: actions/setup-python@v4
