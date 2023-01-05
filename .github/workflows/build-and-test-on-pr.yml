@@ -59,7 +59,7 @@ jobs:
       # end retrying checkout
       - name: install gmsh
         run: |
-          bash ./depdendencies/get_gmsh.sh
+          bash ./dependencies/get_gmsh.sh
           echo "$GITHUB_WORKSPACE/dependencies/gmsh/bin/" >> $GITHUB_PATH
           gmsh --version
         #err, relies a bit too much on absolute path for which the script install gmsh
