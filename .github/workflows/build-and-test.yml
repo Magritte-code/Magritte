@@ -42,7 +42,8 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libegl1
+          sudo apt-get install -y libegl1 libglu1-mesa
+      #I think these dependencies are all required for gmsh; TODO: remove them after I remove gmsh
 
       - name: (temporary fix) set xcode version to latest  #due to xcode 14.0 being bugged, some issue with the linker exists when compiling
         if: matrix.os == 'macos-latest'
