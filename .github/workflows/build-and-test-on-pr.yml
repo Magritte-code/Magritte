@@ -60,7 +60,7 @@ jobs:
       - name: install gmsh
         run: |
           bash get_gmsh.sh
-          echo "${pwd}/gmsh/bin/" >> $GITHUB_PATH
+          echo "${PWD}/gmsh/bin/" >> $GITHUB_PATH
           gmsh --version
         working-directory: dependencies
         #err, relies a bit too much on absolute path for which the script install gmsh
