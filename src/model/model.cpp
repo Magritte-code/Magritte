@@ -651,6 +651,7 @@ int Model :: compute_level_populations (
         // if (use_Ng_acceleration && (iteration_normal == 4))
         if (use_ng_acceleration_step)
         {
+            iteration--;//as the ng-acceleration step is way faster than any normal iteration; so counting it in the same way does not make any sense
             std::cout<<"max order: "<<iteration_normal<<" used order: "<<ng_acceleration_order<<std::endl;
             // lines.iteration_using_Ng_acceleration (parameters->pop_prec);
             lines.iteration_using_Ng_acceleration (parameters->pop_prec, ng_acceleration_order);
