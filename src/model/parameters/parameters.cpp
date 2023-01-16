@@ -69,10 +69,9 @@ void Parameters :: read (const Io &io)
     READ_NUMBER (Real, min_rel_pop_for_convergence);
     READ_NUMBER (Real, pop_prec                   );
     READ_NUMBER (Real, min_opacity                );
-    READ_NUMBER (Real, adaptive_Ng_acceleration_mem_limit);
+    READ_NUMBER (Real, Ng_acceleration_mem_limit);
 
     READ_BOOL (bool, store_intensities     );
-    // READ_BOOL (bool, use_Ng_acceleration   );
     READ_BOOL (bool, one_line_approximation);
     READ_BOOL (bool, use_adaptive_Ng_acceleration);
 }
@@ -109,10 +108,9 @@ void Parameters :: write (const Io &io) const
     WRITE_NUMBER (Real, min_rel_pop_for_convergence);
     WRITE_NUMBER (Real, pop_prec                   );
     WRITE_NUMBER (Real, min_opacity                );
-    WRITE_NUMBER (Real, adaptive_Ng_acceleration_mem_limit);
+    WRITE_NUMBER (Real, Ng_acceleration_mem_limit);
 
     WRITE_BOOL (bool, store_intensities     );
-    // WRITE_BOOL (bool, use_Ng_acceleration   );
     WRITE_BOOL (bool, one_line_approximation);
     WRITE_BOOL (bool, use_adaptive_Ng_acceleration);
 }

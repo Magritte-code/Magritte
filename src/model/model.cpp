@@ -521,17 +521,20 @@ int Model :: compute_level_populations_from_stateq ()
     return (0);
 }
 
-//Default ng-acceleration used every 4 iteration steps
-//For testing, I quickly implement the option to vary the number of iteration steps
+//Default ng-acceleration used after every 'parameters->Ng_acceleration_mem_limit' normal iteration steps
 template<>
 std::tuple<bool, Size> Model :: ng_acceleration_criterion <Default>(bool use_Ng_acceleration, Size prior_normal_iterations)
 {
-    // return std::make_tuple((use_Ng_acceleration && (prior_normal_iterations == 4)), 4);
-
-    const Size skip_N_its = parameters->adaptive_Ng_acceleration_remove_N_its;
-    if (prior_normal_iterations == (parameters->adaptive_Ng_acceleration_mem_limit + skip_N_its))
+    //Ng acceleration will not be used if the user does not allow it
+    if (use_Ng_acceleration == false)
     {
-        return std::make_tuple(true , parameters->adaptive_Ng_acceleration_mem_limit);
+        return std::make_tuple(false , 0);
+    }
+
+    const Size skip_N_its = parameters->Ng_acceleration_remove_N_its;
+    if (prior_normal_iterations == (parameters->Ng_acceleration_mem_limit + skip_N_its))
+    {
+        return std::make_tuple(true , parameters->Ng_acceleration_mem_limit);
     }
     return std::make_tuple(false , 0);
 }
@@ -540,7 +543,7 @@ std::tuple<bool, Size> Model :: ng_acceleration_criterion <Default>(bool use_Ng_
 template<>
 std::tuple<bool, Size> Model :: ng_acceleration_criterion <Adaptive>(bool use_Ng_acceleration, Size prior_normal_iterations)
 {
-    const Size skip_N_its = parameters->adaptive_Ng_acceleration_remove_N_its;
+    const Size skip_N_its = parameters->Ng_acceleration_remove_N_its;
     //Ng acceleration will not be used if we have no prior data (or the user does not allow it)
     //For useful acceleration steps, the order needs to be at least 2
     if (use_Ng_acceleration == false || prior_normal_iterations < parameters->adaptive_Ng_acceleration_min_order + skip_N_its)
@@ -548,49 +551,34 @@ std::tuple<bool, Size> Model :: ng_acceleration_criterion <Adaptive>(bool use_Ng
         return std::make_tuple(false, 0);
     }
 
-    //TODO: SAVE this value somewhere and use it here! This version might not be able to test out multiple trials?
-    double sum_fnc_curr = 0.0; //(just grab from computed result)
+    //Computing the current non-converged fraction to decide whether or not to use an early Ng-acceleration step
+    double sum_fnc_curr = 0.0;
     for (int l = 0; l < parameters->nlspecs(); l++)
     {
-        // const double fnc = lines.lineProducingSpecies[l].fraction_not_converged;
-        //TEST: check whether relative_change_mean is a better criterion; max relative change might also be used
-        // const double fnc = lines.lineProducingSpecies[l].relative_change_mean;
         const double fnc = parameters->adaptive_Ng_acceleration_use_max_criterion ? lines.lineProducingSpecies[l].relative_change_max : lines.lineProducingSpecies[l].relative_change_mean;
         sum_fnc_curr += fnc;
     }
 
     //the number of previous iterations to use is bounded by the memory limit
-    // const Size nb_prev_iterations = std::min({parameters->adaptive_Ng_acceleration_mem_limit, prior_normal_iterations});
     const Size nb_prev_iterations = prior_normal_iterations;
-
-    // for (Size order = nb_prev_iterations; order>=parameters->adaptive_Ng_acceleration_min_order; order--)
-    // {
 
     lines.trial_iteration_using_adaptive_Ng_acceleration(parameters->pop_prec, nb_prev_iterations - skip_N_its);
 
-    //Probably also define some ng_acceleration_trial function
-    //see lspec.update_using_acceleration
-    //for all levels, check fraction convergence; if more converged, t
+    //Computing the Ng-accelerated non-converged fraction to decide whether or not to use an early Ng-acceleration step
     double sum_fnc_ng = 0.0;
     for (int l = 0; l < parameters->nlspecs(); l++)
     {
-        // const double fnc = lines.lineProducingSpecies[l].fraction_not_converged;
-        //TEST: check whether relative_change_mean is a better criterion; max relative change might also be used
-        // const double fnc = lines.lineProducingSpecies[l].relative_change_mean;
         const double fnc = parameters->adaptive_Ng_acceleration_use_max_criterion ? lines.lineProducingSpecies[l].relative_change_max : lines.lineProducingSpecies[l].relative_change_mean;
         sum_fnc_ng += fnc;
     }
 
-    std::cout<<"sum_fnc_ng: "<<sum_fnc_ng<<" sum_fnc_curr: "<<sum_fnc_curr<<std::endl;
-    if (sum_fnc_ng<sum_fnc_curr || prior_normal_iterations == (parameters->adaptive_Ng_acceleration_mem_limit + skip_N_its))
+    // std::cout<<"sum_fnc_ng: "<<sum_fnc_ng<<" sum_fnc_curr: "<<sum_fnc_curr<<std::endl;
+    if (sum_fnc_ng<sum_fnc_curr || prior_normal_iterations == (parameters->Ng_acceleration_mem_limit + skip_N_its))
     {
         return std::make_tuple(true , nb_prev_iterations - skip_N_its);
     }
-    // }
 
     return std::make_tuple(false , 0);
-
-    //and then just do the if clause
 }
 
 
