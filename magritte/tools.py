@@ -19,7 +19,7 @@ T_CMB = 2.72548000E+00   # [K] CMB temperature
 def timestamp():
     """
     Returns a time stamp for the current date and time.
-    
+
     Returns
     -------
     out : str
@@ -35,7 +35,7 @@ class Timer ():
     def __init__ (self, name):
         """
         Set a name for the times.
-        
+
         Parameters
         ---
         name : str
@@ -65,7 +65,7 @@ class Timer ():
         return f'timer: {self.name} = {self.total}'
     def get_interval (self):
         """
-        Returns the elapsed time
+        Returns the elapsed time (without formatting)
         """
         return self.total
 
@@ -80,14 +80,14 @@ def relative_error (a,b):
 def LTEpop (linedata, temperature):
     '''
     Returns the LTE level populations give the temperature.
-    
+
     Parameters
     ----------
     linedata : Magritte Linedata object
         Magritte linedata object of the of the relevant species.
     temperature : float
         Temperature for which to evaluate the LTE level populations.
-    
+
     Returns
     -------
     out : array_like
@@ -106,14 +106,14 @@ def LTEpop (linedata, temperature):
 def lineEmissivity (linedata, pop):
     '''
     Returns the line emissivity for each radiative transition.
-    
+
     Parameters
     ----------
     linedata : Magritte Linedata object
         Magritte linedata object of the of the relevant species.
     pop : array_like
         Populations of the levels.
-    
+
     Returns
     -------
     out : array_like
@@ -131,14 +131,14 @@ def lineEmissivity (linedata, pop):
 def lineOpacity (linedata, pop):
     '''
     Returns the line opacity for each radiative transition.
-    
+
     Parameters
     ----------
     linedata : Magritte Linedata object
         Magritte linedata object of the of the relevant species.
     pop : array_like
         Populations of the levels.
-    
+
     Returns
     -------
     out : array_like
@@ -156,14 +156,14 @@ def lineOpacity (linedata, pop):
 def lineSource (linedata, pop):
     '''
     Returns the line source function for each radiative transition.
-    
+
     Parameters
     ----------
     linedata : Magritte Linedata object
         Magritte linedata object of the of the relevant species.
     pop : array_like
         Populations of the levels.
-    
+
     Returns
     -------
     out : array_like
@@ -177,14 +177,14 @@ def lineSource (linedata, pop):
 def planck (temperature, frequency):
     '''
     Planck function for thermal radiation.
-    
+
     Parameters
     ----------
     temperature : float
         Temperature at which to evaluate the intensity.
     frequency : float
         Frequency at which to evaluate the intensity.
-        
+
     Returns
     -------
     out : float
@@ -196,12 +196,12 @@ def planck (temperature, frequency):
 def I_CMB (frequency):
     """
     Intensity of the cosmic microwave background.
-    
+
     Parameters
     ----------
     frequency : float
         Frequency at which to evaluate the intensity.
-        
+
     Returns
     -------
     out : float
@@ -213,7 +213,7 @@ def I_CMB (frequency):
 def dnu (linedata, k, temp, vturb2):
     """
     Spectral line width.
-    
+
     Parameters
     ----------
     linedata : Magritte Linedata object
@@ -224,7 +224,7 @@ def dnu (linedata, k, temp, vturb2):
         Local temperature [K].
     vturb2 : float
         Square of the turbulent velocity as fraction of the speed of light.
-    
+
     Returns
     -------
     out : float
@@ -236,7 +236,7 @@ def dnu (linedata, k, temp, vturb2):
 def profile (linedata, k, temp, vturb2, nu):
     """
     Gaussian line profile function.
-    
+
     Parameters
     ----------
     linedata : Magritte Linedata object
@@ -249,7 +249,7 @@ def profile (linedata, k, temp, vturb2, nu):
         Square of the turbulent velocity as fraction of the speed of light.
     nu : float
         Frequency at which to evaluate the line profile function.
-        
+
     Returns
     -------
     out : float
@@ -274,7 +274,7 @@ def save_fits(
     ):
     """
     Save channel maps of synthetic observation (image) as a fits file.
-    
+
     Parameters
     ----------
     model : object
@@ -292,12 +292,12 @@ def save_fits(
     dpc : float
         Distance of source in parsec.
     coord : str
-        Image centre coordinates. 
+        Image centre coordinates.
     f_rest : float
         Rest frequency of the transition.
     square : bool
         True if square pixels are required.
-    
+
     Returns
     -------
     None
@@ -306,11 +306,11 @@ def save_fits(
     if (len(model.images) < 1):
         print('No images in model.')
         return
-    
+
     # Check if 3D
     if (model.parameters.dimension() != 3):
         raise ValueError('save_fits only works for 3D models. Please use save_fits_1D for 1D models.')
-    
+
     if not filename:
         # Get path of image directory
         im_dir = os.path.dirname(os.path.abspath(model.parameters.model_name())) + '/images/'
@@ -321,11 +321,11 @@ def save_fits(
             print('Created image directory:', im_dir)
         # Define filename
         filename = f"{im_dir}image.fits"
-        
+
     # Remove fits file if it already exists
     if os.path.isfile(filename):
         os.remove(filename)
-    
+
     # Extract image data
     imx = np.array(model.images[image_nr].ImX)
     imy = np.array(model.images[image_nr].ImY)
@@ -333,7 +333,7 @@ def save_fits(
 
     # Extract the number of frequency bins
     nfreqs = model.parameters.nfreqs()
-    
+
     # Set image boundaries
     x_min, x_max = np.min(imx)/zoom, np.max(imx)/zoom
     y_min, y_max = np.min(imy)/zoom, np.max(imy)/zoom
@@ -342,50 +342,50 @@ def save_fits(
     if square:
         pix_size_x = (x_max - x_min) / npix_x
         pix_size_y = (y_max - y_min) / npix_y
-        
+
         if   pix_size_x > pix_size_y:
             y_max *= pix_size_x / pix_size_y
             y_min *= pix_size_x / pix_size_y
-            
+
         elif pix_size_x < pix_size_y:
             x_max *= pix_size_y / pix_size_x
             x_min *= pix_size_y / pix_size_x
-    
+
     # Create image grid values
     xs = np.linspace(x_min, x_max, npix_x)
-    ys = np.linspace(y_min, y_max, npix_y)        
-    
+    ys = np.linspace(y_min, y_max, npix_y)
+
     # Extract the spectral / velocity data
     freqs = np.array(model.radiation.frequencies.nu)[0]
     f_cen = np.mean(freqs)
-    
+
     # If no rest frequency is given,
     # default to cetral frequency in the image.
     if f_rest == 0.0:
         f_rest = f_cen
-    
+
     velos = (freqs - f_rest) / f_rest * constants.c.si.value
     v_cen = (f_cen - f_rest) / f_rest * constants.c.si.value
 
     dpix_x = np.mean(np.diff(xs))
     dpix_y = np.mean(np.diff(ys))
     dvelos = np.diff(velos)
-    
+
     if (np.abs(relative_error(np.max(dvelos), np.min(dvelos))) > 1.0e-9):
         print('WARNING: No regularly spaced frequency bins!')
         dvelo = None
     else:
         dvelo = np.mean(dvelos)
-    
+
     # Interpolate the scattered data to an image (regular grid)
     zs = np.zeros((nfreqs, npix_x, npix_y))
     for f in range(nfreqs):
         # Nearest neighbor interpolate scattered image data
         zs[f] = griddata((imx, imy), imI[:,f], (xs[None,:], ys[:,None]), method=method)
-    
+
     # Convert intensity from J/s/m/m/ster to Jy/pixel
-    zs = zs * dpix_x * dpix_y / ((dpc * units.parsec).si.value)**2 / 1.0e-26    
-            
+    zs = zs * dpix_x * dpix_y / ((dpc * units.parsec).si.value)**2 / 1.0e-26
+
     if coord is None:
         target_ra  = 0.0
         target_dec = 0.0
@@ -420,11 +420,11 @@ def save_fits(
             target_dec = (dec[0] + dec[1] / 60. + dec[2] / 3600.)
         else:
             target_dec = (dec[0] - dec[1] / 60. - dec[2] / 3600.)
-    
+
     # Convert pixel sizes to degrees
     deg_dpix_x = dpix_x / (1.0 * units.au).si.value / dpc / 3600.0
     deg_dpix_y = dpix_y / (1.0 * units.au).si.value / dpc / 3600.0
-    
+
     # Construct the fits header
     hdr = fits.Header()
     hdr['SIMPLE']   = 'T'              # (T=true) indeed a simple fits file
@@ -433,7 +433,7 @@ def save_fits(
     hdr['NAXIS1']   = npix_x           # number of pixels along x axis (hor)
     hdr['NAXIS2']   = npix_y           # number of pixels along y-axis (ver)
     hdr['NAXIS3']   = nfreqs           # number of pixels along velocity-axis
-    
+
     hdr['EXTEND']   = 'T'              # Extendible fits file (T=true for safety, though not required)
     hdr['CROTA1']   = 0.0              # Rotation of axis 1
     hdr['CROTA2']   = 0.0              # Rotation of axis 2.
@@ -448,7 +448,7 @@ def save_fits(
     hdr['CRPIX1']   = (npix_x-1)/2.0   # pixel index of centre x=0
     hdr['CRVAL1']   = target_ra        # image centre coordinate (x/ra)
     hdr['CUNIT1']   = 'DEG'            # x-axis unit
-    
+
     hdr['CTYPE2']   = 'DEC--SIN'
     hdr['CDELT2']   = deg_dpix_y       # pixel size in degrees along y-axis
     hdr['CRPIX2']   = (npix_y-1)/2.0   # pixel index of centre y=0
@@ -467,9 +467,9 @@ def save_fits(
     hdr['BUNIT']    = 'JY/PIXEL'
 
     fits.writeto(filename, data=zs, header=hdr)
-    
+
     print('Written file to:', filename)
-    
+
     return
 
 
@@ -485,7 +485,7 @@ def save_fits_1D(
     ):
     """
     Save channel maps of synthetic observation (image) as a fits file.
-    
+
     Parameters
     ----------
     model : object
@@ -499,10 +499,10 @@ def save_fits_1D(
     dpc : float
         Distance of source in parsec.
     coord : str
-        Image centre coordinates. 
+        Image centre coordinates.
     f_rest : float
         Rest frequency of the transition.
-    
+
     Returns
     -------
     None
@@ -511,11 +511,11 @@ def save_fits_1D(
     if (len(model.images) < 1):
         print('No images in model.')
         return
-    
+
     # Check if 1D
     if (model.parameters.dimension() != 1):
         raise ValueError('save_fits_1D only works for 1D models. Please use save_fits for 3D models.')
-    
+
     if not filename:
         # Get path of image directory
         im_dir = os.path.dirname(os.path.abspath(model.parameters.model_name())) + '/images/'
@@ -526,29 +526,29 @@ def save_fits_1D(
             print('Created image directory:', im_dir)
         # Define filename
         filename = f"{im_dir}image.fits"
-        
+
     # Remove fits file if it already exists
     if os.path.isfile(filename):
         os.remove(filename)
-    
+
     # Extract image data
     imx = np.array(model.images[image_nr].ImX)
     imI = np.array(model.images[image_nr].I)
 
     # Extract the number of frequency bins
     nfreqs = model.parameters.nfreqs()
-    
+
     # Extrat the radius of the model
     R = np.max(imx)
-    
+
     # Set image boundaries
     x_min, x_max = -R/zoom, +R/zoom
     y_min, y_max = -R/zoom, +R/zoom
-    
+
     # Create image grid values
     xs = np.linspace(x_min, x_max, npix)
     ys = np.linspace(y_min, y_max, npix)
-    
+
     # Create image grid
     Xs, Ys = np.meshgrid(xs, ys)
     Rs     = np.hypot   (Xs, Ys)
@@ -556,34 +556,34 @@ def save_fits_1D(
     # Extract the spectral / velocity data
     freqs = np.array(model.radiation.frequencies.nu)[0]
     f_cen = np.mean(freqs)
-    
+
     # If no rest frequency is given,
     # default to cetral frequency in the image.
     if f_rest == 0.0:
         f_rest = f_cen
-    
+
     velos = (freqs - f_rest) / f_rest * constants.c.si.value
     v_cen = (f_cen - f_rest) / f_rest * constants.c.si.value
 
     dpix   = np.mean(np.diff(xs))
     dvelos = np.diff(velos)
-    
+
     if (np.abs(relative_error(np.max(dvelos), np.min(dvelos))) > 1.0e-9):
         print('WARNING: No regularly spaced frequency bins!')
         dvelo = None
     else:
         dvelo = np.mean(dvelos)
-    
+
     # Interpolate the scattered data to an image (regular grid)
     zs = np.zeros((nfreqs, npix, npix))
     for f in range(nfreqs):
         # Interpolate the 1D data onto the 2D image
         I_fun = interp1d(imx, imI[:,f], bounds_error=False, fill_value=imI[0,f])
         zs[f] = I_fun(Rs)
-    
+
     # Convert intensity from J/s/m/m/ster to Jy/pixel
-    zs = zs * dpix**2 / ((dpc * units.parsec).si.value)**2 / 1.0e-26    
-            
+    zs = zs * dpix**2 / ((dpc * units.parsec).si.value)**2 / 1.0e-26
+
     if coord is None:
         target_ra  = 0.0
         target_dec = 0.0
@@ -618,10 +618,10 @@ def save_fits_1D(
             target_dec = (dec[0] + dec[1] / 60. + dec[2] / 3600.)
         else:
             target_dec = (dec[0] - dec[1] / 60. - dec[2] / 3600.)
-    
+
     # Convert pixel sizes to degrees
     deg_dpix = dpix / (1.0 * units.au).si.value / dpc / 3600.0
-    
+
     # Construct the fits header
     hdr = fits.Header()
     hdr['SIMPLE']   = 'T'              # (T=true) indeed a simple fits file
@@ -630,7 +630,7 @@ def save_fits_1D(
     hdr['NAXIS1']   = npix             # number of pixels along x axis (hor)
     hdr['NAXIS2']   = npix             # number of pixels along y-axis (ver)
     hdr['NAXIS3']   = nfreqs           # number of pixels along velocity-axis
-    
+
     hdr['EXTEND']   = 'T'              # Extendible fits file (T=true for safety, though not required)
     hdr['CROTA1']   = 0.0              # Rotation of axis 1
     hdr['CROTA2']   = 0.0              # Rotation of axis 2.
@@ -645,7 +645,7 @@ def save_fits_1D(
     hdr['CRPIX1']   = (npix-1)/2.0     # pixel index of centre x=0
     hdr['CRVAL1']   = target_ra        # image centre coordinate (x/ra)
     hdr['CUNIT1']   = 'DEG'            # x-axis unit
-    
+
     hdr['CTYPE2']   = 'DEC--SIN'
     hdr['CDELT2']   = deg_dpix         # pixel size in degrees along y-axis
     hdr['CRPIX2']   = (npix-1)/2.0     # pixel index of centre y=0
@@ -664,28 +664,28 @@ def save_fits_1D(
     hdr['BUNIT']    = 'JY/PIXEL'
 
     fits.writeto(filename, data=zs, header=hdr)
-    
+
     print('Written file to:', filename)
-    
+
     return
 
 
 def extract_spectrum_from_FITS (fits_file, aperture):
     """
     Extract a spectrum from a FITS file for a given aperture.
-    
+
     Parameters
     ----------
     fits_file : str
         FITS file containing a data cube.
     aperture : float
         Aperture over which to intergrate the image in arcseconds [as].
-    
+
     Returns
     -------
     Two arrays, one containing the velocities (in km/s) and one containing the intensities.
     """
-    
+
     # Read the FITS file
     hdul = fits.open(fits_file)
 
@@ -697,14 +697,14 @@ def extract_spectrum_from_FITS (fits_file, aperture):
     npix_y = hdul[0].header['NAXIS2']
     cpix_y = hdul[0].header['CRPIX2']
     dy     = hdul[0].header['CDELT2']
-    
+
     npix_v = hdul[0].header['NAXIS3']
     cpix_v = hdul[0].header['CRPIX3']
     dv     = hdul[0].header['CDELT3']
 
     # Extract the data
     I      = hdul[0].data
-    
+
     # Create image axis
     xs = np.abs(dx) * (np.arange(npix_x) - cpix_x) * 3600.
     ys = np.abs(dy) * (np.arange(npix_y) - cpix_y) * 3600.
@@ -713,18 +713,18 @@ def extract_spectrum_from_FITS (fits_file, aperture):
     # Create image grid
     Xs, Ys = np.meshgrid(xs, ys)
     Rs     = np.hypot   (Xs, Ys)
-    
+
     # Integrate images over the aperture
     spec = np.sum(I[:, Rs<aperture], axis=1)
-    
-    # Return 
+
+    # Return
     return (vs, spec)
 
 
 
 
 def check_one_line_approximation(model):
-    
+
     # Extract the largest line width from the model
     width_max = np.max (1.0/np.array(model.lines.inverse_width), axis=0)
     width_rel = np.mean(width_max/lines)
@@ -732,13 +732,13 @@ def check_one_line_approximation(model):
 
     if (width_std / width_rel > 1.0e-10):
         ValueError('Issue with the line widths in the model.')
-    
+
     # Extract the largest line quadrature root from the model
     root_max = 0.0
     for l in range(model.parameters.nlspecs()):
         roots    = np.array(model.lines.lineProducingSpecies[l].quadrature.roots)
         root_max = np.max([np.abs(roots[0]), np.abs(roots[-1]), rtmax])
-        
+
     # Find the (relatively) closest two lines
     dist_min = np.inf
     for i1, l1 in enumerate(lines):
@@ -749,13 +749,13 @@ def check_one_line_approximation(model):
                     dist_min  = dist
                     line_low  = np.min([l1, l2])
                     line_high = np.max([l1, l2])
-                    
+
     lim_low  = line_low  * (1.0 + width_rel*root_max) * shift_up
     lim_high = line_high * (1.0 - width_rel*root_max) * shift_down
-    
+
     width_high = width_rel * line_high
     diff_max   = np.max([lim_high - line_low, line_high - lim_low]) / width_high
 
     contribution = np.exp(-diff_max**2)
-    
+
     return contribution
