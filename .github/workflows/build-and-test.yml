@@ -95,7 +95,7 @@ jobs:
           activate-environment: magritte
           environment-file: dependencies/conda_env.yml
           auto-activate-base: false
-          mamba-version: "*"
+          miniforge-variant: Mambaforge
           channels: conda-forge, defaults
       - name: wait 5 s if attempt failed
         if: steps.setupcondatry1.outcome == 'failure'
@@ -108,7 +108,7 @@ jobs:
           activate-environment: magritte
           environment-file: dependencies/conda_env.yml
           auto-activate-base: false
-          mamba-version: "*"
+          miniforge-variant: Mambaforge
           channels: conda-forge, defaults
       - name: wait 5 s if attempt failed
         if: steps.setupcondatry2.outcome == 'failure'
@@ -121,7 +121,7 @@ jobs:
           activate-environment: magritte
           environment-file: dependencies/conda_env.yml
           auto-activate-base: false
-          mamba-version: "*"
+          miniforge-variant: Mambaforge
           channels: conda-forge, defaults
       # end retrying conda
 
