@@ -54,10 +54,10 @@ struct Parameters
     bool store_intensities           = false;
     // bool use_Ng_acceleration         = true;//Not used, so may safely be removed
     bool use_adaptive_Ng_acceleration= true;//whether to use an adaptive version of Ng acceleration; only relevant if use_Ng_acceleration = true
-    Size adaptive_Ng_acceleration_mem_limit = 8;//determines how many previous iterations we hold in memory when using adaptive ng-acceleration
+    Size adaptive_Ng_acceleration_mem_limit = 6;//determines how many previous iterations we hold in memory when using adaptive ng-acceleration
     Size adaptive_Ng_acceleration_min_order = 2;//Minimal order of adaptive ng acceleration used. Has to be larger than 1.
-    bool adaptive_Ng_acceleration_use_max_criterion = true;//Whether or not to use max change as criterion for adaptive ng acceleration
-    Size adaptive_Ng_acceleration_remove_N_its = 0;//Number of iterations to throw away when using adaptive ng acceleration
+    bool adaptive_Ng_acceleration_use_max_criterion = true;//Whether or not to use max change as criterion for adaptive ng acceleration; uses mean change if false
+    Size adaptive_Ng_acceleration_remove_N_its = 1;//Number of iterations to throw away when using adaptive ng acceleration
 
     ///Approximations for summing over lines; by default, we only sum over the close lines in order to compute opacity/emissivity (leading to O(Nline * ln(Nlines)) scaling behavior)
 
