@@ -2,6 +2,7 @@ import sys, os
 import meshio
 import numpy     as np
 import itertools as itt
+import numba
 
 from string                  import Template
 from subprocess              import Popen, PIPE
@@ -26,7 +27,7 @@ class Mesh:
     def __init__(self, meshFile):
         """
         Read the meshFile using meshio and remove unconnected points.
-        
+
         Parameters
         ----------
         meshFile : str
@@ -38,17 +39,17 @@ class Mesh:
         self.edges     = self.get_edges()
         self.neighbors = self.get_neighbors()
         self.boundary  = self.get_boundary()
-        
+
         # Remove non-connected points
         non_point = self.get_non_point()
         while not (non_point is None):
             print(non_point)
             self.del_non_point(non_point)
             non_point = self.get_non_point()
-            
+
         return
 
-    
+
     def get_edges(self):
         edges = set([])
         for tetra in self.tetras:
@@ -133,7 +134,7 @@ class Mesh:
 def run(command):
     """
     Run command in shell and continuously print its output.
-    
+
     Parameters
     ----------
     command : str
@@ -141,7 +142,7 @@ def run(command):
     """
     # Run command pipe output
     process = Popen(command, stdout=PIPE, shell=True)
-    
+
     # Continuously read output and print
     while True:
         # Extract output
@@ -151,14 +152,14 @@ def run(command):
             break
         else:
             print(line.decode("utf-8"))
-    
+
     return
 
 
 def convert_msh_to_pos(meshName, replace:bool=False):
     """
     Convert a .msh file to a .pos file.
-    
+
     Parameters
     ----------
     modelName : str
@@ -168,44 +169,44 @@ def convert_msh_to_pos(meshName, replace:bool=False):
     """
     # Remove extension from meshName
     meshName, extension = os.path.splitext(meshName)
-    
+
     # create the converision gmsh script file
     conversion_script = f'{meshName}_convert_to_pos.geo'
-    
+
     # Get the path to this folder
     thisFolder = os.path.dirname(os.path.abspath(__file__))
-    
+
     # Extract the template
     with open(f'{thisFolder}/templates/convert_to_pos.template', 'r') as file:
         template = Template(file.read())
-    
+
     # Fill out the template and write the conversion script
     with open(conversion_script,                                 'w') as file:
         file.write(template.substitute(FILE_NAME=meshName))
-    
+
     # Run gmsh in a subprocess to convert the background mesh to the .pos format
     run(f'gmsh -0 {conversion_script}')
-    
+
     # Remove the auxiliary file that is created (geo_unrolled) and the script file
     os.remove(f'{meshName}_convert_to_pos.geo_unrolled')
     os.remove(conversion_script)
     if replace:
         os.remove(f"{meshName}.msh")
-        
+
     return
 
 
 def boundary_cuboid (minVec, maxVec):
     """
     Retuns the gmsh script for a cuboid element that can be used as boundary.
-    
+
     Parameters
     ----------
     minVec : array_like
         (x_min, y_min, z_min) vector defining the cuboid.
     maxVec : array_like
         (x_max, y_max, z_max) vector defining the cuboid.
-        
+
     Returns
     -------
     out : str
@@ -213,11 +214,11 @@ def boundary_cuboid (minVec, maxVec):
     """
     # Get the path to this folder
     thisFolder = os.path.dirname(os.path.abspath(__file__))
-    
+
     # Extract the template
     with open(f'{thisFolder}/templates/cuboid.template', 'r') as file:
         cuboid = Template(file.read())
-        
+
     # Return the filled out template
     return cuboid.substitute(
                I     = 1,
@@ -232,14 +233,14 @@ def boundary_cuboid (minVec, maxVec):
 def boundary_sphere (centre=np.zeros(3), radius=1.0):
     """
     Returns the gmsh script for a sphere element that can be used as boundary.
-    
+
     Parameters
     ----------
     centre : array_like
         (x, y, z) coordinates of the centre of the sphere.
     radius : float
         Radius of the sphere.
-    
+
     Returns
     -------
     out : str
@@ -247,11 +248,11 @@ def boundary_sphere (centre=np.zeros(3), radius=1.0):
     """
     # Get the path to this folder
     thisFolder = os.path.dirname(os.path.abspath(__file__))
-    
+
     # Extract the template
     with open(f'{thisFolder}/templates/sphere.template', 'r') as file:
         sphere = Template(file.read())
-        
+
     # Return the filled out template
     return sphere.substitute(
                I      = 1,
@@ -265,7 +266,7 @@ def boundary_sphere_in_sphere (centre_in =np.zeros(3), radius_in =1.0,
                                centre_out=np.zeros(3), radius_out=1.0 ):
     """
     Returns the gmsh script for a sphere inside a sphere that can be used as boundary.
-    
+
     Parameters
     ----------
     centre_in : array_like
@@ -276,7 +277,7 @@ def boundary_sphere_in_sphere (centre_in =np.zeros(3), radius_in =1.0,
         (x, y, z) coordinates of the centre of the outer sphere.
     radius_out : float
         Radius of the outer sphere.
-        
+
     Returns
     -------
     out : str
@@ -284,11 +285,11 @@ def boundary_sphere_in_sphere (centre_in =np.zeros(3), radius_in =1.0,
     """
     # Get the path to this folder
     thisFolder = os.path.dirname(os.path.abspath(__file__))
-    
+
     # Extract the template
     with open(f'{thisFolder}/templates/sphere_in_sphere.template', 'r') as file:
         sphere = Template(file.read())
-        
+
     # Return the filled out template
     return sphere.substitute(
                CX_IN      = centre_in[0],
@@ -305,7 +306,7 @@ def boundary_sphere_in_cuboid (centre_in=np.zeros(3), radius_in=1.0,
                                minVec   =np.zeros(3), maxVec   =np.ones(3)):
     """
     Returns the gmsh script for a sphere inside a cuboid that can be used as boundary.
-    
+
     Parameters
     ----------
     centre_in : array_like
@@ -316,7 +317,7 @@ def boundary_sphere_in_cuboid (centre_in=np.zeros(3), radius_in=1.0,
         (x_min, y_min, z_min) vector defining the cuboid.
     maxVec : array_like
         (x_max, y_max, z_max) vector defining the cuboid.
-        
+
     Returns
     -------
     out : str
@@ -324,11 +325,11 @@ def boundary_sphere_in_cuboid (centre_in=np.zeros(3), radius_in=1.0,
     """
     # Get the path to this folder
     thisFolder = os.path.dirname(os.path.abspath(__file__))
-    
+
     # Extrace the template
     with open(f'{thisFolder}/templates/sphere_in_cuboid.template', 'r') as file:
         sphere = Template(file.read())
-        
+
     # Return the filled out template
     return sphere.substitute(
         CX_IN      = centre_in[0],
@@ -346,7 +347,7 @@ def boundary_sphere_in_cuboid (centre_in=np.zeros(3), radius_in=1.0,
 def create_mesh_from_background(meshName, boundary, scale_min, scale_max):
     """
     Creates a mesh with element sizes defined on a background mesh.
-    
+
     Parameters
     ----------
     meshName : str
@@ -360,19 +361,19 @@ def create_mesh_from_background(meshName, boundary, scale_min, scale_max):
     """
     # Remove extension from meshName
     meshName, extension = os.path.splitext(meshName)
-    
+
     # create the mesh generating gmsh script file
     meshing_script = f'{meshName}.geo'
     background     = f'{meshName}.pos'
     resulting_mesh = f'{meshName}.vtk'
-    
+
     # Get the path to this folder
     thisFolder = os.path.dirname(os.path.abspath(__file__))
-    
+
     # Extract the template
     with open(f'{thisFolder}/templates/mesh_from_background.template', 'r') as file:
         template = Template(file.read())
-    
+
     # Write the gmsh script
     with open(meshing_script, 'w') as file:
         file.write(template.substitute(
@@ -380,20 +381,20 @@ def create_mesh_from_background(meshName, boundary, scale_min, scale_max):
             SCALE_MIN  = scale_min,
             SCALE_MAX  = scale_max,
             BACKGROUND = background   ))
-    
+
     # run gmsh in a subprocess to generate the mesh from the background
     run(f'gmsh {meshing_script} -3 -saveall -o {resulting_mesh}')
-    
+
     # Remove the script file
     os.remove(meshing_script)
-    
+
     return
 
 
 def create_mesh_from_function(meshName, boundary, scale_min, scale_max, scale_function):
     """
     Creates a mesh with element sizes defined by a scale function.
-    
+
     Parameters
     ----------
     meshName : str
@@ -409,18 +410,18 @@ def create_mesh_from_function(meshName, boundary, scale_min, scale_max, scale_fu
     """
     # Remove extension from meshName
     meshName, extension = os.path.splitext(meshName)
-    
+
     # create the mesh generating gmsh script file
     meshing_script = f'{meshName}.geo'
     resulting_mesh = f'{meshName}.vtk'
-    
+
     # Get the path to this folder
     thisFolder = os.path.dirname(os.path.abspath(__file__))
-    
+
     # Extract the template
     with open(f'{thisFolder}/templates/mesh_from_function.template', 'r') as file:
         template = Template(file.read())
-    
+
     # Write the gmsh script
     with open(meshing_script, 'w') as file:
         file.write(template.substitute(
@@ -428,20 +429,20 @@ def create_mesh_from_function(meshName, boundary, scale_min, scale_max, scale_fu
             SCALE_MIN      = scale_min,
             SCALE_MAX      = scale_max,
             SCALE_FUNCTION = scale_function ))
-    
+
     # Run gmsh in a subprocess to generate the mesh from the background
     run(f'gmsh {meshing_script} -3 -saveall -o {resulting_mesh}')
-    
+
     # Remove the script file
     os.remove(meshing_script)
-    
+
     return
 
 
 def generate_background_from_1D_data(meshName, R, data):
     """
     Generate a background mesh from 1D (radial) data.
-    
+
     Parameters
     ----------
     meshName : str
@@ -463,7 +464,7 @@ def generate_background_from_1D_data(meshName, R, data):
         for s in Rotation.random().apply(sphere):
             points.append(r*s)
             data_s.append(data[i])
-    
+
     # Delaunay tetrahedralise the point set
     delaunay = Delaunay(points)
 
@@ -473,7 +474,7 @@ def generate_background_from_1D_data(meshName, R, data):
         points     =             delaunay.points,
         cells      = {'tetra'  : delaunay.simplices},
         point_data = {'weights': np.array(data_s)}   )
-    
+
     return
 
 
@@ -536,16 +537,16 @@ def get_weights(pos, nbs, nns, tracer, threshold=0.21, fmin=1.0, ftarget=2.15):
     pfs = get_pfs (nns)
     GGs = get_Gs  (tracer, nbs, pfs)
     LLs = get_Ls  (pos,    nbs, pfs)
-    
+
     L_min    = fmin    * LLs
     L_target = ftarget * LLs
-    
+
     weights = L_target
     weights[GGs > threshold] = L_min[GGs > threshold]
 
     return weights
 
-        
+
 def reduce(
         meshName,
         delaunay,
@@ -554,12 +555,12 @@ def reduce(
         scale_max = 1.0e+99,  # Maximum value of the scale parameter
         scale_min = 0.0e+00,  # Minimum value of the scale parameter
         threshold = 0.21,     # Threashold relative difference for coarsening
-        fmin      = 1.0,      # Don't allow refinenment 
+        fmin      = 1.0,      # Don't allow refinenment
         ftarget   = 2.15      # Approx 10^(-1/3) for approx 10 times fewer points
     ):
     """
     Reduce a model mesh for a given tracer function.
-    
+
     Parameters
     ----------
     meshName : str
@@ -589,8 +590,8 @@ def reduce(
     neighbors = [indices[indptr[k]:indptr[k+1]] for k in range(len(delaunay.points))]
     nbs       = np.array([n for sublist in neighbors for n in sublist])
     nns       = np.array([len(sublist) for sublist in neighbors])
-    pos       = delaunay.points    
-    
+    pos       = delaunay.points
+
     # Create a background mesh (in .msh format)
     meshio.write_points_cells(
         filename   = f'{meshName}.msh',
@@ -607,7 +608,7 @@ def reduce(
 
     # Convert .msh to .pos mesh for Gmsh
     convert_msh_to_pos (meshName=meshName, replace=True)
-    
+
     # Create a new mesh from the background mesh
     create_mesh_from_background(
         meshName  = meshName,
@@ -615,5 +616,180 @@ def reduce(
         scale_min = scale_min,
         scale_max = scale_max
     )
-    
+
     return
+
+def remesh_point_cloud(positions, data, max_depth=9, threshold= 5e-2, hullorder = 3):
+    '''
+    Remeshing method by comparing the maximal variation of the data against the threshold.
+    Uses a recursive method with maximal depth max_depth.
+    The hullorder specifies the density of the generated uniform boundary.
+    '''
+
+    new_positions = np.zeros((len(positions), 3))#should be large enough to contain the new positions
+    #in the worst case, the recursive remeshing procedure will return a point cloud with size of the old points
+    remesh_nb_points = 0#helper index for where to put the generated new points
+
+    xyz_min = np.min(positions, axis=0)
+    xyz_max = np.max(positions, axis=0)
+
+    #Recursive re-mesh procedure puts the new points into the new_positions vector (with remesh_nb_points now containing the size of the re-meshed point cloud)
+    remesh_nb_points = get_recursive_remesh(positions, data, 0, max_depth, threshold, new_positions, remesh_nb_points)
+    print("new interior points: ", remesh_nb_points)
+    #shrink positions vector to the actual ones
+    new_positions.resize((remesh_nb_points,3))
+
+    hull = create_cubic_uniform_hull(xyz_min, xyz_max, order=hullorder)
+    nb_boundary = hull.shape[0]
+    print("number boundary points: ", nb_boundary)
+    new_positions = np.concatenate((hull, new_positions), axis = 0)
+
+    # The boundary hull is located at the first nb_boundary positions indices of the new_positions vector
+    return (new_positions, nb_boundary)
+
+@numba.njit(cache=True)
+def create_cubic_uniform_hull(xyz_min, xyz_max, order=3):
+    # hull = np.zeros((1000, 3))#TODO: actually fill in correct value
+    nx, ny, nz = (2**order+1, 2**order+1, 2**order+1)
+    x_vector = np.linspace(xyz_min[0], xyz_max[0], nx)
+    y_vector = np.linspace(xyz_min[1], xyz_max[1], ny)
+    z_vector = np.linspace(xyz_min[2], xyz_max[2], nz)
+
+    #x plane does not yet intersect with other planes
+    xmin_plane = grid3D(np.array([xyz_min[0]]), y_vector, z_vector)
+    xmax_plane = grid3D(np.array([xyz_max[0]]), y_vector, z_vector)
+
+    #y plane intersects with x plane, so using reduced vectors for x coordinate
+    ymin_plane = grid3D(x_vector[1:nx-1], np.array([xyz_min[1]]), z_vector)
+    ymax_plane = grid3D(x_vector[1:nx-1], np.array([xyz_max[1]]), z_vector)
+
+    #z plane also intersects with x plane
+    zmin_plane = grid3D(x_vector[1:nx-1], y_vector[1:ny-1], np.array([xyz_min[2]]))
+    zmax_plane = grid3D(x_vector[1:nx-1], y_vector[1:ny-1], np.array([xyz_max[2]]))
+
+    #At the edges, the hull will contain duplicate points. These need to be removed
+    # hull = np.unique(np.concatenate((xmin_plane, xmax_plane, ymin_plane, ymax_plane, zmin_plane, zmax_plane), axis = 0), axis = 0)
+    hull = np.concatenate((xmin_plane, xmax_plane, ymin_plane, ymax_plane, zmin_plane, zmax_plane), axis = 0)
+
+    # print(hull)
+    return hull
+
+#Simple function for the outer product of 1D vectors
+#Allows us to create surface point cloud by inserting 2 vectors (and a single value for the last coordinate)
+@numba.njit(cache=True)
+def grid3D(x, y, z):
+    xyz = np.empty(shape=(x.size*y.size*z.size, 3))
+    idx = 0
+    for k in range(x.size):
+        for j in range(y.size):
+            for i in range(z.size):
+                xyz[idx] = [x[k], y[j], z[i]]
+                idx+=1
+    return xyz
+
+
+@numba.njit(cache=True)
+def get_recursive_remesh(positions, data, depth, max_depth, threshold, remesh_points, remesh_nb_points):
+    '''
+    Uses recursion to remesh a given point cloud (uses all data to determine whether to recurse on a smaller scale),
+    by evaluating the total variation in the data (compared against the threshold).
+    '''
+
+    #If no data is left, no point should be added
+    if len(data)==0:
+        return remesh_nb_points
+
+    #We crop the position grid; this results in a grid more centered around the original points
+    #This incurs a minor computational cost (compared to inheriting coordinates from the larger box), but the grid looks way nicer at the edges.
+    minx = np.min(positions[:,0])
+    maxx = np.max(positions[:,0])
+    miny = np.min(positions[:,1])
+    maxy = np.max(positions[:,1])
+    minz = np.min(positions[:,2])
+    maxz = np.max(positions[:,2])
+    #Defining the cropped box coordinates
+    min_coord = np.array([minx, miny, minz])
+    max_coord = np.array([maxx, maxy, maxz])
+
+    #If the subdivision has been going on for too long (only a single point remaining or too deep recursion), we replace this box with a point
+    if len(data)==1 or depth==max_depth:
+        #add this point to the list
+        remesh_points[remesh_nb_points, :] = (min_coord + max_coord) / 2.0
+        remesh_nb_points+=1
+        return remesh_nb_points
+
+    minval, maxval = np.min(data), np.max(data)
+
+    #If the total variation in this box lies within the defined bounds, we can stop and approximate this box by a single point
+    if (maxval-minval)<threshold*(minval+maxval):
+        #add this point to the list
+        remesh_points[remesh_nb_points, :] = (min_coord + max_coord) / 2.0
+        remesh_nb_points+=1
+        return remesh_nb_points
+
+    else:
+        #go and do some more recursive investigation
+        delta_coord = (max_coord - min_coord) / 2.0
+        #defining coordinates for sub-boxes
+        def_mincoord = min_coord
+        def_maxcoord = max_coord
+        #We define the maximum by starting from true maximum (if we start from the middle, rounding errors will occur)
+
+        box1_mincoord = def_mincoord + np.array([0,0,0]) * delta_coord
+        box1_maxcoord = def_maxcoord - np.array([1,1,1]) * delta_coord
+        box2_mincoord = def_mincoord + np.array([0,0,1]) * delta_coord
+        box2_maxcoord = def_maxcoord - np.array([1,1,0]) * delta_coord
+        box3_mincoord = def_mincoord + np.array([0,1,0]) * delta_coord
+        box3_maxcoord = def_maxcoord - np.array([1,0,1]) * delta_coord
+        box4_mincoord = def_mincoord + np.array([0,1,1]) * delta_coord
+        box4_maxcoord = def_maxcoord - np.array([1,0,0]) * delta_coord
+        box5_mincoord = def_mincoord + np.array([1,0,0]) * delta_coord
+        box5_maxcoord = def_maxcoord - np.array([0,1,1]) * delta_coord
+        box6_mincoord = def_mincoord + np.array([1,0,1]) * delta_coord
+        box6_maxcoord = def_maxcoord - np.array([0,1,0]) * delta_coord
+        box7_mincoord = def_mincoord + np.array([1,1,0]) * delta_coord
+        box7_maxcoord = def_maxcoord - np.array([0,0,1]) * delta_coord
+        box8_mincoord = def_mincoord + np.array([1,1,1]) * delta_coord
+        box8_maxcoord = def_maxcoord - np.array([0,0,0]) * delta_coord
+
+        box1indices   = np.sum((positions>=box1_mincoord) & (positions<=box1_maxcoord), axis=1) == 3
+        box1positions = positions[box1indices,:]
+        box1data      = data[box1indices]
+        remesh_nb_points = get_recursive_remesh(box1positions, box1data, depth+1, max_depth, threshold, remesh_points, remesh_nb_points)
+
+        box2indices   = np.sum((positions>=box2_mincoord) & (positions<=box2_maxcoord), axis=1) == 3
+        box2positions = positions[box2indices,:]
+        box2data      = data[box2indices]
+        remesh_nb_points = get_recursive_remesh(box2positions, box2data, depth+1, max_depth, threshold, remesh_points, remesh_nb_points)
+
+        box3indices   = np.sum((positions>=box3_mincoord) & (positions<=box3_maxcoord), axis=1) == 3
+        box3positions = positions[box3indices,:]
+        box3data      = data[box3indices]
+        remesh_nb_points = get_recursive_remesh(box3positions, box3data, depth+1, max_depth, threshold, remesh_points, remesh_nb_points)
+
+        box4indices   = np.sum((positions>=box4_mincoord) & (positions<=box4_maxcoord), axis=1) == 3
+        box4positions = positions[box4indices,:]
+        box4data      = data[box4indices]
+        remesh_nb_points = get_recursive_remesh(box4positions, box4data, depth+1, max_depth, threshold, remesh_points, remesh_nb_points)
+
+        box5indices   = np.sum((positions>=box5_mincoord) & (positions<=box5_maxcoord), axis=1) == 3
+        box5positions = positions[box5indices,:]
+        box5data      = data[box5indices]
+        remesh_nb_points = get_recursive_remesh(box5positions, box5data, depth+1, max_depth, threshold, remesh_points, remesh_nb_points)
+
+        box6indices   = np.sum((positions>=box6_mincoord) & (positions<=box6_maxcoord), axis=1) == 3
+        box6positions = positions[box6indices,:]
+        box6data      = data[box6indices]
+        remesh_nb_points = get_recursive_remesh(box6positions, box6data, depth+1, max_depth, threshold, remesh_points, remesh_nb_points)
+
+        box7indices   = np.sum((positions>=box7_mincoord) & (positions<=box7_maxcoord), axis=1) == 3
+        box7positions = positions[box7indices,:]
+        box7data      = data[box7indices]
+        remesh_nb_points = get_recursive_remesh(box7positions, box7data, depth+1, max_depth, threshold, remesh_points, remesh_nb_points)
+
+        box8indices   = np.sum((positions>=box8_mincoord) & (positions<=box8_maxcoord), axis=1) == 3
+        box8positions = positions[box8indices,:]
+        box8data      = data[box8indices]
+        remesh_nb_points = get_recursive_remesh(box8positions, box8data, depth+1, max_depth, threshold, remesh_points, remesh_nb_points)
+
+    return remesh_nb_points

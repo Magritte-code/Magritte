@@ -1,6 +1,7 @@
 from haar import remesh_recursive
 from haar import create_cubic_uniform_hull
 from haar import Haar
+from mesher import remesh_point_cloud
 import numpy as np
 import matplotlib.pyplot as plt
 import time
@@ -21,7 +22,7 @@ data = np.linalg.norm(rand_pos, axis=1)
 # data = np.ones(10)
 print(rand_pos)
 time_rec_start = time.time()
-remeshed_positions_rec, nb_boundary = remesh_recursive(rand_pos, data, q = 20, threshold = 2e-1, hullorder = 2)
+remeshed_positions_rec, nb_boundary = remesh_point_cloud(rand_pos, data, max_depth = 20, threshold = 2e-1, hullorder = 2)
 time_rec_end = time.time()
 print(remeshed_positions_rec)
 
