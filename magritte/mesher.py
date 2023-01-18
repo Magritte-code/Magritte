@@ -633,13 +633,20 @@ def remesh_point_cloud(positions, data, max_depth=9, threshold= 5e-2, hullorder 
     xyz_min = np.min(positions, axis=0)
     xyz_max = np.max(positions, axis=0)
 
+    delta_xyz = xyz_max-xyz_min
+
     #Recursive re-mesh procedure puts the new points into the new_positions vector (with remesh_nb_points now containing the size of the re-meshed point cloud)
     remesh_nb_points = get_recursive_remesh(positions, data, 0, max_depth, threshold, new_positions, remesh_nb_points)
     print("new interior points: ", remesh_nb_points)
     #shrink positions vector to the actual ones
     new_positions.resize((remesh_nb_points,3))
 
-    hull = create_cubic_uniform_hull(xyz_min, xyz_max, order=hullorder)
+    #boundary should be seperated from the actual points
+    eps = 1e-3
+    bxyz_min = xyz_min - eps*delta_xyz
+    bxyz_max = xyz_max + eps*delta_xyz
+
+    hull = create_cubic_uniform_hull(bxyz_min, bxyz_max, order=hullorder)
     nb_boundary = hull.shape[0]
     print("number boundary points: ", nb_boundary)
     new_positions = np.concatenate((hull, new_positions), axis = 0)
