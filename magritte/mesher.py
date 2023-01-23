@@ -677,7 +677,6 @@ def create_cubic_uniform_hull(xyz_min, xyz_max, order=3):
     # hull = np.unique(np.concatenate((xmin_plane, xmax_plane, ymin_plane, ymax_plane, zmin_plane, zmax_plane), axis = 0), axis = 0)
     hull = np.concatenate((xmin_plane, xmax_plane, ymin_plane, ymax_plane, zmin_plane, zmax_plane), axis = 0)
 
-    # print(hull)
     return hull
 
 #Simple function for the outer product of 1D vectors
@@ -694,8 +693,9 @@ def grid3D(x, y, z):
     return xyz
 
 
-# @numba.njit(cache=True, debug=True)
-# @numba.njit()
+# Recursive function to generate a hierarchical remeshed grid, based on the total variation in data (compared to the threshold)
+# Returns the index 'remesh_nb_points', counting how much points have already been added to the remeshed grid
+#Does not use jit, as this is a recursive function
 def get_recursive_remesh(positions: np.array, data: np.array, depth: int, max_depth: int, threshold: float, remesh_points: np.array, remesh_nb_points: int):
     '''
     Uses recursion to remesh a given point cloud (uses all data to determine whether to recurse on a smaller scale),
@@ -705,8 +705,6 @@ def get_recursive_remesh(positions: np.array, data: np.array, depth: int, max_de
     #If no data is left, no point should be added
     if len(data)==0:
         return remesh_nb_points
-
-    # print("pos: ", positions, " data: ", data, " depth: ", depth, max_depth, "rem pos: ", remesh_points, "rem nb_points: ", remesh_nb_points)
 
     #We crop the position grid; this results in a grid more centered around the original points
     #This incurs a minor computational cost (compared to inheriting coordinates from the larger box), but the grid looks way nicer at the edges.
@@ -719,9 +717,6 @@ def get_recursive_remesh(positions: np.array, data: np.array, depth: int, max_de
     #Defining the cropped box coordinates
     min_coord = np.array([minx, miny, minz])
     max_coord = np.array([maxx, maxy, maxz])
-
-
-    # print("min_coord, max_coord: ", min_coord, max_coord)
 
     #If the subdivision has been going on for too long (only a single point remaining or too deep recursion), we replace this box with a point
     if len(data)==1 or depth==max_depth:
@@ -791,181 +786,4 @@ def get_recursive_remesh(positions: np.array, data: np.array, depth: int, max_de
 
         remesh_nb_points = get_recursive_remesh(lll_positions, lll_data, depth+1, max_depth, threshold, remesh_points, remesh_nb_points)
 
-
-
-
-        # # recursive within recursive can't be cached by numba
-        # # remesh_nb_points = recurse_over_octants(positions, data, middlecoord, depth, max_depth, threshold, remesh_points, remesh_nb_points, idx=0)
-        #
-        # #the outer bounds of the grid are implicitly enforced by subdivision
-        # #naming scheme: sections are in each coordinate either 'u'pper or 'l'ower
-        # #dividing over x
-        # upidx = positions[:, 0] >= middle[0]
-        # loidx = positions[:, 0] < middle[0]
-        #
-        # u_positions = positions[upidx, :]
-        # u_data = data[upidx]
-        # l_positions = positions[loidx, :]
-        # l_data = data[loidx]
-        #
-        # #dividing over y
-        # upidx_ux = u_positions[:, 1] >= middle[1]
-        # loidx_ux = u_positions[:, 1] < middle[1]
-        #
-        # upidx_lx = l_positions[:, 1] >= middle[1]
-        # loidx_lx = l_positions[:, 1] < middle[1]
-        #
-        # uu_positions = u_positions[upidx_ux, :]
-        # uu_data = u_data[upidx_ux]
-        # ul_positions = u_positions[loidx_ux, :]
-        # ul_data = u_data[loidx_ux]
-        #
-        # lu_positions = l_positions[upidx_lx, :]
-        # lu_data = l_data[upidx_lx]
-        # ll_positions = l_positions[loidx_lx, :]
-        # ll_data = l_data[loidx_lx]
-        #
-        # #dividing over z
-        # upidx_uxuy = uu_positions[:, 2] >= middle[2]
-        # loidx_uxuy = uu_positions[:, 2] < middle[2]
-        # upidx_uxly = ul_positions[:, 2] >= middle[2]
-        # loidx_uxly = ul_positions[:, 2] < middle[2]
-        # upidx_lxuy = lu_positions[:, 2] >= middle[2]
-        # loidx_lxuy = lu_positions[:, 2] < middle[2]
-        # upidx_lxly = ll_positions[:, 2] >= middle[2]
-        # loidx_lxly = ll_positions[:, 2] < middle[2]
-        #
-        # # uuu_positions = uu_positions[uuu_idx, :]
-        # # print(uuu_idx)
-        # # box1indices   = np.sum((positions>=box1_mincoord) & (positions<=box1_maxcoord), axis=1) == 3
-        #
-        # # box1indices   = ((positions[:,0]>=box1_mincoord[:,0]) & (positions[:,0]<=box1_maxcoord[:,0])#x
-        # #               & (positions[:,1]>=box1_mincoord[:,1]) & (positions[:,1]<=box1_maxcoord[:,1])#y
-        # #               & (positions[:,2]>=box1_mincoord[:,2]) & (positions[:,2]<=box1_maxcoord[:,2]))#z
-        #
-        # uuu_positions = uu_positions[upidx_uxuy, :]
-        # uuu_data = uu_data[upidx_uxuy]
-        #
-        # remesh_nb_points = get_recursive_remesh(uuu_positions, uuu_data, depth+1, max_depth, threshold, remesh_points, remesh_nb_points)
-        #
-        # uul_positions = uu_positions[loidx_uxuy, :]
-        # uul_data = uu_data[loidx_uxuy]
-        #
-        # remesh_nb_points = get_recursive_remesh(uul_positions, uul_data, depth+1, max_depth, threshold, remesh_points, remesh_nb_points)
-        #
-        # ulu_positions = ul_positions[upidx_uxly, :]
-        # ulu_data = ul_data[upidx_uxly]
-        #
-        # remesh_nb_points = get_recursive_remesh(ulu_positions, ulu_data, depth+1, max_depth, threshold, remesh_points, remesh_nb_points)
-        #
-        # ull_positions = ul_positions[loidx_uxly, :]
-        # ull_data = ul_data[loidx_uxly]
-        #
-        # remesh_nb_points = get_recursive_remesh(ull_positions, ull_data, depth+1, max_depth, threshold, remesh_points, remesh_nb_points)
-        #
-        # luu_positions = lu_positions[upidx_lxuy, :]
-        # luu_data = lu_data[upidx_lxuy]
-        #
-        # remesh_nb_points = get_recursive_remesh(luu_positions, luu_data, depth+1, max_depth, threshold, remesh_points, remesh_nb_points)
-        #
-        # lul_positions = lu_positions[loidx_lxuy, :]
-        # lul_data = lu_data[loidx_lxuy]
-        #
-        # remesh_nb_points = get_recursive_remesh(lul_positions, lul_data, depth+1, max_depth, threshold, remesh_points, remesh_nb_points)
-        #
-        # llu_positions = ll_positions[upidx_lxly, :]
-        # llu_data = ll_data[upidx_lxly]
-        #
-        # remesh_nb_points = get_recursive_remesh(llu_positions, llu_data, depth+1, max_depth, threshold, remesh_points, remesh_nb_points)
-        #
-        # lll_positions = ll_positions[loidx_lxly, :]
-        # lll_data = ll_data[loidx_lxly]
-        #
-        # remesh_nb_points = get_recursive_remesh(lll_positions, lll_data, depth+1, max_depth, threshold, remesh_points, remesh_nb_points)
-
-
-        # delta_coord = (max_coord - min_coord) / 2.0
-        # #defining coordinates for sub-boxes
-        # def_mincoord = min_coord
-        # def_maxcoord = max_coord
-        # #We define the maximum by starting from true maximum (if we start from the middle, rounding errors will occur)
-        #
-        # box1_mincoord = def_mincoord + np.array([0,0,0]) * delta_coord
-        # box1_maxcoord = def_maxcoord - np.array([1,1,1]) * delta_coord
-        # box2_mincoord = def_mincoord + np.array([0,0,1]) * delta_coord
-        # box2_maxcoord = def_maxcoord - np.array([1,1,0]) * delta_coord
-        # box3_mincoord = def_mincoord + np.array([0,1,0]) * delta_coord
-        # box3_maxcoord = def_maxcoord - np.array([1,0,1]) * delta_coord
-        # box4_mincoord = def_mincoord + np.array([0,1,1]) * delta_coord
-        # box4_maxcoord = def_maxcoord - np.array([1,0,0]) * delta_coord
-        # box5_mincoord = def_mincoord + np.array([1,0,0]) * delta_coord
-        # box5_maxcoord = def_maxcoord - np.array([0,1,1]) * delta_coord
-        # box6_mincoord = def_mincoord + np.array([1,0,1]) * delta_coord
-        # box6_maxcoord = def_maxcoord - np.array([0,1,0]) * delta_coord
-        # box7_mincoord = def_mincoord + np.array([1,1,0]) * delta_coord
-        # box7_maxcoord = def_maxcoord - np.array([0,0,1]) * delta_coord
-        # box8_mincoord = def_mincoord + np.array([1,1,1]) * delta_coord
-        # box8_maxcoord = def_maxcoord - np.array([0,0,0]) * delta_coord
-        #
-        # # box1indices   = np.sum((positions>=box1_mincoord) & (positions<=box1_maxcoord), axis=1) == 3
-        # box1indices   = ((positions[:,0]>=box1_mincoord[:,0]) & (positions[:,0]<=box1_maxcoord[:,0])#x
-        #               & (positions[:,1]>=box1_mincoord[:,1]) & (positions[:,1]<=box1_maxcoord[:,1])#y
-        #               & (positions[:,2]>=box1_mincoord[:,2]) & (positions[:,2]<=box1_maxcoord[:,2]))#z
-        # box1positions = positions[box1indices,:]
-        # box1data      = data[box1indices]
-        # remesh_nb_points = get_recursive_remesh(box1positions, box1data, depth+1, max_depth, threshold, remesh_points, remesh_nb_points)
-        #
-        # box2indices   = np.sum((positions>=box2_mincoord) & (positions<=box2_maxcoord), axis=1) == 3
-        # box2positions = positions[box2indices,:]
-        # box2data      = data[box2indices]
-        # remesh_nb_points = get_recursive_remesh(box2positions, box2data, depth+1, max_depth, threshold, remesh_points, remesh_nb_points)
-        #
-        # box3indices   = np.sum((positions>=box3_mincoord) & (positions<=box3_maxcoord), axis=1) == 3
-        # box3positions = positions[box3indices,:]
-        # box3data      = data[box3indices]
-        # remesh_nb_points = get_recursive_remesh(box3positions, box3data, depth+1, max_depth, threshold, remesh_points, remesh_nb_points)
-        #
-        # box4indices   = np.sum((positions>=box4_mincoord) & (positions<=box4_maxcoord), axis=1) == 3
-        # box4positions = positions[box4indices,:]
-        # box4data      = data[box4indices]
-        # remesh_nb_points = get_recursive_remesh(box4positions, box4data, depth+1, max_depth, threshold, remesh_points, remesh_nb_points)
-        #
-        # box5indices   = np.sum((positions>=box5_mincoord) & (positions<=box5_maxcoord), axis=1) == 3
-        # box5positions = positions[box5indices,:]
-        # box5data      = data[box5indices]
-        # remesh_nb_points = get_recursive_remesh(box5positions, box5data, depth+1, max_depth, threshold, remesh_points, remesh_nb_points)
-        #
-        # box6indices   = np.sum((positions>=box6_mincoord) & (positions<=box6_maxcoord), axis=1) == 3
-        # box6positions = positions[box6indices,:]
-        # box6data      = data[box6indices]
-        # remesh_nb_points = get_recursive_remesh(box6positions, box6data, depth+1, max_depth, threshold, remesh_points, remesh_nb_points)
-        #
-        # box7indices   = np.sum((positions>=box7_mincoord) & (positions<=box7_maxcoord), axis=1) == 3
-        # box7positions = positions[box7indices,:]
-        # box7data      = data[box7indices]
-        # remesh_nb_points = get_recursive_remesh(box7positions, box7data, depth+1, max_depth, threshold, remesh_points, remesh_nb_points)
-        #
-        # box8indices   = np.sum((positions>=box8_mincoord) & (positions<=box8_maxcoord), axis=1) == 3
-        # box8positions = positions[box8indices,:]
-        # box8data      = data[box8indices]
-        # remesh_nb_points = get_recursive_remesh(box8positions, box8data, depth+1, max_depth, threshold, remesh_points, remesh_nb_points)
-
     return remesh_nb_points
-
-
-# #Err, recursive procedure within recursive is maybe a bit ridiculous. But this can guarantee that my subdivision is correct
-# @numba.njit#(cache=True)
-# def recurse_over_octants(points, data, middle, depth, max_depth, threshold, remesh_points, remesh_nb_points, idx=0):
-#     if idx < 3:
-#         posidx = points[:, idx] >= middle[idx]
-#         negidx = points[:, idx] < middle[idx]
-#         pos_points = points[posidx]
-#         neg_points = points[negidx]
-#         pos_data = data[posidx]
-#         neg_data = data[negidx]
-#         remesh_nb_points = recurse_over_octants(pos_points, pos_data, middle, depth, max_depth, threshold, remesh_points, remesh_nb_points, idx+1)
-#         return recurse_over_octants(neg_points, neg_data, middle, depth, max_depth, threshold, remesh_points, remesh_nb_points, idx+1)
-#     else:
-#         #we have divided the points into 3D octant
-#         #TODO apply recursive mesh stuff
-#         return get_recursive_remesh(points, data, depth+1, max_depth, threshold, remesh_points, remesh_nb_points)
