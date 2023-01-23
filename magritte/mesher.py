@@ -625,8 +625,7 @@ def remesh_point_cloud(positions, data, max_depth=9, threshold= 5e-2, hullorder 
     Uses a recursive method with maximal depth max_depth.
     The hullorder specifies the density of the generated uniform boundary.
     '''
-
-    new_positions = np.zeros((len(positions), 3))#should be large enough to contain the new positions
+    new_positions = np.zeros((8*len(positions), 3))#should be large enough to contain the new positions
     #in the worst case, the recursive remeshing procedure will return a point cloud with size of the old points
     remesh_nb_points = 0#helper index for where to put the generated new points
 
@@ -894,19 +893,19 @@ def get_recursive_remesh(positions, data, depth, max_depth, threshold, remesh_po
     return remesh_nb_points
 
 
-#Err, recursive procedure within recursive is maybe a bit ridiculous. But this can guarantee that my subdivision is correct
-@numba.njit#(cache=True)
-def recurse_over_octants(points, data, middle, depth, max_depth, threshold, remesh_points, remesh_nb_points, idx=0):
-    if idx < 3:
-        posidx = points[:, idx] >= middle[idx]
-        negidx = points[:, idx] < middle[idx]
-        pos_points = points[posidx]
-        neg_points = points[negidx]
-        pos_data = data[posidx]
-        neg_data = data[negidx]
-        remesh_nb_points = recurse_over_octants(pos_points, pos_data, middle, depth, max_depth, threshold, remesh_points, remesh_nb_points, idx+1)
-        return recurse_over_octants(neg_points, neg_data, middle, depth, max_depth, threshold, remesh_points, remesh_nb_points, idx+1)
-    else:
-        #we have divided the points into 3D octant
-        #TODO apply recursive mesh stuff
-        return get_recursive_remesh(points, data, depth+1, max_depth, threshold, remesh_points, remesh_nb_points)
+# #Err, recursive procedure within recursive is maybe a bit ridiculous. But this can guarantee that my subdivision is correct
+# @numba.njit#(cache=True)
+# def recurse_over_octants(points, data, middle, depth, max_depth, threshold, remesh_points, remesh_nb_points, idx=0):
+#     if idx < 3:
+#         posidx = points[:, idx] >= middle[idx]
+#         negidx = points[:, idx] < middle[idx]
+#         pos_points = points[posidx]
+#         neg_points = points[negidx]
+#         pos_data = data[posidx]
+#         neg_data = data[negidx]
+#         remesh_nb_points = recurse_over_octants(pos_points, pos_data, middle, depth, max_depth, threshold, remesh_points, remesh_nb_points, idx+1)
+#         return recurse_over_octants(neg_points, neg_data, middle, depth, max_depth, threshold, remesh_points, remesh_nb_points, idx+1)
+#     else:
+#         #we have divided the points into 3D octant
+#         #TODO apply recursive mesh stuff
+#         return get_recursive_remesh(points, data, depth+1, max_depth, threshold, remesh_points, remesh_nb_points)
