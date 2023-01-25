@@ -625,7 +625,6 @@ def remesh_point_cloud(positions, data, max_depth=9, threshold= 5e-2, hullorder 
     Uses a recursive method with maximal depth max_depth.
     The hullorder specifies the density of the generated uniform boundary.
     '''
-
     new_positions = np.zeros((len(positions), 3))#should be large enough to contain the new positions
     #in the worst case, the recursive remeshing procedure will return a point cloud with size of the old points
     remesh_nb_points = 0#helper index for where to put the generated new points
@@ -633,13 +632,20 @@ def remesh_point_cloud(positions, data, max_depth=9, threshold= 5e-2, hullorder 
     xyz_min = np.min(positions, axis=0)
     xyz_max = np.max(positions, axis=0)
 
+    delta_xyz = xyz_max-xyz_min
+
     #Recursive re-mesh procedure puts the new points into the new_positions vector (with remesh_nb_points now containing the size of the re-meshed point cloud)
     remesh_nb_points = get_recursive_remesh(positions, data, 0, max_depth, threshold, new_positions, remesh_nb_points)
     print("new interior points: ", remesh_nb_points)
     #shrink positions vector to the actual ones
     new_positions.resize((remesh_nb_points,3))
 
-    hull = create_cubic_uniform_hull(xyz_min, xyz_max, order=hullorder)
+    #boundary should be seperated from the actual points
+    eps = 1e-3
+    bxyz_min = xyz_min - eps*delta_xyz
+    bxyz_max = xyz_max + eps*delta_xyz
+
+    hull = create_cubic_uniform_hull(bxyz_min, bxyz_max, order=hullorder)
     nb_boundary = hull.shape[0]
     print("number boundary points: ", nb_boundary)
     new_positions = np.concatenate((hull, new_positions), axis = 0)
@@ -671,7 +677,6 @@ def create_cubic_uniform_hull(xyz_min, xyz_max, order=3):
     # hull = np.unique(np.concatenate((xmin_plane, xmax_plane, ymin_plane, ymax_plane, zmin_plane, zmax_plane), axis = 0), axis = 0)
     hull = np.concatenate((xmin_plane, xmax_plane, ymin_plane, ymax_plane, zmin_plane, zmax_plane), axis = 0)
 
-    # print(hull)
     return hull
 
 #Simple function for the outer product of 1D vectors
@@ -688,8 +693,10 @@ def grid3D(x, y, z):
     return xyz
 
 
-@numba.njit(cache=True)
-def get_recursive_remesh(positions, data, depth, max_depth, threshold, remesh_points, remesh_nb_points):
+# Recursive function to generate a hierarchical remeshed grid, based on the total variation in data (compared to the threshold)
+# Returns the index 'remesh_nb_points', counting how much points have already been added to the remeshed grid
+#Does not use jit, as this is a recursive function
+def get_recursive_remesh(positions: np.array, data: np.array, depth: int, max_depth: int, threshold: float, remesh_points: np.array, remesh_nb_points: int):
     '''
     Uses recursion to remesh a given point cloud (uses all data to determine whether to recurse on a smaller scale),
     by evaluating the total variation in the data (compared against the threshold).
@@ -729,67 +736,54 @@ def get_recursive_remesh(positions, data, depth, max_depth, threshold, remesh_po
 
     else:
         #go and do some more recursive investigation
-        delta_coord = (max_coord - min_coord) / 2.0
-        #defining coordinates for sub-boxes
-        def_mincoord = min_coord
-        def_maxcoord = max_coord
-        #We define the maximum by starting from true maximum (if we start from the middle, rounding errors will occur)
+        middle = (max_coord + min_coord) / 2.0
 
-        box1_mincoord = def_mincoord + np.array([0,0,0]) * delta_coord
-        box1_maxcoord = def_maxcoord - np.array([1,1,1]) * delta_coord
-        box2_mincoord = def_mincoord + np.array([0,0,1]) * delta_coord
-        box2_maxcoord = def_maxcoord - np.array([1,1,0]) * delta_coord
-        box3_mincoord = def_mincoord + np.array([0,1,0]) * delta_coord
-        box3_maxcoord = def_maxcoord - np.array([1,0,1]) * delta_coord
-        box4_mincoord = def_mincoord + np.array([0,1,1]) * delta_coord
-        box4_maxcoord = def_maxcoord - np.array([1,0,0]) * delta_coord
-        box5_mincoord = def_mincoord + np.array([1,0,0]) * delta_coord
-        box5_maxcoord = def_maxcoord - np.array([0,1,1]) * delta_coord
-        box6_mincoord = def_mincoord + np.array([1,0,1]) * delta_coord
-        box6_maxcoord = def_maxcoord - np.array([0,1,0]) * delta_coord
-        box7_mincoord = def_mincoord + np.array([1,1,0]) * delta_coord
-        box7_maxcoord = def_maxcoord - np.array([0,0,1]) * delta_coord
-        box8_mincoord = def_mincoord + np.array([1,1,1]) * delta_coord
-        box8_maxcoord = def_maxcoord - np.array([0,0,0]) * delta_coord
+        uuu_idx = (positions[:,0] >= middle[0]) & (positions[:,1] >= middle[1]) & (positions[:,2] >= middle[2])
+        uuu_data = data[uuu_idx]
+        uuu_positions = positions[uuu_idx, :]
 
-        box1indices   = np.sum((positions>=box1_mincoord) & (positions<=box1_maxcoord), axis=1) == 3
-        box1positions = positions[box1indices,:]
-        box1data      = data[box1indices]
-        remesh_nb_points = get_recursive_remesh(box1positions, box1data, depth+1, max_depth, threshold, remesh_points, remesh_nb_points)
+        remesh_nb_points = get_recursive_remesh(uuu_positions, uuu_data, depth+1, max_depth, threshold, remesh_points, remesh_nb_points)
 
-        box2indices   = np.sum((positions>=box2_mincoord) & (positions<=box2_maxcoord), axis=1) == 3
-        box2positions = positions[box2indices,:]
-        box2data      = data[box2indices]
-        remesh_nb_points = get_recursive_remesh(box2positions, box2data, depth+1, max_depth, threshold, remesh_points, remesh_nb_points)
+        uul_idx = (positions[:,0] >= middle[0]) & (positions[:,1] >= middle[1]) & (positions[:,2] <  middle[2])
+        uul_data = data[uul_idx]
+        uul_positions = positions[uul_idx, :]
 
-        box3indices   = np.sum((positions>=box3_mincoord) & (positions<=box3_maxcoord), axis=1) == 3
-        box3positions = positions[box3indices,:]
-        box3data      = data[box3indices]
-        remesh_nb_points = get_recursive_remesh(box3positions, box3data, depth+1, max_depth, threshold, remesh_points, remesh_nb_points)
+        remesh_nb_points = get_recursive_remesh(uul_positions, uul_data, depth+1, max_depth, threshold, remesh_points, remesh_nb_points)
 
-        box4indices   = np.sum((positions>=box4_mincoord) & (positions<=box4_maxcoord), axis=1) == 3
-        box4positions = positions[box4indices,:]
-        box4data      = data[box4indices]
-        remesh_nb_points = get_recursive_remesh(box4positions, box4data, depth+1, max_depth, threshold, remesh_points, remesh_nb_points)
+        ulu_idx = (positions[:,0] >= middle[0]) & (positions[:,1] <  middle[1]) & (positions[:,2] >= middle[2])
+        ulu_data = data[ulu_idx]
+        ulu_positions = positions[ulu_idx, :]
 
-        box5indices   = np.sum((positions>=box5_mincoord) & (positions<=box5_maxcoord), axis=1) == 3
-        box5positions = positions[box5indices,:]
-        box5data      = data[box5indices]
-        remesh_nb_points = get_recursive_remesh(box5positions, box5data, depth+1, max_depth, threshold, remesh_points, remesh_nb_points)
+        remesh_nb_points = get_recursive_remesh(ulu_positions, ulu_data, depth+1, max_depth, threshold, remesh_points, remesh_nb_points)
 
-        box6indices   = np.sum((positions>=box6_mincoord) & (positions<=box6_maxcoord), axis=1) == 3
-        box6positions = positions[box6indices,:]
-        box6data      = data[box6indices]
-        remesh_nb_points = get_recursive_remesh(box6positions, box6data, depth+1, max_depth, threshold, remesh_points, remesh_nb_points)
+        ull_idx = (positions[:,0] >= middle[0]) & (positions[:,1] <  middle[1]) & (positions[:,2] <  middle[2])
+        ull_data = data[ull_idx]
+        ull_positions = positions[ull_idx, :]
 
-        box7indices   = np.sum((positions>=box7_mincoord) & (positions<=box7_maxcoord), axis=1) == 3
-        box7positions = positions[box7indices,:]
-        box7data      = data[box7indices]
-        remesh_nb_points = get_recursive_remesh(box7positions, box7data, depth+1, max_depth, threshold, remesh_points, remesh_nb_points)
+        remesh_nb_points = get_recursive_remesh(ull_positions, ull_data, depth+1, max_depth, threshold, remesh_points, remesh_nb_points)
 
-        box8indices   = np.sum((positions>=box8_mincoord) & (positions<=box8_maxcoord), axis=1) == 3
-        box8positions = positions[box8indices,:]
-        box8data      = data[box8indices]
-        remesh_nb_points = get_recursive_remesh(box8positions, box8data, depth+1, max_depth, threshold, remesh_points, remesh_nb_points)
+        luu_idx = (positions[:,0] <  middle[0]) & (positions[:,1] >= middle[1]) & (positions[:,2] >= middle[2])
+        luu_data = data[luu_idx]
+        luu_positions = positions[luu_idx, :]
+
+        remesh_nb_points = get_recursive_remesh(luu_positions, luu_data, depth+1, max_depth, threshold, remesh_points, remesh_nb_points)
+
+        lul_idx = (positions[:,0] <  middle[0]) & (positions[:,1] >= middle[1]) & (positions[:,2] <  middle[2])
+        lul_data = data[lul_idx]
+        lul_positions = positions[lul_idx, :]
+
+        remesh_nb_points = get_recursive_remesh(lul_positions, lul_data, depth+1, max_depth, threshold, remesh_points, remesh_nb_points)
+
+        llu_idx = (positions[:,0] <  middle[0]) & (positions[:,1] <  middle[1]) & (positions[:,2] >= middle[2])
+        llu_data = data[llu_idx]
+        llu_positions = positions[llu_idx, :]
+
+        remesh_nb_points = get_recursive_remesh(llu_positions, llu_data, depth+1, max_depth, threshold, remesh_points, remesh_nb_points)
+
+        lll_idx = (positions[:,0] <  middle[0]) & (positions[:,1] <  middle[1]) & (positions[:,2] <  middle[2])
+        lll_data = data[lll_idx]
+        lll_positions = positions[lll_idx, :]
+
+        remesh_nb_points = get_recursive_remesh(lll_positions, lll_data, depth+1, max_depth, threshold, remesh_points, remesh_nb_points)
 
     return remesh_nb_points
