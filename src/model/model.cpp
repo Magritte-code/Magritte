@@ -2,6 +2,7 @@
 #include "model.hpp"
 #include "tools/heapsort.hpp"
 #include "solver/solver.hpp"
+#include <tuple>
 
 
 void Model :: read (const Io& io)
@@ -72,7 +73,7 @@ int Model :: compute_spectral_discretisation ()
     threaded_for (p, parameters->npoints(),
     {
         Real1 freqs (parameters->nfreqs());
-        // Size1 nmbrs (parameters->nfreqs());
+        Size1 nmbrs (parameters->nfreqs());
 
         Size index0 = 0;
         Size index1 = 0;
@@ -92,7 +93,7 @@ int Model :: compute_spectral_discretisation ()
                     const Real root = lines.lineProducingSpecies[l].quadrature.roots[z];
 
                     freqs[index1] = freqs_line + width * root;
-                    // nmbrs[index1] = index1;
+                    nmbrs[index1] = index1;
 
                     index1++;
                 }
@@ -113,6 +114,14 @@ int Model :: compute_spectral_discretisation ()
             radiation.frequencies.nu(p, fl) = freqs[fl];
         }
 
+        // Also compute sorted frequencies
+        heapsort(freqs, nmbrs);
+        // Set all sorted frequencies sorted_nu
+        for (Size fl = 0; fl < parameters->nfreqs(); fl++)
+        {
+            radiation.frequencies.sorted_nu(p, fl) = freqs[fl];
+            radiation.frequencies.corresponding_nu_index(p, fl) = nmbrs[fl];
+        }
 
         // Create lookup table for the frequency corresponding to each line
         // Size1 nmbrs_inverted (parameters->nfreqs());
@@ -332,6 +341,34 @@ int Model :: compute_radiation_field_shortchar_order_0 ()
     return (0);
 }
 
+///   Computer for the radiation field
+//////////////////////////////////////
+int Model :: compute_radiation_field_comoving ()
+{
+    std::cout<< "Computing radiation field..." <<std::endl;
+    Solver solver;
+    solver.setup_comoving(*this);
+
+    // Sperical symmetry is not supported due to changing angles
+    if (parameters->spherical_symmetry())
+    {
+        throw std::runtime_error ("Sperical symmetry is not supported for the comoving solver.");
+    }
+
+    if (parameters->one_line_approximation)
+    {
+        solver.solve_comoving_order_2_sparse<OneLine>(*this);
+    }
+
+    if (parameters->sum_opacity_emissivity_over_all_lines)
+    {
+        solver.solve_comoving_order_2_sparse<None>(*this);
+    }
+
+    solver.solve_comoving_order_2_sparse<CloseLines>(*this);
+    return (0);
+}
+
 
 ///  Computer for the radiation field
 /////////////////////////////////////
@@ -420,6 +457,13 @@ int Model :: compute_radiation_field_feautrier_order_2_sparse ()
     Solver solver;
     solver.setup <CoMoving>                      (*this);
 
+    if (parameters->prune_zero_contribution_points)
+    {
+        std::cout<<"pruning points on rays"<<std::endl;
+        solver.solve_feautrier_order_2_sparse_pruned_rays <CloseLines> (*this);
+        return (0);
+    }
+
     if (parameters->one_line_approximation)
     {
         solver.solve_feautrier_order_2_sparse <OneLine> (*this);
@@ -441,6 +485,11 @@ int Model :: compute_radiation_field_feautrier_order_2_sparse ()
 ///////////////////////////////////////////////////
 int Model :: compute_Jeff ()
 {
+    if (parameters->use_smoothing)
+    {
+        smooth_J();
+    }
+
     for (LineProducingSpecies &lspec : lines.lineProducingSpecies)
     {
         threaded_for (p, parameters->npoints(),
@@ -474,6 +523,11 @@ int Model :: compute_Jeff ()
             }
         })
     }
+    if (parameters->use_smoothing)
+    {
+        std::cout<<"smoothing J"<<std::endl;
+        smooth_Jeff_Jdif();
+    }
 
     return (0);
 }
@@ -483,6 +537,11 @@ int Model :: compute_Jeff ()
 ///////////////////////////////////////////////////
 int Model :: compute_Jeff_sparse ()
 {
+    if (parameters->use_smoothing)
+    {
+        smooth_J_sparse();
+    }
+
     for (LineProducingSpecies &lspec : lines.lineProducingSpecies)
     {
         threaded_for (p, parameters->npoints(),
@@ -504,6 +563,10 @@ int Model :: compute_Jeff_sparse ()
             }
         })
     }
+    // if (parameters->use_smoothing)
+    // {
+    //     smooth_Jeff_Jdif();
+    // }
 
     return (0);
 }
@@ -823,6 +886,107 @@ int Model :: compute_level_populations_shortchar (
 }
 
 
+
+///  Compute level populations self-consistenly with the radiation field
+///  assuming statistical equilibrium (detailed balance for the levels)
+///  @param[in] io                  : io object (for writing level populations)
+///  @param[in] use_Ng_acceleration : true if Ng acceleration has to be used
+///  @param[in] max_niterations     : maximum number of iterations
+///  @return number of iteration done
+///////////////////////////////////////////////////////////////////////////////
+int Model :: compute_level_populations_comoving (
+    const bool use_Ng_acceleration,
+    const long max_niterations     )
+{
+    // Check spectral discretisation setting
+    if (spectralDiscretisation != SD_Lines)
+    {
+        throw std::runtime_error ("Spectral discretisation was not set for Lines!");
+    }
+
+    // Initialize the number of iterations
+    int iteration        = 0;
+    int iteration_normal = 0;
+
+    // Initialize errors
+    error_mean.clear ();
+    error_max .clear ();
+
+    // Initialize some_not_converged
+    bool some_not_converged = true;
+
+    // Iterate as long as some levels are not converged
+    while (some_not_converged && (iteration < max_niterations))
+    {
+        iteration++;
+
+        // logger.write ("Starting iteration ", iteration);
+        cout << "Starting iteration " << iteration << endl;
+
+        // Start assuming convergence
+        some_not_converged = false;
+
+        if (use_Ng_acceleration && (iteration_normal == 4))
+        {
+            lines.iteration_using_Ng_acceleration (parameters->pop_prec);
+
+            iteration_normal = 0;
+        }
+        else
+        {
+            // logger.write ("Computing the radiation field...");
+            cout << "Computing the radiation field..." << endl;
+
+            Timer timer_1("Compute Radiation Field");
+            timer_1.start();
+
+            compute_radiation_field_comoving();
+            compute_Jeff_sparse             ();
+
+            timer_1.stop();
+            timer_1.print_total();
+
+
+            Timer timer_2("Compute Statistical Equilibrium");
+            timer_2.start();
+
+            lines.iteration_using_statistical_equilibrium_sparse (
+                chemistry.species.abundance,
+                thermodynamics.temperature.gas,
+                parameters->pop_prec                            );
+
+            timer_2.stop();
+            timer_2.print_total();
+
+
+            iteration_normal++;
+        }
+
+
+        for (int l = 0; l < parameters->nlspecs(); l++)
+        {
+            error_mean.push_back (lines.lineProducingSpecies[l].relative_change_mean);
+            error_max .push_back (lines.lineProducingSpecies[l].relative_change_max);
+
+            if (lines.lineProducingSpecies[l].fraction_not_converged > 1.0 - parameters->convergence_fraction)
+            {
+                some_not_converged = true;
+            }
+
+            const double fnc = lines.lineProducingSpecies[l].fraction_not_converged;
+
+            // logger.write ("Already ", 100 * (1.0 - fnc), " % converged!");
+            cout << "Already " << 100.0 * (1.0 - fnc) << " % converged!" << endl;
+        }
+    } // end of while loop of iterations
+
+    // Print convergence stats
+    cout << "Converged after " << iteration << " iterations" << endl;
+
+    return iteration;
+}
+
+
 ///  Computer for the radiation field
 /////////////////////////////////////
 int Model :: compute_image (const Size ray_nr)
@@ -949,4 +1113,142 @@ int Model :: set_dshift_max ()
     })
 
     return (0);
+}
+
+
+//Simple smoothing procedure for decreasing directional artifacts at the cost of some spatial accuracy
+void Model :: smooth_J ()
+{
+    //construct temporary matrix (use for each species/line/? to store temp data)
+    Matrix<Real> temp_J;
+    temp_J.resize(parameters->npoints(), parameters->nfreqs());//Possible memory improvement: actually resize for each line producing species/use max size of nrad over all species
+    for (LineProducingSpecies &lspec : lines.lineProducingSpecies)
+    {
+        //for all points, copy the intensities temporarily
+        threaded_for (p, parameters->npoints(),
+        {
+            for (Size k = 0; k < lspec.linedata.nrad; k++)
+            {
+                const Size1 freq_nrs = lspec.nr_line[p][k];
+                // Integrate over the line
+                for (Size z = 0; z < parameters->nquads(); z++)
+                {
+                    temp_J(p,freq_nrs[z]) = radiation.J(p, freq_nrs[z]);
+                    //also reinitialize J, adding its own fraction
+                    Size n_neighbors = geometry.points.n_neighbors[p];
+                    radiation.J(p,freq_nrs[z]) /= (n_neighbors + 1.0);
+                }
+            }
+        })
+
+        threaded_for (p, parameters->npoints(),
+        {
+            //get neighbors of point
+            Size neighbors_start_index;
+            Size n_neighbors;
+            std::tie(neighbors_start_index, n_neighbors) = geometry.points.get_neighbors(p);
+            const Size index_end = neighbors_start_index + n_neighbors;
+
+            for (Size index = neighbors_start_index; index<index_end; index++)
+            {
+                const Size neighbor = geometry.points.neighbors[index];
+                for (Size k = 0; k < lspec.linedata.nrad; k++)
+                {
+                    const Size1 freq_nrs = lspec.nr_line[p][k];
+                    for (Size z = 0; z < parameters->nquads(); z++)
+                    {
+                        // averaging the J (smoothing it out a bit)
+                        radiation.J(p,freq_nrs[z])+=temp_J(neighbor,freq_nrs[z])/(n_neighbors+1.0);
+                    }
+                }
+            }
+        })
+    }
+}
+
+//Simple smoothing procedure for decreasing directional artifacts at the cost of some spatial accuracy
+void Model :: smooth_J_sparse ()
+{
+    //construct temporary matrix (use for each species/line/? to store temp data)
+    Matrix<Real> temp_J;
+    temp_J.resize(parameters->npoints(), parameters->nlines());//Possible memory improvement: actually resize for each line producing species/use max size of nrad over all species
+    for (LineProducingSpecies &lspec : lines.lineProducingSpecies)
+    {
+        //for all points, copy the intensities temporarily
+        threaded_for (p, parameters->npoints(),
+        {
+            for (Size k = 0; k < lspec.linedata.nrad; k++)
+            {
+                temp_J(p,k) = lspec.J(p,k);
+                //also reinitialize J, adding its own fraction
+                Size n_neighbors = geometry.points.n_neighbors[p];
+                lspec.J(p,k) /= (n_neighbors + 1.0);
+            }
+        })
+
+        threaded_for (p, parameters->npoints(),
+        {
+            //get neighbors of point
+            Size neighbors_start_index;
+            Size n_neighbors;
+            std::tie(neighbors_start_index, n_neighbors) = geometry.points.get_neighbors(p);
+            const Size index_end = neighbors_start_index + n_neighbors;
+
+            for (Size index = neighbors_start_index; index<index_end; index++)
+            {
+                const Size neighbor = geometry.points.neighbors[index];
+                for (Size k = 0; k < lspec.linedata.nrad; k++)
+                {
+                    // averaging the J (smoothing it out a bit)
+                    lspec.J(p,k)+=temp_J(neighbor,k)/(n_neighbors+1.0);
+                }
+            }
+        })
+    }
+}
+
+
+void Model :: smooth_Jeff_Jdif ()
+{
+    //construct temporary matrix (use for each species/line/? to store temp data)
+    Matrix<Real> temp_Jeff;
+    Matrix<Real> temp_Jdif;
+    temp_Jeff.resize(parameters->npoints(), parameters->nlines());//Possible memory improvement: actually resize for each line producing species/use max size of nrad over all species
+    temp_Jdif.resize(parameters->npoints(), parameters->nlines());//Possible memory improvement: actually resize for each line producing species/use max size of nrad over all species
+    for (LineProducingSpecies &lspec : lines.lineProducingSpecies)
+    {
+        //for all points, copy the intensities temporarily
+        threaded_for (p, parameters->npoints(),
+        {
+            for (Size k = 0; k < lspec.linedata.nrad; k++)
+            {
+                temp_Jeff(p,k) = lspec.Jeff[p][k];
+                temp_Jdif(p,k) = lspec.Jdif[p][k];
+                //also reinitialize J, adding its own fraction
+                Size n_neighbors = geometry.points.n_neighbors[p];
+                lspec.Jeff[p][k] /= (n_neighbors + 1.0);
+                lspec.Jdif[p][k] /= (n_neighbors + 1.0);
+            }
+        })
+
+        threaded_for (p, parameters->npoints(),
+        {
+            //get neighbors of point
+            Size neighbors_start_index;
+            Size n_neighbors;
+            std::tie(neighbors_start_index, n_neighbors) = geometry.points.get_neighbors(p);
+            const Size index_end = neighbors_start_index + n_neighbors;
+
+            for (Size index = neighbors_start_index; index<index_end; index++)
+            {
+                const Size neighbor = geometry.points.neighbors[index];
+                for (Size k = 0; k < lspec.linedata.nrad; k++)
+                {
+                    // averaging the J (smoothing it out a bit)
+                    lspec.Jeff[p][k]+=temp_Jeff(neighbor,k)/(n_neighbors+1.0);
+                    lspec.Jdif[p][k]+=temp_Jdif(neighbor,k)/(n_neighbors+1.0);
+                }
+            }
+        })
+    }
 }

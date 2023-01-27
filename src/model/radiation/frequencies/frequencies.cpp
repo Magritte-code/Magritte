@@ -23,7 +23,6 @@ void Frequencies :: read (const Io& io)
     //nfreqs += ncont;
 
     nu.resize (parameters->npoints(), parameters->nfreqs());
-
     corresponding_line.resize (parameters->nfreqs());
 
     appears_in_line_integral.resize (parameters->nfreqs());
@@ -31,12 +30,16 @@ void Frequencies :: read (const Io& io)
     corresponding_k_for_tran.resize (parameters->nfreqs());
     corresponding_z_for_line.resize (parameters->nfreqs());
 
+    sorted_nu.resize (parameters->npoints(), parameters->nfreqs());
+    corresponding_nu_index.resize (parameters->npoints(), parameters->nfreqs());
+
     // frequencies.nu has to be initialized (for unused entries)
     threaded_for (p, parameters->npoints(),
     {
         for (Size f = 0; f < parameters->nfreqs(); f++)
         {
             nu(p,f) = 0.0;
+            sorted_nu(p,f) = 0.0;
         }
     })
 }

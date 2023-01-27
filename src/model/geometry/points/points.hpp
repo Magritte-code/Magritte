@@ -4,6 +4,7 @@
 #include "io/io.hpp"
 #include "model/parameters/parameters.hpp"
 #include "tools/types.hpp"
+#include <tuple>
 
 
 struct Points
@@ -23,4 +24,8 @@ struct Points
 
     void read  (const Io& io);
     void write (const Io& io) const;
+
+    std::tuple<Size, Size> get_neighbors(Size pointid);
 };
+
+#include "points.tpp"

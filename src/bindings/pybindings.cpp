@@ -245,9 +245,19 @@ PYBIND11_MODULE (core, module)
             "Compute the radiation field for the modle using the 0th-order short-characteristics methods."
         )
         .def (
+            "compute_radiation_field_comoving",
+            &Model::compute_radiation_field_comoving,
+            "Compute the radiation field for the model using the 2th-order comoving method."
+        )
+        .def (
             "compute_Jeff",
             &Model::compute_Jeff,
             "Compute the effective mean intensity in the line."
+        )
+        .def (
+            "compute_Jeff_sparse",
+            &Model::compute_Jeff_sparse,
+            "Compute the effective mean intensity in the line for a sparse solver."
         )
         .def (
             "compute_level_populations_from_stateq",
@@ -268,6 +278,11 @@ PYBIND11_MODULE (core, module)
             "compute_level_populations_shortchar",
             &Model::compute_level_populations_shortchar,
             "Compute the level populations using the short-characteristics solver for the model assuming statistical equilibrium until convergence, optionally using Ng-acceleration, and for the given maximum number of iterations."
+        )
+        .def (
+            "compute_level_populations_comoving",
+            &Model::compute_level_populations_comoving,
+            "Compute the level populations for the model assuming statistical equilibrium until convergence, using a comoving type method. This optionally use Ng-acceleration and iterates maximally for the given maximum number of iterations. (Memory sparse option.)"
         )
         .def (
             "compute_image",
@@ -314,11 +329,14 @@ PYBIND11_MODULE (core, module)
         .def_readwrite ("pop_prec",                    &Parameters::pop_prec                   , "Required precision for ALI.")
         .def_readwrite ("min_opacity",                 &Parameters::min_opacity                , "Minimum opacity that will be assumed in the solver.")
         .def_readwrite ("min_dtau",                    &Parameters::min_dtau                   , "Minimum optical depth increment that will be assumed in the solver.")
+        .def_readwrite ("comoving_min_dtau",           &Parameters::comoving_min_dtau          , "Minimum optical depth that will be assumed in the comoving solver.")
         .def_readwrite ("store_intensities",           &Parameters::store_intensities          , "Whether or not to store intensities.")
         .def_readwrite ("use_Ng_acceleration",         &Parameters::use_Ng_acceleration        , "Whether or not to use Ng acceleration.")
         .def_readwrite ("one_line_approximation",      &Parameters::one_line_approximation     , "Whether or not to use one line approximation.")
         .def_readwrite ("sum_opacity_emissivity_over_all_lines", &Parameters::sum_opacity_emissivity_over_all_lines, "Whether or not to sum the opacity, emissivity over all lines (including the zero contributions).")
         .def_readwrite ("max_distance_opacity_contribution", &Parameters::max_distance_opacity_contribution, "The distance (scaled to line width) at which we ignore the opacity/emissivity contribution.")
+        .def_readwrite ("use_smoothing",               &Parameters::use_smoothing, "Whether to or not to use smoothing.")
+        .def_readwrite ("prune_zero_contribution_points", &Parameters::prune_zero_contribution_points, "Whether to or not to prune points to far from all lines.")
         // setters
         .def ("set_model_name",               &Parameters::set_model_name          , "Set model name.")
         .def ("set_dimension",                &Parameters::set_dimension           , "Set spatial dimension of the model.")
