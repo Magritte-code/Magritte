@@ -68,6 +68,7 @@ struct Solver
     //However, just go with a Size for absolute safety (max upper bound on number rays traced can be assumed to be the number of points)
     pc::multi_threading::ThreadPrivate<Vector<unsigned char>> real_pt_;
 
+    ///Specific part for non-approximate comoving solver
     // pc::multi_threading::ThreadPrivate<Vector<Real>> curr_intensity_;
     // pc::multi_threading::ThreadPrivate<Vector<Real>> next_intensity_;
     // pc::multi_threading::ThreadPrivate<Vector<Size>> freq_matching_;//for (mis)matching the frequency indices; wait: this assumes that we only go one positional step at a time, drastically increasing the difficulty for adding boundary conditions
@@ -150,6 +151,32 @@ struct Solver
     //EXTRA REQUIREMENT: dIdnu_index1_next_()==start_indices_()[1]; this for easily treating the implicit part
     // && dIdnu_index2/3_next_()!=start_indices_()[1] IF the corresponding coefficient is nonzero
     //Practically, this means that I can just simply subtract
+
+    ///Specific part for comoving approximate solver (CoMoving Approximate)
+    //As this only deals with a single position increment at a time, less data needs to be stored compared to the non-approximate version
+    //unless stated otherwise, all are indexed using the sorted frequency index; however, which sorted index (curr or next point) depends on what is stored TODO EXPLAIN
+    pc::multi_threading::ThreadPrivate<Vector<Real>> cma_computed_intensities_;//stores the computed intensities//TODO: INIT WITH CMB
+    pc::multi_threading::ThreadPrivate<Vector<Real>> cma_start_intensities_;//stores the intensity at the start of increment
+    pc::multi_threading::ThreadPrivate<Vector<Real>> cma_start_frequencies_;//stores the start frequency (mainly convenient for programming)
+    pc::multi_threading::ThreadPrivate<Vector<Real>> cma_start_frequency_index_;//stores the starting frequency index (used for looking up stuff)
+    pc::multi_threading::ThreadPrivate<Vector<Real>> cma_end_frequencies_;//stores the end frequency (mainly convenient for programming)
+    // pc::multi_threading::ThreadPrivate<Vector<Real>> cma_end_frequency_index_;//stores the end frequency index (used for looking up stuff)
+    //not necessary to store, as this maps the end frequency index onto itself.
+    pc::multi_threading::ThreadPrivate<Vector<Real>> cma_chi_curr_;//stores the starting opacity (thus does not need to be computed twice)
+    pc::multi_threading::ThreadPrivate<Vector<Real>> cma_chi_next_;//stores the ending opacity. Needs to overwrite cma_chi_curr when the data is fully mapped
+    pc::multi_threading::ThreadPrivate<Vector<char>> cma_compute_curr_opacity_;//stores whether to compute the opacity
+    pc::multi_threading::ThreadPrivate<Vector<char>> cma_compute_next_opacity_;//stores whether to compute the opacity. Needs to overwrite cma_compute_curr_opacity_ when data is fully mapped
+    pc::multi_threading::ThreadPrivate<Vector<char>> cma_S_curr_;//stores the computed current source function for the increment
+    pc::multi_threading::ThreadPrivate<Vector<char>> cma_S_next_;//stores the computed next source function for the increment
+    pc::multi_threading::ThreadPrivate<Vector<char>> cma_dIdnu_coef1_curr_;//stores derivative coefficents for the intensity derivative with respect to the frequency
+    pc::multi_threading::ThreadPrivate<Vector<char>> cma_dIdnu_coef2_curr_;//1 stores the coef of the current freq, 2 of the nearby freq and 3 of the outermost freq
+    pc::multi_threading::ThreadPrivate<Vector<char>> cma_dIdnu_coef3_curr_;
+    pc::multi_threading::ThreadPrivate<Vector<char>> cma_dIdnu_coef1_next_;
+    pc::multi_threading::ThreadPrivate<Vector<char>> cma_dIdnu_coef2_next_;
+    pc::multi_threading::ThreadPrivate<Vector<char>> cma_dIdnu_coef3_next_;
+    pc::multi_threading::ThreadPrivate<Vector<char>> cma_delta_tau_;//stores the optical depth increments belonging to each position increment
+
+
 
 
 
