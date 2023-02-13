@@ -1,3 +1,5 @@
+#include <set>
+
 template <Frame frame>
 inline void Solver :: setup (Model& model)
 {
@@ -151,7 +153,7 @@ inline void Solver :: setup_comoving (Model& model)
 
 //l=max length of ray, w=nfreqs, n_o_d is number of off-diagonals; will be ignored
 // Approximated version of comoving solver requires less setup stuff
-inline void Solver :: setup_comoving_approx (Model& model)
+inline void Solver :: setup_comoving_local_approx (Model& model)
 {
     length     = 2 * get_ray_lengths_max <Rest> (model) + 1;
     centre     = length/2;
@@ -161,9 +163,6 @@ inline void Solver :: setup_comoving_approx (Model& model)
 
     std::cout<<"setup length: "<<length<<std::endl;
     std::cout<<"setup width: "<<width<<std::endl;
-
-    TODO USE OTHER NAMES FOR THIS DEFINED COMOVING VARS
-    DATA TYPES ARE DIFFERENT!
 
     //Setup for allowing a ray to compute multiple values
     points_to_trace_ray_through.resize(model.parameters->hnrays());
@@ -192,17 +191,17 @@ inline void Solver :: setup_comoving_approx (Model& model)
             }
         }
 
-        //err, I should check which I actually need...
-        //This probably allows multiple lines to be treated together
-        line_quad_discdir_overlap_(i).resize(model.parameters->nlines());
-        left_bound_(i).resize(model.parameters->nlines());
-        right_bound_(i).resize(model.parameters->nlines());
-        left_bound_index_(i).resize(model.parameters->nlines());
-        right_bound_index_(i).resize(model.parameters->nlines());
-
-        //some misc variables
-        line_count_(i).resize(model.parameters->nlines());
-        quad_range_weight_(i).resize(model.parameters->nquads());
+        // //err, I should check which I actually need...
+        // //This probably allows multiple lines to be treated together
+        // line_quad_discdir_overlap_(i).resize(model.parameters->nlines());
+        // left_bound_(i).resize(model.parameters->nlines());
+        // right_bound_(i).resize(model.parameters->nlines());
+        // left_bound_index_(i).resize(model.parameters->nlines());
+        // right_bound_index_(i).resize(model.parameters->nlines());
+        //
+        // //some misc variables
+        // line_count_(i).resize(model.parameters->nlines());
+        // quad_range_weight_(i).resize(model.parameters->nquads());
 
         //This will be able to be reduced significantly, as we will not a priori construct huge matrices for properly obeying the boundary conditions
         // intensities_(i).resize(length, width);
@@ -226,31 +225,34 @@ inline void Solver :: setup_comoving_approx (Model& model)
         // dIdnu_index2_next_(i).resize(length, width);
         // dIdnu_index3_next_(i).resize(length, width);
 
-        start_intensities_(i).resize(width);
-        intensities_(i).resize(width);
-        dIdnu_curr_(i).resize(width);
-        compute_curr_opacity_(i).resize(width);
-        curr_opacity_(i).resize(width);
+        cma_start_intensities_(i).resize(width);
+        cma_computed_intensities_(i).resize(width);
+        // cma_dIdnu_curr_(i).resize(width); explicit, computed intensity derivative with respect to frequency; not used
+        cma_compute_curr_opacity_(i).resize(width);
+        cma_compute_next_opacity_(i).resize(width);
+        cma_chi_next_(i).resize(width);
+        cma_chi_curr_(i).resize(width);
+
         // temp_intensities_(i).resize(width);//for temporarily storing ; just compute explicit dI/dnu at each point
-        delta_tau_(i).resize(width);
-        S_curr_(i).resize(width);
-        S_next_(i).resize(width);
+        cma_delta_tau_(i).resize(width);
+        cma_S_curr_(i).resize(width);
+        cma_S_next_(i).resize(width);
 
-        dIdnu_coef1_curr_(i).resize(width);
-        dIdnu_coef2_curr_(i).resize(width);
-        dIdnu_coef3_curr_(i).resize(width);
+        cma_dIdnu_coef1_curr_(i).resize(width);
+        cma_dIdnu_coef2_curr_(i).resize(width);
+        cma_dIdnu_coef3_curr_(i).resize(width);
 
-        dIdnu_index1_curr_(i).resize(width);
-        dIdnu_index2_curr_(i).resize(width);
-        dIdnu_index3_curr_(i).resize(width);
+        // cma_dIdnu_index1_curr_(i).resize(width);
+        // cma_dIdnu_index2_curr_(i).resize(width);
+        // cma_dIdnu_index3_curr_(i).resize(width);
 
-        dIdnu_coef1_next_(i).resize(width);
-        dIdnu_coef2_next_(i).resize(width);
-        dIdnu_coef3_next_(i).resize(width);
+        cma_dIdnu_coef1_next_(i).resize(width);
+        cma_dIdnu_coef2_next_(i).resize(width);
+        cma_dIdnu_coef3_next_(i).resize(width);
 
-        dIdnu_index1_next_(i).resize(width);
-        dIdnu_index2_next_(i).resize(width);
-        dIdnu_index3_next_(i).resize(width);
+        // cma_dIdnu_index1_next_(i).resize(width);
+        // cma_dIdnu_index2_next_(i).resize(width);
+        // cma_dIdnu_index3_next_(i).resize(width);
     }
 
     //Finally also trace the rays in advance to prune the unnecessary ones.
@@ -2092,7 +2094,7 @@ inline void Solver :: solve_comoving_local_approx_order_2_sparse (Model& model)
 
 
 template<ApproximationType approx>
-inline void Solver :: solve_comoving_local_approx_order_2_sparse (
+accel inline void Solver :: solve_comoving_local_approx_order_2_sparse (
       Model& model,
       const Size o,//ray origin point
       const Size r,//ray direction index
@@ -2158,7 +2160,7 @@ inline void Solver :: solve_comoving_local_approx_order_2_sparse (
     Vector<char>& cma_compute_curr_opacity = cma_compute_curr_opacity_();
     // compute_curr_opacity.fill(compute_curr_opacity.begin(), compute_curr_opacity.end(), 1); grr, Vector is not a vector
     //manually fill instead
-    for (for freqidx=0; freqidx<model.parameters->nfreqs(); freqidx++)
+    for (Size freqidx=0; freqidx<model.parameters->nfreqs(); freqidx++)
     {
         cma_compute_curr_opacity[freqidx]=true;
         //also compute starting intensity
@@ -2182,7 +2184,7 @@ inline void Solver :: solve_comoving_local_approx_order_2_sparse (
             const Size z=model.radiation.frequencies.corresponding_z_for_line[unsorted_freqidx];
             LineProducingSpecies& lspec=model.lines.lineProducingSpecies[l];
             lspec.J(nr[first_()],k) += lspec.quadrature.weights[z] * wt * cma_intensities[freqid];// Su_()[centre];
-            //TODO: compute lambda term
+            //TODO: compute lambda term; err, for bdy? technically zero as bdy condition is enforced, so ignore
         }
     }
     // else
@@ -2209,11 +2211,10 @@ inline void Solver :: solve_comoving_local_approx_order_2_sparse (
         // std::cout<<"rayposidx: "<<rayposidx<<std::endl;
         // std::cout<<"dtau rayposidx: "<<delta_tau_()(rayposidx, 0)<<std::endl;
         // comoving_local_approx_map_data(model, rayposidx, rayidx, r, is_upward_disc, true);
-        comoving_local_approx_map_data(model, nr_()[rayposidx-1], nr_()[rayposidx], shift_curr, shift_next, is_upward_disc, dZ_()[rayposidx])
-        solve_comoving_local_approx_single_step (model, rayposidx, rayidx, r, is_upward_disc, true);
+        comoving_local_approx_map_data<approx>(model, nr_()[rayposidx-1], nr_()[rayposidx], shift_curr, shift_next, is_upward_disc, dZ_()[rayposidx]);
+        solve_comoving_local_approx_single_step (model, nr_()[rayposidx], rayidx, r, is_upward_disc);
         rayposidx++;
     }
-    TODO ALSO DO BACKWARD RAY
 
     // std::cout<<"after forward iterations"<<std::endl;
 
@@ -2231,8 +2232,8 @@ inline void Solver :: solve_comoving_local_approx_order_2_sparse (
         shift_()[temp_rayidx] = 2.0-shift_()[temp_rayidx];
     }
 
-    //manually fill compute_curr_opacity
-    for (for freqidx=0; freqidx<model.parameters->nfreqs(); freqidx++)
+    //manually fill compute_curr_opacity, as we have not yet computed the current opacities on this ray direction (dopper shift changing sign means we cannot reuse the last opacity on the opposite direction)
+    for (Size freqidx=0; freqidx<model.parameters->nfreqs(); freqidx++)
     {
         cma_compute_curr_opacity[freqidx]=true;
         //also compute starting intensity
@@ -2257,7 +2258,7 @@ inline void Solver :: solve_comoving_local_approx_order_2_sparse (
             const Size z=model.radiation.frequencies.corresponding_z_for_line[unsorted_freqidx];
             LineProducingSpecies& lspec=model.lines.lineProducingSpecies[l];
             lspec.J(nr[last_()],k) += lspec.quadrature.weights[z] * wt * cma_intensities[freqid];// Su_()[centre];
-            //TODO: compute lambda term
+            //TODO: compute lambda term; err, for bdy? technically zero as bdy condition is enforced, so ignore
         }
     }
 
@@ -2274,8 +2275,8 @@ inline void Solver :: solve_comoving_local_approx_order_2_sparse (
         // std::cout<<"next ray index: "<<rayposidx<<std::endl;
         const bool is_upward_disc=(shift_next>=shift_curr);
         // solve_comoving_single_step (model, rayposidx, rayidx, r, is_upward_disc, false);
-        comoving_local_approx_map_data(model, nr_()[rayposidx+1], nr_()[rayposidx], shift_curr, shift_next, is_upward_disc, dZ_()[rayposidx])
-        TODO SOLVE EQUATIONS
+        comoving_local_approx_map_data<approx>(model, nr_()[rayposidx+1], nr_()[rayposidx], shift_curr, shift_next, is_upward_disc, dZ_()[rayposidx]);
+        solve_comoving_local_approx_single_step (model, nr_()[rayposidx], rayidx, r, is_upward_disc);
         rayposidx--;
     }
 
@@ -2294,13 +2295,14 @@ inline void Solver :: solve_comoving_local_approx_order_2_sparse (
 // is_upward_disc denotes whether we want an upward discretization
 // nextpointonrayindex should denote how far the next point lies on the ray
 // currpointonrayindex should do the same, but for the previous point//, const Size currpointonrayindex, const Size nextpointonrayindex
-inline void Solver :: comoving_local_approx_map_data(Model& model, const Size curr_point, const Size next_point, const Real curr_shift, const Real next_shift, const bool is_upward_disc, const Real dZ)
+template<ApproximationType approx>
+accel inline void Solver :: comoving_local_approx_map_data(Model& model, const Size curr_point, const Size next_point, const Real curr_shift, const Real next_shift, const bool is_upward_disc, const Real dZ)
 {//, const Size splitindex
     //if upward discretization, we start from the uppermost part
     bool is_in_bounds = false;
     Size in_bounds_count = 0;//to decide whether to artificially add some boundary to the implicit part (if < 2) then the implicit freq derivative cannot be computed up to second order
     Size curr_freq_count = 0;//count for explicit part to determine when to say that something is outside of our bounds
-    std::set<Real> encountered_lines;
+    std::set<Size> encountered_lines;
     // const Real max_curr_nu_dist = TODO;
     if (is_upward_disc)
     {
@@ -2338,7 +2340,7 @@ inline void Solver :: comoving_local_approx_map_data(Model& model, const Size cu
                     is_in_bounds = false;
                     in_bounds_count = 0;
                     //Also reset count for encountered lines
-                    encountered_lines = set<Size>{curr_line_idx};
+                    encountered_lines = std::set<Size>{curr_line_idx};
                     curr_freq_count = 0;
                 }
                 else
@@ -2350,7 +2352,7 @@ inline void Solver :: comoving_local_approx_map_data(Model& model, const Size cu
             {
                 const Real curr_freq = model.radiation.frequencies.sorted_nu(curr_point, curr_freq_idx-1)*curr_shift;//index - 1 due to size
                 const Real next_freq = model.radiation.frequencies.sorted_nu(next_point, next_freq_idx-1)*next_shift;//index - 1 due to size
-                comoving_approx_map_single_data(model, curr_point, next_point, dZ, is_in_bounds, in_bounds_count, next_freq_idx-1, curr_freq_idx-1, next_freq, curr_freq, curr_line_idx, is_upward_disc)
+                comoving_approx_map_single_data<approx>(model, curr_point, next_point, dZ, is_in_bounds, in_bounds_count, next_freq_idx-1, curr_freq_idx-1, next_freq, curr_freq, curr_line_idx, is_upward_disc);
 
                 // TODO GO MAP STUFF (and compute S_dtau, ...)
                 // freq_matching_()[next_freq_idx-1]=curr_freq_idx-1;
@@ -2367,7 +2369,7 @@ inline void Solver :: comoving_local_approx_map_data(Model& model, const Size cu
         {
             const Real curr_freq = model.radiation.frequencies.sorted_nu(curr_point, curr_freq_idx-1)*curr_shift;//index - 1 due to size
             const Real next_freq = model.radiation.frequencies.sorted_nu(next_point, next_freq_idx-1)*next_shift;//index - 1 due to size
-            comoving_approx_map_single_data(model, curr_point, next_point, dZ, false, in_bounds_count, next_freq_idx-1, curr_freq_idx-1, next_freq, curr_freq, curr_line_idx, is_upward_disc)
+            comoving_approx_map_single_data<approx>(model, curr_point, next_point, dZ, false, in_bounds_count, next_freq_idx-1, curr_freq_idx-1, next_freq, curr_freq, curr_line_idx, is_upward_disc);
 
             // start_indices_()(nextpointonrayindex,next_freq_idx-1)[0]=currpointonrayindex;//stores point
             // start_indices_()(nextpointonrayindex,next_freq_idx-1)[1]=min_freq_idx-1;//stores freq
@@ -2409,7 +2411,7 @@ inline void Solver :: comoving_local_approx_map_data(Model& model, const Size cu
                     is_in_bounds = false;
                     in_bounds_count = 0;
                     //Also reset count for encountered lines
-                    encountered_lines = set<Size>{curr_line_idx};
+                    encountered_lines = std::set<Size>{curr_line_idx};
                     curr_freq_count = 0;
                 }
                 else
@@ -2421,7 +2423,7 @@ inline void Solver :: comoving_local_approx_map_data(Model& model, const Size cu
             {
                 const Real curr_freq = model.radiation.frequencies.sorted_nu(curr_point, curr_freq_idx)*curr_shift;
                 const Real next_freq = model.radiation.frequencies.sorted_nu(next_point, next_freq_idx)*next_shift;
-                comoving_approx_map_single_data(model, curr_point, next_point, dZ, is_in_bounds, in_bounds_count, next_freq_idx, curr_freq_idx, next_freq, curr_freq, curr_line_idx, is_upward_disc)
+                comoving_approx_map_single_data<approx>(model, curr_point, next_point, dZ, is_in_bounds, in_bounds_count, next_freq_idx, curr_freq_idx, next_freq, curr_freq, curr_line_idx, is_upward_disc);
 
                 // freq_matching_()[next_freq_idx]=curr_freq_idx;
                 // start_indices_()(nextpointonrayindex,next_freq_idx)[0]=currpointonrayindex;//stores point
@@ -2431,13 +2433,13 @@ inline void Solver :: comoving_local_approx_map_data(Model& model, const Size cu
                 curr_freq_count++;
             }
         }
-        is_in_bounds=false
+        is_in_bounds=false;
         //match remaining points as best as possible (with the outermost point)
         while (next_freq_idx<=max_freq_idx)
         {
-            const Real curr_freq = model.radiation.frequencies.sorted_nu(currpoint, curr_freq_idx)*curr_shift;
-            const Real next_freq = model.radiation.frequencies.sorted_nu(nextpoint, next_freq_idx)*next_shift;
-            comoving_approx_map_single_data(model, curr_point, next_point, dZ, false, in_bounds_count, next_freq_idx, curr_freq_idx, next_freq, curr_freq, curr_line_idx, is_upward_disc)
+            const Real curr_freq = model.radiation.frequencies.sorted_nu(curr_point, curr_freq_idx)*curr_shift;
+            const Real next_freq = model.radiation.frequencies.sorted_nu(next_point, next_freq_idx)*next_shift;
+            comoving_approx_map_single_data<approx>(model, curr_point, next_point, dZ, false, in_bounds_count, next_freq_idx, curr_freq_idx, next_freq, curr_freq, curr_line_idx, is_upward_disc);
 
             // start_indices_()(nextpointonrayindex,next_freq_idx)[0]=currpointonrayindex;//stores point
             // start_indices_()(nextpointonrayindex,next_freq_idx)[1]=max_freq_idx;//stores freq
@@ -2448,15 +2450,16 @@ inline void Solver :: comoving_local_approx_map_data(Model& model, const Size cu
 }
 
 //next and curr freq includes the doppler shift!
-TODO: ALSO ADD CURR AND NEXT POINT
+// TODO: ALSO ADD CURR AND NEXT POINT
 //Err, curr_line_idx is just some value that might or might not be adequate, as we may be connecting multiple lines together. Ignoring for now, as it only impact the single-line-approx (which fails in exactly the same situation of overlapping lines/very high doppler shifts)
-inline void Solver :: comoving_approx_map_single_data(Model& model, const Size curr_point, const Size next_point, const Real dZ, TODO, const bool is_in_bounds, const Size curr_freq_count, const Size next_freq_idx, const Size curr_freq_idx, const Real next_freq, const Real curr_freq, const Size curr_line_idx, const bool is_upward_disc)
+template<ApproximationType approx>
+accel inline void Solver :: comoving_approx_map_single_data(Model& model, const Size curr_point, const Size next_point, const Real dZ, const bool is_in_bounds, const Size curr_freq_count, const Size next_freq_idx, const Size curr_freq_idx, const Real next_freq, const Real curr_freq, const Size curr_line_idx, const bool is_upward_disc)
 {
     //next_freq_idx will be used for indexing
     //If bdy, then map onto freq of next index
     if (!is_in_bounds||curr_freq_count<2)
     {
-        TODO RENAME EVERYTHING
+        // TODO RENAME EVERYTHING
         //overwrite starting intensities? Might be a bad idea, as this contains the computed intensities
         cma_start_intensities_()[next_freq_idx] = boundary_intensity(model, curr_point, next_freq);
         cma_start_frequencies_()[next_freq_idx] = next_freq;
@@ -2503,10 +2506,8 @@ inline void Solver :: comoving_approx_map_single_data(Model& model, const Size c
         // const Real dtau = std::max(trap(chi_curr, chi_next, dZ), COMOVING_MIN_DTAU);
         // Floor dtau by COMOVING_MIN_DTAU, due to division by dtau^2
         dtau = std::max(dtau, model.parameters->comoving_min_dtau);
-        cma_delta_tau_()(next_freq_idx)=dtau;
+        cma_delta_tau_()[next_freq_idx]=dtau;
         // chi_temp_copy_()(next_freq_idx)=chi_next;
-        MAP CHINEXT TO USEFUL ARRAY
-        AT END OF FULL MAP, COPY THIS ARRAY OR AT END OF SINGLE STEP COMPUTATION
     }
     else
     {
@@ -2526,7 +2527,7 @@ inline void Solver :: comoving_approx_map_single_data(Model& model, const Size c
         // More correct would be: shift_c=1.0, shift_n = 1.0 + (next_freq-curr_freq)/line_freq
         //As we may use any frame of reference, we might as well put it a the current point in order to decide whether the doppler shift is large
         const Real shift_c=1.0;
-        const Real line_freq = model.lines.line[l];
+        const Real line_freq = model.lines.line[curr_line_idx];
         const Real shift_n=1.0 + (next_freq-curr_freq)/line_freq;
         //dz position increment, we should be able to supply this
         //compute_curr_opacity; err, this might become cumbersome to store: simple algorithm: first init to true, then save every result in the next freq list; finally get results from freqmatched curr freq
@@ -2536,6 +2537,7 @@ inline void Solver :: comoving_approx_map_single_data(Model& model, const Size c
         Real dtau, chi_next;
         // Real chi_curr = SAVED_CHI[]
         Real chi_curr = cma_chi_curr_()[curr_freq_idx];//retrieving the correct frequency
+        bool compute_curr_opacity = cma_compute_curr_opacity_()[curr_freq_idx];
 
         compute_source_dtau<approx>(model, curr_point, next_point, curr_line_idx, curr_freq, next_freq, shift_c, shift_n, dZ, compute_curr_opacity, dtau, chi_curr, chi_next, Scurr, Snext);
 
@@ -2550,20 +2552,20 @@ inline void Solver :: comoving_approx_map_single_data(Model& model, const Size c
         // const Real dtau = std::max(trap(chi_curr, chi_next, dZ), COMOVING_MIN_DTAU);
         // Floor dtau by COMOVING_MIN_DTAU, due to division by dtau^2
         dtau = std::max(dtau, model.parameters->comoving_min_dtau);
-        cma_delta_tau_()(next_freq_idx)=dtau;
+        cma_delta_tau_()[next_freq_idx]=dtau;
         // chi_temp_copy_()(next_freq_idx)=chi_next;
         // MAP CHINEXT TO USEFUL ARRAY
-        // AT END OF FULL MAP, COPY THIS ARRAY
+        // AT END OF FULL MAP, COPY THIS ARRAY *DONE* at end of single position increment
 
         //⚠ Assumes the frequencies to be set in a fixed order!
         // if is_upward_disc==TRUE, then the frequency indices should be traversed from nfreqs-1 to 0
         // if is_upward_disc==FALSE, then the frequency indices should be traversed from 0 to nfreqs-1
         if (is_upward_disc)
         {
-            dfreqsmall = cma_start_frequencies_()[next_freq_idx+2] - cma_start_frequencies_()[next_freq_idx+1]
+            Real dfreqsmall = cma_start_frequencies_()[next_freq_idx+2] - cma_start_frequencies_()[next_freq_idx+1];
             // (model.radiation.frequencies.nu(currpoint, curr_freq_idxp2)-model.radiation.frequencies.nu(currpoint, curr_freq_idxp1))
             //           *shift_curr;
-            dfreqlarge = cma_start_frequencies_()[next_freq_idx+2] - cma_start_frequencies_()[next_freq_idx+0]
+            Real dfreqlarge = cma_start_frequencies_()[next_freq_idx+2] - cma_start_frequencies_()[next_freq_idx+0];
             // (model.radiation.frequencies.nu(currpoint, curr_freq_idxp2)-model.radiation.frequencies.nu(currpoint, curr_freq_idx))
             //           *shift_curr;
             cma_dIdnu_coef3_curr_()[next_freq_idx] = -dfreqsmall/(std::pow(dfreqlarge, 2.0)-dfreqlarge*dfreqsmall);//farthest
@@ -2576,10 +2578,10 @@ inline void Solver :: comoving_approx_map_single_data(Model& model, const Size c
             // dIdnu_index1_curr_()(next_freq_idx)=curr_freq_idx;
 
             //And now do the same (but simpler; less index management) for the implicit part
-            dfreqsmall = cma_end_frequencies_()[next_freq_idx+2] - cma_end_frequencies_()[next_freq_idx+1]
+            dfreqsmall = cma_end_frequencies_()[next_freq_idx+2] - cma_end_frequencies_()[next_freq_idx+1];
             // (model.radiation.frequencies.nu(nextpoint, next_freq_idx+2)-model.radiation.frequencies.nu(nextpoint, next_freq_idx+1))
             //             *shift_next;
-            dfreqlarge = cma_end_frequencies_()[next_freq_idx+2] - cma_end_frequencies_()[next_freq_idx+0]
+            dfreqlarge = cma_end_frequencies_()[next_freq_idx+2] - cma_end_frequencies_()[next_freq_idx+0];
             // (model.radiation.frequencies.nu(nextpoint, next_freq_idx+2)-model.radiation.frequencies.nu(nextpoint, next_freq_idx))
             //             *shift_next;
 
@@ -2591,10 +2593,10 @@ inline void Solver :: comoving_approx_map_single_data(Model& model, const Size c
         else
         {
             //Note: minus signs in front, as we are now computing the first derivative using points on the other side (switched order of term, making sign clearer; just compare to upward disc version)
-            dfreqsmall = -(cma_start_frequencies_()[next_freq_idx-1] - cma_start_frequencies_()[next_freq_idx-2])
+            Real dfreqsmall = -(cma_start_frequencies_()[next_freq_idx-1] - cma_start_frequencies_()[next_freq_idx-2]);
             // -(model.radiation.frequencies.nu(currpoint, curr_freq_idxm1)-model.radiation.frequencies.nu(currpoint, curr_freq_idxm2))
             // *shift_curr;
-            dfreqlarge = -(cma_start_frequencies_()[next_freq_idx-0] - cma_start_frequencies_()[next_freq_idx-2])
+            Real dfreqlarge = -(cma_start_frequencies_()[next_freq_idx-0] - cma_start_frequencies_()[next_freq_idx-2]);
             // -(model.radiation.frequencies.nu(currpoint, curr_freq_idx)-model.radiation.frequencies.nu(currpoint, curr_freq_idxm2))
             // *shift_curr;
             cma_dIdnu_coef3_curr_()[next_freq_idx] = -dfreqsmall/(std::pow(dfreqlarge, 2.0)-dfreqlarge*dfreqsmall);//farthest
@@ -2606,10 +2608,10 @@ inline void Solver :: comoving_approx_map_single_data(Model& model, const Size c
 
             //And now do the same (but simpler; less index management) for the implicit part
             //Note: minus signs in front, as we are now computing the first derivative using points on the other side
-            dfreqsmall = -(cma_end_frequencies_()[next_freq_idx-1] - cma_end_frequencies_()[next_freq_idx-2])
+            dfreqsmall = -(cma_end_frequencies_()[next_freq_idx-1] - cma_end_frequencies_()[next_freq_idx-2]);
             // -(model.radiation.frequencies.nu(nextpoint, next_freq_idx-1)-model.radiation.frequencies.nu(nextpoint, next_freq_idx-2))
             // *shift_next;
-            dfreqlarge = -(cma_end_frequencies_()[next_freq_idx-0] - cma_end_frequencies_()[next_freq_idx-2])
+            dfreqlarge = -(cma_end_frequencies_()[next_freq_idx-0] - cma_end_frequencies_()[next_freq_idx-2]);
             // -(model.radiation.frequencies.nu(nextpoint, next_freq_idx)-model.radiation.frequencies.nu(nextpoint, next_freq_idx-2))
             // *shift_next;
             cma_dIdnu_coef3_next_()[next_freq_idx] = -dfreqsmall/(std::pow(dfreqlarge, 2.0)-dfreqlarge*dfreqsmall);//farthest
@@ -2631,7 +2633,7 @@ inline void Solver :: comoving_approx_map_single_data(Model& model, const Size c
 //rr direction index necessary for determining whether to add intensity to J//TODO? replace with bool denoting whether to add it (precompute if clause somewhere else)
 //TODO: figure out whether rayposidx_currpoint is needed!! As it should be replaced with start_indices_...
 // inline void Solver :: solve_comoving_single_step (Model& model, const Size raypos-idx, const Size rayidx, const Size rr, const bool is_upward_disc, const bool forward_ray)
-inline void Solver :: solve_comoving_approx_single_step (Model& model, const Size ?, const Size rayidx, const Size rr, const bool is_upward_disc)
+accel inline void Solver :: solve_comoving_local_approx_single_step (Model& model, const Size next_point, const Size rayidx, const Size rr, const bool is_upward_disc)
 {
     // IF BORED: refactor this function such that it acts the explicit and implicit part on the same time (not first forward for all freqs, than backward for all freqs)
     Vector<Size>& nr=nr_();//stores the exact point indices
@@ -2639,28 +2641,24 @@ inline void Solver :: solve_comoving_approx_single_step (Model& model, const Siz
     Vector<double>& shift=shift_();//stores the shift; should already be in the correct direction
     Vector<Real>& cma_delta_tau=cma_delta_tau_();//stores the optical depths
     Vector<Real>& cma_S_curr=S_curr_();
-    Vector<Real>& S_next=S_next_();
+    Vector<Real>& cma_S_next=S_next_();
     Vector<Real>& cma_computed_intensities=cma_computed_intensities_();
     Vector<Real>& cma_start_intensities=cma_start_intensities_();
-    Vector<Size>& cma_start_frequencies=cma_start_frequencies_();
-    Vector<Size>& cma_end_frequencies=cma_end_frequencies_();
-    TODO: at end of this, do set the start equal to the computed intensities; THIS IS REQUIRED FOR THE NEXT MAPPING STEP
+    Vector<Real>& cma_start_frequencies=cma_start_frequencies_();
+    Vector<Real>& cma_end_frequencies=cma_end_frequencies_();
+    // TODO: at end of this, do set the start equal to the computed intensities; THIS IS REQUIRED FOR THE NEXT MAPPING STEP
+    //*DONE*
 
     Vector<Real>& cma_dIdnu_coef1_curr=cma_dIdnu_coef1_curr_();//coefficient of the freq point itself
     Vector<Real>& cma_dIdnu_coef2_curr=cma_dIdnu_coef2_curr_();
     Vector<Real>& cma_dIdnu_coef3_curr=cma_dIdnu_coef3_curr_();
 
-    // Matrix<Size>& dIdnu_index1_curr=dIdnu_index1_curr_();
-    // Matrix<Size>& dIdnu_index2_curr=dIdnu_index2_curr_();
-    // Matrix<Size>& dIdnu_index3_curr=dIdnu_index3_curr_();
     Vector<Size>& cma_start_frequency_index=cma_start_frequency_index_();//direction will tell me anyway which values to use (but do use modulo? to prevent oob access)
-    OR JUST APPLY BOUNDARY CONDITIONS TO 'FIRST' TWO
 
     Vector<Real>& cma_dIdnu_coef1_next=cma_dIdnu_coef1_next_();
     Vector<Real>& cma_dIdnu_coef2_next=cma_dIdnu_coef2_next_();
     Vector<Real>& cma_dIdnu_coef3_next=cma_dIdnu_coef3_next_();
 
-    SAME HERE: APPLY BOUNDAR CONDITIONS ON FIRST TWO
     // Matrix<Size>& dIdnu_index1_next=dIdnu_index1_next_();
     // Matrix<Size>& dIdnu_index2_next=dIdnu_index2_next_();
     // Matrix<Size>& dIdnu_index3_next=dIdnu_index3_next_();
@@ -2669,7 +2667,7 @@ inline void Solver :: solve_comoving_approx_single_step (Model& model, const Siz
     // std::cout<<"rayposidx=next point on ray idx= "<<rayposidx<<std::endl;
 
     //rayposidx represents the next position on the ray
-    const Size nextpointidx=nr[rayposidx];
+    const Size nextpointidx=next_point;//nr[rayposidx];
     // const Real next_shift=(forward_ray) ? 2.0-shift[rayposidx] : shift[rayposidx];//absolute shifts, versus static frame!
 
     // std::cout<<"after getting shift"<<std::endl;
@@ -2716,6 +2714,7 @@ inline void Solver :: solve_comoving_approx_single_step (Model& model, const Siz
             const Real expl_term=(-expm1(-dtau)-dtau*exp(-dtau))/dtau;
             // std::cout<<"expl term: "<<expl_term<<std::endl;
             // std::cout<<"curr source: "<<S_curr(rayposidx, next_freq_idx)<<std::endl;
+            const Size curr_freq_idx = cma_start_frequency_index_()[next_freq_idx];
 
             const Real expl_freq_der=cma_dIdnu_coef1_curr[next_freq_idx]*cma_start_intensities[curr_freq_idx]
                                     +cma_dIdnu_coef2_curr[next_freq_idx]*cma_start_intensities[curr_freq_idx+1]
@@ -2780,6 +2779,7 @@ inline void Solver :: solve_comoving_approx_single_step (Model& model, const Siz
             const Real expl_term=(-expm1(-dtau)-dtau*exp(-dtau))/dtau;
             // std::cout<<"expl term: "<<expl_term<<std::endl;
             // std::cout<<"curr source: "<<S_curr(rayposidx, next_freq_idx)<<std::endl;
+            const Size curr_freq_idx = cma_start_frequency_index_()[next_freq_idx];
 
             const Real expl_freq_der=cma_dIdnu_coef1_curr[next_freq_idx]*cma_start_intensities[curr_freq_idx]
                                     +cma_dIdnu_coef2_curr[next_freq_idx]*cma_start_intensities[curr_freq_idx-1]
@@ -2814,12 +2814,12 @@ inline void Solver :: solve_comoving_approx_single_step (Model& model, const Siz
         const Real bdy_dtau1=cma_delta_tau[model.parameters->nfreqs()-1];
         const Real impl_term1=(bdy_dtau1+expm1(-bdy_dtau1))/bdy_dtau1;
         cma_computed_intensities[model.parameters->nfreqs()-1]=cma_computed_intensities[model.parameters->nfreqs()-1]
-        +impl_term*cma_S_next[model.parametersl->nfreqs()-1];//source term // no freq derivative term
+        +impl_term1*cma_S_next[model.parameters->nfreqs()-1];//source term // no freq derivative term
         // +impl_term*impl_freq_der*deltanu/dtau)/(1.0-dIdnu_coef1_next(rayposidx, next_freq_idx-1)*impl_term*deltanu/dtau); //freq derivative term
         const Real bdy_dtau2=cma_delta_tau[model.parameters->nfreqs()-2];
         const Real impl_term2=(bdy_dtau2+expm1(-bdy_dtau2))/bdy_dtau2;
         cma_computed_intensities[model.parameters->nfreqs()-2]=cma_computed_intensities[model.parameters->nfreqs()-2]
-        +impl_term*cma_S_next[model.parametersl->nfreqs()-2];//source term
+        +impl_term2*cma_S_next[model.parameters->nfreqs()-2];//source term
 
         // std::cout<<"is_upward_disc"<<std::endl;
         //in case of positive doppler shifts, we need to start from the largest frequencies (where we have extra boundary conditions on the end)
@@ -2860,12 +2860,12 @@ inline void Solver :: solve_comoving_approx_single_step (Model& model, const Siz
         const Real bdy_dtau1=cma_delta_tau[0];
         const Real impl_term1=(bdy_dtau1+expm1(-bdy_dtau1))/bdy_dtau1;
         cma_computed_intensities[0]=cma_computed_intensities[0]
-        +impl_term*cma_S_next[0];//source term // no freq derivative term
-        // +impl_term*impl_freq_der*deltanu/dtau)/(1.0-dIdnu_coef1_next(rayposidx, next_freq_idx-1)*impl_term*deltanu/dtau); //freq derivative term
+        +impl_term1*cma_S_next[0];//source term // no freq derivative term
+
         const Real bdy_dtau2=cma_delta_tau[1];
         const Real impl_term2=(bdy_dtau2+expm1(-bdy_dtau2))/bdy_dtau2;
         cma_computed_intensities[1]=cma_computed_intensities[1]
-        +impl_term*cma_S_next[1];//source term
+        +impl_term2*cma_S_next[1];//source term // no freq derivative term
 
         for (Size next_freq_idx=2; next_freq_idx<model.parameters->nfreqs(); next_freq_idx++)
         {
@@ -2883,8 +2883,8 @@ inline void Solver :: solve_comoving_approx_single_step (Model& model, const Siz
             const Real impl_term=(dtau+expm1(-dtau))/dtau;
             // std::cout<<"impl_term: "<<impl_term<<std::endl;
             //only the parts of the other points (to subtract/add)
-            const Real impl_freq_der=cma_dIdnu_coef2_next[next_freq_idx]*cma_computed_intensities[next_freq_idx+1]
-                                    +cma_dIdnu_coef3_next[next_freq_idx]*cma_computed_intensities[next_freq_idx+2];
+            const Real impl_freq_der=cma_dIdnu_coef2_next[next_freq_idx]*cma_computed_intensities[next_freq_idx-1]
+                                    +cma_dIdnu_coef3_next[next_freq_idx]*cma_computed_intensities[next_freq_idx-2];
             // std::cout<<"impl freq der: "<<impl_freq_der<<std::endl;
             // std::cout<<"full freq der term: "<<impl_term*impl_freq_der*deltanu/dtau<<std::endl;
             // std::cout<<"1.0-dIdnu coef times...: "<<1.0-dIdnu_coef1_next(rayposidx, next_freq_idx)*deltanu/dtau<<std::endl;
@@ -2927,9 +2927,9 @@ inline void Solver :: solve_comoving_approx_single_step (Model& model, const Siz
             //Computing the ALI element
 
             //TODO: check whether this is correct (print out Jeff, Jlin in optically thick model)
-            const Size curr_point_on_ray_index=start_indices_()(rayposidx, freqid)[0];
-            const Size curr_point_idx=nr[curr_point_on_ray_index];
-            const Size curr_freq_idx=start_indices_()(rayposidx, freqid)[1];
+            // const Size curr_point_on_ray_index=start_indices_()(rayposidx, freqid)[0];
+            // const Size curr_point_idx=nr[curr_point_on_ray_index];
+            // const Size curr_freq_idx=start_indices_()(rayposidx, freqid)[1];
             // const Real curr_shift=(forward_ray) ? 2.0-shift[curr_point_on_ray_index] : shift[curr_point_on_ray_index];//absolute shift, versus static frame
             // const Real deltanu=model.radiation.frequencies.sorted_nu(nextpointidx, freqid)*next_shift-model.radiation.frequencies.sorted_nu(curr_point_idx, curr_freq_idx)*curr_shift;
             const Real deltanu=cma_end_frequencies[freqid]-cma_start_frequencies[freqid];
@@ -2946,7 +2946,19 @@ inline void Solver :: solve_comoving_approx_single_step (Model& model, const Siz
             lspec.lambda.add_element(nextpointidx, k, nextpointidx, lambdaterm);
         }
     }
-    TODO: actually overwrite starting intensities now!
+
+    //Finally overwrite some variables with their value at the next point
+    // in this way, we prepare for the next step
+    for (Size next_freq_idx=0; next_freq_idx<model.parameters->nfreqs(); next_freq_idx++)
+    {
+        //note: for now, I might overwrite a bit too much stuff (which will be recomputed either way)
+        //but better be safe than sorry for this complicated solver; I can always check later which parts may safely be not overwritten
+        cma_start_intensities[next_freq_idx]=cma_computed_intensities[next_freq_idx];
+        cma_start_frequencies[next_freq_idx]=cma_end_frequencies[next_freq_idx];
+        cma_chi_curr_()[next_freq_idx] = cma_chi_next_()[next_freq_idx];
+        cma_compute_curr_opacity_()[next_freq_idx] = cma_compute_next_opacity_()[next_freq_idx];
+        cma_S_curr[next_freq_idx]=cma_S_curr[next_freq_idx];
+    }
 }
 
 

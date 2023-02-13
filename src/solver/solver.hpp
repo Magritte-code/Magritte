@@ -158,7 +158,7 @@ struct Solver
     pc::multi_threading::ThreadPrivate<Vector<Real>> cma_computed_intensities_;//stores the computed intensities//TODO: INIT WITH CMB
     pc::multi_threading::ThreadPrivate<Vector<Real>> cma_start_intensities_;//stores the intensity at the start of increment
     pc::multi_threading::ThreadPrivate<Vector<Real>> cma_start_frequencies_;//stores the start frequency (mainly convenient for programming)
-    pc::multi_threading::ThreadPrivate<Vector<Real>> cma_start_frequency_index_;//stores the starting frequency index (used for looking up stuff)
+    pc::multi_threading::ThreadPrivate<Vector<Size>> cma_start_frequency_index_;//stores the starting frequency index (used for looking up stuff)
     pc::multi_threading::ThreadPrivate<Vector<Real>> cma_end_frequencies_;//stores the end frequency (mainly convenient for programming)
     // pc::multi_threading::ThreadPrivate<Vector<Real>> cma_end_frequency_index_;//stores the end frequency index (used for looking up stuff)
     //not necessary to store, as this maps the end frequency index onto itself.
@@ -166,15 +166,15 @@ struct Solver
     pc::multi_threading::ThreadPrivate<Vector<Real>> cma_chi_next_;//stores the ending opacity. Needs to overwrite cma_chi_curr when the data is fully mapped
     pc::multi_threading::ThreadPrivate<Vector<char>> cma_compute_curr_opacity_;//stores whether to compute the opacity
     pc::multi_threading::ThreadPrivate<Vector<char>> cma_compute_next_opacity_;//stores whether to compute the opacity. Needs to overwrite cma_compute_curr_opacity_ when data is fully mapped
-    pc::multi_threading::ThreadPrivate<Vector<char>> cma_S_curr_;//stores the computed current source function for the increment
-    pc::multi_threading::ThreadPrivate<Vector<char>> cma_S_next_;//stores the computed next source function for the increment
-    pc::multi_threading::ThreadPrivate<Vector<char>> cma_dIdnu_coef1_curr_;//stores derivative coefficents for the intensity derivative with respect to the frequency
-    pc::multi_threading::ThreadPrivate<Vector<char>> cma_dIdnu_coef2_curr_;//1 stores the coef of the current freq, 2 of the nearby freq and 3 of the outermost freq
-    pc::multi_threading::ThreadPrivate<Vector<char>> cma_dIdnu_coef3_curr_;
-    pc::multi_threading::ThreadPrivate<Vector<char>> cma_dIdnu_coef1_next_;
-    pc::multi_threading::ThreadPrivate<Vector<char>> cma_dIdnu_coef2_next_;
-    pc::multi_threading::ThreadPrivate<Vector<char>> cma_dIdnu_coef3_next_;
-    pc::multi_threading::ThreadPrivate<Vector<char>> cma_delta_tau_;//stores the optical depth increments belonging to each position increment
+    pc::multi_threading::ThreadPrivate<Vector<Real>> cma_S_curr_;//stores the computed current source function for the increment
+    pc::multi_threading::ThreadPrivate<Vector<Real>> cma_S_next_;//stores the computed next source function for the increment
+    pc::multi_threading::ThreadPrivate<Vector<Real>> cma_dIdnu_coef1_curr_;//stores derivative coefficents for the intensity derivative with respect to the frequency
+    pc::multi_threading::ThreadPrivate<Vector<Real>> cma_dIdnu_coef2_curr_;//1 stores the coef of the current freq, 2 of the nearby freq and 3 of the outermost freq
+    pc::multi_threading::ThreadPrivate<Vector<Real>> cma_dIdnu_coef3_curr_;
+    pc::multi_threading::ThreadPrivate<Vector<Real>> cma_dIdnu_coef1_next_;
+    pc::multi_threading::ThreadPrivate<Vector<Real>> cma_dIdnu_coef2_next_;
+    pc::multi_threading::ThreadPrivate<Vector<Real>> cma_dIdnu_coef3_next_;
+    pc::multi_threading::ThreadPrivate<Vector<Real>> cma_delta_tau_;//stores the optical depth increments belonging to each position increment
 
 
 
@@ -277,8 +277,8 @@ struct Solver
 
     // Comoving solvers stuff
     /////////////////////////
+    //general ray tracing differences
     // inline void setup_comoving (Model& model, const Size l, const Size w);
-    inline void setup_comoving (Model& model);
     inline void get_static_rays_to_trace (Model& model);
     accel inline void trace_ray_points (
         const Geometry& geometry,
@@ -286,6 +286,8 @@ struct Solver
         const Size      rdir,
         const Size      rsav,
         const Size      rayidx);
+    //Complicated solver stuff
+    inline void setup_comoving (Model& model);
 
     inline void match_frequency_indices(Model& model, const Size nextpoint, const Size currpoint, const Real next_shift, const Real curr_shift, Size nextpointonrayindex, Size currpointonrayindex, bool is_upward_disc);
     inline void get_overlapping_lines(Model& model, const Size nextpoint, bool is_upward_disc);
@@ -327,6 +329,48 @@ struct Solver
         const int    increment,
             Size&  id1,
             Size&  id2 );
+
+
+    // Comoving approx solver stuff
+    accel inline void setup_comoving_local_approx (Model& model);
+    template<ApproximationType approx>
+    accel inline void solve_comoving_local_approx_order_2_sparse(Model& model);
+    template<ApproximationType approx>
+    accel inline void solve_comoving_local_approx_order_2_sparse (
+          Model& model,
+          const Size o,//ray origin point
+          const Size r,//ray direction index
+          const Size rayidx,//ray trace index
+          const double dshift_max);
+    template<ApproximationType approx>
+    accel inline void comoving_local_approx_map_data(
+          Model& model,
+          const Size curr_point,
+          const Size next_point,
+          const Real curr_shift,
+          const Real next_shift,
+          const bool is_upward_disc,
+          const Real dZ);
+    template<ApproximationType approx>
+    accel inline void comoving_approx_map_single_data(
+          Model& model,
+          const Size curr_point,
+          const Size next_point,
+          const Real dZ,
+          const bool is_in_bounds,
+          const Size curr_freq_count,
+          const Size next_freq_idx,
+          const Size curr_freq_idx,
+          const Real next_freq,
+          const Real curr_freq,
+          const Size curr_line_idx,
+          const bool is_upward_disc);
+    accel inline void solve_comoving_local_approx_single_step(
+          Model& model,
+          const Size next_point,
+          const Size rayidx,
+          const Size rr,
+          const bool is_upward_disc);
 
     // Point pruning solvers stuff
     //////////////////////////////
