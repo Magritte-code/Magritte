@@ -250,6 +250,11 @@ PYBIND11_MODULE (core, module)
             "Compute the radiation field for the model using the 2th-order comoving method."
         )
         .def (
+            "compute_radiation_field_comoving_local_approx",
+            &Model::compute_radiation_field_comoving_local_approx,
+            "Compute the radiation field for the model using the 2th-order comoving method and a local approximation for the boundary conditions."
+        )
+        .def (
             "compute_Jeff",
             &Model::compute_Jeff,
             "Compute the effective mean intensity in the line."
@@ -282,6 +287,11 @@ PYBIND11_MODULE (core, module)
         .def (
             "compute_level_populations_comoving",
             &Model::compute_level_populations_comoving,
+            "Compute the level populations for the model assuming statistical equilibrium until convergence, using a comoving type method. This optionally use Ng-acceleration and iterates maximally for the given maximum number of iterations. (Memory sparse option.)"
+        )
+        .def (
+            "compute_level_populations_comoving_local_approx",
+            &Model::compute_level_populations_comoving_local_approx,
             "Compute the level populations for the model assuming statistical equilibrium until convergence, using a comoving type method. This optionally use Ng-acceleration and iterates maximally for the given maximum number of iterations. (Memory sparse option.)"
         )
         .def (
