@@ -353,7 +353,8 @@ struct Solver
           const Real curr_shift,
           const Real next_shift,
           const bool is_upward_disc,
-          const Real dZ);
+          const Real dZ,
+          const Size bdy_point);
     template<ApproximationType approx>
     accel inline void comoving_approx_map_single_data(
           Model& model,
@@ -369,7 +370,8 @@ struct Solver
           const Real next_shift,
           const Real curr_shift,
           const Size curr_line_idx,
-          const bool is_upward_disc);
+          const bool is_upward_disc,
+          const Size bdy_point);
     accel inline void solve_comoving_local_approx_single_step(
           Model& model,
           const Size next_point,
