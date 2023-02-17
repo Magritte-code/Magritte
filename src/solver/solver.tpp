@@ -202,6 +202,76 @@ inline void Solver :: solve_shortchar_order_0 (Model& model)
 
 
 template<ApproximationType approx>
+inline void Solver :: solve_feautrier_order_2_grey (Model& model)
+{
+    // Allocate memory
+    model.grey_J.resize (model.parameters->npoints());
+    model.grey_F.resize (model.parameters->npoints());
+
+    // Initialise grey J and F
+    threaded_for (o, model.parameters->npoints(),
+    {
+        model.grey_J[o] = 0.0;
+        model.grey_F[o] = 0.0;
+    })
+
+
+    // For each ray, solve transfer equation
+    for (Size rr = 0; rr < model.parameters->hnrays(); rr++)
+    {
+        const Size     ar = model.geometry.rays.antipod  [rr];
+        const Real     wt = model.geometry.rays.weight   [rr] * two;
+        const Vector3D nn = model.geometry.rays.direction[rr];
+
+        cout << "--- rr = " << rr << endl;
+
+        accelerated_for (o, model.parameters->npoints(),
+        {
+        //const Size o = 0;
+
+            const Real dshift_max = get_dshift_max (model, o);
+
+            nr_   ()[centre] = o;
+            shift_()[centre] = 1.0;
+
+            first_() = trace_ray <CoMoving> (model.geometry, o, rr, dshift_max, -1, centre-1, centre-1) + 1;
+            last_ () = trace_ray <CoMoving> (model.geometry, o, ar, dshift_max, +1, centre+1, centre  ) - 1;
+            n_tot_() = (last_()+1) - first_();
+
+            if (n_tot_() > 1)
+            {
+                const Size f = 0;
+
+                solve_feautrier_order_2_uv <approx> (model, o, f);
+
+                model.grey_J[o] += wt * Su_()[centre];
+                model.grey_F[o] += wt * Sv_()[centre] * nn;
+
+
+                //cout << Su_()[centre] << endl;
+                //cout << Sv_()[centre] << endl;
+
+                //cout << "model grey J   r = " << rr << "   J = " << model.grey_J[o] << endl;
+                //cout << "model grey F   r = " << rr << "   F = " <<  model.grey_F[o].x() << "  " <<  model.grey_F[o].y() << "  " << model.grey_F[o].z() << endl;
+            }
+            else
+            {
+                const Size f = 0;
+
+                model.grey_J[o] += wt * boundary_intensity(model, o, model.radiation.frequencies.nu(o, f));
+                model.grey_F[o] += 0.0;
+            }
+        })
+
+        pc::accelerator::synchronize();
+    }
+
+    model.grey_J.copy_ptr_to_vec();
+    model.grey_F.copy_ptr_to_vec();
+}
+
+
+template<ApproximationType approx>
 inline void Solver :: solve_feautrier_order_2_uv (Model& model)
 {
     // Allocate memory if not pre-allocated
@@ -830,6 +900,28 @@ accel inline void Solver :: get_eta_and_chi <OneLine> (
 }
 
 
+///  Getter for the emissivity (eta) and the opacity (chi) in the "one line" approixmation
+///    @param[in]  model : reference to model object
+///    @param[in]  p     : index of the point
+///    @param[in]  l     : line index corresponding to the frequency
+///    @param[in]  freq  : frequency (in co-moving frame)
+///    @param[out] eta   : emissivity
+///    @param[out] chi   : opacity
+//////////////////////////////////////////////////////////////////////////////////////////
+template<>
+accel inline void Solver :: get_eta_and_chi <Grey> (
+    const Model& model,
+    const Size   p,
+    const Size   l,
+    const Real   freq,
+          Real&  eta,
+          Real&  chi ) const
+{
+    eta = model.grey_emissivity[p];
+    chi = model.grey_opacity   [p];
+}
+
+
 ///  Apply trapezium rule to x_crt and x_nxt
 ///    @param[in] x_crt : current value of x
 ///    @param[in] x_nxt : next value of x
@@ -1212,6 +1304,7 @@ accel inline void Solver :: update_Lambda (Model &model, const Size rr, const Si
     }
 }
 
+
 ///  Computer for the optical depth and source function when computing using the formal line integration
 ///  In case of low velocity differences, almost two times slower
 ///  For high velocity increments however, this does not need any extra interpolation points (-> way faster) (and some extra optimizations are made in the limit of extremely large doppler shift (as erf goes to its limit value)
@@ -1233,6 +1326,7 @@ inline void Solver :: compute_S_dtau_line_integrated <OneLine> (Model& model, Si
     Snext=model.lines.emissivity(nextpoint, lineidx)/(model.lines.opacity(nextpoint, lineidx)+model.parameters->min_opacity);//next source
     //note: due to interaction with dtau when computing all sources individually, we do need to recompute Scurr and Snext for all position increments
 }
+
 
 ///  Computer for the optical depth and source function when computing using the formal line integration
 ///  In case of low velocity differences, almost two times slower
@@ -1344,6 +1438,25 @@ inline void Solver :: compute_S_dtau_line_integrated <CloseLines> (Model& model,
     //note: due to interaction with dtau when computing all sources individually, we do need to recompute Scurr and Snext for all position increments
 }
 
+
+///  computeer for S and dtau, dummy
+///    @param[in] curr_point : index of current point
+///    @param[in] next_point : index of next point
+///    @param[in] lineidx : index of line to integrate over
+///    @param[in] currfreq : frequency at current point (in comoving frame)
+///    @param[in] nextfreq : frequency at next point (in comoving frame)
+///    @param[in] dZ : position increment
+///    @param[out] dtau : optical depth increment to compute
+///    @param[out] Scurr : source function at current point to compute
+///    @param[out] Snext : source function at next point to compute
+/////////////////////////////////////////////////////////////////////
+template<>
+inline void Solver :: compute_S_dtau_line_integrated <Grey> (Model& model, Size currpoint, Size nextpoint, Size lineidx, Real currfreq, Real nextfreq, Real dZ, Real& dtau, Real& Scurr, Real& Snext)
+{
+    // In the grey case, there is no frequency dependence and this part of the code should never be reached.
+}
+
+
 /// Computes the source function and optical depth in a hybrid manner
 ///    @param[in/out] compute_curr_opacity: for deciding whether we need to compute the current opacity when using the trapezoidal rule
 ///    @param[in] currpoint : index of current point
@@ -1395,6 +1508,7 @@ accel inline void Solver :: compute_source_dtau (Model& model, Size currpoint, S
         dtaunext = half * (chicurr + chinext) * dZ;
     }
 }
+
 
 ///  Solver for Feautrier equation along ray pairs using the (ordinary)
 ///  2nd-order solver, without adaptive optical depth increments

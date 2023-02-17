@@ -153,6 +153,10 @@ PYBIND11_MODULE (core, module)
         .def_readwrite ("boundary_condition", &Model::boundary_condition)
         .def_readwrite ("column",             &Model::column)
         .def_readwrite ("density",            &Model::density)
+        .def_readwrite ("grey_emissivity",    &Model::grey_emissivity)
+        .def_readwrite ("grey_opacity",       &Model::grey_opacity)
+        .def_readwrite ("grey_J",             &Model::grey_J)
+        .def_readwrite ("grey_F",             &Model::grey_F)
         .def_readonly  (
             "error_mean",
             &Model::error_mean,
@@ -222,27 +226,32 @@ PYBIND11_MODULE (core, module)
         .def (
             "compute_radiation_field_feautrier_order_2",
             &Model::compute_radiation_field_feautrier_order_2,
-            "Compute the radiation field for the modle using the 2nd-order Feautrier solver."
+            "Compute the radiation field for the model using the 2nd-order Feautrier solver."
+        )
+        .def (
+            "compute_radiation_field_feautrier_order_2_grey",
+            &Model::compute_radiation_field_feautrier_order_2_grey,
+            "Compute the radiation field for the model using the 2nd-order grey Feautrier solver."
         )
         .def (
             "compute_radiation_field_feautrier_order_2_sparse",
             &Model::compute_radiation_field_feautrier_order_2_sparse,
-            "Compute the radiation field for the modle using the 2nd-order Feautrier solver."
+            "Compute the radiation field for the model using the 2nd-order Feautrier solver."
         )
         .def (
             "compute_radiation_field_feautrier_order_2_uv",
             &Model::compute_radiation_field_feautrier_order_2_uv,
-            "Compute the radiation field for the modle using the 2nd-order Feautrier solver."
+            "Compute the radiation field for the model using the 2nd-order Feautrier solver."
         )
         .def (
             "compute_radiation_field_feautrier_order_2_anis",
             &Model::compute_radiation_field_feautrier_order_2_anis,
-            "Compute the radiation field for the modle using the 2nd-order Feautrier solver, anisotropic case."
+            "Compute the radiation field for the model using the 2nd-order Feautrier solver, anisotropic case."
         )
         .def (
             "compute_radiation_field_shortchar_order_0",
             &Model::compute_radiation_field_shortchar_order_0,
-            "Compute the radiation field for the modle using the 0th-order short-characteristics methods."
+            "Compute the radiation field for the model using the 0th-order short-characteristics methods."
         )
         .def (
             "compute_Jeff",

@@ -69,6 +69,7 @@ struct Model
     int compute_LTE_level_populations             ();
     int compute_radiation_field                   ();
     int compute_radiation_field_feautrier_order_2 ();
+    int compute_radiation_field_feautrier_order_2_grey ();
     int compute_radiation_field_shortchar_order_0 ();
     int compute_Jeff                              ();
     int compute_Jeff_sparse                       ();
@@ -115,4 +116,10 @@ struct Model
     Matrix<Real> column;
 
     int set_column ();
+
+    Vector<Real> grey_emissivity;
+    Vector<Real> grey_opacity;
+
+    Vector<Real>     grey_J;
+    Vector<Vector3D> grey_F;
 };

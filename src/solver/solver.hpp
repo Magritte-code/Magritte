@@ -6,7 +6,7 @@
 
 ///  Approximation used in the solver
 /////////////////////////////////////
-enum ApproximationType {None, OneLine, CloseLines};
+enum ApproximationType {None, OneLine, CloseLines, Grey};
 
 
 struct Solver
@@ -165,6 +165,12 @@ struct Solver
     accel inline void image_optical_depth (Model& model, const Size rr);
     template<ApproximationType approx>
     accel inline void image_optical_depth (Model& model, const Size o, const Size f);
+
+
+    // Grey Solver
+    //////////////
+    template <ApproximationType approx>
+    accel inline void solve_feautrier_order_2_grey (Model& model);
 
 
     // Solvers only computing u
