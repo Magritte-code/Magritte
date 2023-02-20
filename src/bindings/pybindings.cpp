@@ -405,6 +405,7 @@ PYBIND11_MODULE (core, module)
         .value("Zero",    Zero)
         .value("Thermal", Thermal)
         .value("CMB",     CMB)
+        .value("Value",   Value)
         .export_values();
 
 
@@ -414,6 +415,7 @@ PYBIND11_MODULE (core, module)
         .def_readwrite ("boundary2point",       &Boundary::boundary2point, "Array with point index for each boundary point.")
         .def_readonly  ("point2boundary",       &Boundary::point2boundary, "Array with boundary index for each point.")
         .def_readwrite ("boundary_temperature", &Boundary::boundary_temperature, "Array with radiative temperature for each boundary point (only relevant for thermal boundary conditions).")
+        .def_readwrite ("boundary_value",       &Boundary::boundary_value, "Array with intensity value for each boundary point (only relevant for boundary condition: Value).")
         // functions
         .def ("set_boundary_condition",         &Boundary::set_boundary_condition, "Setter for the boundary condition.")
         .def ("get_boundary_condition",         &Boundary::get_boundary_condition, "Getter for the boundary condition.")

@@ -792,6 +792,7 @@ accel inline Real Solver :: boundary_intensity (const Model& model, const Size p
     switch (model.geometry.boundary.boundary_condition[bdy_id])
     {
         case Zero    : return 0.0;
+        case Value   : return model.geometry.boundary.boundary_value[bdy_id];               
         case Thermal : return planck (model.geometry.boundary.boundary_temperature[bdy_id], freq);
         default      : return planck (T_CMB, freq);
     }

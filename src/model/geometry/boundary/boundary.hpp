@@ -6,7 +6,7 @@
 #include "tools/types.hpp"
 
 
-enum BoundaryCondition {Zero, Thermal, CMB};
+enum BoundaryCondition {Zero, Thermal, CMB, Value};
 
 
 struct Boundary
@@ -18,6 +18,7 @@ struct Boundary
 
     Vector<BoundaryCondition> boundary_condition;
     Vector<Real>              boundary_temperature;
+    Vector<Real>              boundary_value;
 
 
     Boundary (std::shared_ptr<Parameters> params)

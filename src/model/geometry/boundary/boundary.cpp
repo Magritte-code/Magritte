@@ -34,11 +34,13 @@ void Boundary :: read (const Io& io)
     // Set boundary conditions
     boundary_condition  .resize (parameters->nboundary());
     boundary_temperature.resize (parameters->nboundary());
+    boundary_value      .resize (parameters->nboundary());
 
     Size1 boundary_condition_int (parameters->nboundary());
 
     io.read_list (prefix+"boundary_temperature", boundary_temperature);
-    io.read_list (prefix+"boundary_condition", boundary_condition_int);
+    io.read_list (prefix+"boundary_value",       boundary_value);
+    io.read_list (prefix+"boundary_condition",   boundary_condition_int);
 
 
     for (Size b = 0; b < parameters->nboundary(); b++)
@@ -46,6 +48,7 @@ void Boundary :: read (const Io& io)
         if (boundary_condition_int[b] == 0) boundary_condition[b] = Zero;
         if (boundary_condition_int[b] == 1) boundary_condition[b] = Thermal;
         if (boundary_condition_int[b] == 2) boundary_condition[b] = CMB;
+        if (boundary_condition_int[b] == 3) boundary_condition[b] = Value;
     }
 
 
@@ -54,6 +57,7 @@ void Boundary :: read (const Io& io)
 
     boundary_condition  .copy_vec_to_ptr ();
     boundary_temperature.copy_vec_to_ptr ();
+    boundary_value      .copy_vec_to_ptr ();
 }
 
 
@@ -70,10 +74,12 @@ void Boundary :: write (const Io& io) const
         if (boundary_condition[b] == Zero   ) boundary_condition_int[b] = 0;
         if (boundary_condition[b] == Thermal) boundary_condition_int[b] = 1;
         if (boundary_condition[b] == CMB    ) boundary_condition_int[b] = 2;
+        if (boundary_condition[b] == Value  ) boundary_condition_int[b] = 3;
     }
 
     io.write_list (prefix+"boundary_temperature", boundary_temperature);
-    io.write_list (prefix+"boundary_condition", boundary_condition_int);
+    io.write_list (prefix+"boundary_value",       boundary_value);
+    io.write_list (prefix+"boundary_condition",   boundary_condition_int);
 }
 
 
