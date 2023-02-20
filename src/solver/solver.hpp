@@ -220,6 +220,20 @@ struct Solver
               Size      id1,
               Size      id2 );
 
+//With extra functionality to figure out when to stop our computations on the ray
+    template <Frame frame>
+    accel inline Size trace_ray_comoving (
+        const Geometry& geometry,
+        const Size      o,
+        const Size      r,
+        const Size      rr,
+        const Size      rayidx,
+        const double    dshift_max,
+        const int       increment,
+              Size      id1,
+              Size      id2,
+              Size&     outermost_interesting_point_rayidx);
+
     accel inline void set_data (
         const Size   crt,
         const Size   nxt,
@@ -301,9 +315,9 @@ struct Solver
                 const Real curr_shift, std::multimap<Real, std::tuple<Size, Size>>& multimap_freq_to_bdy_index);
     inline void set_initial_boundary_conditions(Model& model, const Size currpoint, const Real curr_shift, std::multimap<Real, std::tuple<Size, Size>>& multimap_freq_to_bdy_index);
     template <ApproximationType approx>
-    inline void comoving_ray_bdy_setup_forward(Model& model);
+    inline void comoving_ray_bdy_setup_forward(Model& model, Size first_interesting_rayposidx);
     template <ApproximationType approx>
-    inline void comoving_ray_bdy_setup_backward(Model& model);
+    inline void comoving_ray_bdy_setup_backward(Model& model, Size last_interesting_rayposidx);
     template<ApproximationType approx>
     inline void solve_comoving_order_2_sparse (Model& model);
     inline void solve_comoving_single_step (Model& model, const Size rayposidx, const Size rayidx, const Size rr, const bool is_upward_disc, const bool forward_ray);
