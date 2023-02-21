@@ -760,8 +760,8 @@ inline void Solver :: set_implicit_boundary_frequencies(Model& model, const Size
             while(right_bound_freq<next_freq && curr_range_index<nb_ranges-1)
             {
                 curr_range_index++;
-                Real left_bound_freq=left_bound[curr_range_index];
-                Real right_bound_freq=right_bound[curr_range_index];
+                left_bound_freq=left_bound[curr_range_index];
+                right_bound_freq=right_bound[curr_range_index];
             }
             //freq outside range if <left_bound || >right_bound
             if (next_freq<left_bound_freq || next_freq>right_bound_freq)
@@ -793,8 +793,8 @@ inline void Solver :: set_implicit_boundary_frequencies(Model& model, const Size
             while(right_bound_freq<next_freq && curr_range_index<nb_ranges-1)
             {
                 curr_range_index++;
-                Real left_bound_freq=left_bound[curr_range_index];
-                Real right_bound_freq=right_bound[curr_range_index];
+                left_bound_freq=left_bound[curr_range_index];
+                right_bound_freq=right_bound[curr_range_index];
             }
             //freq outside range if <left_bound || >right_bound
             if (next_freq<left_bound_freq || next_freq>right_bound_freq)
