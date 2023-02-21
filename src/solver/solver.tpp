@@ -569,7 +569,7 @@ inline void Solver :: get_overlapping_lines(Model& model, const Size nextpoint, 
             //increment number of freqs of line quadrature encountered
             line_count[lineidx]++;
             //if we have counted all relevant quads belonging to a specific line:
-            if (line_count[lineidx]==model.parameters->nfreqs())
+            if (line_count[lineidx]==model.parameters->nquads())
             {
                 line_count[lineidx]=0;//reset the index (as counting this line is no longer needed)
                 //Then if no other lines are currently being counted (i.e. entire count vectors is zero),
@@ -593,7 +593,7 @@ inline void Solver :: get_overlapping_lines(Model& model, const Size nextpoint, 
             //increment number of freqs of line quadrature encountered
             line_count[lineidx]++;
             //if we have counted all relevant quads belonging to a specific line:
-            if (line_count[lineidx]==model.parameters->nfreqs())
+            if (line_count[lineidx]==model.parameters->nquads())
             {
                 line_count[lineidx]=0;//reset the index (as counting this line is no longer needed)
                 //Then if no other lines are currently being counted (i.e. entire count vectors is zero),
