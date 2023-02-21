@@ -431,6 +431,48 @@ def set_quadrature(model):
     return model
 
 
+def set_quadrature_equidistant(model, max_line_width):
+    """
+    Setter for the quadrature roots and weights for the Newton-Cotes
+    quadrature, used for integrating over (Gaussian) line profiles.
+
+    Parameters
+    ----------
+    model : Magritte model object
+        Magritte model object to set.
+    max_line_width : strictly positive double
+        Returns the
+    TODO: ADD CURR QUADRATURE TYPE TO quadrature.hpp
+    (for later referencing)
+
+    Returns
+    -------
+    out : Magritte model object
+        Updated Magritte object.
+    """
+    # Get Newton-cotes quadrature roots and weights
+    roots = np.linspace(-max_line_width, max_line_width, model.parameters.nquads())
+    weights = 2.0*np.ones(model.parameters.nquads())
+    weights[-1]=1.0
+    weights[0]=1.0
+    #and now multiplying with the exponential, is this is the (non-normalized) weight function
+    weights = weights * np.exp(-roots*roots)
+
+    print("roots: ", roots)
+    print("weights: ", weights)
+
+    # weights, _ = sp.integrate.newton_cotes(model.parameters.nquads() - 1, 1)
+    # (roots, weights) = np.polynomial.hermite.hermgauss(model.parameters.nquads())
+    # Normalize weights
+    weights = weights / np.sum(weights)
+    # Set roots and weights
+    for l in range(model.parameters.nlspecs()):
+        model.lines.lineProducingSpecies[l].quadrature.roots  .set(roots)
+        model.lines.lineProducingSpecies[l].quadrature.weights.set(weights)
+    return model
+
+
+
 def getProperName(name):
     '''
     Return the standard name for the species.
@@ -552,7 +594,7 @@ def set_linedata_from_LAMDA_file (model, fileNames, config={}):
     # Make sure a file is provides for each species
     if len(fileNames) != model.parameters.nlspecs():
         raise ValueError('Number of provided LAMDA files != nlspecs')
-    # Create lineProducingSpecies objects    
+    # Create lineProducingSpecies objects
     model.lines.resize_LineProducingSpecies (len(fileNames))
     # Convenient name
     species = model.chemistry.species
