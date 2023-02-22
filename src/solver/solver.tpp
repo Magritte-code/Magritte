@@ -206,8 +206,17 @@ inline void Solver :: solve_feautrier_order_2_grey (Model& model)
 {
     // Allocate memory
     model.radiation.I.resize (model.parameters->nrays(), model.parameters->npoints(), model.parameters->nfreqs());
+    model.radiation.J.resize (                           model.parameters->npoints(), model.parameters->nfreqs());
     model.grey_J.resize (model.parameters->npoints());
     model.grey_F.resize (model.parameters->npoints());
+
+    // THESE SHOULD NOT BE NECESSARY BUT I AM NOT SURE
+    // ///////////////////////////////////////////////
+    // Initialise Lambda operator
+    for (auto &lspec : model.lines.lineProducingSpecies) {lspec.lambda.clear();}
+    // Initialise mean intensity
+    model.radiation.initialize_J();
+    //////////////////////////////////////////////////
 
     // Initialise grey J and F
     threaded_for (o, model.parameters->npoints(),
