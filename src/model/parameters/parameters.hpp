@@ -8,9 +8,9 @@
 #include "tools/setOnce.hpp"
 
 
-#define CREATE_PARAMETER(type, x)                                               \
+#define CREATE_PARAMETER(type, x, essential)                                    \
     private:                                                                    \
-        SetOnce<type> x##__{#x};                                                \
+        SetOnce<type, essential> x##__{#x};                                          \
     public:                                                                     \
         inline void set_##x (const type value)       {x##__.set(value);};\
         inline type       x (                ) const {return x##__.get(     );};
@@ -20,24 +20,28 @@
 //////////////////////////////////////////////////////////
 struct Parameters
 {
-    CREATE_PARAMETER (string, version);
+    //essential parameters which need to be set by the user
+    CREATE_PARAMETER (string, version, true);
+    CREATE_PARAMETER (string, model_name, true);
 
-    CREATE_PARAMETER (string, model_name);
+    CREATE_PARAMETER (Size, dimension, true);
+    CREATE_PARAMETER (Size, npoints, true);
+    CREATE_PARAMETER (Size, nrays, true);
+    CREATE_PARAMETER (Size, nboundary, true);
+    CREATE_PARAMETER (Size, nspecs, true);
+    CREATE_PARAMETER (Size, nlspecs, true);
+    CREATE_PARAMETER (Size, nquads, true);
 
-    CREATE_PARAMETER (Size, dimension );
-    CREATE_PARAMETER (Size, npoints   );
-    CREATE_PARAMETER (Size, nrays     );
-    CREATE_PARAMETER (Size, hnrays    );
-    CREATE_PARAMETER (Size, nboundary );
-    CREATE_PARAMETER (Size, nfreqs    );
-    CREATE_PARAMETER (Size, nspecs    );
-    CREATE_PARAMETER (Size, nlspecs   );
-    CREATE_PARAMETER (Size, nlines    );
-    CREATE_PARAMETER (Size, nquads    );
+    CREATE_PARAMETER (bool, spherical_symmetry, true);
 
-    CREATE_PARAMETER (bool, use_scattering        );
-    CREATE_PARAMETER (bool, spherical_symmetry    );
-    CREATE_PARAMETER (bool, adaptive_ray_tracing  );
+    //nonessential parameters which are automatically inferred by magritte
+    CREATE_PARAMETER (Size, hnrays, false);
+    CREATE_PARAMETER (Size, nfreqs, false);
+    CREATE_PARAMETER (Size, nlines, false);
+
+    //Old things that are no more connected to anything...
+    CREATE_PARAMETER (bool, use_scattering, false);
+    CREATE_PARAMETER (bool, adaptive_ray_tracing, false);
 
 
     Size n_off_diag                  = 0;
