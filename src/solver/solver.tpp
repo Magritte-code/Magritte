@@ -205,6 +205,7 @@ template<ApproximationType approx>
 inline void Solver :: solve_feautrier_order_2_grey (Model& model)
 {
     // Allocate memory
+    model.radiation.I.resize (model.parameters->nrays(), model.parameters->npoints(), model.parameters->nfreqs());
     model.grey_J.resize (model.parameters->npoints());
     model.grey_F.resize (model.parameters->npoints());
 
@@ -220,7 +221,7 @@ inline void Solver :: solve_feautrier_order_2_grey (Model& model)
     for (Size rr = 0; rr < model.parameters->hnrays(); rr++)
     {
         const Size     ar = model.geometry.rays.antipod  [rr];
-        const Real     wt = model.geometry.rays.weight   [rr] * two;
+        const Real     wt = model.geometry.rays.weight   [rr];
         const Vector3D nn = model.geometry.rays.direction[rr];
 
         cout << "--- rr = " << rr << endl;
@@ -229,38 +230,46 @@ inline void Solver :: solve_feautrier_order_2_grey (Model& model)
         {
         //const Size o = 0;
 
-            const Real dshift_max = get_dshift_max (model, o);
+            solve_shortchar_order_0<approx> (model, o, rr);
+            solve_shortchar_order_0<approx> (model, o, ar);
+          
+            const Size f = 0;
+              
+            model.grey_J[o] += wt * (model.radiation.I(rr,o,f) + model.radiation.I(ar,o,f));
+            model.grey_F[o] += wt * (model.radiation.I(rr,o,f) - model.radiation.I(ar,o,f)) * nn;
 
-            nr_   ()[centre] = o;
-            shift_()[centre] = 1.0;
+            // const Real dshift_max = get_dshift_max (model, o);
 
-            first_() = trace_ray <CoMoving> (model.geometry, o, rr, dshift_max, -1, centre-1, centre-1) + 1;
-            last_ () = trace_ray <CoMoving> (model.geometry, o, ar, dshift_max, +1, centre+1, centre  ) - 1;
-            n_tot_() = (last_()+1) - first_();
+            // nr_   ()[centre] = o;
+            // shift_()[centre] = 1.0;
 
-            if (n_tot_() > 1)
-            {
-                const Size f = 0;
+            // first_() = trace_ray <CoMoving> (model.geometry, o, rr, dshift_max, -1, centre-1, centre-1) + 1;
+            // last_ () = trace_ray <CoMoving> (model.geometry, o, ar, dshift_max, +1, centre+1, centre  ) - 1;
+            // n_tot_() = (last_()+1) - first_();
 
-                solve_feautrier_order_2_uv <approx> (model, o, f);
+            // if (n_tot_() > 1)
+            // {
+            //     const Size f = 0;
 
-                model.grey_J[o] += wt * Su_()[centre];
-                model.grey_F[o] += wt * Sv_()[centre] * nn;
+            //     solve_feautrier_order_2_uv <approx> (model, o, f);
+
+            //     model.grey_J[o] += wt * Su_()[centre];
+            //     model.grey_F[o] += wt * Sv_()[centre] * nn;
 
 
-                //cout << Su_()[centre] << endl;
-                //cout << Sv_()[centre] << endl;
+            //     //cout << Su_()[centre] << endl;
+            //     //cout << Sv_()[centre] << endl;
 
-                //cout << "model grey J   r = " << rr << "   J = " << model.grey_J[o] << endl;
-                //cout << "model grey F   r = " << rr << "   F = " <<  model.grey_F[o].x() << "  " <<  model.grey_F[o].y() << "  " << model.grey_F[o].z() << endl;
-            }
-            else
-            {
-                const Size f = 0;
+            //     //cout << "model grey J   r = " << rr << "   J = " << model.grey_J[o] << endl;
+            //     //cout << "model grey F   r = " << rr << "   F = " << model.grey_F[o].x() << "  " <<  model.grey_F[o].y() << "  " << model.grey_F[o].z() << endl;
+            // }
+            // else
+            // {
+            //     const Size f = 0;
 
-                model.grey_J[o] += wt * boundary_intensity(model, o, model.radiation.frequencies.nu(o, f));
-                model.grey_F[o] += 0.0;
-            }
+            //     model.grey_J[o] += wt * boundary_intensity(model, o, model.radiation.frequencies.nu(o, f));
+            //     model.grey_F[o] += 0.0;
+            // }
         })
 
         pc::accelerator::synchronize();
