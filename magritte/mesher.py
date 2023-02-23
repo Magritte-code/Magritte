@@ -624,6 +624,24 @@ def remesh_point_cloud(positions, data, max_depth=9, threshold= 5e-2, hullorder 
     Remeshing method by comparing the maximal variation of the data against the threshold.
     Uses a recursive method with maximal depth max_depth.
     The hullorder specifies the density of the generated uniform boundary.
+
+    Parameters
+    ----------
+    positions : numpy array of float
+        3D positions of the points (dimension of array N by 3)
+    data : numpy array of float
+        Corresponding data for the points, in order to determine the variation.
+        Must be non-zero
+    max_depth : int
+        Maximal recursion depth. Determines the miminal scale in the remeshed point cloud.
+        Must be positive
+    threshold : float
+        The threshold to use when deciding the variation to be small enough in order to approximate a region with a single point.
+        Must be positive
+    hullorder : int
+        Determines the amount of boundary points generated in the hull around the remeshed point cloud.
+        Increasing this by 1 results in a 4 times increase in number of boundary points.
+        Must be positive
     '''
     new_positions = np.zeros((len(positions), 3))#should be large enough to contain the new positions
     #in the worst case, the recursive remeshing procedure will return a point cloud with size of the old points
@@ -653,7 +671,7 @@ def remesh_point_cloud(positions, data, max_depth=9, threshold= 5e-2, hullorder 
     # The boundary hull is located at the first nb_boundary positions indices of the new_positions vector
     return (new_positions, nb_boundary)
 
-@numba.njit(cache=True)
+# @numba.njit(cache=True)
 def create_cubic_uniform_hull(xyz_min, xyz_max, order=3):
     # hull = np.zeros((1000, 3))#TODO: actually fill in correct value
     nx, ny, nz = (2**order+1, 2**order+1, 2**order+1)
@@ -681,7 +699,7 @@ def create_cubic_uniform_hull(xyz_min, xyz_max, order=3):
 
 #Simple function for the outer product of 1D vectors
 #Allows us to create surface point cloud by inserting 2 vectors (and a single value for the last coordinate)
-@numba.njit(cache=True)
+# @numba.njit(cache=True)
 def grid3D(x, y, z):
     xyz = np.empty(shape=(x.size*y.size*z.size, 3))
     idx = 0
@@ -698,8 +716,30 @@ def grid3D(x, y, z):
 #Does not use jit, as this is a recursive function
 def get_recursive_remesh(positions: np.array, data: np.array, depth: int, max_depth: int, threshold: float, remesh_points: np.array, remesh_nb_points: int):
     '''
+    Helper function for the point cloud remeshing method.
     Uses recursion to remesh a given point cloud (uses all data to determine whether to recurse on a smaller scale),
     by evaluating the total variation in the data (compared against the threshold).
+    
+    Parameters
+    ----------
+    positions : numpy array of float
+        3D positions of the points (dimension of array N by 3)
+    data : numpy array of float
+        Corresponding data for the points, in order to determine the variation.
+        Must be non-zero
+    depth : int
+        Current recursion depth
+    max_depth : int
+        Maximal recursion depth. Determines the miminal scale in the remeshed point cloud.
+        Must be positive
+    threshold : float
+        The threshold to use when deciding the variation to be small enough in order to approximate a region with a single point.
+        Must be positive
+    remesh_points : numpy array (in/out)
+        Array holding the remeshed point positions. Must be large enough to contain all remeshed points,  Must have at least dimensions N by 3.
+    remesh_nb_points : int (in/out)
+        The number of point in the remeshed point cloud.
+        Must be initialized to 0
     '''
 
     #If no data is left, no point should be added
