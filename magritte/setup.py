@@ -202,7 +202,7 @@ def set_uniform_rays(model, randomize=False, first_ray=np.array([1.0, 0.0, 0.0])
         direction  = healpy.pixelfunc.pix2vec(healpy.npix2nside(nrays), range(nrays))
         direction  = np.array(direction).transpose()
         if randomize:
-            direction = sp.spatial.transform.Rotation.random().apply(rays)
+            direction = sp.spatial.transform.Rotation.random().apply(direction)
 
         # Rotate such that the first ray is in the given direction
         R1 = create_rotation_matrix(direction[0])
