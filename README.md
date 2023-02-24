@@ -69,7 +69,6 @@ examples to facilitate its independent use. Until then, please
 **Developers**
 * Frederik De Ceuster
 * Thomas Ceulemans
-* Atulit Srivastava
 
 **Scientific & Technical advisors**
 * Ward Homan
@@ -82,7 +81,9 @@ examples to facilitate its independent use. Until then, please
 **Contributors**
 * Silke Maes
 * Jolien Malfait
-
+* Atulit Srivastava
+* Mats Esseldeurs
+* Arnout Coenegrachts
 
 ## Acknowledgements
 FDC was for most of the development supported by the EPSRC iCASE studentship programme, Intel Corporation and Cray Inc.
