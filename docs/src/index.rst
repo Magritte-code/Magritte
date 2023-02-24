@@ -101,6 +101,4 @@ Developers & Contributors
 Acknowledgements
 ****************
 
-FDC is supported by the EPSRC iCASE studentship programme, Intel Corporation and Cray Inc.
-FDC, JB, WH, and LD acknowledge support from the ERC consolidator grant 646758 AEROSOL.
-TC is a PhD fellow of the Research Foundation - Flanders (FWO).
+FDC was for most of the development supported by the EPSRC iCASE studentship programme, Intel Corporation and Cray Inc, and is currently a Postdoctoral Research Fellow of the Research Foundation - Flanders (FWO). FDC, JB, WH, and LD acknowledge support from the ERC consolidator grant 646758 AEROSOL. TC is a PhD Fellow of the Research Foundation - Flanders (FWO).
