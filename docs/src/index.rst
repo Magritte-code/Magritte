@@ -80,7 +80,6 @@ Developers & Contributors
 
 * Frederik De Ceuster
 * Thomas Ceulemans
-* Atulit Srivastava
 
 **Scientific & Technical advisors**
 
@@ -95,7 +94,9 @@ Developers & Contributors
 
 * Silke Maes
 * Jolien Malfait
-
+* Atulit Srivastava
+* Mats Esseldeurs
+* Arnout Coenegrachts
 
 Acknowledgements
 ****************
