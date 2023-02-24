@@ -3,6 +3,7 @@ import meshio
 import numpy     as np
 import itertools as itt
 import numba
+import healpy
 
 from string                  import Template
 from subprocess              import Popen, PIPE
@@ -642,6 +643,13 @@ def remesh_point_cloud(positions, data, max_depth=9, threshold= 5e-2, hullorder 
         Determines the amount of boundary points generated in the hull around the remeshed point cloud.
         Increasing this by 1 results in a 4 times increase in number of boundary points.
         Must be positive
+
+    Returns
+    -------
+    remeshed_positions : numpy array of float
+        The positions of the points in the remeshed point cloud. The boundary points lie in front.
+    number of boundary points : unsigned int
+        The number of boundary points in the remeshed point cloud.
     '''
     new_positions = np.zeros((len(positions), 3))#should be large enough to contain the new positions
     #in the worst case, the recursive remeshing procedure will return a point cloud with size of the old points
@@ -719,7 +727,7 @@ def get_recursive_remesh(positions: np.array, data: np.array, depth: int, max_de
     Helper function for the point cloud remeshing method.
     Uses recursion to remesh a given point cloud (uses all data to determine whether to recurse on a smaller scale),
     by evaluating the total variation in the data (compared against the threshold).
-    
+
     Parameters
     ----------
     positions : numpy array of float
@@ -827,3 +835,79 @@ def get_recursive_remesh(positions: np.array, data: np.array, depth: int, max_de
         remesh_nb_points = get_recursive_remesh(lll_positions, lll_data, depth+1, max_depth, threshold, remesh_points, remesh_nb_points)
 
     return remesh_nb_points
+
+
+#Clear for internal use
+def point_cloud_clear_inner_boundary_generic(remeshed_positions, nb_boundary, numpy_friendly_function, threshold):
+    '''
+    General function for consistently clearing an inner boundary region in a remeshed point cloud.
+
+    Parameters
+    ----------
+    remeshed_positions : numpy array of float
+        Positions of the points in the point cloud. Assumes the boundary points to lie in front.
+    nb_boundary : unsigned int
+        The number of boundary points in the point cloud.
+    numpy_friendly_function : lambda function which operates on numpy array
+        Function which acts on location for determining the shape of the inner boundary condition region
+    threshold : float
+        Cutoff value associate to numpy_friendly_function in order to constrain the shape of the inner boundary region
+
+    Returns
+    -------
+    remeshed_positions : numpy array of float
+        The positions of the points in the remeshed point cloud. The boundary points lie in front.
+    number of boundary points : unsigned int
+        The number of boundary points in the remeshed point cloud.
+    '''
+    boundary_points = [:nb_boundary, :]#extract original boundary points
+
+    keep_pos = numpy_friendly_function(remeshed_positions)>threshold
+    new_remeshed_positions = remeshed_positions[keep_pos]
+    remove_bdy = numpy_friendly_function(boundary_points)<=threshold
+    nb_bounds_reduced = len(remove_bdy)
+    new_nb_boundary = nb_boundary-nb_bounds_reduced
+
+    return new_remeshed_positions, new_nb_boundary
+
+
+def point_cloud_add_spherical_inner_boundary(remeshed_positions, nb_boundary, radius, healpy_order = 5, origin = np.array([0.0,0.0,0.0]).T):
+    '''
+    Function for specifying a spherical inner boundary in a remeshed point cloud.
+    First clears the inner region of points and then constructs a spherical boundary using healpy.
+
+    Parameters
+    ----------
+    remeshed_positions : numpy array of float
+        Positions of the points in the point cloud. Assumes the boundary points to lie in front.
+    nb_boundary : unsigned int
+        The number of boundary points in the point cloud.
+    radius : positive float
+        Radius of the spherical inner boundary
+    healpy_order : unsigned int
+        The number of points on the inner boundary is defined as: 12*(healpy_order**2), as the healpy discretization of the sphere is used.
+    origin : 1 by 3 numpy vector of float
+        Contains x,y,z coordinates of center point of the sphere (by default [0.0,0.0,0.0]^T)
+
+    Returns
+    -------
+    remeshed_positions : numpy array of float
+        The positions of the points in the remeshed point cloud. The boundary points lie in front.
+    number of boundary points : unsigned int
+        The number of boundary points in the remeshed point cloud.
+    '''
+
+    radii2 = lambda r : np.sum(np.power(r-origin[np.newaxis, :], 2),axis=1)#function for computing the square of the radius
+    #clear points within inner boundary
+    remeshed_positions, nb_boundary = point_cloud_clear_inner_boundary_generic(remeshed_positions, nb_boundary, radii2, radius**2)
+    #use healpy with 12*5**2 directions to define inner sphere
+    N_inner_bdy = 12*healpy_order**2
+    #healpix always requires 12*x**2 as number of points on the sphere
+    direction  = healpy.pixelfunc.pix2vec(healpy.npix2nside(N_inner_bdy), range(N_inner_bdy))
+    direction  = np.array(direction).transpose()
+    #then multiply with the desired radius of the inner boundary
+    inner_bdy = radius * direction
+    positions_reduced = np.concatenate((inner_bdy,positions_reduced))
+    nb_boundary = nb_boundary + N_inner_bdy
+
+    return positions_reduced, nb_boundary
