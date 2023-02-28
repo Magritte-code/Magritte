@@ -860,11 +860,45 @@ def point_cloud_clear_inner_boundary_generic(remeshed_positions, nb_boundary, nu
     number of boundary points : unsigned int
         The number of boundary points in the remeshed point cloud.
     '''
-    boundary_points = [:nb_boundary, :]#extract original boundary points
+    boundary_points = remeshed_positions[:nb_boundary, :]#extract original boundary points
 
     keep_pos = numpy_friendly_function(remeshed_positions)>threshold
     new_remeshed_positions = remeshed_positions[keep_pos]
     remove_bdy = numpy_friendly_function(boundary_points)<=threshold
+    nb_bounds_reduced = len(remove_bdy)
+    new_nb_boundary = nb_boundary-nb_bounds_reduced
+
+    return new_remeshed_positions, new_nb_boundary
+
+
+#Clear for internal use
+def point_cloud_clear_outer_boundary_generic(remeshed_positions, nb_boundary, numpy_friendly_function, threshold):
+    '''
+    General function for consistently clearing all points outside a given region in a remeshed point cloud.
+
+    Parameters
+    ----------
+    remeshed_positions : numpy array of float
+        Positions of the points in the point cloud. Assumes the boundary points to lie in front.
+    nb_boundary : unsigned int
+        The number of boundary points in the point cloud.
+    numpy_friendly_function : lambda function which operates on numpy array
+        Function which acts on location for determining the shape of the inner boundary condition region
+    threshold : float
+        Cutoff value associate to numpy_friendly_function in order to constrain the shape of the inner boundary region
+
+    Returns
+    -------
+    remeshed_positions : numpy array of float
+        The positions of the points in the remeshed point cloud. The boundary points lie in front.
+    number of boundary points : unsigned int
+        The number of boundary points in the remeshed point cloud.
+    '''
+    boundary_points = remeshed_positions[:nb_boundary, :]#extract original boundary points
+
+    keep_pos = numpy_friendly_function(remeshed_positions)<threshold
+    new_remeshed_positions = remeshed_positions[keep_pos]
+    remove_bdy = numpy_friendly_function(boundary_points)>=threshold
     nb_bounds_reduced = len(remove_bdy)
     new_nb_boundary = nb_boundary-nb_bounds_reduced
 
@@ -899,7 +933,49 @@ def point_cloud_add_spherical_inner_boundary(remeshed_positions, nb_boundary, ra
 
     radii2 = lambda r : np.sum(np.power(r-origin[np.newaxis, :], 2),axis=1)#function for computing the square of the radius
     #clear points within inner boundary
-    remeshed_positions, nb_boundary = point_cloud_clear_inner_boundary_generic(remeshed_positions, nb_boundary, radii2, radius**2)
+    positions_reduced, nb_boundary = point_cloud_clear_inner_boundary_generic(remeshed_positions, nb_boundary, radii2, radius**2)
+    #use healpy with 12*5**2 directions to define inner sphere
+    N_inner_bdy = 12*healpy_order**2
+    #healpix always requires 12*x**2 as number of points on the sphere
+    direction  = healpy.pixelfunc.pix2vec(healpy.npix2nside(N_inner_bdy), range(N_inner_bdy))
+    direction  = np.array(direction).transpose()
+    #then multiply with the desired radius of the inner boundary
+    inner_bdy = radius * direction
+    positions_reduced = np.concatenate((inner_bdy,positions_reduced))
+    nb_boundary = nb_boundary + N_inner_bdy
+
+    return positions_reduced, nb_boundary
+
+
+def point_cloud_add_spherical_outer_boundary(remeshed_positions, nb_boundary, radius, healpy_order = 10, origin = np.array([0.0,0.0,0.0]).T):
+    '''
+    Function for specifying a spherical outer boundary in a remeshed point cloud.
+    First clears the region outside the sphere and then constructs a spherical boundary using healpy.
+
+    Parameters
+    ----------
+    remeshed_positions : numpy array of float
+        Positions of the points in the point cloud. Assumes the boundary points to lie in front.
+    nb_boundary : unsigned int
+        The number of boundary points in the point cloud.
+    radius : positive float
+        Radius of the spherical outer boundary
+    healpy_order : unsigned int
+        The number of points on the outer boundary is defined as: 12*(healpy_order**2), as the healpy discretization of the sphere is used.
+    origin : 1 by 3 numpy vector of float
+        Contains x,y,z coordinates of center point of the sphere (by default [0.0,0.0,0.0]^T)
+
+    Returns
+    -------
+    remeshed_positions : numpy array of float
+        The positions of the points in the remeshed point cloud. The boundary points lie in front.
+    number of boundary points : unsigned int
+        The number of boundary points in the remeshed point cloud.
+    '''
+
+    radii2 = lambda r : np.sum(np.power(r-origin[np.newaxis, :], 2),axis=1)#function for computing the square of the radius
+    #clear points within inner boundary
+    positions_reduced, nb_boundary = point_cloud_clear_outer_boundary_generic(remeshed_positions, nb_boundary, radii2, radius**2)
     #use healpy with 12*5**2 directions to define inner sphere
     N_inner_bdy = 12*healpy_order**2
     #healpix always requires 12*x**2 as number of points on the sphere
