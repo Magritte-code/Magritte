@@ -501,6 +501,28 @@ int IoPython :: write_3_vector (
 }
 
 
+// For figuring out whether a file exists, using only python io.
+bool IoPython :: file_exists (const string file_name) const
+{
+    try         {py::initialize_interpreter ();}
+    catch (...) {                              }
+
+    // Add /Io folder to Python path
+    py::module::import("sys").attr("path").attr("insert")(0, io_folder);
+
+    // Import function defined in "'implementation'.py". This will either be io_"python_text.py" or "io_python_hdf5.py".
+    py::object ioFunction = py::module::import(implementation.c_str()).attr("file_exists");
+
+    // Execute io function
+    py::object result = ioFunction (file_name);
+
+    // Cast result to appropriate type
+    bool data = result.cast<bool>();
+
+    return data;
+}
+
+
 ///  Executer in python for reader functions
 ///    @param[in]  function  : name of reader function to execute
 ///    @param[in]  file_name : name of the file from which to read

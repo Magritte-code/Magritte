@@ -11,6 +11,9 @@ struct Io
 {
     const string io_file;
 
+    // For figuring out whether a file exists
+    virtual bool file_exists (const string fname) const = 0;
+
     // Constructor
     Io (const string &io_file): io_file (io_file) {};
 

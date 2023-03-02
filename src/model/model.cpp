@@ -6,6 +6,16 @@
 
 void Model :: read (const Io& io)
 {
+    //Before reading a model, first check whether a file exists at the given location.
+    //Otherwise, magritte will try to read nonexistent information and thus segfault.
+    if (!io.file_exists(parameters->model_name()))
+    {
+            std::cout<<"Model file cannot be read."<<std::endl;
+            std::cout<<"No file exists with path: "<<parameters->model_name()<<std::endl;
+            std::cout<<"Please check whether the path is spelled correctly."<<std::endl;
+            throw std::ios_base::failure("Model cannot be found at the specified location");
+    }
+
     cout << "                                           " << endl;
     cout << "-------------------------------------------" << endl;
     cout << "  Reading Model...                         " << endl;

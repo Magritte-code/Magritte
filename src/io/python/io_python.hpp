@@ -13,6 +13,9 @@ struct IoPython : public Io
     public:
         const string implementation;   ///< name of python module with io implementation
 
+        // For figuring out whether a file exists
+        bool file_exists (const string fname) const override;
+
         // Constructor
         IoPython (const string &implementation, const string &io_file);
 
