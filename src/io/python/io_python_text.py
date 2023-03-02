@@ -1,3 +1,12 @@
+import os.path
+
+def file_exists (file_name):
+    """
+    Checks whether the file exists.
+    """
+    return os.path.isfile(file_name)
+
+
 def  get_length (input_file):
     """
     Return the number of lines in the input file.

@@ -10,6 +10,10 @@
 
 struct IoText : public Io
 {
+
+    // For figuring out whether a file exists
+    bool file_exists (const string fname) const override;
+
     // Constructor
     IoText (const string &io_file);
 
