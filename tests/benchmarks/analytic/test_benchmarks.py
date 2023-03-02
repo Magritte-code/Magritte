@@ -17,6 +17,14 @@ import pytest
 # def does_not_raise():
 #     yield
 
+#In order to
+class TestInput:
+    def test_read_nonexistent_file(self):
+        import magritte.core as magritte
+        with pytest.raises(Exception):
+            bogusFile = "dlpbmfhqbzeszvroptsqwupklhbtvkzkmebzdduhetthdjakgz.hdf5"
+            model = magritte.Model(bogusFile) #reading bogus files should raise an
+
 class TestAnalytic:
     #incremental testing; see conftest.py or pytest.ini
     @pytest.mark.incremental
