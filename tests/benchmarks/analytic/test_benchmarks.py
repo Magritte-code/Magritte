@@ -17,13 +17,14 @@ import pytest
 # def does_not_raise():
 #     yield
 
-#In order to
+#In order to check whether our Io module works correctly
 class TestInput:
     def test_read_nonexistent_file(self):
         import magritte.core as magritte
         with pytest.raises(Exception):
             bogusFile = "dlpbmfhqbzeszvroptsqwupklhbtvkzkmebzdduhetthdjakgz.hdf5"
-            model = magritte.Model(bogusFile) #reading bogus files should raise an
+            model = magritte.Model(bogusFile) #reading bogus files should raise an exception
+            #note: if we segfault, pytest will also complain, so this should protect against segfaults
 
 class TestAnalytic:
     #incremental testing; see conftest.py or pytest.ini
