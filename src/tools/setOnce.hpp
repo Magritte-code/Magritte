@@ -25,7 +25,8 @@ struct GetBeforeSetException : public std::exception
 };
 
 
-template <typename type>
+//essential parameters will not be derived, so must be set by the user themselves when creating a model. Note: currently does not actually do much
+template <typename type, bool essential>
 class SetOnce
 {
     private:
