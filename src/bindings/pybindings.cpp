@@ -229,11 +229,12 @@ PYBIND11_MODULE (core, module)
             &Model::compute_radiation_field_feautrier_order_2_sparse,
             "Compute the radiation field for the modle using the 2nd-order Feautrier solver."
         )
-        .def (
-            "compute_radiation_field_feautrier_order_2_uv",
-            &Model::compute_radiation_field_feautrier_order_2_uv,
-            "Compute the radiation field for the modle using the 2nd-order Feautrier solver."
-        )
+        /// Solver is bugged, so removed from the api, as the shortchar solver can replace it
+        // .def (
+        //     "compute_radiation_field_feautrier_order_2_uv",
+        //     &Model::compute_radiation_field_feautrier_order_2_uv,
+        //     "Compute the radiation field for the modle using the 2nd-order Feautrier solver."
+        // )
         .def (
             "compute_radiation_field_feautrier_order_2_anis",
             &Model::compute_radiation_field_feautrier_order_2_anis,
