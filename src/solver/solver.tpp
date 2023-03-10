@@ -3853,11 +3853,11 @@ accel inline Size Solver :: trace_ray_comoving (
 
             set_data (crt, nxt, shift_crt, shift_nxt, dZ, dshift_max, increment, id1, id2);
         }
-        //has to be a valid point in order to evaluate this, so inside these brackets
-        if (closest_ray(rr, nxt)==rayidx)
-        {   //subtracting increment required, as id1 always points to the next point after set_data
-            outermost_interesting_point_rayidx = id1-increment;//as the data is set there, this should? be fine
-        }
+        // //has to be a valid point in order to evaluate this, so inside these brackets
+        // if (closest_ray(rr, nxt)==rayidx)
+        // {   //subtracting increment required, as id1 always points to the next point after set_data
+        //     outermost_interesting_point_rayidx = id1-increment;//as the data is set there, this should? be fine
+        // }
     }
 
     return id1;
