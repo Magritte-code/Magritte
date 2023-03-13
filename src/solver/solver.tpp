@@ -81,7 +81,7 @@ inline void Solver :: setup_comoving (Model& model)
         points_to_trace_ray_through[i].resize(model.parameters->npoints());
     }
 
-    //
+    //For determining which ray lies closest to each point
     n_rays_through_point.resize(model.parameters->hnrays(), model.parameters->npoints());
     min_ray_distsqr     .resize(model.parameters->hnrays(), model.parameters->npoints());
     closest_ray         .resize(model.parameters->hnrays(), model.parameters->npoints());
@@ -132,17 +132,6 @@ inline void Solver :: setup_comoving (Model& model)
         dIdnu_index2_next_(i).resize(length, width);
         dIdnu_index3_next_(i).resize(length, width);
 
-        //For containing the boundary conditions efficiently (for each line)
-        // left_bdy_deque_frequencies_(i).resize(model.parameters->nlines());//contains the boundary frequencies
-        // left_bdy_deque_rayposidx_(i).resize(model.parameters->nlines());//contains the boundary frequencies ray position indices
-        // left_bdy_deque_freq_idx_(i).resize(model.parameters->nlines());//contains the boundary frequencies frequency indices
-        //
-        // right_bdy_deque_frequencies_(i).resize(model.parameters->nlines());//contains the boundary frequencies
-        // right_bdy_deque_rayposidx_(i).resize(model.parameters->nlines());//contains the boundary frequencies ray position indices
-        // right_bdy_deque_freq_idx_(i).resize(model.parameters->nlines());//contains the boundary frequencies frequency indices
-
-
-
     }
 
     //Finally also trace the rays in advance to prune the unnecessary ones.
@@ -171,6 +160,7 @@ inline void Solver :: setup_comoving_local_approx (Model& model)
         points_to_trace_ray_through[i].resize(model.parameters->npoints());
     }
 
+    //for determining which ray lies closest to each point
     n_rays_through_point.resize(model.parameters->hnrays(), model.parameters->npoints());
     min_ray_distsqr     .resize(model.parameters->hnrays(), model.parameters->npoints());
     closest_ray         .resize(model.parameters->hnrays(), model.parameters->npoints());
@@ -182,49 +172,7 @@ inline void Solver :: setup_comoving_local_approx (Model& model)
         nr_          (i).resize (length);
         shift_       (i).resize (length);
 
-        // start_indices_(i).resize(length, width);
-        // for (Size j=0; j<length; j++)
-        // {
-        //     for (Size k=0; k<width; k++)
-        //     {
-        //         start_indices_(i)(j,k).resize(2);
-        //     }
-        // }
-
-        // //err, I should check which I actually need...
-        // //This probably allows multiple lines to be treated together
-        // line_quad_discdir_overlap_(i).resize(model.parameters->nlines());
-        // left_bound_(i).resize(model.parameters->nlines());
-        // right_bound_(i).resize(model.parameters->nlines());
-        // left_bound_index_(i).resize(model.parameters->nlines());
-        // right_bound_index_(i).resize(model.parameters->nlines());
-        //
-        // //some misc variables
-        // line_count_(i).resize(model.parameters->nlines());
-        // quad_range_weight_(i).resize(model.parameters->nquads());
-
-        //This will be able to be reduced significantly, as we will not a priori construct huge matrices for properly obeying the boundary conditions
-        // intensities_(i).resize(length, width);
-        // delta_tau_(i).resize(length, width);
-        // S_curr_(i).resize(length, width);
-        // S_next_(i).resize(length, width);
-        //
-        // dIdnu_coef1_curr_(i).resize(length, width);
-        // dIdnu_coef2_curr_(i).resize(length, width);
-        // dIdnu_coef3_curr_(i).resize(length, width);
-        //
-        // dIdnu_index1_curr_(i).resize(length, width);
-        // dIdnu_index2_curr_(i).resize(length, width);
-        // dIdnu_index3_curr_(i).resize(length, width);
-        //
-        // dIdnu_coef1_next_(i).resize(length, width);
-        // dIdnu_coef2_next_(i).resize(length, width);
-        // dIdnu_coef3_next_(i).resize(length, width);
-        //
-        // dIdnu_index1_next_(i).resize(length, width);
-        // dIdnu_index2_next_(i).resize(length, width);
-        // dIdnu_index3_next_(i).resize(length, width);
-
+        //For simplicity, we define other variables for the comoving approx solver, as we store less (in full solver, we use matrices, here vectors suffice)
         cma_computed_intensities_(i).resize(width);
         cma_start_intensities_(i).resize(width);
         cma_start_frequencies_(i).resize(width);
@@ -238,24 +186,13 @@ inline void Solver :: setup_comoving_local_approx (Model& model)
         cma_S_curr_(i).resize(width);
         cma_S_next_(i).resize(width);
 
-        // temp_intensities_(i).resize(width);//for temporarily storing ; just compute explicit dI/dnu at each point
-
-        //directly computing the explict derivative is more convenient
-        // cma_dIdnu_coef1_curr_(i).resize(width);
-        // cma_dIdnu_coef2_curr_(i).resize(width);
-        // cma_dIdnu_coef3_curr_(i).resize(width);
-
-
-        // cma_dIdnu_index1_curr_(i).resize(width);
-        // cma_dIdnu_index2_curr_(i).resize(width);
-        // cma_dIdnu_index3_curr_(i).resize(width);
-
         cma_dIdnu_coef1_next_(i).resize(width);
         cma_dIdnu_coef2_next_(i).resize(width);
         cma_dIdnu_coef3_next_(i).resize(width);
         cma_dIdnu_expl_(i).resize(width);
         cma_delta_tau_(i).resize(width);
 
+        // The implicit frequency derivative will be computed on the fly
         // cma_dIdnu_index1_next_(i).resize(width);
         // cma_dIdnu_index2_next_(i).resize(width);
         // cma_dIdnu_index3_next_(i).resize(width);
@@ -268,10 +205,10 @@ inline void Solver :: setup_comoving_local_approx (Model& model)
 
 
 
-// /  Getter for the maximum allowed shift value determined by the smallest line
-// /    @param[in] o : number of point under consideration
-// /    @retrun maximum allowed shift value determined by the smallest line
-// /////////////////////////////////////////////////////////////////////////////
+///  Getter for the maximum allowed shift value determined by the smallest line
+///    @param[in] o : number of point under consideration
+///    @retrun maximum allowed shift value determined by the smallest line
+///////////////////////////////////////////////////////////////////////////////
 accel inline Real Solver :: get_dshift_max (
     const Model& model,
     const Size   o     )
@@ -331,13 +268,13 @@ inline Size Solver :: get_ray_lengths_max (Model& model)
 }
 
 
-//traces all points on a given ray (should be called in both directions)
-//but as tracing antipodal rays should be symmetric, we only need to keep track of one direction
+///  Traces all points on a given ray and checks whether the ray lies closest (among currently traced rays) to the given ray
+///  Should be called in both directions, but as tracing antipodal rays should be symmetric, we only need to keep track of one direction
 accel inline void Solver :: trace_ray_points (
     const Geometry& geometry,
     const Size      o,//origin point of ray
-    const Size      rdir,//ray direction to trace
-    const Size      rsav,//ray index save direction
+    const Size      rdir,//ray direction to trace ∈ [0, nrays-1]
+    const Size      rsav,//ray index save direction ∈ [0,hnrays-1]
     const Size      rayidx)//for indexing the rays (counts from 0 to total number of rays traced through the domain
 {
     double  Z = 0.0;   // distance from origin (o)
@@ -345,17 +282,9 @@ accel inline void Solver :: trace_ray_points (
 
     Size nxt = geometry.get_next (o, rdir, o, Z, dZ);
 
-    // // For generality, I assign a ray index to each ray of a given direction rsav
-    // // TODO: maybe change this if we were to allow arbitrary rays to be traced
-    // // Also the ray direction is identified with the forward dir
-    // closest_ray(rsav,o)=rayidx;
-    // min_ray_distsqr(rsav,o)=0.0;
-
     if (geometry.valid_point(nxt))
     {
-
         // get distance and check if closest ray
-        // TODO: maybe write optimize function which also returns the distance, as we are currently doing some minor work twice
         Real dist2 = geometry.get_dist2_ray_point(o, nxt, rdir);
         //If it is the first time we encounter this point, or this is the closest ray: assign this ray to compute the stuff (J, lambda) of the point
         if (n_rays_through_point(rsav,nxt)==0||dist2<min_ray_distsqr(rsav,nxt))
@@ -400,12 +329,8 @@ inline void Solver :: get_static_rays_to_trace (Model& model)
         //To make sure that we order the rays starting from the largest elements
         for (Size pointidx=0; pointidx<model.parameters->npoints(); pointidx++)
         {
-            const Size o=model.geometry.sorted_position_indices[pointidx];//
-        // for (Size o=0; o<model.parameters->npoints(); o++)
-        // {
-            // std::cout<<"n_rays_through_point: "<<n_rays_through_point(rr,o)<<std::endl;
-            // TODO?: maybe replace with some boolean-like thing, as we do not actually care (aside from debugging)
-            // how much rays are traced through a point
+            const Size o=model.geometry.sorted_position_indices[pointidx];
+
             //DEBUG: commenting this out results in tracing through all points
             if (n_rays_through_point(rr,o)>0)
             {continue;}
@@ -448,9 +373,7 @@ inline void Solver :: get_static_rays_to_trace (Model& model)
             // std::cout<<"closest ray: "<<closest_ray(rr,p)<<std::endl;
             // std::cout<<"point: "<<p<<"#: "<<n_rays_through_point(rr, p)<<std::endl;
         }
-
     }
-
 }
 
 
