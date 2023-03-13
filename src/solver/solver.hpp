@@ -313,7 +313,7 @@ struct Solver
                 std::multimap<Real, std::tuple<Size, Size>>& multimap_freq_to_bdy_index, bool is_upward_disc);
     inline void match_overlapping_boundary_conditions(Model& model, const Size currpoint, const Size curr_point_on_ray_index,
                 const Real curr_shift, std::multimap<Real, std::tuple<Size, Size>>& multimap_freq_to_bdy_index);
-    inline void set_initial_boundary_conditions(Model& model, const Size currpoint, const Real curr_shift, std::multimap<Real, std::tuple<Size, Size>>& multimap_freq_to_bdy_index);
+    inline void set_initial_boundary_conditions(Model& model, const Size initial_bdy, const Real curr_shift, std::multimap<Real, std::tuple<Size, Size>>& multimap_freq_to_bdy_index);
     template <ApproximationType approx>
     inline void comoving_ray_bdy_setup_forward(Model& model, Size first_interesting_rayposidx);
     template <ApproximationType approx>

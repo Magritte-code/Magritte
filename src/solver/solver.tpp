@@ -377,14 +377,15 @@ inline void Solver :: get_static_rays_to_trace (Model& model)
 }
 
 
-// Matches the sorted frequency indices such that the frequency difference is minimal
-// ALSO relies on the current frequency split
+///  Matches the sorted frequency indices such that the frequency difference is minimal
+///  Internal function for the non-approximate comoving solver
+// uses the doppler shifts (curr_shift, next_shift)
 // ERR, should just iterate over all frequencies, ignoring those different splits. Boundary conditions
 // is_upward_disc denotes whether we want an upward discretization
 // nextpointonrayindex should denote how far the next point lies on the ray
 // currpointonrayindex should do the same, but for the previous point
 inline void Solver :: match_frequency_indices(Model& model, const Size nextpoint, const Size currpoint, const Real next_shift, const Real curr_shift, Size nextpointonrayindex, Size currpointonrayindex, bool is_upward_disc)
-{//, const Size splitindex
+{
     //if upward discretization, we start from the uppermost part
     if (is_upward_disc)
     {
@@ -394,7 +395,7 @@ inline void Solver :: match_frequency_indices(Model& model, const Size nextpoint
         Size next_freq_idx=model.parameters->nfreqs()-1+1;
         const Size min_freq_idx=0+1;
         //assumes at least a single frequency will not be a boundary condition (is reasonable if we limit the doppler shift)
-        //NOTE: oob freqs should be dealt with later on
+        //NOTE: oob freqs will be dealt with later on
         while (curr_freq_idx>=min_freq_idx && next_freq_idx>=min_freq_idx)
         {
             //check if the frequency at the previous point index is higher than this frequency (in static frame)
@@ -402,11 +403,9 @@ inline void Solver :: match_frequency_indices(Model& model, const Size nextpoint
                 model.radiation.frequencies.sorted_nu(nextpoint, next_freq_idx-1)*next_shift)
             {
                 curr_freq_idx--;
-                // freq_matching_()[next_freq_idx]=curr_freq_idx;
             }
             else//freq matching index must be determined if it is just higher than the freq at the previous point
             {
-                // freq_matching_()[next_freq_idx-1]=curr_freq_idx-1;
                 start_indices_()(nextpointonrayindex,next_freq_idx-1)[0]=currpointonrayindex;//stores point on ray index
                 start_indices_()(nextpointonrayindex,next_freq_idx-1)[1]=curr_freq_idx-1;//stores freq
                 //for the sake of boundary conditions, these start_indices_ might be overwritten later
@@ -420,8 +419,6 @@ inline void Solver :: match_frequency_indices(Model& model, const Size nextpoint
             start_indices_()(nextpointonrayindex,next_freq_idx-1)[1]=min_freq_idx-1;//stores freq
             next_freq_idx--;
         }
-
-
     }
     else
     {
@@ -437,11 +434,9 @@ inline void Solver :: match_frequency_indices(Model& model, const Size nextpoint
                 model.radiation.frequencies.sorted_nu(nextpoint, next_freq_idx)*next_shift)
             {
                 curr_freq_idx++;
-                // freq_matching_()[next_freq_idx]=curr_freq_idx;
             }
             else//freq matching index must be determined if it is just higher than the freq at the previous point
             {
-                // freq_matching_()[next_freq_idx]=curr_freq_idx;
                 start_indices_()(nextpointonrayindex,next_freq_idx)[0]=currpointonrayindex;//stores point
                 start_indices_()(nextpointonrayindex,next_freq_idx)[1]=curr_freq_idx;//stores freq
                 //for the sake of boundary conditions, these start_indices_ might be overwritten later
@@ -456,18 +451,16 @@ inline void Solver :: match_frequency_indices(Model& model, const Size nextpoint
             next_freq_idx++;
         }
     }
-//? should also return the number/indices of boundary frequencies
 }
 
 
-//Computes which lines are overlapping at the given point (next point)
-//might not be useful, better to determine covering; although we might need it anyway for determining the freq der boundary conditions
-//TODO: determine both (and define data struct for the overlap stuff) technically a simple Vector should work fine (even/odd indices respectively denotes start and end of intervals)
-//err, we do need them at different points (overlap at curr point, freq der at next point hmm, also at curr?)
-//USING THE SINGLE LINE APPROX, THIS CAN BE SIMPLIFIED
+///  Computes which lines are overlapping at the given point (at the next point)
+///  Internal function for (non-approximate) comoving solver
+///  Is necessary for determining the boundary conditions (we require to know which lines overlap to determine those)
+// TODO: USING THE SINGLE LINE APPROX, THIS CAN BE SIMPLIFIED
 inline void Solver :: get_overlapping_lines(Model& model, const Size nextpoint, bool is_upward_disc)
 {
-    //Copied logic from get_line_ranges, as this should do similar things
+    //For checking whether the lines overlap, we simply check whether the frequency quadrature overlaps
     //Should be conceptually more simple than using the line centers and widths to figure out whether they overlap
     Vector<unsigned char>& line_quad_discdir_overlap=line_quad_discdir_overlap_();
     for (Size lineidx=0; lineidx<model.parameters->nlines(); lineidx++)
@@ -475,22 +468,13 @@ inline void Solver :: get_overlapping_lines(Model& model, const Size nextpoint, 
         line_quad_discdir_overlap[lineidx]=false;//initialize to no overlap
     }
 
-    //TODO: use heuristic with max line width and quadrature.roots to determine whether successive lines might overlap
-    //Then if the heuristic says maybe, do a proper search as below (for that single line)
-    //This currently implemented method could be too slow
-
     Vector<Size>& line_count=line_count_();//counts the number of quadratures encountered for each line
-    //This can get complicated due to having no requirement to use the same quadrature for all lines...
-    //Due to having no requirement that all lines should use the same quadrature, we will just try to compute continguous ranges by iterating over the frequencies itself.
-    //Thus we iterate over all freqs, and count the occurences of the lines; if we encounter a line the maximal number of times, set line count to zero and check if continguous region has ended
-    // if not, then we evidently have an overlap
-    //This only works because the frequencies themselves are sorted
+
     if (is_upward_disc)
     {
         for (Size freqidx=0; freqidx<model.parameters->nfreqs(); freqidx++)
         {
-            //get corresponding line of the freq
-            // const Size lineidx=model.radiation.frequencies.corresponding_line_matrix(nextpoint, freqidx);
+            //get corresponding line of the sorted frequency index
             const Size unsorted_freqidx=model.radiation.frequencies.corresponding_nu_index(nextpoint, freqidx);//arbitrary frame, as within a single point, one does not need to care about doppler shifts
             const Size lineidx=model.radiation.frequencies.corresponding_line[unsorted_freqidx];
             //increment number of freqs of line quadrature encountered
@@ -501,7 +485,7 @@ inline void Solver :: get_overlapping_lines(Model& model, const Size nextpoint, 
                 line_count[lineidx]=0;//reset the index (as counting this line is no longer needed)
                 //Then if no other lines are currently being counted (i.e. entire count vectors is zero),
                 // we conclude that the current continguous range has ended
-                // TODO SIMPLIFY LOGIC USING SET AND TOTAL COUNT
+                // TODO SIMPLIFY: LOGIC USING SET AND TOTAL COUNT
                 if (!std::all_of(line_count.vec.begin(), line_count.vec.end(), [](int i) { return i==0; }))
                 {
                     //just set curr line index to be overlapping (on the right side)
@@ -514,8 +498,7 @@ inline void Solver :: get_overlapping_lines(Model& model, const Size nextpoint, 
     {   //long for more easily handling reverse loops
         for (long freqidx=model.parameters->nfreqs()-1; freqidx>=0; freqidx--)
         {
-            //get corresponding line of the freq
-            // const Size lineidx=model.radiation.frequencies.corresponding_line_matrix(nextpoint, freqidx);
+            //get corresponding line of the sorted frequency index
             const Size unsorted_freqidx=model.radiation.frequencies.corresponding_nu_index(nextpoint, freqidx);//arbitrary frame, as within a single point, one does not need to care about doppler shifts
             const Size lineidx=model.radiation.frequencies.corresponding_line[unsorted_freqidx];
             //increment number of freqs of line quadrature encountered
@@ -534,13 +517,15 @@ inline void Solver :: get_overlapping_lines(Model& model, const Size nextpoint, 
             }
         }
     }
-    //TODO: check line_count to be uniformly 0!!
+    //TODO: check line_count to be uniformly 0!! We did not reinitialize this variable...
 }
 
 
-//Computes the continguous ranges spanned by the line quadratures
-//excludes some part of the frequency quadrature (2 farthest freq quads) due to imposed boundary conditions
-//USING THE SINGLE LINE APPROX, THIS CAN BE SIMPLIFIED ENORMOUSLY (just use all individual line quadratures)
+///  Computes the continguous ranges spanned by the line quadratures (at the current point)
+///  Internal function of the (non-approximate) comoving solver
+///  In this version, we exclude the 2 farthest frequency points due to boundary conditions
+///  Also requires the shift, as we will use these computed ranges to determine overlap with boundary frequencies
+//TODO: USING THE SINGLE LINE APPROX, THIS CAN BE SIMPLIFIED ENORMOUSLY (just use all individual line quadratures)
 inline void Solver :: get_line_ranges(Model& model, const Size curr_point, bool is_upward_disc, Real curr_shift)
 {
     Vector<Real>& left_bound=left_bound_();//Specifies the left bounds of the ranges in [Hz]
@@ -555,11 +540,13 @@ inline void Solver :: get_line_ranges(Model& model, const Size curr_point, bool 
     Size& tot_quad_range_weight=tot_quad_range_weight_();
     tot_quad_range_weight=model.parameters->nquads()-2;//Number of used quadratures is the same for both cases, so we do not need to worry about this
 
-    // //The previous implementation was horrendously slow and bugged, so replace with the following:
+    // TODO: maybe replace this implementation with the following:
     // const Size tot_quad_range_weight = model.parameters->nquads()-2;
     // Size tot_quad_count = 0;
     // std::set<Size> encountered_lines = std::set<Size>();
+    //... In this, the set might make it a bit more efficient ...
 
+    //We exclude the farthest 2 frequency points for each line, as these correspond to boundary conditions
     if (is_upward_disc)
     {//then everything except the final two quads may be used for determining the range
         Size quadidx=0;
@@ -591,10 +578,6 @@ inline void Solver :: get_line_ranges(Model& model, const Size curr_point, bool 
         }
     }
 
-    //TODO: also add heuristic with max line width and quadrature.roots to determine whether successive lines might overlap
-    //Then if the heuristic says maybe, do a proper search as below (for that single line), otherwise just construct range from the single line
-    //This currently implemented method could be too slow
-
     //Dummy initialization, as we do not know a priori what the first counted quadrature will be
     Real leftbound=0.0;
     Real rightbound=0.0;
@@ -604,24 +587,18 @@ inline void Solver :: get_line_ranges(Model& model, const Size curr_point, bool 
     bool leftbound_specified=false;//Specifies whether the left bound for the current range has already been set
 
     Vector<Size>& line_count=line_count_();//counts the number of quadratures encountered for each line
-    //This can get complicated due to having no requirement to use the same quadrature for all lines...
-    //Due to having no requirement that all lines should use the same quadrature, we will just try to compute continguous ranges by iterating over the frequencies itself.
-    //Thus we iterate over all freqs, and count the occurences of the lines; if we encounter a line the maximal number of times, set line count to zero and check if continguous region has ended
-    //new range gets added if no other line is overlapping.
-    //This only works because the frequencies themselves are sorted
+    //ASSUMED AT THIS POINT TO BE INITIALIZED TO 0.
+
     for (Size freqidx=0; freqidx<model.parameters->nfreqs(); freqidx++)
     {
-        //get corresponding line of the freq
-        // const Size lineidx=model.radiation.frequencies.corresponding_line_matrix(curr_point, freqidx);
-        //FIXME: REPLACE corresponding_z_for_line WITH FUTURE VERSION WHICH ALSO TAKES INTO ACCOUNT THE POINT INDEX
-        // const Size quadidx=model.radiation.frequencies.corresponding_z_for_line[freqidx];
+        //get corresponding line of the sorted frequency index
         const Size unsorted_freqidx=model.radiation.frequencies.corresponding_nu_index(curr_point, freqidx);
         const Size lineidx=model.radiation.frequencies.corresponding_line[unsorted_freqidx];
         const Size quadidx=model.radiation.frequencies.corresponding_z_for_line[unsorted_freqidx];
         const Real curr_freq=model.radiation.frequencies.sorted_nu(curr_point, freqidx)*curr_shift;//in static frame
 
         if (!leftbound_specified&&(quad_range_weight[quadidx]))
-        {//specify left bound if not yet done so (and the point actually belongs to any of our ranges)
+        {//specify left bound if not yet done so (and the point is not a boundary point)
             leftbound_specified=true;
             leftbound=curr_freq;
             leftboundidx=freqidx;
@@ -629,6 +606,7 @@ inline void Solver :: get_line_ranges(Model& model, const Size curr_point, bool 
         rightbound=curr_freq;
         rightboundidx=freqidx;
 
+        // TODO: implementation using a set
         // //better implementation of checking whether we have counted all useful quadrature points of a (maybe overlapping) line region.
         // encountered_lines.insert(lineidx);
         // tot_quad_count+=quad_range_weight[quadidx];//the boundary points need not be counted,
@@ -646,9 +624,8 @@ inline void Solver :: get_line_ranges(Model& model, const Size curr_point, bool 
         //     leftbound_specified=false;
         // }
 
-        //OLD METHOD OF CHECKING WHETHER ALL QUADS ARE COUNTED
 
-        //increment number of freqs encountered // not incrementing the if boundary quadratures are encountered
+        //increment number of freqs encountered if a non-boundary point is encountered (implicit conversion from bool to int)
         line_count[lineidx]+=quad_range_weight[quadidx];
         //if we have counted all relevant quads belonging to a specific line:
         if (line_count[lineidx]==tot_quad_range_weight)
@@ -656,8 +633,7 @@ inline void Solver :: get_line_ranges(Model& model, const Size curr_point, bool 
             line_count[lineidx]=0;
             //Then if no other lines are currently being counted (i.e. entire count is zero),
             // we conclude that the current continguous range has ended
-            //TODO: make this thing scalable, use a set to store current lines, and some counter for total counts!
-            // TODO IMPROVE HERE
+            //TODO: make this thing scalable, using a set for the lines encoutered, and some counter for total counts!
             if (std::all_of(line_count.vec.begin(), line_count.vec.end(), [](int i) { return i==0; }))
             {
                 //add range
@@ -666,19 +642,20 @@ inline void Solver :: get_line_ranges(Model& model, const Size curr_point, bool 
                 left_bound_index[nb_ranges]=leftboundidx;
                 right_bound_index[nb_ranges]=rightboundidx;
                 nb_ranges++;
-                // std::cout<<"deltabounds: "<<rightbound-leftbound<<std::endl;
 
                 //set flag for new left bound
                 leftbound_specified=false;
             }
         }
     }
-    //TODO: check line_count to be uniformly 0!!
+    //TODO: check line_count to be uniformly 0!! As we do not reinitialize it anywhere (and we assume it to be 0 when entering this and another function)
 }
 
 
 
-//Sets all implicit boundary conditions, using the computed frequency ranges for currpoint and overlaps for nextpoint
+///  Sets all implicit boundary conditions, using the computed frequency ranges for currpoint and overlaps for nextpoint
+///  Internal function for the (non-approximate) comoving solver
+///  Uses the line ranges computed by get_line_ranges to figure out which frequencies (at the next point) lie out of bounds
 inline void Solver :: set_implicit_boundary_frequencies(Model& model, const Size nextpoint, const Size nextpointonrayindex, Real shift_next,
                 std::multimap<Real, std::tuple<Size, Size>>& multimap_freq_to_bdy_index, bool is_upward_disc)
 {
@@ -689,29 +666,21 @@ inline void Solver :: set_implicit_boundary_frequencies(Model& model, const Size
     Size nb_ranges=nb_ranges_();
     Real left_bound_freq=left_bound[curr_range_index];
     Real right_bound_freq=right_bound[curr_range_index];
-    //Or just do all at once, checking the properties of each freq sequentially
-    //duplicated due to difference due to discretization direction
-    //TODO: bounds are only put at last two (is_upward_disc) or first two (!is_upward_disc) quadratures of each line.
-    //This logic can therefore be simplified if we compute the inverse mapping from the unsorted frequencies to the sorted frequencies
-    //+this might make the deque implementation feasible; err, that might not be able to handle general shrinking/growing of line width due to temperature decrase/increase
+
     if (is_upward_disc)
     {
-        // std::cout<<"is_upward_disc"<<std::endl;
+        // The only difference between upward and downward direction lies in the location of the forced boundary conditions
         for (Size freqidx=0; freqidx<model.parameters->nfreqs(); freqidx++)
         {
-            // std::cout<<"curr_range_index: "<<curr_range_index<<std::endl;
-            // Real next_freq=model.radiation.frequencies.nu(nextpoint, freqidx)*shift_next;
             Real next_freq=model.radiation.frequencies.sorted_nu(nextpoint, freqidx)*shift_next;//in static frame
             const Size unsorted_freqidx=model.radiation.frequencies.corresponding_nu_index(nextpoint, freqidx);
             const Size lineidx=model.radiation.frequencies.corresponding_line[unsorted_freqidx];
             const Size quadidx=model.radiation.frequencies.corresponding_z_for_line[unsorted_freqidx];
-            // (quadidx==model.parameters->nquads()-1||quadidx==model.parameters->nquads()-2)
-            // replaced by quadidx>=nquads()-2
+
             // Nonoverlapping edges of a line quadrature need boundary conditions
             if (quadidx>=model.parameters->nquads()-2&&!line_quad_overlap[lineidx])
             {
-                //then is required boundary condition
-                // std::cout<<"before new bdy freq: "<<next_freq<<std::endl;
+                //Thus we add this frequency as a boundary condition
                 multimap_freq_to_bdy_index.emplace(next_freq, std::make_tuple(nextpointonrayindex, freqidx));
                 continue;
             }
@@ -723,35 +692,26 @@ inline void Solver :: set_implicit_boundary_frequencies(Model& model, const Size
                 left_bound_freq=left_bound[curr_range_index];
                 right_bound_freq=right_bound[curr_range_index];
             }
-            //freq outside range if <left_bound || >right_bound
+            //The frequency lies outside the range if smaller than left_bound OR larger than right_bound
             if (next_freq<left_bound_freq || next_freq>right_bound_freq)
             {
-                //then is required boundary condition
-                // std::cout<<"deltavsleft: "<<next_freq-left_bound_freq<<std::endl;
-                // std::cout<<"deltavsright: "<<right_bound_freq-next_freq<<std::endl;
-                // std::cout<<"after new bdy freq: "<<next_freq<<std::endl;
+                //Thus we add this frequency as a boundary condition
                 multimap_freq_to_bdy_index.emplace(next_freq, std::make_tuple(nextpointonrayindex, freqidx));
             }
         }
     }
     else
     {
-        // std::cout<<"!is_upward_disc"<<std::endl;
         for (Size freqidx=0; freqidx<model.parameters->nfreqs(); freqidx++)
         {
-            // std::cout<<"curr_range_index: "<<curr_range_index<<std::endl;
-            // Real next_freq=model.radiation.frequencies.nu(nextpoint, freqidx)*shift_next;
             Real next_freq=model.radiation.frequencies.sorted_nu(nextpoint, freqidx)*shift_next;//in static frame
             const Size unsorted_freqidx=model.radiation.frequencies.corresponding_nu_index(nextpoint, freqidx);
             const Size lineidx=model.radiation.frequencies.corresponding_line[unsorted_freqidx];
             const Size quadidx=model.radiation.frequencies.corresponding_z_for_line[unsorted_freqidx];
-            // (quadidx==0||quadidx==1)
-            // replaced by quadidx<2
             // Nonoverlapping edges of a line quadrature need boundary conditions
             if (quadidx<2&&!line_quad_overlap[lineidx])
             {
-                //then is required boundary condition
-                // std::cout<<"before new bdy freq: "<<next_freq<<std::endl;
+                //Thus we add the frequency as a boundary condition
                 multimap_freq_to_bdy_index.emplace(next_freq, std::make_tuple(nextpointonrayindex, freqidx));
                 continue;
             }
@@ -762,13 +722,10 @@ inline void Solver :: set_implicit_boundary_frequencies(Model& model, const Size
                 left_bound_freq=left_bound[curr_range_index];
                 right_bound_freq=right_bound[curr_range_index];
             }
-            //freq outside range if <left_bound || >right_bound
+            //The frequency lies outside the range if smaller than left_bound OR larger than right_bound
             if (next_freq<left_bound_freq || next_freq>right_bound_freq)
             {
-                // std::cout<<"deltavsleft: "<<next_freq-left_bound_freq<<std::endl;
-                // std::cout<<"deltavsright: "<<right_bound_freq-next_freq<<std::endl;
-                // std::cout<<"after new bdy freq: "<<next_freq<<std::endl;
-                //then is required boundary condition
+                //Thus we add the frequency as a boundary condition
                 multimap_freq_to_bdy_index.emplace(next_freq, std::make_tuple(nextpointonrayindex, freqidx));
             }
         }
@@ -776,12 +733,11 @@ inline void Solver :: set_implicit_boundary_frequencies(Model& model, const Size
 }
 
 
-// Matches the overlapping boundary conditions, using the currently computed ranges
+///  Matches the overlapping boundary conditions, using the currently computed ranges
+///  Internal function for the (non-approximate) comoving solver
 inline void Solver :: match_overlapping_boundary_conditions(Model& model, const Size currpoint, const Size curr_point_on_ray_index,
                                                             const Real curr_shift, std::multimap<Real, std::tuple<Size, Size>>& multimap_freq_to_bdy_index)
 {
-    //just iterate simultaneously over the ranges and frequencies
-    //TPDO first define the indices corresponding to the ranges//DONE
     Vector<Real>& left_bound=left_bound_();//Specifies the left bounds of the ranges in [Hz]
     Vector<Real>& right_bound=right_bound_();//Specifies the right bounds of the ranges in [Hz]
     Size& nb_ranges=nb_ranges_();//contains the number of ranges
@@ -794,22 +750,22 @@ inline void Solver :: match_overlapping_boundary_conditions(Model& model, const 
     Real curr_range_min=left_bound[curr_range_index];
     Real curr_range_max=right_bound[curr_range_index];
     Real curr_range_freq=curr_range_min;
-    // std::cout<<"nb_ranges: "<<nb_ranges<<" curr_range_min: "<<curr_range_min<<" curr_range_max: "<<curr_range_max<<std::endl;
 
     //By just using the builtin lower_bound, one can easily find the boundary conditions overlapping with the current ranges
     std::multimap<Real, std::tuple<Size, Size>>::iterator it=multimap_freq_to_bdy_index.lower_bound(curr_range_min);
+    //Using a while loop, as we simulataneously iterate over the boundary conditions and over the line ranges
     while (it!=multimap_freq_to_bdy_index.end()&&curr_range_index<nb_ranges)
     {
         const Real bdy_freq=it->first;//get boundary freq
         const Size bdy_point_on_ray_idx=std::get<0>(it->second);//get corresponding point index on ray
         const Size bdy_freq_idx=std::get<1>(it->second);//get corresponding freq index
-        // std::cout<<"bdy_freq_idx: "<<bdy_freq_idx<<" bdy_freq: "<<bdy_freq<<std::endl;
         //check if bdy freq is smaller than the right bound
         if (bdy_freq>curr_range_max)
         {
+            //The boundary frequency lies further than the current line, so use the next line instead
             curr_range_index++;
             if (curr_range_index==nb_ranges)
-            {   //all other boundary freqs lie outside the last range, so returning
+            {   //no next line exist, so all remaining boundary frequencies lie outside the last range
                 return;
             }
             //update info about ranges
@@ -818,7 +774,6 @@ inline void Solver :: match_overlapping_boundary_conditions(Model& model, const 
             curr_range_freq=curr_range_min;
             curr_freq_index=left_bound_index[curr_range_index];//stores the freq index of curr point
             it=multimap_freq_to_bdy_index.lower_bound(curr_range_min);//and adjust iterator accordingly
-            // std::cout<<"curr_range_min: "<<curr_range_min<<" curr_range_max: "<<curr_range_max<<std::endl;
             continue;
         }
         //the bdy frequency now lies within the bounds, so just linearly iterate until we find the correct freqs of the ranges (static frame) to interpolate with
@@ -826,13 +781,13 @@ inline void Solver :: match_overlapping_boundary_conditions(Model& model, const 
         //Find which freq bounds at curr_point exactly correspond to the bdy freq (enclosing it from the right)
         while (bdy_freq>curr_range_freq&&curr_range_freq<curr_range_max)
         {
-            // std::cout<<"curr_freq_idx: "<<curr_freq_index<<std::endl;
             curr_freq_index++;
             curr_range_freq=model.radiation.frequencies.sorted_nu(currpoint, curr_freq_index)*curr_shift;//in static frame
-            // std::cout<<"looping second while loop"<<std::endl;
         }
 
-        ///zeroth order interpolation
+        //In this section: I have implemented a few different options for interpolating the boundary conditions
+
+        ///zeroth order interpolation for the boundary frequency
         // Size left_curr_freq_idx=curr_freq_index-1;
         // Size right_curr_freq_idx=curr_freq_index;
         //
@@ -858,12 +813,9 @@ inline void Solver :: match_overlapping_boundary_conditions(Model& model, const 
         //     zeroth_order_freq = right_curr_freq_idx;
         // }
 
-        ///first order interpolation
+        ///First order interpolation for the boundary frequency
         Size left_curr_freq_idx=curr_freq_index-1;
         Size right_curr_freq_idx=curr_freq_index;
-
-        // std::cout<<"left_curr_freq_idx: "<<left_curr_freq_idx<<" right_curr_freq_idx: "<<right_curr_freq_idx<<std::endl;
-        // ERR, this left_curr_freq_idx might be a bit too far on the left...
 
         //the curr range freq should now be larger/equal to the bdy freq
         //In the case that bdy_freq lies on the left bound, doing left_bound-1 makes no sense as index for interpolation, so use curr_index as left bound instead
@@ -896,7 +848,7 @@ inline void Solver :: match_overlapping_boundary_conditions(Model& model, const 
         //             *curr_shift;//in static frame
 
 
-        ///setting interpolating boundary condition
+        ///Setting the interpolation coefficients for the boundary condition
 
 
         //Set frequency derivative correctly
@@ -951,137 +903,22 @@ inline void Solver :: match_overlapping_boundary_conditions(Model& model, const 
 
         //set dtau to approx 0
         delta_tau_()(bdy_point_on_ray_idx, bdy_freq_idx)=model.parameters->comoving_min_dtau;//should be small enough, but not small enough to crash my solver (due to /Δτ^2 necessary)
-        // std::cout<<"bdy delta_tau: "<<COMOVING_MIN_DTAU<<std::endl;
-        //set S? (nah just ignore the existence, as dtau≃0, so the influence S*dtau is negligible)
+        //The source function is set to 0, as the optical depth increment Δτ≃0 anyway.
         S_curr_()(bdy_point_on_ray_idx, bdy_freq_idx)=0.0;
         S_next_()(bdy_point_on_ray_idx, bdy_freq_idx)=0.0;
-        //In case of large doppler shifts, we might need to rethink setting dtau→0; as this will underestimate the optical depth (and influence of source)
-        //Concretely, we would need to use the optical depth of the last segment, and somehow incorporate the interpolated intensity of way earlier
+        //TODO: In case of large doppler shifts, we might need to rethink setting dtau→0; as this will underestimate the optical depth (and influence of source)
+        //Concretely, we would need to use the optical depth of the last segment, and somehow incorporate the interpolated intensity of way earlier (and set the source function correctly)
 
-        //pop value from iterator
+        //pop value from iterator, as we have succesfully set this boundary condition
         it=multimap_freq_to_bdy_index.erase(it);
-
     }
-
-
-    // //SLOW way of doing this
-    // //TODO: also add frequencies!
-    // //sorted iterating over all boundary frequencies
-    // //TODO: just get iterator over multimap and simulataneously check for end of ranges too!
-    // std::multimap<Real, std::tuple<Size, Size>>::iterator it=multimap_freq_to_bdy_index.begin();
-    // while (it!=multimap_freq_to_bdy_index.end()&&curr_range_index<nb_ranges)
-    // {
-    //     // std::cout<<"start of large while loop"<<std::endl;
-    //     const Real bdy_freq=it->first;//get boundary freq
-    //     const Size bdy_point_on_ray_idx=std::get<0>(it->second);//get corresponding point index on ray
-    //     const Size bdy_freq_idx=std::get<1>(it->second);//get corresponding freq index
-    //     // std::cout<<"left bound of range: "<<left_bound[curr_range_index]<<std::endl;
-    //     // std::cout<<"right bound of range: "<<right_bound[curr_range_index]<<std::endl;
-    //     // std::cout<<"bdy_freq: "<<bdy_freq<<std::endl;
-    //
-    //
-    //     //compare the frequency to the max freq of current range; if larger, then we need to compare against the next range
-    //     while (right_bound[curr_range_index]<bdy_freq)
-    //     {
-    //         // std::cout<<"nb_ranges: "<<nb_ranges<<std::endl;
-    //         // std::cout<<"curr_range_index"<<curr_range_index<<std::endl;
-    //         if (curr_range_index==nb_ranges-1)//curr_range_index∈[0,...,nb_ranges-1]
-    //         {
-    //             // std::cout<<"stopping matching bdy conditions due to limited ranges"<<std::endl;
-    //             //if curr_range_index==nb_ranges, then all remaining boundary frequencies lie outside of the ranges
-    //             //so we do not need to waste any more time on trying to match them
-    //             return;
-    //         }
-    //         curr_range_index++;
-    //         //update info about ranges
-    //         curr_range_min=left_bound[curr_range_index];
-    //         curr_range_max=right_bound[curr_range_index];
-    //         curr_range_freq=curr_range_min;
-    //         curr_freq_index=left_bound_index[curr_range_index];//stores the freq index of curr point
-    //         // std::cout<<"curr_freq_idx: "<<curr_freq_index<<std::endl;
-    //         // std::cout<<"looping first while loop"<<std::endl;
-    //     }
-    //     // std::cout<<"after correctly setting right_bound"<<std::endl;
-    //     //now it is guaranteed that rightbound>=bdy_freq, so we only need to check whether leftbound<=bdy_freq
-    //     if (curr_range_min<=bdy_freq)
-    //     {
-    //         // std::cout<<"curr range min: "<<curr_range_min<<std::endl;
-    //         // std::cout<<"bdy freq: "<<bdy_freq<<std::endl;
-    //         //Do the boundary stuff
-    //         //but first check which freqs are exactly in front or behind the bdy freq
-    //         //Start with the leftmost index of the range
-    //
-    //         //while(&& <) looping
-    //         //Find which freq bounds at curr_point exactly correspond to the bdy freq (enclosing it)
-    //         while (bdy_freq>curr_range_freq&&curr_range_freq<curr_range_max)
-    //         {
-    //             // std::cout<<"curr_freq_idx: "<<curr_freq_index<<std::endl;
-    //             curr_freq_index++;
-    //             curr_range_freq=model.radiation.frequencies.sorted_nu(currpoint, curr_freq_index)*curr_shift;//in static frame
-    //             // std::cout<<"looping second while loop"<<std::endl;
-    //         }
-    //         Size left_curr_freq_idx=curr_freq_index-1;
-    //         Size right_curr_freq_idx=curr_freq_index;
-    //         //the curr range freq should now be larger/equal to the bdy freq
-    //         //In the case that bdy_freq lies on the left bound, doing left_bound-1 makes no sense as index for interpolation, so use curr_index as left bound instead
-    //         if (curr_freq_index==left_bound_index[curr_range_index])
-    //         {
-    //             left_curr_freq_idx=curr_freq_index;
-    //             right_curr_freq_idx=curr_freq_index+1;
-    //         }
-    //         const Real deltafreq=(model.radiation.frequencies.sorted_nu(currpoint, right_curr_freq_idx)
-    //                               -model.radiation.frequencies.sorted_nu(currpoint, left_curr_freq_idx))*curr_shift;//in static frame
-    //
-    //         //Set starting index correctly
-    //         start_indices_()(bdy_point_on_ray_idx, bdy_freq_idx)[0]=curr_point_on_ray_index;
-    //         start_indices_()(bdy_point_on_ray_idx, bdy_freq_idx)[1]=left_curr_freq_idx;
-    //
-    //         //Set frequency derivative correctly
-    //
-    //         //Note: the actual factor with which to multiply is Δτ^2/(1-exp(-Δτ)-Δτ*exp(-Δτ)), which in the limit Δτ→0 corresponds to 2 (wait, I did forget a factor exp(-Δτ) in front due to optical depth itself)
-    //         //So in total, the multiplication factor is exp(-Δτ)*Δτ^2/(1-exp(-Δτ)-Δτ*exp(-Δτ))
-    //         //Set explicit coefficents to TWICE the normal 1/Δν value (as we are only treating the explicit part)
-    //         dIdnu_coef1_curr_()(bdy_point_on_ray_idx, bdy_freq_idx)=-2/deltafreq;
-    //         dIdnu_coef2_curr_()(bdy_point_on_ray_idx, bdy_freq_idx)=+2/deltafreq;
-    //         dIdnu_coef3_curr_()(bdy_point_on_ray_idx, bdy_freq_idx)=0.0;
-    //
-    //         dIdnu_index1_curr_()(bdy_point_on_ray_idx, bdy_freq_idx)=left_curr_freq_idx;
-    //         dIdnu_index2_curr_()(bdy_point_on_ray_idx, bdy_freq_idx)=right_curr_freq_idx;
-    //         dIdnu_index3_curr_()(bdy_point_on_ray_idx, bdy_freq_idx)=right_curr_freq_idx;
-    //         //as the coefficient for the last on is 0, no effort should be made to renumber that last index
-    //
-    //         //Implicit part coefs are set to 0. (as long as the corresponding indicies are in bounds, i do not particularly care about the exact values)
-    //         dIdnu_coef1_next_()(bdy_point_on_ray_idx, bdy_freq_idx)=0.0;
-    //         dIdnu_coef2_next_()(bdy_point_on_ray_idx, bdy_freq_idx)=0.0;
-    //         dIdnu_coef3_next_()(bdy_point_on_ray_idx, bdy_freq_idx)=0.0;
-    //         //exact indices do not matter, as long as they are in bounds
-    //         dIdnu_index1_next_()(bdy_point_on_ray_idx, bdy_freq_idx)=bdy_freq_idx;
-    //         dIdnu_index2_next_()(bdy_point_on_ray_idx, bdy_freq_idx)=bdy_freq_idx;
-    //         dIdnu_index3_next_()(bdy_point_on_ray_idx, bdy_freq_idx)=bdy_freq_idx;
-    //
-    //         //set dtau to approx 0
-    //         delta_tau_()(bdy_point_on_ray_idx, bdy_freq_idx)=model.parameters->comoving_min_dtau;//should be small enough, but not small enough to crash my solver (due to /Δτ^2 necessary)
-    //         // std::cout<<"bdy delta_tau: "<<COMOVING_MIN_DTAU<<std::endl;
-    //         //set S? (nah just ignore the existence, as dtau≃0)
-    //         //In case of large doppler shifts, we might need to rethink setting dtau→0; as this will underestimate the optical depth (and influence of source)
-    //         //Concretely, we would need to use the optical depth of the last segment, and somehow incorporate the interpolated intensity of way earlier
-    //
-    //         //pop value from iterator
-    //         it=multimap_freq_to_bdy_index.erase(it);
-    //         //TODO NOT HERE: for the INITIAL BOUNDARY CONDITIONS, maybe let the function choose the TYPE OF BOUNDARY CONDITION to use!!!
-    //         // std::cout<<"popping iterator"<<std::endl;
-    //     }
-    //     else
-    //     {
-    //         // std::cout<<"incrementing iterator"<<std::endl;
-    //         it++;
-    //     }
-    // }
 }
 
 
-//As currpoint lies on the boundary, use currpoint to derive the necessary boundary conditions!
-inline void Solver :: set_initial_boundary_conditions(Model& model, const Size currpoint, const Real curr_shift, std::multimap<Real, std::tuple<Size, Size>>& multimap_freq_to_bdy_index)
+///  For all remaining boundary points, this sets the boundary condition correctly
+///  Interal function of the (non-approximate) comoving solver.
+///  Uses the initial_bdy (point) for determining which boundary condition to use
+inline void Solver :: set_initial_boundary_conditions(Model& model, const Size inital_bdy, const Real curr_shift, std::multimap<Real, std::tuple<Size, Size>>& multimap_freq_to_bdy_index)
 {
     std::multimap<Real, std::tuple<Size, Size>>::iterator it=multimap_freq_to_bdy_index.begin();
     while (it!=multimap_freq_to_bdy_index.end())
@@ -1094,7 +931,7 @@ inline void Solver :: set_initial_boundary_conditions(Model& model, const Size c
         Size curr_freq_idx=start_indices_()(bdy_point_on_ray_idx, bdy_freq_idx)[1];
 
         //Compute boundary intensity
-        Real bdy_intensity=boundary_intensity(model, currpoint, bdy_freq);
+        Real bdy_intensity=boundary_intensity(model, initial_bdy, bdy_freq);
 
         //Set the frequency derivative coefficients to 0
         dIdnu_coef1_curr_()(bdy_point_on_ray_idx, bdy_freq_idx)=0.0;
@@ -1117,17 +954,11 @@ inline void Solver :: set_initial_boundary_conditions(Model& model, const Size c
         delta_tau_()(bdy_point_on_ray_idx, bdy_freq_idx)=50.0;//should be large enough
         S_curr_()(bdy_point_on_ray_idx, bdy_freq_idx)=bdy_intensity;
         S_next_()(bdy_point_on_ray_idx, bdy_freq_idx)=bdy_intensity;
-        // std::cout<<"initial bdy intensity: "<<bdy_intensity<<std::endl;
 
-        //Hmm, if we were to compute S, Δτ (only using the last part), we might be able to get far better results in case of extreme velocity gradients (and limited quadrature points)
+        //TODO: Hmm, if we were to compute S, Δτ (only using the last part), we might be able to get far better results in case of extreme velocity gradients (and limited quadrature points)
         //However, this does not protect against using far too large doppler shifts... (when going back and forth, might jump into a non-computed part; however then +- bdy intensity applies either way?)
-        // Size prevpoint=start_indices_()(bdy_point_on_ray_idx, bdy_freq_idx)[0];
-        // bool compute_curr_opacity=true;
-        // Size initial_point_index=ARGUMENT
-        // compute_source_dtau<approx>(model, currpoint, nextpoint, nextlineidx, currfreq, nextfreq, shift_curr, shift_next, dZ, compute_curr_opacity, dtau, chicurr, chinext, Scurr, Snext);
 
-
-        //pop value from iterator
+        //pop value from iterator, as this boundary condition is now accounted for
         it=multimap_freq_to_bdy_index.erase(it);
     }
 }
