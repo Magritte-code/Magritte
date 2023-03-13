@@ -399,3 +399,21 @@ accel inline double Geometry :: get_dist2_ray_point_general_geometry (
     const double distance_from_ray2 = R.dot(R) - Z*Z;
     return distance_from_ray2;
 }
+
+///   Computes the mean distance between the specified point and its neighbors
+accel inline double Geometry :: get_mean_dist_to_point (
+    const Size o) const
+{
+    double total_dist = 0.0;
+    const Size     n_nbs = points.    n_neighbors[o];
+    const Size cum_n_nbs = points.cum_n_neighbors[o];
+
+    for (Size i = 0; i < n_nbs; i++)
+    {
+        const Size     n     = points.neighbors[cum_n_nbs+i];
+        const Vector3D R     = points.position[n] - points.position[o];
+        total_dist+=std::sqrt(R.squaredNorm());
+    }
+
+    return total_dist/n_nbs;
+}

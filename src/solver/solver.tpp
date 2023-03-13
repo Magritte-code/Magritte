@@ -397,8 +397,12 @@ inline void Solver :: get_static_rays_to_trace (Model& model)
     {
         Size n_rays_to_trace=0;
         const Size ar=model.geometry.rays.antipod[rr];
-        for (Size o=0; o<model.parameters->npoints(); o++)
+        //To make sure that we order the rays starting from the largest elements
+        for (Size pointidx=0; pointidx<model.parameters->npoints(); pointidx++)
         {
+            const Size o=model.geometry.sorted_position_indices[pointidx];//
+        // for (Size o=0; o<model.parameters->npoints(); o++)
+        // {
             // std::cout<<"n_rays_through_point: "<<n_rays_through_point(rr,o)<<std::endl;
             // TODO?: maybe replace with some boolean-like thing, as we do not actually care (aside from debugging)
             // how much rays are traced through a point
@@ -574,6 +578,7 @@ inline void Solver :: get_overlapping_lines(Model& model, const Size nextpoint, 
                 line_count[lineidx]=0;//reset the index (as counting this line is no longer needed)
                 //Then if no other lines are currently being counted (i.e. entire count vectors is zero),
                 // we conclude that the current continguous range has ended
+                // TODO SIMPLIFY LOGIC USING SET AND TOTAL COUNT
                 if (!std::all_of(line_count.vec.begin(), line_count.vec.end(), [](int i) { return i==0; }))
                 {
                     //just set curr line index to be overlapping (on the right side)
@@ -621,11 +626,17 @@ inline void Solver :: get_line_ranges(Model& model, const Size curr_point, bool 
     Vector<Size>& left_bound_index=left_bound_index_();//Specifies the corresponding freq index to the left bounds of the ranges
     Vector<Size>& right_bound_index=right_bound_index_();//Specifies the corresponding freq index to the right bounds of the ranges
 
-    nb_ranges=0;
+    nb_ranges=0;//by default, set to 0.
     //First, we specify which quadratues are counted (every one except the outmost 2 ones depending on discretization direction)
     Vector<Size>& quad_range_weight=quad_range_weight_();
     Size& tot_quad_range_weight=tot_quad_range_weight_();
     tot_quad_range_weight=model.parameters->nquads()-2;//Number of used quadratures is the same for both cases, so we do not need to worry about this
+
+    // //The previous implementation was horrendously slow and bugged, so replace with the following:
+    // const Size tot_quad_range_weight = model.parameters->nquads()-2;
+    // Size tot_quad_count = 0;
+    // std::set<Size> encountered_lines = std::set<Size>();
+
     if (is_upward_disc)
     {//then everything except the final two quads may be used for determining the range
         Size quadidx=0;
@@ -694,6 +705,26 @@ inline void Solver :: get_line_ranges(Model& model, const Size curr_point, bool 
         }
         rightbound=curr_freq;
         rightboundidx=freqidx;
+
+        // //better implementation of checking whether we have counted all useful quadrature points of a (maybe overlapping) line region.
+        // encountered_lines.insert(lineidx);
+        // tot_quad_count+=quad_range_weight[quadidx];//the boundary points need not be counted,
+        // //err, I accidentally forgot that we do not increment the tot_quad_count when approaching bdy points (adding nonspecified bounds makes no sense)
+        // if ((leftbound_specified)&&((encountered_lines.size()*tot_quad_range_weight) == tot_quad_count))
+        // {
+        //     //add range
+        //     left_bound[nb_ranges]=leftbound;
+        //     right_bound[nb_ranges]=rightbound;
+        //     left_bound_index[nb_ranges]=leftboundidx;
+        //     right_bound_index[nb_ranges]=rightboundidx;
+        //     nb_ranges++;
+        //
+        //     //set flag for new left bound
+        //     leftbound_specified=false;
+        // }
+
+        //OLD METHOD OF CHECKING WHETHER ALL QUADS ARE COUNTED
+
         //increment number of freqs encountered // not incrementing the if boundary quadratures are encountered
         line_count[lineidx]+=quad_range_weight[quadidx];
         //if we have counted all relevant quads belonging to a specific line:
@@ -702,6 +733,8 @@ inline void Solver :: get_line_ranges(Model& model, const Size curr_point, bool 
             line_count[lineidx]=0;
             //Then if no other lines are currently being counted (i.e. entire count is zero),
             // we conclude that the current continguous range has ended
+            //TODO: make this thing scalable, use a set to store current lines, and some counter for total counts!
+            // TODO IMPROVE HERE
             if (std::all_of(line_count.vec.begin(), line_count.vec.end(), [](int i) { return i==0; }))
             {
                 //add range
@@ -710,6 +743,7 @@ inline void Solver :: get_line_ranges(Model& model, const Size curr_point, bool 
                 left_bound_index[nb_ranges]=leftboundidx;
                 right_bound_index[nb_ranges]=rightboundidx;
                 nb_ranges++;
+                // std::cout<<"deltabounds: "<<rightbound-leftbound<<std::endl;
 
                 //set flag for new left bound
                 leftbound_specified=false;
@@ -739,8 +773,10 @@ inline void Solver :: set_implicit_boundary_frequencies(Model& model, const Size
     //+this might make the deque implementation feasible; err, that might not be able to handle general shrinking/growing of line width due to temperature decrase/increase
     if (is_upward_disc)
     {
+        // std::cout<<"is_upward_disc"<<std::endl;
         for (Size freqidx=0; freqidx<model.parameters->nfreqs(); freqidx++)
         {
+            // std::cout<<"curr_range_index: "<<curr_range_index<<std::endl;
             // Real next_freq=model.radiation.frequencies.nu(nextpoint, freqidx)*shift_next;
             Real next_freq=model.radiation.frequencies.sorted_nu(nextpoint, freqidx)*shift_next;//in static frame
             const Size unsorted_freqidx=model.radiation.frequencies.corresponding_nu_index(nextpoint, freqidx);
@@ -752,12 +788,13 @@ inline void Solver :: set_implicit_boundary_frequencies(Model& model, const Size
             if (quadidx>=model.parameters->nquads()-2&&!line_quad_overlap[lineidx])
             {
                 //then is required boundary condition
+                // std::cout<<"before new bdy freq: "<<next_freq<<std::endl;
                 multimap_freq_to_bdy_index.emplace(next_freq, std::make_tuple(nextpointonrayindex, freqidx));
                 continue;
             }
             //ranges are sorted, just like the freqs; therefore we can relatively efficently compare the non-overlap
             // by just advancing the index for the ranges
-            while(right_bound_freq<next_freq && curr_range_index<nb_ranges-1)
+            while((right_bound_freq<next_freq) && (curr_range_index<nb_ranges-1))
             {
                 curr_range_index++;
                 left_bound_freq=left_bound[curr_range_index];
@@ -767,14 +804,19 @@ inline void Solver :: set_implicit_boundary_frequencies(Model& model, const Size
             if (next_freq<left_bound_freq || next_freq>right_bound_freq)
             {
                 //then is required boundary condition
+                // std::cout<<"deltavsleft: "<<next_freq-left_bound_freq<<std::endl;
+                // std::cout<<"deltavsright: "<<right_bound_freq-next_freq<<std::endl;
+                // std::cout<<"after new bdy freq: "<<next_freq<<std::endl;
                 multimap_freq_to_bdy_index.emplace(next_freq, std::make_tuple(nextpointonrayindex, freqidx));
             }
         }
     }
     else
     {
+        // std::cout<<"!is_upward_disc"<<std::endl;
         for (Size freqidx=0; freqidx<model.parameters->nfreqs(); freqidx++)
         {
+            // std::cout<<"curr_range_index: "<<curr_range_index<<std::endl;
             // Real next_freq=model.radiation.frequencies.nu(nextpoint, freqidx)*shift_next;
             Real next_freq=model.radiation.frequencies.sorted_nu(nextpoint, freqidx)*shift_next;//in static frame
             const Size unsorted_freqidx=model.radiation.frequencies.corresponding_nu_index(nextpoint, freqidx);
@@ -786,11 +828,12 @@ inline void Solver :: set_implicit_boundary_frequencies(Model& model, const Size
             if (quadidx<2&&!line_quad_overlap[lineidx])
             {
                 //then is required boundary condition
+                // std::cout<<"before new bdy freq: "<<next_freq<<std::endl;
                 multimap_freq_to_bdy_index.emplace(next_freq, std::make_tuple(nextpointonrayindex, freqidx));
                 continue;
             }
             //ranges are sorted, just like the freqs; therefore we can relatively efficently compare the non-overlap
-            while(right_bound_freq<next_freq && curr_range_index<nb_ranges-1)
+            while((right_bound_freq<next_freq) && (curr_range_index<nb_ranges-1))
             {
                 curr_range_index++;
                 left_bound_freq=left_bound[curr_range_index];
@@ -799,6 +842,9 @@ inline void Solver :: set_implicit_boundary_frequencies(Model& model, const Size
             //freq outside range if <left_bound || >right_bound
             if (next_freq<left_bound_freq || next_freq>right_bound_freq)
             {
+                // std::cout<<"deltavsleft: "<<next_freq-left_bound_freq<<std::endl;
+                // std::cout<<"deltavsright: "<<right_bound_freq-next_freq<<std::endl;
+                // std::cout<<"after new bdy freq: "<<next_freq<<std::endl;
                 //then is required boundary condition
                 multimap_freq_to_bdy_index.emplace(next_freq, std::make_tuple(nextpointonrayindex, freqidx));
             }
@@ -825,6 +871,7 @@ inline void Solver :: match_overlapping_boundary_conditions(Model& model, const 
     Real curr_range_min=left_bound[curr_range_index];
     Real curr_range_max=right_bound[curr_range_index];
     Real curr_range_freq=curr_range_min;
+    // std::cout<<"nb_ranges: "<<nb_ranges<<" curr_range_min: "<<curr_range_min<<" curr_range_max: "<<curr_range_max<<std::endl;
 
     //By just using the builtin lower_bound, one can easily find the boundary conditions overlapping with the current ranges
     std::multimap<Real, std::tuple<Size, Size>>::iterator it=multimap_freq_to_bdy_index.lower_bound(curr_range_min);
@@ -833,6 +880,7 @@ inline void Solver :: match_overlapping_boundary_conditions(Model& model, const 
         const Real bdy_freq=it->first;//get boundary freq
         const Size bdy_point_on_ray_idx=std::get<0>(it->second);//get corresponding point index on ray
         const Size bdy_freq_idx=std::get<1>(it->second);//get corresponding freq index
+        // std::cout<<"bdy_freq_idx: "<<bdy_freq_idx<<" bdy_freq: "<<bdy_freq<<std::endl;
         //check if bdy freq is smaller than the right bound
         if (bdy_freq>curr_range_max)
         {
@@ -847,6 +895,7 @@ inline void Solver :: match_overlapping_boundary_conditions(Model& model, const 
             curr_range_freq=curr_range_min;
             curr_freq_index=left_bound_index[curr_range_index];//stores the freq index of curr point
             it=multimap_freq_to_bdy_index.lower_bound(curr_range_min);//and adjust iterator accordingly
+            // std::cout<<"curr_range_min: "<<curr_range_min<<" curr_range_max: "<<curr_range_max<<std::endl;
             continue;
         }
         //the bdy frequency now lies within the bounds, so just linearly iterate until we find the correct freqs of the ranges (static frame) to interpolate with
@@ -889,6 +938,9 @@ inline void Solver :: match_overlapping_boundary_conditions(Model& model, const 
         ///first order interpolation
         Size left_curr_freq_idx=curr_freq_index-1;
         Size right_curr_freq_idx=curr_freq_index;
+
+        // std::cout<<"left_curr_freq_idx: "<<left_curr_freq_idx<<" right_curr_freq_idx: "<<right_curr_freq_idx<<std::endl;
+        // ERR, this left_curr_freq_idx might be a bit too far on the left...
 
         //the curr range freq should now be larger/equal to the bdy freq
         //In the case that bdy_freq lies on the left bound, doing left_bound-1 makes no sense as index for interpolation, so use curr_index as left bound instead
@@ -1417,6 +1469,7 @@ inline void Solver :: comoving_ray_bdy_setup_forward(Model& model, Size last_int
 template<ApproximationType approx>
 inline void Solver :: comoving_ray_bdy_setup_backward(Model& model, Size first_interesting_rayposidx)
 {
+    // std::cout<<"setup backward"<<std::endl;
     //Note: this assumes backward ray, not forward ray
     Matrix<Real>& intensities=intensities_();
 
@@ -1610,13 +1663,17 @@ inline void Solver :: comoving_ray_bdy_setup_backward(Model& model, Size first_i
         //now start classifying the new boundary points
         //For this we first need to compute the ranges of curr_point (minus some boundary freqs)
         get_line_ranges(model, currpoint, is_upward_disc, shift_curr);//for the current point, we definitely need the exact ranges (fiddled with to ensure enough bdy conditions)
+
+        // std::cout<<"getting overlapping lines"<<std::endl;
         // and compute the overlap between lines on next_point
         get_overlapping_lines(model, nextpoint, is_upward_disc);//technically, we should compute which lines overlap only in this part
 
+        // std::cout<<"setting implicit boundary freqs"<<std::endl;
         //First, we set boundary conditions by comparing the frequencies we have at next_point
         // versus the range of frequencies we have a curr_point; any outside that range will be treated as boundary points
         set_implicit_boundary_frequencies(model, nextpoint, rayposidx, shift_next, multimap_freq_to_bdy_index, is_upward_disc);
         // And now we check what boundary conditions need to be evaluated using the intensities at curr_point
+        // std::cout<<"matching implicit boundary freqs"<<std::endl;
         match_overlapping_boundary_conditions(model, currpoint, rayposidx+1, shift_curr, multimap_freq_to_bdy_index);
         rayposidx++;
     }
@@ -2157,8 +2214,14 @@ accel inline void Solver :: solve_comoving_local_approx_order_2_sparse (
     //trace the ray, getting all points on the ray and indicating whether they are real
     //no more interpolations, so no more checking which points are real
     //Note: technically, it does not matter which frame I use, as long as it is a fixed frame for the entire ray
-    first_() = trace_ray<Rest>(model.geometry, o, rr, dshift_max, -1, centre-1, centre-1) + 1;
-    last_ () = trace_ray<Rest>(model.geometry, o, ar, dshift_max, +1, centre+1, centre  ) - 1;
+    // first_() = trace_ray<Rest>(model.geometry, o, rr, dshift_max, -1, centre-1, centre-1) + 1;
+    // last_ () = trace_ray<Rest>(model.geometry, o, ar, dshift_max, +1, centre+1, centre  ) - 1;
+    //We should also check which points are actually necessary to compute
+    Size first_interesting_rayposidx = centre;
+    Size last_interesting_rayposidx = centre;
+    first_() = trace_ray_comoving<Rest>(model.geometry, o, rr, rr, rayidx, dshift_max, -1, centre-1, centre-1, first_interesting_rayposidx) + 1;
+    last_ () = trace_ray_comoving<Rest>(model.geometry, o, ar, rr, rayidx, dshift_max, +1, centre+1, centre, last_interesting_rayposidx) - 1;
+
 
     // std::cout<<"traced ray"<<std::endl;
 
@@ -2227,7 +2290,9 @@ accel inline void Solver :: solve_comoving_local_approx_order_2_sparse (
     // std::cout<<"iterating over all point on ray (forward)"<<std::endl;
 
 
-    while (rayposidx<=last_())
+    // while (rayposidx<=last_())
+    //in order to reduce the amount of redundant computations
+    while (rayposidx<=last_interesting_rayposidx)
     {
         // const Real shift_next=2.0-shift_()[rayposidx];
         // const Real shift_curr=2.0-shift_()[rayposidx-1];
@@ -2303,7 +2368,9 @@ accel inline void Solver :: solve_comoving_local_approx_order_2_sparse (
     // ALSO PUT SHIFT HERE IN CORRECT DIRECTION
     rayposidx=last_()-1;//ray position index -> point index through nr[rayposidx]
     //from last_()-1 to first_ index, trace the ray backwards; Warning: rayposidx is an unsigned int, so +1 necessary to both sides
-    while (rayposidx+1>=first_()+1)
+    // while (rayposidx+1>=first_()+1)
+    //in order to reduce the amount of redundant computations
+    while (rayposidx+1>=first_interesting_rayposidx+1)
     {
         const Real shift_next=shift_()[rayposidx];
         const Real shift_curr=shift_()[rayposidx+1];

@@ -27,6 +27,8 @@ struct Geometry
     Matrix<Size> lengths;
     Size         lengths_max;
 
+    Vector<Size> sorted_position_indices;
+
 
     Geometry (std::shared_ptr<Parameters> params)
     : parameters (params)
@@ -108,6 +110,9 @@ struct Geometry
         const Size o,
         const Size p,
         const Size r) const;
+
+    accel inline double get_mean_dist_to_point (
+        const Size o) const;
 
     inline bool valid_point     (const Size p) const;
     inline bool not_on_boundary (const Size p) const;
