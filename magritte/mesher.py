@@ -976,7 +976,7 @@ def point_cloud_add_spherical_outer_boundary(remeshed_positions, nb_boundary, ra
     radii2 = lambda r : np.sum(np.power(r-origin[np.newaxis, :], 2),axis=1)#function for computing the square of the radius
     #clear points within inner boundary
     #safety factor due to boundary hull being not a perfect sphere
-    max_angle = 45*2*np.pi/360.0 /healpy_order#max angle between two healpy directions (TODO TEST WHETHER CORRECT)
+    max_angle = 45*2*np.pi/360.0 /healpy_order#max angle between two healpy directions
     safety_factor = np.cos(max_angle)
     positions_reduced, nb_boundary = point_cloud_clear_outer_boundary_generic(remeshed_positions, nb_boundary, radii2, (radius*safety_factor)**2)
     #use healpy with 12*5**2 directions to define inner sphere
