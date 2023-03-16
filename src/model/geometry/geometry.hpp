@@ -68,6 +68,14 @@ struct Geometry
               double& Z,
               double& dZ  ) const;
 
+    accel inline Size get_boundary_point_closer_to_custom_ray (
+        const Vector3D origin,
+        const Vector3D raydir,
+        const Size     crt    ) const;
+
+    accel inline Size get_closest_bdy_point_in_custom_raydir (
+        const Vector3D raydir) const;
+
     template <Frame frame>
     accel inline double get_shift (
         const Size   o,

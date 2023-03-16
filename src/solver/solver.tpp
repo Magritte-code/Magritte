@@ -658,6 +658,75 @@ accel inline Size Solver :: trace_ray (
     return id1;
 }
 
+
+//Because of the new method for computing the optical depth, adding extra frequency points for counteracting the large doppler shift is no longer necessary
+//Specialized raytracer for imaging the model.
+//Note: assumes the outer boundary to be convex in order to correctly start tracing the ray
+template <Frame frame>
+accel inline Size Solver :: trace_ray_imaging (
+    const Geometry& geometry,
+    const Vector3D  origin,
+    const Size start_bdy,
+    const Vector3D  raydir,
+    const double    dshift_max,
+    const int       increment,
+          Size      id1,
+          Size      id2 )
+{
+
+    Size initial_point=start_bdy;
+    //first figure out which boundary point lies closest to the custom ray
+    //TODO: is slightly inefficient implementation, can be improved
+    //--> assumption: convex outer boundary
+    while (true)
+    {
+        Size next_attempt = geometry.get_boundary_point_closer_to_custom_ray(origin, raydir, initial_point);
+        if (next_attempt==initial_point)
+        {
+            break;
+        }
+        initial_point = next_attempt;
+    }
+
+    double  Z = 0.0;   // distance from origin (o)
+    double dZ = 0.0;   // last increment in Z
+
+    Size nxt = geometry.get_next (o, r, o, Z, dZ);
+
+    if (geometry.valid_point(nxt))
+    {
+        Size         crt = o;
+        double shift_crt = geometry.get_shift <frame> (o, r, crt, 0.0);
+        double shift_nxt = geometry.get_shift <frame> (o, r, nxt, Z  );
+
+        set_data (crt, nxt, shift_crt, shift_nxt, dZ, dshift_max, increment, id1, id2);
+
+        while (geometry.not_on_boundary(nxt))
+        {
+                  crt =       nxt;
+            shift_crt = shift_nxt;
+
+                  nxt = geometry.get_next          (o, r, nxt, Z, dZ);
+            shift_nxt = geometry.get_shift <frame> (o, r, nxt, Z    );
+
+            set_data (crt, nxt, shift_crt, shift_nxt, dZ, dshift_max, increment, id1, id2);
+        }
+    }
+
+    return id1;
+}
+
+//for obtaining the closest boundary point
+accel inline Size Solver :: get_closest_bdy_point_in_custom_raydir (
+    const Geometry& geometry,
+    const Vector3D  raydir
+) const
+{
+
+
+}
+
+
 //Because of the new method for computing the optical depth, adding extra frequency points for counteracting the large doppler shift is no longer necessary
 accel inline void Solver :: set_data (
     const Size   crt,

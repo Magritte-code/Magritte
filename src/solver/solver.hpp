@@ -90,6 +90,18 @@ struct Solver
               Size      id1,
               Size      id2 );
 
+    template <Frame frame>
+    accel inline Size trace_ray_imaging (
+        const Geometry& geometry,
+        const Vector3D  origin,
+        const Size start_bdy,
+        const Vector3D  raydir,
+        const double    dshift_max,
+        const int       increment,
+              Size      id1,
+              Size      id2 );
+    )
+
     accel inline void set_data (
         const Size   crt,
         const Size   nxt,

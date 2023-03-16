@@ -22,6 +22,8 @@ Image :: Image (const Geometry& geometry, const ImageType it, const Size rr) : i
     ImX.resize (geometry.parameters->npoints());
     ImY.resize (geometry.parameters->npoints());
     I.  resize (geometry.parameters->npoints(), geometry.parameters->nfreqs());
+    ray_origin.resize(geometry.parameters->npoints());
+    raydir = Vector3D(geometry.rays.direction[ray_nr].x(), geometry.rays.direction[ray_nr].y(), geometry.rays.direction[ray_nr].z());
 
     set_coordinates (geometry);
 }
@@ -33,6 +35,10 @@ Image :: Image (const Image& image) : imageType(image.imageType), ray_nr (image.
 {
     ImX = image.ImX;
     ImY = image.ImY;
+    //FIX ME: check whether this copy constructor actually properly copies these values!
+    ray_origin = image.ray_origin;
+    raydir = image.raydir;
+
 
     // Deep copy of I
     I.nrows = image.I.nrows;
@@ -43,6 +49,31 @@ Image :: Image (const Image& image) : imageType(image.imageType), ray_nr (image.
     I.allocated_size = 0;
     I.set_dat ();
 }
+
+///  Constructor for Image, using a prespecified grid of image points outside the model
+///////////////////////////////////////////////////////////////////////////////////////
+Image :: Image (const Geometry& geometry, const ImageType it, const Size rr) : imageType(it), ray_nr (rr)
+{
+    if (geometry.parameters->dimension() == 1)
+    {
+        // throw std::runtime_error ("For this imaging method, 1D is currently not supported");
+        if ((geometry.rays.direction[ray_nr].x() != 0.0) ||
+            (geometry.rays.direction[ray_nr].y() != 1.0) ||
+            (geometry.rays.direction[ray_nr].z() != 0.0)   )
+        {
+            throw std::runtime_error ("In 1D, the image ray has to be (0,1,0)");
+        }
+    }
+
+    ImX.resize (geometry.parameters->npoints());
+    ImY.resize (geometry.parameters->npoints());
+    I.  resize (geometry.parameters->npoints(), geometry.parameters->nfreqs());
+    ray_origin.resize(geometry.parameters->npoints());
+    raydir = Vector3D(geometry.rays.direction[ray_nr].x(), geometry.rays.direction[ray_nr].y(), geometry.rays.direction[ray_nr].z());
+
+    set_coordinates (geometry);
+}
+
 
 ///  print: write out the images
 ///    @param[in] io: io object

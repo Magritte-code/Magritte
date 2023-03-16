@@ -279,6 +279,78 @@ accel inline void Geometry :: get_next (
 }
 
 
+///  Getter for the number of the next closer boundary point on the ray and its distance along ray in
+///  the general case without any further assumptions. Can handle rays not originating from inside the model.
+///  Remark: we assume the outer boundary to be convex (as usual in Magritte) in order to find a consistent result when applying this multiple times to find the closest boundary point to the given ray
+///    @param[in] origin : coordinate of the origin point from which the ray originates
+///    @param[in] raydir : direction vector of the ray along which we are looking
+///    @param[in] crt : number of the cell put last on the ray
+///    @param[in/out] Z : reference to the current distance along the ray
+///    @param[out] dZ : reference to the distance increment to the next ray
+///    @return number of the next closer boundary point on the ray
+//////////////////////////////////////////////////////////////////
+accel inline Size Geometry :: get_boundary_point_closer_to_custom_ray (
+    const Vector3D origin,
+    const Vector3D raydir,
+    const Size     crt) const
+          // double& Z,
+          // double& dZ      ) const
+{
+    const Size     n_nbs = points.    n_neighbors[crt];
+    const Size cum_n_nbs = points.cum_n_neighbors[crt];
+
+    const Vector3D R_curr = points.position[crt] - origin;
+    const double   Z_curr = R_curr.dot(raydir);
+
+    double dmin2 = R_curr.dot(R_curr) - Z_new*Z_new;   // Initialize to current distance
+    Size   next = crt;              // return current point when no better boundary point is found
+
+    for (Size i = 0; i < n_nbs; i++)
+    {
+        const Size     n     = points.neighbors[cum_n_nbs+i];
+        //TODO: Lazy implementation: define instead a neighbors structure using only boundary points (now we are looping over way too many points)
+        if (!not_on_boundary(n))
+        {
+            const Vector3D R_new = points.position[n] - origin;
+            const double   Z_new = R.dot(raydir);
+            const double distance_from_ray2 = R_new.dot(R_new) - Z_new*Z_new;
+
+            if (distance_from_ray2 < dmin2)
+            {
+                dmin2 = distance_from_ray2;
+                next = n;
+            }
+        }
+    }
+
+    return next;
+}
+
+
+///  Compute the closest boundary point in the custom ray direction
+///    @param[in] raydir : ray direction vector
+///////////////////////////////////////////////////////////////////
+accel inline Size Geometry :: get_closest_bdy_point_in_custom_raydir (
+    const Vector3D raydir) const
+{
+    //first try out first boundary point
+    Size closest_bdy_point = boundary.point2boundary[0];//first best guess is the first boundary point
+    double projected_dmin = raydir.dot(points.position[closest_point]); // and the corresponding projected distance
+    for (Size bdy_index = 1; bdy_index<parameters->nboundary(); bdy_index++)
+    {
+        const Size bdy_point_index = boundary.point2boundary[bdy_index];
+        const double projected_distance = raydir.dot(points.position[bdy_point_index]);
+
+        if (projected_distance<projected_dmin)
+        {
+            closest_bdy_point = bdy_point_index;
+        }
+    }
+
+    return closest_bdy_point;
+}
+
+
 ///  Getter for the doppler shift along the ray between the current cell and the origin
 ///    @param[in] o   : number of cell from which the ray originates
 ///    @param[in] r   : number of the ray along which we are looking
