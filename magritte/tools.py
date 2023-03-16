@@ -326,6 +326,12 @@ def save_fits(
     imy = np.array(model.images[image_nr].ImY)
     imI = np.array(model.images[image_nr].I)
 
+    # Filter imaging data originating from boundary points
+    bdy_indices = np.array(model.geometry.boundary.boundary2point)
+    imx = np.delete(imx, bdy_indices)
+    imy = np.delete(imy, bdy_indices)
+    imI = np.delete(imI, bdy_indices, axis=0)
+
     # Extract the number of frequency bins
     nfreqs = model.parameters.nfreqs()
     
@@ -529,6 +535,11 @@ def save_fits_1D(
     # Extract image data
     imx = np.array(model.images[image_nr].ImX)
     imI = np.array(model.images[image_nr].I)
+
+    # Filter imaging data originating from boundary points
+    bdy_indices = np.array(model.geometry.boundary.boundary2point)
+    imx = np.delete(imx, bdy_indices)
+    imI = np.delete(imI, bdy_indices, axis=0)
 
     # Extract the number of frequency bins
     nfreqs = model.parameters.nfreqs()
