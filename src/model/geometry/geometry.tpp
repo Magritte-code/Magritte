@@ -49,6 +49,53 @@ accel inline Size Geometry :: get_next_general_geometry (
     return next;
 }
 
+///  Getter for the number of the next cell on ray and its distance along ray in
+///  the general case, using a custom ray direction and custom origin
+///    @param[in]      o : number of cell from which the ray originates
+///    @param[in]      r : number of the ray along which we are looking
+///    @param[in]      c : number of the cell put last on the ray
+///    @param[in/out]  Z : reference to the current distance along the ray
+///    @param[out]    dZ : reference to the distance increment to the next ray
+///    @return number of the next cell on the ray after the current cell
+///////////////////////////////////////////////////////////////////////////////////
+accel inline Size Geometry :: get_next_general_geometry_custom_origin_raydir (
+    const Vector3D origin,
+    const Vector3D raydir,
+    const Size     crt,
+          double&  Z,
+          double&  dZ     ) const
+{
+    const Size     n_nbs = points.    n_neighbors[crt];
+    const Size cum_n_nbs = points.cum_n_neighbors[crt];
+
+    double dmin = std::numeric_limits<Real>::max();   // Initialize to "infinity"
+    Size   next = parameters->npoints();              // return npoints when there is no next
+
+    for (Size i = 0; i < n_nbs; i++)
+    {
+        const Size     n     = points.neighbors[cum_n_nbs+i];
+        const Vector3D R     = points.position[n] - origin;
+        const double   Z_new = R.dot(raydir);
+
+        if (Z_new > Z)
+        {
+            const double distance_from_ray2 = R.dot(R) - Z_new*Z_new;
+
+            if (distance_from_ray2 < dmin)
+            {
+                dmin = distance_from_ray2;
+                next = n;
+                dZ   = Z_new - Z;   // such that dZ > 0.0
+            }
+        }
+    }
+
+    // Update distance along ray
+    Z += dZ;
+
+    return next;
+}
+
 
 ///  Getter for the number of the next cell on ray and its distance along ray when
 ///  assuming spherical symmetry and such that the positions are in ascending order!
@@ -148,6 +195,14 @@ inline double Geometry :: get_shift_general_geometry <Rest> (
     }
 
     return 1.0 - points.velocity[crt].dot(rays.direction[r_correct]);
+}
+
+//custom points are assumed to have a zero velocity, custom rays are assumed to be pointing in the correct direction
+accel inline double Geometry :: get_shift_general_geometry_custom_origin_raydir (
+    const Vector3D raydir,
+    const Size     crt) const
+{
+    return 1.0 - points.velocity[crt].dot(raydir);
 }
 
 
@@ -302,7 +357,7 @@ accel inline Size Geometry :: get_boundary_point_closer_to_custom_ray (
     const Vector3D R_curr = points.position[crt] - origin;
     const double   Z_curr = R_curr.dot(raydir);
 
-    double dmin2 = R_curr.dot(R_curr) - Z_new*Z_new;   // Initialize to current distance
+    double dmin2 = R_curr.dot(R_curr) - Z_curr*Z_curr;   // Initialize to current distance
     Size   next = crt;              // return current point when no better boundary point is found
 
     for (Size i = 0; i < n_nbs; i++)
@@ -312,7 +367,7 @@ accel inline Size Geometry :: get_boundary_point_closer_to_custom_ray (
         if (!not_on_boundary(n))
         {
             const Vector3D R_new = points.position[n] - origin;
-            const double   Z_new = R.dot(raydir);
+            const double   Z_new = R_new.dot(raydir);
             const double distance_from_ray2 = R_new.dot(R_new) - Z_new*Z_new;
 
             if (distance_from_ray2 < dmin2)
@@ -335,7 +390,7 @@ accel inline Size Geometry :: get_closest_bdy_point_in_custom_raydir (
 {
     //first try out first boundary point
     Size closest_bdy_point = boundary.point2boundary[0];//first best guess is the first boundary point
-    double projected_dmin = raydir.dot(points.position[closest_point]); // and the corresponding projected distance
+    double projected_dmin = raydir.dot(points.position[closest_bdy_point]); // and the corresponding projected distance
     for (Size bdy_index = 1; bdy_index<parameters->nboundary(); bdy_index++)
     {
         const Size bdy_point_index = boundary.point2boundary[bdy_index];

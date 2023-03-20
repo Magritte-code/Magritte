@@ -100,7 +100,6 @@ struct Solver
         const int       increment,
               Size      id1,
               Size      id2 );
-    )
 
     accel inline void set_data (
         const Size   crt,

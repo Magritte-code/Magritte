@@ -691,13 +691,15 @@ accel inline Size Solver :: trace_ray_imaging (
     double  Z = 0.0;   // distance from origin (o)
     double dZ = 0.0;   // last increment in Z
 
-    Size nxt = geometry.get_next (o, r, o, Z, dZ);
+    //nxt = geometry.'get_next'(o,r,initial_point, Z, dZ)
+    Size nxt = geometry.get_next_general_geometry_custom_origin_raydir (origin, raydir, initial_point, Z, dZ);
 
     if (geometry.valid_point(nxt))
     {
-        Size         crt = o;
-        double shift_crt = geometry.get_shift <frame> (o, r, crt, 0.0);
-        double shift_nxt = geometry.get_shift <frame> (o, r, nxt, Z  );
+        Size         crt = initial_point;
+        // shift_crt/nxt = geometry.get_shift <frame> (o, r, crt/nxt, Z    );
+        double shift_crt = geometry.get_shift_general_geometry_custom_origin_raydir (raydir, crt);
+        double shift_nxt = geometry.get_shift_general_geometry_custom_origin_raydir (raydir, nxt);
 
         set_data (crt, nxt, shift_crt, shift_nxt, dZ, dshift_max, increment, id1, id2);
 
@@ -706,24 +708,14 @@ accel inline Size Solver :: trace_ray_imaging (
                   crt =       nxt;
             shift_crt = shift_nxt;
 
-                  nxt = geometry.get_next          (o, r, nxt, Z, dZ);
-            shift_nxt = geometry.get_shift <frame> (o, r, nxt, Z    );
+                  nxt = geometry.get_next_general_geometry_custom_origin_raydir (origin, raydir, nxt, Z, dZ);
+            shift_nxt = geometry.get_shift_general_geometry_custom_origin_raydir (raydir, nxt);
 
             set_data (crt, nxt, shift_crt, shift_nxt, dZ, dshift_max, increment, id1, id2);
         }
     }
 
     return id1;
-}
-
-//for obtaining the closest boundary point
-accel inline Size Solver :: get_closest_bdy_point_in_custom_raydir (
-    const Geometry& geometry,
-    const Vector3D  raydir
-) const
-{
-
-
 }
 
 

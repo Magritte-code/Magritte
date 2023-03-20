@@ -54,6 +54,13 @@ struct Geometry
               double& Z,
               double& dZ  ) const;
 
+    // accel inline Size get_next_custom_origin_raydir (
+    //     const Vector3D origin,
+    //     const Vector3D raydir,
+    //     const Size      crt,
+    //           double&   Z,
+    //           double&   dZ    ) const;
+
     accel inline Size get_next_general_geometry (
         const Size    o,
         const Size    r,
@@ -61,12 +68,26 @@ struct Geometry
               double& Z,
               double& dZ  ) const;
 
+    accel inline Size get_next_general_geometry_custom_origin_raydir (
+        const Vector3D origin,
+        const Vector3D raydir,
+        const Size     crt,
+              double&  Z,
+              double&  dZ     ) const;
+
     accel inline Size get_next_spherical_symmetry (
         const Size    o,
         const Size    r,
         const Size    crt,
               double& Z,
               double& dZ  ) const;
+
+    // accel inline Size get_next_spherical_symmetry_custom_origin_raydir (
+    //     const Vector3D origin,
+    //     const Vector3D raydir,
+    //     const Size     crt,
+    //           double&  Z,
+    //           double&  dZ     ) const;
 
     accel inline Size get_boundary_point_closer_to_custom_ray (
         const Vector3D origin,
@@ -82,6 +103,10 @@ struct Geometry
         const Size   r,
         const Size   crt,
         const double Z   ) const;
+
+    accel inline double get_shift_general_geometry_custom_origin_raydir (
+        const Vector3D raydir,
+        const Size     crt) const;
 
     template <Frame frame>
     accel inline double get_shift_general_geometry (
