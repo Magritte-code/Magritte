@@ -4,19 +4,19 @@
 
 ///  Getter for the number of the next cell on ray and its distance along ray in
 ///  the general case without any further assumptions
-///    @param[in]      o : number of cell from which the ray originates
-///    @param[in]      r : number of the ray along which we are looking
+///    @param[in]      origin : position where the ray originates
+///    @param[in]      raydir : normalized vector of the direction of the ray
 ///    @param[in]      c : number of the cell put last on the ray
 ///    @param[in/out]  Z : reference to the current distance along the ray
 ///    @param[out]    dZ : reference to the distance increment to the next ray
 ///    @return number of the next cell on the ray after the current cell
 ///////////////////////////////////////////////////////////////////////////////////
 accel inline Size Geometry :: get_next_general_geometry (
-    const Size    o,
-    const Size    r,
-    const Size    c,
-          double& Z,
-          double& dZ                   ) const
+    const Vector3D origin,
+    const Vector3D raydir,
+    const Size     c,
+          double&  Z,
+          double&  dZ                   ) const
 {
     const Size     n_nbs = points.    n_neighbors[c];
     const Size cum_n_nbs = points.cum_n_neighbors[c];
@@ -27,55 +27,10 @@ accel inline Size Geometry :: get_next_general_geometry (
     for (Size i = 0; i < n_nbs; i++)
     {
         const Size     n     = points.neighbors[cum_n_nbs+i];
-        const Vector3D R     = points.position[n] - points.position[o];
-        const double   Z_new = R.dot(rays.direction[r]);
-
-        if (Z_new > Z)
-        {
-            const double distance_from_ray2 = R.dot(R) - Z_new*Z_new;
-
-            if (distance_from_ray2 < dmin)
-            {
-                dmin = distance_from_ray2;
-                next = n;
-                dZ   = Z_new - Z;   // such that dZ > 0.0
-            }
-        }
-    }
-
-    // Update distance along ray
-    Z += dZ;
-
-    return next;
-}
-
-///  Getter for the number of the next cell on ray and its distance along ray in
-///  the general case, using a custom ray direction and custom origin
-///    @param[in]      o : number of cell from which the ray originates
-///    @param[in]      r : number of the ray along which we are looking
-///    @param[in]      c : number of the cell put last on the ray
-///    @param[in/out]  Z : reference to the current distance along the ray
-///    @param[out]    dZ : reference to the distance increment to the next ray
-///    @return number of the next cell on the ray after the current cell
-///////////////////////////////////////////////////////////////////////////////////
-accel inline Size Geometry :: get_next_general_geometry_custom_origin_raydir (
-    const Vector3D origin,
-    const Vector3D raydir,
-    const Size     crt,
-          double&  Z,
-          double&  dZ     ) const
-{
-    const Size     n_nbs = points.    n_neighbors[crt];
-    const Size cum_n_nbs = points.cum_n_neighbors[crt];
-
-    double dmin = std::numeric_limits<Real>::max();   // Initialize to "infinity"
-    Size   next = parameters->npoints();              // return npoints when there is no next
-
-    for (Size i = 0; i < n_nbs; i++)
-    {
-        const Size     n     = points.neighbors[cum_n_nbs+i];
+        // const Vector3D R     = points.position[n] - points.position[o];
         const Vector3D R     = points.position[n] - origin;
         const double   Z_new = R.dot(raydir);
+        // const double   Z_new = R.dot(rays.direction[r]);
 
         if (Z_new > Z)
         {
@@ -95,6 +50,53 @@ accel inline Size Geometry :: get_next_general_geometry_custom_origin_raydir (
 
     return next;
 }
+
+// ///  Getter for the number of the next cell on ray and its distance along ray in
+// ///  the general case, using a custom ray direction and custom origin
+// ///    @param[in]      o : number of cell from which the ray originates
+// ///    @param[in]      r : number of the ray along which we are looking
+// ///    @param[in]      c : number of the cell put last on the ray
+// ///    @param[in/out]  Z : reference to the current distance along the ray
+// ///    @param[out]    dZ : reference to the distance increment to the next ray
+// ///    @return number of the next cell on the ray after the current cell
+// ///////////////////////////////////////////////////////////////////////////////////
+// accel inline Size Geometry :: get_next_general_geometry_custom_origin_raydir (
+//     const Vector3D origin,
+//     const Vector3D raydir,
+//     const Size     crt,
+//           double&  Z,
+//           double&  dZ     ) const
+// {
+//     const Size     n_nbs = points.    n_neighbors[crt];
+//     const Size cum_n_nbs = points.cum_n_neighbors[crt];
+//
+//     double dmin = std::numeric_limits<Real>::max();   // Initialize to "infinity"
+//     Size   next = parameters->npoints();              // return npoints when there is no next
+//
+//     for (Size i = 0; i < n_nbs; i++)
+//     {
+//         const Size     n     = points.neighbors[cum_n_nbs+i];
+//         const Vector3D R     = points.position[n] - origin;
+//         const double   Z_new = R.dot(raydir);
+//
+//         if (Z_new > Z)
+//         {
+//             const double distance_from_ray2 = R.dot(R) - Z_new*Z_new;
+//
+//             if (distance_from_ray2 < dmin)
+//             {
+//                 dmin = distance_from_ray2;
+//                 next = n;
+//                 dZ   = Z_new - Z;   // such that dZ > 0.0
+//             }
+//         }
+//     }
+//
+//     // Update distance along ray
+//     Z += dZ;
+//
+//     return next;
+// }
 
 
 ///  Getter for the number of the next cell on ray and its distance along ray when
@@ -107,18 +109,22 @@ accel inline Size Geometry :: get_next_general_geometry_custom_origin_raydir (
 ///    @return number of the next cell on the ray after the current cell
 ///////////////////////////////////////////////////////////////////////////////////
 inline Size Geometry :: get_next_spherical_symmetry (
-    const Size  o,
-    const Size  r,
-    const Size  c,
-    double     &Z,
-    double     &dZ                                  ) const
+    const Vector3D origin,
+    const Vector3D raydir,
+    const Size     c,
+    double         &Z,
+    double         &dZ                                  ) const
 {
     Size next;
 
-    const double Rsin = points.position[o].x() * rays.direction[r].y();
-    const double Rcos = points.position[o].x() * rays.direction[r].x();
-
-    const double Rsin2       = Rsin * Rsin;
+    // const double Rsin = points.position[o].x() * rays.direction[r].y();
+    // const double Rcos = points.position[o].x() * rays.direction[r].x();
+    //Even though no default ray in spherical symmetry has a z-component, any custom ray (for eg imaging) might have a z-component
+    // R sin is a bit difficult to determine directly, use the trivial angle identity to determine Rsin^2
+    const double Rcos = origin.dot(raydir);
+    const double R2 = origin.squaredNorm();
+    const double Rsin2 = R2 - Rcos * Rcos;
+    // const double Rsin2       = Rsin * Rsin;
     const double Rcos_plus_Z = Rcos + Z;
 
     if (Z < -Rcos)
@@ -167,11 +173,12 @@ inline Size Geometry :: get_next_spherical_symmetry (
 ///////////////////////////////////////////////////////////////////////////////////////
 template <>
 inline double Geometry :: get_shift_general_geometry <CoMoving> (
-    const Size  o,
-    const Size  r,
-    const Size  crt ) const
+    const Vector3D origin_velocity,
+    const Vector3D raydir,
+    const Size     crt ) const
 {
-    return 1.0 - (points.velocity[crt] - points.velocity[o]).dot(rays.direction[r]);
+    // return 1.0 - (points.velocity[crt] - points.velocity[o]).dot(rays.direction[r]);
+    return 1.0 - (points.velocity[crt] - origin_velocity).dot(raydir);
 }
 
 
@@ -183,27 +190,30 @@ inline double Geometry :: get_shift_general_geometry <CoMoving> (
 ///////////////////////////////////////////////////////////////////////////////////////
 template <>
 inline double Geometry :: get_shift_general_geometry <Rest> (
-    const Size  o,
-    const Size  r,
-    const Size  crt ) const
-{
-    Size r_correct = r;
-
-    if (r >= parameters->hnrays()) // assumes ray indices and antipodes are on opposite sites of hnrays
-    {
-        r_correct = rays.antipod[r];
-    }
-
-    return 1.0 - points.velocity[crt].dot(rays.direction[r_correct]);
-}
-
-//custom points are assumed to have a zero velocity, custom rays are assumed to be pointing in the correct direction
-accel inline double Geometry :: get_shift_general_geometry_custom_origin_raydir (
+    const Vector3D origin,
     const Vector3D raydir,
-    const Size     crt) const
+    const Size     crt ) const
 {
+    // Size r_correct = r;
+
+    // TODO: rest frame lazyness
+
+    // if (r >= parameters->hnrays()) // assumes ray indices and antipodes are on opposite sites of hnrays
+    // {
+    //     r_correct = rays.antipod[r];
+    // }
+
+    // return 1.0 - points.velocity[crt].dot(rays.direction[r_correct]);
     return 1.0 - points.velocity[crt].dot(raydir);
 }
+
+// //custom points are assumed to have a zero velocity, custom rays are assumed to be pointing in the correct direction
+// accel inline double Geometry :: get_shift_general_geometry_custom_origin_raydir (
+//     const Vector3D raydir,
+//     const Size     crt) const
+// {
+//     return 1.0 - points.velocity[crt].dot(raydir);
+// }
 
 
 accel inline Size Geometry :: get_n_interpl (
@@ -282,6 +292,38 @@ inline bool Geometry :: not_on_boundary (const Size p) const
 
 ///  Getter for the number of the next cell on ray and its distance along ray in
 ///  the general case without any further assumptions
+///    @param[in]      origin : position from which the ray originates
+///    @param[in]      raydir : direction of the ray along which we are looking
+///    @param[in]      c : number of the cell put last on the ray
+///    @param[in/out]  Z : reference to the current distance along the ray
+///    @param[out]    dZ : reference to the distance increment to the next ray
+///    @return number of the next cell on the ray after the current cell
+///////////////////////////////////////////////////////////////////////////////////
+accel inline Size Geometry :: get_next (
+    const Vector3D origin,
+    const Vector3D raydir,
+    const Size     crt,
+          double&  Z,
+          double&  dZ                   ) const
+{
+    Size next;
+
+    if (parameters->spherical_symmetry())
+    {
+        next = get_next_spherical_symmetry (origin, raydir, crt, Z, dZ);
+    }
+    else
+    {
+        next = get_next_general_geometry   (origin, raydir, crt, Z, dZ);
+    }
+
+    return next;
+}
+
+
+///  Getter for the number of the next cell on ray and its distance along ray in
+///  the general case without any further assumptions
+///  Simple wrapper for compatibility with the previous internal api
 ///    @param[in]      o : number of cell from which the ray originates
 ///    @param[in]      r : number of the ray along which we are looking
 ///    @param[in]      c : number of the cell put last on the ray
@@ -296,25 +338,29 @@ accel inline Size Geometry :: get_next (
           double& Z,
           double& dZ                   ) const
 {
-    Size next;
+    const Vector3D origin = points.position[o];
+    const Vector3D raydir = rays.direction[r];
 
-    if (parameters->spherical_symmetry())
-    {
-        next = get_next_spherical_symmetry (o, r, crt, Z, dZ);
-    }
-    else
-    {
-        next = get_next_general_geometry   (o, r, crt, Z, dZ);
-    }
-
-    return next;
+    return get_next (origin, raydir, crt, Z, dZ);
+    // Size next;
+    //
+    // if (parameters->spherical_symmetry())
+    // {
+    //     next = get_next_spherical_symmetry (o, r, crt, Z, dZ);
+    // }
+    // else
+    // {
+    //     next = get_next_general_geometry   (o, r, crt, Z, dZ);
+    // }
+    //
+    // return next;
 }
 
 
 ///  Getter for the number of the next cell on ray and its distance along ray in
 ///  the general case without any further assumptions
-///    @param[in]      o : number of cell from which the ray originates
-///    @param[in]      r : number of the ray along which we are looking
+///    @param[in]      origin : position from which the ray originates
+///    @param[in]      raydir : direction of the ray along which we are looking
 ///    @param[in]      c : number of the cell put last on the ray
 ///    @param[in/out]  Z : reference to the current distance along the ray
 ///    @param[out]    dZ : reference to the distance increment to the next ray
@@ -415,25 +461,32 @@ accel inline Size Geometry :: get_closest_bdy_point_in_custom_raydir (
 ///////////////////////////////////////////////////////////////////////////////////////
 template<>
 inline double Geometry :: get_shift_spherical_symmetry <CoMoving> (
-    const Size   o,
-    const Size   r,
+    const Vector3D origin,
+    const Vector3D origin_velocity,
+    const Vector3D raydir,
     const Size   c,
     const double Z ) const
 {
-    if (points.position[o].x() == 0.0)
+    //At the 0 point, we cannot have any velocity (otherwise not spherically symmetric)
+    // if (points.position[o].x() == 0.0)
+    if (origin.squaredNorm() == 0.0)
     {
         return 1.0;
     }
 
     if (points.position[c].x() == 0.0)
     {
-        return 1.0 + points.velocity[o].x() * rays.direction[r].x();
+        // return 1.0 + points.velocity[o].x() * rays.direction[r].x();
+        return 1.0 + origin_velocity.dot(raydir);
     }
 
-    const double Rcos_plus_Z = points.position[o].x() * rays.direction[r].x() + Z;
+    // const double Rcos_plus_Z = points.position[o].x() * rays.direction[r].x() + Z;
+    const double Rcos_plus_Z = origin.dot(raydir) + Z;
 
+    // return 1.0 - (  points.velocity[c].x() * Rcos_plus_Z / points.position[c].x()
+    //               - points.velocity[o].x() * rays.direction[r].x()               );
     return 1.0 - (  points.velocity[c].x() * Rcos_plus_Z / points.position[c].x()
-                  - points.velocity[o].x() * rays.direction[r].x()               );
+                    - origin_velocity.dot(raydir)                             );
 }
 
 
@@ -446,32 +499,38 @@ inline double Geometry :: get_shift_spherical_symmetry <CoMoving> (
 ///////////////////////////////////////////////////////////////////////////////////////
 template<>
 inline double Geometry :: get_shift_spherical_symmetry <Rest> (
-    const Size   o,
-    const Size   r,
-    const Size   c,
-    const double Z ) const
+    const Vector3D origin,
+    const Vector3D origin_velocity,
+    const Vector3D raydir,
+    const Size     c,
+    const double   Z ) const
 {
     if (points.position[c].x() == 0.0)
     {
         return 1.0;
     }
 
-    const double Rcos_plus_Z = points.position[o].x() * rays.direction[r].x() + Z;
+    // const double Rcos_plus_Z = points.position[o].x() * rays.direction[r].x() + Z;
+    const double Rcos_plus_Z = origin.dot(raydir) + Z;
 
     // double shift;
 
-    if (r < parameters->hnrays()) // assumes ray indices and antipodes are on opposite sites of hnrays
-    {
-        return 1.0 - points.velocity[c].x() * Rcos_plus_Z / points.position[c].x();
-    }
-    else
-    {
-        return 1.0 + points.velocity[c].x() * Rcos_plus_Z / points.position[c].x();
-    }
+    // WARNING : the raydir needs to get swapped in the function calling this function... (or the result: 2.0-shift)
+
+    return 1.0 - points.velocity[c].x() * Rcos_plus_Z / points.position[c].x();
+    // if (r < parameters->hnrays()) // assumes ray indices and antipodes are on opposite sites of hnrays
+    // {
+    //     return 1.0 - points.velocity[c].x() * Rcos_plus_Z / points.position[c].x();
+    // }
+    // else
+    // {
+    //     return 1.0 + points.velocity[c].x() * Rcos_plus_Z / points.position[c].x();
+    // }
 }
 
 
 ///  Getter for the doppler shift along the ray between the current cell and the origin
+///  Wrapper for compatibility with old api
 ///    @param[in] o   : number of cell from which the ray originates
 ///    @param[in] r   : number of the ray along which we are looking
 ///    @param[in] crt : number of the cell for which we want the velocity
@@ -485,12 +544,57 @@ inline double Geometry :: get_shift (
     const Size   c,
     const double Z ) const
 {
+    Vector3D raydir = rays.direction[r];
+    const Vector3D origin = points.position[o];
+    const Vector3D origin_velocity = points.velocity[o];
+    //Due to a lazy old implementation, the computed shift might need to be reversed
+    const bool reverse = ((frame == Rest) && (r >= parameters->hnrays()));
+
+    return get_shift <frame> (origin, origin_velocity, raydir, c, Z, reverse);
+
+    // if (parameters->spherical_symmetry())
+    // {
+    //     shift = get_shift_spherical_symmetry <frame> (origin, raydir, c, Z);
+    // }
+    // else
+    // {
+    //     shift = get_shift_general_geometry <frame> (origin, raydir, c);
+    // }
+}
+
+
+///  Getter for the doppler shift along the ray between the current cell and the origin
+///    @param[in] origin : position from which the ray originates
+///    @param[in] raydir : direction of the ray along which we are looking
+///    @param[in] crt : number of the cell for which we want the velocity
+///    @param[in] Z   : reference to the current distance along the ray
+///    @param[in] reverse: whether to reverse the computed doppler shift (for imaging)
+///    @return doppler shift along the ray between the current cell and the origin
+///////////////////////////////////////////////////////////////////////////////////////
+template<Frame frame>
+inline double Geometry :: get_shift (
+    const Vector3D origin,
+    const Vector3D origin_velocity,
+    const Vector3D raydir,
+    const Size   c,
+    const double Z,
+    const bool reverse) const
+{
+    double shift = 1.0;
     if (parameters->spherical_symmetry())
     {
-        return get_shift_spherical_symmetry <frame> (o, r, c, Z);
+        shift = get_shift_spherical_symmetry <frame> (origin, origin_velocity, raydir, c, Z);
     }
     else
     {
-        return get_shift_general_geometry <frame> (o, r, c);
+        shift = get_shift_general_geometry <frame> (origin_velocity, raydir, c);
+    }
+    if (reverse)
+    {
+        return 2.0-shift;
+    }
+    else
+    {
+        return shift;
     }
 }

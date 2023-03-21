@@ -674,7 +674,8 @@ accel inline Size Solver :: trace_ray_imaging (
           Size      id2 )
 {
 
-    Size initial_point=start_bdy;
+    const Size initial_point=start_bdy;
+    const Vector3D origin_velocity = Vector3D (0.0, 0.0, 0.0);
     //first figure out which boundary point lies closest to the custom ray
     //TODO: is slightly inefficient implementation, can be improved
     //--> assumption: convex outer boundary
@@ -691,15 +692,15 @@ accel inline Size Solver :: trace_ray_imaging (
     double  Z = 0.0;   // distance from origin (o)
     double dZ = 0.0;   // last increment in Z
 
-    //nxt = geometry.'get_next'(o,r,initial_point, Z, dZ)
-    Size nxt = geometry.get_next_general_geometry_custom_origin_raydir (origin, raydir, initial_point, Z, dZ);
+    // nxt = geometry.'get_next'(o,r,initial_point, Z, dZ)
+    Size nxt = geometry.get_next (origin, raydir, initial_point, Z, dZ);
 
     if (geometry.valid_point(nxt))
     {
         Size         crt = initial_point;
         // shift_crt/nxt = geometry.get_shift <frame> (o, r, crt/nxt, Z    );
-        double shift_crt = geometry.get_shift_general_geometry_custom_origin_raydir (raydir, crt);
-        double shift_nxt = geometry.get_shift_general_geometry_custom_origin_raydir (raydir, nxt);
+        double shift_crt = geometry.get_shift <frame> (origin, origin_velocity, raydir, crt, Z, false);
+        double shift_nxt = geometry.get_shift <frame> (origin, origin_velocity, raydir, nxt, Z, false);
 
         set_data (crt, nxt, shift_crt, shift_nxt, dZ, dshift_max, increment, id1, id2);
 
@@ -708,8 +709,8 @@ accel inline Size Solver :: trace_ray_imaging (
                   crt =       nxt;
             shift_crt = shift_nxt;
 
-                  nxt = geometry.get_next_general_geometry_custom_origin_raydir (origin, raydir, nxt, Z, dZ);
-            shift_nxt = geometry.get_shift_general_geometry_custom_origin_raydir (raydir, nxt);
+                  nxt = geometry.get_next (origin, raydir, nxt, Z, dZ);
+            shift_nxt = geometry.get_shift <frame> (origin, origin_velocity, raydir, nxt, Z, false);
 
             set_data (crt, nxt, shift_crt, shift_nxt, dZ, dshift_max, increment, id1, id2);
         }
