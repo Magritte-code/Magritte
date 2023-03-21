@@ -311,10 +311,10 @@ inline void Image :: set_coordinates_projection_surface (const Geometry& geometr
                 const double ImY = jx * geometry.points.position[bdy_point_index].x()
                                  + jy * geometry.points.position[bdy_point_index].y()
                                  + jz * geometry.points.position[bdy_point_index].z();
-                max_x = std::max(max_x, ImX);
-                max_y = std::max(max_y, ImY);
                 min_x = std::min(min_x, ImX);
-                min_y = std::max(min_y, ImY);
+                max_x = std::max(max_x, ImX);
+                min_y = std::min(min_y, ImY);
+                max_y = std::max(max_y, ImY);
             }
         }
         else
@@ -366,6 +366,7 @@ inline void Image :: set_coordinates_projection_surface (const Geometry& geometr
 //Warning: use only if ImagePointPosition==ProjectionSurface
 accel Vector3D Image :: surface_coords_to_3D_coordinates(const double x, const double y) const
 {
+    std::cout<<"x, y: "<<x<<" "<<y<<std::endl;
     if (imagePointPosition!=ProjectionSurface)
     {
         throw std::runtime_error("Surface coordinates cannot be computed of image which does not define a projection surface.");
@@ -384,6 +385,11 @@ accel Vector3D Image :: surface_coords_to_3D_coordinates(const double x, const d
     const double jx =  rx * rz * inverse_denominator;
     const double jy =  ry * rz * inverse_denominator;
     const double jz = -denominator;
+
+    std::cout<<"i(x, y): "<<ix<<" "<<iy<<std::endl;
+    std::cout<<"j(x, y, z)"<<jx<<" "<<jy<<" "<<jz<<std::endl;
+    std::cout<<"denominator: "<<denominator<<std::endl;
+    std::cout<<"surface_center_point: "<<surface_center_point.x()<<" "<<surface_center_point.y()<<" "<<surface_center_point.z()<<std::endl;
 
     if (denominator >= 1.0e-9)
     {
