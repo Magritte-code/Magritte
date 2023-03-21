@@ -190,7 +190,7 @@ inline double Geometry :: get_shift_general_geometry <CoMoving> (
 ///////////////////////////////////////////////////////////////////////////////////////
 template <>
 inline double Geometry :: get_shift_general_geometry <Rest> (
-    const Vector3D origin,
+    const Vector3D origin_velocity,
     const Vector3D raydir,
     const Size     crt ) const
 {
@@ -399,6 +399,10 @@ accel inline Size Geometry :: get_boundary_point_closer_to_custom_ray (
 {
     const Size     n_nbs = points.    n_neighbors[crt];
     const Size cum_n_nbs = points.cum_n_neighbors[crt];
+    std::cout<<"n_nbs: "<<n_nbs<<std::endl;
+    std::cout<<"origin: "<<origin.x()<<origin.y()<<origin.z()<<std::endl;
+    //ORIGIN IS WRONG IN THE INPUT; FIX THIS
+    std::cout<<"raydir: "<<raydir.x()<<raydir.y()<<raydir.z()<<std::endl;
 
     const Vector3D R_curr = points.position[crt] - origin;
     const double   Z_curr = R_curr.dot(raydir);
@@ -439,12 +443,13 @@ accel inline Size Geometry :: get_closest_bdy_point_in_custom_raydir (
     double projected_dmin = raydir.dot(points.position[closest_bdy_point]); // and the corresponding projected distance
     for (Size bdy_index = 1; bdy_index<parameters->nboundary(); bdy_index++)
     {
-        const Size bdy_point_index = boundary.point2boundary[bdy_index];
+        const Size bdy_point_index = boundary.boundary2point[bdy_index];
         const double projected_distance = raydir.dot(points.position[bdy_point_index]);
 
         if (projected_distance<projected_dmin)
         {
             closest_bdy_point = bdy_point_index;
+            projected_dmin = projected_distance;
         }
     }
 
@@ -549,6 +554,8 @@ inline double Geometry :: get_shift (
     const Vector3D origin_velocity = points.velocity[o];
     //Due to a lazy old implementation, the computed shift might need to be reversed
     const bool reverse = ((frame == Rest) && (r >= parameters->hnrays()));
+    // const bool reverse = (r >= parameters->hnrays());//clearly fails the constant velocity gradient tests
+    // const bool reverse = false;//fails the imager tests
 
     return get_shift <frame> (origin, origin_velocity, raydir, c, Z, reverse);
 

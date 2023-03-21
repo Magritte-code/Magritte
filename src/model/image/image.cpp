@@ -56,7 +56,7 @@ Image :: Image (const Geometry& geometry, const ImageType it, const Size rr, con
 
 ///  Copy constructor for Image
 ///////////////////////////////
-Image :: Image (const Image& image) : imageType(image.imageType), imagePointPosition(image.imagePointPosition), ray_nr (image.ray_nr), ray_origin(image.ray_origin), ray_direction(image.ray_direction)
+Image :: Image (const Image& image) : imageType(image.imageType), imagePointPosition(image.imagePointPosition), ray_nr (image.ray_nr), ray_direction(image.ray_direction)
 {
     ImX = image.ImX;
     ImY = image.ImY;
@@ -77,7 +77,7 @@ Image :: Image (const Image& image) : imageType(image.imageType), imagePointPosi
 
 ///  Constructor for Image; using non-default rays, default point position
 //////////////////////////
-Image :: Image (const Geometry& geometry, const ImageType it, const Vector3D raydir) : imageType(it), imagePointPosition(AllModelPoints), ray_nr(-1), ray_direction(raydir)
+Image :: Image (const Geometry& geometry, const ImageType it, const Vector3D raydir) : imageType(it), imagePointPosition(AllModelPoints), ray_nr(-1), ray_direction(raydir), closest_bdy_point(geometry.parameters->npoints())
 {
     if (geometry.parameters->dimension() == 1)
     {
@@ -166,12 +166,13 @@ Image :: Image (const Geometry& geometry, const ImageType it, const Vector3D ray
 ///  Setter for the coordinates on the image axes
 ///    @param[in] geometry : geometry object of the model
 /////////////////////////////////////////////////////////
-void Image :: set_coordinates_all_model_points (const Geometry& geometry)
+inline void Image :: set_coordinates_all_model_points (const Geometry& geometry)
 {
     ImX.resize (geometry.parameters->npoints());
     ImY.resize (geometry.parameters->npoints());
     I.  resize (geometry.parameters->npoints(), geometry.parameters->nfreqs());
-    ray_origin.resize(geometry.parameters->npoints());
+    // ray_origin.resize(geometry.parameters->npoints());
+    closest_bdy_point = geometry.parameters->npoints();
 
     if (geometry.parameters->dimension() == 1)
     {
@@ -221,7 +222,7 @@ void Image :: set_coordinates_all_model_points (const Geometry& geometry)
     }
 }
 
-void Image :: set_coordinates_projection_surface (const Geometry& geometry, const Size Nxpix, const Size Nypix)//(const Geometry& geometry)
+inline void Image :: set_coordinates_projection_surface (const Geometry& geometry, const Size Nxpix, const Size Nypix)//(const Geometry& geometry)
 {
     //If the raydirection is [0,0,1], then I set hat(x)=[1,0,0], hat(y)=[0,1,0] (lefthand rule: x, n, y)
     //For other ray directions, I define the (almost everywhere) unique rotation as follows:
@@ -333,8 +334,11 @@ void Image :: set_coordinates_projection_surface (const Geometry& geometry, cons
     }
 
     //Define pixels spanned by the plane: TODO: figure out why I thought I needed the closest bdy point
-    // const Size closest_bdy_point = geometry.get_closest_bdy_point_in_custom_raydir(ray_direction);
-    // const Vector3D closest_bdy_position = geometry.points.position[closest_bdy_point];
+    closest_bdy_point = geometry.get_closest_bdy_point_in_custom_raydir(ray_direction);
+    const Vector3D closest_bdy_position = geometry.points.position[closest_bdy_point];
+    const double distance_from_origin = closest_bdy_position.dot(ray_direction);//in a specific ray direction
+    //TODO: when implemented scalar multiplication in vector3D, change this.
+    surface_center_point = ray_direction*distance_from_origin;
     const double deltax = (max_x - min_x)/(Nxpix);//putting the points a half ... away from the edge
     const double deltay = (max_y - min_y)/(Nypix);
 
@@ -354,5 +358,41 @@ void Image :: set_coordinates_projection_surface (const Geometry& geometry, cons
         }
     });
 
+
+}
+
+
+//Helper function which converts surface coordinates to 3D coordinates using the saved
+//Warning: use only if ImagePointPosition==ProjectionSurface
+accel Vector3D Image :: surface_coords_to_3D_coordinates(const double x, const double y) const
+{
+    if (imagePointPosition!=ProjectionSurface)
+    {
+        throw std::runtime_error("Surface coordinates cannot be computed of image which does not define a projection surface.");
+    }
+    //TODO: maybe save these conversion things
+    const double rx = ray_direction.x();
+    const double ry = ray_direction.y();
+    const double rz = ray_direction.z();
+
+    const double         denominator = sqrt (rx*rx + ry*ry);
+    const double inverse_denominator = 1.0 / denominator;
+
+    const double ix =  ry * inverse_denominator;
+    const double iy = -rx * inverse_denominator;
+
+    const double jx =  rx * rz * inverse_denominator;
+    const double jy =  ry * rz * inverse_denominator;
+    const double jz = -denominator;
+
+    if (denominator >= 1.0e-9)
+    {
+        //To transform the distance in the direction back to the position, just multiply by the unit vector in that direction
+        return Vector3D(x*ix + y*jx, x*iy + y*jy, y*jz) + surface_center_point;
+    }
+    else
+    {
+        return Vector3D(x, y, 0) + surface_center_point;
+    }
 
 }

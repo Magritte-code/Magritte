@@ -276,6 +276,21 @@ PYBIND11_MODULE (core, module)
             "Compute an image for the model along the given ray."
         )
         .def (
+            "compute_image_new",
+            (int (Model::*)(const Vector3D raydir)) &Model::compute_image_new,
+            "Compute an image of the model along the given ray direction, using a new imager."
+        )
+        .def (
+            "compute_image_new",
+            (int (Model::*)(const Size ray_nr)) &Model::compute_image_new,
+            "Compute an image of the model along the given ray direction, using a new imager."
+        )
+        .def (
+            "compute_image_new",
+            (int (Model::*)(const Vector3D raydir, const Size Nxpix, const Size Nypix)) &Model::compute_image_new,
+            "Compute an image of the model along the given ray direction, using a new imager."
+        )
+        .def (
             "compute_image_optical_depth",
             &Model::compute_image_optical_depth,
             "Compute an image of the optical depth for the model along the given ray."
@@ -653,7 +668,7 @@ PYBIND11_MODULE (core, module)
                     sizeof(Real),                                                 // Size of one element
                     py::format_descriptor<Real>::format(),                        // Python struct-style format descriptor
                     2,                                                            // Number of dimensions
-                    py::detail::any_container<ssize_t>({m.nrows,
+                     py::detail::any_container<ssize_t>({m.nrows,
                                                         m.ncols}),                // Buffer dimensions
                     py::detail::any_container<ssize_t>({sizeof(Real)*m.ncols,
                                                         sizeof(Real)         })   // Strides (in bytes) for each index

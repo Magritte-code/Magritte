@@ -13,8 +13,8 @@ struct Boundary
 {
     std::shared_ptr<Parameters> parameters;
 
-    Vector<Size> boundary2point;
-    Vector<Size> point2boundary;
+    Vector<Size> boundary2point;//maps boundary index ∈[0, nboundary-1] to point index ∈[0, npoints-1]
+    Vector<Size> point2boundary;//maps point index to boundary index. Maps non-boundary points to parameters->npoints() (invalid value)
 
     Vector<BoundaryCondition> boundary_condition;
     Vector<Real>              boundary_temperature;

@@ -84,6 +84,11 @@ struct Model
         const long  max_niterations     );
     int compute_image                             (const Size ray_nr);
     int compute_image_optical_depth               (const Size ray_nr);
+    int compute_image_new (const Vector3D raydir, const Size Nxpix, const Size Nypix);
+    int compute_image_new (const Vector3D raydir);
+    int compute_image_new (const Size ray_nr);
+    // int compute_image_new (const Real dirx, const Real diry, const Real dirz, const Size Nxpix, const Size Nypix);
+    // int compute_image_new (const Real dirx, const Real diry, const Real dirz);
 
     Double1 error_max;
     Double1 error_mean;

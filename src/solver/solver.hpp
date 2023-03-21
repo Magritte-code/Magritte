@@ -90,6 +90,13 @@ struct Solver
               Size      id1,
               Size      id2 );
 
+    accel inline Size trace_ray_imaging_get_start (
+          const Geometry& geometry,
+          const Vector3D  origin,
+          const Size      start_bdy,
+          const Vector3D  raydir,
+          Real& Z);
+
     template <Frame frame>
     accel inline Size trace_ray_imaging (
         const Geometry& geometry,
@@ -100,6 +107,12 @@ struct Solver
         const int       increment,
               Size      id1,
               Size      id2 );
+
+    accel inline Size trace_ray_imaging_get_start (
+        const Geometry& geometry,
+        const Vector3D  origin,
+        const Size      start_bdy,
+        const Vector3D  raydir);
 
     accel inline void set_data (
         const Size   crt,
@@ -153,10 +166,15 @@ struct Solver
 
     // Solvers for images
     /////////////////////
+    //algorithms for tracing the rays and extracting the information of the solver
     template<ApproximationType approx>
     accel inline void image_feautrier_order_2 (Model& model, const Size rr);
     template<ApproximationType approx>
+    inline void image_feautrier_order_2_new_imager (Model& model, const Vector3D ray_dir, const Size Nxpix, const Size Nypix);
+    //actual solver
+    template<ApproximationType approx>
     accel inline void image_feautrier_order_2 (Model& model, const Size o, const Size f);
+
 
     template<ApproximationType approx>
     accel inline void image_feautrier_order_2_for_point     (Model& model, const Size rr, const Size p);

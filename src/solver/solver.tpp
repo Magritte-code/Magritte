@@ -545,6 +545,73 @@ inline void Solver :: image_feautrier_order_2 (Model& model, const Size rr)
     model.images.push_back (image);
 }
 
+
+template<ApproximationType approx>
+inline void Solver :: image_feautrier_order_2_new_imager (Model& model, const Vector3D ray_dir, const Size Nxpix, const Size Nypix)
+{
+    // Image image = Image(model.geometry, Intensity, rr);
+    Image image = Image (model.geometry, Intensity, ray_dir, Nxpix, Nypix);
+
+    // const Size ar = model.geometry.rays.antipod[rr];
+
+    //for all points in the image
+    //Note: const for now, may be adaptive in the future; (but then while loop will be required anyway)
+    const Size Npixels = image.ImX.size();//is ImY.size()
+    std::cout<<"Npixels: "<<Npixels<<std::endl;
+    const Vector3D origin_velocity = Vector3D(0.0);
+
+    const Size start_bdy_point = model.geometry.get_closest_bdy_point_in_custom_raydir(ray_dir);
+    std::cout<<"start_bdy_point: "<<start_bdy_point<<std::endl;
+
+    // accelerated_for (o, model.parameters->npoints(),
+    accelerated_for (pixidx, Npixels,
+    {
+        std::cout<<"pixidx: "<<pixidx<<std::endl;
+        const Real dshift_max = get_dshift_max (model, start_bdy_point);
+        const Vector3D origin = image.surface_coords_to_3D_coordinates(image.ImX[pixidx], image.ImY[pixidx]);
+
+        Real Z=0.0;
+        const Size closest_bdy_point = trace_ray_imaging_get_start(model.geometry, origin, start_bdy_point, ray_dir, Z);
+        std::cout<<"closest_bdy_point: "<<closest_bdy_point<<std::endl;
+
+        // nr_   ()[centre] = o;
+        // shift_()[centre] = model.geometry.get_shift <Rest> (o, rr, o, 0.0);
+
+
+        nr_   ()[centre] = closest_bdy_point;
+        shift_()[centre] = model.geometry.get_shift <Rest> (origin, origin_velocity, ray_dir, closest_bdy_point, 0.0, false);
+        first_() = trace_ray_imaging <Rest> (model.geometry, origin, closest_bdy_point, ray_dir, dshift_max, -1, centre-1, centre-1) + 1;
+        last_() = centre;//by definition, only boundary points can lie in the backward direction
+
+        std::cout<<"starting to solve ray"<<std::endl;
+        // first_() = trace_ray_imaging <Rest> (model.geometry, o, rr, dshift_max, -1, centre-1, centre-1) + 1;
+        // last_ () = trace_ray_imaging <Rest> (model.geometry, o, ar, dshift_max, +1, centre+1, centre  ) - 1;
+        n_tot_() = (last_()+1) - first_();
+        std::cout<<"ntot: "<<n_tot_()<<std::endl;
+
+        if (n_tot_() > 1)
+        {
+            for (Size f = 0; f < model.parameters->nfreqs(); f++)
+            {
+                image_feautrier_order_2<approx> (model, closest_bdy_point, f);
+
+                image.I(pixidx,f) = two*Su_()[last_()] - boundary_intensity(model, nr_()[last_()], model.radiation.frequencies.nu(closest_bdy_point, f));
+            }
+        }
+        else
+        {
+            for (Size f = 0; f < model.parameters->nfreqs(); f++)
+            {
+                image.I(pixidx,f) = boundary_intensity(model, closest_bdy_point, model.radiation.frequencies.nu(closest_bdy_point, f));
+            }
+        }
+    })
+
+    pc::accelerator::synchronize();
+
+    model.images.push_back (image);
+}
+
 template<ApproximationType approx>
 inline void Solver :: image_feautrier_order_2_for_point (Model& model, const Size rr, const Size p)
 {
@@ -662,20 +729,15 @@ accel inline Size Solver :: trace_ray (
 //Because of the new method for computing the optical depth, adding extra frequency points for counteracting the large doppler shift is no longer necessary
 //Specialized raytracer for imaging the model.
 //Note: assumes the outer boundary to be convex in order to correctly start tracing the ray
-template <Frame frame>
-accel inline Size Solver :: trace_ray_imaging (
+accel inline Size Solver :: trace_ray_imaging_get_start (
     const Geometry& geometry,
     const Vector3D  origin,
-    const Size start_bdy,
+    const Size      start_bdy,
     const Vector3D  raydir,
-    const double    dshift_max,
-    const int       increment,
-          Size      id1,
-          Size      id2 )
+    Real& Z)
 {
 
-    const Size initial_point=start_bdy;
-    const Vector3D origin_velocity = Vector3D (0.0, 0.0, 0.0);
+    Size initial_point=start_bdy;
     //first figure out which boundary point lies closest to the custom ray
     //TODO: is slightly inefficient implementation, can be improved
     //--> assumption: convex outer boundary
@@ -689,15 +751,51 @@ accel inline Size Solver :: trace_ray_imaging (
         initial_point = next_attempt;
     }
 
+    Z = raydir.dot(geometry.points.position[initial_point]-origin);
+
+    return initial_point;
+}
+
+
+//Because of the new method for computing the optical depth, adding extra frequency points for counteracting the large doppler shift is no longer necessary
+//Specialized raytracer for imaging the model.
+//Note: assumes the outer boundary to be convex in order to correctly start tracing the ray
+template <Frame frame>
+accel inline Size Solver :: trace_ray_imaging (
+    const Geometry& geometry,
+    const Vector3D  origin,
+    const Size start_bdy,
+    const Vector3D  raydir,
+    const double    dshift_max,
+    const int       increment,
+          Size      id1,
+          Size      id2 )
+{
+
+    // const Size initial_point=start_bdy;
+    // //first figure out which boundary point lies closest to the custom ray
+    // //TODO: is slightly inefficient implementation, can be improved
+    // //--> assumption: convex outer boundary
+    // while (true)
+    // {
+    //     Size next_attempt = geometry.get_boundary_point_closer_to_custom_ray(origin, raydir, initial_point);
+    //     if (next_attempt==initial_point)
+    //     {
+    //         break;
+    //     }
+    //     initial_point = next_attempt;
+    // }
+
     double  Z = 0.0;   // distance from origin (o)
     double dZ = 0.0;   // last increment in Z
+    const Vector3D origin_velocity = Vector3D (0.0, 0.0, 0.0);
 
     // nxt = geometry.'get_next'(o,r,initial_point, Z, dZ)
-    Size nxt = geometry.get_next (origin, raydir, initial_point, Z, dZ);
+    Size nxt = geometry.get_next (origin, raydir, start_bdy, Z, dZ);
 
     if (geometry.valid_point(nxt))
     {
-        Size         crt = initial_point;
+        Size         crt = start_bdy;
         // shift_crt/nxt = geometry.get_shift <frame> (o, r, crt/nxt, Z    );
         double shift_crt = geometry.get_shift <frame> (origin, origin_velocity, raydir, crt, Z, false);
         double shift_nxt = geometry.get_shift <frame> (origin, origin_velocity, raydir, nxt, Z, false);

@@ -12,6 +12,8 @@
 ///  Frame of reference used in geometry computations
 /////////////////////////////////////////////////////
 enum Frame {CoMoving, Rest};
+//CoMoving: used for all solvers, does not reverse the shift
+//Rest: used for the old imagers, reverses the shift if necessary
 
 
 ///  Data structure for geometry

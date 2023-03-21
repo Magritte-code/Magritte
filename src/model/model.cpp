@@ -858,6 +858,51 @@ int Model :: compute_image (const Size ray_nr)
 }
 
 
+///  Wrapper for the new imager
+///////////////////////////////
+int Model :: compute_image_new (const Vector3D raydir)
+{
+    return compute_image_new(raydir, 256, 256);
+}
+
+///  Wrapper for the new imager
+///////////////////////////////
+int Model :: compute_image_new (const Size ray_nr)
+{
+    return compute_image_new(geometry.rays.direction[ray_nr]);
+}
+//TODO: find better name for new imager
+
+///  Computer for the radiation field, using a new imager TODO: check whether direction is correct (I suspect it is not)
+/////////////////////////////////////
+int Model :: compute_image_new (const Vector3D raydir, const Size Nxpix, const Size Nypix)
+{
+    if (raydir.squaredNorm()==0.0)
+    {
+        throw std::runtime_error("The given ray direction vector does not point in a direction. Please use a non-zero (normed) direction vector to generate an image.");
+    }
+    const Vector3D normed_raydir = raydir * (1 / std::sqrt(raydir.squaredNorm()));
+    cout << "Computing image new..." << endl;
+
+    Solver solver;
+    solver.setup <Rest>            (*this);
+    if (parameters->one_line_approximation)
+    {
+        solver.image_feautrier_order_2_new_imager <OneLine> (*this, normed_raydir, Nxpix, Nypix);
+        return (0);
+    }
+
+    if (parameters->sum_opacity_emissivity_over_all_lines)
+    {
+        solver.image_feautrier_order_2_new_imager <None> (*this, normed_raydir, Nxpix, Nypix);
+        return (0);
+    }
+
+    solver.image_feautrier_order_2_new_imager <CloseLines> (*this, normed_raydir, Nxpix, Nypix);
+    return (0);
+}
+
+
 ///  Computer for image in one point
 ////////////////////////////////////
 int Model :: compute_image_for_point (const Size ray_nr, const Size p)
