@@ -860,7 +860,7 @@ def point_cloud_clear_inner_boundary_generic(remeshed_positions, nb_boundary, nu
     number of boundary points : unsigned int
         The number of boundary points in the remeshed point cloud.
     '''
-    boundary_points = remeshed_positions[:nb_boundary, :]#extract original boundary points
+    boundary_points = remeshed_positions[:nb_boundary, :].copy()#extract original boundary points
 
     keep_pos = numpy_friendly_function(remeshed_positions)>threshold
     new_remeshed_positions = remeshed_positions[keep_pos]
@@ -894,7 +894,7 @@ def point_cloud_clear_outer_boundary_generic(remeshed_positions, nb_boundary, nu
     number of boundary points : unsigned int
         The number of boundary points in the remeshed point cloud.
     '''
-    boundary_points = remeshed_positions[:nb_boundary, :]#extract original boundary points
+    boundary_points = remeshed_positions[:nb_boundary, :].copy()#extract original boundary points
 
     keep_pos = numpy_friendly_function(remeshed_positions)<threshold
     new_remeshed_positions = remeshed_positions[keep_pos]
@@ -980,13 +980,13 @@ def point_cloud_add_spherical_outer_boundary(remeshed_positions, nb_boundary, ra
     safety_factor = np.cos(max_angle)
     positions_reduced, nb_boundary = point_cloud_clear_outer_boundary_generic(remeshed_positions, nb_boundary, radii2, (radius*safety_factor)**2)
     #use healpy with 12*5**2 directions to define inner sphere
-    N_inner_bdy = 12*healpy_order**2
+    N_outer_bdy = 12*healpy_order**2
     #healpix always requires 12*x**2 as number of points on the sphere
-    direction  = healpy.pixelfunc.pix2vec(healpy.npix2nside(N_inner_bdy), range(N_inner_bdy))
+    direction  = healpy.pixelfunc.pix2vec(healpy.npix2nside(N_outer_bdy), range(N_outer_bdy))
     direction  = np.array(direction).transpose()
     #then multiply with the desired radius of the inner boundary
     inner_bdy = origin + radius * direction
     positions_reduced = np.concatenate((inner_bdy,positions_reduced))
-    nb_boundary = nb_boundary + N_inner_bdy
+    nb_boundary = nb_boundary + N_outer_bdy
 
     return positions_reduced, nb_boundary

@@ -15,7 +15,7 @@ from palettable.cubehelix import cubehelix2_16      # Nice colormap
 from tqdm                 import tqdm               # Progress bars
 from ipywidgets           import interact           # Interactive plots
 from ipywidgets.embed     import embed_minimal_html # Store interactive plots
-from magritte.core        import ImageType          # Image type
+from magritte.core        import ImageType, ImagePointPosition  # Image type, point position
 from math                 import floor, ceil        # Math helper functions
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
@@ -106,11 +106,13 @@ def image_mpl(
     imI = np.array(model.images[image_nr].I)
     imv = np.array(model.radiation.frequencies.nu)[0]
 
-    # Filter imaging data originating from boundary points
-    bdy_indices = np.array(model.geometry.boundary.boundary2point)
-    imx = np.delete(imx, bdy_indices)
-    imy = np.delete(imy, bdy_indices)
-    imI = np.delete(imI, bdy_indices, axis=0)
+    # Workaround for model images
+    if (model.images[image_nr].imagePointPosition == ImagePointPosition.AllModelPoints):
+        # Filter imaging data originating from boundary points
+        bdy_indices = np.array(model.geometry.boundary.boundary2point)
+        imx = np.delete(imx, bdy_indices)
+        imy = np.delete(imy, bdy_indices)
+        imI = np.delete(imI, bdy_indices, axis=0)
 
     # Extract the number of frequency bins
     nfreqs = model.parameters.nfreqs()
@@ -284,11 +286,13 @@ def image_plotly(
     imI = np.array(model.images[image_nr].I)
     imv = np.array(model.radiation.frequencies.nu)[0]
 
-    # Filter imaging data originating from boundary points
-    bdy_indices = np.array(model.geometry.boundary.boundary2point)
-    imx = np.delete(imx, bdy_indices)
-    imy = np.delete(imy, bdy_indices)
-    imI = np.delete(imI, bdy_indices, axis=0)
+    # Workaround for model images
+    if (model.images[image_nr].imagePointPosition == ImagePointPosition.AllModelPoints):
+        # Filter imaging data originating from boundary points
+        bdy_indices = np.array(model.geometry.boundary.boundary2point)
+        imx = np.delete(imx, bdy_indices)
+        imy = np.delete(imy, bdy_indices)
+        imI = np.delete(imI, bdy_indices, axis=0)
 
     # Extract the number of frequency bins
     nfreqs = model.parameters.nfreqs()
@@ -322,7 +326,7 @@ def image_plotly(
     Is = Is / np.max(Is)
 
     # Put zero-values to the smallest non-zero value
-    zs[zs==0.0] = np.min(zs[zs!=0.0])
+    zs[zs<=0.0] = np.min(zs[zs>0.0])
 
     # Get the logarithm of the data (matplotlib has a hard time handling logarithmic data.)
     log_zs     = np.log10(zs)
