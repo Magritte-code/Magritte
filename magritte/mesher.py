@@ -865,7 +865,7 @@ def point_cloud_clear_inner_boundary_generic(remeshed_positions, nb_boundary, nu
     keep_pos = numpy_friendly_function(remeshed_positions)>threshold
     new_remeshed_positions = remeshed_positions[keep_pos]
     remove_bdy = numpy_friendly_function(boundary_points)<=threshold
-    nb_bounds_reduced = len(remove_bdy)
+    nb_bounds_reduced = np.sum(remove_bdy)
     new_nb_boundary = nb_boundary-nb_bounds_reduced
 
     return new_remeshed_positions, new_nb_boundary
@@ -899,7 +899,7 @@ def point_cloud_clear_outer_boundary_generic(remeshed_positions, nb_boundary, nu
     keep_pos = numpy_friendly_function(remeshed_positions)<threshold
     new_remeshed_positions = remeshed_positions[keep_pos]
     remove_bdy = numpy_friendly_function(boundary_points)>=threshold
-    nb_bounds_reduced = len(remove_bdy)
+    nb_bounds_reduced = np.sum(remove_bdy)
     new_nb_boundary = nb_boundary-nb_bounds_reduced
 
     return new_remeshed_positions, new_nb_boundary
