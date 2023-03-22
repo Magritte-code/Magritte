@@ -123,10 +123,17 @@ PYBIND11_MODULE (core, module)
         .value("OpticalDepth", OpticalDepth)
         .export_values();
 
+    // ImagePointPosition
+    py::enum_<ImagePointPosition>(module, "ImagePointPosition")
+        .value("AllModelPoints", AllModelPoints)
+        .value("ProjectionSurface", ProjectionSurface)
+        .export_values();
+
     // Image
     py::class_<Image> (module, "Image", "Image class, 2D point cloud of intensities for each frequency bin.")
         // attributes
         .def_readonly  ("imageType", &Image::imageType, "Type of image (intensity of optical depth).")
+        .def_readonly  ("imagePointPosition", &Image::imagePointPosition, "Position of image points (model points or projection surface).")
         .def_readonly  ("ray_nr",    &Image::ray_nr,    "Number of the ray along which the image is taken.")
         .def_readonly  ("ImX",       &Image::ImX,       "X-coordinates of the points in the image plane.")
         .def_readonly  ("ImY",       &Image::ImY,       "Y-coordinates of the points in the image plane.")

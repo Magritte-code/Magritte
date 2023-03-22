@@ -50,6 +50,8 @@ struct Image
     inline void set_coordinates_all_model_points (const Geometry& geometry);
     inline void set_coordinates_projection_surface (const Geometry& geometry, const Size Nxpix, const Size Nypix);
 
+    inline bool uses_projection_surface() const;
+
     accel Vector3D surface_coords_to_3D_coordinates(const double x, const double y) const;
     // void set_coordinates_projection_surface (const Geometry& geometry, const Size Nxpix, const Size Nypix);
 };

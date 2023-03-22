@@ -366,7 +366,7 @@ inline void Image :: set_coordinates_projection_surface (const Geometry& geometr
 //Warning: use only if ImagePointPosition==ProjectionSurface
 accel Vector3D Image :: surface_coords_to_3D_coordinates(const double x, const double y) const
 {
-    std::cout<<"x, y: "<<x<<" "<<y<<std::endl;
+    // std::cout<<"x, y: "<<x<<" "<<y<<std::endl;
     if (imagePointPosition!=ProjectionSurface)
     {
         throw std::runtime_error("Surface coordinates cannot be computed of image which does not define a projection surface.");
@@ -386,10 +386,10 @@ accel Vector3D Image :: surface_coords_to_3D_coordinates(const double x, const d
     const double jy =  ry * rz * inverse_denominator;
     const double jz = -denominator;
 
-    std::cout<<"i(x, y): "<<ix<<" "<<iy<<std::endl;
-    std::cout<<"j(x, y, z)"<<jx<<" "<<jy<<" "<<jz<<std::endl;
-    std::cout<<"denominator: "<<denominator<<std::endl;
-    std::cout<<"surface_center_point: "<<surface_center_point.x()<<" "<<surface_center_point.y()<<" "<<surface_center_point.z()<<std::endl;
+    // std::cout<<"i(x, y): "<<ix<<" "<<iy<<std::endl;
+    // std::cout<<"j(x, y, z)"<<jx<<" "<<jy<<" "<<jz<<std::endl;
+    // std::cout<<"denominator: "<<denominator<<std::endl;
+    // std::cout<<"surface_center_point: "<<surface_center_point.x()<<" "<<surface_center_point.y()<<" "<<surface_center_point.z()<<std::endl;
 
     if (denominator >= 1.0e-9)
     {
@@ -401,4 +401,9 @@ accel Vector3D Image :: surface_coords_to_3D_coordinates(const double x, const d
         return Vector3D(x, y, 0) + surface_center_point;
     }
 
+}
+
+inline bool Solver :: uses_projection_surface()
+{
+    return (imagePointPosition==ProjectionSurface)
 }

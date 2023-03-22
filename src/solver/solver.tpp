@@ -557,22 +557,24 @@ inline void Solver :: image_feautrier_order_2_new_imager (Model& model, const Ve
     //for all points in the image
     //Note: const for now, may be adaptive in the future; (but then while loop will be required anyway)
     const Size Npixels = image.ImX.size();//is ImY.size()
-    std::cout<<"Npixels: "<<Npixels<<std::endl;
+    // std::cout<<"Npixels: "<<Npixels<<std::endl;
     const Vector3D origin_velocity = Vector3D(0.0);
 
     const Size start_bdy_point = model.geometry.get_closest_bdy_point_in_custom_raydir(ray_dir);
-    std::cout<<"start_bdy_point: "<<start_bdy_point<<std::endl;
+    // std::cout<<"start_bdy_point: "<<start_bdy_point<<std::endl;
 
     // accelerated_for (o, model.parameters->npoints(),
     accelerated_for (pixidx, Npixels,
     {
-        std::cout<<"pixidx: "<<pixidx<<std::endl;
+        // std::cout<<"pixidx: "<<pixidx<<std::endl;
         const Real dshift_max = get_dshift_max (model, start_bdy_point);
         const Vector3D origin = image.surface_coords_to_3D_coordinates(image.ImX[pixidx], image.ImY[pixidx]);
+        // std::cout<<"computed origin: "<<origin.x()<<" "<<origin.y()<<" "<<origin.z()<<std::endl;
 
         Real Z=0.0;
         const Size closest_bdy_point = trace_ray_imaging_get_start(model.geometry, origin, start_bdy_point, ray_dir, Z);
-        std::cout<<"closest_bdy_point: "<<closest_bdy_point<<std::endl;
+        // std::cout<<"closest_bdy_point: "<<closest_bdy_point<<std::endl;
+        // std::cout<<"closest bdy position: "<<model.geometry.points.position[closest_bdy_point].x()<<" "<<model.geometry.points.position[closest_bdy_point].y()<<" "<<model.geometry.points.position[closest_bdy_point].z()<<std::endl;
 
         // nr_   ()[centre] = o;
         // shift_()[centre] = model.geometry.get_shift <Rest> (o, rr, o, 0.0);
@@ -583,11 +585,11 @@ inline void Solver :: image_feautrier_order_2_new_imager (Model& model, const Ve
         first_() = trace_ray_imaging <Rest> (model.geometry, origin, closest_bdy_point, ray_dir, dshift_max, -1, centre-1, centre-1) + 1;
         last_() = centre;//by definition, only boundary points can lie in the backward direction
 
-        std::cout<<"starting to solve ray"<<std::endl;
+        // std::cout<<"starting to solve ray"<<std::endl;
         // first_() = trace_ray_imaging <Rest> (model.geometry, o, rr, dshift_max, -1, centre-1, centre-1) + 1;
         // last_ () = trace_ray_imaging <Rest> (model.geometry, o, ar, dshift_max, +1, centre+1, centre  ) - 1;
         n_tot_() = (last_()+1) - first_();
-        std::cout<<"ntot: "<<n_tot_()<<std::endl;
+        // std::cout<<"ntot: "<<n_tot_()<<std::endl;
 
         if (n_tot_() > 1)
         {
@@ -792,9 +794,19 @@ accel inline Size Solver :: trace_ray_imaging (
 
     // nxt = geometry.'get_next'(o,r,initial_point, Z, dZ)
     Size nxt = geometry.get_next (origin, raydir, start_bdy, Z, dZ);
+    //As we might directly encounter a boundary as next point, we instead might want to iterate until a non-boundary point is found as next point; Note: this might incur some error on the boundary, as the step will be rather large
+    while ((!geometry.not_on_boundary(nxt))&&(geometry.valid_point(nxt)))
+    {
+        // std::cout<<"on boundary iterating"<<std::endl;
+        nxt = geometry.get_next (origin, raydir, nxt, Z, dZ);
+    }
 
     if (geometry.valid_point(nxt))
     {
+
+        // std::cout<<"nxt: "<<nxt<<std::endl;
+        // std::cout<<"position: "<<geometry.points.position[nxt].x()<<" "<<geometry.points.position[nxt].y()<<" "<<geometry.points.position[nxt].z()<<std::endl;
+        // std::cout<<"not on boundary: "<<geometry.not_on_boundary(nxt)<<std::endl;
         Size         crt = start_bdy;
         // shift_crt/nxt = geometry.get_shift <frame> (o, r, crt/nxt, Z    );
         double shift_crt = geometry.get_shift <frame> (origin, origin_velocity, raydir, crt, Z, false);

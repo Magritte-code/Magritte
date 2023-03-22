@@ -399,10 +399,10 @@ accel inline Size Geometry :: get_boundary_point_closer_to_custom_ray (
 {
     const Size     n_nbs = points.    n_neighbors[crt];
     const Size cum_n_nbs = points.cum_n_neighbors[crt];
-    std::cout<<"n_nbs: "<<n_nbs<<std::endl;
-    std::cout<<"origin: "<<origin.x()<<origin.y()<<origin.z()<<std::endl;
+    // std::cout<<"n_nbs: "<<n_nbs<<std::endl;
+    // std::cout<<"origin: "<<origin.x()<<origin.y()<<origin.z()<<std::endl;
     //ORIGIN IS WRONG IN THE INPUT; FIX THIS
-    std::cout<<"raydir: "<<raydir.x()<<raydir.y()<<raydir.z()<<std::endl;
+    // std::cout<<"raydir: "<<raydir.x()<<raydir.y()<<raydir.z()<<std::endl;
 
     const Vector3D R_curr = points.position[crt] - origin;
     const double   Z_curr = R_curr.dot(raydir);
