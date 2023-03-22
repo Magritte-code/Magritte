@@ -286,6 +286,7 @@ inline void Image :: set_coordinates_projection_surface (const Geometry& geometr
         const double rx = ray_direction.x();
         const double ry = ray_direction.y();
         const double rz = ray_direction.z();
+        std::cout<<"raydir: "<<rx<<" "<<ry<<" "<<rz<<std::endl;
 
         const double         denominator = sqrt (rx*rx + ry*ry);
         const double inverse_denominator = 1.0 / denominator;
@@ -401,9 +402,4 @@ accel Vector3D Image :: surface_coords_to_3D_coordinates(const double x, const d
         return Vector3D(x, y, 0) + surface_center_point;
     }
 
-}
-
-inline bool Solver :: uses_projection_surface()
-{
-    return (imagePointPosition==ProjectionSurface)
 }

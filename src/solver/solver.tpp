@@ -602,6 +602,10 @@ inline void Solver :: image_feautrier_order_2_new_imager (Model& model, const Ve
         }
         else
         {
+            // std::cout<<"ntot==1 at pixel: "<<image.ImX[pixidx]<<" "<<image.ImY[pixidx]<<std::endl;
+            // std::cout<<"computed origin: "<<origin.x()<<" "<<origin.y()<<" "<<origin.z()<<std::endl;
+            // std::cout<<"closest bdy position: "<<model.geometry.points.position[closest_bdy_point].x()<<" "<<model.geometry.points.position[closest_bdy_point].y()<<" "<<model.geometry.points.position[closest_bdy_point].z()<<std::endl;
+
             for (Size f = 0; f < model.parameters->nfreqs(); f++)
             {
                 image.I(pixidx,f) = boundary_intensity(model, closest_bdy_point, model.radiation.frequencies.nu(closest_bdy_point, f));
@@ -801,6 +805,8 @@ accel inline Size Solver :: trace_ray_imaging (
         nxt = geometry.get_next (origin, raydir, nxt, Z, dZ);
     }
 
+    // std::cout<<"nxt: "<<nxt<<std::endl;
+
     if (geometry.valid_point(nxt))
     {
 
@@ -824,6 +830,8 @@ accel inline Size Solver :: trace_ray_imaging (
 
             set_data (crt, nxt, shift_crt, shift_nxt, dZ, dshift_max, increment, id1, id2);
         }
+
+
     }
 
     return id1;
