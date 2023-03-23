@@ -885,7 +885,7 @@ int Model :: compute_image_new (const Vector3D raydir, const Size Nxpix, const S
     cout << "Computing image new..." << endl;
 
     Solver solver;
-    solver.setup <Rest>            (*this);
+    solver.setup_new_imager <Rest> (*this);//traced ray length might be different, thus we might need longer data types
     if (parameters->one_line_approximation)
     {
         solver.image_feautrier_order_2_new_imager <OneLine> (*this, normed_raydir, Nxpix, Nypix);

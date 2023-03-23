@@ -69,6 +69,9 @@ struct Solver
     template <Frame frame>
     void setup (Model& model);
 
+    template <Frame frame>
+    void setup_new_imager (Model& model);
+
     void setup (const Size l, const Size w, const Size n_o_d);
 
     accel inline Real get_dshift_max (const Model& model, const Size o);
@@ -78,6 +81,9 @@ struct Solver
 
     template <Frame frame>
     inline Size get_ray_lengths_max (Model& model);
+
+    template <Frame frame>
+    inline Size get_ray_lengths_max_new_imager (Model& model);
 
 
     template <Frame frame>

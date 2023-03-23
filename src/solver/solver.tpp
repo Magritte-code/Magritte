@@ -11,6 +11,19 @@ inline void Solver :: setup (Model& model)
 }
 
 
+template <Frame frame>
+inline void Solver :: setup_new_imager (Model& model)
+{
+    const Size length = 2 * get_ray_lengths_max_new_imager <frame> (model) + 1;
+    const Size  width = model.parameters->nfreqs();
+    const Size  n_o_d = model.parameters->n_off_diag;
+
+    model.set_dshift_max();//err, probably belongs somewhere else, but we need to compute the max shift for each point
+
+    setup (length, width, n_o_d);
+}
+
+
 inline void Solver :: setup (const Size l, const Size w, const Size n_o_d)
 {
     length     = l;
@@ -119,6 +132,13 @@ inline Size Solver :: get_ray_lengths_max (Model& model)
                                         geo.lengths.vec.end()   );
 
     return geo.lengths_max;
+}
+
+template <Frame frame>
+inline Size Solver :: get_ray_lengths_max_new_imager (Model& model)
+{
+    //TODO: properly implement this, as this is just for testing
+    return 2+2*get_ray_lengths_max<Rest>(model);
 }
 
 
@@ -778,54 +798,88 @@ accel inline Size Solver :: trace_ray_imaging (
           Size      id2 )
 {
 
-    // const Size initial_point=start_bdy;
-    // //first figure out which boundary point lies closest to the custom ray
-    // //TODO: is slightly inefficient implementation, can be improved
-    // //--> assumption: convex outer boundary
-    // while (true)
-    // {
-    //     Size next_attempt = geometry.get_boundary_point_closer_to_custom_ray(origin, raydir, initial_point);
-    //     if (next_attempt==initial_point)
-    //     {
-    //         break;
-    //     }
-    //     initial_point = next_attempt;
-    // }
-
     double  Z = 0.0;   // distance from origin (o)
     double dZ = 0.0;   // last increment in Z
+    const Size MAX_CONSECUTIVE_BDY = 3; //maximal amount of consecutive boundary points before stopping
     const Vector3D origin_velocity = Vector3D (0.0, 0.0, 0.0);
+    Size crt = start_bdy;
 
     // nxt = geometry.'get_next'(o,r,initial_point, Z, dZ)
     Size nxt = geometry.get_next (origin, raydir, start_bdy, Z, dZ);
-    //As we might directly encounter a boundary as next point, we instead might want to iterate until a non-boundary point is found as next point; Note: this might incur some error on the boundary, as the step will be rather large
-    while ((!geometry.not_on_boundary(nxt))&&(geometry.valid_point(nxt)))
+    //As we might directly encounter a boundary as next point, we instead might want to iterate until a non-boundary point is found as next point to start our ray
+    while ((geometry.valid_point(nxt))&&(!geometry.not_on_boundary(nxt)))
     {
-        // std::cout<<"on boundary iterating"<<std::endl;
+        crt = nxt;
         nxt = geometry.get_next (origin, raydir, nxt, Z, dZ);
     }
-
-    // std::cout<<"nxt: "<<nxt<<std::endl;
 
     if (geometry.valid_point(nxt))
     {
 
+        bool already_on_bdy = false;//by definition (previous while loop exited and this is a valid point), the current 'nxt' is not a boundary point
         // std::cout<<"nxt: "<<nxt<<std::endl;
         // std::cout<<"position: "<<geometry.points.position[nxt].x()<<" "<<geometry.points.position[nxt].y()<<" "<<geometry.points.position[nxt].z()<<std::endl;
         // std::cout<<"not on boundary: "<<geometry.not_on_boundary(nxt)<<std::endl;
-        Size         crt = start_bdy;
+        // Size         crt = start_bdy;
         // shift_crt/nxt = geometry.get_shift <frame> (o, r, crt/nxt, Z    );
         double shift_crt = geometry.get_shift <frame> (origin, origin_velocity, raydir, crt, Z, false);
         double shift_nxt = geometry.get_shift <frame> (origin, origin_velocity, raydir, nxt, Z, false);
 
         set_data (crt, nxt, shift_crt, shift_nxt, dZ, dshift_max, increment, id1, id2);
 
-        while (geometry.not_on_boundary(nxt))
+
+        //Due to boundary points begin slightly annoying to start a ray from, we must make sure the ray only end when we are sure that we stay on the boundary
+        // while (geometry.valid_point(nxt))
+        while (true)
+        // while (geometry.not_on_boundary(nxt))
         {
+            if (!geometry.not_on_boundary(nxt))
+            {
+                Size curr_cons_bdy = 1;
+                Size temp_nxt = nxt;
+                double temp_Z = Z;
+                double temp_dZ = dZ;
+                while (true)
+                {
+                    temp_nxt = geometry.get_next (origin, raydir, temp_nxt, temp_Z, temp_dZ);
+                    if ((!geometry.valid_point(temp_nxt))||(curr_cons_bdy == MAX_CONSECUTIVE_BDY))
+                    {
+                        return id1;//the ray ends if we cannot find any points anymore, or we have too many boundary points after eachother
+                    }
+                    if (geometry.not_on_boundary(temp_nxt))
+                    {
+                        break;//the ray continues, as we find once again non-boundary points
+                    }
+                    curr_cons_bdy+=1;
+                }
+            }
+
+
                   crt =       nxt;
             shift_crt = shift_nxt;
 
                   nxt = geometry.get_next (origin, raydir, nxt, Z, dZ);
+
+            // // //if we encounter an invalid point, stop tracing the ray//THIS SHOULD NEVER BE
+            // if (!geometry.valid_point(nxt))
+            // {
+            //     std::cout<<"This should not happen; please contact the developer. "<<std::endl;
+            //     break;
+            // }
+            // //stop the ray if we hit two boundary points in a row
+            // if (!geometry.not_on_boundary(nxt))
+            // {
+            //     Size temp_nxt =
+            //   if (already_on_bdy)
+            //   {
+            //     break;
+            //   }
+            //   already_on_bdy = true;
+            // }
+            // else
+            // {
+            //   already_on_bdy = false;
+            // }
             shift_nxt = geometry.get_shift <frame> (origin, origin_velocity, raydir, nxt, Z, false);
 
             set_data (crt, nxt, shift_crt, shift_nxt, dZ, dshift_max, increment, id1, id2);
@@ -836,6 +890,66 @@ accel inline Size Solver :: trace_ray_imaging (
 
     return id1;
 }
+
+
+// template <Frame frame>
+// accel inline Size Solver :: get_ray_length_new_imager (
+//     const Geometry& geometry,
+//     const Vector3D  origin,
+//     const Size start_bdy,
+//     const Vector3D  raydir) const
+// {
+//     Size    l = 0;     // ray length
+//     double  Z = 0.0;   // distance from origin (o)
+//     double dZ = 0.0;   // last increment in Z
+//
+//     Size nxt = geometry.get_next (origin, raydir, start_bdy, Z, dZ);
+//     //As we might directly encounter a boundary as next point, we instead might want to iterate until a non-boundary point is found as next point; Note: this might incur some error on the boundary, as the step will be rather large
+//     while ((geometry.valid_point(nxt))&&(!geometry.not_on_boundary(nxt)))
+//     {
+//         nxt = geometry.get_next (origin, raydir, nxt, Z, dZ);
+//     }
+//
+//     if (geometry.valid_point(nxt))
+//     {
+//         l+=1;
+//         bool already_on_bdy = false;//by definition (previous while loop exited and this is a valid point), the current 'nxt' is not a boundary point
+//
+//         Size crt = start_bdy;
+//
+//         //Due to boundary points begin slightly annoying to start a ray from, we must make sure the ray only end when we are sure that we stay on the boundary
+//         while (true)
+//         {
+//                   crt =       nxt;
+//             shift_crt = shift_nxt;
+//
+//                   nxt = geometry.get_next (origin, raydir, nxt, Z, dZ);
+//
+//             // //if we encounter an invalid point, stop tracing the ray
+//             if (!geometry.valid_point(nxt))
+//             {
+//                 break;
+//             }
+//             //stop the ray if we hit two boundary points in a row
+//             if (!geometry.not_on_boundary(nxt))
+//             {
+//               if (already_on_bdy)
+//               {
+//                 break;
+//               }
+//               already_on_bdy = true;
+//             }
+//             else
+//             {
+//               already_on_bdy = false;
+//             }
+//
+//             l+=1;
+//         }
+//     }
+//
+//     return l;
+// }
 
 
 //Because of the new method for computing the optical depth, adding extra frequency points for counteracting the large doppler shift is no longer necessary
