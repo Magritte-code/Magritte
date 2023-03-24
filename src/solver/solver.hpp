@@ -11,6 +11,9 @@ enum ApproximationType {None, OneLine, CloseLines};
 
 struct Solver
 {
+
+    const Size MAX_CONSECUTIVE_BDY = 5;//for the new imager, we need some stopping criterion to determine when the ray ends
+
     pc::multi_threading::ThreadPrivate<Vector<double>> dZ_;      ///< distance increments along the ray
     pc::multi_threading::ThreadPrivate<Vector<Size>>   nr_;      ///< corresponding point number on the ray
     pc::multi_threading::ThreadPrivate<Vector<double>> shift_;   ///< Doppler shift along the ray
@@ -69,8 +72,8 @@ struct Solver
     template <Frame frame>
     void setup (Model& model);
 
-    template <Frame frame>
-    void setup_new_imager (Model& model);
+    // template <Frame frame>
+    void setup_new_imager (Model& model, Image& image, const Vector3D& ray_dir);
 
     void setup (const Size l, const Size w, const Size n_o_d);
 
@@ -82,8 +85,14 @@ struct Solver
     template <Frame frame>
     inline Size get_ray_lengths_max (Model& model);
 
-    template <Frame frame>
-    inline Size get_ray_lengths_max_new_imager (Model& model);
+    // template <Frame frame>
+    inline Size get_ray_lengths_max_new_imager (Model& model, Image& image, const Vector3D& ray_dir);
+
+    accel inline Size get_ray_length_new_imager (
+        const Geometry& geometry,
+        const Vector3D  origin,
+        const Size start_bdy,
+        const Vector3D  raydir) const;
 
 
     template <Frame frame>
