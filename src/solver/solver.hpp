@@ -111,6 +111,7 @@ struct Solver
         const Vector3D  raydir,
         const double    dshift_max,
         const int       increment,
+              Real&     Z,
               Size      id1,
               Size      id2 );
 

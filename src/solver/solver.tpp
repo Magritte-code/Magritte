@@ -602,7 +602,7 @@ inline void Solver :: image_feautrier_order_2_new_imager (Model& model, const Ve
 
         nr_   ()[centre] = closest_bdy_point;
         shift_()[centre] = model.geometry.get_shift <Rest> (origin, origin_velocity, ray_dir, closest_bdy_point, 0.0, false);
-        first_() = trace_ray_imaging <Rest> (model.geometry, origin, closest_bdy_point, ray_dir, dshift_max, -1, centre-1, centre-1) + 1;
+        first_() = trace_ray_imaging <Rest> (model.geometry, origin, closest_bdy_point, ray_dir, dshift_max, -1, Z, centre-1, centre-1) + 1;
         last_() = centre;//by definition, only boundary points can lie in the backward direction
 
         // std::cout<<"starting to solve ray"<<std::endl;
@@ -794,11 +794,12 @@ accel inline Size Solver :: trace_ray_imaging (
     const Vector3D  raydir,
     const double    dshift_max,
     const int       increment,
+          Real&     Z,//distance from origin can be non-zero to start, as this measures the distance from the projection plane
           Size      id1,
           Size      id2 )
 {
 
-    double  Z = 0.0;   // distance from origin (o)
+    // double  Z = 0.0;   // distance from origin (o)
     double dZ = 0.0;   // last increment in Z
     const Size MAX_CONSECUTIVE_BDY = 3; //maximal amount of consecutive boundary points before stopping
     const Vector3D origin_velocity = Vector3D (0.0, 0.0, 0.0);
@@ -816,7 +817,7 @@ accel inline Size Solver :: trace_ray_imaging (
     if (geometry.valid_point(nxt))
     {
 
-        bool already_on_bdy = false;//by definition (previous while loop exited and this is a valid point), the current 'nxt' is not a boundary point
+        // bool already_on_bdy = false;//by definition (previous while loop exited and this is a valid point), the current 'nxt' is not a boundary point
         // std::cout<<"nxt: "<<nxt<<std::endl;
         // std::cout<<"position: "<<geometry.points.position[nxt].x()<<" "<<geometry.points.position[nxt].y()<<" "<<geometry.points.position[nxt].z()<<std::endl;
         // std::cout<<"not on boundary: "<<geometry.not_on_boundary(nxt)<<std::endl;
@@ -859,27 +860,6 @@ accel inline Size Solver :: trace_ray_imaging (
             shift_crt = shift_nxt;
 
                   nxt = geometry.get_next (origin, raydir, nxt, Z, dZ);
-
-            // // //if we encounter an invalid point, stop tracing the ray//THIS SHOULD NEVER BE
-            // if (!geometry.valid_point(nxt))
-            // {
-            //     std::cout<<"This should not happen; please contact the developer. "<<std::endl;
-            //     break;
-            // }
-            // //stop the ray if we hit two boundary points in a row
-            // if (!geometry.not_on_boundary(nxt))
-            // {
-            //     Size temp_nxt =
-            //   if (already_on_bdy)
-            //   {
-            //     break;
-            //   }
-            //   already_on_bdy = true;
-            // }
-            // else
-            // {
-            //   already_on_bdy = false;
-            // }
             shift_nxt = geometry.get_shift <frame> (origin, origin_velocity, raydir, nxt, Z, false);
 
             set_data (crt, nxt, shift_crt, shift_nxt, dZ, dshift_max, increment, id1, id2);
