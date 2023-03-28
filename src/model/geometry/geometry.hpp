@@ -14,7 +14,9 @@
 enum Frame {CoMoving, Rest};
 //CoMoving: used for all solvers, does not reverse the shift
 //Rest: used for the old imagers, reverses the shift if necessary
-
+enum Tracer {Defaulttracer, Imagetracer};//for the new imaging ray-tracer, some extra precautions have to be made with respect to the treatment of boundary points
+//Default: used for everything except the new imager
+//Image: used for the new imager
 
 ///  Data structure for geometry
 ////////////////////////////////
@@ -40,6 +42,7 @@ struct Geometry
     void read  (const Io& io);
     void write (const Io& io) const;
 
+    // template <Tracer tracer> (by default, only use the default tracer)
     accel inline void get_next (
         const Size    o,
         const Size    r,
@@ -49,6 +52,7 @@ struct Geometry
               double& dZ,
               double& shift ) const;
 
+    // template <Tracer tracer>
     accel inline Size get_next (
         const Size    o,
         const Size    r,
@@ -56,6 +60,7 @@ struct Geometry
               double& Z,
               double& dZ  ) const;
 
+    template <Tracer tracer>
     accel inline Size get_next (
         const Vector3D origin,
         const Vector3D ray_dir,
@@ -70,6 +75,7 @@ struct Geometry
     //           double&   Z,
     //           double&   dZ    ) const;
 
+    template <Tracer tracer>
     accel inline Size get_next_general_geometry (
         const Vector3D origin,
         const Vector3D ray_dir,
@@ -84,6 +90,7 @@ struct Geometry
     //           double&  Z,
     //           double&  dZ     ) const;
 
+    //TODO? also implement the tracer variations?
     accel inline Size get_next_spherical_symmetry (
         const Vector3D origin,
         const Vector3D ray_dir,

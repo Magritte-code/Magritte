@@ -11,7 +11,8 @@
 ///    @param[out]    dZ : reference to the distance increment to the next ray
 ///    @return number of the next cell on the ray after the current cell
 ///////////////////////////////////////////////////////////////////////////////////
-accel inline Size Geometry :: get_next_general_geometry (
+template<>
+accel inline Size Geometry :: get_next_general_geometry <Defaulttracer> (
     const Vector3D origin,
     const Vector3D raydir,
     const Size     c,
@@ -35,6 +36,7 @@ accel inline Size Geometry :: get_next_general_geometry (
         if (Z_new > Z)
         {
             const double distance_from_ray2 = R.dot(R) - Z_new*Z_new;
+            // std::cout<<"n: "<<n<<" Z_new: "<<Z_new<<" dist2:"<<distance_from_ray2<<std::endl;
 
             if (distance_from_ray2 < dmin)
             {
@@ -43,6 +45,76 @@ accel inline Size Geometry :: get_next_general_geometry (
                 dZ   = Z_new - Z;   // such that dZ > 0.0
             }
         }
+    }
+
+    // Update distance along ray
+    Z += dZ;
+
+    return next;
+}
+
+
+///  Getter for the number of the next cell on ray and its distance along ray in
+///  the general case without any further assumptions
+///    @param[in]      origin : position where the ray originates
+///    @param[in]      raydir : normalized vector of the direction of the ray
+///    @param[in]      c : number of the cell put last on the ray
+///    @param[in/out]  Z : reference to the current distance along the ray
+///    @param[out]    dZ : reference to the distance increment to the next ray
+///    @return number of the next cell on the ray after the current cell
+///////////////////////////////////////////////////////////////////////////////////
+template<>
+accel inline Size Geometry :: get_next_general_geometry <Imagetracer> (
+    const Vector3D origin,
+    const Vector3D raydir,
+    const Size     c,
+          double&  Z,
+          double&  dZ                   ) const
+{
+    const Size     n_nbs = points.    n_neighbors[c];
+    const Size cum_n_nbs = points.cum_n_neighbors[c];
+
+    double dmin = std::numeric_limits<Real>::max();   // Initialize to "infinity"
+    Size   next = parameters->npoints();              // return npoints when there is no next
+    double maxdist_neighbors2 = 0.0;
+
+    for (Size i = 0; i < n_nbs; i++)
+    {
+        const Size     n     = points.neighbors[cum_n_nbs+i];
+        // const Vector3D R     = points.position[n] - points.position[o];
+        const Vector3D R     = points.position[n] - origin;
+        const double   Z_new = R.dot(raydir);
+        // const double   Z_new = R.dot(rays.direction[r]);
+        if (Z_new > Z)
+        {
+            const double distance_from_ray2 = R.dot(R) - Z_new*Z_new;
+            // std::cout<<"n: "<<n<<" Z_new: "<<Z_new<<" dist2:"<<distance_from_ray2<<std::endl;
+
+            if (distance_from_ray2 < dmin)
+            {
+                dmin = distance_from_ray2;
+                next = n;
+                dZ   = Z_new - Z;   // such that dZ > 0.0
+            }
+        }
+        const Vector3D diff_nxt_crt = points.position[n] - points.position[c];
+        const double dist_neighbor2 = diff_nxt_crt.dot(diff_nxt_crt);
+        if (dist_neighbor2 > maxdist_neighbors2)
+        {
+            maxdist_neighbors2 = dist_neighbor2;
+        }
+    }
+
+    //Precaution against tracing stuff along the boundary, stopping when we move farther from the ray than the distance traveled
+    // const Vector3D R_diff = points.position[next] - points.position[c];
+    // const double curr_dist2 = .dot()
+    // // const double Z_diff = dZ;
+    // // const double x_diff2 = R_diff.dot(R_diff) - Z_diff*Z_diff;
+    // const double R_diff2 = R_diff.dot(R_diff);
+    //safety factor of 2
+    if ((!not_on_boundary(c))&&(2.0*maxdist_neighbors2 < dmin))
+    {
+        return parameters->npoints();
     }
 
     // Update distance along ray
@@ -299,6 +371,7 @@ inline bool Geometry :: not_on_boundary (const Size p) const
 ///    @param[out]    dZ : reference to the distance increment to the next ray
 ///    @return number of the next cell on the ray after the current cell
 ///////////////////////////////////////////////////////////////////////////////////
+template<Tracer tracer>
 accel inline Size Geometry :: get_next (
     const Vector3D origin,
     const Vector3D raydir,
@@ -314,7 +387,7 @@ accel inline Size Geometry :: get_next (
     }
     else
     {
-        next = get_next_general_geometry   (origin, raydir, crt, Z, dZ);
+        next = get_next_general_geometry<tracer> (origin, raydir, crt, Z, dZ);
     }
 
     return next;
@@ -341,7 +414,7 @@ accel inline Size Geometry :: get_next (
     const Vector3D origin = points.position[o];
     const Vector3D raydir = rays.direction[r];
 
-    return get_next (origin, raydir, crt, Z, dZ);
+    return get_next <Defaulttracer> (origin, raydir, crt, Z, dZ);
     // Size next;
     //
     // if (parameters->spherical_symmetry())
@@ -375,7 +448,7 @@ accel inline void Geometry :: get_next (
           double& dZ,
           double& shift ) const
 {
-    nxt   = get_next             (o, r, crt, Z, dZ);
+    nxt   = get_next (o, r, crt, Z, dZ);
     shift = get_shift <CoMoving> (o, r, nxt, Z    );
 }
 

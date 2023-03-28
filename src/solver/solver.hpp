@@ -12,7 +12,8 @@ enum ApproximationType {None, OneLine, CloseLines};
 struct Solver
 {
 
-    const Size MAX_CONSECUTIVE_BDY = 5;//for the new imager, we need some stopping criterion to determine when the ray ends
+    const Size MAX_CONSECUTIVE_BDY = 4;//for the new imager, we need some stopping criterion to determine when the ray ends
+    // const Size MAX_CONSECUTIVE_BDY = 5;//for the new imager, we need some stopping criterion to determine when the ray ends
 
     pc::multi_threading::ThreadPrivate<Vector<double>> dZ_;      ///< distance increments along the ray
     pc::multi_threading::ThreadPrivate<Vector<Size>>   nr_;      ///< corresponding point number on the ray

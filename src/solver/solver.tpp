@@ -617,11 +617,13 @@ inline void Solver :: image_feautrier_order_2_new_imager (Model& model, const Ve
         shift_()[centre] = model.geometry.get_shift <Rest> (origin, origin_velocity, ray_dir, closest_bdy_point, Z, false);
         first_() = trace_ray_imaging <Rest> (model.geometry, origin, closest_bdy_point, ray_dir, dshift_max, -1, Z, centre-1, centre-1) + 1;
         last_() = centre;//by definition, only boundary points can lie in the backward direction
+        // std::cout<<"first: "<<first_()<<" last: "<<last_();
 
         // std::cout<<"starting to solve ray"<<std::endl;
         // first_() = trace_ray_imaging <Rest> (model.geometry, o, rr, dshift_max, -1, centre-1, centre-1) + 1;
         // last_ () = trace_ray_imaging <Rest> (model.geometry, o, ar, dshift_max, +1, centre+1, centre  ) - 1;
         n_tot_() = (last_()+1) - first_();
+        // std::cout<<"n_tot_: "<<n_tot_()<<std::endl;
 
         if (n_tot_() > 1)
         {
@@ -817,13 +819,22 @@ accel inline Size Solver :: trace_ray_imaging (
     const Vector3D origin_velocity = Vector3D (0.0, 0.0, 0.0);
     Size crt = start_bdy;
 
+    // std::cout<<"origin: "<<origin.x()<<","<<origin.y()<<","<<origin.z()<<std::endl;
+
+    // std::cout<<"Z: "<<Z<<" crt: "<<crt<<std::endl;
+
     // nxt = geometry.'get_next'(o,r,initial_point, Z, dZ)
-    Size nxt = geometry.get_next (origin, raydir, start_bdy, Z, dZ);
+    Size nxt = geometry.get_next <Imagetracer> (origin, raydir, start_bdy, Z, dZ);
+    // std::cout<<"Z: "<<Z<<" crt: "<<crt<<" nxt: "<<nxt<<std::endl;
     //As we might directly encounter a boundary as next point, we instead might want to iterate until a non-boundary point is found as next point to start our ray
     while ((geometry.valid_point(nxt))&&(!geometry.not_on_boundary(nxt)))
     {
         crt = nxt;
-        nxt = geometry.get_next (origin, raydir, nxt, Z, dZ);
+        nxt = geometry.get_next <Imagetracer> (origin, raydir, nxt, Z, dZ);
+        // std::cout<<"Z: "<<Z<<" crt: "<<crt<<" nxt: "<<nxt<<" nxt on bdy?:"<<!geometry.not_on_boundary(nxt)<<std::endl;
+        Vector3D poscurr = geometry.points.position[crt];
+        Vector3D posnext = geometry.points.position[nxt];
+        // std::cout<<"poscrt: "<<poscurr.x()<<","<<poscurr.y()<<","<<poscurr.z()<<" posnxt: "<<posnext.x()<<","<<posnext.y()<<","<<posnext.z()<<std::endl;
     }
 
     if (geometry.valid_point(nxt))
@@ -844,7 +855,7 @@ accel inline Size Solver :: trace_ray_imaging (
                 double temp_dZ = dZ;
                 while (true)
                 {
-                    temp_nxt = geometry.get_next (origin, raydir, temp_nxt, temp_Z, temp_dZ);
+                    temp_nxt = geometry.get_next <Imagetracer> (origin, raydir, temp_nxt, temp_Z, temp_dZ);
                     if ((!geometry.valid_point(temp_nxt))||(curr_cons_bdy == MAX_CONSECUTIVE_BDY))
                     {
                         return id1;//the ray ends if we cannot find any points anymore, or we have too many boundary points after eachother
@@ -861,7 +872,7 @@ accel inline Size Solver :: trace_ray_imaging (
                   crt =       nxt;
             shift_crt = shift_nxt;
 
-                  nxt = geometry.get_next (origin, raydir, nxt, Z, dZ);
+                  nxt = geometry.get_next <Imagetracer> (origin, raydir, nxt, Z, dZ);
             shift_nxt = geometry.get_shift <frame> (origin, origin_velocity, raydir, nxt, Z, false);
 
             // std::cout<<"id1: "<<id1<<" id2: "<<id2<<" l:"<<l<<std::endl;
@@ -870,6 +881,8 @@ accel inline Size Solver :: trace_ray_imaging (
 
 
     }
+
+    // std::cout<<"a normal boundary point"<<std::endl;
 
     return id1;
 }
@@ -903,12 +916,12 @@ accel inline Size Solver :: get_ray_length_new_imager (
 
     // double  Z = 0.0;   // distance from origin (o)
     Size crt = initial_point;
-    Size nxt = geometry.get_next (origin, raydir, crt, Z, dZ);
+    Size nxt = geometry.get_next <Imagetracer> (origin, raydir, crt, Z, dZ);
     //As we might directly encounter a boundary as next point, we instead might want to iterate until a non-boundary point is found as next point to start our ray
     while ((geometry.valid_point(nxt))&&(!geometry.not_on_boundary(nxt)))
     {
         crt = nxt;
-        nxt = geometry.get_next (origin, raydir, nxt, Z, dZ);
+        nxt = geometry.get_next <Imagetracer> (origin, raydir, nxt, Z, dZ);
     }
 
     if (geometry.valid_point(nxt))
@@ -926,7 +939,7 @@ accel inline Size Solver :: get_ray_length_new_imager (
                 double temp_dZ = dZ;
                 while (true)
                 {
-                    temp_nxt = geometry.get_next (origin, raydir, temp_nxt, temp_Z, temp_dZ);
+                    temp_nxt = geometry.get_next <Imagetracer> (origin, raydir, temp_nxt, temp_Z, temp_dZ);
                     if ((!geometry.valid_point(temp_nxt))||(curr_cons_bdy == MAX_CONSECUTIVE_BDY))
                     {
                         return l;//the ray ends if we cannot find any points anymore, or we have too many boundary points after eachother
@@ -940,7 +953,7 @@ accel inline Size Solver :: get_ray_length_new_imager (
             }
 
           crt = nxt;
-          nxt = geometry.get_next (origin, raydir, nxt, Z, dZ);
+          nxt = geometry.get_next <Imagetracer> (origin, raydir, nxt, Z, dZ);
           l+=1;
       }
 

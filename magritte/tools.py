@@ -6,6 +6,7 @@ from time              import perf_counter
 from astropy.io        import fits
 from astropy           import units, constants
 from scipy.interpolate import griddata, interp1d
+from magritte.core     import ImagePointPosition  # Image point position, for determining whether we need to prune boundary points
 
 
 # Physical constants
