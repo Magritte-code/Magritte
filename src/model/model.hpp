@@ -84,9 +84,11 @@ struct Model
         const long  max_niterations     );
     int compute_image                             (const Size ray_nr);
     int compute_image_optical_depth               (const Size ray_nr);
-    int compute_image_new (const Vector3D raydir, const Size Nxpix, const Size Nypix);
-    int compute_image_new (const Vector3D raydir);
-    int compute_image_new (const Size ray_nr);
+    int compute_image_new (const Vector3D raydir, const Size Nxpix, const Size Nypix);//actual function for the new imager
+    //convenient wrappers for the new imager
+    int compute_image_new (const double rx, const double ry, const double rz, const Size Nxpix, const Size Nypix);
+    int compute_image_new (const Size ray_nr, const Size Nxpix, const Size Nypix);
+    int compute_image_new (const Size ray_nr);//most similar function formulation to old imager
     // int compute_image_new (const Real dirx, const Real diry, const Real dirz, const Size Nxpix, const Size Nypix);
     // int compute_image_new (const Real dirx, const Real diry, const Real dirz);
 

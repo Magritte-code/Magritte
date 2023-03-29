@@ -858,20 +858,37 @@ int Model :: compute_image (const Size ray_nr)
 }
 
 
-///  Wrapper for the new imager
-///////////////////////////////
-int Model :: compute_image_new (const Vector3D raydir)
-{
-    return compute_image_new(raydir, 256, 256);
-}
+// ///  Wrapper for the new imager
+// ///////////////////////////////
+// int Model :: compute_image_new (const Vector3D raydir)
+// {
+//     return compute_image_new(raydir, 256, 256);
+// }
 
 ///  Wrapper for the new imager
 ///////////////////////////////
 int Model :: compute_image_new (const Size ray_nr)
 {
-    return compute_image_new(geometry.rays.direction[ray_nr]);
+    return compute_image_new(geometry.rays.direction[ray_nr], 256, 256);
 }
-//TODO: find better name for new imager
+
+///  Wrapper for the new imager
+///////////////////////////////
+int Model :: compute_image_new (const Size ray_nr, const Size Nxpix, const Size Nypix)
+{
+    return compute_image_new(geometry.rays.direction[ray_nr], Nxpix, Nypix);
+}
+
+
+///  Wrapper for the new imager
+///////////////////////////////
+int Model :: compute_image_new (const double rx, const double ry, const double rz, const Size Nxpix, const Size Nypix)
+{
+    const Vector3D raydir = Vector3D(rx, ry, rz);//will be normed later on (if not yet normed)
+    return compute_image_new(raydir, Nxpix, Nypix);
+}
+
+
 
 ///  Computer for the radiation field, using a new imager TODO: check whether direction is correct (I suspect it is not)
 /////////////////////////////////////
