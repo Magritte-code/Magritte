@@ -845,6 +845,8 @@ accel inline Size Solver :: trace_ray_imaging (
     // nxt = geometry.'get_next'(o,r,initial_point, Z, dZ)
     Size nxt = geometry.get_next <Imagetracer> (origin, raydir, start_bdy, Z, dZ);
     // std::cout<<"Z: "<<Z<<" crt: "<<crt<<" nxt: "<<nxt<<std::endl;
+    if (!geometry.parameters->spherical_symmetry())//in 1D spherical symmetry, this next workaround is not needed.
+    {  
     //As we might directly encounter a boundary as next point, we instead might want to iterate until a non-boundary point is found as next point to start our ray
     while ((geometry.valid_point(nxt))&&(!geometry.not_on_boundary(nxt)))
     {
@@ -854,6 +856,7 @@ accel inline Size Solver :: trace_ray_imaging (
         Vector3D poscurr = geometry.points.position[crt];
         Vector3D posnext = geometry.points.position[nxt];
         // std::cout<<"poscrt: "<<poscurr.x()<<","<<poscurr.y()<<","<<poscurr.z()<<" posnxt: "<<posnext.x()<<","<<posnext.y()<<","<<posnext.z()<<std::endl;
+    }
     }
 
     if (geometry.valid_point(nxt))
