@@ -104,12 +104,21 @@ class TestNewImager:
         def test_velocity_gradient_1D_new_imager_setup(self):
             velocity_gradient_new_imager_setup()
 
-    class TestVelocityGradient1DNewImagerBenchmarks:
-        def test_velocity_gradient_1D_new_imager_run_bench1(self):
-            assert velocity_gradient_new_imager_run(nosave=True, benchindex=1, use_widgets=False)
-        def test_velocity_gradient_1D_new_imager_run_bench2(self):
-            assert velocity_gradient_new_imager_run(nosave=True, benchindex=2, use_widgets=False)
-        def test_velocity_gradient_1D_new_imager_run_bench3(self):
-            assert velocity_gradient_new_imager_run(nosave=True, benchindex=3, use_widgets=False)
+        class TestVelocityGradient1DNewImagerBenchmarks:
+            def test_velocity_gradient_1D_new_imager_run_bench1(self):
+                assert velocity_gradient_new_imager_run(nosave=True, benchindex=1, use_widgets=False)
+            def test_velocity_gradient_1D_new_imager_run_bench2(self):
+                assert velocity_gradient_new_imager_run(nosave=True, benchindex=2, use_widgets=False)
+            def test_velocity_gradient_1D_new_imager_run_bench3(self):
+                assert velocity_gradient_new_imager_run(nosave=True, benchindex=3, use_widgets=False)
+
+    @pytest.mark.incremental
+    class TestVelocityGradient3DNewImager:
+        def test_velocity_gradient_3D_new_imager_setup(self):
+            velocity_gradient_new_imager_setup()
+
+        def test_velocity_gradient_3D_new_imager_run(self):
+            assert velocity_gradient_new_imager_run(nosave=True, use_widgets=False)
+
 
 #TODO ADD ALL ANALYTIC BENCHMARKS, get some manner of performance somewhere else
