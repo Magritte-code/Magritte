@@ -93,7 +93,7 @@ struct Solver
         const Geometry& geometry,
         const Vector3D  origin,
         const Size start_bdy,
-        const Vector3D  raydir) const;
+        const Vector3D  raydir);
 
 
     template <Frame frame>

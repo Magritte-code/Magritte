@@ -173,8 +173,8 @@ accel inline Size Geometry :: get_next_general_geometry <Imagetracer> (
 
 ///  Getter for the number of the next cell on ray and its distance along ray when
 ///  assuming spherical symmetry and such that the positions are in ascending order!
-///    @param[in]      o : number of cell from which the ray originates
-///    @param[in]      r : number of the ray along which we are looking
+///    @param[in]      origin : origin from which the ray originates
+///    @param[in]      raydir : direction of the ray along which we are looking
 ///    @param[in]      c : number of the cell put last on the ray
 ///    @param[in/out]  Z : reference to the current distance along the ray
 ///    @param[out]    dZ : reference to the distance increment to the next ray
@@ -198,6 +198,7 @@ inline Size Geometry :: get_next_spherical_symmetry (
     const double Rsin2 = R2 - Rcos * Rcos;
     // const double Rsin2       = Rsin * Rsin;
     const double Rcos_plus_Z = Rcos + Z;
+    // std::cout<<"origin: "<<origin.x()<<","<<origin.y()<<","<<origin.z()<<" Rcos: "<<Rcos<<" Rsin2: "<<Rsin2<<" Z:"<<Z<<std::endl;
 
     if (Z < -Rcos)
     {
@@ -236,6 +237,34 @@ inline Size Geometry :: get_next_spherical_symmetry (
     return next;
 }
 
+///  Computes the distance of the ray origin to the specified boundary point in any geometry.
+///  Able to both handle 3D general geometry and 1D spherical symmetry.
+///    @param[in]      origin : origin from which the ray originates
+///    @param[in]      raydir : direction of the ray along which we are looking
+///    @param[in]      bdy : point index of boundary point
+inline double Geometry :: get_distance_origin_to_boundary(const Vector3D origin, const Vector3D raydir, const Size bdy) const
+{
+    double Z = raydir.dot(points.position[bdy]-origin);//for a general 3D geometry, computing the distance is simple
+
+    if (parameters->spherical_symmetry())
+    {//in spherical symmetry, the distance needs to be computed differently; TODO? put in geometry instead
+        const double Rcos = origin.dot(raydir);
+        const double R2 = origin.squaredNorm();
+        const double Rsin2 = R2 - Rcos * Rcos;
+        const double horz_dist2 = points.position[bdy].squaredNorm() - Rsin2;
+        // If a ray falls outside of the spherically symmetric model, we just return the distance until the closest point to the model
+        if (horz_dist2 > 0)
+        {
+            Z = -sqrt(horz_dist2) - Rcos;//roughly copied from geometry::get_next_spherical_symmetry
+        }
+        else
+        {
+            //Just put the distance in the middle, as the ray traced is outside of the domain; this corresponds to the large 'else' clause in get_next_spherical_symmetry. Then no next point will be found. We expect this, as we are tracing a ray outside the model.
+            Z = -Rcos;
+        }
+    }
+    return Z;
+}
 
 ///  Getter for the doppler shift along the ray between the current cell and the origin
 ///    @param[in] o   : number of cell from which the ray originates
@@ -511,6 +540,11 @@ accel inline Size Geometry :: get_boundary_point_closer_to_custom_ray (
 accel inline Size Geometry :: get_closest_bdy_point_in_custom_raydir (
     const Vector3D raydir) const
 {
+    //in spherical symmetry, the furthest point is always the last point
+    if (parameters->spherical_symmetry())
+    {
+        return parameters->npoints()-1;
+    }
     //first try out first boundary point
     Size closest_bdy_point = boundary.point2boundary[0];//first best guess is the first boundary point
     double projected_dmin = raydir.dot(points.position[closest_bdy_point]); // and the corresponding projected distance

@@ -98,6 +98,12 @@ struct Geometry
               double&  Z,
               double&  dZ  ) const;
 
+    //Is able to deal with the different symmetries
+    accel inline double get_distance_origin_to_boundary (
+        const Vector3D origin,
+        const Vector3D raydir,
+        const Size bdy) const;
+
     // accel inline Size get_next_spherical_symmetry_custom_origin_raydir (
     //     const Vector3D origin,
     //     const Vector3D raydir,

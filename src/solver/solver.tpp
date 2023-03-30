@@ -791,7 +791,26 @@ accel inline Size Solver :: trace_ray_imaging_get_start (
         initial_point = next_attempt;
     }
 
-    Z = raydir.dot(geometry.points.position[initial_point]-origin);
+    Z = geometry.get_distance_origin_to_boundary(origin, raydir, initial_point);
+
+    // Z = raydir.dot(geometry.points.position[initial_point]-origin);
+    // if (geometry.parameters->spherical_symmetry())
+    // {//in spherical symmetry, the distance needs to be computed differently; TODO? put in geometry instead
+    //     const double Rcos = origin.dot(raydir);
+    //     const double R2 = origin.squaredNorm();
+    //     const double Rsin2 = R2 - Rcos * Rcos;
+    //     const double horz_dist = geometry.points.position[initial_point].squaredNorm() - Rsin2;
+    //     // std::cout<<"origin: "<<origin.x()<<","<<origin.y()<<","<<origin.z()<<" horz_dist: "<<horz_dist<<std::endl;
+    //     if (horz_dist > 0)
+    //     {
+    //         Z = -sqrt(geometry.points.position[initial_point].squaredNorm() - Rsin2) - Rcos;//copied from geometry::get_next_spherical_symmetry
+    //     }
+    //     else
+    //     {
+    //         //Just put the distance in the middle, as the ray traced is outside of the domain
+    //         Z = -Rcos;
+    //     }
+    // }
 
     return initial_point;
 }
@@ -894,25 +913,27 @@ accel inline Size Solver :: get_ray_length_new_imager (
     const Geometry& geometry,
     const Vector3D  origin,
     const Size start_bdy,
-    const Vector3D  raydir) const
+    const Vector3D  raydir)
 {
-    Size l = 0;//ray length
-    Size initial_point=start_bdy;
-    //first figure out which boundary point lies closest to the custom ray
-    //TODO: is slightly inefficient implementation, can be improved
-    //--> assumption: convex outer boundary
-    while (true)
-    {
-        Size next_attempt = geometry.get_boundary_point_closer_to_custom_ray(origin, raydir, initial_point);
-        if (next_attempt==initial_point)
-        {
-            break;
-        }
-        initial_point = next_attempt;
-    }
-
+    double Z=0.0;
     double dZ = 0.0;   // last increment in Z
-    double Z = raydir.dot(geometry.points.position[initial_point]-origin);
+    Size initial_point = trace_ray_imaging_get_start(geometry, origin, start_bdy, raydir, Z);
+    Size l = 0;//ray length
+    // Size initial_point=start_bdy;
+    // //first figure out which boundary point lies closest to the custom ray
+    // //TODO: is slightly inefficient implementation, can be improved
+    // //--> assumption: convex outer boundary
+    // while (true)
+    // {
+    //     Size next_attempt = geometry.get_boundary_point_closer_to_custom_ray(origin, raydir, initial_point);
+    //     if (next_attempt==initial_point)
+    //     {
+    //         break;
+    //     }
+    //     initial_point = next_attempt;
+    // }
+    //
+    // double Z = raydir.dot(geometry.points.position[initial_point]-origin);
 
     // double  Z = 0.0;   // distance from origin (o)
     Size crt = initial_point;

@@ -337,8 +337,13 @@ inline void Image :: set_coordinates_projection_surface (const Geometry& geometr
     //Define pixels spanned by the plane: TODO: figure out why I thought I needed the closest bdy point
     closest_bdy_point = geometry.get_closest_bdy_point_in_custom_raydir(ray_direction);
     const Vector3D closest_bdy_position = geometry.points.position[closest_bdy_point];
-    const double distance_from_origin = closest_bdy_position.dot(ray_direction);//in a specific ray direction
-    //TODO: when implemented scalar multiplication in vector3D, change this.
+    double distance_from_origin = closest_bdy_position.dot(ray_direction);//in a specific ray direction
+    //for 1D spherical symmetry, this is incorrect, as we represent the distance from the middle by the x-coordinate
+    if (geometry.parameters->spherical_symmetry())
+    {
+        distance_from_origin = -closest_bdy_position.x();
+    }
+
     surface_center_point = ray_direction*distance_from_origin;
     const double deltax = (max_x - min_x)/(Nxpix);//putting the points a half ... away from the edge
     const double deltay = (max_y - min_y)/(Nypix);
