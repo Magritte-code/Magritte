@@ -18,7 +18,7 @@ from scipy.interpolate import interp1d
 
 
 dimension = 3
-nshells   = 5
+nshells   = 20
 nrays     = 12*2**2 #reduced number of rays to speed up test
 nspecs    = 5
 nlspecs   = 1
@@ -43,7 +43,7 @@ npoints          = sum(npoints_in_shell)
 xyz = np.array([[0, 0, 0]])
 for (r, n) in zip(r_shell, npoints_in_shell):
     pos = r*np.array(hp.pixelfunc.pix2vec(hp.npix2nside(n), range(n))).T
-    # pos = sp.spatial.transform.Rotation.random().apply(pos)
+    pos = sp.spatial.transform.Rotation.random().apply(pos)
     xyz = np.concatenate((xyz, pos))
 position = xyz[1:]
 
@@ -121,15 +121,6 @@ def run_model (a_or_b, nosave=False):
     model.compute_inverse_line_widths     ()
     model.compute_LTE_level_populations   ()
     timer2.stop()
-
-    magritte.pcmt_set_n_threads_avail(1)
-    fcen = model.lines.lineProducingSpecies[0].linedata.frequency[0]
-    vpix = 1.0e+3   # velocity pixel size [m/s]
-    dd   = vpix * (model.parameters.nfreqs()-1)/2 / magritte.CC
-    fmin = fcen - fcen*dd
-    fmax = fcen + fcen*dd
-    model.compute_spectral_discretisation (fmin, fmax)
-    model.compute_image_new(0)
 
     timer3 = tools.Timer('running model')
     timer3.start()
