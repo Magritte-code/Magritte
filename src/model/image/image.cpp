@@ -9,7 +9,7 @@ const string prefix = "image/";
 
 ///  Constructor for Image; using default rays, default point position
 //////////////////////////
-Image :: Image (const Geometry& geometry, const ImageType it, const Size rr) : imageType(it), imagePointPosition(AllModelPoints), ray_nr(rr), ray_direction(Vector3D(geometry.rays.direction[ray_nr].x(), geometry.rays.direction[ray_nr].y(), geometry.rays.direction[ray_nr].z()))
+Image :: Image (const Geometry& geometry, const Frequencies& frequencies, const ImageType it, const Size rr) : imageType(it), imagePointPosition(AllModelPoints), ray_nr(rr), ray_direction(Vector3D(geometry.rays.direction[ray_nr].x(), geometry.rays.direction[ray_nr].y(), geometry.rays.direction[ray_nr].z()))
 {
     if (geometry.parameters->dimension() == 1)
     {
@@ -26,13 +26,13 @@ Image :: Image (const Geometry& geometry, const ImageType it, const Size rr) : i
     // I.  resize (geometry.parameters->npoints(), geometry.parameters->nfreqs());
     // ray_origin.resize(geometry.parameters->npoints());
     // ray_direction = Vector3D(geometry.rays.direction[ray_nr].x(), geometry.rays.direction[ray_nr].y(), geometry.rays.direction[ray_nr].z());
-
+    set_freqs(frequencies);
     set_coordinates_all_model_points (geometry);
 }
 
 ///  Constructor for Image; using default rays, non-default point position
 //////////////////////////
-Image :: Image (const Geometry& geometry, const ImageType it, const Size rr, const Size Nxpix, const Size Nypix) : imageType(it), imagePointPosition(ProjectionSurface), ray_nr(rr), ray_direction(Vector3D(geometry.rays.direction[ray_nr].x(), geometry.rays.direction[ray_nr].y(), geometry.rays.direction[ray_nr].z()))
+Image :: Image (const Geometry& geometry, const Frequencies& frequencies, const ImageType it, const Size rr, const Size Nxpix, const Size Nypix) : imageType(it), imagePointPosition(ProjectionSurface), ray_nr(rr), ray_direction(Vector3D(geometry.rays.direction[ray_nr].x(), geometry.rays.direction[ray_nr].y(), geometry.rays.direction[ray_nr].z()))
 {
     if (geometry.parameters->dimension() == 1)
     {
@@ -49,21 +49,24 @@ Image :: Image (const Geometry& geometry, const ImageType it, const Size rr, con
     // I.  resize (geometry.parameters->npoints(), geometry.parameters->nfreqs());
     // ray_origin.resize(geometry.parameters->npoints());
     // ray_direction = const Vector3D(geometry.rays.direction[ray_nr].x(), geometry.rays.direction[ray_nr].y(), geometry.rays.direction[ray_nr].z());
-
+    set_freqs(frequencies);
     set_coordinates_projection_surface (geometry, Nxpix, Nypix);
 }
 
 
 ///  Copy constructor for Image
 ///////////////////////////////
-Image :: Image (const Image& image) : imageType(image.imageType), imagePointPosition(image.imagePointPosition), ray_nr (image.ray_nr), ray_direction(image.ray_direction)
+Image :: Image (const Image& image) : imageType(image.imageType), imagePointPosition(image.imagePointPosition), ray_nr (image.ray_nr), ray_direction(image.ray_direction), closest_bdy_point(image.closest_bdy_point), surface_center_point(image.surface_center_point), nfreqs(image.nfreqs)
 {
     ImX = image.ImX;
     ImY = image.ImY;
-    //FIX ME: check whether this copy constructor actually properly copies these values!
-    // ray_origin = image.ray_origin;
-    // ray_direction = image.ray_direction;
 
+    // Deep copy of freqs
+    freqs.resize(nfreqs);
+    for (Size f=0; f<nfreqs; f++)
+    {
+        freqs[f]=image.freqs[f];
+    }
 
     // Deep copy of I
     I.nrows = image.I.nrows;
@@ -77,14 +80,11 @@ Image :: Image (const Image& image) : imageType(image.imageType), imagePointPosi
 
 ///  Constructor for Image; using non-default rays, default point position
 //////////////////////////
-Image :: Image (const Geometry& geometry, const ImageType it, const Vector3D raydir) : imageType(it), imagePointPosition(AllModelPoints), ray_nr(-1), ray_direction(raydir), closest_bdy_point(geometry.parameters->npoints())
+Image :: Image (const Geometry& geometry, const Frequencies& frequencies, const ImageType it, const Vector3D raydir) : imageType(it), imagePointPosition(AllModelPoints), ray_nr(-1), ray_direction(raydir), closest_bdy_point(geometry.parameters->npoints())
 {
     if (geometry.parameters->dimension() == 1)
     {
-        // throw std::runtime_error ("1D is currently not supported, when choosing a custom ray direction.");
-        //TODO: either do a lot of work (do everything correctly in )
-        //OR: set the raydirection just to [0,1,0]
-        //Dev note: in Geometry, I should define how to handle custom ray directions in 1D...
+        //Same error condition as previous imager. In 1D, it does not matter either way from which direction we image.
         if ((raydir.x() != 0.0) ||
             (raydir.y() != 1.0) ||
             (raydir.z() != 0.0)   )
@@ -92,28 +92,18 @@ Image :: Image (const Geometry& geometry, const ImageType it, const Vector3D ray
             throw std::runtime_error ("In 1D, the image ray has to be (0,1,0)");
         }
     }
-
-    // ImX.resize (geometry.parameters->npoints());
-    // ImY.resize (geometry.parameters->npoints());
-    // I.  resize (geometry.parameters->npoints(), geometry.parameters->nfreqs());
-    // ray_origin.resize(geometry.parameters->npoints());
-
-    // ray_direction = raydir;
-
+    set_freqs(frequencies);
     set_coordinates_all_model_points (geometry);
 }
 
 
 ///  Constructor for Image; using non-default rays, non-default point position
 //////////////////////////
-Image :: Image (const Geometry& geometry, const ImageType it, const Vector3D raydir, const Size Nxpix, const Size Nypix) : imageType(it), imagePointPosition(ProjectionSurface), ray_nr(-1), ray_direction(raydir)
+Image :: Image (const Geometry& geometry, const Frequencies& frequencies, const ImageType it, const Vector3D raydir, const Size Nxpix, const Size Nypix) : imageType(it), imagePointPosition(ProjectionSurface), ray_nr(-1), ray_direction(raydir)
 {
     if (geometry.parameters->dimension() == 1)
     {
-        // throw std::runtime_error ("1D is currently not supported, when choosing a custom ray direction.");
-        //TODO: either do a lot of work (do everything correctly in )
-        //OR: set the raydirection just to [0,1,0]
-        //Dev note: in Geometry, I should define how to handle custom ray directions in 1D...
+        //Same error condition as previous imager. In 1D, it does not matter either way from which direction we image.
         if ((raydir.x() != 0.0) ||
             (raydir.y() != 1.0) ||
             (raydir.z() != 0.0)   )
@@ -121,17 +111,24 @@ Image :: Image (const Geometry& geometry, const ImageType it, const Vector3D ray
             throw std::runtime_error ("In 1D, the image ray has to be (0,1,0)");
         }
     }
-
-    // ImX.resize (geometry.parameters->npoints());
-    // ImY.resize (geometry.parameters->npoints());
-    // I.  resize (geometry.parameters->npoints(), geometry.parameters->nfreqs());
-    // ray_origin.resize(geometry.parameters->npoints());
-
-    // ray_direction = raydir;
-
+    set_freqs(frequencies);
     set_coordinates_projection_surface (geometry, Nxpix, Nypix);
 }
 
+
+inline void Image :: set_freqs(const Frequencies& frequencies)
+{
+    // if (model.spectralDiscretisation != SD_Image)
+    // {
+    //     throw std::runtime_error("The model currently does not have a spectral discretization for imaging. Thus the images cannot be initialized.")
+    // }
+    nfreqs = frequencies.N_IMAGE_FREQS;
+    freqs.resize(nfreqs);
+    for (Size f=0; f<nfreqs; f++)
+    {
+        freqs[f]=frequencies.nu(0,f);//assumes an imaging spectral discretization
+    }
+}
 
 ///  print: write out the images
 ///    @param[in] io: io object
@@ -166,12 +163,12 @@ Image :: Image (const Geometry& geometry, const ImageType it, const Vector3D ray
 ///  Setter for the coordinates on the image axes
 ///    @param[in] geometry : geometry object of the model
 /////////////////////////////////////////////////////////
+// Assumes the frequencies have already been set
 inline void Image :: set_coordinates_all_model_points (const Geometry& geometry)
 {
     ImX.resize (geometry.parameters->npoints());
     ImY.resize (geometry.parameters->npoints());
-    I.  resize (geometry.parameters->npoints(), geometry.parameters->nfreqs());
-    // ray_origin.resize(geometry.parameters->npoints());
+    I.  resize (geometry.parameters->npoints(), nfreqs);
     closest_bdy_point = geometry.parameters->npoints();
 
     if (geometry.parameters->dimension() == 1)
@@ -222,6 +219,7 @@ inline void Image :: set_coordinates_all_model_points (const Geometry& geometry)
     }
 }
 
+// assumes the frequencies have already been set
 inline void Image :: set_coordinates_projection_surface (const Geometry& geometry, const Size Nxpix, const Size Nypix)//(const Geometry& geometry)
 {
     //If the raydirection is [0,0,1], then I set hat(x)=[1,0,0], hat(y)=[0,1,0] (lefthand rule: x, n, y)
@@ -248,12 +246,7 @@ inline void Image :: set_coordinates_projection_surface (const Geometry& geometr
     //yy = cos(β) = zn/√(1-xn^2)
     //yz = sin(β) = -yn/√(1-xn^2)
 
-    //OR WE USE THE DIRECTIONS DEFINED ABOVE (only difference is how the axes were defined):
-
-    //TODO copy
-
-
-    //Then figure out (using the boundary points, which points lie farthest in x-y space, then use to define rectangular grid? (at least min/max coords))
+    //Note: we instead use the coordinate system defined in set_coordinates_all_model_points, which is similar, in order to be compatible with the previous imager.
 
     //default initialization for the limits of the projected boundary points
     double max_x = std::numeric_limits<double>::lowest();
@@ -270,11 +263,7 @@ inline void Image :: set_coordinates_projection_surface (const Geometry& geometr
             max_x = std::max(max_x, ImX);
             min_x = std::min(min_x, ImX);
         }
-        // threaded_for (p, geometry.parameters->npoints(),
-        // {
-        //     ImX[p] = geometry.points.position[p].x();
-        //     // ImY[p] = 0.0;
-        // })
+        //In 1D, all model points 'lie' on the x-axis. Thus to get a proper image, we also need to use the same dimensions for the y-axis.
         max_x = std::max(std::abs(min_x), max_x);
         min_x = -max_x;
         min_y = min_x;
@@ -286,7 +275,6 @@ inline void Image :: set_coordinates_projection_surface (const Geometry& geometr
         const double rx = ray_direction.x();
         const double ry = ray_direction.y();
         const double rz = ray_direction.z();
-        std::cout<<"raydir: "<<rx<<" "<<ry<<" "<<rz<<std::endl;
 
         const double         denominator = sqrt (rx*rx + ry*ry);
         const double inverse_denominator = 1.0 / denominator;
@@ -350,7 +338,7 @@ inline void Image :: set_coordinates_projection_surface (const Geometry& geometr
 
     ImX.resize(Nxpix*Nypix);
     ImY.resize(Nxpix*Nypix);
-    I.resize(Nxpix*Nypix, geometry.parameters->nfreqs());
+    I.resize(Nxpix*Nypix, nfreqs);
 
     threaded_for (x_idx, Nxpix,
     {

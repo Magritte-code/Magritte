@@ -64,8 +64,12 @@ struct Model
     int compute_spectral_discretisation           (
         const Real width );
     int compute_spectral_discretisation           (
-        const long double nu_min,
-        const long double nu_max );
+        const Real nu_min,
+        const Real nu_max );
+    int compute_spectral_discretisation           (
+        const Real nu_min,
+        const Real nu_max,
+        const Size N_IMAGE_FREQS );
     int compute_LTE_level_populations             ();
     int compute_radiation_field                   ();
     int compute_radiation_field_feautrier_order_2 ();

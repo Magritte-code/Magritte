@@ -19,12 +19,19 @@ struct Frequencies
     Size1 corresponding_k_for_tran;           ///< number of transition corresponding to frequency
     Size1 corresponding_z_for_line;           ///< number of line number corresponding to frequency
 
+    //For imaging
+    Size N_IMAGE_FREQS;//set when imaging
+    //Everything above will be resized when computing images
+
 
     Frequencies (std::shared_ptr<Parameters> params)
     : parameters (params) {};
 
     void read  (const Io& io);
     void write (const Io& io) const;
+    void resize_data(Size Nfreqs);
+
+
 
 //    Size nbins = 0;    ///< number of extra bins per line
 //    Size ncont = 0;    ///< number of background bins

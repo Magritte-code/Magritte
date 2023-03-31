@@ -16,29 +16,31 @@ void Frequencies :: read (const Io& io)
     // Count line frequencies
     parameters->set_nfreqs (parameters->nlines() * parameters->nquads());
 
-    // Add extra frequency bins around lines to get nicer spectrum
-    //nfreqs += nlines * 2 * nbins;
+    resize_data(parameters->nfreqs());
+}
 
-    // Add ncont bins background
-    //nfreqs += ncont;
+/// Helper function for resize all data associated to
+void Frequencies :: resize_data (const Size Nfreqs)
+{
+    nu.resize (parameters->npoints(), Nfreqs);
 
-    nu.resize (parameters->npoints(), parameters->nfreqs());
+    corresponding_line.resize (Nfreqs);
 
-    corresponding_line.resize (parameters->nfreqs());
-
-    appears_in_line_integral.resize (parameters->nfreqs());
-    corresponding_l_for_spec.resize (parameters->nfreqs());
-    corresponding_k_for_tran.resize (parameters->nfreqs());
-    corresponding_z_for_line.resize (parameters->nfreqs());
+    appears_in_line_integral.resize (Nfreqs);
+    corresponding_l_for_spec.resize (Nfreqs);
+    corresponding_k_for_tran.resize (Nfreqs);
+    corresponding_z_for_line.resize (Nfreqs);
 
     // frequencies.nu has to be initialized (for unused entries)
     threaded_for (p, parameters->npoints(),
     {
-        for (Size f = 0; f < parameters->nfreqs(); f++)
+        for (Size f = 0; f < Nfreqs; f++)
         {
             nu(p,f) = 0.0;
         }
     })
+
+    N_IMAGE_FREQS = Nfreqs;
 }
 
 

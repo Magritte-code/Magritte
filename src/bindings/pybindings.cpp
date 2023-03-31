@@ -134,12 +134,14 @@ PYBIND11_MODULE (core, module)
         // attributes
         .def_readonly  ("imageType", &Image::imageType, "Type of image (intensity of optical depth).")
         .def_readonly  ("imagePointPosition", &Image::imagePointPosition, "Position of image points (model points or projection surface).")
+        .def_readonly  ("nfreqs", &Image::nfreqs,       "Number of frequency bins in the image.")
+        .def_readonly  ("freqs", &Image::freqs,         "Frequency bins of the image.")
         .def_readonly  ("ray_nr",    &Image::ray_nr,    "Number of the ray along which the image is taken.")
         .def_readonly  ("ImX",       &Image::ImX,       "X-coordinates of the points in the image plane.")
         .def_readonly  ("ImY",       &Image::ImY,       "Y-coordinates of the points in the image plane.")
         .def_readonly  ("I",         &Image::I,         "Intensity of the points in the image (for each frequency bin).")
         // constructor
-        .def (py::init<const Geometry&, const ImageType&, const Size&>());
+        .def (py::init<const Geometry&, const Frequencies&, const ImageType&, const Size&>());
 
 
     // Model
@@ -218,8 +220,13 @@ PYBIND11_MODULE (core, module)
         )
         .def (
             "compute_spectral_discretisation",
-            (int (Model::*)(const long double nu_min, const long double nu_max)) &Model::compute_spectral_discretisation,
+            (int (Model::*)(const Real nu_min, const Real nu_max)) &Model::compute_spectral_discretisation,
             "Compute the spectral discretisation for the model tailored for images with the given min and max frequency."
+        )
+        .def (
+            "compute_spectral_discretisation",
+            (int (Model::*)(const Real nu_min, const Real nu_max, const Size N_IMAGE_FREQS)) &Model::compute_spectral_discretisation,
+            "Compute the spectral discretisation for the model tailored for images with the given min and max frequency. Can also specify the amount of frequency bins to use (instead of defaulting to parameters.nfreqs)."
         )
         .def (
             "compute_LTE_level_populations",
