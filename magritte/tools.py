@@ -336,7 +336,7 @@ def save_fits(
         imI = np.delete(imI, bdy_indices, axis=0)
 
     # Extract the number of frequency bins
-    nfreqs = model.parameters.nfreqs()
+    nfreqs = model.images[image_nr].nfreqs
 
     # Set image boundaries
     x_min, x_max = np.min(imx)/zoom, np.max(imx)/zoom
@@ -360,7 +360,7 @@ def save_fits(
     ys = np.linspace(y_min, y_max, npix_y)
 
     # Extract the spectral / velocity data
-    freqs = np.array(model.radiation.frequencies.nu)[0]
+    freqs = np.array(model.images[image_nr].freqs)
     f_cen = np.mean(freqs)
 
     # If no rest frequency is given,
@@ -547,7 +547,7 @@ def save_fits_1D(
         imI = np.delete(imI, bdy_indices, axis=0)
 
     # Extract the number of frequency bins
-    nfreqs = model.parameters.nfreqs()
+    nfreqs = model.images[image_nr].nfreqs
 
     # Extrat the radius of the model
     R = np.max(imx)
@@ -565,7 +565,7 @@ def save_fits_1D(
     Rs     = np.hypot   (Xs, Ys)
 
     # Extract the spectral / velocity data
-    freqs = np.array(model.radiation.frequencies.nu)[0]
+    freqs = np.array(model.images[image_nr].freqs)
     f_cen = np.mean(freqs)
 
     # If no rest frequency is given,

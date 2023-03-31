@@ -108,6 +108,7 @@ def image_mpl(
 
     # Workaround for model images
     if (model.images[image_nr].imagePointPosition == ImagePointPosition.AllModelPoints):
+    # if (False):
         # Filter imaging data originating from boundary points
         bdy_indices = np.array(model.geometry.boundary.boundary2point)
         imx = np.delete(imx, bdy_indices)
@@ -115,7 +116,7 @@ def image_mpl(
         imI = np.delete(imI, bdy_indices, axis=0)
 
     # Extract the number of frequency bins
-    nfreqs = model.parameters.nfreqs()
+    nfreqs = model.images[image_nr].nfreqs
 
     # Set image boundaries
     x_min, x_max = np.min(imx)/zoom, np.max(imx)/zoom
@@ -126,7 +127,7 @@ def image_mpl(
     ys = np.linspace(y_min, y_max, npix_y)
 
     # Extract the spectral / velocity data
-    freqs = np.array(model.radiation.frequencies.nu)[0]
+    freqs = np.array(model.images[image_nr].freqs)
     f_ij  = np.mean(freqs)
     velos = (freqs - f_ij) / f_ij * constants.c.to(v_unit).value
 
@@ -145,8 +146,8 @@ def image_mpl(
         Is[f] = np.sum(zs[f])
     Is = Is / np.max(Is)
 
-    # Put zero values to the smallest non-zero value
-    zs[zs==0.0] = np.min(zs[zs!=0.0])
+    # Put zero/negative values to the smallest positive value
+    zs[zs<=0.0] = np.min(zs[zs>0.0])
 
     # Get the logarithm of the data (matplotlib has a hard time handling logarithmic data.)
     log_zs     = np.log10(zs)
@@ -295,18 +296,20 @@ def image_plotly(
         imI = np.delete(imI, bdy_indices, axis=0)
 
     # Extract the number of frequency bins
-    nfreqs = model.parameters.nfreqs()
+    nfreqs = model.images[image_nr].nfreqs
 
     # Set image boundaries
     x_min, x_max = np.min(imx)/zoom, np.max(imx)/zoom
     y_min, y_max = np.min(imy)/zoom, np.max(imy)/zoom
+
+    print(x_min, x_max, y_min, y_max)
 
     # Create image grid values
     xs = np.linspace(x_min, x_max, npix_x)
     ys = np.linspace(y_min, y_max, npix_y)
 
     # Extract the spectral / velocity data
-    freqs = np.array(model.radiation.frequencies.nu)[0]
+    freqs = np.array(model.images[image_nr].freqs)
     f_ij  = np.mean(freqs)
     velos = (freqs - f_ij) / f_ij * constants.c.to(v_unit).value
 
@@ -370,7 +373,7 @@ def image_plotly(
     x_max = np.max(xs)
     x_min = np.min(xs)
     y_max = np.max(ys)
-    x_min = np.min(xs)
+    y_min = np.min(ys)
 
     # Build up plot
     for f in range(nfreqs):
