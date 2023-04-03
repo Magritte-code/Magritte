@@ -40,7 +40,7 @@ void Frequencies :: resize_data (const Size Nfreqs)
         }
     })
 
-    N_IMAGE_FREQS = Nfreqs;
+    n_image_freqs = Nfreqs;
 }
 
 
