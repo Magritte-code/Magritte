@@ -60,40 +60,40 @@ struct Geometry
 
     template <Tracer tracer>
     accel inline Size get_next (
-        const Vector3D origin,
-        const Vector3D ray_dir,
+        const Vector3D& origin,
+        const Vector3D& ray_dir,
         const Size     crt,
         double&  Z,
         double&  dZ ) const;
 
     template <Tracer tracer>
     accel inline Size get_next_general_geometry (
-        const Vector3D origin,
-        const Vector3D ray_dir,
+        const Vector3D& origin,
+        const Vector3D& ray_dir,
         const Size     crt,
               double&  Z,
               double&  dZ  ) const;
 
     accel inline Size get_next_spherical_symmetry (
-        const Vector3D origin,
-        const Vector3D ray_dir,
+        const Vector3D& origin,
+        const Vector3D& ray_dir,
         const Size     crt,
               double&  Z,
               double&  dZ  ) const;
 
     //Is able to deal with the different symmetries
     accel inline double get_distance_origin_to_boundary (
-        const Vector3D origin,
-        const Vector3D raydir,
+        const Vector3D& origin,
+        const Vector3D& raydir,
         const Size bdy) const;
 
     accel inline Size get_boundary_point_closer_to_custom_ray (
-        const Vector3D origin,
-        const Vector3D raydir,
+        const Vector3D& origin,
+        const Vector3D& raydir,
         const Size     crt    ) const;
 
     accel inline Size get_closest_bdy_point_in_custom_raydir (
-        const Vector3D raydir) const;
+        const Vector3D& raydir) const;
 
     template <Frame frame>
     accel inline double get_shift (
@@ -104,24 +104,24 @@ struct Geometry
 
     template <Frame frame>
     accel inline double get_shift (
-        const Vector3D origin,
-        const Vector3D origin_velocity,
-        const Vector3D raydir,
+        const Vector3D& origin,
+        const Vector3D& origin_velocity,
+        const Vector3D& raydir,
         const Size     crt,
         const double   Z,
         const bool reverse) const;
 
     template <Frame frame>
     accel inline double get_shift_general_geometry (
-        const Vector3D origin_velocity,
-        const Vector3D raydir,
+        const Vector3D& origin_velocity,
+        const Vector3D& raydir,
         const Size     crt ) const;
 
     template <Frame frame>
     accel inline double get_shift_spherical_symmetry (
-        const Vector3D origin,
-        const Vector3D origin_velocity,
-        const Vector3D raydir,
+        const Vector3D& origin,
+        const Vector3D& origin_velocity,
+        const Vector3D& raydir,
         const Size     crt,
         const double   Z   ) const;
 

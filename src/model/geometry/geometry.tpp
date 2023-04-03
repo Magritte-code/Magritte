@@ -13,8 +13,8 @@
 ///////////////////////////////////////////////////////////////////////////////////
 template<>
 accel inline Size Geometry :: get_next_general_geometry <Defaulttracer> (
-    const Vector3D origin,
-    const Vector3D raydir,
+    const Vector3D& origin,
+    const Vector3D& raydir,
     const Size     c,
           double&  Z,
           double&  dZ                   ) const
@@ -63,8 +63,8 @@ accel inline Size Geometry :: get_next_general_geometry <Defaulttracer> (
 ///////////////////////////////////////////////////////////////////////////////////
 template<>
 accel inline Size Geometry :: get_next_general_geometry <Imagetracer> (
-    const Vector3D origin,
-    const Vector3D raydir,
+    const Vector3D& origin,
+    const Vector3D& raydir,
     const Size     c,
           double&  Z,
           double&  dZ                   ) const
@@ -125,8 +125,8 @@ accel inline Size Geometry :: get_next_general_geometry <Imagetracer> (
 ///    @return number of the next cell on the ray after the current cell
 ///////////////////////////////////////////////////////////////////////////////////
 inline Size Geometry :: get_next_spherical_symmetry (
-    const Vector3D origin,
-    const Vector3D raydir,
+    const Vector3D& origin,
+    const Vector3D& raydir,
     const Size     c,
     double         &Z,
     double         &dZ                                  ) const
@@ -182,7 +182,7 @@ inline Size Geometry :: get_next_spherical_symmetry (
 ///    @param[in]      origin : origin from which the ray originates
 ///    @param[in]      raydir : direction of the ray along which we are looking
 ///    @param[in]      bdy : point index of boundary point
-inline double Geometry :: get_distance_origin_to_boundary(const Vector3D origin, const Vector3D raydir, const Size bdy) const
+inline double Geometry :: get_distance_origin_to_boundary(const Vector3D& origin, const Vector3D& raydir, const Size bdy) const
 {
     double Z = raydir.dot(points.position[bdy]-origin);//for a general 3D geometry, computing the distance is simple
 
@@ -214,8 +214,8 @@ inline double Geometry :: get_distance_origin_to_boundary(const Vector3D origin,
 ///////////////////////////////////////////////////////////////////////////////////////
 template <>
 inline double Geometry :: get_shift_general_geometry <CoMoving> (
-    const Vector3D origin_velocity,
-    const Vector3D raydir,
+    const Vector3D& origin_velocity,
+    const Vector3D& raydir,
     const Size     crt ) const
 {
     // return 1.0 - (points.velocity[crt] - points.velocity[o]).dot(rays.direction[r]);
@@ -231,8 +231,8 @@ inline double Geometry :: get_shift_general_geometry <CoMoving> (
 ///////////////////////////////////////////////////////////////////////////////////////
 template <>
 inline double Geometry :: get_shift_general_geometry <Rest> (
-    const Vector3D origin_velocity,
-    const Vector3D raydir,
+    const Vector3D& origin_velocity,
+    const Vector3D& raydir,
     const Size     crt ) const
 {
     return 1.0 - points.velocity[crt].dot(raydir);
@@ -324,8 +324,8 @@ inline bool Geometry :: not_on_boundary (const Size p) const
 ///////////////////////////////////////////////////////////////////////////////////
 template<Tracer tracer>
 accel inline Size Geometry :: get_next (
-    const Vector3D origin,
-    const Vector3D raydir,
+    const Vector3D& origin,
+    const Vector3D& raydir,
     const Size     crt,
           double&  Z,
           double&  dZ                   ) const
@@ -403,8 +403,8 @@ accel inline void Geometry :: get_next (
 ///    @return number of the next closer boundary point on the ray
 //////////////////////////////////////////////////////////////////
 accel inline Size Geometry :: get_boundary_point_closer_to_custom_ray (
-    const Vector3D origin,
-    const Vector3D raydir,
+    const Vector3D& origin,
+    const Vector3D& raydir,
     const Size     crt) const
           // double& Z,
           // double& dZ      ) const
@@ -444,7 +444,7 @@ accel inline Size Geometry :: get_boundary_point_closer_to_custom_ray (
 ///    @param[in] raydir : ray direction vector
 ///////////////////////////////////////////////////////////////////
 accel inline Size Geometry :: get_closest_bdy_point_in_custom_raydir (
-    const Vector3D raydir) const
+    const Vector3D& raydir) const
 {
     //in spherical symmetry, the furthest point is always the last point
     if (parameters->spherical_symmetry())
@@ -479,9 +479,9 @@ accel inline Size Geometry :: get_closest_bdy_point_in_custom_raydir (
 ///////////////////////////////////////////////////////////////////////////////////////
 template<>
 inline double Geometry :: get_shift_spherical_symmetry <CoMoving> (
-    const Vector3D origin,
-    const Vector3D origin_velocity,
-    const Vector3D raydir,
+    const Vector3D& origin,
+    const Vector3D& origin_velocity,
+    const Vector3D& raydir,
     const Size   c,
     const double Z ) const
 {
@@ -512,9 +512,9 @@ inline double Geometry :: get_shift_spherical_symmetry <CoMoving> (
 ///////////////////////////////////////////////////////////////////////////////////////
 template<>
 inline double Geometry :: get_shift_spherical_symmetry <Rest> (
-    const Vector3D origin,
-    const Vector3D origin_velocity,
-    const Vector3D raydir,
+    const Vector3D& origin,
+    const Vector3D& origin_velocity,
+    const Vector3D& raydir,
     const Size     c,
     const double   Z ) const
 {
@@ -564,9 +564,9 @@ inline double Geometry :: get_shift (
 ///////////////////////////////////////////////////////////////////////////////////////
 template<Frame frame>
 inline double Geometry :: get_shift (
-    const Vector3D origin,
-    const Vector3D origin_velocity,
-    const Vector3D raydir,
+    const Vector3D& origin,
+    const Vector3D& origin_velocity,
+    const Vector3D& raydir,
     const Size   c,
     const double Z,
     const bool reverse) const
