@@ -21,11 +21,6 @@ Image :: Image (const Geometry& geometry, const Frequencies& frequencies, const 
         }
     }
 
-    // ImX.resize (geometry.parameters->npoints());
-    // ImY.resize (geometry.parameters->npoints());
-    // I.  resize (geometry.parameters->npoints(), geometry.parameters->nfreqs());
-    // ray_origin.resize(geometry.parameters->npoints());
-    // ray_direction = Vector3D(geometry.rays.direction[ray_nr].x(), geometry.rays.direction[ray_nr].y(), geometry.rays.direction[ray_nr].z());
     set_freqs(frequencies);
     set_coordinates_all_model_points (geometry);
 }
@@ -44,11 +39,7 @@ Image :: Image (const Geometry& geometry, const Frequencies& frequencies, const 
         }
     }
 
-    // ImX.resize (geometry.parameters->npoints());
-    // ImY.resize (geometry.parameters->npoints());
-    // I.  resize (geometry.parameters->npoints(), geometry.parameters->nfreqs());
-    // ray_origin.resize(geometry.parameters->npoints());
-    // ray_direction = const Vector3D(geometry.rays.direction[ray_nr].x(), geometry.rays.direction[ray_nr].y(), geometry.rays.direction[ray_nr].z());
+
     set_freqs(frequencies);
     set_coordinates_projection_surface (geometry, Nxpix, Nypix);
 }
@@ -219,6 +210,11 @@ inline void Image :: set_coordinates_all_model_points (const Geometry& geometry)
     }
 }
 
+///  Setter for the coordinates on the image axes, assuming the image is projected onto a surface outside the model
+///    @param[in] geometry : geometry object of the model
+///    @param[in] Nxpix : number of pixels in x direction
+///    @param[in] Nypix : number of pixels in y direction
+/////////////////////////////////////////////////////////
 // assumes the frequencies have already been set
 inline void Image :: set_coordinates_projection_surface (const Geometry& geometry, const Size Nxpix, const Size Nypix)//(const Geometry& geometry)
 {
@@ -255,7 +251,7 @@ inline void Image :: set_coordinates_projection_surface (const Geometry& geometr
     double min_y = std::numeric_limits<double>::max();
     //Maybe in other function: define the imaging plane (do we still need the perpendicular vectors anywhere? I guess not)
     if (geometry.parameters->dimension() == 1)
-    {//TODO: figure out what we actually want in 1D!
+    {
         for (Size bdy_idx = 0; bdy_idx<geometry.parameters->nboundary(); bdy_idx++)
         {
             const Size bdy_point_index = geometry.boundary.boundary2point[bdy_idx];
@@ -360,12 +356,12 @@ inline void Image :: set_coordinates_projection_surface (const Geometry& geometr
 //Warning: use only if ImagePointPosition==ProjectionSurface
 accel Vector3D Image :: surface_coords_to_3D_coordinates(const double x, const double y) const
 {
-    // std::cout<<"x, y: "<<x<<" "<<y<<std::endl;
     if (imagePointPosition!=ProjectionSurface)
     {
         throw std::runtime_error("Surface coordinates cannot be computed of image which does not define a projection surface.");
     }
-    //TODO: maybe save these conversion things
+
+    //TODO: maybe save these conversion things in a seperate function
     const double rx = ray_direction.x();
     const double ry = ray_direction.y();
     const double rz = ray_direction.z();
@@ -379,11 +375,6 @@ accel Vector3D Image :: surface_coords_to_3D_coordinates(const double x, const d
     const double jx =  rx * rz * inverse_denominator;
     const double jy =  ry * rz * inverse_denominator;
     const double jz = -denominator;
-
-    // std::cout<<"i(x, y): "<<ix<<" "<<iy<<std::endl;
-    // std::cout<<"j(x, y, z)"<<jx<<" "<<jy<<" "<<jz<<std::endl;
-    // std::cout<<"denominator: "<<denominator<<std::endl;
-    // std::cout<<"surface_center_point: "<<surface_center_point.x()<<" "<<surface_center_point.y()<<" "<<surface_center_point.z()<<std::endl;
 
     if (denominator >= 1.0e-9)
     {

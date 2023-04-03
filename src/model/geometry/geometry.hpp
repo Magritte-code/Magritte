@@ -42,7 +42,6 @@ struct Geometry
     void read  (const Io& io);
     void write (const Io& io) const;
 
-    // template <Tracer tracer> (by default, only use the default tracer)
     accel inline void get_next (
         const Size    o,
         const Size    r,
@@ -52,7 +51,6 @@ struct Geometry
               double& dZ,
               double& shift ) const;
 
-    // template <Tracer tracer>
     accel inline Size get_next (
         const Size    o,
         const Size    r,
@@ -68,13 +66,6 @@ struct Geometry
         double&  Z,
         double&  dZ ) const;
 
-    // accel inline Size get_next_custom_origin_raydir (
-    //     const Vector3D origin,
-    //     const Vector3D raydir,
-    //     const Size      crt,
-    //           double&   Z,
-    //           double&   dZ    ) const;
-
     template <Tracer tracer>
     accel inline Size get_next_general_geometry (
         const Vector3D origin,
@@ -83,14 +74,6 @@ struct Geometry
               double&  Z,
               double&  dZ  ) const;
 
-    // accel inline Size get_next_general_geometry_custom_origin_raydir (
-    //     const Vector3D origin,
-    //     const Vector3D raydir,
-    //     const Size     crt,
-    //           double&  Z,
-    //           double&  dZ     ) const;
-
-    //TODO? also implement the tracer variations?
     accel inline Size get_next_spherical_symmetry (
         const Vector3D origin,
         const Vector3D ray_dir,
@@ -103,13 +86,6 @@ struct Geometry
         const Vector3D origin,
         const Vector3D raydir,
         const Size bdy) const;
-
-    // accel inline Size get_next_spherical_symmetry_custom_origin_raydir (
-    //     const Vector3D origin,
-    //     const Vector3D raydir,
-    //     const Size     crt,
-    //           double&  Z,
-    //           double&  dZ     ) const;
 
     accel inline Size get_boundary_point_closer_to_custom_ray (
         const Vector3D origin,
@@ -134,10 +110,6 @@ struct Geometry
         const Size     crt,
         const double   Z,
         const bool reverse) const;
-
-    // accel inline double get_shift_general_geometry_custom_origin_raydir (
-    //     const Vector3D raydir,
-    //     const Size     crt) const;
 
     template <Frame frame>
     accel inline double get_shift_general_geometry (

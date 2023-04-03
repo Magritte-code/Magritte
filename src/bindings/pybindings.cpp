@@ -682,7 +682,7 @@ PYBIND11_MODULE (core, module)
                     sizeof(Real),                                                 // Size of one element
                     py::format_descriptor<Real>::format(),                        // Python struct-style format descriptor
                     2,                                                            // Number of dimensions
-                     py::detail::any_container<ssize_t>({m.nrows,
+                    py::detail::any_container<ssize_t>({m.nrows,
                                                         m.ncols}),                // Buffer dimensions
                     py::detail::any_container<ssize_t>({sizeof(Real)*m.ncols,
                                                         sizeof(Real)         })   // Strides (in bytes) for each index

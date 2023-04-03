@@ -19,7 +19,8 @@ struct Image
     const ImagePointPosition imagePointPosition; ///< From which points the ray starts (model points or surface outside model)
     const Size      ray_nr;      ///< number of the ray to be imaged
     const Vector3D  ray_direction;///< ray direction, if not imaging all model points
-    //Stuff which is practically const, but the compiler complain because they are defined in a subfunction (not the constructor itself).
+    
+    //Stuff which is practically const, but the compiler complains about because they are defined in a subfunction (not the constructor itself).
     Size      nfreqs;      ///< number of frequencies imaged
     Vector<Real> freqs;    ///< frequencies imaged
     Size closest_bdy_point;///< position of closest bdy point to start tracing ray from, if imaging a projection surface
