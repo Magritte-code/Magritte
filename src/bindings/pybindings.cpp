@@ -225,7 +225,7 @@ PYBIND11_MODULE (core, module)
         )
         .def (
             "compute_spectral_discretisation",
-            (int (Model::*)(const Real nu_min, const Real nu_max, const Size N_IMAGE_FREQS)) &Model::compute_spectral_discretisation,
+            (int (Model::*)(const Real nu_min, const Real nu_max, const Size n_image_freqs)) &Model::compute_spectral_discretisation,
             "Compute the spectral discretisation for the model tailored for images with the given min and max frequency. Can also specify the amount of frequency bins to use (instead of defaulting to parameters.nfreqs)."
         )
         .def (

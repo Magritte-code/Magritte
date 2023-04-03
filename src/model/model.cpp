@@ -286,22 +286,22 @@ int Model :: compute_spectral_discretisation (
 ///  Gives same frequency bins to each point
 ///    @param[in] min : minimal frequency
 ///    @param[in] max : maximal frequency
-///    @param[in] N_IMAGE_FREQS : number of frequencies in the discretization
+///    @param[in] n_image_freqs : number of frequencies in the discretization
 ///////////////////////////////////////////////////////
 int Model :: compute_spectral_discretisation (
     const Real nu_min,
     const Real nu_max,
-    const Size N_IMAGE_FREQS)//TODO: or use nquads() instead?
+    const Size n_image_freqs)//TODO: or use nquads() instead?
 {
-    if (N_IMAGE_FREQS<1)
+    if (n_image_freqs<1)
     {
           throw std::runtime_error("At least a single frequency is needed to compute a spectral discretization.");
     }
 
-    radiation.frequencies.resize_data(N_IMAGE_FREQS);
+    radiation.frequencies.resize_data(n_image_freqs);
     cout << "Computing spectral discretisation..." << endl;
 
-    if (N_IMAGE_FREQS ==1)
+    if (n_image_freqs ==1)
     {//avoiding division by 0
         threaded_for (p, parameters->npoints(),
         {
@@ -315,11 +315,11 @@ int Model :: compute_spectral_discretisation (
     }
     else
     {
-        const long double dnu = (nu_max - nu_min) / (N_IMAGE_FREQS - 1);
+        const long double dnu = (nu_max - nu_min) / (n_image_freqs - 1);
 
         threaded_for (p, parameters->npoints(),
         {
-            for (Size f = 0; f < N_IMAGE_FREQS; f++)
+            for (Size f = 0; f < n_image_freqs; f++)
             {
                 radiation.frequencies.nu(p, f) = (Real) (nu_min + f*dnu);
 

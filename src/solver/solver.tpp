@@ -558,7 +558,7 @@ inline void Solver :: image_feautrier_order_2 (Model& model, const Size rr)
 
         if (n_tot_() > 1)
         {
-            for (Size f = 0; f < model.radiation.frequencies.N_IMAGE_FREQS; f++)
+            for (Size f = 0; f < model.radiation.frequencies.n_image_freqs; f++)
             {
                 image_feautrier_order_2<approx> (model, o, f);
 
@@ -567,7 +567,7 @@ inline void Solver :: image_feautrier_order_2 (Model& model, const Size rr)
         }
         else
         {
-            for (Size f = 0; f < model.radiation.frequencies.N_IMAGE_FREQS; f++)
+            for (Size f = 0; f < model.radiation.frequencies.n_image_freqs; f++)
             {
                 image.I(o,f) = boundary_intensity(model, o, model.radiation.frequencies.nu(o, f));
             }
@@ -608,7 +608,7 @@ inline void Solver :: image_feautrier_order_2_new_imager (Model& model, const Ve
 
         if (n_tot_() > 1)
         {
-            for (Size f = 0; f < model.radiation.frequencies.N_IMAGE_FREQS; f++)
+            for (Size f = 0; f < model.radiation.frequencies.n_image_freqs; f++)
             {
                 image_feautrier_order_2<approx> (model, closest_bdy_point, f);
                 image.I(pixidx,f) = two*Su_()[last_()] - boundary_intensity(model, nr_()[last_()], model.radiation.frequencies.nu(closest_bdy_point, f));
@@ -616,7 +616,7 @@ inline void Solver :: image_feautrier_order_2_new_imager (Model& model, const Ve
         }
         else
         {
-            for (Size f = 0; f < model.radiation.frequencies.N_IMAGE_FREQS; f++)
+            for (Size f = 0; f < model.radiation.frequencies.n_image_freqs; f++)
             {
                 image.I(pixidx,f) = boundary_intensity(model, closest_bdy_point, model.radiation.frequencies.nu(closest_bdy_point, f));
             }
@@ -652,7 +652,7 @@ inline void Solver :: image_feautrier_order_2_for_point (Model& model, const Siz
 
     if (n_tot_() > 1)
     {
-        for (Size f = 0; f < model.radiation.frequencies.N_IMAGE_FREQS; f++)
+        for (Size f = 0; f < model.radiation.frequencies.n_image_freqs; f++)
         {
             image_feautrier_order_2_for_point_loc<approx> (model, o, f);
         }
@@ -681,7 +681,7 @@ inline void Solver :: image_optical_depth (Model& model, const Size rr)
 
         if (n_tot_() > 1)
         {
-            for (Size f = 0; f < model.radiation.frequencies.N_IMAGE_FREQS; f++)
+            for (Size f = 0; f < model.radiation.frequencies.n_image_freqs; f++)
             {
                 image_optical_depth<approx> (model, o, f);
 
@@ -690,7 +690,7 @@ inline void Solver :: image_optical_depth (Model& model, const Size rr)
         }
         else
         {
-            for (Size f = 0; f < model.radiation.frequencies.N_IMAGE_FREQS; f++)
+            for (Size f = 0; f < model.radiation.frequencies.n_image_freqs; f++)
             {
                 image.I(o,f) = 0.0;
             }
