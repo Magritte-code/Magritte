@@ -303,9 +303,9 @@ def save_fits(
         print('No images in model.')
         return
 
-    # Check if 3D
-    if (model.parameters.dimension() != 3):
-        raise ValueError('save_fits only works for 3D models. Please use save_fits_1D for 1D models.')
+    # Check if 3D or a projection surface was used
+    if (model.parameters.dimension() != 3 and model.images[image_nr].imagePointPosition == ImagePointPosition.AllModelPoints):
+        raise ValueError('save_fits only works for 3D models or models imaged using the new imager. Please use save_fits_1D for 1D models.')
 
     if not filename:
         # Get path of image directory
@@ -516,9 +516,9 @@ def save_fits_1D(
         print('No images in model.')
         return
 
-    # Check if 1D
-    if (model.parameters.dimension() != 1):
-        raise ValueError('save_fits_1D only works for 1D models. Please use save_fits for 3D models.')
+    # Check if 1D and old imager was used
+    if (model.parameters.dimension() != 1 or model.images[image_nr].imagePointPosition == ImagePointPosition.AllModelPoints):
+        raise ValueError('save_fits_1D only works for 1D models, imaged using the old imager. Please use save_fits for 3D models or any models imaged using the new imager.')
 
     if not filename:
         # Get path of image directory
