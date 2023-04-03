@@ -12,8 +12,9 @@ enum ApproximationType {None, OneLine, CloseLines};
 struct Solver
 {
 
-    const Size MAX_CONSECUTIVE_BDY = 4;//for the new imager, we need some stopping criterion to determine when the ray ends
-    // const Size MAX_CONSECUTIVE_BDY = 5;//for the new imager, we need some stopping criterion to determine when the ray ends
+    // This seems to be the best value for the imager to avoid dead pixels, while somewhat decently handling the inner boundary
+    // TODO: for the imager: let the ray stop at the inner bdy
+    const Size MAX_CONSECUTIVE_BDY = 5;//for the new imager, we need some stopping criterion to determine when the ray ends
 
     pc::multi_threading::ThreadPrivate<Vector<double>> dZ_;      ///< distance increments along the ray
     pc::multi_threading::ThreadPrivate<Vector<Size>>   nr_;      ///< corresponding point number on the ray
