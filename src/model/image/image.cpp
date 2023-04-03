@@ -9,7 +9,7 @@ const string prefix = "image/";
 
 ///  Constructor for Image; using default rays, default point position
 //////////////////////////
-Image :: Image (const Geometry& geometry, const Frequencies& frequencies, const ImageType it, const Size rr) : imageType(it), imagePointPosition(AllModelPoints), ray_nr(rr), ray_direction(Vector3D(geometry.rays.direction[ray_nr].x(), geometry.rays.direction[ray_nr].y(), geometry.rays.direction[ray_nr].z()))
+Image :: Image (const Geometry& geometry, const Frequencies& frequencies, const ImageType it, const Size rr) : imageType(it), imagePointPosition(AllModelPoints), ray_nr(rr), ray_direction(Vector3D(geometry.rays.direction[ray_nr]))
 {
     if (geometry.parameters->dimension() == 1)
     {
@@ -27,7 +27,7 @@ Image :: Image (const Geometry& geometry, const Frequencies& frequencies, const 
 
 ///  Constructor for Image; using default rays, non-default point position
 //////////////////////////
-Image :: Image (const Geometry& geometry, const Frequencies& frequencies, const ImageType it, const Size rr, const Size Nxpix, const Size Nypix) : imageType(it), imagePointPosition(ProjectionSurface), ray_nr(rr), ray_direction(Vector3D(geometry.rays.direction[ray_nr].x(), geometry.rays.direction[ray_nr].y(), geometry.rays.direction[ray_nr].z()))
+Image :: Image (const Geometry& geometry, const Frequencies& frequencies, const ImageType it, const Size rr, const Size Nxpix, const Size Nypix) : imageType(it), imagePointPosition(ProjectionSurface), ray_nr(rr), ray_direction(Vector3D(geometry.rays.direction[ray_nr]))
 {
     if (geometry.parameters->dimension() == 1)
     {
