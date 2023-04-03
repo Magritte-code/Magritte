@@ -145,23 +145,14 @@ inline Size Solver :: get_ray_lengths_max_new_imager (Model& model, Image& image
 
     const Size start_bdy_point = model.geometry.get_closest_bdy_point_in_custom_raydir(ray_dir);
 
-    // accelerated_for (o, model.parameters->npoints(),
-    for (Size pixidx = 0; pixidx<Npixels; pixidx++)
-    // accelerated_for (pixidx, Npixels,
+    accelerated_for (pixidx, Npixels,
     {
-        // const Real dshift_max = get_dshift_max (model, start_bdy_point);
         const Vector3D origin = image.surface_coords_to_3D_coordinates(image.ImX[pixidx], image.ImY[pixidx]);
-
         ray_lengths[pixidx] = get_ray_length_new_imager (model.geometry, origin, start_bdy_point, ray_dir);
-        // std::cout<<"pixidx: "<<pixidx<<" l:"<<ray_lengths[pixidx]<<std::endl;
-    // });
-    }
+    });
 
     const Size max_ray_length = (*std::max_element(ray_lengths.begin(), ray_lengths.end()));
     return max_ray_length;
-    // return max_ray_length + 2*MAX_CONSECUTIVE_BDY + 200;
-    //TODO: properly implement this, as this is just for testing
-    // return 2+2*get_ray_lengths_max<Rest>(model);
 }
 
 
@@ -592,20 +583,15 @@ inline void Solver :: image_feautrier_order_2 (Model& model, const Size rr)
 template<ApproximationType approx>
 inline void Solver :: image_feautrier_order_2_new_imager (Model& model, const Vector3D ray_dir, const Size Nxpix, const Size Nypix)
 {
-    // Image image = Image(model.geometry, Intensity, rr);
     Image image = Image (model.geometry, model.radiation.frequencies, Intensity, ray_dir, Nxpix, Nypix);
     setup_new_imager(model, image, ray_dir);
 
-    // const Size ar = model.geometry.rays.antipod[rr];
-
-    //for all points in the image
-    //Note: const for now, may be adaptive in the future; (but then while loop will be required anyway)
-    const Size Npixels = image.ImX.size();//is ImY.size()
+    //Note: number of pixels is constant for now, but may be adaptive in the future; (but then while loop will be required anyway)
+    const Size Npixels = image.ImX.size();//is ImY.size(), is I.size()
     const Vector3D origin_velocity = Vector3D(0.0);
 
     const Size start_bdy_point = model.geometry.get_closest_bdy_point_in_custom_raydir(ray_dir);
 
-    // accelerated_for (o, model.parameters->npoints(),
     accelerated_for (pixidx, Npixels,
     {
         const Vector3D origin = image.surface_coords_to_3D_coordinates(image.ImX[pixidx], image.ImY[pixidx]);
@@ -617,30 +603,19 @@ inline void Solver :: image_feautrier_order_2_new_imager (Model& model, const Ve
         shift_()[centre] = model.geometry.get_shift <Rest> (origin, origin_velocity, ray_dir, closest_bdy_point, Z, false);
         first_() = trace_ray_imaging <Rest> (model.geometry, origin, closest_bdy_point, ray_dir, dshift_max, -1, Z, centre-1, centre-1) + 1;
         last_() = centre;//by definition, only boundary points can lie in the backward direction
-        // std::cout<<"first: "<<first_()<<" last: "<<last_();
 
-        // std::cout<<"starting to solve ray"<<std::endl;
-        // first_() = trace_ray_imaging <Rest> (model.geometry, o, rr, dshift_max, -1, centre-1, centre-1) + 1;
-        // last_ () = trace_ray_imaging <Rest> (model.geometry, o, ar, dshift_max, +1, centre+1, centre  ) - 1;
         n_tot_() = (last_()+1) - first_();
-        // std::cout<<"n_tot_: "<<n_tot_()<<std::endl;
 
         if (n_tot_() > 1)
         {
-            // for (Size f = 0; f < model.parameters->nfreqs(); f++)
             for (Size f = 0; f < model.radiation.frequencies.N_IMAGE_FREQS; f++)
             {
                 image_feautrier_order_2<approx> (model, closest_bdy_point, f);
-
                 image.I(pixidx,f) = two*Su_()[last_()] - boundary_intensity(model, nr_()[last_()], model.radiation.frequencies.nu(closest_bdy_point, f));
             }
         }
         else
         {
-            // std::cout<<"ntot==1 at pixel: "<<image.ImX[pixidx]<<" "<<image.ImY[pixidx]<<std::endl;
-            // std::cout<<"computed origin: "<<origin.x()<<" "<<origin.y()<<" "<<origin.z()<<std::endl;
-            // std::cout<<"closest bdy position: "<<model.geometry.points.position[closest_bdy_point].x()<<" "<<model.geometry.points.position[closest_bdy_point].y()<<" "<<model.geometry.points.position[closest_bdy_point].z()<<std::endl;
-
             for (Size f = 0; f < model.radiation.frequencies.N_IMAGE_FREQS; f++)
             {
                 image.I(pixidx,f) = boundary_intensity(model, closest_bdy_point, model.radiation.frequencies.nu(closest_bdy_point, f));
@@ -780,8 +755,8 @@ accel inline Size Solver :: trace_ray_imaging_get_start (
 
     Size initial_point=start_bdy;
     //first figure out which boundary point lies closest to the custom ray
-    //TODO: is slightly inefficient implementation, can be improved
-    //--> assumption: convex outer boundary
+    //TODO: is slightly inefficient implementation, can be improved by only checking bdy point neighbors
+    //We use here the assumption that the outer boundary is convex, to obtain the closest point on the boundary
     while (true)
     {
         Size next_attempt = geometry.get_boundary_point_closer_to_custom_ray(origin, raydir, initial_point);
@@ -793,25 +768,6 @@ accel inline Size Solver :: trace_ray_imaging_get_start (
     }
 
     Z = geometry.get_distance_origin_to_boundary(origin, raydir, initial_point);
-
-    // Z = raydir.dot(geometry.points.position[initial_point]-origin);
-    // if (geometry.parameters->spherical_symmetry())
-    // {//in spherical symmetry, the distance needs to be computed differently; TODO? put in geometry instead
-    //     const double Rcos = origin.dot(raydir);
-    //     const double R2 = origin.squaredNorm();
-    //     const double Rsin2 = R2 - Rcos * Rcos;
-    //     const double horz_dist = geometry.points.position[initial_point].squaredNorm() - Rsin2;
-    //     // std::cout<<"origin: "<<origin.x()<<","<<origin.y()<<","<<origin.z()<<" horz_dist: "<<horz_dist<<std::endl;
-    //     if (horz_dist > 0)
-    //     {
-    //         Z = -sqrt(geometry.points.position[initial_point].squaredNorm() - Rsin2) - Rcos;//copied from geometry::get_next_spherical_symmetry
-    //     }
-    //     else
-    //     {
-    //         //Just put the distance in the middle, as the ray traced is outside of the domain
-    //         Z = -Rcos;
-    //     }
-    // }
 
     return initial_point;
 }
@@ -833,35 +789,14 @@ accel inline Size Solver :: trace_ray_imaging (
           Size      id2 )
 {
 
-    // double  Z = 0.0;   // distance from origin (o)
     double dZ = 0.0;   // last increment in Z
-    // const Size MAX_CONSECUTIVE_BDY = 5; //maximal amount of consecutive boundary points before stopping // TODO: define inner boundary to stop on when reached.
     const Vector3D origin_velocity = Vector3D (0.0, 0.0, 0.0);
     Size crt = start_bdy;
 
-    // std::cout<<"origin: "<<origin.x()<<","<<origin.y()<<","<<origin.z()<<std::endl;
-
-    // std::cout<<"Z: "<<Z<<" crt: "<<crt<<std::endl;
-
-    // nxt = geometry.'get_next'(o,r,initial_point, Z, dZ)
     Size nxt = geometry.get_next <Imagetracer> (origin, raydir, start_bdy, Z, dZ);
-    // std::cout<<"Z: "<<Z<<" crt: "<<crt<<" nxt: "<<nxt<<std::endl;
-    // if (!geometry.parameters->spherical_symmetry())//in 1D spherical symmetry, this next workaround is not needed.
-    // {
-    // //As we might directly encounter a boundary as next point, we instead might want to iterate until a non-boundary point is found as next point to start our ray
-    // while ((geometry.valid_point(nxt))&&(!geometry.not_on_boundary(nxt)))
-    // {
-    //     crt = nxt;
-    //     nxt = geometry.get_next <Imagetracer> (origin, raydir, nxt, Z, dZ);
-    //     // std::cout<<"Z: "<<Z<<" crt: "<<crt<<" nxt: "<<nxt<<" nxt on bdy?:"<<!geometry.not_on_boundary(nxt)<<std::endl;
-    //     Vector3D poscurr = geometry.points.position[crt];
-    //     Vector3D posnext = geometry.points.position[nxt];
-    //     // std::cout<<"poscrt: "<<poscurr.x()<<","<<poscurr.y()<<","<<poscurr.z()<<" posnxt: "<<posnext.x()<<","<<posnext.y()<<","<<posnext.z()<<std::endl;
-    // }
-    // }
 
     if (geometry.valid_point(nxt))
-    {//in this case, nxt is not a boundary point (due to while loop above).
+    {
         double shift_crt = geometry.get_shift <frame> (origin, origin_velocity, raydir, crt, Z, false);
         double shift_nxt = geometry.get_shift <frame> (origin, origin_velocity, raydir, nxt, Z, false);
 
@@ -876,6 +811,7 @@ accel inline Size Solver :: trace_ray_imaging (
                 Size temp_nxt = nxt;
                 double temp_Z = Z;
                 double temp_dZ = dZ;
+
                 while (true)
                 {
                     temp_nxt = geometry.get_next <Imagetracer> (origin, raydir, temp_nxt, temp_Z, temp_dZ);
@@ -891,21 +827,15 @@ accel inline Size Solver :: trace_ray_imaging (
                 }
             }
 
-
                   crt =       nxt;
             shift_crt = shift_nxt;
 
                   nxt = geometry.get_next <Imagetracer> (origin, raydir, nxt, Z, dZ);
             shift_nxt = geometry.get_shift <frame> (origin, origin_velocity, raydir, nxt, Z, false);
 
-            // std::cout<<"id1: "<<id1<<" id2: "<<id2<<" l:"<<l<<std::endl;
             set_data (crt, nxt, shift_crt, shift_nxt, dZ, dshift_max, increment, id1, id2);
         }
-
-
     }
-
-    // std::cout<<"a normal boundary point"<<std::endl;
 
     return id1;
 }
@@ -919,35 +849,12 @@ accel inline Size Solver :: get_ray_length_new_imager (
     const Size start_bdy,
     const Vector3D  raydir)
 {
+    Size l = 0;//ray length, which we need to compute
     double Z=0.0;
     double dZ = 0.0;   // last increment in Z
     Size initial_point = trace_ray_imaging_get_start(geometry, origin, start_bdy, raydir, Z);
-    Size l = 0;//ray length
-    // Size initial_point=start_bdy;
-    // //first figure out which boundary point lies closest to the custom ray
-    // //TODO: is slightly inefficient implementation, can be improved
-    // //--> assumption: convex outer boundary
-    // while (true)
-    // {
-    //     Size next_attempt = geometry.get_boundary_point_closer_to_custom_ray(origin, raydir, initial_point);
-    //     if (next_attempt==initial_point)
-    //     {
-    //         break;
-    //     }
-    //     initial_point = next_attempt;
-    // }
-    //
-    // double Z = raydir.dot(geometry.points.position[initial_point]-origin);
-
-    // double  Z = 0.0;   // distance from origin (o)
     Size crt = initial_point;
     Size nxt = geometry.get_next <Imagetracer> (origin, raydir, crt, Z, dZ);
-    //As we might directly encounter a boundary as next point, we instead might want to iterate until a non-boundary point is found as next point to start our ray
-    // while ((geometry.valid_point(nxt))&&(!geometry.not_on_boundary(nxt)))
-    // {
-    //     crt = nxt;
-    //     nxt = geometry.get_next <Imagetracer> (origin, raydir, nxt, Z, dZ);
-    // }
 
     if (geometry.valid_point(nxt))
     {
@@ -977,11 +884,10 @@ accel inline Size Solver :: get_ray_length_new_imager (
                 }
             }
 
-          crt = nxt;
-          nxt = geometry.get_next <Imagetracer> (origin, raydir, nxt, Z, dZ);
-          l+=1;
-      }
-
+            crt = nxt;
+            nxt = geometry.get_next <Imagetracer> (origin, raydir, nxt, Z, dZ);
+            l+=1;
+        }
     }
     return l;
 }

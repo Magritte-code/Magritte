@@ -21,7 +21,7 @@ struct Frequencies
 
     //For imaging
     Size N_IMAGE_FREQS;//set when imaging
-    //Everything above will be resized when computing images
+    //Everything above will be resized when computing images (using Frequencies::resize_data)
 
 
     Frequencies (std::shared_ptr<Parameters> params)
