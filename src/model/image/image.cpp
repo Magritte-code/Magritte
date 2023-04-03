@@ -314,10 +314,10 @@ inline void Image :: set_coordinates_projection_surface (const Geometry& geometr
                 const double ImX = geometry.points.position[bdy_point_index].x();
                 const double ImY = geometry.points.position[bdy_point_index].y();
 
-                max_x = std::max(max_x, ImX);
-                max_y = std::max(max_y, ImY);
                 min_x = std::min(min_x, ImX);
-                min_y = std::max(min_y, ImY);
+                max_x = std::max(max_x, ImX);
+                min_y = std::min(min_y, ImY);
+                max_y = std::max(max_y, ImY);
             }
         }
     }
