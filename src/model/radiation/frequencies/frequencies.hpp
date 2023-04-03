@@ -20,7 +20,7 @@ struct Frequencies
     Size1 corresponding_z_for_line;           ///< number of line number corresponding to frequency
 
     //For imaging
-    Size N_IMAGE_FREQS;//set when imaging
+    Size n_image_freqs;//set when imaging
     //Everything above will be resized when computing images (using Frequencies::resize_data)
 
 
