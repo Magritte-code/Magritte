@@ -199,9 +199,11 @@ struct Solver
     template<ApproximationType approx>
     accel inline void image_feautrier_order_2_for_point_loc (Model& model, const Size o,  const Size f);
 
-    //TODO: switch these to compute_S_dtau internally; currently just uses trapezoidal rule
     template<ApproximationType approx>
     accel inline void image_optical_depth (Model& model, const Size rr);
+    template<ApproximationType approx>
+    inline void image_optical_depth_new_imager (Model& model, const Vector3D ray_dir, const Size Nxpix, const Size Nypix);
+    //actual solver
     template<ApproximationType approx>
     accel inline void image_optical_depth (Model& model, const Size o, const Size f);
 

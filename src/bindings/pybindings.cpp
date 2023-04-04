@@ -310,6 +310,21 @@ PYBIND11_MODULE (core, module)
             "Compute an image of the optical depth for the model along the given ray."
         )
         .def (
+            "compute_image_optical_depth_new",
+            (int (Model::*)(const Size ray_nr)) &Model::compute_image_optical_depth_new,
+            "Compute an image of the optical depth for the model along the given ray direction, using the new imager."
+        )
+        .def (
+            "compute_image_optical_depth_new",
+            (int (Model::*)(const Size ray_nr, const Size Nxpix, const Size Nypix)) &Model::compute_image_optical_depth_new,
+            "Compute an image of the optical depth for the model along the given ray direction, using the new imager, specifying the image resolution."
+        )
+        .def (
+            "compute_image_optical_depth_new",
+            (int (Model::*)(const double rx, const double ry, const double rz, const Size Nxpix, const Size Nypix)) &Model::compute_image_optical_depth_new,
+            "Compute an image of the optical depth for the model along the given ray direction, using the new imager, specifying the ray direction and image resolution."
+        )
+        .def (
             "set_eta_and_chi",
             &Model::set_eta_and_chi,
             "Set latest emissivity and opacity for the model in the eta and chi variables respectively."

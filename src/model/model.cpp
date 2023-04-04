@@ -984,7 +984,7 @@ int Model :: compute_image_for_point (const Size ray_nr, const Size p)
 }
 
 
-///  Computer for optical depth iimage
+///  Computer for optical depth image
 //////////////////////////////////////
 int Model :: compute_image_optical_depth (const Size ray_nr)
 {
@@ -1004,6 +1004,61 @@ int Model :: compute_image_optical_depth (const Size ray_nr)
     }
 
     solver.image_optical_depth <CloseLines> (*this, ray_nr);
+    return (0);
+}
+
+
+///  Wrapper for the new imager
+///////////////////////////////
+int Model :: compute_image_optical_depth_new (const Size ray_nr)
+{
+    return compute_image_optical_depth_new(geometry.rays.direction[ray_nr], 256, 256);
+}
+
+///  Wrapper for the new imager
+///////////////////////////////
+int Model :: compute_image_optical_depth_new (const Size ray_nr, const Size Nxpix, const Size Nypix)
+{
+    return compute_image_optical_depth_new(geometry.rays.direction[ray_nr], Nxpix, Nypix);
+}
+
+
+///  Wrapper for the new imager
+///////////////////////////////
+int Model :: compute_image_optical_depth_new (const double rx, const double ry, const double rz, const Size Nxpix, const Size Nypix)
+{
+    const Vector3D raydir = Vector3D(rx, ry, rz);//will be normed later on (if not yet normed)
+    return compute_image_optical_depth_new(raydir, Nxpix, Nypix);
+}
+
+
+///  Computer for new optical depth image
+//////////////////////////////////////
+int Model :: compute_image_optical_depth_new (const Vector3D raydir, const Size Nxpix, const Size Nypix)
+{
+    if (raydir.squaredNorm()==0.0)
+    {
+        throw std::runtime_error("The given ray direction vector does not point in a direction. Please use a non-zero (normed) direction vector to generate an image.");
+    }
+    const Vector3D normed_raydir = raydir * (1 / std::sqrt(raydir.squaredNorm()));
+    cout << "Computing image optical depth new..." << endl;
+
+    Solver solver;
+
+    if (parameters->one_line_approximation)
+    {
+        throw std::runtime_error ("One line approximation is currently not supported for imaging.");
+        solver.image_optical_depth_new_imager <OneLine> (*this, normed_raydir, Nxpix, Nypix);
+        return (0);
+    }
+
+    if (parameters->sum_opacity_emissivity_over_all_lines)
+    {
+        solver.image_optical_depth_new_imager <None> (*this, normed_raydir, Nxpix, Nypix);
+        return (0);
+    }
+
+    solver.image_optical_depth_new_imager <CloseLines> (*this, normed_raydir, Nxpix, Nypix);
     return (0);
 }
 
