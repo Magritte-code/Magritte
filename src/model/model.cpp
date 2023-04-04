@@ -78,7 +78,7 @@ int Model :: compute_inverse_line_widths ()
 int Model :: compute_spectral_discretisation ()
 {
     cout << "Computing spectral discretisation..." << endl;
-    radiation.frequencies.resize_data(parameters->nfreqs());
+    radiation.frequencies.resize_data(parameters->nlines()*parameters->nquads());
 
     threaded_for (p, parameters->npoints(),
     {
