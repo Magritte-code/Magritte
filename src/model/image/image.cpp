@@ -113,7 +113,7 @@ inline void Image :: set_freqs(const Frequencies& frequencies)
     // {
     //     throw std::runtime_error("The model currently does not have a spectral discretization for imaging. Thus the images cannot be initialized.")
     // }
-    nfreqs = frequencies.n_image_freqs;
+    nfreqs = frequencies.parameters->nfreqs();
     freqs.resize(nfreqs);
     for (Size f=0; f<nfreqs; f++)
     {

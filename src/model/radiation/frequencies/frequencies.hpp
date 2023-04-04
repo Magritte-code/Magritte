@@ -19,10 +19,6 @@ struct Frequencies
     Size1 corresponding_k_for_tran;           ///< number of transition corresponding to frequency
     Size1 corresponding_z_for_line;           ///< number of line number corresponding to frequency
 
-    //For imaging
-    Size n_image_freqs;//set when imaging
-    //Everything above will be resized when computing images (using Frequencies::resize_data)
-
 
     Frequencies (std::shared_ptr<Parameters> params)
     : parameters (params) {};

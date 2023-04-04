@@ -15,6 +15,21 @@
         inline void set_##x (const type value)       {x##__.set(value);};\
         inline type       x (                ) const {return x##__.get(     );};
 
+//Global variables may change their value at fixed times, explained in the comments, in constrast to static parameters
+#define CREATE_GLOBAL_VARIABLE(type, x)\
+    private:\
+        type x##__;\
+    public:\
+        inline void set_##x (const type value)       {x##__ = value;};\
+        inline type       x (                ) const {return x##__;};
+
+// template<typename T>
+// CREATE_GLOBAL_VARIABLE(string name)
+// {
+//     private:
+//     T x
+// }
+
 
 ///  Parameters: secure structure for the model parameters
 //////////////////////////////////////////////////////////
@@ -36,8 +51,10 @@ struct Parameters
 
     //nonessential parameters which are automatically inferred by magritte
     CREATE_PARAMETER (Size, hnrays, false);
-    CREATE_PARAMETER (Size, nfreqs, false);
     CREATE_PARAMETER (Size, nlines, false);
+
+    //global variables
+    CREATE_GLOBAL_VARIABLE (Size, nfreqs);//due to the fact that line radiative transfer and the imager require different amounts of
 
     //Old things that are no more connected to anything...
     CREATE_PARAMETER (bool, use_scattering, false);

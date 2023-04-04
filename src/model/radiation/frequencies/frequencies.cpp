@@ -40,7 +40,7 @@ void Frequencies :: resize_data (const Size Nfreqs)
         }
     })
 
-    n_image_freqs = Nfreqs;
+    parameters->set_nfreqs(Nfreqs);//is global variable, so may be reset to another value
 }
 
 

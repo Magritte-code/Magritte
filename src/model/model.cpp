@@ -186,7 +186,7 @@ int Model :: compute_spectral_discretisation ()
 int Model :: compute_spectral_discretisation (const Real width)
 {
     cout << "Computing spectral discretisation..." << endl;
-    radiation.frequencies.resize_data(parameters->nfreqs());
+    radiation.frequencies.resize_data(parameters->nlines()*parameters->nquads());
 
     threaded_for (p, parameters->npoints(),
     {
@@ -273,12 +273,12 @@ int Model :: compute_spectral_discretisation (const Real width)
 }
 
 
-///  Wrapper for compute_spectral_discretisation, filling in parameters.nfreqs() as number of frequencies
+///  Wrapper for compute_spectral_discretisation, filling in parameters.nlines()*parameters.nquads() as number of frequencies, similar to old behavior
 int Model :: compute_spectral_discretisation (
     const Real nu_min,
     const Real nu_max)
 {
-    return compute_spectral_discretisation(nu_min, nu_max, parameters->nfreqs());
+    return compute_spectral_discretisation(nu_min, nu_max, parameters->nlines()*parameters->nquads());
 }
 
 
