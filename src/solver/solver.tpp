@@ -138,14 +138,14 @@ inline Size Solver :: get_ray_lengths_max (Model& model)
 // template <Frame frame>
 inline Size Solver :: get_ray_lengths_max_new_imager (Model& model, Image& image, const Vector3D& ray_dir)
 {
-    const Size Npixels = image.ImX.size();//is ImY.size() (number of pixels in image)
+    const Size npixels = image.ImX.size();//is ImY.size() (number of pixels in image)
 
     std::vector<Size> ray_lengths;
-    ray_lengths.resize(Npixels);//TODO: later on, define which pixels need to be used for raytracing (adaptive imager)/or define new partial images (might be more elegant)
+    ray_lengths.resize(npixels);//TODO: later on, define which pixels need to be used for raytracing (adaptive imager)/or define new partial images (might be more elegant)
 
     const Size start_bdy_point = model.geometry.get_closest_bdy_point_in_custom_raydir(ray_dir);
 
-    accelerated_for (pixidx, Npixels,
+    accelerated_for (pixidx, npixels,
     {
         const Vector3D origin = image.surface_coords_to_3D_coordinates(image.ImX[pixidx], image.ImY[pixidx]);
         ray_lengths[pixidx] = get_ray_length_new_imager (model.geometry, origin, start_bdy_point, ray_dir);
@@ -581,18 +581,18 @@ inline void Solver :: image_feautrier_order_2 (Model& model, const Size rr)
 
 
 template<ApproximationType approx>
-inline void Solver :: image_feautrier_order_2_new_imager (Model& model, const Vector3D ray_dir, const Size Nxpix, const Size Nypix)
+inline void Solver :: image_feautrier_order_2_new_imager (Model& model, const Vector3D& ray_dir, const Size nxpix, const Size nypix)
 {
-    Image image = Image (model.geometry, model.radiation.frequencies, Intensity, ray_dir, Nxpix, Nypix);
+    Image image = Image (model.geometry, model.radiation.frequencies, Intensity, ray_dir, nxpix, nypix);
     setup_new_imager(model, image, ray_dir);
 
     //Note: number of pixels is constant for now, but may be adaptive in the future; (but then while loop will be required anyway)
-    const Size Npixels = image.ImX.size();//is ImY.size(), is I.size()
+    const Size npixels = image.ImX.size();//is ImY.size(), is I.size()
     const Vector3D origin_velocity = Vector3D(0.0);
 
     const Size start_bdy_point = model.geometry.get_closest_bdy_point_in_custom_raydir(ray_dir);
 
-    accelerated_for (pixidx, Npixels,
+    accelerated_for (pixidx, npixels,
     {
         const Vector3D origin = image.surface_coords_to_3D_coordinates(image.ImX[pixidx], image.ImY[pixidx]);
         Real Z=0.0;
@@ -704,18 +704,18 @@ inline void Solver :: image_optical_depth (Model& model, const Size rr)
 
 
 template<ApproximationType approx>
-inline void Solver :: image_optical_depth_new_imager (Model& model, const Vector3D ray_dir, const Size Nxpix, const Size Nypix)
+inline void Solver :: image_optical_depth_new_imager (Model& model, const Vector3D& ray_dir, const Size nxpix, const Size nypix)
 {
-    Image image = Image (model.geometry, model.radiation.frequencies, OpticalDepth, ray_dir, Nxpix, Nypix);
+    Image image = Image (model.geometry, model.radiation.frequencies, OpticalDepth, ray_dir, nxpix, nypix);
     setup_new_imager(model, image, ray_dir);
 
     //Note: number of pixels is constant for now, but may be adaptive in the future; (but then while loop will be required anyway)
-    const Size Npixels = image.ImX.size();//is ImY.size(), is I.size()
+    const Size npixels = image.ImX.size();//is ImY.size(), is I.size()
     const Vector3D origin_velocity = Vector3D(0.0);
 
     const Size start_bdy_point = model.geometry.get_closest_bdy_point_in_custom_raydir(ray_dir);
 
-    accelerated_for (pixidx, Npixels,
+    accelerated_for (pixidx, npixels,
     {
         const Vector3D origin = image.surface_coords_to_3D_coordinates(image.ImX[pixidx], image.ImY[pixidx]);
         Real Z=0.0;
@@ -797,9 +797,9 @@ accel inline Size Solver :: trace_ray (
 //Note: assumes the outer boundary to be convex in order to correctly start tracing the ray
 accel inline Size Solver :: trace_ray_imaging_get_start (
     const Geometry& geometry,
-    const Vector3D  origin,
+    const Vector3D& origin,
     const Size      start_bdy,
-    const Vector3D  raydir,
+    const Vector3D& raydir,
     Real& Z)
 {
 
@@ -829,9 +829,9 @@ accel inline Size Solver :: trace_ray_imaging_get_start (
 template <Frame frame>
 accel inline Size Solver :: trace_ray_imaging (
     const Geometry& geometry,
-    const Vector3D  origin,
+    const Vector3D& origin,
     const Size start_bdy,
-    const Vector3D  raydir,
+    const Vector3D& raydir,
     const double    dshift_max,
     const int       increment,
           Real&     Z,//distance from origin can be non-zero to start, as this measures the distance from the projection plane
@@ -895,12 +895,12 @@ accel inline Size Solver :: trace_ray_imaging (
 // template <Frame frame>
 accel inline Size Solver :: get_ray_length_new_imager (
     const Geometry& geometry,
-    const Vector3D  origin,
+    const Vector3D& origin,
     const Size start_bdy,
-    const Vector3D  raydir)
+    const Vector3D& raydir)
 {
     Size l = 0;//ray length, which we need to compute
-    double Z=0.0;
+    double Z = 0.0;
     double dZ = 0.0;   // last increment in Z
     Size initial_point = trace_ray_imaging_get_start(geometry, origin, start_bdy, raydir, Z);
     Size crt = initial_point;

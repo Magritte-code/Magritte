@@ -92,9 +92,9 @@ struct Solver
 
     accel inline Size get_ray_length_new_imager (
         const Geometry& geometry,
-        const Vector3D  origin,
+        const Vector3D&  origin,
         const Size start_bdy,
-        const Vector3D  raydir);
+        const Vector3D&  raydir);
 
 
     template <Frame frame>
@@ -109,28 +109,23 @@ struct Solver
 
     accel inline Size trace_ray_imaging_get_start (
           const Geometry& geometry,
-          const Vector3D  origin,
+          const Vector3D&  origin,
           const Size      start_bdy,
-          const Vector3D  raydir,
+          const Vector3D&  raydir,
           Real& Z);
 
     template <Frame frame>
     accel inline Size trace_ray_imaging (
         const Geometry& geometry,
-        const Vector3D  origin,
+        const Vector3D&  origin,
         const Size start_bdy,
-        const Vector3D  raydir,
+        const Vector3D&  raydir,
         const double    dshift_max,
         const int       increment,
               Real&     Z,
               Size      id1,
               Size      id2 );
 
-    accel inline Size trace_ray_imaging_get_start (
-        const Geometry& geometry,
-        const Vector3D  origin,
-        const Size      start_bdy,
-        const Vector3D  raydir);
 
     accel inline void set_data (
         const Size   crt,
@@ -188,7 +183,7 @@ struct Solver
     template<ApproximationType approx>
     accel inline void image_feautrier_order_2 (Model& model, const Size rr);
     template<ApproximationType approx>
-    inline void image_feautrier_order_2_new_imager (Model& model, const Vector3D ray_dir, const Size Nxpix, const Size Nypix);
+    inline void image_feautrier_order_2_new_imager (Model& model, const Vector3D& ray_dir, const Size nxpix, const Size nypix);
     //actual solver
     template<ApproximationType approx>
     accel inline void image_feautrier_order_2 (Model& model, const Size o, const Size f);
@@ -202,7 +197,7 @@ struct Solver
     template<ApproximationType approx>
     accel inline void image_optical_depth (Model& model, const Size rr);
     template<ApproximationType approx>
-    inline void image_optical_depth_new_imager (Model& model, const Vector3D ray_dir, const Size Nxpix, const Size Nypix);
+    inline void image_optical_depth_new_imager (Model& model, const Vector3D& ray_dir, const Size nxpix, const Size nypix);
     //actual solver
     template<ApproximationType approx>
     accel inline void image_optical_depth (Model& model, const Size o, const Size f);
