@@ -98,8 +98,6 @@ struct Model
     int compute_image_optical_depth_new (const double rx, const double ry, const double rz, const Size Nxpix, const Size Nypix);
     int compute_image_optical_depth_new (const Size ray_nr, const Size Nxpix, const Size Nypix);
     int compute_image_optical_depth_new (const Size ray_nr);//most similar function formulation to old imager
-    // int compute_image_new (const Real dirx, const Real diry, const Real dirz, const Size Nxpix, const Size Nypix);
-    // int compute_image_new (const Real dirx, const Real diry, const Real dirz);
 
     Double1 error_max;
     Double1 error_mean;
