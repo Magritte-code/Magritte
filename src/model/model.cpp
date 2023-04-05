@@ -78,6 +78,7 @@ int Model :: compute_inverse_line_widths ()
 int Model :: compute_spectral_discretisation ()
 {
     cout << "Computing spectral discretisation..." << endl;
+    radiation.frequencies.resize_data(parameters->nlines()*parameters->nquads());
 
     threaded_for (p, parameters->npoints(),
     {
@@ -185,6 +186,7 @@ int Model :: compute_spectral_discretisation ()
 int Model :: compute_spectral_discretisation (const Real width)
 {
     cout << "Computing spectral discretisation..." << endl;
+    radiation.frequencies.resize_data(parameters->nlines()*parameters->nquads());
 
     threaded_for (p, parameters->npoints(),
     {
@@ -271,34 +273,67 @@ int Model :: compute_spectral_discretisation (const Real width)
 }
 
 
+///  Wrapper for compute_spectral_discretisation, filling in parameters.nlines()*parameters.nquads() as number of frequencies, similar to old behavior
+int Model :: compute_spectral_discretisation (
+    const Real nu_min,
+    const Real nu_max)
+{
+    return compute_spectral_discretisation(nu_min, nu_max, parameters->nlines()*parameters->nquads());
+}
+
+
 ///  Computer for spectral (=frequency) discretisation
 ///  Gives same frequency bins to each point
 ///    @param[in] min : minimal frequency
 ///    @param[in] max : maximal frequency
+///    @param[in] n_image_freqs : number of frequencies in the discretization
 ///////////////////////////////////////////////////////
 int Model :: compute_spectral_discretisation (
-    const long double nu_min,
-    const long double nu_max )
+    const Real nu_min,
+    const Real nu_max,
+    const Size n_image_freqs)//TODO: or use nquads() instead?
 {
+    if (n_image_freqs<1)
+    {
+          throw std::runtime_error("At least a single frequency is needed to compute a spectral discretization.");
+    }
+
+    radiation.frequencies.resize_data(n_image_freqs);
     cout << "Computing spectral discretisation..." << endl;
 
-    const long double dnu = (nu_max - nu_min) / (parameters->nfreqs() - 1);
-
-    threaded_for (p, parameters->npoints(),
-    {
-        for (Size f = 0; f < parameters->nfreqs(); f++)
+    if (n_image_freqs ==1)
+    {//avoiding division by 0
+        threaded_for (p, parameters->npoints(),
         {
-            radiation.frequencies.nu(p, f) = (Real) (nu_min + f*dnu);
+            radiation.frequencies.nu(p, 0) = (Real) (nu_min + nu_max)/2.0;
 
-            radiation.frequencies.appears_in_line_integral[f] = false;;
-            radiation.frequencies.corresponding_l_for_spec[f] = parameters->nfreqs();
-            radiation.frequencies.corresponding_k_for_tran[f] = parameters->nfreqs();
-            radiation.frequencies.corresponding_z_for_line[f] = parameters->nfreqs();
-        }
-    })
+            radiation.frequencies.appears_in_line_integral[0] = false;
+            radiation.frequencies.corresponding_l_for_spec[0] = parameters->nfreqs();
+            radiation.frequencies.corresponding_k_for_tran[0] = parameters->nfreqs();
+            radiation.frequencies.corresponding_z_for_line[0] = parameters->nfreqs();
+        })
+    }
+    else
+    {
+        const long double dnu = (nu_max - nu_min) / (n_image_freqs - 1);
 
+        threaded_for (p, parameters->npoints(),
+        {
+            for (Size f = 0; f < n_image_freqs; f++)
+            {
+                radiation.frequencies.nu(p, f) = (Real) (nu_min + f*dnu);
+
+                radiation.frequencies.appears_in_line_integral[f] = false;
+                radiation.frequencies.corresponding_l_for_spec[f] = parameters->nfreqs();
+                radiation.frequencies.corresponding_k_for_tran[f] = parameters->nfreqs();
+                radiation.frequencies.corresponding_z_for_line[f] = parameters->nfreqs();
+            }
+        })
+    }
     // Set spectral discretisation setting
     spectralDiscretisation = SD_Image;
+
+    //TODO: for all frequencies, set the correct corresponding line. In this way, the OneLine approximation will be compatible with the imagers
 
     return (0);
 }
@@ -843,6 +878,7 @@ int Model :: compute_image (const Size ray_nr)
     solver.setup <Rest>            (*this);
     if (parameters->one_line_approximation)
     {
+        throw std::runtime_error ("One line approximation is currently not supported for imaging.");
         solver.image_feautrier_order_2 <OneLine> (*this, ray_nr);
         return (0);
     }
@@ -858,6 +894,70 @@ int Model :: compute_image (const Size ray_nr)
 }
 
 
+// ///  Wrapper for the new imager
+// ///////////////////////////////
+// int Model :: compute_image_new (const Vector3D raydir)
+// {
+//     return compute_image_new(raydir, 256, 256);
+// }
+
+///  Wrapper for the new imager
+///////////////////////////////
+int Model :: compute_image_new (const Size ray_nr)
+{
+    return compute_image_new(geometry.rays.direction[ray_nr], 256, 256);
+}
+
+///  Wrapper for the new imager
+///////////////////////////////
+int Model :: compute_image_new (const Size ray_nr, const Size Nxpix, const Size Nypix)
+{
+    return compute_image_new(geometry.rays.direction[ray_nr], Nxpix, Nypix);
+}
+
+
+///  Wrapper for the new imager
+///////////////////////////////
+int Model :: compute_image_new (const double rx, const double ry, const double rz, const Size Nxpix, const Size Nypix)
+{
+    const Vector3D raydir = Vector3D(rx, ry, rz);//will be normed later on (if not yet normed)
+    return compute_image_new(raydir, Nxpix, Nypix);
+}
+
+
+
+///  Computer for the radiation field, using a new imager TODO: check whether direction is correct (I suspect it is not)
+/////////////////////////////////////
+int Model :: compute_image_new (const Vector3D raydir, const Size Nxpix, const Size Nypix)
+{
+    if (raydir.squaredNorm()==0.0)
+    {
+        throw std::runtime_error("The given ray direction vector does not point in a direction. Please use a non-zero (normed) direction vector to generate an image.");
+    }
+    const Vector3D normed_raydir = raydir * (1 / std::sqrt(raydir.squaredNorm()));
+    cout << "Computing image new..." << endl;
+
+    Solver solver;
+    //setup has to be handled after image creation, due to the rays themselves depend on the image pixels
+    // solver.setup_new_imager <Rest> (*this);//traced ray length might be different, thus we might need longer data types
+    if (parameters->one_line_approximation)
+    {
+        throw std::runtime_error ("One line approximation is not supported for imaging.");
+        solver.image_feautrier_order_2_new_imager <OneLine> (*this, normed_raydir, Nxpix, Nypix);
+        return (0);
+    }
+
+    if (parameters->sum_opacity_emissivity_over_all_lines)
+    {
+        solver.image_feautrier_order_2_new_imager <None> (*this, normed_raydir, Nxpix, Nypix);
+        return (0);
+    }
+
+    solver.image_feautrier_order_2_new_imager <CloseLines> (*this, normed_raydir, Nxpix, Nypix);
+    return (0);
+}
+
+
 ///  Computer for image in one point
 ////////////////////////////////////
 int Model :: compute_image_for_point (const Size ray_nr, const Size p)
@@ -868,6 +968,7 @@ int Model :: compute_image_for_point (const Size ray_nr, const Size p)
     solver.setup <Rest>                      (*this);
     if (parameters->one_line_approximation)
     {
+        throw std::runtime_error ("One line approximation is currently not supported for imaging.");
         solver.image_feautrier_order_2_for_point <OneLine> (*this, ray_nr, p);
         return (0);
     }
@@ -883,7 +984,7 @@ int Model :: compute_image_for_point (const Size ray_nr, const Size p)
 }
 
 
-///  Computer for optical depth iimage
+///  Computer for optical depth image
 //////////////////////////////////////
 int Model :: compute_image_optical_depth (const Size ray_nr)
 {
@@ -891,6 +992,7 @@ int Model :: compute_image_optical_depth (const Size ray_nr)
     solver.setup <Rest>        (*this);
     if (parameters->one_line_approximation)
     {
+        throw std::runtime_error ("One line approximation is currently not supported for imaging.");
         solver.image_optical_depth <OneLine> (*this, ray_nr);
         return (0);
     }
@@ -902,6 +1004,61 @@ int Model :: compute_image_optical_depth (const Size ray_nr)
     }
 
     solver.image_optical_depth <CloseLines> (*this, ray_nr);
+    return (0);
+}
+
+
+///  Wrapper for the new imager
+///////////////////////////////
+int Model :: compute_image_optical_depth_new (const Size ray_nr)
+{
+    return compute_image_optical_depth_new(geometry.rays.direction[ray_nr], 256, 256);
+}
+
+///  Wrapper for the new imager
+///////////////////////////////
+int Model :: compute_image_optical_depth_new (const Size ray_nr, const Size Nxpix, const Size Nypix)
+{
+    return compute_image_optical_depth_new(geometry.rays.direction[ray_nr], Nxpix, Nypix);
+}
+
+
+///  Wrapper for the new imager
+///////////////////////////////
+int Model :: compute_image_optical_depth_new (const double rx, const double ry, const double rz, const Size Nxpix, const Size Nypix)
+{
+    const Vector3D raydir = Vector3D(rx, ry, rz);//will be normed later on (if not yet normed)
+    return compute_image_optical_depth_new(raydir, Nxpix, Nypix);
+}
+
+
+///  Computer for new optical depth image
+//////////////////////////////////////
+int Model :: compute_image_optical_depth_new (const Vector3D raydir, const Size Nxpix, const Size Nypix)
+{
+    if (raydir.squaredNorm()==0.0)
+    {
+        throw std::runtime_error("The given ray direction vector does not point in a direction. Please use a non-zero (normed) direction vector to generate an image.");
+    }
+    const Vector3D normed_raydir = raydir * (1 / std::sqrt(raydir.squaredNorm()));
+    cout << "Computing image optical depth new..." << endl;
+
+    Solver solver;
+
+    if (parameters->one_line_approximation)
+    {
+        throw std::runtime_error ("One line approximation is currently not supported for imaging.");
+        solver.image_optical_depth_new_imager <OneLine> (*this, normed_raydir, Nxpix, Nypix);
+        return (0);
+    }
+
+    if (parameters->sum_opacity_emissivity_over_all_lines)
+    {
+        solver.image_optical_depth_new_imager <None> (*this, normed_raydir, Nxpix, Nypix);
+        return (0);
+    }
+
+    solver.image_optical_depth_new_imager <CloseLines> (*this, normed_raydir, Nxpix, Nypix);
     return (0);
 }
 

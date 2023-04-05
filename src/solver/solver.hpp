@@ -11,6 +11,11 @@ enum ApproximationType {None, OneLine, CloseLines};
 
 struct Solver
 {
+
+    // This seems to be the best value for the imager to avoid dead pixels, while somewhat decently handling the inner boundary
+    // TODO: for the imager: let the ray stop at the inner bdy
+    const Size MAX_CONSECUTIVE_BDY = 5;//for the new imager, we need some stopping criterion to determine when the ray ends
+
     pc::multi_threading::ThreadPrivate<Vector<double>> dZ_;      ///< distance increments along the ray
     pc::multi_threading::ThreadPrivate<Vector<Size>>   nr_;      ///< corresponding point number on the ray
     pc::multi_threading::ThreadPrivate<Vector<double>> shift_;   ///< Doppler shift along the ray
@@ -69,6 +74,9 @@ struct Solver
     template <Frame frame>
     void setup (Model& model);
 
+    // template <Frame frame>
+    void setup_new_imager (Model& model, Image& image, const Vector3D& ray_dir);
+
     void setup (const Size l, const Size w, const Size n_o_d);
 
     accel inline Real get_dshift_max (const Model& model, const Size o);
@@ -78,6 +86,15 @@ struct Solver
 
     template <Frame frame>
     inline Size get_ray_lengths_max (Model& model);
+
+    // template <Frame frame>
+    inline Size get_ray_lengths_max_new_imager (Model& model, Image& image, const Vector3D& ray_dir);
+
+    accel inline Size get_ray_length_new_imager (
+        const Geometry& geometry,
+        const Vector3D&  origin,
+        const Size start_bdy,
+        const Vector3D&  raydir);
 
 
     template <Frame frame>
@@ -89,6 +106,26 @@ struct Solver
         const int       increment,
               Size      id1,
               Size      id2 );
+
+    accel inline Size trace_ray_imaging_get_start (
+          const Geometry& geometry,
+          const Vector3D&  origin,
+          const Size      start_bdy,
+          const Vector3D&  raydir,
+          Real& Z);
+
+    template <Frame frame>
+    accel inline Size trace_ray_imaging (
+        const Geometry& geometry,
+        const Vector3D&  origin,
+        const Size start_bdy,
+        const Vector3D&  raydir,
+        const double    dshift_max,
+        const int       increment,
+              Real&     Z,
+              Size      id1,
+              Size      id2 );
+
 
     accel inline void set_data (
         const Size   crt,
@@ -142,19 +179,26 @@ struct Solver
 
     // Solvers for images
     /////////////////////
+    //algorithms for tracing the rays and extracting the information of the solver
     template<ApproximationType approx>
     accel inline void image_feautrier_order_2 (Model& model, const Size rr);
     template<ApproximationType approx>
+    inline void image_feautrier_order_2_new_imager (Model& model, const Vector3D& ray_dir, const Size nxpix, const Size nypix);
+    //actual solver
+    template<ApproximationType approx>
     accel inline void image_feautrier_order_2 (Model& model, const Size o, const Size f);
+
 
     template<ApproximationType approx>
     accel inline void image_feautrier_order_2_for_point     (Model& model, const Size rr, const Size p);
     template<ApproximationType approx>
     accel inline void image_feautrier_order_2_for_point_loc (Model& model, const Size o,  const Size f);
 
-    //TODO: switch these to compute_S_dtau internally; currently just uses trapezoidal rule
     template<ApproximationType approx>
     accel inline void image_optical_depth (Model& model, const Size rr);
+    template<ApproximationType approx>
+    inline void image_optical_depth_new_imager (Model& model, const Vector3D& ray_dir, const Size nxpix, const Size nypix);
+    //actual solver
     template<ApproximationType approx>
     accel inline void image_optical_depth (Model& model, const Size o, const Size f);
 

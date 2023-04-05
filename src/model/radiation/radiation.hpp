@@ -15,6 +15,7 @@ struct Radiation
 
     Frequencies frequencies;                  ///< data structure containing frequency bins
 
+    //Data stuctures pertaining to line radiative transfer computations
     Tensor<Real> I;                           ///< intensity (r, p, f)
     Tensor<Real> u;                           ///< intensity (r, p, f)
     Tensor<Real> v;                           ///< intensity (r, p, f)

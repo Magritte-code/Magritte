@@ -12,7 +12,11 @@
 ///  Frame of reference used in geometry computations
 /////////////////////////////////////////////////////
 enum Frame {CoMoving, Rest};
-
+//CoMoving: used for all solvers, does not reverse the shift
+//Rest: used for the old imagers, reverses the shift if necessary
+enum Tracer {Defaulttracer, Imagetracer};//for the new imaging ray-tracer, some extra precautions have to be made with respect to the treatment of boundary points
+//Default: used for everything except the new imager
+//Image: used for the new imager
 
 ///  Data structure for geometry
 ////////////////////////////////
@@ -54,19 +58,42 @@ struct Geometry
               double& Z,
               double& dZ  ) const;
 
+    template <Tracer tracer>
+    accel inline Size get_next (
+        const Vector3D& origin,
+        const Vector3D& ray_dir,
+        const Size     crt,
+        double&  Z,
+        double&  dZ ) const;
+
+    template <Tracer tracer>
     accel inline Size get_next_general_geometry (
-        const Size    o,
-        const Size    r,
-        const Size    crt,
-              double& Z,
-              double& dZ  ) const;
+        const Vector3D& origin,
+        const Vector3D& ray_dir,
+        const Size     crt,
+              double&  Z,
+              double&  dZ  ) const;
 
     accel inline Size get_next_spherical_symmetry (
-        const Size    o,
-        const Size    r,
-        const Size    crt,
-              double& Z,
-              double& dZ  ) const;
+        const Vector3D& origin,
+        const Vector3D& ray_dir,
+        const Size     crt,
+              double&  Z,
+              double&  dZ  ) const;
+
+    //Is able to deal with the different symmetries
+    accel inline double get_distance_origin_to_boundary (
+        const Vector3D& origin,
+        const Vector3D& raydir,
+        const Size bdy) const;
+
+    accel inline Size get_boundary_point_closer_to_custom_ray (
+        const Vector3D& origin,
+        const Vector3D& raydir,
+        const Size     crt    ) const;
+
+    accel inline Size get_closest_bdy_point_in_custom_raydir (
+        const Vector3D& raydir) const;
 
     template <Frame frame>
     accel inline double get_shift (
@@ -76,17 +103,27 @@ struct Geometry
         const double Z   ) const;
 
     template <Frame frame>
+    accel inline double get_shift (
+        const Vector3D& origin,
+        const Vector3D& origin_velocity,
+        const Vector3D& raydir,
+        const Size     crt,
+        const double   Z,
+        const bool reverse) const;
+
+    template <Frame frame>
     accel inline double get_shift_general_geometry (
-        const Size o,
-        const Size r,
-        const Size crt ) const;
+        const Vector3D& origin_velocity,
+        const Vector3D& raydir,
+        const Size     crt ) const;
 
     template <Frame frame>
     accel inline double get_shift_spherical_symmetry (
-        const Size   o,
-        const Size   r,
-        const Size   crt,
-        const double Z   ) const;
+        const Vector3D& origin,
+        const Vector3D& origin_velocity,
+        const Vector3D& raydir,
+        const Size     crt,
+        const double   Z   ) const;
 
     accel inline Size get_n_interpl (
         const double shift_crt,
