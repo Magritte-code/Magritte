@@ -20,27 +20,27 @@ void Frequencies :: read (const Io& io)
 }
 
 /// Helper function for resize all data associated to
-void Frequencies :: resize_data (const Size Nfreqs)
+void Frequencies :: resize_data (const Size nfreqs)
 {
-    nu.resize (parameters->npoints(), Nfreqs);
+    nu.resize (parameters->npoints(), nfreqs);
 
-    corresponding_line.resize (Nfreqs);
+    corresponding_line.resize (nfreqs);
 
-    appears_in_line_integral.resize (Nfreqs);
-    corresponding_l_for_spec.resize (Nfreqs);
-    corresponding_k_for_tran.resize (Nfreqs);
-    corresponding_z_for_line.resize (Nfreqs);
+    appears_in_line_integral.resize (nfreqs);
+    corresponding_l_for_spec.resize (nfreqs);
+    corresponding_k_for_tran.resize (nfreqs);
+    corresponding_z_for_line.resize (nfreqs);
 
     // frequencies.nu has to be initialized (for unused entries)
     threaded_for (p, parameters->npoints(),
     {
-        for (Size f = 0; f < Nfreqs; f++)
+        for (Size f = 0; f < nfreqs; f++)
         {
             nu(p,f) = 0.0;
         }
     })
 
-    parameters->set_nfreqs(Nfreqs);//is global variable, so may be reset to another value
+    parameters->set_nfreqs(nfreqs);//is global variable, so may be reset to another value
 }
 
 
