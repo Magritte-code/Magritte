@@ -1744,7 +1744,7 @@ inline void Solver :: solve_comoving_order_2_sparse (
             // Size1 corresponding_l_for_spec;           ///< number of line species corresponding to frequency
             // Size1 corresponding_k_for_tran;           ///< number of transition corresponding to frequency
             // Size1 corresponding_z_for_line;           ///< number of line number corresponding to frequency
-            const Size unsorted_freqidx=model.radiation.frequencies.corresponding_nu_index(nr[first_()], freqid);
+            const Size unsorted_freqidx=model.radiation.frequencies.corresponding_nu_index(nr[last_()], freqid);
             const Size l=model.radiation.frequencies.corresponding_l_for_spec[unsorted_freqidx];
             const Size k=model.radiation.frequencies.corresponding_k_for_tran[unsorted_freqidx];
             const Size z=model.radiation.frequencies.corresponding_z_for_line[unsorted_freqidx];
