@@ -118,8 +118,13 @@ def image_mpl(
     nfreqs = model.images[image_nr].nfreqs
 
     # Set image boundaries
-    x_min, x_max = np.min(imx)/zoom, np.max(imx)/zoom
-    y_min, y_max = np.min(imy)/zoom, np.max(imy)/zoom
+    deltax = (np.max(imx) - np.min(imx))/zoom
+    midx = (np.max(imx) + np.min(imx))/2.0
+    deltay = (np.max(imy) - np.min(imy))/zoom
+    midy = (np.max(imy) + np.min(imy))/2.0
+
+    x_min, x_max = midx - deltax/2.0, midx + deltax/2.0
+    y_min, y_max = midx - deltay/2.0, midy + deltay/2.0
 
     # Create image grid values
     xs = np.linspace(x_min, x_max, npix_x)
@@ -297,10 +302,13 @@ def image_plotly(
     nfreqs = model.images[image_nr].nfreqs
 
     # Set image boundaries
-    x_min, x_max = np.min(imx)/zoom, np.max(imx)/zoom
-    y_min, y_max = np.min(imy)/zoom, np.max(imy)/zoom
+    deltax = (np.max(imx) - np.min(imx))/zoom
+    midx = (np.max(imx) + np.min(imx))/2.0
+    deltay = (np.max(imy) - np.min(imy))/zoom
+    midy = (np.max(imy) + np.min(imy))/2.0
 
-    print(x_min, x_max, y_min, y_max)
+    x_min, x_max = midx - deltax/2.0, midx + deltax/2.0
+    y_min, y_max = midx - deltay/2.0, midy + deltay/2.0
 
     # Create image grid values
     xs = np.linspace(x_min, x_max, npix_x)
