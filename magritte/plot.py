@@ -104,7 +104,6 @@ def image_mpl(
     imx = np.array(model.images[image_nr].ImX)
     imy = np.array(model.images[image_nr].ImY)
     imI = np.array(model.images[image_nr].I)
-    imv = np.array(model.radiation.frequencies.nu)[0]
 
     # Workaround for model images
     if (model.images[image_nr].imagePointPosition == ImagePointPosition.AllModelPoints):
@@ -285,7 +284,6 @@ def image_plotly(
     imx = np.array(model.images[image_nr].ImX)
     imy = np.array(model.images[image_nr].ImY)
     imI = np.array(model.images[image_nr].I)
-    imv = np.array(model.radiation.frequencies.nu)[0]
 
     # Workaround for model images
     if (model.images[image_nr].imagePointPosition == ImagePointPosition.AllModelPoints):
