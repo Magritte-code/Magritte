@@ -124,7 +124,7 @@ def image_mpl(
     midy = (np.max(imy) + np.min(imy))/2.0
 
     x_min, x_max = midx - deltax/2.0, midx + deltax/2.0
-    y_min, y_max = midx - deltay/2.0, midy + deltay/2.0
+    y_min, y_max = midy - deltay/2.0, midy + deltay/2.0
 
     # Create image grid values
     xs = np.linspace(x_min, x_max, npix_x)
@@ -152,6 +152,8 @@ def image_mpl(
 
     # Put zero/negative values to the smallest positive value
     zs[zs<=0.0] = np.min(zs[zs>0.0])
+    # Put nan values to smallest positive value
+    zs[np.isnan(zs)] = np.min(zs[zs>0.0])
 
     # Get the logarithm of the data (matplotlib has a hard time handling logarithmic data.)
     log_zs     = np.log10(zs)
@@ -308,7 +310,7 @@ def image_plotly(
     midy = (np.max(imy) + np.min(imy))/2.0
 
     x_min, x_max = midx - deltax/2.0, midx + deltax/2.0
-    y_min, y_max = midx - deltay/2.0, midy + deltay/2.0
+    y_min, y_max = midy - deltay/2.0, midy + deltay/2.0
 
     # Create image grid values
     xs = np.linspace(x_min, x_max, npix_x)
@@ -336,6 +338,8 @@ def image_plotly(
 
     # Put zero-values to the smallest non-zero value
     zs[zs<=0.0] = np.min(zs[zs>0.0])
+    # Put nan values to smallest positive value
+    zs[np.isnan(zs)] = np.min(zs[zs>0.0])
 
     # Get the logarithm of the data (matplotlib has a hard time handling logarithmic data.)
     log_zs     = np.log10(zs)

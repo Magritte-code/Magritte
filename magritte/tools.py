@@ -345,7 +345,7 @@ def save_fits(
     midy = (np.max(imy) + np.min(imy))/2.0
 
     x_min, x_max = midx - deltax/2.0, midx + deltax/2.0
-    y_min, y_max = midx - deltay/2.0, midy + deltay/2.0
+    y_min, y_max = midy - deltay/2.0, midy + deltay/2.0
 
     # Rescale if square pixels are required
     if square:
