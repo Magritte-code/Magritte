@@ -101,9 +101,14 @@ accel inline Size Geometry :: get_next_general_geometry <Imagetracer> (
         }
     }
 
+    const Vector3D R_c     = points.position[c] - origin;
+    const double   Z_c = R_c.dot(raydir);
+    const double distance_curr_from_ray2 = R_c.dot(R_c) - Z_c*Z_c;
+
     //Precaution against tracing stuff along the boundary, stopping when we move farther from the ray than the distance traveled
-    //using a safety factor of 2
-    if ((!not_on_boundary(c))&&(2.0*maxdist_neighbors2 < dmin))
+    //using a safety factor of 2; TO DO: actually implement some manner of 'surface unit vector' to determine when to stop this ray; then this entire condition might be replaced by this (maybe also merge with 'regular' get_next_general_geometry)
+    //we also check whether the distance from the ray increases (as irregularly placed boundary points might result in stopping too early)
+    if ((!not_on_boundary(c))&&(2.0*maxdist_neighbors2 < dmin)&&(distance_curr_from_ray2<dmin))
     {
         return parameters->npoints();
     }
