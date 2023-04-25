@@ -29,24 +29,21 @@ jobs:
       matrix:
         include:
           - os: macos-latest
-            PACKAGE_MANAGER: brew
-            INSTALL_COMMAND: install
-            DEPENDENCIES: gmsh #llvm libomp
             C-COMPILER: gcc-11
             CXX-COMPILER: g++-11
           - os: ubuntu-latest
-            PACKAGE_MANAGER: sudo apt-get
-            INSTALL_COMMAND: install -y
-            DEPENDENCIES: gmsh libegl1
             C-COMPILER: gcc
             CXX-COMPILER: g++
     defaults:
       run:
         shell: bash -l {0} # necessary for conda
     steps:
-      - run: ${{matrix.PACKAGE_MANAGER}} update
-      - name: install dependencies
-        run: ${{matrix.PACKAGE_MANAGER}} ${{matrix.INSTALL_COMMAND}} ${{matrix.DEPENDENCIES}}
+      - name: (linux) install libegl1
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libegl1 libglu1-mesa
+      #I think these dependencies are all required for gmsh; TODO: remove them after I remove gmsh
 
       - name: (temporary fix) set xcode version to latest  #due to xcode 14.0 being bugged, some issue with the linker exists when compiling
         if: matrix.os == 'macos-latest'
@@ -79,9 +76,16 @@ jobs:
         with: #no ref: thus checks out commit which triggered workflow
           submodules: true
       # end retrying checkout
+      - name: install gmsh
+        run: |
+          bash ./dependencies/get_gmsh.sh
+          echo "$GITHUB_WORKSPACE/dependencies/gmsh/bin/" >> $GITHUB_PATH
+        #err, relies a bit too much on absolute path for which the script install gmsh
+      - name: gsmh version
+        run: gmsh --version
 
       - name: setup python
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v4
 
       # retrying setting up conda: 3 tries, with 5 seconds wait inbetween
       - name: Install conda packages (try 1)
@@ -91,7 +95,7 @@ jobs:
           activate-environment: magritte
           environment-file: dependencies/conda_env.yml
           auto-activate-base: false
-          mamba-version: "*"
+          miniforge-variant: Mambaforge
           channels: conda-forge, defaults
       - name: wait 5 s if attempt failed
         if: steps.setupcondatry1.outcome == 'failure'
@@ -104,7 +108,7 @@ jobs:
           activate-environment: magritte
           environment-file: dependencies/conda_env.yml
           auto-activate-base: false
-          mamba-version: "*"
+          miniforge-variant: Mambaforge
           channels: conda-forge, defaults
       - name: wait 5 s if attempt failed
         if: steps.setupcondatry2.outcome == 'failure'
@@ -117,7 +121,7 @@ jobs:
           activate-environment: magritte
           environment-file: dependencies/conda_env.yml
           auto-activate-base: false
-          mamba-version: "*"
+          miniforge-variant: Mambaforge
           channels: conda-forge, defaults
       # end retrying conda
 

@@ -11,13 +11,13 @@
 IoText :: IoText (const string &io_file) : Io (io_file) {}
 
 
-///  Check if the given path exists
+///  Check if the given file exists
 ///    @param[in] path : path to check
 //////////////////////////////////////
-bool pathExist (const string &path)
+bool IoText :: file_exists (const string fname) const
 {
     struct stat buffer;
-    return (stat (path.c_str(), &buffer) == 0);
+    return (stat (fname.c_str(), &buffer) == 0);
 }
 
 
@@ -31,7 +31,7 @@ int IoText :: read_length (const string file_name, Size &length) const
 
   length = 0;
 
-  if (pathExist (fname + ".txt"))
+  if (file_exists (fname + ".txt"))
   {
     std::ifstream file (fname + ".txt");
 
@@ -47,7 +47,7 @@ int IoText :: read_length (const string file_name, Size &length) const
 
   else
   {
-    while (pathExist (fname + std::to_string (length)))
+    while (file_exists (fname + std::to_string (length)))
     {
       length++;
     }
@@ -80,7 +80,7 @@ int IoText :: read_width (const string file_name, Size &width) const
 
   width = 0;
 
-  if (pathExist (fname + ".txt"))
+  if (file_exists (fname + ".txt"))
   {
     // Count the number of columns in the file
 
@@ -104,7 +104,7 @@ int IoText :: read_width (const string file_name, Size &width) const
   {
     // Count the number of files with a similar name
 
-    while (pathExist (fname + std::to_string (width)))
+    while (file_exists (fname + std::to_string (width)))
     {
       width++;
     }

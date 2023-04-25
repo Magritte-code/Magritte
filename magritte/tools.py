@@ -6,6 +6,7 @@ from time              import perf_counter
 from astropy.io        import fits
 from astropy           import units, constants
 from scipy.interpolate import griddata, interp1d
+from magritte.core     import ImagePointPosition  # Image point position, for determining whether we need to prune boundary points
 
 
 # Physical constants
@@ -63,11 +64,6 @@ class Timer ():
         Print the elapsed time.
         """
         return f'timer: {self.name} = {self.total}'
-    def get_interval (self):
-        """
-        Returns the elapsed time (without formatting)
-        """
-        return self.total
 
 
 def relative_error (a,b):
@@ -307,9 +303,9 @@ def save_fits(
         print('No images in model.')
         return
 
-    # Check if 3D
-    if (model.parameters.dimension() != 3):
-        raise ValueError('save_fits only works for 3D models. Please use save_fits_1D for 1D models.')
+    # Check if 3D or a projection surface was used
+    if (model.parameters.dimension() != 3 and model.images[image_nr].imagePointPosition == ImagePointPosition.AllModelPoints):
+        raise ValueError('save_fits only works for 3D models or models imaged using the new imager. Please use save_fits_1D for 1D models.')
 
     if not filename:
         # Get path of image directory
@@ -331,12 +327,25 @@ def save_fits(
     imy = np.array(model.images[image_nr].ImY)
     imI = np.array(model.images[image_nr].I)
 
+    # Workaround for model images
+    if (model.images[image_nr].imagePointPosition == ImagePointPosition.AllModelPoints):
+        # Filter imaging data originating from boundary points
+        bdy_indices = np.array(model.geometry.boundary.boundary2point)
+        imx = np.delete(imx, bdy_indices)
+        imy = np.delete(imy, bdy_indices)
+        imI = np.delete(imI, bdy_indices, axis=0)
+
     # Extract the number of frequency bins
-    nfreqs = model.parameters.nfreqs()
+    nfreqs = model.images[image_nr].nfreqs
 
     # Set image boundaries
-    x_min, x_max = np.min(imx)/zoom, np.max(imx)/zoom
-    y_min, y_max = np.min(imy)/zoom, np.max(imy)/zoom
+    deltax = (np.max(imx) - np.min(imx))/zoom
+    midx = (np.max(imx) + np.min(imx))/2.0
+    deltay = (np.max(imy) - np.min(imy))/zoom
+    midy = (np.max(imy) + np.min(imy))/2.0
+
+    x_min, x_max = midx - deltax/2.0, midx + deltax/2.0
+    y_min, y_max = midy - deltay/2.0, midy + deltay/2.0
 
     # Rescale if square pixels are required
     if square:
@@ -356,7 +365,7 @@ def save_fits(
     ys = np.linspace(y_min, y_max, npix_y)
 
     # Extract the spectral / velocity data
-    freqs = np.array(model.radiation.frequencies.nu)[0]
+    freqs = np.array(model.images[image_nr].freqs)
     f_cen = np.mean(freqs)
 
     # If no rest frequency is given,
@@ -512,9 +521,9 @@ def save_fits_1D(
         print('No images in model.')
         return
 
-    # Check if 1D
-    if (model.parameters.dimension() != 1):
-        raise ValueError('save_fits_1D only works for 1D models. Please use save_fits for 3D models.')
+    # Check if 1D and old imager was used
+    if (model.parameters.dimension() != 1 or model.images[image_nr].imagePointPosition == ImagePointPosition.AllModelPoints):
+        raise ValueError('save_fits_1D only works for 1D models, imaged using the old imager. Please use save_fits for 3D models or any models imaged using the new imager.')
 
     if not filename:
         # Get path of image directory
@@ -535,8 +544,15 @@ def save_fits_1D(
     imx = np.array(model.images[image_nr].ImX)
     imI = np.array(model.images[image_nr].I)
 
+    # Workaround for model images
+    if (model.images[image_nr].imagePointPosition == ImagePointPosition.AllModelPoints):
+        # Filter imaging data originating from boundary points
+        bdy_indices = np.array(model.geometry.boundary.boundary2point)
+        imx = np.delete(imx, bdy_indices)
+        imI = np.delete(imI, bdy_indices, axis=0)
+
     # Extract the number of frequency bins
-    nfreqs = model.parameters.nfreqs()
+    nfreqs = model.images[image_nr].nfreqs
 
     # Extrat the radius of the model
     R = np.max(imx)
@@ -554,7 +570,7 @@ def save_fits_1D(
     Rs     = np.hypot   (Xs, Ys)
 
     # Extract the spectral / velocity data
-    freqs = np.array(model.radiation.frequencies.nu)[0]
+    freqs = np.array(model.images[image_nr].freqs)
     f_cen = np.mean(freqs)
 
     # If no rest frequency is given,

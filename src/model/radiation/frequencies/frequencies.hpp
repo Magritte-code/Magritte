@@ -25,6 +25,9 @@ struct Frequencies
 
     void read  (const Io& io);
     void write (const Io& io) const;
+    void resize_data(Size Nfreqs);
+
+
 
 //    Size nbins = 0;    ///< number of extra bins per line
 //    Size ncont = 0;    ///< number of background bins

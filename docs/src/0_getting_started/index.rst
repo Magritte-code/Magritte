@@ -1,8 +1,8 @@
 Getting started
 ###############
 
-First check if all :ref:`prerequisites <link-prerequisites>` are in place before continuing to install Magritte in the :ref:`quickstart <link-prerequisites>`.
-More background on the installation process of Magritte can be found in the :ref:`installation <link-installation>` notes.
+First check if all :ref:`prerequisites <link-prerequisites>` are in place before continuing to install Magritte in the :ref:`quickstart <link-quickstart>`.
+More background on the installation process of Magritte can be found in the :ref:`installation <link-installation>` notes. For returning users, we refer to the quick guide on :ref:`updating Magritte <link-updating_Magritte>`.
 
 .. toctree::
    :maxdepth: 2
@@ -11,3 +11,4 @@ More background on the installation process of Magritte can be found in the :ref
    0_prerequisites
    1_quickstart
    2_installation
+   3_updating_Magritte

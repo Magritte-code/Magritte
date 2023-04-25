@@ -2,15 +2,20 @@
 #include "tools/types.hpp"
 
 
-#define READ_SETONCE_NUMBER(type, x)                                                       \
-    type x##_copy;                                                                         \
+#define READ_SETONCE_NUMBER(type, x, essential)                                            \
+    type x##_copy;                                                               \
     if (io.read_number ("."#x, x##_copy) == 0) {set_##x (x##_copy);}                       \
-    else                                       {cout << "Failed to read "#x"!" << endl;}
+    else                                       {if(essential){cout << "Failed to read "#x"!" << endl;}}
 
-#define READ_SETONCE_BOOL(type, x)                                                         \
+#define READ_SETONCE_BOOL(type, x, essential)                                              \
     type x##_copy;                                                                         \
     if (io.read_bool ("."#x, x##_copy) == 0) {set_##x (x##_copy);}                         \
-    else                                     {cout << "Failed to read "#x"!" << endl;}
+    else                                     {if(essential){cout << "Failed to read "#x"!" << endl;}}
+
+#define READ_SETONCE_WORD(type, x, essential)                                              \
+    type x##_copy;                                                                         \
+    if (io.read_word ("."#x, x##_copy) == 0) {set_##x (x##_copy);}                         \
+    else                                     {if(essential){cout << "Failed to read "#x"!" << endl;}}
 
 #define READ_NUMBER(type, x)                                                               \
     type x##_copy;                                                                         \
@@ -22,17 +27,17 @@
     if (io.read_bool ("."#x, x##_copy) == 0) {x = x##_copy;}                               \
     else                                     {cout << "Failed to read "#x"!" << endl;}
 
-#define WRITE_SETONCE_NUMBER(type, x)                                                      \
+#define WRITE_SETONCE_NUMBER(type, x, essential)                                           \
     try         {io.write_number ("."#x, x());}                                            \
-    catch (...) {cout << "Failed to write parameter "#x"!" << endl;}
+    catch (...) {if(essential){cout << "Failed to write parameter "#x"!" << endl;}}
 
-#define WRITE_SETONCE_BOOL(type, x)                                                        \
+#define WRITE_SETONCE_BOOL(type, x, essential)                                             \
     try         {io.write_bool ("."#x, x());}                                              \
-    catch (...) {cout << "Failed to write parameter "#x"!" << endl;}
+    catch (...) {if(essential){cout << "Failed to write parameter "#x"!" << endl;}}
 
-#define WRITE_SETONCE_WORD(type, x)                                                        \
+#define WRITE_SETONCE_WORD(type, x, essential)                                             \
     try         {io.write_word ("."#x, x());}                                              \
-    catch (...) {cout << "Failed to write parameter "#x"!" << endl;}
+    catch (...) {if(essential){cout << "Failed to write parameter "#x"!" << endl;}}
 
 #define WRITE_NUMBER(type, x)                                                              \
     try         {io.write_number ("."#x, x);}                                              \
@@ -47,20 +52,20 @@ void Parameters :: read (const Io &io)
 {
     cout << "Reading parameters..." << endl;
 
-    READ_SETONCE_NUMBER (Size, dimension);
-    READ_SETONCE_NUMBER (Size, npoints  );
-    READ_SETONCE_NUMBER (Size, nrays    );
-    READ_SETONCE_NUMBER (Size, hnrays   );
-    READ_SETONCE_NUMBER (Size, nboundary);
-    READ_SETONCE_NUMBER (Size, nfreqs   );
-    READ_SETONCE_NUMBER (Size, nspecs   );
-    READ_SETONCE_NUMBER (Size, nlspecs  );
-    READ_SETONCE_NUMBER (Size, nlines   );
-    READ_SETONCE_NUMBER (Size, nquads   );
+    READ_SETONCE_NUMBER (Size, dimension, true);
+    READ_SETONCE_NUMBER (Size, npoints, true);
+    READ_SETONCE_NUMBER (Size, nrays, true);
+    READ_SETONCE_NUMBER (Size, hnrays, false);
+    READ_SETONCE_NUMBER (Size, nboundary, true);
+    READ_SETONCE_NUMBER (Size, nfreqs, false);
+    READ_SETONCE_NUMBER (Size, nspecs, true);
+    READ_SETONCE_NUMBER (Size, nlspecs, true);
+    READ_SETONCE_NUMBER (Size, nlines, false);
+    READ_SETONCE_NUMBER (Size, nquads, true);
 
-    READ_SETONCE_BOOL (bool, use_scattering      );
-    READ_SETONCE_BOOL (bool, spherical_symmetry  );
-    READ_SETONCE_BOOL (bool, adaptive_ray_tracing);
+    READ_SETONCE_BOOL (bool, use_scattering, false);
+    READ_SETONCE_BOOL (bool, spherical_symmetry, true);
+    READ_SETONCE_BOOL (bool, adaptive_ray_tracing, false);
 
     READ_NUMBER (Size, n_off_diag);
 
@@ -83,23 +88,23 @@ void Parameters :: write (const Io &io) const
 {
     cout << "Writing parameters..." << endl;
 
-    WRITE_SETONCE_WORD (string, version);
+    WRITE_SETONCE_WORD (string, version, true);
 
-    WRITE_SETONCE_NUMBER (Size, dimension);
-    WRITE_SETONCE_NUMBER (Size, npoints  );
-    WRITE_SETONCE_NUMBER (Size, nrays    );
-    WRITE_SETONCE_NUMBER (Size, hnrays   );
-    WRITE_SETONCE_NUMBER (Size, nboundary);
-    WRITE_SETONCE_NUMBER (Size, nfreqs   );
-    WRITE_SETONCE_NUMBER (Size, nspecs   );
-    WRITE_SETONCE_NUMBER (Size, nlspecs  );
-    WRITE_SETONCE_NUMBER (Size, nlines   );
-    WRITE_SETONCE_NUMBER (Size, nquads   );
+    WRITE_SETONCE_NUMBER (Size, dimension, true);
+    WRITE_SETONCE_NUMBER (Size, npoints, true);
+    WRITE_SETONCE_NUMBER (Size, nrays, true);
+    WRITE_SETONCE_NUMBER (Size, hnrays, false);
+    WRITE_SETONCE_NUMBER (Size, nboundary, true);
+    WRITE_SETONCE_NUMBER (Size, nfreqs, false);
+    WRITE_SETONCE_NUMBER (Size, nspecs, true);
+    WRITE_SETONCE_NUMBER (Size, nlspecs, true);
+    WRITE_SETONCE_NUMBER (Size, nlines, false);
+    WRITE_SETONCE_NUMBER (Size, nquads, true);
 
 
-    WRITE_SETONCE_BOOL (bool, use_scattering      );
-    WRITE_SETONCE_BOOL (bool, spherical_symmetry  );
-    WRITE_SETONCE_BOOL (bool, adaptive_ray_tracing);
+    WRITE_SETONCE_BOOL (bool, use_scattering, false);
+    WRITE_SETONCE_BOOL (bool, spherical_symmetry, true);
+    WRITE_SETONCE_BOOL (bool, adaptive_ray_tracing, false);
 
     WRITE_NUMBER (Size, n_off_diag);
 

@@ -123,16 +123,25 @@ PYBIND11_MODULE (core, module)
         .value("OpticalDepth", OpticalDepth)
         .export_values();
 
+    // ImagePointPosition
+    py::enum_<ImagePointPosition>(module, "ImagePointPosition")
+        .value("AllModelPoints", AllModelPoints)
+        .value("ProjectionSurface", ProjectionSurface)
+        .export_values();
+
     // Image
     py::class_<Image> (module, "Image", "Image class, 2D point cloud of intensities for each frequency bin.")
         // attributes
         .def_readonly  ("imageType", &Image::imageType, "Type of image (intensity of optical depth).")
+        .def_readonly  ("imagePointPosition", &Image::imagePointPosition, "Position of image points (model points or projection surface).")
+        .def_readonly  ("nfreqs", &Image::nfreqs,       "Number of frequency bins in the image.")
+        .def_readonly  ("freqs", &Image::freqs,         "Frequency bins of the image.")
         .def_readonly  ("ray_nr",    &Image::ray_nr,    "Number of the ray along which the image is taken.")
         .def_readonly  ("ImX",       &Image::ImX,       "X-coordinates of the points in the image plane.")
         .def_readonly  ("ImY",       &Image::ImY,       "Y-coordinates of the points in the image plane.")
         .def_readonly  ("I",         &Image::I,         "Intensity of the points in the image (for each frequency bin).")
         // constructor
-        .def (py::init<const Geometry&, const ImageType&, const Size&>());
+        .def (py::init<const Geometry&, const Frequencies&, const ImageType&, const Size&>());
 
 
     // Model
@@ -211,8 +220,13 @@ PYBIND11_MODULE (core, module)
         )
         .def (
             "compute_spectral_discretisation",
-            (int (Model::*)(const long double nu_min, const long double nu_max)) &Model::compute_spectral_discretisation,
+            (int (Model::*)(const Real nu_min, const Real nu_max)) &Model::compute_spectral_discretisation,
             "Compute the spectral discretisation for the model tailored for images with the given min and max frequency."
+        )
+        .def (
+            "compute_spectral_discretisation",
+            (int (Model::*)(const Real nu_min, const Real nu_max, const Size n_image_freqs)) &Model::compute_spectral_discretisation,
+            "Compute the spectral discretisation for the model tailored for images with the given min and max frequency. Can also specify the amount of frequency bins to use (instead of defaulting to parameters.nfreqs)."
         )
         .def (
             "compute_LTE_level_populations",
@@ -229,11 +243,12 @@ PYBIND11_MODULE (core, module)
             &Model::compute_radiation_field_feautrier_order_2_sparse,
             "Compute the radiation field for the modle using the 2nd-order Feautrier solver."
         )
-        .def (
-            "compute_radiation_field_feautrier_order_2_uv",
-            &Model::compute_radiation_field_feautrier_order_2_uv,
-            "Compute the radiation field for the modle using the 2nd-order Feautrier solver."
-        )
+        /// Solver is bugged, so removed from the api, as the shortchar solver can replace it
+        // .def (
+        //     "compute_radiation_field_feautrier_order_2_uv",
+        //     &Model::compute_radiation_field_feautrier_order_2_uv,
+        //     "Compute the radiation field for the modle using the 2nd-order Feautrier solver."
+        // )
         .def (
             "compute_radiation_field_feautrier_order_2_anis",
             &Model::compute_radiation_field_feautrier_order_2_anis,
@@ -275,9 +290,39 @@ PYBIND11_MODULE (core, module)
             "Compute an image for the model along the given ray."
         )
         .def (
+            "compute_image_new",
+            (int (Model::*)(const Size ray_nr)) &Model::compute_image_new,
+            "Compute an image of the model along the given ray direction, using the new imager."
+        )
+        .def (
+            "compute_image_new",
+            (int (Model::*)(const Size ray_nr, const Size Nxpix, const Size Nypix)) &Model::compute_image_new,
+            "Compute an image of the model along the given ray direction, using the new imager, specifying the image resolution."
+        )
+        .def (
+            "compute_image_new",
+            (int (Model::*)(const double rx, const double ry, const double rz, const Size Nxpix, const Size Nypix)) &Model::compute_image_new,
+            "Compute an image of the model along the given ray direction, using the new imager, specifying the ray direction and image resolution."
+        )
+        .def (
             "compute_image_optical_depth",
             &Model::compute_image_optical_depth,
             "Compute an image of the optical depth for the model along the given ray."
+        )
+        .def (
+            "compute_image_optical_depth_new",
+            (int (Model::*)(const Size ray_nr)) &Model::compute_image_optical_depth_new,
+            "Compute an image of the optical depth for the model along the given ray direction, using the new imager."
+        )
+        .def (
+            "compute_image_optical_depth_new",
+            (int (Model::*)(const Size ray_nr, const Size Nxpix, const Size Nypix)) &Model::compute_image_optical_depth_new,
+            "Compute an image of the optical depth for the model along the given ray direction, using the new imager, specifying the image resolution."
+        )
+        .def (
+            "compute_image_optical_depth_new",
+            (int (Model::*)(const double rx, const double ry, const double rz, const Size Nxpix, const Size Nypix)) &Model::compute_image_optical_depth_new,
+            "Compute an image of the optical depth for the model along the given ray direction, using the new imager, specifying the ray direction and image resolution."
         )
         .def (
             "set_eta_and_chi",
@@ -330,7 +375,7 @@ PYBIND11_MODULE (core, module)
         .def ("set_nrays",                    &Parameters::set_nrays               , "Set number of rays.")
         .def ("set_hnrays",                   &Parameters::set_hnrays              , "Set the half of the number of rays.")
         .def ("set_nboundary",                &Parameters::set_nboundary           , "Set number of boundary points.")
-        .def ("set_nfreqs",                   &Parameters::set_nfreqs              , "Set number of frequency bins.")
+        .def ("set_nfreqs",                   &Parameters::set_nfreqs              , "Set number of frequency bins.")//TODO: phase this out, as this is a) not essential to model setup and b) dangerous to play around with (segfaults if wrong value is set)
         .def ("set_nspecs",                   &Parameters::set_nspecs              , "Set number of species.")
         .def ("set_nlspecs",                  &Parameters::set_nlspecs             , "Set number of line producing species.")
         .def ("set_nlines",                   &Parameters::set_nlines              , "Set number of lines.")
