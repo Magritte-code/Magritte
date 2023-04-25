@@ -18,7 +18,7 @@ the memory cost is reduced significantly. The sparse solver can be called simila
    magritte.core.compute_level_populations_sparse(use_Ng_acceleration, max_niterations)
 
 Magritte also offers the option to compute the intensities using the formal solution.
-Currently, no real usecase exists for this solver that is not covered by the Feautrier solver. This might change in the future.
+This solver can be used to compute the directional intensities.
 
 .. code-block:: python
 
