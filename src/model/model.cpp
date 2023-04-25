@@ -566,6 +566,68 @@ int Model :: compute_level_populations_from_stateq ()
     return (0);
 }
 
+//Default ng-acceleration used after every 'parameters->Ng_acceleration_mem_limit' normal iteration steps
+template<>
+std::tuple<bool, Size> Model :: ng_acceleration_criterion <Default>(bool use_Ng_acceleration, Size prior_normal_iterations)
+{
+    //Ng acceleration will not be used if the user does not allow it
+    if (use_Ng_acceleration == false)
+    {
+        return std::make_tuple(false , 0);
+    }
+
+    const Size skip_N_its = parameters->Ng_acceleration_remove_N_its;
+    if (prior_normal_iterations == (parameters->Ng_acceleration_mem_limit + skip_N_its))
+    {
+        return std::make_tuple(true , parameters->Ng_acceleration_mem_limit);
+    }
+    return std::make_tuple(false , 0);
+}
+
+//Adaptive ng acceleration, similar to as described in F. De Ceusters thesis
+template<>
+std::tuple<bool, Size> Model :: ng_acceleration_criterion <Adaptive>(bool use_Ng_acceleration, Size prior_normal_iterations)
+{
+    const Size skip_N_its = parameters->Ng_acceleration_remove_N_its;
+    //Ng acceleration will not be used if we have no prior data (or the user does not allow it)
+    //For useful acceleration steps, the order needs to be at least 2
+    if (use_Ng_acceleration == false || prior_normal_iterations < parameters->adaptive_Ng_acceleration_min_order + skip_N_its)
+    {
+        return std::make_tuple(false, 0);
+    }
+
+    //Computing the current non-converged fraction to decide whether or not to use an early Ng-acceleration step
+    double sum_fnc_curr = 0.0;
+    for (int l = 0; l < parameters->nlspecs(); l++)
+    {
+        const double fnc = parameters->adaptive_Ng_acceleration_use_max_criterion ? lines.lineProducingSpecies[l].relative_change_max : lines.lineProducingSpecies[l].relative_change_mean;
+        sum_fnc_curr += fnc;
+    }
+
+    //the number of previous iterations to use is bounded by the memory limit
+    const Size nb_prev_iterations = prior_normal_iterations;
+
+    lines.trial_iteration_using_adaptive_Ng_acceleration(parameters->pop_prec, nb_prev_iterations - skip_N_its);
+
+    //Computing the Ng-accelerated non-converged fraction to decide whether or not to use an early Ng-acceleration step
+    double sum_fnc_ng = 0.0;
+    for (int l = 0; l < parameters->nlspecs(); l++)
+    {
+        const double fnc = parameters->adaptive_Ng_acceleration_use_max_criterion ? lines.lineProducingSpecies[l].relative_change_max : lines.lineProducingSpecies[l].relative_change_mean;
+        sum_fnc_ng += fnc;
+    }
+
+    // std::cout<<"sum_fnc_ng: "<<sum_fnc_ng<<" sum_fnc_curr: "<<sum_fnc_curr<<std::endl;
+    if (sum_fnc_ng<sum_fnc_curr || prior_normal_iterations == (parameters->Ng_acceleration_mem_limit + skip_N_its))
+    {
+        return std::make_tuple(true , nb_prev_iterations - skip_N_its);
+    }
+
+    return std::make_tuple(false , 0);
+}
+
+
+
 
 ///  Compute level populations self-consistenly with the radiation field
 ///  assuming statistical equilibrium (detailed balance for the levels)
@@ -598,22 +660,35 @@ int Model :: compute_level_populations (
     // Iterate as long as some levels are not converged
     while (some_not_converged && (iteration < max_niterations))
     {
-        iteration++;
-
         // logger.write ("Starting iteration ", iteration);
         cout << "Starting iteration " << iteration << endl;
 
         // Start assuming convergence
         some_not_converged = false;
 
-        if (use_Ng_acceleration && (iteration_normal == 4))
+        std::tuple<bool, Size> tuple_ng_decision;
+        if (parameters->use_adaptive_Ng_acceleration)
         {
-            lines.iteration_using_Ng_acceleration (parameters->pop_prec);
+            tuple_ng_decision = ng_acceleration_criterion <Adaptive>(use_Ng_acceleration, iteration_normal);
+        }
+        else
+        {
+            tuple_ng_decision = ng_acceleration_criterion <Default>(use_Ng_acceleration, iteration_normal);
+        }
+        const bool use_ng_acceleration_step = std::get<0>(tuple_ng_decision);
+        const Size ng_acceleration_order = std::get<1>(tuple_ng_decision);
+
+        std::cout<<"using ng acceleration? "<<use_ng_acceleration_step<<std::endl;
+        if (use_ng_acceleration_step)
+        {
+            std::cout<<"max order: "<<iteration_normal<<" used order: "<<ng_acceleration_order<<std::endl;
+            lines.iteration_using_Ng_acceleration (parameters->pop_prec, ng_acceleration_order);
 
             iteration_normal = 0;
         }
         else
         {
+            iteration++;//only counting default iterations, as the ng-accelerated iterations are orders of magnitude faster.
             // logger.write ("Computing the radiation field...");
             cout << "Computing the radiation field..." << endl;
 
@@ -698,22 +773,35 @@ int Model :: compute_level_populations_sparse (
     // Iterate as long as some levels are not converged
     while (some_not_converged && (iteration < max_niterations))
     {
-        iteration++;
-
         // logger.write ("Starting iteration ", iteration);
         cout << "Starting iteration " << iteration << endl;
 
         // Start assuming convergence
         some_not_converged = false;
 
-        if (use_Ng_acceleration && (iteration_normal == 4))
+        std::tuple<bool, Size> tuple_ng_decision;
+        if (parameters->use_adaptive_Ng_acceleration)
         {
-            lines.iteration_using_Ng_acceleration (parameters->pop_prec);
+            tuple_ng_decision = ng_acceleration_criterion <Adaptive>(use_Ng_acceleration, iteration_normal);
+        }
+        else
+        {
+            tuple_ng_decision = ng_acceleration_criterion <Default>(use_Ng_acceleration, iteration_normal);
+        }
+        const bool use_ng_acceleration_step = std::get<0>(tuple_ng_decision);
+        const Size ng_acceleration_order = std::get<1>(tuple_ng_decision);
+
+        std::cout<<"using ng acceleration? "<<use_ng_acceleration_step<<std::endl;
+        if (use_ng_acceleration_step)
+        {
+            std::cout<<"Ng acceleration max order: "<<iteration_normal<<" used order: "<<ng_acceleration_order<<std::endl;
+            lines.iteration_using_Ng_acceleration (parameters->pop_prec, ng_acceleration_order);
 
             iteration_normal = 0;
         }
         else
         {
+            iteration++;//only counting default iterations, as the ng-accelerated iterations are orders of magnitude faster.
             // logger.write ("Computing the radiation field...");
             cout << "Computing the radiation field..." << endl;
 
@@ -807,14 +895,29 @@ int Model :: compute_level_populations_shortchar (
         // Start assuming convergence
         some_not_converged = false;
 
-        if (use_Ng_acceleration && (iteration_normal == 4))
+        std::tuple<bool, Size> tuple_ng_decision;
+        if (parameters->use_adaptive_Ng_acceleration)
         {
-            lines.iteration_using_Ng_acceleration (parameters->pop_prec);
+            tuple_ng_decision = ng_acceleration_criterion <Adaptive>(use_Ng_acceleration, iteration_normal);
+        }
+        else
+        {
+            tuple_ng_decision = ng_acceleration_criterion <Default>(use_Ng_acceleration, iteration_normal);
+        }
+
+        const bool use_ng_acceleration_step = std::get<0>(tuple_ng_decision);
+        const Size ng_acceleration_order = std::get<1>(tuple_ng_decision);
+
+        if (use_ng_acceleration_step)
+        {
+            std::cout<<"Ng acceleration max order: "<<iteration_normal<<" used order: "<<ng_acceleration_order<<std::endl;
+            lines.iteration_using_Ng_acceleration (parameters->pop_prec, ng_acceleration_order);
 
             iteration_normal = 0;
         }
         else
         {
+            iteration++;//only counting default iterations, as the ng-accelerated iterations are orders of magnitude faster.
             // logger.write ("Computing the radiation field...");
             cout << "Computing the radiation field..." << endl;
 

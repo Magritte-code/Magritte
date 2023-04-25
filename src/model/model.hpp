@@ -12,7 +12,9 @@
 #include "lines/lines.hpp"
 #include "radiation/radiation.hpp"
 #include "image/image.hpp"
+#include <tuple>
 
+enum NgAccelerationType {Default, Adaptive};
 
 struct Model
 {
@@ -86,6 +88,8 @@ struct Model
     int compute_level_populations_shortchar       (
         const bool  use_Ng_acceleration,
         const long  max_niterations     );
+    template<NgAccelerationType type>
+    std::tuple<bool, Size> ng_acceleration_criterion (bool use_Ng_acceleration, Size prior_normal_iterations);
     int compute_image                             (const Size ray_nr);
     int compute_image_optical_depth               (const Size ray_nr);
     int compute_image_new (const Vector3D raydir, const Size Nxpix, const Size Nypix);//actual function for the new imager

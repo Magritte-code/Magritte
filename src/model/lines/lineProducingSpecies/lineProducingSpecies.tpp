@@ -83,15 +83,16 @@ inline void LineProducingSpecies :: update_using_LTE (
     populations.push_back (population);
 }
 
-
+/// This function check whether the level populations have converged, using the specified precision
 inline void LineProducingSpecies :: check_for_convergence (const Real pop_prec)
 {
     const Real weight = 1.0 / (parameters->npoints() * linedata.nlev);
 
     Real fnc = 0.0;
     Real rcm = 0.0;
+    Real rcmax = 0.0;
 
-#   pragma omp parallel for reduction (+: fnc, rcm)
+#   pragma omp parallel for reduction (+: fnc, rcm) reduction (max: rcmax)
     for (Size p = 0; p < parameters->npoints(); p++)
     {
         for (Size i = 0; i < linedata.nlev; i++)
@@ -100,10 +101,12 @@ inline void LineProducingSpecies :: check_for_convergence (const Real pop_prec)
 
             if (population(ind) > parameters->min_rel_pop_for_convergence * population_tot[p])
             {
-                Real relative_change = 2.0;
-
-                relative_change *= fabs (population (ind) - population_prev1 (ind));
-                relative_change /=      (population (ind) + population_prev1 (ind));
+                // Real relative_change = 2.0;
+                //
+                // relative_change *= std::abs(population (ind) - population_prev1 (ind));
+                // relative_change /= (population (ind) + population_prev1 (ind));
+                //minor computed negative level populations might result in negative values for this
+                const Real relative_change = 2.0*std::abs((population (ind) - population_prev1 (ind))/(population (ind) + population_prev1 (ind)));
 
                 if (relative_change > pop_prec)
                 {
@@ -111,12 +114,55 @@ inline void LineProducingSpecies :: check_for_convergence (const Real pop_prec)
                 }
 
                 rcm += (weight * relative_change);
+                rcmax = std::max(relative_change, rcmax);
             }
         }
     }
 
     fraction_not_converged = fnc;
     relative_change_mean   = rcm;
+    relative_change_max  = rcmax;
+}
+
+/// This function check whether the trial level populations have converged, using the specified precision
+inline void LineProducingSpecies :: check_for_convergence_trial (const Real pop_prec)
+{
+    const Real weight = 1.0 / (parameters->npoints() * linedata.nlev);
+
+    Real fnc = 0.0;
+    Real rcm = 0.0;
+    Real rcmax = 0.0;
+
+#   pragma omp parallel for reduction (+: fnc, rcm) reduction (max: rcmax)
+    for (Size p = 0; p < parameters->npoints(); p++)
+    {
+        for (Size i = 0; i < linedata.nlev; i++)
+        {
+            const Size ind = index (p, i);
+
+            if (population(ind) > parameters->min_rel_pop_for_convergence * population_tot[p])
+            {
+                // Real relative_change = 2.0;
+                //
+                // relative_change *= std::abs(trial_population (ind) - population (ind));
+                // relative_change /= (trial_population (ind) + population (ind));
+                //minor computed negative level populations might result in negative values for this
+                const Real relative_change = 2.0*std::abs((trial_population (ind) - population (ind))/(trial_population (ind) + population (ind)));
+
+                if (relative_change > pop_prec)
+                {
+                    fnc += weight;
+                }
+
+                rcm += (weight * relative_change);
+                rcmax = std::max(relative_change, rcmax);
+            }
+        }
+    }
+
+    fraction_not_converged = fnc;
+    relative_change_mean   = rcm;
+    relative_change_max  = rcmax;
 }
 
 
@@ -185,13 +231,37 @@ void LineProducingSpecies :: update_using_Ng_acceleration ()
 ///////////////////////////////////////////////////////////////////////////
 void LineProducingSpecies :: update_using_acceleration (const Size order)
 {
+    population_prev3 = population_prev2;
+    population_prev2 = population_prev1;
+    population_prev1 = population;
+
+    residuals  .push_back(population-populations.back());
+    populations.push_back(population);
+
+    //inequality due to residuals needing to be computed from populations, but populations may be computed without computing residuals
+    if (populations.size()<(residuals.size()+1))
+    {
+      std::cout<<"Inconsistent data sizes for ng acceleration."<<std::endl;
+      std::cout<<"Size populations: "<<populations.size()<<" Size residuals: "<<residuals.size()<<std::endl;
+      throw std::runtime_error("Error during ng acceleration; inconstent sizes.");
+    }
+    if (residuals.size() < order)
+    {
+      std::cout<<"Ng acceleration order: "<<order<<std::endl;
+      std::cout<<"Size residuals: "<<residuals.size()<<std::endl;
+      throw std::runtime_error("Error during ng acceleration; order of acceleration greather than data stored.");
+    }
+
+    const Size popsize = populations.size();
+    const Size ressize = residuals.size();
+
     MatrixXr RTR (order, order);
 
     for (Size i = 0; i < order; i++)
     {
         for (Size j = 0; j < order; j++)
         {
-            RTR(i,j) = residuals[i].dot(residuals[j]);
+            RTR(i,j) = residuals[ressize-order+i].dot(residuals[ressize-order+j]);
         }
     }
 
@@ -199,15 +269,73 @@ void LineProducingSpecies :: update_using_acceleration (const Size order)
     VectorXr coef  = RTR.colPivHouseholderQr().solve(ones);
              coef /= coef.sum();
 
-    residuals  .push_back(population-populations.back());
-    populations.push_back(population);
-
     population = VectorXr::Zero(population.size());
 
     for (Size i = 0; i < order; i++)
     {
-        population += populations[order-1-i] * coef[order-1-i];
+        population += populations[popsize-1-i] * coef[order-1-i];
     }
+
+    //enforcing memory limit by removing almost all previous information after (general) ng-acceleration
+    //Last population must be kept to compute residuals
+    residuals  .clear();
+    populations.erase(populations.begin(), populations.end()-1);
+
+}
+
+
+///  update_using_acceleration: perform a Ng accelerated iteration step
+///    for level populations. All variable names are based on lecture notes
+///    by C.P. Dullemond which are based on Olson, Auer and Buchler (1985).
+///  Does not update the level populations, storing the results instead into a seperate array
+///////////////////////////////////////////////////////////////////////////
+void LineProducingSpecies :: update_using_acceleration_trial (const Size order)
+{
+    residuals  .push_back(population-populations.back());
+    populations.push_back(population);
+
+    //inequality due to residuals needing to be computed from populations, but populations may be computed without computing residuals
+    if (populations.size()<(residuals.size()+1))
+    {
+        std::cout<<"Inconsistent data sizes for ng acceleration."<<std::endl;
+        std::cout<<"Size populations: "<<populations.size()<<" Size residuals: "<<residuals.size()<<std::endl;
+        throw std::runtime_error("Error during ng acceleration; inconstent sizes.");
+    }
+    if (populations.size() < order)
+    {
+        std::cout<<"Ng acceleration order: "<<order<<std::endl;
+        std::cout<<"Size residuals: "<<residuals.size()<<std::endl;
+        throw std::runtime_error("Error during ng acceleration; order of acceleration greather than data stored.");
+    }
+
+    const Size popsize = populations.size();
+    const Size ressize = residuals.size();
+
+    MatrixXr RTR (order, order);
+
+    for (Size i = 0; i < order; i++)
+    {
+        for (Size j = 0; j < order; j++)
+        {
+            RTR(i,j) = residuals[ressize-order+i].dot(residuals[ressize-order+j]);
+        }
+    }
+
+    VectorXr ones  = VectorXr::Constant(order, 1.0);
+    VectorXr coef  = RTR.colPivHouseholderQr().solve(ones);
+             coef /= coef.sum();
+
+
+    trial_population = VectorXr::Zero(population.size());
+
+    for (Size i = 0; i < order; i++)
+    {
+        trial_population += populations[popsize-1-i] * coef[order-1-i];
+    }
+
+    //as this is a trial, the last elements will now be deleted for consistency
+    residuals  .pop_back();
+    populations.pop_back();
 }
 
 
@@ -464,8 +592,8 @@ inline void LineProducingSpecies :: update_using_statistical_equilibrium_sparse 
     population_prev2 = population_prev1;
     population_prev1 = population;
 
-    // residuals  .push_back(population-populations.back());
-    // populations.push_back(population);
+    residuals  .push_back(population-populations.back());
+    populations.push_back(population);
 
     MatrixXr StatEq (linedata.nlev, linedata.nlev);
     VectorXr y = VectorXr::Zero(linedata.nlev);

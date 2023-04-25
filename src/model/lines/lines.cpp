@@ -114,6 +114,29 @@ void Lines :: iteration_using_Ng_acceleration (const Real pop_prec)
     //gather_emissivities_and_opacities ();
 }
 
+void Lines :: iteration_using_Ng_acceleration (const Real pop_prec, const Size order)
+{
+    for (LineProducingSpecies &lspec : lineProducingSpecies)
+    {
+        lspec.update_using_acceleration (order);
+        lspec.check_for_convergence     (pop_prec);
+    }
+
+    set_emissivity_and_opacity ();
+
+    //gather_emissivities_and_opacities ();
+}
+
+
+void Lines :: trial_iteration_using_adaptive_Ng_acceleration (const Real pop_prec, const Size order)
+{
+    for (LineProducingSpecies &lspec : lineProducingSpecies)
+    {
+        lspec.update_using_acceleration_trial (order);
+        lspec.check_for_convergence_trial (pop_prec);
+    }
+}
+
 
 void Lines :: iteration_using_statistical_equilibrium (
     const Double2      &abundance,
