@@ -10,7 +10,7 @@ As it is both accurate and fast, it is a fine option to default to.
 
    magritte.core.compute_level_populations(use_Ng_acceleration, max_niterations)
 
-The memory usage of this solver can be too high for larger models. By no longer storing the intensities for each direction,
+The memory usage of this solver can be too high for larger models. By no longer storing the mean intensities for each direction pair,
 the memory cost is reduced significantly. The sparse solver can be called similarly using:
 
 .. code-block:: python
