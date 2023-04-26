@@ -19,8 +19,8 @@ year = datetime.datetime.now().year
 # -- Project information -----------------------------------------------------
 
 project = 'Magritte'
-copyright = f'{year}, Frederik De Ceuster'
-author = 'Frederik De Ceuster'
+copyright = f'{year}, Frederik De Ceuster, Thomas Ceulemans'
+author = 'Frederik De Ceuster, Thomas Ceulemans'
 
 # -- Explicitly specify master doc -------------------------------------------
 master_doc = 'index'
