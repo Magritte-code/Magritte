@@ -201,11 +201,22 @@ inline void Image :: set_coordinates_all_model_points (const Geometry& geometry)
         }
         else
         {
-            threaded_for (p, geometry.parameters->npoints(),
+            if (rz>0)
             {
-                ImX[p] = geometry.points.position[p].x();
-                ImY[p] = geometry.points.position[p].y();
-            })
+                threaded_for (p, geometry.parameters->npoints(),
+                {
+                    ImX[p] = geometry.points.position[p].x();
+                    ImY[p] = geometry.points.position[p].y();
+                })
+            }
+            else
+            {//for a correct orientation of direction vectors (x, y, z), we flip the x-axis
+                threaded_for (p, geometry.parameters->npoints(),
+                {
+                    ImX[p] = -geometry.points.position[p].x();
+                    ImY[p] = geometry.points.position[p].y();
+                })
+            }
         }
     }
 }
@@ -304,16 +315,33 @@ inline void Image :: set_coordinates_projection_surface (const Geometry& geometr
         }
         else
         {
-            for (Size bdy_idx = 0; bdy_idx<geometry.parameters->nboundary(); bdy_idx++)
+            if (rz>0)
             {
-                const Size bdy_point_index = geometry.boundary.boundary2point[bdy_idx];
-                const double ImX = geometry.points.position[bdy_point_index].x();
-                const double ImY = geometry.points.position[bdy_point_index].y();
+                for (Size bdy_idx = 0; bdy_idx<geometry.parameters->nboundary(); bdy_idx++)
+                {
+                    const Size bdy_point_index = geometry.boundary.boundary2point[bdy_idx];
+                    const double ImX = geometry.points.position[bdy_point_index].x();
+                    const double ImY = geometry.points.position[bdy_point_index].y();
 
-                min_x = std::min(min_x, ImX);
-                max_x = std::max(max_x, ImX);
-                min_y = std::min(min_y, ImY);
-                max_y = std::max(max_y, ImY);
+                    min_x = std::min(min_x, ImX);
+                    max_x = std::max(max_x, ImX);
+                    min_y = std::min(min_y, ImY);
+                    max_y = std::max(max_y, ImY);
+                }
+            }
+            else
+            {//for a correct orientation of direction vectors (x, y, z), we flip the x-axis
+                for (Size bdy_idx = 0; bdy_idx<geometry.parameters->nboundary(); bdy_idx++)
+                {
+                    const Size bdy_point_index = geometry.boundary.boundary2point[bdy_idx];
+                    const double ImX = -geometry.points.position[bdy_point_index].x();
+                    const double ImY = geometry.points.position[bdy_point_index].y();
+
+                    min_x = std::min(min_x, ImX);
+                    max_x = std::max(max_x, ImX);
+                    min_y = std::min(min_y, ImY);
+                    max_y = std::max(max_y, ImY);
+                }
             }
         }
     }
@@ -383,7 +411,14 @@ accel Vector3D Image :: surface_coords_to_3D_coordinates(const double x, const d
     }
     else
     {
-        return Vector3D(x, y, 0) + surface_center_point;
+        if (rz>0)
+        {
+            return Vector3D(x, y, 0) + surface_center_point;
+        }
+        else
+        {//for a correct orientation of direction vectors (x, y, z), we flip the x-axis
+            return Vector3D(-x, y, 0) + surface_center_point;
+        }
     }
 
 }
