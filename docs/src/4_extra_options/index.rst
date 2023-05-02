@@ -9,3 +9,4 @@ we will explain a few interesting options that might be interesting.
 
    parameters.approximations
    other_solvers
+   adaptive_ng_acceleration
