@@ -220,7 +220,7 @@ def set_uniform_rays(model, randomize=False, first_ray=np.array([1.0, 0.0, 0.0])
     return model
 
 
-def set_rays_spherical_symmetry(model, nextra=0, uniform=True):
+def set_rays_spherical_symmetry(model, uniform=True, nextra=0, step=1):
     """
     Setter for rays in a 1D spherically symmetric model.
 
@@ -228,77 +228,109 @@ def set_rays_spherical_symmetry(model, nextra=0, uniform=True):
     ----------
     model : Magritte model object
         Magritte model object to set.
-    nextra : int
-        Number of extra rays to add.
     uniform : bool
         Whether or not to use uniformly distributed rays.
+    nextra : int
+        Number of extra rays to add.
+    step : int
+        Step size used to step through the points when shooting rays (step=1 uses all points).
 
     Returns
     -------
     out : Magritte model object
         Updated Magritte object.
     """
-
     if uniform:
+        # Treat every ray as "extra", since "extra" rays are added uniformly anyway
         nrays  = model.parameters.nrays()
         nextra = nrays//2-1
         rs     = []
     else:
-        nrays = 2*(1 + model.parameters.npoints() + nextra)
         rs    = np.array(model.geometry.points.position)[:,0]
-
-    # for i, ri in enumerate(points):
-
+        # Below we assume that rs is sorted and the last element is the largest, hence sort
+        rs = np.sort(rs)
+        R  = rs[-1]
+    
+    # Add the first ray, right through the centre, i.e. along the x-axis
     Rx = [1.0]
     Ry = [0.0]
     Rz = [0.0]
-
-    for j, rj in enumerate(rs):
-       Rx.append(ri / np.sqrt(ri**2 + rj**2))
-       Ry.append(rj / np.sqrt(ri**2 + rj**2))
-       Rz.append(0.0)
-
+    
+    # Add the other rays, such that for the outer shell each ray touches another shell
+    for ri in rs[0:-1:step]:
+        ry = ri / R
+        rx = np.sqrt(1.0 - ry**2)
+        Rx.append(rx)
+        Ry.append(ry)
+        Rz.append(0.0)
+    
+    # Determine up to which angle we already have rays
     angle_max   = np.arctan(Ry[-1] / Rx[-1])
     angle_extra = (0.5*np.pi - angle_max) / nextra
-
+    
+    # Fill the remaining angular space uniformly
     for k in range(1, nextra):
         Rx.append(np.cos(angle_max + k*angle_extra))
         Ry.append(np.sin(angle_max + k*angle_extra))
         Rz.append(0.0)
-
+    
+    # Add the last ray, orthogonal to the radial direction, i.e. along the y-axis
     Rx.append(0.0)
     Ry.append(1.0)
     Rz.append(0.0)
-
+    
+    # Determine the number of rays
+    assert len(Rx) == len(Ry)
+    assert len(Rx) == len(Rz)
+    nrays = 2*len(Rx)
+    
+    # Compute the weights for each ray
+    # \int_{half previous}^{half next} sin \theta d\theta
+    # = cos(half previous angle) - cos(half next angle)
     Wt = []
     for n in range(nrays//2):
         if   (n == 0):
             upper_x, upper_y = 0.5*(Rx[n]+Rx[n+1]), 0.5*(Ry[n]+Ry[n+1])
             lower_x, lower_y = Rx[ 0], Ry[ 0]
-        elif (n == nrays/2-1):
+        elif (n == nrays//2-1):
             upper_x, upper_y = Rx[-1], Ry[-1]
             lower_x, lower_y = 0.5*(Rx[n]+Rx[n-1]), 0.5*(Ry[n]+Ry[n-1])
         else:
             upper_x, upper_y = 0.5*(Rx[n]+Rx[n+1]), 0.5*(Ry[n]+Ry[n+1])
             lower_x, lower_y = 0.5*(Rx[n]+Rx[n-1]), 0.5*(Ry[n]+Ry[n-1])
-
+    
         Wt.append(  lower_x / np.sqrt(lower_x**2 + lower_y**2)
                   - upper_x / np.sqrt(upper_x**2 + upper_y**2) )
-
-    inverse_double_total = 1.0 / (2.0 * sum(Wt))
-
-    for n in range(nrays//2):
-        Wt[n] = Wt[n] * inverse_double_total
-
+    
     # Append the antipodal rays
     for n in range(nrays//2):
         Rx.append(-Rx[n])
         Ry.append(-Ry[n])
         Rz.append(-Rz[n])
         Wt.append( Wt[n])
-
-    model.geometry.rays.direction.set(np.array((Rx,Ry,Rz)).transpose())
-    model.geometry.rays.weight   .set(np.array(Wt))
+    
+    # Create numpy arrays
+    direction = np.array((Rx,Ry,Rz)).transpose()
+    weight    = np.array(Wt)
+    
+    # Normalize the weights
+    weight /= np.sum(weight)
+    
+    # Set the direction and the weights in the Magritte model
+    model.geometry.rays.direction.set(direction)
+    model.geometry.rays.weight   .set(weight)
+    
+    # Set nrays in the model
+    try:
+        model.parameters.set_nrays(nrays)
+    except:
+        raise RuntimeError(
+            f"The specified number of rays in the model (nrays={model.parameters.nrays()}) does not match\n"
+            f"with the specified nextra={nextra} and step={step}. Either don't specify the number of rays\n"
+            f"for the model (i.e. don't invoke model.parameters.set_nrays) so this function can\n"
+            f"set nrays, or specify the right number, which is {nrays} in this particular case."
+        )    
+    
     # Done
     return model
 
