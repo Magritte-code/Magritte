@@ -132,13 +132,16 @@ PYBIND11_MODULE (core, module)
     // Image
     py::class_<Image> (module, "Image", "Image class, 2D point cloud of intensities for each frequency bin.")
         // attributes
-        .def_readonly  ("imageType", &Image::imageType, "Type of image (intensity of optical depth).")
+        .def_readonly  ("imageType", &Image::imageType, "Type of image (intensity or optical depth).")
         .def_readonly  ("imagePointPosition", &Image::imagePointPosition, "Position of image points (model points or projection surface).")
         .def_readonly  ("nfreqs", &Image::nfreqs,       "Number of frequency bins in the image.")
         .def_readonly  ("freqs", &Image::freqs,         "Frequency bins of the image.")
         .def_readonly  ("ray_nr",    &Image::ray_nr,    "Number of the ray along which the image is taken.")
         .def_readonly  ("ImX",       &Image::ImX,       "X-coordinates of the points in the image plane.")
         .def_readonly  ("ImY",       &Image::ImY,       "Y-coordinates of the points in the image plane.")
+        .def_readonly  ("image_direction_x", &Image::image_direction_x, "coordinate of image x direction in a 3D general geometry.")
+        .def_readonly  ("image_direction_y", &Image::image_direction_y, "coordinate of image y direction in a 3D general geometry.")
+        .def_readonly  ("image_direction_z", &Image::image_direction_z, "direction in which the image is taken.")
         .def_readonly  ("I",         &Image::I,         "Intensity of the points in the image (for each frequency bin).")
         // constructor
         .def (py::init<const Geometry&, const Frequencies&, const ImageType&, const Size&>());
@@ -384,8 +387,8 @@ PYBIND11_MODULE (core, module)
         .def ("set_spherical_symmetry",       &Parameters::set_spherical_symmetry  , "Set whether or not to use spherical symmetry")
         .def ("set_adaptive_ray_tracing",     &Parameters::set_adaptive_ray_tracing, "Set whether or not to use adaptive ray tracing.")
         // getters
-		    .def ("version",                      &Parameters::version                 , "Magritte version number.")
-		    .def ("model_name",                   &Parameters::model_name              , "Model name.")
+		.def ("version",                      &Parameters::version                 , "Magritte version number.")
+		.def ("model_name",                   &Parameters::model_name              , "Model name.")
         .def ("dimension",                    &Parameters::dimension               , "Spatial dimension of the model.")
         .def ("npoints",                      &Parameters::npoints                 , "Number of points.")
         .def ("nrays",                        &Parameters::nrays                   , "Number of rays.")
@@ -686,6 +689,27 @@ PYBIND11_MODULE (core, module)
         )
         // functions
         .def ("set", &Vector<Real>::set_1D_array)
+        // constructor
+        .def (py::init());
+
+    // Vector3D
+    py::class_<Vector3D> (module, "V3DReal", py::buffer_protocol())
+        // buffer
+        .def_buffer(
+            [](Vector3D &v) -> py::buffer_info
+            {
+                return py::buffer_info(
+                    &v.data[0],                          // Pointer to buffer
+                    sizeof(Real),                          // Size of one element
+                    py::format_descriptor<Real>::format(), // Python struct-style format descriptor
+                    1,                                     // Number of dimensions
+                    {3},                        // Buffer dimensions
+                    {sizeof(Real)}                         // Strides (in bytes) for each index
+                );
+            }
+        )
+        // functions TODO IMPLEMENT when necessary (for now, no Vector3D is expected* to be set by the user). *We might in the future try to ask for a direction in '(numpy vector to) Vector3D' format
+        // .def ("set", &Vector3D<Real>::set_1D_array)
         // constructor
         .def (py::init());
 

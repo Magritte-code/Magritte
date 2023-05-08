@@ -47,7 +47,7 @@ Image :: Image (const Geometry& geometry, const Frequencies& frequencies, const 
 
 ///  Copy constructor for Image
 ///////////////////////////////
-Image :: Image (const Image& image) : imageType(image.imageType), imagePointPosition(image.imagePointPosition), ray_nr (image.ray_nr), ray_direction(image.ray_direction), closest_bdy_point(image.closest_bdy_point), surface_center_point(image.surface_center_point), nfreqs(image.nfreqs)
+Image :: Image (const Image& image) : imageType(image.imageType), imagePointPosition(image.imagePointPosition), ray_nr (image.ray_nr), ray_direction(image.ray_direction), closest_bdy_point(image.closest_bdy_point), surface_center_point(image.surface_center_point), nfreqs(image.nfreqs), image_direction_x(image.image_direction_x), image_direction_y(image.image_direction_y), image_direction_z(image.image_direction_z)
 {
     ImX = image.ImX;
     ImY = image.ImY;
@@ -169,6 +169,12 @@ inline void Image :: set_coordinates_all_model_points (const Geometry& geometry)
             ImX[p] = geometry.points.position[p].x();
             ImY[p] = 0.0;
         })
+        
+        //For now, the ray direction in 1D can only be (0.0,1.0,0.0)
+        //Do not set the x-and y-directions, as these do not make sense in 1D spherical symmetry
+        //Note: no copy constructor exists for Paracabs::Vector objects
+        image_direction_z = Vector3D(0.0, 1.0, 0.0);
+
     }
 
     if (geometry.parameters->dimension() == 3)
@@ -198,6 +204,10 @@ inline void Image :: set_coordinates_all_model_points (const Geometry& geometry)
                          + jy * geometry.points.position[p].y()
                          + jz * geometry.points.position[p].z();
             })
+
+            image_direction_x = Vector3D(ix, iy, 0.0);
+            image_direction_y = Vector3D(jx, jy, jz);
+
         }
         else
         {
@@ -206,7 +216,13 @@ inline void Image :: set_coordinates_all_model_points (const Geometry& geometry)
                 ImX[p] = geometry.points.position[p].x();
                 ImY[p] = geometry.points.position[p].y();
             })
+
+            image_direction_x = Vector3D(1.0, 0.0, 0.0);
+            image_direction_y = Vector3D(0.0, 1.0, 0.0);
+
         }
+
+        image_direction_z = Vector3D(rx, ry, rz);
     }
 }
 
@@ -264,6 +280,15 @@ inline void Image :: set_coordinates_projection_surface (const Geometry& geometr
         min_x = -max_x;
         min_y = min_x;
         max_y = max_x;
+
+        //For now, the ray direction in 1D can only be (0.0,1.0,0.0)
+        //We do set the x-and y-directions, as we treat the image of the 1D object in the same way as a 3D object
+        //But still, these direction vectors might as well be omitted, as we have spherical symmetry in this object...
+        //Note: no copy constructor exists for Paracabs::Vector objects
+        //Note: the directions are obtained by filling in the formulae for ix,iy, jx,jy,jz
+        image_direction_x = Vector3D(1.0, 0.0, 0.0);
+        image_direction_y = Vector3D(0.0, 0.0, -1.0);
+        image_direction_z = Vector3D(0.0, 1.0, 0.0);
     }
 
     if (geometry.parameters->dimension() == 3)
@@ -301,6 +326,9 @@ inline void Image :: set_coordinates_projection_surface (const Geometry& geometr
                 min_y = std::min(min_y, ImY);
                 max_y = std::max(max_y, ImY);
             }
+
+            image_direction_x = Vector3D(ix, iy, 0.0);
+            image_direction_y = Vector3D(jx, jy, jz);
         }
         else
         {
@@ -315,7 +343,12 @@ inline void Image :: set_coordinates_projection_surface (const Geometry& geometr
                 min_y = std::min(min_y, ImY);
                 max_y = std::max(max_y, ImY);
             }
+
+            image_direction_x = Vector3D(1.0, 0.0, 0.0);
+            image_direction_y = Vector3D(0.0, 1.0, 0.0);
         }
+
+        image_direction_z = Vector3D(rx, ry, rz);
     }
 
     //Define pixels spanned by the plane: TODO: figure out why I thought I needed the closest bdy point
