@@ -26,8 +26,15 @@ struct Image
     Size closest_bdy_point;///< position of closest bdy point to start tracing ray from, if imaging a projection surface
     Vector3D surface_center_point;///< position of 0 point of projection surface, if imaging a projection surface
 
+    //The images themselves define some coordinate system, this is copied into these Vector3D's
+    Vector3D image_direction_x;  ///< coordinate of image x direction in a 3D general geometry
+    Vector3D image_direction_y;  ///< coordinate of image y direction in a 3D general geometry
+    Vector3D image_direction_z;  ///< direction in which the image is taken
+
     Double1 ImX;                 ///< x coordinate of point in image
     Double1 ImY;                 ///< y coordinate of point in image
+
+    //The actual image contents
     Matrix<Real> I;              ///< value of the pixel at the corresponding coordinate
 
 
