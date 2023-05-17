@@ -2,6 +2,7 @@ import numpy as np
 import scipy as sp
 import healpy
 import re
+import astroquery.lamda as lamda
 
 from magritte.core import LineProducingSpecies, vLineProducingSpecies,            \
                           CollisionPartner, vCollisionPartner, CC, HH, KB, T_CMB, \
@@ -469,7 +470,7 @@ def getProperName(name):
     '''
     if name in ['e']:
         return 'e-'
-    if name in ['pH2', 'oH2', 'p-H2', 'o-H2']:
+    if name in ['pH2', 'oH2', 'p-H2', 'o-H2', 'PH2', 'OH2']:
         return 'H2'
     # If none of the above special cases, it should be fine
     return name
@@ -503,6 +504,24 @@ def extractCollisionPartner (fileName, line, species, elem):
     else:
         orthoPara = 'n'
     return [getSpeciesNumber (species, partner), orthoPara]
+
+
+#Astroquery actually reads the number in front of the line to determine which collider is used.
+# Thus the names for H2 are limited to PH2, OH2.
+def extractCollisionPartnerAstroquery (partner, species):
+    orthopara = 'n'
+    if partner == 'PH2':
+        orthopara = 'p'
+    elif partner == 'OH2':
+        orthopara = 'o'
+
+    return [getSpeciesNumber (species, partner), orthopara]
+
+
+#Astroquery names the temperature colums for the collision rates in the following manner: "C_ij(T=temp)"
+def convertTempToColumnNameAstroquery (temp):
+    return "C_ij(T="+str(temp)+")"
+
 
 
 class LamdaFileReader ():
@@ -590,20 +609,36 @@ def set_linedata_from_LAMDA_file (model, fileNames, config={}):
     species = model.chemistry.species
     # Add data for each LAMDA file
     for lspec, fileName in enumerate(fileNames):
-        # Create reader for data file
-        rd = LamdaFileReader(fileName)
-        # Read radiative data
-        sym          = rd.readColumn(start= 1,      nElem=1,    columnNr=0, type='str')[0]
+        #new astroquery file read
+        collrates, radtransitions, enlevels = lamda.parse_lamda_datafile(fileName)
+        sym = enlevels.meta['molecule']# is given after ! MOLECULE
         num          = getSpeciesNumber(species, sym)
-        mass         = rd.readColumn(start= 3,      nElem=1,    columnNr=0, type='float')[0]
-        inverse_mass = float (1.0 / mass)
-        nlev         = rd.readColumn(start= 5,      nElem=1,    columnNr=0, type='int')[0]
-        energy       = rd.readColumn(start= 7,      nElem=nlev, columnNr=1, type='float')
-        weight       = rd.readColumn(start= 7,      nElem=nlev, columnNr=2, type='float')
-        nrad         = rd.readColumn(start= 8+nlev, nElem=1,    columnNr=0, type='int')[0]
-        irad         = rd.readColumn(start=10+nlev, nElem=nrad, columnNr=1, type='int')
-        jrad         = rd.readColumn(start=10+nlev, nElem=nrad, columnNr=2, type='int')
-        A            = rd.readColumn(start=10+nlev, nElem=nrad, columnNr=3, type='float')
+        mass = enlevels.meta['molwt']
+        inverse_mass = float (1.0/mass)
+        nlev = enlevels.meta['nenergylevels']
+        energy = enlevels['Energy']
+        weight = enlevels['Weight']
+        nrad = radtransitions.meta['radtrans']
+        irad = radtransitions['Upper'] #upper transition
+        jrad = radtransitions['Lower'] #lower transition
+        A = radtransitions['EinsteinA']
+
+        # Old reader object
+        # # Create reader for data file
+        # rd = LamdaFileReader(fileName)
+        # # Read radiative data
+        # sym          = rd.readColumn(start= 1,      nElem=1,    columnNr=0, type='str')[0]
+        # num          = getSpeciesNumber(species, sym)
+        # mass         = rd.readColumn(start= 3,      nElem=1,    columnNr=0, type='float')[0]
+        # inverse_mass = float (1.0 / mass)
+        # nlev         = rd.readColumn(start= 5,      nElem=1,    columnNr=0, type='int')[0]
+        # energy       = rd.readColumn(start= 7,      nElem=nlev, columnNr=1, type='float')
+        # weight       = rd.readColumn(start= 7,      nElem=nlev, columnNr=2, type='float')
+        # nrad         = rd.readColumn(start= 8+nlev, nElem=1,    columnNr=0, type='int')[0]
+        # irad         = rd.readColumn(start=10+nlev, nElem=nrad, columnNr=1, type='int')
+        # jrad         = rd.readColumn(start=10+nlev, nElem=nrad, columnNr=2, type='int')
+        # A            = rd.readColumn(start=10+nlev, nElem=nrad, columnNr=3, type='float')
+
         # Change index range from [1, nlev] to [0, nlev-1]
         for k in range(nrad):
             irad[k] += -1
@@ -619,32 +654,50 @@ def set_linedata_from_LAMDA_file (model, fileNames, config={}):
         model.lines.lineProducingSpecies[lspec].linedata.nlev         = nlev
         model.lines.lineProducingSpecies[lspec].linedata.energy       = energy
         model.lines.lineProducingSpecies[lspec].linedata.weight       = weight
-        # Start reading collisional data
-        nlr = nlev + nrad
-        # Get number of collision partners
-        ncolpar = rd.readColumn(start=11+nlr, nElem=1,  columnNr=0, type='int')[0]
-        ind     = 13 + nlr
+
+        ncolpar = len(collrates)
+
+        # # Start reading collisional data
+        # nlr = nlev + nrad
+        # # Get number of collision partners
+        # ncolpar = rd.readColumn(start=11+nlr, nElem=1,  columnNr=0, type='int')[0]
+        # ind     = 13 + nlr
+
         # Set number of collision partners
         model.lines.lineProducingSpecies[lspec].linedata.ncolpar = ncolpar
         # Create list of CollisionPartners
         model.lines.lineProducingSpecies[lspec].linedata.colpar = vCollisionPartner([CollisionPartner() for _ in range(ncolpar)])
         # Loop over the collision partners
-        for c in range(ncolpar):
-            num_col_partner = rd.extractCollisionPartner(line=ind, species=species, elem=sym)[0]
-            orth_or_para_H2 = rd.extractCollisionPartner(line=ind, species=species, elem=sym)[1]
-            ncol            = rd.readColumn(start=ind+2, nElem=1,    columnNr=0,   type='int')[0]
-            ntmp            = rd.readColumn(start=ind+4, nElem=1,    columnNr=0,   type='int')[0]
-            icol            = rd.readColumn(start=ind+8, nElem=ncol, columnNr=1,   type='int')
-            jcol            = rd.readColumn(start=ind+8, nElem=ncol, columnNr=2,   type='int')
+        # for c in range(ncolpar):
+        for partner, c in zip(collrates.keys(), range(ncolpar)):
+            num_col_partner, orth_or_para_H2 = extractCollisionPartnerAstroquery (partner, species)
+            ncol = collrates[partner].meta['ntrans']
+            ntmp = collrates[partner].meta['ntemp']
+            icol = collrates[partner]['Upper']
+            jcol = collrates[partner]['Lower']
+
+            # num_col_partner = rd.extractCollisionPartner(line=ind, species=species, elem=sym)[0]
+            # orth_or_para_H2 = rd.extractCollisionPartner(line=ind, species=species, elem=sym)[1]
+            # ncol            = rd.readColumn(start=ind+2, nElem=1,    columnNr=0,   type='int')[0]
+            # ntmp            = rd.readColumn(start=ind+4, nElem=1,    columnNr=0,   type='int')[0]
+            # icol            = rd.readColumn(start=ind+8, nElem=ncol, columnNr=1,   type='int')
+            # jcol            = rd.readColumn(start=ind+8, nElem=ncol, columnNr=2,   type='int')
             # Change index range from [1, nlev] to [0, nlev-1]
             for k in range(ncol):
                 icol[k] += -1
                 jcol[k] += -1
             tmp = []
             Cd  = []
-            for t in range (ntmp):
-                tmp.append (rd.readColumn(start=ind+6, nElem=1,    columnNr=t,   type='float')[0])
-                Cd .append (rd.readColumn(start=ind+8, nElem=ncol, columnNr=3+t, type='float'))
+
+            tmp = collrates[partner].meta['temperatures']
+
+            for temp in tmp:
+                Cd.append(collrates[partner][convertTempToColumnNameAstroquery(temp)])
+
+            # for t in range (ntmp):
+            #     tmp.append (rd.readColumn(start=ind+6, nElem=1,    columnNr=t,   type='float')[0])
+            #     Cd .append (rd.readColumn(start=ind+8, nElem=ncol, columnNr=3+t, type='float'))
+
             # Convert to SI units
             for t in range(ntmp):
                 for k in range(ncol):
@@ -668,7 +721,7 @@ def set_linedata_from_LAMDA_file (model, fileNames, config={}):
             model.lines.lineProducingSpecies[lspec].linedata.colpar[c].Cd              = Cd
             model.lines.lineProducingSpecies[lspec].linedata.colpar[c].Ce              = Ce
             # Increment index
-            ind += 9 + ncol
+            # ind += 9 + ncol
         # Limit to the specified lines if required
         if ('considered transitions' in config) and (config['considered transitions'] is not None):
             if not isinstance(config['considered transitions'], list):
