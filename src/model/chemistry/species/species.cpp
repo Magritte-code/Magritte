@@ -40,8 +40,6 @@ void Species :: write (const Io &io) const
 {
     cout << "Writing species..." << endl;
 
-    Long1 dummy (parameters->nspecs(), 0);
-
     io.write_list  (prefix+"species",   symbol   );
     io.write_array (prefix+"abundance", abundance);
 }
