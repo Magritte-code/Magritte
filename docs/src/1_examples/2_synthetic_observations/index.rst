@@ -11,7 +11,7 @@ The following examples show how to create synthetic observations with Magritte.
     on how to create a Magritte model, please refer to the :ref:`creating models
     <link-creating_models>` or :ref:`post-processing examples <link-post-processing>`.
 
-.. Note::
+.. Warning::
     Compared to Magritte versions before 0.3.0, the frequency discretization of images is flipped.
     This is due to a bug in the computation of the doppler shift in versions of Magritte prior to 0.3.0.
 
