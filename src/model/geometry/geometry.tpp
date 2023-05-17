@@ -223,8 +223,7 @@ inline double Geometry :: get_shift_general_geometry <CoMoving> (
     const Vector3D& raydir,
     const Size     crt ) const
 {
-    // return 1.0 - (points.velocity[crt] - points.velocity[o]).dot(rays.direction[r]);
-    return 1.0 - (points.velocity[crt] - origin_velocity).dot(raydir);
+    return 1.0 + (points.velocity[crt] - origin_velocity).dot(raydir);
 }
 
 
@@ -240,7 +239,7 @@ inline double Geometry :: get_shift_general_geometry <Rest> (
     const Vector3D& raydir,
     const Size     crt ) const
 {
-    return 1.0 - points.velocity[crt].dot(raydir);
+    return 1.0 + points.velocity[crt].dot(raydir);
 }
 
 
@@ -498,12 +497,12 @@ inline double Geometry :: get_shift_spherical_symmetry <CoMoving> (
 
     if (points.position[c].x() == 0.0)
     {
-        return 1.0 + origin_velocity.dot(raydir);
+        return 1.0 - origin_velocity.dot(raydir);
     }
 
     const double Rcos_plus_Z = origin.dot(raydir) + Z;
 
-    return 1.0 - (  points.velocity[c].x() * Rcos_plus_Z / points.position[c].x()
+    return 1.0 + (  points.velocity[c].x() * Rcos_plus_Z / points.position[c].x()
                     - origin_velocity.dot(raydir)                             );
 }
 
@@ -530,7 +529,7 @@ inline double Geometry :: get_shift_spherical_symmetry <Rest> (
 
     const double Rcos_plus_Z = origin.dot(raydir) + Z;
 
-    return 1.0 - points.velocity[c].x() * Rcos_plus_Z / points.position[c].x();
+    return 1.0 + points.velocity[c].x() * Rcos_plus_Z / points.position[c].x();
 }
 
 
