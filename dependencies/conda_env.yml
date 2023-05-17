@@ -23,7 +23,7 @@ dependencies:
   - h5py
   - numba
   - healpy
-  - astropy
+  - astroquery
   - jupyterlab-plotly-extension
   - nbdime
   - jupyterlab-git
