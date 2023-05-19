@@ -25,6 +25,8 @@ void Species :: read (const Io& io)
 
     // Read the abundaces of each species in each cell
     io.read_array (prefix+"abundance", abundance);
+    // Also read the species names
+    io.read_list  (prefix+"species",   symbol   );
 
     // Set initial abundances
     abundance_init = abundance;
@@ -38,8 +40,6 @@ void Species :: write (const Io &io) const
 {
     cout << "Writing species..." << endl;
 
-    Long1 dummy (parameters->nspecs(), 0);
-
-    io.write_list  (prefix+"species",   dummy    );
+    io.write_list  (prefix+"species",   symbol   );
     io.write_array (prefix+"abundance", abundance);
 }
