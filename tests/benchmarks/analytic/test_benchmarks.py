@@ -1,3 +1,4 @@
+from reject_nonexistent_species import create_model as reject_nonexistent_species_setup
 from all_constant_single_ray import create_model as all_constant_setup
 from all_constant_single_ray import run_model as all_constant_run
 from all_zero_single_ray import create_model as all_zero_setup
@@ -29,6 +30,10 @@ class TestInput:
             bogusFile = "dlpbmfhqbzeszvroptsqwupklhbtvkzkmebzdduhetthdjakgz.hdf5"
             model = magritte.Model(bogusFile) #reading bogus files should raise an exception
             #note: if we segfault, pytest will also complain, so this should protect against segfaults
+
+    def test_read_nonexistent_species(self):
+        with pytest.raises(Exception):
+            reject_nonexistent_species_setup()
 
 class TestAnalytic:
     #incremental testing; see conftest.py or pytest.ini
