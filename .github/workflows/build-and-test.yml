@@ -29,9 +29,7 @@ jobs:
           clang_format: true
           clang_format_extensions: "c,cc,cpp,h,hpp,tpp"
           clang_format_dir: "src/"
-          black_format: true
-          black_format_extensions: "py"
-          black_format_dir: "src/, tests/, magritte/, docs/"
+          clang_format_args: "-i"
 
 #Before testing, we increase the version number. Otherwise, some delay (>30 mins) may occur between updating the code and doing the version increase.
   UpdateVersion:
