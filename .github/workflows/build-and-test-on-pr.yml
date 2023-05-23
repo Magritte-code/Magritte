@@ -29,7 +29,7 @@ jobs:
           clang_format: true
           clang_format_extensions: "c,cc,cpp,h,hpp,tpp"
           clang_format_dir: "src/"
-          clang_format_args: "-i"
+          clang_format_auto_fix: true
 
   BuildAndTest:
     needs: run-linters
