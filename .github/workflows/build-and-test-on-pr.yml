@@ -4,8 +4,37 @@ on:
   pull_request:
     branches: [ stable ]
 jobs:
+  #Before testing the code, make sure that it is linted properly
+  run-linters:
+    name: Run linters
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v3
+
+      - name: Install ClangFormat
+        run: sudo apt-get install -y clang-format
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+
+      - name: Install Python dependencies
+        run: pip install black flake8
+
+      - name: Run linters
+        uses: wearerequired/lint-action@v2
+        with:
+          auto_fix: true
+          clang_format: true
+          clang_format_extensions: "c,cc,cpp,h,hpp,tpp"
+          clang_format_dir: "src/"
+          black_format: true
+          black_format_extensions: "py"
+          black_format_dir: "src/, tests/, magritte/, docs/"
+
   BuildAndTest:
-    # runs-on: ubuntu-latest
+    needs: run-linters
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
