@@ -22,7 +22,7 @@ jobs:
       - name: Install Python dependencies
         run: pip install black flake8
 
-      - name: Run linters
+      - name: Run cpp linter
         uses: wearerequired/lint-action@v2
         with:
           auto_fix: true
@@ -30,6 +30,15 @@ jobs:
           clang_format_extensions: "c,cc,cpp,h,hpp,tpp"
           clang_format_dir: "src/"
           clang_format_auto_fix: true
+
+      - name: Run python linter
+        uses: wearerequired/lint-action@v2
+        with:
+          auto_fix: true
+          black: true
+          black_extensions: "py"
+          black_dir: "src/, tests/, magritte/, docs/"
+          black_auto_fix: true
 
   BuildAndTest:
     needs: run-linters

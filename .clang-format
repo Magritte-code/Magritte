@@ -76,8 +76,6 @@ ForEachMacros:
   - foreach
   - Q_FOREACH
   - BOOST_FOREACH
-  - accelerated_for
-  - threaded_for
 IfMacros:
   - KJ_IF_MAYBE
 IncludeBlocks:   Regroup
@@ -168,6 +166,8 @@ StatementAttributeLikeMacros:
 StatementMacros:
   - Q_UNUSED
   - QT_REQUIRE_VERSION
+  - accelerated_for
+  - threaded_for
 TabWidth:        8
 UseCRLF:         false
 UseTab:          Never
