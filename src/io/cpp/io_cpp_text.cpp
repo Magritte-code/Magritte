@@ -1,378 +1,314 @@
-#include <fstream>
-#include <sys/stat.h>
-#include <iomanip>
-
 #include "io_cpp_text.hpp"
 
+#include <fstream>
+#include <iomanip>
+#include <sys/stat.h>
 
 ///  Constructor for IoText
 ///    @param[in] io_file : file to read from and write to
 //////////////////////////////////////////////////////////
-IoText :: IoText (const string &io_file) : Io (io_file) {}
-
+IoText ::IoText(const string& io_file) : Io(io_file) {}
 
 ///  Check if the given file exists
 ///    @param[in] path : path to check
 //////////////////////////////////////
-bool IoText :: file_exists (const string fname) const
-{
+bool IoText ::file_exists(const string fname) const {
     struct stat buffer;
-    return (stat (fname.c_str(), &buffer) == 0);
+    return (stat(fname.c_str(), &buffer) == 0);
 }
-
 
 ///  Reader for the length of a text file
 ///    @param[in]  file_name : path to file containing the data
 ///    @param[out] length    : length to be read
 ///////////////////////////////////////////////////////////////
-int IoText :: read_length (const string file_name, Size &length) const
-{
-  string fname = io_file + file_name;
+int IoText ::read_length(const string file_name, Size& length) const {
+    string fname = io_file + file_name;
 
-  length = 0;
+    length = 0;
 
-  if (file_exists (fname + ".txt"))
-  {
-    std::ifstream file (fname + ".txt");
+    if (file_exists(fname + ".txt")) {
+        std::ifstream file(fname + ".txt");
 
-    string line;
+        string line;
 
-    while (std::getline (file, line))
-    {
-      length++;
+        while (std::getline(file, line)) {
+            length++;
+        }
+
+        file.close();
     }
 
-    file.close();
-  }
-
-  else
-  {
-    while (file_exists (fname + std::to_string (length)))
-    {
-      length++;
+    else {
+        while (file_exists(fname + std::to_string(length))) {
+            length++;
+        }
     }
-  }
 
-  return (0);
+    return (0);
 }
-
 
 ///  Getter for the length of a text file
 ///    @param[in]  file_name : path to file containing the data
 ///    @returns length of the file
 ///////////////////////////////////////////////////////////////
-Size IoText :: get_length (const string file_name) const
-{
+Size IoText ::get_length(const string file_name) const {
     Size length;
-    read_length (file_name, length);
+    read_length(file_name, length);
     return length;
 }
-
 
 ///  Reader for the number of columns (width) of a text file
 ///  or the number of files with a similar file name
 ///    @param[in]  file_name : path to file containing the data
 ///    @param[out] width     : width to be read
 ///////////////////////////////////////////////////////////////
-int IoText :: read_width (const string file_name, Size &width) const
-{
-  string fname = io_file + file_name;
+int IoText ::read_width(const string file_name, Size& width) const {
+    string fname = io_file + file_name;
 
-  width = 0;
+    width = 0;
 
-  if (file_exists (fname + ".txt"))
-  {
-    // Count the number of columns in the file
+    if (file_exists(fname + ".txt")) {
+        // Count the number of columns in the file
 
-    std::ifstream file (io_file + file_name + ".txt");
+        std::ifstream file(io_file + file_name + ".txt");
 
-    string line, elem;
+        string line, elem;
 
-    std::getline (file, line);
+        std::getline(file, line);
 
-    std::stringstream ss (line);
+        std::stringstream ss(line);
 
-    while (std::getline (ss, elem, '\t'))
-    {
-      width++;
+        while (std::getline(ss, elem, '\t')) {
+            width++;
+        }
+
+        file.close();
     }
 
-    file.close();
-  }
+    else {
+        // Count the number of files with a similar name
 
-  else
-  {
-    // Count the number of files with a similar name
-
-    while (file_exists (fname + std::to_string (width)))
-    {
-      width++;
+        while (file_exists(fname + std::to_string(width))) {
+            width++;
+        }
     }
-  }
 
-  return (0);
+    return (0);
 }
-
 
 ///  Getter for the number of columns (width) of a text file
 ///  or the number of files with a similar file name
 ///    @param[in]  file_name : path to file containing the data
 ///    @returns width of the file
 ///////////////////////////////////////////////////////////////
-Size IoText :: get_width (const string file_name) const
-{
+Size IoText ::get_width(const string file_name) const {
     Size width;
-    read_width (file_name, width);
+    read_width(file_name, width);
     return width;
 }
 
-
 ///  Reader for a single (long integer) number from a text file
 ///    @param[in]  file_name : path to the file containing the number
 ///    @param[out] number    : number to be read
 /////////////////////////////////////////////////////////////////////
-int IoText :: read_number (const string file_name, Size &number) const
-{
-    std::ifstream file (io_file + file_name + ".txt");
+int IoText ::read_number(const string file_name, Size& number) const {
+    std::ifstream file(io_file + file_name + ".txt");
 
-    if (file.is_open())
-    {
+    if (file.is_open()) {
         file >> number;
 
-        return ( 0);
-    }
-    else
-    {
+        return (0);
+    } else {
         return (-1);
     }
 }
-
 
 ///  Writer for a single (long integer) number to a text file
 ///    @param[in]  file_name : path to the file to be written
 ///    @param[out] number    : number to be written
 /////////////////////////////////////////////////////////////
-int IoText :: write_number (const string file_name, const Size &number) const
-{
-    std::ofstream file (io_file + file_name + ".txt");
+int IoText ::write_number(const string file_name, const Size& number) const {
+    std::ofstream file(io_file + file_name + ".txt");
 
-    if (file.is_open())
-    {
+    if (file.is_open()) {
         file << std::scientific << std::setprecision(16);
         file << number;
 
-        return ( 0);
-    }
-    else
-    {
+        return (0);
+    } else {
         return (-1);
     }
 }
-
 
 ///  Reader for a single (long integer) number from a text file
 ///    @param[in]  file_name : path to the file containing the number
 ///    @param[out] number    : number to be read
 /////////////////////////////////////////////////////////////////////
-int IoText :: read_number (const string file_name, long &number) const
-{
-    std::ifstream file (io_file + file_name + ".txt");
+int IoText ::read_number(const string file_name, long& number) const {
+    std::ifstream file(io_file + file_name + ".txt");
 
-    if (file.is_open())
-    {
+    if (file.is_open()) {
         file >> number;
 
-        return ( 0);
-    }
-    else
-    {
+        return (0);
+    } else {
         return (-1);
     }
 }
-
 
 ///  Writer for a single (long integer) number to a text file
 ///    @param[in]  file_name : path to the file to be written
 ///    @param[out] number    : number to be written
 /////////////////////////////////////////////////////////////
-int IoText :: write_number (const string file_name, const long &number) const
-{
-    std::ofstream file (io_file + file_name + ".txt");
+int IoText ::write_number(const string file_name, const long& number) const {
+    std::ofstream file(io_file + file_name + ".txt");
 
-    if (file.is_open())
-    {
-        file << std::scientific << std::setprecision (16);
+    if (file.is_open()) {
+        file << std::scientific << std::setprecision(16);
         file << number;
 
-        return ( 0);
-    }
-    else
-    {
+        return (0);
+    } else {
         return (-1);
     }
 }
-
 
 ///  Reader for a single (double) number from a text file
 ///    @param[in]  file_name : path to the file containing the number
 ///    @param[out] number    : number to be read
 /////////////////////////////////////////////////////////////////////
-int IoText :: read_number (const string file_name, Real &number) const
-{
-    std::ifstream file (io_file + file_name + ".txt");
+int IoText ::read_number(const string file_name, Real& number) const {
+    std::ifstream file(io_file + file_name + ".txt");
 
-    if (file.is_open())
-    {
+    if (file.is_open()) {
         file >> number;
 
-        return ( 0);
-    }
-    else
-    {
+        return (0);
+    } else {
         return (-1);
     }
 }
-
 
 ///  Writer for a single (double) number to a text file
 ///    @param[in]  file_name : path to the file to be written
 ///    @param[out] number    : number to be written
 /////////////////////////////////////////////////////////////
-int IoText :: write_number (const string file_name, const Real &number) const
-{
-    std::ofstream file (io_file + file_name + ".txt");
+int IoText ::write_number(const string file_name, const Real& number) const {
+    std::ofstream file(io_file + file_name + ".txt");
 
-    if (file.is_open())
-    {
-        file << std::scientific << std::setprecision (16);
+    if (file.is_open()) {
+        file << std::scientific << std::setprecision(16);
         file << number;
 
-        return ( 0);
-    }
-    else
-    {
+        return (0);
+    } else {
         return (-1);
     }
 }
-
 
 ///  Reader for a single string from a text file
 ///    @param[in]  file_name : path to the file containing the string
 ///    @param[out] word      : string to be read
 /////////////////////////////////////////////////////////////////////
-int IoText :: read_word (const string file_name, string &word) const
-{
-    std::ifstream file (io_file + file_name + ".txt");
+int IoText ::read_word(const string file_name, string& word) const {
+    std::ifstream file(io_file + file_name + ".txt");
 
-    if (file.is_open())
-    {
+    if (file.is_open()) {
         file >> word;
 
-        return ( 0);
-    }
-    else
-    {
+        return (0);
+    } else {
         return (-1);
     }
 }
-
 
 ///  Writer for a single string to a text file
 ///    @param[in]  file_name : path to the file to be written
 ///    @param[out] word      : string to be written
 /////////////////////////////////////////////////////////////
-int IoText :: write_word (const string file_name, const string &word) const
-{
-    std::ofstream file (io_file + file_name + ".txt");
+int IoText ::write_word(const string file_name, const string& word) const {
+    std::ofstream file(io_file + file_name + ".txt");
 
-    if (file.is_open())
-    {
+    if (file.is_open()) {
         file << word;
 
-        return ( 0);
-    }
-    else
-    {
+        return (0);
+    } else {
         return (-1);
     }
 }
-
 
 ///  Reader for a single boolean from a text file
 ///    @param[in]  file_name : path to the file containing the boolean
 ///    @param[out] value     : value to be read
 //////////////////////////////////////////////////////////////////////
-int IoText :: read_bool (const string file_name, bool &value) const
-{
+int IoText ::read_bool(const string file_name, bool& value) const {
     // Treat booleans as text in io
     string word;
 
-    int err = read_word (file_name, word);
+    int err = read_word(file_name, word);
 
-    if      (word.compare("true" ) == 0) {value = true; }
-    else if (word.compare("false") == 0) {value = false;}
-    else                                 {  err = -1;   }
+    if (word.compare("true") == 0) {
+        value = true;
+    } else if (word.compare("false") == 0) {
+        value = false;
+    } else {
+        err = -1;
+    }
 
     return err;
 }
-
 
 ///  Writer for a single boolean to a text file
 ///    @param[in]  file_name : path to the file to be written
 ///    @param[out] value     : value to be written
 /////////////////////////////////////////////////////////////
-int IoText :: write_bool (const string file_name, const bool &value) const
-{
-  // Treat booleans as text in io
-  string word = "false";
+int IoText ::write_bool(const string file_name, const bool& value) const {
+    // Treat booleans as text in io
+    string word = "false";
 
-  if (value) {word = "true";}
+    if (value) {
+        word = "true";
+    }
 
-  return write_word (file_name, word);
+    return write_word(file_name, word);
 }
-
 
 ///  Reader for a list of long integers from a text file
 ///     @param[in] file_name : path to file containing the list
 ///     @param[in] list      : list to be read
 ///////////////////////////////////////////////////////////////
-int IoText :: read_list (const string file_name, Long1 &list) const
-{
-  std::ifstream file (io_file + file_name + ".txt");
+int IoText ::read_list(const string file_name, Long1& list) const {
+    std::ifstream file(io_file + file_name + ".txt");
 
-  long n = 0;
+    long n = 0;
 
-  while (file >> list[n])
-  {
-    n++;
-  }
+    while (file >> list[n]) {
+        n++;
+    }
 
-  file.close();
+    file.close();
 
-  return (0);
+    return (0);
 }
-
 
 ///  Writer for a list of long integers to a text file
 ///    @param[in] file_name : path to file to be written
 ///    @param[in] list      : list to be written
 ////////////////////////////////////////////////////////
-int IoText :: write_list (const string file_name, const Long1 &list) const
-{
-  std::ofstream file (io_file + file_name + ".txt");
+int IoText ::write_list(const string file_name, const Long1& list) const {
+    std::ofstream file(io_file + file_name + ".txt");
 
-  file << std::scientific << std::setprecision (16);
+    file << std::scientific << std::setprecision(16);
 
-  for (long n = 0; n < list.size(); n++)
-  {
-    file << list[n] << endl;
-  }
+    for (long n = 0; n < list.size(); n++) {
+        file << list[n] << endl;
+    }
 
-  file.close();
+    file.close();
 
-  return (0);
+    return (0);
 }
-
 
 // ///  Reader for a list of doubles from a text file
 // ///    @param[in] file_name : path to file containing the list
@@ -394,7 +330,6 @@ int IoText :: write_list (const string file_name, const Long1 &list) const
 //   return (0);
 // }
 
-
 // ///  Writer for a list of strings to a text file
 // ///    @param[in] file_name : path to file to be written
 // ///    @param[in] list      : list to be written
@@ -415,19 +350,16 @@ int IoText :: write_list (const string file_name, const Long1 &list) const
 //   return (0);
 // }
 
-
 ///  Reader for a list of doubles from a text file
 ///    @param[in] file_name : path to file containing the list
 ///    @param[in] list      : list to be read
 //////////////////////////////////////////////////////////////
-int IoText :: read_list (const string file_name, Size_t1 &list) const
-{
-    std::ifstream file (io_file + file_name + ".txt");
+int IoText ::read_list(const string file_name, Size_t1& list) const {
+    std::ifstream file(io_file + file_name + ".txt");
 
-    long   n = 0;
+    long n = 0;
 
-    while (file >> list[n])
-    {
+    while (file >> list[n]) {
         n++;
     }
 
@@ -436,19 +368,16 @@ int IoText :: read_list (const string file_name, Size_t1 &list) const
     return (0);
 }
 
-
 ///  Writer for a list of strings to a text file
 ///    @param[in] file_name : path to file to be written
 ///    @param[in] list      : list to be written
 ////////////////////////////////////////////////////////
-int IoText :: write_list (const string file_name, const Size_t1 &list) const
-{
-    std::ofstream file (io_file + file_name + ".txt");
+int IoText ::write_list(const string file_name, const Size_t1& list) const {
+    std::ofstream file(io_file + file_name + ".txt");
 
-    file << std::scientific << std::setprecision (16);
+    file << std::scientific << std::setprecision(16);
 
-    for (long n = 0; n < list.size(); n++)
-    {
+    for (long n = 0; n < list.size(); n++) {
         file << list[n] << endl;
     }
 
@@ -457,19 +386,16 @@ int IoText :: write_list (const string file_name, const Size_t1 &list) const
     return (0);
 }
 
-
 ///  Reader for a list of doubles from a text file
 ///    @param[in] file_name : path to file containing the list
 ///    @param[in] list      : list to be read
 //////////////////////////////////////////////////////////////
-int IoText :: read_list (const string file_name, Size1 &list) const
-{
-    std::ifstream file (io_file + file_name + ".txt");
+int IoText ::read_list(const string file_name, Size1& list) const {
+    std::ifstream file(io_file + file_name + ".txt");
 
-    long   n = 0;
+    long n = 0;
 
-    while (file >> list[n])
-    {
+    while (file >> list[n]) {
         n++;
     }
 
@@ -478,19 +404,16 @@ int IoText :: read_list (const string file_name, Size1 &list) const
     return (0);
 }
 
-
 ///  Writer for a list of strings to a text file
 ///    @param[in] file_name : path to file to be written
 ///    @param[in] list      : list to be written
 ////////////////////////////////////////////////////////
-int IoText :: write_list (const string file_name, const Size1 &list) const
-{
-    std::ofstream file (io_file + file_name + ".txt");
+int IoText ::write_list(const string file_name, const Size1& list) const {
+    std::ofstream file(io_file + file_name + ".txt");
 
-    file << std::scientific << std::setprecision (16);
+    file << std::scientific << std::setprecision(16);
 
-    for (long n = 0; n < list.size(); n++)
-    {
+    for (long n = 0; n < list.size(); n++) {
         file << list[n] << endl;
     }
 
@@ -499,19 +422,16 @@ int IoText :: write_list (const string file_name, const Size1 &list) const
     return (0);
 }
 
-
 ///  Reader for a list of doubles from a text file
 ///    @param[in] file_name : path to file containing the list
 ///    @param[in] list      : list to be read
 //////////////////////////////////////////////////////////////
-int IoText :: read_list (const string file_name, Real1 &list) const
-{
-    std::ifstream file (io_file + file_name + ".txt");
+int IoText ::read_list(const string file_name, Real1& list) const {
+    std::ifstream file(io_file + file_name + ".txt");
 
-    long   n = 0;
+    long n = 0;
 
-    while (file >> list[n])
-    {
+    while (file >> list[n]) {
         n++;
     }
 
@@ -520,19 +440,16 @@ int IoText :: read_list (const string file_name, Real1 &list) const
     return (0);
 }
 
-
 ///  Writer for a list of strings to a text file
 ///    @param[in] file_name : path to file to be written
 ///    @param[in] list      : list to be written
 ////////////////////////////////////////////////////////
-int IoText :: write_list (const string file_name, const Real1 &list) const
-{
-    std::ofstream file (io_file + file_name + ".txt");
+int IoText ::write_list(const string file_name, const Real1& list) const {
+    std::ofstream file(io_file + file_name + ".txt");
 
-    file << std::scientific << std::setprecision (16);
+    file << std::scientific << std::setprecision(16);
 
-    for (long n = 0; n < list.size(); n++)
-    {
+    for (long n = 0; n < list.size(); n++) {
         file << list[n] << endl;
     }
 
@@ -540,103 +457,88 @@ int IoText :: write_list (const string file_name, const Real1 &list) const
 
     return (0);
 }
-
 
 ///  Reader for a list of strings from a text file
 ///    @param[in] file_name : path to file containing the list
 ///    @param[in] list      : list to be read
 //////////////////////////////////////////////////////////////
-int IoText :: read_list (const string file_name, String1 &list) const
-{
-  std::ifstream file (io_file + file_name + ".txt");
+int IoText ::read_list(const string file_name, String1& list) const {
+    std::ifstream file(io_file + file_name + ".txt");
 
-  long   n = 0;
+    long n = 0;
 
-  while (file >> list[n])
-  {
-    n++;
-  }
+    while (file >> list[n]) {
+        n++;
+    }
 
-  file.close();
+    file.close();
 
-  return (0);
+    return (0);
 }
-
 
 ///  Writer for a list of strings to a text file
 ///    @param[in] file_name : path to file to be written
 ///    @param[in] list      : list to be written
 ////////////////////////////////////////////////////////
-int IoText :: write_list (const string file_name, const String1 &list) const
-{
-  std::ofstream file (io_file + file_name + ".txt");
+int IoText ::write_list(const string file_name, const String1& list) const {
+    std::ofstream file(io_file + file_name + ".txt");
 
-  file << std::scientific << std::setprecision (16);
+    file << std::scientific << std::setprecision(16);
 
-  for (long n = 0; n < list.size(); n++)
-  {
-    file << list[n] << endl;
-  }
+    for (long n = 0; n < list.size(); n++) {
+        file << list[n] << endl;
+    }
 
-  file.close();
+    file.close();
 
-  return (0);
+    return (0);
 }
-
 
 ///  Reader for an array of long integers from a text file
 ///    @param[in] file_name : path to file containing the array
 ///    @param[in] array     : array to be read
 ///////////////////////////////////////////////////////////////
-int IoText :: read_array (const string file_name, Long2 &array) const
-{
-  std::ifstream file (io_file + file_name + ".txt");
+int IoText ::read_array(const string file_name, Long2& array) const {
+    std::ifstream file(io_file + file_name + ".txt");
 
-  string line;
+    string line;
 
-  for (long n1 = 0; n1 < array.size(); n1++)
-  {
-    std::getline (file, line);
+    for (long n1 = 0; n1 < array.size(); n1++) {
+        std::getline(file, line);
 
-    std::stringstream ss (line);
+        std::stringstream ss(line);
 
-    for (long n2 = 0; n2 < array[n1].size(); n2++)
-    {
-      ss >> array[n1][n2];
+        for (long n2 = 0; n2 < array[n1].size(); n2++) {
+            ss >> array[n1][n2];
+        }
     }
-  }
 
-  file.close();
+    file.close();
 
-  return (0);
+    return (0);
 }
-
 
 ///  Writer for an array of long integers to a text file
 ///    @param[in] file_name : path to file to be written
 ///    @param[in] array     : array to be written
 ////////////////////////////////////////////////////////
-int IoText :: write_array (const string file_name, const Long2 &array) const
-{
-  std::ofstream file (io_file + file_name + ".txt");
+int IoText ::write_array(const string file_name, const Long2& array) const {
+    std::ofstream file(io_file + file_name + ".txt");
 
-  file << std::scientific << std::setprecision (16);
+    file << std::scientific << std::setprecision(16);
 
-  for (long n1 = 0; n1 < array.size(); n1++)
-  {
-    for (long n2 = 0; n2 < array[n1].size(); n2++)
-    {
-      file << array[n1][n2] << "\t";
+    for (long n1 = 0; n1 < array.size(); n1++) {
+        for (long n2 = 0; n2 < array[n1].size(); n2++) {
+            file << array[n1][n2] << "\t";
+        }
+
+        file << endl;
     }
 
-    file << endl;
-  }
+    file.close();
 
-  file.close();
-
-  return (0);
+    return (0);
 }
-
 
 // ///  Reader for an array of doubles from a text file
 // ///    @param[in] file_name : path to file containing the array
@@ -665,7 +567,6 @@ int IoText :: write_array (const string file_name, const Long2 &array) const
 //   return (0);
 // }
 
-
 // ///  Writer for an array of doubles from a text file
 // ///    @param[in] file_name : path to file to be written
 // ///    @param[in] array     : array to be written
@@ -691,25 +592,21 @@ int IoText :: write_array (const string file_name, const Long2 &array) const
 //   return (0);
 // }
 
-
 ///  Reader for an array of doubles from a text file
 ///    @param[in] file_name : path to file containing the array
 ///    @param[in] array     : array to be read
 ///////////////////////////////////////////////////////////////
-int IoText :: read_array (const string file_name, Real2 &array) const
-{
-    std::ifstream file (io_file + file_name + ".txt");
+int IoText ::read_array(const string file_name, Real2& array) const {
+    std::ifstream file(io_file + file_name + ".txt");
 
     string line;
 
-    for (long n1 = 0; n1 < array.size(); n1++)
-    {
-        std::getline (file, line);
+    for (long n1 = 0; n1 < array.size(); n1++) {
+        std::getline(file, line);
 
-        std::stringstream ss (line);
+        std::stringstream ss(line);
 
-        for (long n2 = 0; n2 < array[n1].size(); n2++)
-        {
+        for (long n2 = 0; n2 < array[n1].size(); n2++) {
             ss >> array[n1][n2];
         }
     }
@@ -719,21 +616,17 @@ int IoText :: read_array (const string file_name, Real2 &array) const
     return (0);
 }
 
-
 ///  Writer for an array of doubles from a text file
 ///    @param[in] file_name : path to file to be written
 ///    @param[in] array     : array to be written
 ////////////////////////////////////////////////////////
-int IoText :: write_array (const string file_name, const Real2 &array) const
-{
-    std::ofstream file (io_file + file_name + ".txt");
+int IoText ::write_array(const string file_name, const Real2& array) const {
+    std::ofstream file(io_file + file_name + ".txt");
 
-    file << std::scientific << std::setprecision (16);
+    file << std::scientific << std::setprecision(16);
 
-    for (long n1 = 0; n1 < array.size(); n1++)
-    {
-        for (long n2 = 0; n2 < array[n1].size(); n2++)
-        {
+    for (long n1 = 0; n1 < array.size(); n1++) {
+        for (long n2 = 0; n2 < array[n1].size(); n2++) {
             file << array[n1][n2] << "\t";
         }
 
@@ -745,33 +638,25 @@ int IoText :: write_array (const string file_name, const Real2 &array) const
     return (0);
 }
 
-
 ///  Reader for a list of 3-vectors of doubles from a text file
 ///    @param[in] file_name : path to file containing the vectors
 ///    @param[in] x         : x component of the vector to be read
 ///    @param[in] y         : y component of the vector to be read
 ///    @param[in] z         : z component of the vector to be read
 //////////////////////////////////////////////////////////////////
-int IoText :: read_3_vector (
-        const string   file_name,
-              Double1 &x,
-              Double1 &y,
-              Double1 &z         ) const
-{
-  std::ifstream file (io_file + file_name + ".txt");
+int IoText ::read_3_vector(const string file_name, Double1& x, Double1& y, Double1& z) const {
+    std::ifstream file(io_file + file_name + ".txt");
 
-  long   n = 0;
+    long n = 0;
 
-  while (file >> x[n] >> y[n] >> z[n])
-  {
-    n++;
-  }
+    while (file >> x[n] >> y[n] >> z[n]) {
+        n++;
+    }
 
-  file.close();
+    file.close();
 
-  return (0);
+    return (0);
 }
-
 
 ///  Writer for a list of 3-vectors of doubles to a text file
 ///    @param[in] file_name : path to file containing the vectors
@@ -779,31 +664,23 @@ int IoText :: read_3_vector (
 ///    @param[in] y         : y component of the vector to be written
 ///    @param[in] z         : z component of the vector to be written
 /////////////////////////////////////////////////////////////////////
-int IoText :: write_3_vector (
-        const string   file_name,
-        const Double1 &x,
-        const Double1 &y,
-        const Double1 &z         ) const
-{
-  const long length = x.size();
+int IoText ::write_3_vector(const string file_name, const Double1& x, const Double1& y, const Double1& z) const {
+    const long length = x.size();
 
-  // Check if all 3 vectors are the same size
-  if (   (length != y.size())
-      || (length != z.size()) )
-  {
-    return (-1);
-  }
+    // Check if all 3 vectors are the same size
+    if ((length != y.size()) || (length != z.size())) {
+        return (-1);
+    }
 
-  std::ofstream file (io_file + file_name + ".txt");
+    std::ofstream file(io_file + file_name + ".txt");
 
-  file << std::scientific << std::setprecision (16);
+    file << std::scientific << std::setprecision(16);
 
-  for (long n = 0; n < length; n++)
-  {
-    file << x[n] << "\t" << y[n] << "\t" << z[n] << endl;
-  }
+    for (long n = 0; n < length; n++) {
+        file << x[n] << "\t" << y[n] << "\t" << z[n] << endl;
+    }
 
-  file.close();
+    file.close();
 
-  return (0);
+    return (0);
 }
