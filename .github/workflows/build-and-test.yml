@@ -4,12 +4,50 @@ on:
   push:
     branches: [ stable ]
 jobs:
+#Before doing anything, make sure that the code is linted
+  run-linters:
+    name: Run linters
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v3
+
+      - name: Install ClangFormat
+        run: sudo apt-get install -y clang-format
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+
+      - name: Install Python dependencies
+        run: pip install black flake8
+
+      - name: Run cpp linter
+        uses: wearerequired/lint-action@v2
+        with:
+          auto_fix: true
+          clang_format: true
+          clang_format_extensions: "c,cc,cpp,h,hpp,tpp"
+          clang_format_dir: "src/"
+          clang_format_auto_fix: true
+          # black: true 
+          # black_extensions: "py"
+          # black_dir: #ignoring python formatting for now, as the github action does not support multiple directories
+          #   -"src/"
+          #   -"tests/"
+          #   -"magritte/"
+          #   -"docs/"
+          # black_auto_fix: true
+
 #Before testing, we increase the version number. Otherwise, some delay (>30 mins) may occur between updating the code and doing the version increase.
   UpdateVersion:
+    needs: run-linters
     runs-on: ubuntu-latest
     steps:
       - name: checkout repo
         uses: actions/checkout@v3
+        with:
+          ref: ${{ github.ref }} #err, version.txt file should not be linted; but still checking out latest commit to be sure
       - name: Update version (locally) using commit message to determine version increase
         run: echo "NewVersion=$(python updateVersion.py "${{github.event.head_commit.message}}")" >> $GITHUB_ENV
         working-directory: CI
@@ -57,6 +95,7 @@ jobs:
         uses: actions/checkout@v3
         with: #no ref: thus checks out commit which triggered workflow
           submodules: true
+          ref: ${{ github.ref }} #note: linter might create new commit; that one needs to be tested (github.ref points to branch -> latest commit on branch)
       - name: wait 5 s if attempt failed
         if: steps.checkouttry1.outcome == 'failure'
         run: sleep 5
@@ -66,6 +105,7 @@ jobs:
         uses: actions/checkout@v3
         with: #no ref: thus checks out commit which triggered workflow
           submodules: true
+          ref: ${{ github.ref }}
       - name: wait 5 s if attempt failed
         if: steps.checkouttry2.outcome == 'failure'
         run: sleep 5
@@ -75,6 +115,7 @@ jobs:
         uses: actions/checkout@v3
         with: #no ref: thus checks out commit which triggered workflow
           submodules: true
+          ref: ${{ github.ref }}
       # end retrying checkout
       - name: install gmsh
         run: |

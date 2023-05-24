@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include <iostream>
 using std::cout;
 using std::endl;
@@ -11,137 +10,102 @@ using std::string;
 using std::vector;
 #include <chrono>
 
-
 /// TIMER: class for precise process timing
 ///////////////////////////////////////////
-class singleTimer
-{
+class singleTimer {
 
-    private:
+  private:
+    std::chrono::high_resolution_clock::time_point start_ =
+        std::chrono::high_resolution_clock::now();
+    std::chrono::high_resolution_clock::time_point stop_ =
+        std::chrono::high_resolution_clock::now();
 
-        std::chrono::high_resolution_clock::time_point start_ = std::chrono::high_resolution_clock::now();
-        std::chrono::high_resolution_clock::time_point stop_  = std::chrono::high_resolution_clock::now();
+  public:
+    inline void start() { start_ = std::chrono::high_resolution_clock::now(); }
+    inline void stop() { stop_ = std::chrono::high_resolution_clock::now(); }
 
-    public:
+    inline double get_interval() const {
+        std::chrono::duration<double> interval = stop_ - start_;
 
-        inline void start () {start_ = std::chrono::high_resolution_clock::now();}
-        inline void stop  () {stop_  = std::chrono::high_resolution_clock::now();}
-
-        inline double get_interval () const
-        {
-            std::chrono::duration<double> interval = stop_ - start_;
-
-            return interval.count();
-        }
+        return interval.count();
+    }
 };
 
-
-
-
 /// TIMER: class for precise process timing
 ///////////////////////////////////////////
 
-class Timer
-{
+class Timer {
 
-    private:
+  private:
+    string name;
 
-        string name;
+    vector<std::chrono::high_resolution_clock::time_point> starts;
+    vector<std::chrono::high_resolution_clock::time_point> stops;
 
-        vector <std::chrono::high_resolution_clock::time_point> starts;
-        vector <std::chrono::high_resolution_clock::time_point> stops;
+    vector<std::chrono::duration<double>> intervals;
 
-        vector <std::chrono::duration <double>> intervals;
+    std::chrono::duration<double> total;
 
-        std::chrono::duration <double> total;
+  public:
+    ///  Constructor for TIMER
+    //////////////////////////
 
+    Timer(const string timer_name) { name = timer_name; }
 
-    public:
+    ///  start: start timer i.e. set initial time stamp
+    ///////////////////////////////////////////////////
 
+    void start() { starts.push_back(std::chrono::high_resolution_clock::now()); }
 
-	  ///  Constructor for TIMER
-	  //////////////////////////
+    ///  stop: stop timer and calculate interval for every process
+    //////////////////////////////////////////////////////////////
 
-	  Timer (const string timer_name)
-	  {
-	      name = timer_name;
-	  }
+    void stop() {
+        stops.push_back(std::chrono::high_resolution_clock::now());
 
+        const std::chrono::duration<double> interval = stops.back() - starts.back();
 
-	  ///  start: start timer i.e. set initial time stamp
-	  ///////////////////////////////////////////////////
+        intervals.push_back(interval);
 
-    void start ()
-    {
-      starts.push_back (std::chrono::high_resolution_clock::now());
+        total += interval;
     }
 
+    ///  print_to_file: print time interval to file
+    ///////////////////////////////////////////////
 
-	  ///  stop: stop timer and calculate interval for every process
-	  //////////////////////////////////////////////////////////////
-
-    void stop ()
-    {
-      stops.push_back (std::chrono::high_resolution_clock::now());
-
-      const std::chrono::duration <double> interval = stops.back()-starts.back();
-
-      intervals.push_back (interval);
-
-      total += interval;
-    }
-
-
-	  ///  print_to_file: print time interval to file
-	  ///////////////////////////////////////////////
-
-
-	  //void print_to_file ()
-	  //{
+    // void print_to_file ()
+    //{
     //  string file_name = output_folder + "timer_" + name + ".txt";
 
-	  //	ofstream outFile (file_name, ios_base::app);
+    //	ofstream outFile (file_name, ios_base::app);
 
     //  outFile << interval.count() << endl;
 
-	  //	outFile.close();
-	  //}
+    //	outFile.close();
+    //}
 
+    ///  print: print time interval to screen
+    /////////////////////////////////////////
 
-	  ///  print: print time interval to screen
-	  /////////////////////////////////////////
-
-    string get_print_string ()
-    {
+    string get_print_string() {
         return ("T   | " + name + " : " + to_string(intervals.back().count()) + " seconds");
     }
 
-    string get_print_total_string ()
-    {
-        return ("Tot | " + name + " : " + to_string(total.count()           ) + " seconds");
+    string get_print_total_string() {
+        return ("Tot | " + name + " : " + to_string(total.count()) + " seconds");
     }
 
-    void print ()
-    {
-        cout << get_print_string () << endl;
-    }
+    void print() { cout << get_print_string() << endl; }
 
-    void print_total ()
-    {
-        cout << get_print_total_string () << endl;
-    }
-
+    void print_total() { cout << get_print_total_string() << endl; }
 };
-
-
-
 
 #if (MAGRITTE_MPI_PARALLEL)
 
 /// MPI_TIMER: class for precise process timing when using MPI
 //////////////////////////////////////////////////////////////
 //
-//class MPI_TIMER
+// class MPI_TIMER
 //{
 //  private:
 //
