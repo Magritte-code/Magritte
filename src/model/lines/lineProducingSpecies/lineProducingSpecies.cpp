@@ -55,7 +55,7 @@ void LineProducingSpecies ::read(const Io& io, const Size l) {
     int err_prev2 = io.read_array(prefix_l + "population_prev2", pops_prev2);
     int err_prev3 = io.read_array(prefix_l + "population_prev3", pops_prev3);
 
-    threaded_for (p, parameters->npoints(), {
+    threaded_for(p, parameters->npoints(), {
         for (Size i = 0; i < linedata.nlev; i++) {
             if (err_prev1 == 0) {
                 population_prev1(index(p, i)) = pops_prev1[p][i];
@@ -118,7 +118,7 @@ void LineProducingSpecies ::read_populations(const Io& io, const Size l, const s
     int err = io.read_array(prefix_l + "population" + tag, pops);
 
     if (err == 0) {
-        threaded_for (p, parameters->npoints(), {
+        threaded_for(p, parameters->npoints(), {
             for (Size i = 0; i < linedata.nlev; i++) {
                 population(index(p, i)) = pops[p][i];
             }
@@ -142,13 +142,13 @@ void LineProducingSpecies ::write_populations(const Io& io, const Size l, const 
     if (population.size() > 0) {
         Double2 pops(parameters->npoints(), Double1(linedata.nlev));
 
-        threaded_for (p, parameters->npoints(), {
+        threaded_for(p, parameters->npoints(), {
             for (Size i = 0; i < linedata.nlev; i++) {
                 pops[p][i] = population(index(p, i));
             }
         })
 
-            io.write_array(prefix_l + "population" + tag, pops);
+        io.write_array(prefix_l + "population" + tag, pops);
     }
 
     if (Jlin.size() > 0) {

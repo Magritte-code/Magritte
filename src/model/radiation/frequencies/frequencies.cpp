@@ -29,13 +29,13 @@ void Frequencies ::resize_data(const Size nfreqs) {
     corresponding_z_for_line.resize(nfreqs);
 
     // frequencies.nu has to be initialized (for unused entries)
-    threaded_for (p, parameters->npoints(), {
+    threaded_for(p, parameters->npoints(), {
         for (Size f = 0; f < nfreqs; f++) {
             nu(p, f) = 0.0;
         }
     })
 
-        parameters->set_nfreqs(nfreqs); // is global variable, so may be reset to another value
+    parameters->set_nfreqs(nfreqs); // is global variable, so may be reset to another value
 }
 
 ///  Writer for the Frequencies data

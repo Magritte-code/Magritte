@@ -23,7 +23,7 @@ inline void Lambda ::initialize(const Size nrad_new) {
 }
 
 inline void Lambda ::clear() {
-    threaded_for (p, parameters->npoints(), {
+    threaded_for(p, parameters->npoints(), {
         for (Size k = 0; k < nrad; k++) {
             Ls[p][k].clear();
             nr[p][k].clear();
