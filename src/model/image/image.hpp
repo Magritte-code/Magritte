@@ -22,8 +22,8 @@ struct Image {
     const ImageType imageType;                   ///< Type of image (intensity or optical depth)
     const ImagePointPosition imagePointPosition; ///< From which points the ray starts (model points
                                                  ///< or surface outside model)
-    const Size ray_nr;            ///< number of the ray to be imaged
-    const Vector3D ray_direction; ///< ray direction, if not imaging all model points
+    const Size ray_nr;                           ///< number of the ray to be imaged
+    const Vector3D ray_direction;                ///< ray direction, if not imaging all model points
 
     // Stuff which is practically const, but the compiler complains about because
     // they are defined in a subfunction (not the constructor itself).
