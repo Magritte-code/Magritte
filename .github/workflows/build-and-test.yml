@@ -30,14 +30,14 @@ jobs:
           clang_format_extensions: "c,cc,cpp,h,hpp,tpp"
           clang_format_dir: "src/"
           clang_format_auto_fix: true
-          black: true
-          black_extensions: "py"
-          black_dir: 
-            -"src/"
-            -"tests/"
-            -"magritte/"
-            -"docs/"
-          black_auto_fix: true
+          # black: true 
+          # black_extensions: "py"
+          # black_dir: #ignoring python formatting for now, as the github action does not support multiple directories
+          #   -"src/"
+          #   -"tests/"
+          #   -"magritte/"
+          #   -"docs/"
+          # black_auto_fix: true
 
 #Before testing, we increase the version number. Otherwise, some delay (>30 mins) may occur between updating the code and doing the version increase.
   UpdateVersion:
