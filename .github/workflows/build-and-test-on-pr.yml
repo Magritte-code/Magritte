@@ -74,6 +74,7 @@ jobs:
         uses: actions/checkout@v3
         with: #no ref: thus checks out commit which triggered workflow
           submodules: true
+          ref: ${{ github.ref }} #note: linter might create new commit; that one needs to be tested (github.ref points to branch -> latest commit on branch)
       - name: wait 5 s if attempt failed
         if: steps.checkouttry1.outcome == 'failure'
         run: sleep 5
@@ -83,6 +84,7 @@ jobs:
         uses: actions/checkout@v3
         with: #no ref: thus checks out commit which triggered workflow
           submodules: true
+          ref: ${{ github.ref }}
       - name: wait 5 s if attempt failed
         if: steps.checkouttry2.outcome == 'failure'
         run: sleep 5
@@ -92,6 +94,7 @@ jobs:
         uses: actions/checkout@v3
         with: #no ref: thus checks out commit which triggered workflow
           submodules: true
+          ref: ${{ github.ref }}
       # end retrying checkout
       - name: install gmsh
         run: |
