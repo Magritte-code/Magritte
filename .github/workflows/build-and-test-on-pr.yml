@@ -32,7 +32,11 @@ jobs:
           clang_format_auto_fix: true
           black: true
           black_extensions: "py"
-          black_dir: "src/, tests/, magritte/, docs/"
+          black_dir: 
+            -"src/"
+            -"tests/"
+            -"magritte/"
+            -"docs/"
           black_auto_fix: true
 
   BuildAndTest:
