@@ -59,7 +59,7 @@ accel inline Size Geometry ::get_next_general_geometry<Imagetracer>(
     const Size cum_n_nbs = points.cum_n_neighbors[c];
 
     double dmin               = std::numeric_limits<Real>::max(); // Initialize to "infinity"
-    Size next                 = parameters->npoints();            // return npoints when there is no next
+    Size next                 = parameters->npoints(); // return npoints when there is no next
     double maxdist_neighbors2 = 0.0;
 
     for (Size i = 0; i < n_nbs; i++) {
@@ -94,7 +94,8 @@ accel inline Size Geometry ::get_next_general_geometry<Imagetracer>(
     // (maybe also merge with 'regular' get_next_general_geometry) we also check
     // whether the distance from the ray increases (as irregularly placed boundary
     // points might result in stopping too early)
-    if ((!not_on_boundary(c)) && (2.0 * maxdist_neighbors2 < dmin) && (distance_curr_from_ray2 < dmin)) {
+    if ((!not_on_boundary(c)) && (2.0 * maxdist_neighbors2 < dmin)
+        && (distance_curr_from_ray2 < dmin)) {
         return parameters->npoints();
     }
 
@@ -165,7 +166,8 @@ inline Size Geometry ::get_next_spherical_symmetry(
 ///    @param[in]      bdy : point index of boundary point
 inline double Geometry ::get_distance_origin_to_boundary(
     const Vector3D& origin, const Vector3D& raydir, const Size bdy) const {
-    double Z = raydir.dot(points.position[bdy] - origin); // for a general 3D geometry, computing the distance is simple
+    double Z = raydir.dot(points.position[bdy]
+                          - origin); // for a general 3D geometry, computing the distance is simple
 
     if (parameters->spherical_symmetry()) { // in spherical symmetry, the distance
                                             // needs to be computed differently;
@@ -177,7 +179,8 @@ inline double Geometry ::get_distance_origin_to_boundary(
         // If a ray falls outside of the spherically symmetric model, we just return
         // the distance until the closest point to the model
         if (horz_dist2 > 0) {
-            Z = -sqrt(horz_dist2) - Rcos; // roughly copied from geometry::get_next_spherical_symmetry
+            Z = -sqrt(horz_dist2)
+              - Rcos; // roughly copied from geometry::get_next_spherical_symmetry
         } else {
             // Just put the distance in the middle, as the ray traced is outside of
             // the domain; this corresponds to the large 'else' clause in
@@ -229,7 +232,8 @@ accel inline Size Geometry ::get_n_interpl(
 }
 
 template <Frame frame>
-accel inline Size Geometry ::get_ray_length(const Size o, const Size r, const double dshift_max) const {
+accel inline Size Geometry ::get_ray_length(
+    const Size o, const Size r, const double dshift_max) const {
     Size l    = 0;   // ray length
     double Z  = 0.0; // distance from origin (o)
     double dZ = 0.0; // last increment in Z
@@ -310,7 +314,8 @@ accel inline Size Geometry ::get_next(
 ///    @param[out]    dZ : reference to the distance increment to the next ray
 ///    @return number of the next cell on the ray after the current cell
 ///////////////////////////////////////////////////////////////////////////////////
-accel inline Size Geometry ::get_next(const Size o, const Size r, const Size crt, double& Z, double& dZ) const {
+accel inline Size Geometry ::get_next(
+    const Size o, const Size r, const Size crt, double& Z, double& dZ) const {
     const Vector3D origin = points.position[o];
     const Vector3D raydir = rays.direction[r];
 
@@ -326,8 +331,8 @@ accel inline Size Geometry ::get_next(const Size o, const Size r, const Size crt
 ///    @param[out]    dZ : reference to the distance increment to the next ray
 ///    @return number of the next cell on the ray after the current cell
 ///////////////////////////////////////////////////////////////////////////////////
-accel inline void Geometry ::get_next(
-    const Size o, const Size r, const Size crt, Size& nxt, double& Z, double& dZ, double& shift) const {
+accel inline void Geometry ::get_next(const Size o, const Size r, const Size crt, Size& nxt,
+    double& Z, double& dZ, double& shift) const {
     nxt   = get_next(o, r, crt, Z, dZ);
     shift = get_shift<CoMoving>(o, r, nxt, Z);
 }
@@ -359,7 +364,7 @@ accel inline Size Geometry ::get_boundary_point_closer_to_custom_ray(
     const double Z_curr   = R_curr.dot(raydir);
 
     double dmin2 = R_curr.dot(R_curr) - Z_curr * Z_curr; // Initialize to current distance
-    Size next    = crt;                                  // return current point when no better boundary point is found
+    Size next    = crt; // return current point when no better boundary point is found
 
     for (Size i = 0; i < n_nbs; i++) {
         const Size n = points.neighbors[cum_n_nbs + i];
@@ -389,9 +394,10 @@ accel inline Size Geometry ::get_closest_bdy_point_in_custom_raydir(const Vector
         return parameters->npoints() - 1;
     }
     // first try out first boundary point
-    Size closest_bdy_point = boundary.point2boundary[0]; // first best guess is the first boundary point
-    double projected_dmin  = raydir.dot(points.position[closest_bdy_point]); // and the corresponding
-                                                                             // projected distance
+    Size closest_bdy_point =
+        boundary.point2boundary[0]; // first best guess is the first boundary point
+    double projected_dmin = raydir.dot(points.position[closest_bdy_point]); // and the corresponding
+                                                                            // projected distance
     for (Size bdy_index = 1; bdy_index < parameters->nboundary(); bdy_index++) {
         const Size bdy_point_index      = boundary.boundary2point[bdy_index];
         const double projected_distance = raydir.dot(points.position[bdy_point_index]);
@@ -415,8 +421,8 @@ accel inline Size Geometry ::get_closest_bdy_point_in_custom_raydir(const Vector
 ///    origin
 ///////////////////////////////////////////////////////////////////////////////////////
 template <>
-inline double Geometry ::get_shift_spherical_symmetry<CoMoving>(const Vector3D& origin, const Vector3D& origin_velocity,
-    const Vector3D& raydir, const Size c, const double Z) const {
+inline double Geometry ::get_shift_spherical_symmetry<CoMoving>(const Vector3D& origin,
+    const Vector3D& origin_velocity, const Vector3D& raydir, const Size c, const double Z) const {
     // At the 0 point, we cannot have any velocity (otherwise not spherically
     // symmetric)
     if (origin.squaredNorm() == 0.0) {
@@ -429,7 +435,9 @@ inline double Geometry ::get_shift_spherical_symmetry<CoMoving>(const Vector3D& 
 
     const double Rcos_plus_Z = origin.dot(raydir) + Z;
 
-    return 1.0 + (points.velocity[c].x() * Rcos_plus_Z / points.position[c].x() - origin_velocity.dot(raydir));
+    return 1.0
+         + (points.velocity[c].x() * Rcos_plus_Z / points.position[c].x()
+             - origin_velocity.dot(raydir));
 }
 
 ///  Getter for the doppler shift along the ray between the current cell and the
@@ -442,8 +450,8 @@ inline double Geometry ::get_shift_spherical_symmetry<CoMoving>(const Vector3D& 
 ///    origin
 ///////////////////////////////////////////////////////////////////////////////////////
 template <>
-inline double Geometry ::get_shift_spherical_symmetry<Rest>(const Vector3D& origin, const Vector3D& origin_velocity,
-    const Vector3D& raydir, const Size c, const double Z) const {
+inline double Geometry ::get_shift_spherical_symmetry<Rest>(const Vector3D& origin,
+    const Vector3D& origin_velocity, const Vector3D& raydir, const Size c, const double Z) const {
     if (points.position[c].x() == 0.0) {
         return 1.0;
     }
@@ -486,8 +494,8 @@ inline double Geometry ::get_shift(const Size o, const Size r, const Size c, con
 ///    origin
 ///////////////////////////////////////////////////////////////////////////////////////
 template <Frame frame>
-inline double Geometry ::get_shift(const Vector3D& origin, const Vector3D& origin_velocity, const Vector3D& raydir,
-    const Size c, const double Z, const bool reverse) const {
+inline double Geometry ::get_shift(const Vector3D& origin, const Vector3D& origin_velocity,
+    const Vector3D& raydir, const Size c, const double Z, const bool reverse) const {
     double shift = 1.0;
     if (parameters->spherical_symmetry()) {
         shift = get_shift_spherical_symmetry<frame>(origin, origin_velocity, raydir, c, Z);

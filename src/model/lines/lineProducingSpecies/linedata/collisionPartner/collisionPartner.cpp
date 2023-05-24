@@ -10,7 +10,8 @@ const string prefix = "lines/lineProducingSpecies_";
 void CollisionPartner ::read(const Io& io, const Size l, const Size c) {
     cout << "Reading collisionPartner..." << endl;
 
-    const string prefix_lc = prefix + std::to_string(l) + "/linedata" + "/collisionPartner_" + std::to_string(c) + "/";
+    const string prefix_lc =
+        prefix + std::to_string(l) + "/linedata" + "/collisionPartner_" + std::to_string(c) + "/";
 
     io.read_number(prefix_lc + ".num_col_partner", num_col_partner);
     io.read_word(prefix_lc + ".orth_or_para_H2", orth_or_para_H2);
@@ -48,7 +49,8 @@ void CollisionPartner ::write(const Io& io, const Size l, const Size c) const {
     cout << "Writing collisionPartner..." << endl;
     cout << "(l, c) = " << l << ", " << c << endl;
 
-    const string prefix_lc = prefix + std::to_string(l) + "/linedata" + "/collisionPartner_" + std::to_string(c) + "/";
+    const string prefix_lc =
+        prefix + std::to_string(l) + "/linedata" + "/collisionPartner_" + std::to_string(c) + "/";
 
     io.write_number(prefix_lc + ".num_col_partner", num_col_partner);
     io.write_word(prefix_lc + ".orth_or_para_H2", orth_or_para_H2);

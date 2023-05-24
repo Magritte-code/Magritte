@@ -9,11 +9,14 @@ const string prefix = "image/";
 
 ///  Constructor for Image; using default rays, default point position
 //////////////////////////
-Image ::Image(const Geometry& geometry, const Frequencies& frequencies, const ImageType it, const Size rr) :
-    imageType(it), imagePointPosition(AllModelPoints), ray_nr(rr),
+Image ::Image(
+    const Geometry& geometry, const Frequencies& frequencies, const ImageType it, const Size rr) :
+    imageType(it),
+    imagePointPosition(AllModelPoints), ray_nr(rr),
     ray_direction(Vector3D(geometry.rays.direction[ray_nr])) {
     if (geometry.parameters->dimension() == 1) {
-        if ((geometry.rays.direction[ray_nr].x() != 0.0) || (geometry.rays.direction[ray_nr].y() != 1.0)
+        if ((geometry.rays.direction[ray_nr].x() != 0.0)
+            || (geometry.rays.direction[ray_nr].y() != 1.0)
             || (geometry.rays.direction[ray_nr].z() != 0.0)) {
             throw std::runtime_error("In 1D, the image ray has to be (0,1,0)");
         }
@@ -25,12 +28,14 @@ Image ::Image(const Geometry& geometry, const Frequencies& frequencies, const Im
 
 ///  Constructor for Image; using default rays, non-default point position
 //////////////////////////
-Image ::Image(const Geometry& geometry, const Frequencies& frequencies, const ImageType it, const Size rr,
-    const Size Nxpix, const Size Nypix) :
+Image ::Image(const Geometry& geometry, const Frequencies& frequencies, const ImageType it,
+    const Size rr, const Size Nxpix, const Size Nypix) :
     imageType(it),
-    imagePointPosition(ProjectionSurface), ray_nr(rr), ray_direction(Vector3D(geometry.rays.direction[ray_nr])) {
+    imagePointPosition(ProjectionSurface), ray_nr(rr),
+    ray_direction(Vector3D(geometry.rays.direction[ray_nr])) {
     if (geometry.parameters->dimension() == 1) {
-        if ((geometry.rays.direction[ray_nr].x() != 0.0) || (geometry.rays.direction[ray_nr].y() != 1.0)
+        if ((geometry.rays.direction[ray_nr].x() != 0.0)
+            || (geometry.rays.direction[ray_nr].y() != 1.0)
             || (geometry.rays.direction[ray_nr].z() != 0.0)) {
             throw std::runtime_error("In 1D, the image ray has to be (0,1,0)");
         }
@@ -45,8 +50,9 @@ Image ::Image(const Geometry& geometry, const Frequencies& frequencies, const Im
 Image ::Image(const Image& image) :
     imageType(image.imageType), imagePointPosition(image.imagePointPosition), ray_nr(image.ray_nr),
     ray_direction(image.ray_direction), closest_bdy_point(image.closest_bdy_point),
-    surface_center_point(image.surface_center_point), nfreqs(image.nfreqs), image_direction_x(image.image_direction_x),
-    image_direction_y(image.image_direction_y), image_direction_z(image.image_direction_z) {
+    surface_center_point(image.surface_center_point), nfreqs(image.nfreqs),
+    image_direction_x(image.image_direction_x), image_direction_y(image.image_direction_y),
+    image_direction_z(image.image_direction_z) {
     ImX = image.ImX;
     ImY = image.ImY;
 
@@ -68,8 +74,10 @@ Image ::Image(const Image& image) :
 
 ///  Constructor for Image; using non-default rays, default point position
 //////////////////////////
-Image ::Image(const Geometry& geometry, const Frequencies& frequencies, const ImageType it, const Vector3D raydir) :
-    imageType(it), imagePointPosition(AllModelPoints), ray_nr(-1), ray_direction(raydir),
+Image ::Image(const Geometry& geometry, const Frequencies& frequencies, const ImageType it,
+    const Vector3D raydir) :
+    imageType(it),
+    imagePointPosition(AllModelPoints), ray_nr(-1), ray_direction(raydir),
     closest_bdy_point(geometry.parameters->npoints()) {
     if (geometry.parameters->dimension() == 1) {
         // Same error condition as previous imager. In 1D, it does not matter either
@@ -84,8 +92,8 @@ Image ::Image(const Geometry& geometry, const Frequencies& frequencies, const Im
 
 ///  Constructor for Image; using non-default rays, non-default point position
 //////////////////////////
-Image ::Image(const Geometry& geometry, const Frequencies& frequencies, const ImageType it, const Vector3D raydir,
-    const Size Nxpix, const Size Nypix) :
+Image ::Image(const Geometry& geometry, const Frequencies& frequencies, const ImageType it,
+    const Vector3D raydir, const Size Nxpix, const Size Nypix) :
     imageType(it),
     imagePointPosition(ProjectionSurface), ray_nr(-1), ray_direction(raydir) {
     if (geometry.parameters->dimension() == 1) {
@@ -181,7 +189,8 @@ inline void Image ::set_coordinates_all_model_points(const Geometry& geometry) {
 
         if (denominator >= 1.0e-9) {
             threaded_for(p, geometry.parameters->npoints(), {
-                ImX[p] = ix * geometry.points.position[p].x() + iy * geometry.points.position[p].y();
+                ImX[p] =
+                    ix * geometry.points.position[p].x() + iy * geometry.points.position[p].y();
 
                 ImY[p] = jx * geometry.points.position[p].x() + jy * geometry.points.position[p].y()
                        + jz * geometry.points.position[p].z();
@@ -328,9 +337,10 @@ inline void Image ::set_coordinates_projection_surface(const Geometry& geometry,
 
     // Define pixels spanned by the plane: TODO: figure out why I thought I needed
     // the closest bdy point
-    closest_bdy_point                   = geometry.get_closest_bdy_point_in_custom_raydir(ray_direction);
+    closest_bdy_point = geometry.get_closest_bdy_point_in_custom_raydir(ray_direction);
     const Vector3D closest_bdy_position = geometry.points.position[closest_bdy_point];
-    double distance_from_origin         = closest_bdy_position.dot(ray_direction); // in a specific ray direction
+    double distance_from_origin =
+        closest_bdy_position.dot(ray_direction); // in a specific ray direction
     // for 1D spherical symmetry, this is incorrect, as we represent the distance
     // from the middle by the x-coordinate
     if (geometry.parameters->spherical_symmetry()) {
@@ -338,8 +348,9 @@ inline void Image ::set_coordinates_projection_surface(const Geometry& geometry,
     }
 
     surface_center_point = ray_direction * distance_from_origin;
-    const double deltax  = (max_x - min_x) / (Nxpix); // putting the points a half ... away from the edge
-    const double deltay  = (max_y - min_y) / (Nypix);
+    const double deltax =
+        (max_x - min_x) / (Nxpix); // putting the points a half ... away from the edge
+    const double deltay = (max_y - min_y) / (Nypix);
 
     ImX.resize(Nxpix * Nypix);
     ImY.resize(Nxpix * Nypix);

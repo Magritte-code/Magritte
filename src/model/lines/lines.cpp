@@ -22,7 +22,8 @@ void Lines ::read(const Io& io) {
     max_inverse_mass = 0.0;
     for (Size l = 0; l < parameters->nlspecs(); l++) {
         lineProducingSpecies[l].read(io, l);
-        max_inverse_mass = std::max(lineProducingSpecies[l].linedata.inverse_mass, max_inverse_mass);
+        max_inverse_mass =
+            std::max(lineProducingSpecies[l].linedata.inverse_mass, max_inverse_mass);
     }
 
     /// Set nrad_cum, a helper variable for determining indices

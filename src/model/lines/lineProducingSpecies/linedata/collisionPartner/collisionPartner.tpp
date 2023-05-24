@@ -26,7 +26,8 @@ inline void CollisionPartner ::interpolate_collision_coefficients(const Real tem
 ///    @param[in] temperature_gas : gas temperature
 ///    @param[in/out] abundance       : H2 abundance
 ////////////////////////////////////////////////////////
-inline void CollisionPartner ::adjust_abundance_for_ortho_or_para(const Real temperature_gas, Real& abundance) const {
+inline void CollisionPartner ::adjust_abundance_for_ortho_or_para(
+    const Real temperature_gas, Real& abundance) const {
     if (orth_or_para_H2 != "n") {
         const Real frac_H2_para = 1.0 / (1.0 + 9.0 * expf(-170.5 / temperature_gas));
 

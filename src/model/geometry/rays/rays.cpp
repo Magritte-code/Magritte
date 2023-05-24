@@ -18,7 +18,8 @@ void Rays ::read(const Io& io) {
     io.read_list(prefix + "weight", weight);
 
     for (Size r = 0; r < parameters->nrays(); r++) {
-        direction[r] = Vector3D(direction_buffer[r][0], direction_buffer[r][1], direction_buffer[r][2]);
+        direction[r] =
+            Vector3D(direction_buffer[r][0], direction_buffer[r][1], direction_buffer[r][2]);
     }
 
     const double tolerance = 1.0E-9;

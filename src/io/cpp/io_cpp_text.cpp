@@ -664,7 +664,8 @@ int IoText ::read_3_vector(const string file_name, Double1& x, Double1& y, Doubl
 ///    @param[in] y         : y component of the vector to be written
 ///    @param[in] z         : z component of the vector to be written
 /////////////////////////////////////////////////////////////////////
-int IoText ::write_3_vector(const string file_name, const Double1& x, const Double1& y, const Double1& z) const {
+int IoText ::write_3_vector(
+    const string file_name, const Double1& x, const Double1& y, const Double1& z) const {
     const long length = x.size();
 
     // Check if all 3 vectors are the same size

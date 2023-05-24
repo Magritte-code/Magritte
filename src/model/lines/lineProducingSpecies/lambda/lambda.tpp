@@ -41,21 +41,27 @@ inline Size Lambda ::index_first(const Size p, const Size k) const { return k + 
 ///    @param[in] p : index of the receiving cell
 ///    @param[in] k : index of the line transition
 //////////////////////////////////////////////////
-inline Size Lambda ::index_last(const Size p, const Size k) const { return index_first(p, k) + get_size(p, k) - 1; }
+inline Size Lambda ::index_last(const Size p, const Size k) const {
+    return index_first(p, k) + get_size(p, k) - 1;
+}
 
 ///  Getter for ALO element
 ///    @param[in] p      : index of the receiving cell
 ///    @param[in] k      : index of the line transition
 ///    @param[in] index  : index of the ALO element
 ///////////////////////////////////////////////////////
-inline Real Lambda ::get_Ls(const Size p, const Size k, const Size index) const { return Ls[p][k][index]; }
+inline Real Lambda ::get_Ls(const Size p, const Size k, const Size index) const {
+    return Ls[p][k][index];
+}
 
 ///  Getter for cell index corresponding of ALO element
 ///    @param[in] p      : index of the receiving cell
 ///    @param[in] k      : index of the line transition
 ///    @param[in] index  : index of the ALO element
 ///////////////////////////////////////////////////////
-inline Size Lambda ::get_nr(const Size p, const Size k, const Size index) const { return nr[p][k][index]; }
+inline Size Lambda ::get_nr(const Size p, const Size k, const Size index) const {
+    return nr[p][k][index];
+}
 
 ///  Getter for cell index corresponding of ALO element
 ///    @param[in] p      : index of the receiving cell

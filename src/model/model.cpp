@@ -244,7 +244,8 @@ int Model ::compute_spectral_discretisation(const Real width) {
 ///  parameters.nlines()*parameters.nquads() as number of frequencies, similar
 ///  to old behavior
 int Model ::compute_spectral_discretisation(const Real nu_min, const Real nu_max) {
-    return compute_spectral_discretisation(nu_min, nu_max, parameters->nlines() * parameters->nquads());
+    return compute_spectral_discretisation(
+        nu_min, nu_max, parameters->nlines() * parameters->nquads());
 }
 
 ///  Computer for spectral (=frequency) discretisation
@@ -441,7 +442,8 @@ int Model ::compute_Jeff() {
 
                 // Collect the approximated part
                 for (Size m = 0; m < lspec.lambda.get_size(p, k); m++) {
-                    const Size I = lspec.index(lspec.lambda.get_nr(p, k, m), lspec.linedata.irad[k]);
+                    const Size I =
+                        lspec.index(lspec.lambda.get_nr(p, k, m), lspec.linedata.irad[k]);
 
                     diff += lspec.lambda.get_Ls(p, k, m) * lspec.population[I];
                 }
@@ -465,7 +467,8 @@ int Model ::compute_Jeff_sparse() {
 
                 // Collect the approximated part
                 for (Size m = 0; m < lspec.lambda.get_size(p, k); m++) {
-                    const Size I = lspec.index(lspec.lambda.get_nr(p, k, m), lspec.linedata.irad[k]);
+                    const Size I =
+                        lspec.index(lspec.lambda.get_nr(p, k, m), lspec.linedata.irad[k]);
 
                     diff += lspec.lambda.get_Ls(p, k, m) * lspec.population[I];
                 }
@@ -531,7 +534,8 @@ std::tuple<bool, Size> Model ::ng_acceleration_criterion<Adaptive>(
     // the number of previous iterations to use is bounded by the memory limit
     const Size nb_prev_iterations = prior_normal_iterations;
 
-    lines.trial_iteration_using_adaptive_Ng_acceleration(parameters->pop_prec, nb_prev_iterations - skip_N_its);
+    lines.trial_iteration_using_adaptive_Ng_acceleration(
+        parameters->pop_prec, nb_prev_iterations - skip_N_its);
 
     // Computing the Ng-accelerated non-converged fraction to decide whether or
     // not to use an early Ng-acceleration step
@@ -545,7 +549,8 @@ std::tuple<bool, Size> Model ::ng_acceleration_criterion<Adaptive>(
 
     // std::cout<<"sum_fnc_ng: "<<sum_fnc_ng<<" sum_fnc_curr:
     // "<<sum_fnc_curr<<std::endl;
-    if (sum_fnc_ng < sum_fnc_curr || prior_normal_iterations == (parameters->Ng_acceleration_mem_limit + skip_N_its)) {
+    if (sum_fnc_ng < sum_fnc_curr
+        || prior_normal_iterations == (parameters->Ng_acceleration_mem_limit + skip_N_its)) {
         return std::make_tuple(true, nb_prev_iterations - skip_N_its);
     }
 
@@ -586,16 +591,19 @@ int Model ::compute_level_populations(const bool use_Ng_acceleration, const long
 
         std::tuple<bool, Size> tuple_ng_decision;
         if (parameters->use_adaptive_Ng_acceleration) {
-            tuple_ng_decision = ng_acceleration_criterion<Adaptive>(use_Ng_acceleration, iteration_normal);
+            tuple_ng_decision =
+                ng_acceleration_criterion<Adaptive>(use_Ng_acceleration, iteration_normal);
         } else {
-            tuple_ng_decision = ng_acceleration_criterion<Default>(use_Ng_acceleration, iteration_normal);
+            tuple_ng_decision =
+                ng_acceleration_criterion<Default>(use_Ng_acceleration, iteration_normal);
         }
         const bool use_ng_acceleration_step = std::get<0>(tuple_ng_decision);
         const Size ng_acceleration_order    = std::get<1>(tuple_ng_decision);
 
         std::cout << "using ng acceleration? " << use_ng_acceleration_step << std::endl;
         if (use_ng_acceleration_step) {
-            std::cout << "max order: " << iteration_normal << " used order: " << ng_acceleration_order << std::endl;
+            std::cout << "max order: " << iteration_normal
+                      << " used order: " << ng_acceleration_order << std::endl;
             lines.iteration_using_Ng_acceleration(parameters->pop_prec, ng_acceleration_order);
 
             iteration_normal = 0;
@@ -630,7 +638,8 @@ int Model ::compute_level_populations(const bool use_Ng_acceleration, const long
             error_mean.push_back(lines.lineProducingSpecies[l].relative_change_mean);
             error_max.push_back(lines.lineProducingSpecies[l].relative_change_max);
 
-            if (lines.lineProducingSpecies[l].fraction_not_converged > 1.0 - parameters->convergence_fraction) {
+            if (lines.lineProducingSpecies[l].fraction_not_converged
+                > 1.0 - parameters->convergence_fraction) {
                 some_not_converged = true;
             }
 
@@ -654,7 +663,8 @@ int Model ::compute_level_populations(const bool use_Ng_acceleration, const long
 ///  @param[in] max_niterations     : maximum number of iterations
 ///  @return number of iteration done
 ///////////////////////////////////////////////////////////////////////////////
-int Model ::compute_level_populations_sparse(const bool use_Ng_acceleration, const long max_niterations) {
+int Model ::compute_level_populations_sparse(
+    const bool use_Ng_acceleration, const long max_niterations) {
     // Check spectral discretisation setting
     if (spectralDiscretisation != SD_Lines) {
         throw std::runtime_error("Spectral discretisation was not set for Lines!");
@@ -681,17 +691,19 @@ int Model ::compute_level_populations_sparse(const bool use_Ng_acceleration, con
 
         std::tuple<bool, Size> tuple_ng_decision;
         if (parameters->use_adaptive_Ng_acceleration) {
-            tuple_ng_decision = ng_acceleration_criterion<Adaptive>(use_Ng_acceleration, iteration_normal);
+            tuple_ng_decision =
+                ng_acceleration_criterion<Adaptive>(use_Ng_acceleration, iteration_normal);
         } else {
-            tuple_ng_decision = ng_acceleration_criterion<Default>(use_Ng_acceleration, iteration_normal);
+            tuple_ng_decision =
+                ng_acceleration_criterion<Default>(use_Ng_acceleration, iteration_normal);
         }
         const bool use_ng_acceleration_step = std::get<0>(tuple_ng_decision);
         const Size ng_acceleration_order    = std::get<1>(tuple_ng_decision);
 
         std::cout << "using ng acceleration? " << use_ng_acceleration_step << std::endl;
         if (use_ng_acceleration_step) {
-            std::cout << "Ng acceleration max order: " << iteration_normal << " used order: " << ng_acceleration_order
-                      << std::endl;
+            std::cout << "Ng acceleration max order: " << iteration_normal
+                      << " used order: " << ng_acceleration_order << std::endl;
             lines.iteration_using_Ng_acceleration(parameters->pop_prec, ng_acceleration_order);
 
             iteration_normal = 0;
@@ -726,7 +738,8 @@ int Model ::compute_level_populations_sparse(const bool use_Ng_acceleration, con
             error_mean.push_back(lines.lineProducingSpecies[l].relative_change_mean);
             error_max.push_back(lines.lineProducingSpecies[l].relative_change_max);
 
-            if (lines.lineProducingSpecies[l].fraction_not_converged > 1.0 - parameters->convergence_fraction) {
+            if (lines.lineProducingSpecies[l].fraction_not_converged
+                > 1.0 - parameters->convergence_fraction) {
                 some_not_converged = true;
             }
 
@@ -750,7 +763,8 @@ int Model ::compute_level_populations_sparse(const bool use_Ng_acceleration, con
 ///  @param[in] max_niterations     : maximum number of iterations
 ///  @return number of iteration done
 ///////////////////////////////////////////////////////////////////////////////
-int Model ::compute_level_populations_shortchar(const bool use_Ng_acceleration, const long max_niterations) {
+int Model ::compute_level_populations_shortchar(
+    const bool use_Ng_acceleration, const long max_niterations) {
     // Check spectral discretisation setting
     if (spectralDiscretisation != SD_Lines) {
         throw std::runtime_error("Spectral discretisation was not set for Lines!");
@@ -779,17 +793,19 @@ int Model ::compute_level_populations_shortchar(const bool use_Ng_acceleration, 
 
         std::tuple<bool, Size> tuple_ng_decision;
         if (parameters->use_adaptive_Ng_acceleration) {
-            tuple_ng_decision = ng_acceleration_criterion<Adaptive>(use_Ng_acceleration, iteration_normal);
+            tuple_ng_decision =
+                ng_acceleration_criterion<Adaptive>(use_Ng_acceleration, iteration_normal);
         } else {
-            tuple_ng_decision = ng_acceleration_criterion<Default>(use_Ng_acceleration, iteration_normal);
+            tuple_ng_decision =
+                ng_acceleration_criterion<Default>(use_Ng_acceleration, iteration_normal);
         }
 
         const bool use_ng_acceleration_step = std::get<0>(tuple_ng_decision);
         const Size ng_acceleration_order    = std::get<1>(tuple_ng_decision);
 
         if (use_ng_acceleration_step) {
-            std::cout << "Ng acceleration max order: " << iteration_normal << " used order: " << ng_acceleration_order
-                      << std::endl;
+            std::cout << "Ng acceleration max order: " << iteration_normal
+                      << " used order: " << ng_acceleration_order << std::endl;
             lines.iteration_using_Ng_acceleration(parameters->pop_prec, ng_acceleration_order);
 
             iteration_normal = 0;
@@ -824,7 +840,8 @@ int Model ::compute_level_populations_shortchar(const bool use_Ng_acceleration, 
             error_mean.push_back(lines.lineProducingSpecies[l].relative_change_mean);
             error_max.push_back(lines.lineProducingSpecies[l].relative_change_max);
 
-            if (lines.lineProducingSpecies[l].fraction_not_converged > 1.0 - parameters->convergence_fraction) {
+            if (lines.lineProducingSpecies[l].fraction_not_converged
+                > 1.0 - parameters->convergence_fraction) {
                 some_not_converged = true;
             }
 
@@ -884,7 +901,8 @@ int Model ::compute_image_new(const Size ray_nr, const Size Nxpix, const Size Ny
 
 ///  Wrapper for the new imager
 ///////////////////////////////
-int Model ::compute_image_new(const double rx, const double ry, const double rz, const Size Nxpix, const Size Nypix) {
+int Model ::compute_image_new(
+    const double rx, const double ry, const double rz, const Size Nxpix, const Size Nypix) {
     const Vector3D raydir = Vector3D(rx, ry, rz); // will be normed later on (if not yet normed)
     return compute_image_new(raydir, Nxpix, Nypix);
 }
@@ -894,8 +912,9 @@ int Model ::compute_image_new(const double rx, const double ry, const double rz,
 /////////////////////////////////////
 int Model ::compute_image_new(const Vector3D raydir, const Size Nxpix, const Size Nypix) {
     if (raydir.squaredNorm() == 0.0) {
-        throw std::runtime_error("The given ray direction vector does not point in a direction. Please "
-                                 "use a non-zero (normed) direction vector to generate an image.");
+        throw std::runtime_error(
+            "The given ray direction vector does not point in a direction. Please "
+            "use a non-zero (normed) direction vector to generate an image.");
     }
     const Vector3D normed_raydir = raydir * (1 / std::sqrt(raydir.squaredNorm()));
     cout << "Computing image new..." << endl;
@@ -984,10 +1003,12 @@ int Model ::compute_image_optical_depth_new(
 
 ///  Computer for new optical depth image
 //////////////////////////////////////
-int Model ::compute_image_optical_depth_new(const Vector3D raydir, const Size Nxpix, const Size Nypix) {
+int Model ::compute_image_optical_depth_new(
+    const Vector3D raydir, const Size Nxpix, const Size Nypix) {
     if (raydir.squaredNorm() == 0.0) {
-        throw std::runtime_error("The given ray direction vector does not point in a direction. Please "
-                                 "use a non-zero (normed) direction vector to generate an image.");
+        throw std::runtime_error(
+            "The given ray direction vector does not point in a direction. Please "
+            "use a non-zero (normed) direction vector to generate an image.");
     }
     const Vector3D normed_raydir = raydir * (1 / std::sqrt(raydir.squaredNorm()));
     cout << "Computing image optical depth new..." << endl;
@@ -1041,8 +1062,9 @@ int Model ::set_dshift_max() {
         dshift_max[o] = std::numeric_limits<Real>::max();
 
         for (const LineProducingSpecies& lspec : lines.lineProducingSpecies) {
-            const Real inverse_mass   = lspec.linedata.inverse_mass;
-            const Real new_dshift_max = parameters->max_width_fraction * thermodynamics.profile_width(inverse_mass, o);
+            const Real inverse_mass = lspec.linedata.inverse_mass;
+            const Real new_dshift_max =
+                parameters->max_width_fraction * thermodynamics.profile_width(inverse_mass, o);
 
             if (dshift_max[o] > new_dshift_max) {
                 dshift_max[o] = new_dshift_max;

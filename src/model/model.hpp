@@ -29,12 +29,12 @@ struct Model {
     enum SpectralDiscretisation { SD_None, SD_Lines, SD_Image } spectralDiscretisation = SD_None;
 
     Model() :
-        parameters(new Parameters()), geometry(parameters), chemistry(parameters), thermodynamics(parameters),
-        lines(parameters), radiation(parameters){};
+        parameters(new Parameters()), geometry(parameters), chemistry(parameters),
+        thermodynamics(parameters), lines(parameters), radiation(parameters){};
 
     Model(const string name) :
-        parameters(new Parameters()), geometry(parameters), chemistry(parameters), thermodynamics(parameters),
-        lines(parameters), radiation(parameters) {
+        parameters(new Parameters()), geometry(parameters), chemistry(parameters),
+        thermodynamics(parameters), lines(parameters), radiation(parameters) {
         parameters->set_model_name(name);
         read();
     }
@@ -52,7 +52,8 @@ struct Model {
     int compute_spectral_discretisation();
     int compute_spectral_discretisation(const Real width);
     int compute_spectral_discretisation(const Real nu_min, const Real nu_max);
-    int compute_spectral_discretisation(const Real nu_min, const Real nu_max, const Size n_image_freqs);
+    int compute_spectral_discretisation(
+        const Real nu_min, const Real nu_max, const Size n_image_freqs);
     int compute_LTE_level_populations();
     int compute_radiation_field();
     int compute_radiation_field_feautrier_order_2();
@@ -61,16 +62,20 @@ struct Model {
     int compute_Jeff_sparse();
     int compute_level_populations_from_stateq();
     int compute_level_populations(const bool use_Ng_acceleration, const long max_niterations);
-    int compute_level_populations_sparse(const bool use_Ng_acceleration, const long max_niterations);
-    int compute_level_populations_shortchar(const bool use_Ng_acceleration, const long max_niterations);
+    int compute_level_populations_sparse(
+        const bool use_Ng_acceleration, const long max_niterations);
+    int compute_level_populations_shortchar(
+        const bool use_Ng_acceleration, const long max_niterations);
     template <NgAccelerationType type>
-    std::tuple<bool, Size> ng_acceleration_criterion(bool use_Ng_acceleration, Size prior_normal_iterations);
+    std::tuple<bool, Size> ng_acceleration_criterion(
+        bool use_Ng_acceleration, Size prior_normal_iterations);
     int compute_image(const Size ray_nr);
     int compute_image_optical_depth(const Size ray_nr);
     int compute_image_new(const Vector3D raydir, const Size Nxpix,
         const Size Nypix); // actual function for the new imager
     // convenient wrappers for the new imager
-    int compute_image_new(const double rx, const double ry, const double rz, const Size Nxpix, const Size Nypix);
+    int compute_image_new(
+        const double rx, const double ry, const double rz, const Size Nxpix, const Size Nypix);
     int compute_image_new(const Size ray_nr, const Size Nxpix, const Size Nypix);
     int compute_image_new(const Size ray_nr); // most similar function formulation
                                               // to old imager

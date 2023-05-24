@@ -5,7 +5,9 @@
 ///    @param[in] p          : index of the point
 ///    @param[in] line_index : index of the line
 /////////////////////////////////////////////////
-inline Size Lines ::index(const Size p, const Size line_index) const { return line_index + p * parameters->nlines(); }
+inline Size Lines ::index(const Size p, const Size line_index) const {
+    return line_index + p * parameters->nlines();
+}
 
 ///  Indexer for cell, line producing species and transition indices
 ///    @param[in] l : index of the line producing species
@@ -18,7 +20,9 @@ inline Size Lines ::line_index(const Size l, const Size k) const { return k + nr
 ///    @param[in] l : index of the line producing species
 ///    @param[in] k : index of the line transition
 /////////////////////////////////////// /////////////////////////////
-inline Size Lines ::index(const Size p, const Size l, const Size k) const { return index(p, line_index(l, k)); }
+inline Size Lines ::index(const Size p, const Size l, const Size k) const {
+    return index(p, line_index(l, k));
+}
 
 ///  Setter for line emissivity and opacity
 ///////////////////////////////////////////
@@ -47,7 +51,8 @@ inline void Lines ::set_inverse_width(const Thermodynamics& thermodynamics) {
 
                 const Size lid = line_index(l, k);
 
-                inverse_width(p, lid) = (Real)1.0 / thermodynamics.profile_width(invr_mass, p, frequency);
+                inverse_width(p, lid) =
+                    (Real)1.0 / thermodynamics.profile_width(invr_mass, p, frequency);
             }
         }
     })

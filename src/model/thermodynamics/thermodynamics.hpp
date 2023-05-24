@@ -19,7 +19,8 @@ struct Thermodynamics {
 
     inline Real profile(const Real width, const Real freq_diff) const;
 
-    inline Real profile(const Real inverse_mass, const Size p, const Real freq_line, const Real freq) const;
+    inline Real profile(
+        const Real inverse_mass, const Size p, const Real freq_line, const Real freq) const;
 
     inline Real profile_width(const Real inverse_mass, const Size p, const Real freq_line) const;
 

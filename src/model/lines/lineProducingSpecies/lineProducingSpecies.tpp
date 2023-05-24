@@ -11,7 +11,9 @@
 ///    @param[in] i : index of the level
 ///    @return corresponding index for p and i
 //////////////////////////////////////////////
-inline Size LineProducingSpecies ::index(const Size p, const Size i) const { return i + p * linedata.nlev; }
+inline Size LineProducingSpecies ::index(const Size p, const Size i) const {
+    return i + p * linedata.nlev;
+}
 
 ///  Getter for the line emissivity
 ///    @param[in] p : index of the cell
@@ -42,7 +44,8 @@ inline Real LineProducingSpecies ::get_opacity(const Size p, const Size k) const
 ///    @param[in] p: number of cell
 ///    @param[in] l: number of line producing species
 ///////////////////////////////////////////////////////////
-inline void LineProducingSpecies ::update_using_LTE(const Double2& abundance, const Vector<Real>& temperature) {
+inline void LineProducingSpecies ::update_using_LTE(
+    const Double2& abundance, const Vector<Real>& temperature) {
     threaded_for(p, parameters->npoints(), {
         population_tot[p] = abundance[p][linedata.num];
 
@@ -88,9 +91,9 @@ inline void LineProducingSpecies ::check_for_convergence(const Real pop_prec) {
                 // (ind));
                 // minor computed negative level populations might result in negative
                 // values for this
-                const Real relative_change =
-                    2.0
-                    * std::abs((population(ind) - population_prev1(ind)) / (population(ind) + population_prev1(ind)));
+                const Real relative_change = 2.0
+                                           * std::abs((population(ind) - population_prev1(ind))
+                                                      / (population(ind) + population_prev1(ind)));
 
                 if (relative_change > pop_prec) {
                     fnc += weight;
@@ -129,9 +132,9 @@ inline void LineProducingSpecies ::check_for_convergence_trial(const Real pop_pr
                 // (ind));
                 // minor computed negative level populations might result in negative
                 // values for this
-                const Real relative_change =
-                    2.0
-                    * std::abs((trial_population(ind) - population(ind)) / (trial_population(ind) + population(ind)));
+                const Real relative_change = 2.0
+                                           * std::abs((trial_population(ind) - population(ind))
+                                                      / (trial_population(ind) + population(ind)));
 
                 if (relative_change > pop_prec) {
                     fnc += weight;
@@ -218,7 +221,8 @@ void LineProducingSpecies ::update_using_acceleration(const Size order) {
     // populations may be computed without computing residuals
     if (populations.size() < (residuals.size() + 1)) {
         std::cout << "Inconsistent data sizes for ng acceleration." << std::endl;
-        std::cout << "Size populations: " << populations.size() << " Size residuals: " << residuals.size() << std::endl;
+        std::cout << "Size populations: " << populations.size()
+                  << " Size residuals: " << residuals.size() << std::endl;
         throw std::runtime_error("Error during ng acceleration; inconstent sizes.");
     }
     if (residuals.size() < order) {
@@ -269,7 +273,8 @@ void LineProducingSpecies ::update_using_acceleration_trial(const Size order) {
     // populations may be computed without computing residuals
     if (populations.size() < (residuals.size() + 1)) {
         std::cout << "Inconsistent data sizes for ng acceleration." << std::endl;
-        std::cout << "Size populations: " << populations.size() << " Size residuals: " << residuals.size() << std::endl;
+        std::cout << "Size populations: " << populations.size()
+                  << " Size residuals: " << residuals.size() << std::endl;
         throw std::runtime_error("Error during ng acceleration; inconstent sizes.");
     }
     if (populations.size() < order) {
@@ -317,7 +322,8 @@ inline void LineProducingSpecies ::update_using_statistical_equilibrium(
     LambdaStar.resize(parameters->npoints() * linedata.nlev, parameters->npoints() * linedata.nlev);
     LambdaTest.resize(parameters->npoints() * linedata.nlev, parameters->npoints() * linedata.nlev);
 
-    const Size non_zeros = parameters->npoints() * (linedata.nlev + 6 * linedata.nrad + 4 * linedata.ncol_tot);
+    const Size non_zeros =
+        parameters->npoints() * (linedata.nlev + 6 * linedata.nrad + 4 * linedata.ncol_tot);
     // Store previous iterations
     population_prev3 = population_prev2;
     population_prev2 = population_prev1;
@@ -338,7 +344,8 @@ inline void LineProducingSpecies ::update_using_statistical_equilibrium(
     //    triplets_LT.reserve (non_zeros);
     //    triplets_LS.reserve (non_zeros);
 
-    for (Size p = 0; p < parameters->npoints(); p++) // !!! no OMP because push_back is not thread safe !!!
+    for (Size p = 0; p < parameters->npoints();
+         p++) // !!! no OMP because push_back is not thread safe !!!
     {
         // Radiative transitions
 
@@ -538,7 +545,8 @@ inline void LineProducingSpecies ::update_using_statistical_equilibrium_sparse(
     MatrixXr StatEq(linedata.nlev, linedata.nlev);
     VectorXr y = VectorXr::Zero(linedata.nlev);
 
-    for (Size p = 0; p < parameters->npoints(); p++) // !!! no OMP because push_back is not thread safe !!!
+    for (Size p = 0; p < parameters->npoints();
+         p++) // !!! no OMP because push_back is not thread safe !!!
     {
         StatEq.setZero();
 
@@ -608,7 +616,8 @@ inline void LineProducingSpecies ::update_using_statistical_equilibrium_sparse(
         y[linedata.nlev - 1] = population_tot[p];
 
         // Solve statistical equilibrium and store level populations
-        population.segment(p * linedata.nlev, linedata.nlev) = StatEq.colPivHouseholderQr().solve(y);
+        population.segment(p * linedata.nlev, linedata.nlev) =
+            StatEq.colPivHouseholderQr().solve(y);
 
     } // for all cells
 

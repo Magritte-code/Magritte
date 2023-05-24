@@ -6,7 +6,10 @@
 #include "model/radiation/frequencies/frequencies.hpp"
 #include "tools/types.hpp"
 
-enum ImageType { Intensity, OpticalDepth }; ///< What the image represents (either intensity or optical depth)
+enum ImageType {
+    Intensity,
+    OpticalDepth
+}; ///< What the image represents (either intensity or optical depth)
 enum ImagePointPosition {
     AllModelPoints,
     ProjectionSurface
@@ -17,10 +20,10 @@ enum ImagePointPosition {
 /////////////////////////////////////////
 struct Image {
     const ImageType imageType;                   ///< Type of image (intensity or optical depth)
-    const ImagePointPosition imagePointPosition; ///< From which points the ray starts (model points or
-                                                 ///< surface outside model)
-    const Size ray_nr;                           ///< number of the ray to be imaged
-    const Vector3D ray_direction;                ///< ray direction, if not imaging all model points
+    const ImagePointPosition imagePointPosition; ///< From which points the ray starts (model points
+                                                 ///< or surface outside model)
+    const Size ray_nr;            ///< number of the ray to be imaged
+    const Vector3D ray_direction; ///< ray direction, if not imaging all model points
 
     // Stuff which is practically const, but the compiler complains about because
     // they are defined in a subfunction (not the constructor itself).
@@ -45,17 +48,20 @@ struct Image {
     // The actual image contents
     Matrix<Real> I; ///< value of the pixel at the corresponding coordinate
 
-    Image(const Geometry& geometry, const Frequencies& frequencies, const ImageType it, const Size ray_nr);
-    Image(const Geometry& geometry, const Frequencies& frequencies, const ImageType it, const Size ray_nr,
-        const Size Nxpix, const Size Nypix);
-    Image(const Geometry& geometry, const Frequencies& frequencies, const ImageType it, const Vector3D ray_dir);
-    Image(const Geometry& geometry, const Frequencies& frequencies, const ImageType it, const Vector3D ray_dir,
-        const Size Nxpix, const Size Nypix);
+    Image(const Geometry& geometry, const Frequencies& frequencies, const ImageType it,
+        const Size ray_nr);
+    Image(const Geometry& geometry, const Frequencies& frequencies, const ImageType it,
+        const Size ray_nr, const Size Nxpix, const Size Nypix);
+    Image(const Geometry& geometry, const Frequencies& frequencies, const ImageType it,
+        const Vector3D ray_dir);
+    Image(const Geometry& geometry, const Frequencies& frequencies, const ImageType it,
+        const Vector3D ray_dir, const Size Nxpix, const Size Nypix);
     Image(const Image& image);
 
     inline void set_freqs(const Frequencies& frequencies);
     inline void set_coordinates_all_model_points(const Geometry& geometry);
-    inline void set_coordinates_projection_surface(const Geometry& geometry, const Size Nxpix, const Size Nypix);
+    inline void set_coordinates_projection_surface(
+        const Geometry& geometry, const Size Nxpix, const Size Nypix);
 
     accel Vector3D surface_coords_to_3D_coordinates(const double x, const double y) const;
 };

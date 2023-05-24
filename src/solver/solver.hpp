@@ -16,8 +16,8 @@ struct Solver {
     const Size MAX_CONSECUTIVE_BDY = 5; // for the new imager, we need some stopping
                                         // criterion to determine when the ray ends
 
-    pc::multi_threading::ThreadPrivate<Vector<double>> dZ_;    ///< distance increments along the ray
-    pc::multi_threading::ThreadPrivate<Vector<Size>> nr_;      ///< corresponding point number on the ray
+    pc::multi_threading::ThreadPrivate<Vector<double>> dZ_; ///< distance increments along the ray
+    pc::multi_threading::ThreadPrivate<Vector<Size>> nr_; ///< corresponding point number on the ray
     pc::multi_threading::ThreadPrivate<Vector<double>> shift_; ///< Doppler shift along the ray
 
     pc::multi_threading::ThreadPrivate<Vector<Real>> eta_c_;
@@ -85,22 +85,24 @@ struct Solver {
     // template <Frame frame>
     inline Size get_ray_lengths_max_new_imager(Model& model, Image& image, const Vector3D& ray_dir);
 
-    accel inline Size get_ray_length_new_imager(
-        const Geometry& geometry, const Vector3D& origin, const Size start_bdy, const Vector3D& raydir);
+    accel inline Size get_ray_length_new_imager(const Geometry& geometry, const Vector3D& origin,
+        const Size start_bdy, const Vector3D& raydir);
 
     template <Frame frame>
-    accel inline Size trace_ray(const Geometry& geometry, const Size o, const Size r, const double dshift_max,
-        const int increment, Size id1, Size id2);
+    accel inline Size trace_ray(const Geometry& geometry, const Size o, const Size r,
+        const double dshift_max, const int increment, Size id1, Size id2);
 
-    accel inline Size trace_ray_imaging_get_start(
-        const Geometry& geometry, const Vector3D& origin, const Size start_bdy, const Vector3D& raydir, Real& Z);
+    accel inline Size trace_ray_imaging_get_start(const Geometry& geometry, const Vector3D& origin,
+        const Size start_bdy, const Vector3D& raydir, Real& Z);
 
     template <Frame frame>
-    accel inline Size trace_ray_imaging(const Geometry& geometry, const Vector3D& origin, const Size start_bdy,
-        const Vector3D& raydir, const double dshift_max, const int increment, Real& Z, Size id1, Size id2);
+    accel inline Size trace_ray_imaging(const Geometry& geometry, const Vector3D& origin,
+        const Size start_bdy, const Vector3D& raydir, const double dshift_max, const int increment,
+        Real& Z, Size id1, Size id2);
 
-    accel inline void set_data(const Size crt, const Size nxt, const double shift_crt, const double shift_nxt,
-        const double dZ_loc, const double dshift_max, const int increment, Size& id1, Size& id2);
+    accel inline void set_data(const Size crt, const Size nxt, const double shift_crt,
+        const double shift_nxt, const double dZ_loc, const double dshift_max, const int increment,
+        Size& id1, Size& id2);
 
     accel inline Real gaussian(const Real width, const Real diff) const;
     accel inline Real planck(const Real temp, const Real freq) const;
@@ -108,22 +110,24 @@ struct Solver {
     accel inline Real boundary_intensity(const Model& model, const Size p, const Real freq) const;
 
     template <ApproximationType approx>
-    accel inline void get_eta_and_chi(
-        const Model& model, const Size p, const Size l, const Real freq, Real& eta, Real& chi) const;
+    accel inline void get_eta_and_chi(const Model& model, const Size p, const Size l,
+        const Real freq, Real& eta, Real& chi) const;
 
     template <ApproximationType approx>
-    inline void compute_S_dtau_line_integrated(Model& model, Size currpoint, Size nextpoint, Size lineidx,
-        Real currfreq, Real nextfreq, Real dZ, Real& dtau, Real& Scurr, Real& Snext);
+    inline void compute_S_dtau_line_integrated(Model& model, Size currpoint, Size nextpoint,
+        Size lineidx, Real currfreq, Real nextfreq, Real dZ, Real& dtau, Real& Scurr, Real& Snext);
 
-    inline Real compute_dtau_single_line(
-        Model& model, Size curridx, Size nextidx, Size lineidx, Real curr_freq, Real next_freq, Real dz);
+    inline Real compute_dtau_single_line(Model& model, Size curridx, Size nextidx, Size lineidx,
+        Real curr_freq, Real next_freq, Real dz);
 
     template <ApproximationType approx>
-    accel inline void compute_source_dtau(Model& model, Size currpoint, Size nextpoint, Size line, Real curr_freq,
-        Real next_freq, double curr_shift, double next_shift, Real dZ, bool& compute_curr_opacity, Real& dtaunext,
-        Real& chicurr, Real& chinext, Real& Scurr, Real& Snext);
+    accel inline void compute_source_dtau(Model& model, Size currpoint, Size nextpoint, Size line,
+        Real curr_freq, Real next_freq, double curr_shift, double next_shift, Real dZ,
+        bool& compute_curr_opacity, Real& dtaunext, Real& chicurr, Real& chinext, Real& Scurr,
+        Real& Snext);
 
-    template <ApproximationType approx> accel inline void update_Lambda(Model& model, const Size rr, const Size f);
+    template <ApproximationType approx>
+    accel inline void update_Lambda(Model& model, const Size rr, const Size f);
     // accel inline void solve_shortchar_order_0_ray_forward (
     //           Model& model,
     //           const Size   o,
@@ -138,7 +142,8 @@ struct Solver {
     /////////////////////
     // algorithms for tracing the rays and extracting the
     // information of the solver
-    template <ApproximationType approx> accel inline void image_feautrier_order_2(Model& model, const Size rr);
+    template <ApproximationType approx>
+    accel inline void image_feautrier_order_2(Model& model, const Size rr);
     template <ApproximationType approx>
     inline void image_feautrier_order_2_new_imager(
         Model& model, const Vector3D& ray_dir, const Size nxpix, const Size nypix);
@@ -149,22 +154,27 @@ struct Solver {
     template <ApproximationType approx>
     accel inline void image_feautrier_order_2_for_point(Model& model, const Size rr, const Size p);
     template <ApproximationType approx>
-    accel inline void image_feautrier_order_2_for_point_loc(Model& model, const Size o, const Size f);
+    accel inline void image_feautrier_order_2_for_point_loc(
+        Model& model, const Size o, const Size f);
 
-    template <ApproximationType approx> accel inline void image_optical_depth(Model& model, const Size rr);
+    template <ApproximationType approx>
+    accel inline void image_optical_depth(Model& model, const Size rr);
     template <ApproximationType approx>
     inline void image_optical_depth_new_imager(
         Model& model, const Vector3D& ray_dir, const Size nxpix, const Size nypix);
     // actual solver
-    template <ApproximationType approx> accel inline void image_optical_depth(Model& model, const Size o, const Size f);
+    template <ApproximationType approx>
+    accel inline void image_optical_depth(Model& model, const Size o, const Size f);
 
     // Solvers only computing u
     ///////////////////////////
     template <ApproximationType approx> accel inline void solve_feautrier_order_2(Model& model);
 
-    template <ApproximationType approx> accel inline void solve_feautrier_order_2_sparse(Model& model);
+    template <ApproximationType approx>
+    accel inline void solve_feautrier_order_2_sparse(Model& model);
 
-    template <ApproximationType approx> accel inline void solve_feautrier_order_2_anis(Model& model);
+    template <ApproximationType approx>
+    accel inline void solve_feautrier_order_2_anis(Model& model);
 
     template <ApproximationType approx>
     accel inline void solve_feautrier_order_2(Model& model, const Size o, const Size f);

@@ -67,12 +67,15 @@ struct IoPython : public Io {
     int write_array(const string fname, const Real2& array) const override;
 
     int read_3_vector(const string fname, Double1& x, Double1& y, Double1& z) const override;
-    int write_3_vector(const string fname, const Double1& x, const Double1& y, const Double1& z) const override;
+    int write_3_vector(
+        const string fname, const Double1& x, const Double1& y, const Double1& z) const override;
 
   private:
     static const string io_folder; ///< path to io_python files
 
-    template <class type> int read_in_python(const string function, const string file_name, type& data) const;
+    template <class type>
+    int read_in_python(const string function, const string file_name, type& data) const;
 
-    template <class type> int write_in_python(const string function, const string file_name, const type& data) const;
+    template <class type>
+    int write_in_python(const string function, const string file_name, const type& data) const;
 };

@@ -25,7 +25,8 @@ struct CollisionPartner {
     void read(const Io& io, const Size l, const Size c);
     void write(const Io& io, const Size l, const Size c) const;
 
-    inline void adjust_abundance_for_ortho_or_para(const Real temperature_gas, Real& abundance) const;
+    inline void adjust_abundance_for_ortho_or_para(
+        const Real temperature_gas, Real& abundance) const;
 
     inline void interpolate_collision_coefficients(const Real temperature_gas);
 };

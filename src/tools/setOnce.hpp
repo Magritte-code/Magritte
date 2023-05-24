@@ -6,7 +6,9 @@
 #include <iostream>
 
 struct DoubleSetException : public std::exception {
-    const char* what() const throw() { return "Tried to overwrite SetOnce object with another value."; }
+    const char* what() const throw() {
+        return "Tried to overwrite SetOnce object with another value.";
+    }
 };
 
 struct GetBeforeSetException : public std::exception {
@@ -26,13 +28,14 @@ template <typename type, bool essential> class SetOnce {
     inline SetOnce() {}
     inline SetOnce(const string name) : var_name(name) {}
     inline SetOnce(const type new_value, const string name) : value(new_value), var_name(name) {}
-    inline SetOnce(const SetOnce& s) : already_set(s.already_set), value(s.value), var_name(s.var_name){};
+    inline SetOnce(const SetOnce& s) :
+        already_set(s.already_set), value(s.value), var_name(s.var_name){};
 
     inline void set(const type new_value) {
         if (already_set) {
             if (value != new_value) {
-                std::cout << "variable: " << var_name << " ERROR value = " << value << " new value = " << new_value
-                          << std::endl;
+                std::cout << "variable: " << var_name << " ERROR value = " << value
+                          << " new value = " << new_value << std::endl;
                 throw DoubleSetException();
             }
         } else {
@@ -44,8 +47,8 @@ template <typename type, bool essential> class SetOnce {
     inline void set_default(const type new_value) {
         if (already_set) {
             if (value != new_value) {
-                std::cout << "variable: " << var_name << " ERROR value = " << value << " new value = " << new_value
-                          << std::endl;
+                std::cout << "variable: " << var_name << " ERROR value = " << value
+                          << " new value = " << new_value << std::endl;
                 throw DoubleSetException();
             }
         } else {

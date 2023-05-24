@@ -27,8 +27,8 @@ PYBIND11_MODULE(core, module) {
         "Get the number of available threads (using OpenMP).");
     module.def("pcmt_set_n_threads_avail", &paracabs::multi_threading::set_n_threads_avail,
         "Set the number of available threads (using OpenMP).");
-    module.def(
-        "pcmp_comm_rank", &paracabs::message_passing::comm_rank, "Get the rank of the current process (using MPI).");
+    module.def("pcmp_comm_rank", &paracabs::message_passing::comm_rank,
+        "Get the rank of the current process (using MPI).");
     module.def("pcmp_comm_size", &paracabs::message_passing::comm_size,
         "Get the size of the current communicator (using MPI).");
     module.def("pcmp_length", &paracabs::message_passing::length,
@@ -56,18 +56,23 @@ PYBIND11_MODULE(core, module) {
     py::class_<Io>(module, "Io", "Abstract input/output base class.");
 
     // IoText
-    py::class_<IoText, Io>(module, "IoText", "Intput/output class for text-based io, implemented in C++.")
+    py::class_<IoText, Io>(
+        module, "IoText", "Intput/output class for text-based io, implemented in C++.")
         // attributes
-        .def_readonly("io_file", &IoText::io_file, "Name of the folder or file to read from or write to.")
+        .def_readonly(
+            "io_file", &IoText::io_file, "Name of the folder or file to read from or write to.")
         // constructor
         .def(py::init<const string&>());
 
 #if (PYTHON_IO)
     // IoPython
-    py::class_<IoPython, Io>(module, "IoPython", "Input/output class for io, implemented in Python.")
+    py::class_<IoPython, Io>(
+        module, "IoPython", "Input/output class for io, implemented in Python.")
         // attributes
-        .def_readonly("implementation", &IoPython::implementation, "Type of input/output. Either \"hdf5\" or \"text\".")
-        .def_readonly("io_file", &IoPython::io_file, "Name of the folder or file to read from or write to.")
+        .def_readonly("implementation", &IoPython::implementation,
+            "Type of input/output. Either \"hdf5\" or \"text\".")
+        .def_readonly(
+            "io_file", &IoPython::io_file, "Name of the folder or file to read from or write to.")
         // constructor
         .def(py::init<const string&, const string&>());
 #endif
@@ -90,7 +95,8 @@ PYBIND11_MODULE(core, module) {
         .export_values();
 
     // Image
-    py::class_<Image>(module, "Image", "Image class, 2D point cloud of intensities for each frequency bin.")
+    py::class_<Image>(
+        module, "Image", "Image class, 2D point cloud of intensities for each frequency bin.")
         // attributes
         .def_readonly("imageType", &Image::imageType, "Type of image (intensity or optical depth).")
         .def_readonly("imagePointPosition", &Image::imagePointPosition,
@@ -100,12 +106,14 @@ PYBIND11_MODULE(core, module) {
         .def_readonly("ray_nr", &Image::ray_nr, "Number of the ray along which the image is taken.")
         .def_readonly("ImX", &Image::ImX, "X-coordinates of the points in the image plane.")
         .def_readonly("ImY", &Image::ImY, "Y-coordinates of the points in the image plane.")
+        .def_readonly("image_direction_x", &Image::image_direction_x,
+            "coordinate of image x direction in a 3D general geometry.")
+        .def_readonly("image_direction_y", &Image::image_direction_y,
+            "coordinate of image y direction in a 3D general geometry.")
+        .def_readonly("image_direction_z", &Image::image_direction_z,
+            "direction in which the image is taken.")
         .def_readonly(
-            "image_direction_x", &Image::image_direction_x, "coordinate of image x direction in a 3D general geometry.")
-        .def_readonly(
-            "image_direction_y", &Image::image_direction_y, "coordinate of image y direction in a 3D general geometry.")
-        .def_readonly("image_direction_z", &Image::image_direction_z, "direction in which the image is taken.")
-        .def_readonly("I", &Image::I, "Intensity of the points in the image (for each frequency bin).")
+            "I", &Image::I, "Intensity of the points in the image (for each frequency bin).")
         // constructor
         .def(py::init<const Geometry&, const Frequencies&, const ImageType&, const Size&>());
 
@@ -127,8 +135,10 @@ PYBIND11_MODULE(core, module) {
         .def_readwrite("boundary_condition", &Model::boundary_condition)
         .def_readwrite("column", &Model::column)
         .def_readwrite("density", &Model::density)
-        .def_readonly("error_mean", &Model::error_mean, "Mean relative error in the level populations.")
-        .def_readonly("error_max", &Model::error_max, "Max relative error in the level populaitons.")
+        .def_readonly(
+            "error_mean", &Model::error_mean, "Mean relative error in the level populations.")
+        .def_readonly(
+            "error_max", &Model::error_max, "Max relative error in the level populaitons.")
         // functions
         .def("read", (void(Model::*)(void)) & Model::read,
             "Read model file (using the hdf5 implementation of IoPython and "
@@ -136,15 +146,19 @@ PYBIND11_MODULE(core, module) {
         .def("write", (void(Model::*)(void) const) & Model::write,
             "Write model file (using the hdf5 implementation of IoPython and "
             "using the model name specified in parameters.)")
-        .def("read", (void(Model::*)(const Io&)) & Model::read, "Read model file using the given Io object.")
-        .def("write", (void(Model::*)(const Io&) const) & Model::write, "Write model file using the given Io object.")
-        .def("read", (void(Model::*)(const string)) & Model::read, "Read model file (assuming HDF5 file format).")
+        .def("read", (void(Model::*)(const Io&)) & Model::read,
+            "Read model file using the given Io object.")
+        .def("write", (void(Model::*)(const Io&) const) & Model::write,
+            "Write model file using the given Io object.")
+        .def("read", (void(Model::*)(const string)) & Model::read,
+            "Read model file (assuming HDF5 file format).")
         .def("write", (void(Model::*)(const string) const) & Model::write,
             "Write model file (assuming HDF5 file format).")
         .def("compute_inverse_line_widths", &Model::compute_inverse_line_widths,
             "Compute the inverse line widths for the model. (Needs to be "
             "recomputed whenever the temperature of turbulence changes.)")
-        .def("compute_spectral_discretisation", (int(Model::*)(void)) & Model::compute_spectral_discretisation,
+        .def("compute_spectral_discretisation",
+            (int(Model::*)(void)) & Model::compute_spectral_discretisation,
             "Compute the spectral discretisation for the model tailored for "
             "line (Gauss-Hermite) quadrature.")
         .def("compute_spectral_discretisation",
@@ -152,7 +166,8 @@ PYBIND11_MODULE(core, module) {
             "Compute the spectral discretisation for the model tailored for "
             "images with the given spectral width.")
         .def("compute_spectral_discretisation",
-            (int(Model::*)(const Real nu_min, const Real nu_max)) & Model::compute_spectral_discretisation,
+            (int(Model::*)(const Real nu_min, const Real nu_max))
+                & Model::compute_spectral_discretisation,
             "Compute the spectral discretisation for the model tailored for "
             "images with the given min and max frequency.")
         .def("compute_spectral_discretisation",
@@ -165,7 +180,8 @@ PYBIND11_MODULE(core, module) {
         .def("compute_LTE_level_populations", &Model::compute_LTE_level_populations,
             "Compute the level populations for the model assuming local "
             "thermodynamic equilibrium (LTE).")
-        .def("compute_radiation_field_feautrier_order_2", &Model::compute_radiation_field_feautrier_order_2,
+        .def("compute_radiation_field_feautrier_order_2",
+            &Model::compute_radiation_field_feautrier_order_2,
             "Compute the radiation field for the modle using the 2nd-order "
             "Feautrier solver.")
         .def("compute_radiation_field_feautrier_order_2_sparse",
@@ -180,13 +196,16 @@ PYBIND11_MODULE(core, module) {
         //     "Compute the radiation field for the modle using the 2nd-order
         //     Feautrier solver."
         // )
-        .def("compute_radiation_field_feautrier_order_2_anis", &Model::compute_radiation_field_feautrier_order_2_anis,
+        .def("compute_radiation_field_feautrier_order_2_anis",
+            &Model::compute_radiation_field_feautrier_order_2_anis,
             "Compute the radiation field for the modle using the 2nd-order "
             "Feautrier solver, anisotropic case.")
-        .def("compute_radiation_field_shortchar_order_0", &Model::compute_radiation_field_shortchar_order_0,
+        .def("compute_radiation_field_shortchar_order_0",
+            &Model::compute_radiation_field_shortchar_order_0,
             "Compute the radiation field for the modle using the 0th-order "
             "short-characteristics methods.")
-        .def("compute_Jeff", &Model::compute_Jeff, "Compute the effective mean intensity in the line.")
+        .def("compute_Jeff", &Model::compute_Jeff,
+            "Compute the effective mean intensity in the line.")
         .def("compute_level_populations_from_stateq", &Model::compute_level_populations_from_stateq,
             "Compute the level populations for the model assuming statistical "
             "equilibrium.")
@@ -204,16 +223,19 @@ PYBIND11_MODULE(core, module) {
             "solver for the model assuming statistical equilibrium until "
             "convergence, optionally using Ng-acceleration, and for the given "
             "maximum number of iterations.")
-        .def("compute_image", &Model::compute_image, "Compute an image for the model along the given ray.")
+        .def("compute_image", &Model::compute_image,
+            "Compute an image for the model along the given ray.")
         .def("compute_image_new", (int(Model::*)(const Size ray_nr)) & Model::compute_image_new,
             "Compute an image of the model along the given ray direction, using "
             "the new imager.")
         .def("compute_image_new",
-            (int(Model::*)(const Size ray_nr, const Size Nxpix, const Size Nypix)) & Model::compute_image_new,
+            (int(Model::*)(const Size ray_nr, const Size Nxpix, const Size Nypix))
+                & Model::compute_image_new,
             "Compute an image of the model along the given ray direction, using "
             "the new imager, specifying the image resolution.")
         .def("compute_image_new",
-            (int(Model::*)(const double rx, const double ry, const double rz, const Size Nxpix, const Size Nypix))
+            (int(Model::*)(const double rx, const double ry, const double rz, const Size Nxpix,
+                const Size Nypix))
                 & Model::compute_image_new,
             "Compute an image of the model along the given ray direction, using "
             "the new imager, specifying the ray direction and image resolution.")
@@ -231,7 +253,8 @@ PYBIND11_MODULE(core, module) {
             "given ray direction, using the new imager, specifying the image "
             "resolution.")
         .def("compute_image_optical_depth_new",
-            (int(Model::*)(const double rx, const double ry, const double rz, const Size Nxpix, const Size Nypix))
+            (int(Model::*)(const double rx, const double ry, const double rz, const Size Nxpix,
+                const Size Nypix))
                 & Model::compute_image_optical_depth_new,
             "Compute an image of the optical depth for the model along the "
             "given ray direction, using the new imager, specifying the ray "
@@ -239,7 +262,8 @@ PYBIND11_MODULE(core, module) {
         .def("set_eta_and_chi", &Model::set_eta_and_chi,
             "Set latest emissivity and opacity for the model in the eta and chi "
             "variables respectively.")
-        .def("set_boundary_condition", &Model::set_boundary_condition, "Set boundary condition (internally).")
+        .def("set_boundary_condition", &Model::set_boundary_condition,
+            "Set boundary condition (internally).")
         .def("compute_image_for_point", &Model::compute_image_for_point,
             "Compute image (single pixel) for a single point.")
         .def("set_column", &Model::set_column, "Set column (internally).")
@@ -248,7 +272,8 @@ PYBIND11_MODULE(core, module) {
         .def(py::init<>());
 
     // Parameters
-    py::class_<Parameters, std::shared_ptr<Parameters>>(module, "Parameters", "Class containing the model parameters.")
+    py::class_<Parameters, std::shared_ptr<Parameters>>(
+        module, "Parameters", "Class containing the model parameters.")
         // io
         .def_readwrite("n_off_diag", &Parameters::n_off_diag,
             "Bandwidth of the ALO (0=diagonal, 1=tri-diaginal, "
@@ -262,29 +287,34 @@ PYBIND11_MODULE(core, module) {
             "Minimum relative level population to be considered in "
             "the convergence criterion.")
         .def_readwrite("pop_prec", &Parameters::pop_prec, "Required precision for ALI.")
-        .def_readwrite("min_opacity", &Parameters::min_opacity, "Minimum opacity that will be assumed in the solver.")
-        .def_readwrite(
-            "min_dtau", &Parameters::min_dtau, "Minimum optical depth increment that will be assumed in the solver.")
-        .def_readwrite("store_intensities", &Parameters::store_intensities, "Whether or not to store intensities.")
+        .def_readwrite("min_opacity", &Parameters::min_opacity,
+            "Minimum opacity that will be assumed in the solver.")
+        .def_readwrite("min_dtau", &Parameters::min_dtau,
+            "Minimum optical depth increment that will be assumed in the solver.")
+        .def_readwrite("store_intensities", &Parameters::store_intensities,
+            "Whether or not to store intensities.")
         .def_readwrite("one_line_approximation", &Parameters::one_line_approximation,
             "Whether or not to use one line approximation.")
-        .def_readwrite("sum_opacity_emissivity_over_all_lines", &Parameters::sum_opacity_emissivity_over_all_lines,
+        .def_readwrite("sum_opacity_emissivity_over_all_lines",
+            &Parameters::sum_opacity_emissivity_over_all_lines,
             "Whether or not to sum the opacity, emissivity over all "
             "lines (including the zero contributions).")
-        .def_readwrite("max_distance_opacity_contribution", &Parameters::max_distance_opacity_contribution,
+        .def_readwrite("max_distance_opacity_contribution",
+            &Parameters::max_distance_opacity_contribution,
             "The distance (scaled to line width) at which we ignore "
             "the opacity/emissivity contribution.")
         .def_readwrite("use_adaptive_Ng_acceleration", &Parameters::use_adaptive_Ng_acceleration,
             "Whether to use adaptive Ng acceleration.")
-        .def_readwrite(
-            "Ng_acceleration_mem_limit", &Parameters::Ng_acceleration_mem_limit, "Memory limit for ng acceleration.")
+        .def_readwrite("Ng_acceleration_mem_limit", &Parameters::Ng_acceleration_mem_limit,
+            "Memory limit for ng acceleration.")
         .def_readwrite("adaptive_Ng_acceleration_use_max_criterion",
             &Parameters::adaptive_Ng_acceleration_use_max_criterion,
             "Whether of not to use the maximum relative change as "
             "criterion for the adaptive ng-acceleration")
         .def_readwrite("Ng_acceleration_remove_N_its", &Parameters::Ng_acceleration_remove_N_its,
             "Number of iterations to ignore when using ng-acceleration")
-        .def_readwrite("adaptive_Ng_acceleration_min_order", &Parameters::adaptive_Ng_acceleration_min_order,
+        .def_readwrite("adaptive_Ng_acceleration_min_order",
+            &Parameters::adaptive_Ng_acceleration_min_order,
             "Minimal order of ng acceleration when using adaptive Ng "
             "acceleration. Has to be larger than 1.")
         // setters
@@ -304,7 +334,8 @@ PYBIND11_MODULE(core, module) {
         .def("set_nlspecs", &Parameters::set_nlspecs, "Set number of line producing species.")
         .def("set_nlines", &Parameters::set_nlines, "Set number of lines.")
         .def("set_nquads", &Parameters::set_nquads, "Set number of quadrature points.")
-        .def("set_use_scattering", &Parameters::set_use_scattering, "Set whether or not to use scattering.")
+        .def("set_use_scattering", &Parameters::set_use_scattering,
+            "Set whether or not to use scattering.")
         .def("set_spherical_symmetry", &Parameters::set_spherical_symmetry,
             "Set whether or not to use spherical symmetry")
         .def("set_adaptive_ray_tracing", &Parameters::set_adaptive_ray_tracing,
@@ -323,8 +354,10 @@ PYBIND11_MODULE(core, module) {
         .def("nlines", &Parameters::nlines, "Number of lines.")
         .def("nquads", &Parameters::nquads, "Number of quadrature points.")
         .def("use_scattering", &Parameters::use_scattering, "Whether or not to use scattering.")
-        .def("spherical_symmetry", &Parameters::spherical_symmetry, "Whether or not to use spherical symmetry.")
-        .def("adaptive_ray_tracing", &Parameters::adaptive_ray_tracing, "Whether or not to use adaptive ray tracing.")
+        .def("spherical_symmetry", &Parameters::spherical_symmetry,
+            "Whether or not to use spherical symmetry.")
+        .def("adaptive_ray_tracing", &Parameters::adaptive_ray_tracing,
+            "Whether or not to use adaptive ray tracing.")
         // functions
         .def("read", &Parameters::read, "Rread object from file.")
         .def("write", &Parameters::write, "Write object to file.");
@@ -349,18 +382,22 @@ PYBIND11_MODULE(core, module) {
         .def_readwrite("velocity", &Points::velocity,
             "Array with velocity vectors of the points (as a fraction "
             "of the speed of light).")
-        .def_readwrite("neighbors", &Points::neighbors, "Linearised array of neighbours of each point.")
+        .def_readwrite(
+            "neighbors", &Points::neighbors, "Linearised array of neighbours of each point.")
         .def_readwrite("n_neighbors", &Points::n_neighbors, "Number of neighbours of each point.")
-        .def_readonly("cum_n_neighbors", &Points::cum_n_neighbors, "Cumulative number of neighbours of each point.")
+        .def_readonly("cum_n_neighbors", &Points::cum_n_neighbors,
+            "Cumulative number of neighbours of each point.")
         // io
         .def("read", &Points::read, "Read object from file.")
         .def("write", &Points::write, "Write object to file.");
 
     // Rays
-    py::class_<Rays>(module, "Rays", "Class containing the (light) rays (directional discretisation).")
+    py::class_<Rays>(
+        module, "Rays", "Class containing the (light) rays (directional discretisation).")
         // attributes
         .def_readwrite("direction", &Rays::direction, "Array with direction vector of each ray.")
-        .def_readonly("antipod", &Rays::antipod, "Array with the number of the antipodal ray for each ray.")
+        .def_readonly(
+            "antipod", &Rays::antipod, "Array with the number of the antipodal ray for each ray.")
         .def_readwrite("weight", &Rays::weight,
             "Array with the weights that each ray contributes in "
             "integrals over directions.")
@@ -378,14 +415,18 @@ PYBIND11_MODULE(core, module) {
     // Boundary
     py::class_<Boundary>(module, "Boundary", "Class containing the model boundary.")
         // attributes
-        .def_readwrite("boundary2point", &Boundary::boundary2point, "Array with point index for each boundary point.")
-        .def_readonly("point2boundary", &Boundary::point2boundary, "Array with boundary index for each point.")
+        .def_readwrite("boundary2point", &Boundary::boundary2point,
+            "Array with point index for each boundary point.")
+        .def_readonly("point2boundary", &Boundary::point2boundary,
+            "Array with boundary index for each point.")
         .def_readwrite("boundary_temperature", &Boundary::boundary_temperature,
             "Array with radiative temperature for each boundary point "
             "(only relevant for thermal boundary conditions).")
         // functions
-        .def("set_boundary_condition", &Boundary::set_boundary_condition, "Setter for the boundary condition.")
-        .def("get_boundary_condition", &Boundary::get_boundary_condition, "Getter for the boundary condition.")
+        .def("set_boundary_condition", &Boundary::set_boundary_condition,
+            "Setter for the boundary condition.")
+        .def("get_boundary_condition", &Boundary::get_boundary_condition,
+            "Getter for the boundary condition.")
         // io
         .def("read", &Boundary::read, "Read object from file.")
         .def("write", &Boundary::write, "Write object to file.");
@@ -410,8 +451,8 @@ PYBIND11_MODULE(core, module) {
     // Turbulence
     py::class_<Turbulence>(module, "Turbulence", "Class containing the (micro) turbulence.")
         // attributes
-        .def_readwrite(
-            "vturb2", &Turbulence::vturb2, "Square of the micro turbulence as a fraction of the speed of light.")
+        .def_readwrite("vturb2", &Turbulence::vturb2,
+            "Square of the micro turbulence as a fraction of the speed of light.")
         // functions
         .def("read", &Turbulence::read, "Read object from file.")
         .def("write", &Turbulence::write, "Write object to file.");
@@ -436,43 +477,51 @@ PYBIND11_MODULE(core, module) {
     // Lines
     py::class_<Lines>(module, "Lines", "Class containing the lines and their data.")
         // attributes
-        .def_readonly("lineProducingSpecies", &Lines::lineProducingSpecies, "Vector of LineProducingSpecies.")
-        .def_readonly("emissivity", &Lines::emissivity, "Array with emissivities for each point and frequency bin.")
-        .def_readonly("opacity", &Lines::opacity, "Array with opacities for each point and frequency bin.")
         .def_readonly(
-            "inverse_width", &Lines::inverse_width, "Array with the inverse widths for each line at each point.")
+            "lineProducingSpecies", &Lines::lineProducingSpecies, "Vector of LineProducingSpecies.")
+        .def_readonly("emissivity", &Lines::emissivity,
+            "Array with emissivities for each point and frequency bin.")
+        .def_readonly(
+            "opacity", &Lines::opacity, "Array with opacities for each point and frequency bin.")
+        .def_readonly("inverse_width", &Lines::inverse_width,
+            "Array with the inverse widths for each line at each point.")
         .def_readonly("line", &Lines::line, "Array with the line (centre) frequencies.")
         // functions
         .def("read", &Lines::read, "Read object from file.")
         .def("write", &Lines::write, "Write object to file.")
-        .def("set_emissivity_and_opacity", &Lines::set_emissivity_and_opacity, "Set the emissivity and opacity arrays.")
+        .def("set_emissivity_and_opacity", &Lines::set_emissivity_and_opacity,
+            "Set the emissivity and opacity arrays.")
         .def("resize_LineProducingSpecies", &Lines::resize_LineProducingSpecies,
             "Resize the vector LineProducingSpecies.");
 
     // LineProducingSpecies
-    py::class_<LineProducingSpecies>(module, "LineProducingSpecies", "Class containing a line producing species.")
+    py::class_<LineProducingSpecies>(
+        module, "LineProducingSpecies", "Class containing a line producing species.")
         // attributes
         .def_readonly("linedata", &LineProducingSpecies::linedata, "Linedata object.")
         .def_readonly("quadrature", &LineProducingSpecies::quadrature, "Quadrature object.")
         .def_readonly("Lambda", &LineProducingSpecies::lambda,
             "Lambda object") // "lambda" is invalid in Python, use "Lambda"
-        .def_readwrite("Jeff", &LineProducingSpecies::Jeff, "Array with effective mean intensities in the lines.")
+        .def_readwrite("Jeff", &LineProducingSpecies::Jeff,
+            "Array with effective mean intensities in the lines.")
         .def_readwrite("Jlin", &LineProducingSpecies::Jlin)
         .def_readonly("Jdif", &LineProducingSpecies::Jdif)
         .def_readonly("fraction_not_converged", &LineProducingSpecies::fraction_not_converged)
 
         .def_readonly("J", &LineProducingSpecies::J, "Isotropic radiation field.")
-        .def_readonly("J2_0", &LineProducingSpecies::J2_0, "Anisotropic radiation field tensor element 0")
         .def_readonly(
-            "J2_1_Re", &LineProducingSpecies::J2_1_Re, "Anisotropic radiation field tensor element 1 (real part)")
-        .def_readonly(
-            "J2_1_Im", &LineProducingSpecies::J2_1_Im, "Anisotropic radiation field tensor element 1 (imaginary part)")
-        .def_readonly(
-            "J2_2_Re", &LineProducingSpecies::J2_2_Re, "Anisotropic radiation field tensor element 2 (real part)")
-        .def_readonly(
-            "J2_2_Im", &LineProducingSpecies::J2_2_Im, "Anisotropic radiation field tensor element 2 (imaginary part)")
+            "J2_0", &LineProducingSpecies::J2_0, "Anisotropic radiation field tensor element 0")
+        .def_readonly("J2_1_Re", &LineProducingSpecies::J2_1_Re,
+            "Anisotropic radiation field tensor element 1 (real part)")
+        .def_readonly("J2_1_Im", &LineProducingSpecies::J2_1_Im,
+            "Anisotropic radiation field tensor element 1 (imaginary part)")
+        .def_readonly("J2_2_Re", &LineProducingSpecies::J2_2_Re,
+            "Anisotropic radiation field tensor element 2 (real part)")
+        .def_readonly("J2_2_Im", &LineProducingSpecies::J2_2_Im,
+            "Anisotropic radiation field tensor element 2 (imaginary part)")
         .def_readwrite("nr_line", &LineProducingSpecies::nr_line)
-        .def_readwrite("population", &LineProducingSpecies::population, "Array with level populations for each point.")
+        .def_readwrite("population", &LineProducingSpecies::population,
+            "Array with level populations for each point.")
         .def_readwrite("population_tot", &LineProducingSpecies::population_tot,
             "Array with the sum of all level populations at each point. (Should "
             "be equal to the abundance of the species.)")
@@ -502,11 +551,13 @@ PYBIND11_MODULE(core, module) {
         .def("MPI_gather", &Lambda::MPI_gather);
 
     // Quadrature
-    py::class_<Quadrature>(module, "Quadrature", "Class containing the data for Gauss-Hermite quadrature.")
+    py::class_<Quadrature>(
+        module, "Quadrature", "Class containing the data for Gauss-Hermite quadrature.")
         // attributes
-        .def_readwrite("roots", &Quadrature::roots, "Array containing the roots for the Gauss-Hermite quadrature.")
-        .def_readwrite(
-            "weights", &Quadrature::weights, "Array containing the weights for the Gauss-Hermite quadrature.")
+        .def_readwrite("roots", &Quadrature::roots,
+            "Array containing the roots for the Gauss-Hermite quadrature.")
+        .def_readwrite("weights", &Quadrature::weights,
+            "Array containing the weights for the Gauss-Hermite quadrature.")
         // functions
         .def("read", &Quadrature::read, "Read object from file.")
         .def("write", &Quadrature::write, "Write object to file.");
@@ -516,17 +567,23 @@ PYBIND11_MODULE(core, module) {
         // attributes
         .def_readwrite("num", &Linedata::num, "Number of the species corresponding the line data.")
         .def_readwrite("sym", &Linedata::sym, "Chemical symbol of the species.")
-        .def_readwrite("inverse_mass", &Linedata::inverse_mass, "Inverse mass (1/mass) of the species.")
+        .def_readwrite(
+            "inverse_mass", &Linedata::inverse_mass, "Inverse mass (1/mass) of the species.")
         .def_readwrite("nlev", &Linedata::nlev, "Number of energy levels.")
         .def_readwrite("nrad", &Linedata::nrad, "Number of radiative transitions.")
-        .def_readwrite("irad", &Linedata::irad, "Array with upper levels of the radiative transitions.")
-        .def_readwrite("jrad", &Linedata::jrad, "Array with lower levels of the radiative transitions.")
+        .def_readwrite(
+            "irad", &Linedata::irad, "Array with upper levels of the radiative transitions.")
+        .def_readwrite(
+            "jrad", &Linedata::jrad, "Array with lower levels of the radiative transitions.")
         .def_readwrite("energy", &Linedata::energy, "Array with the energy for each level.")
-        .def_readwrite("weight", &Linedata::weight, "Array with the statistical weight for each level.")
-        .def_readwrite("frequency", &Linedata::frequency, "Array with frequencies of the line transitions.")
+        .def_readwrite(
+            "weight", &Linedata::weight, "Array with the statistical weight for each level.")
+        .def_readwrite(
+            "frequency", &Linedata::frequency, "Array with frequencies of the line transitions.")
         .def_readwrite("A", &Linedata::A, "Array with Einstein A coefficients.")
         .def_readwrite("Ba", &Linedata::Ba, "Array with Einstein B (absorption) coeficients.")
-        .def_readwrite("Bs", &Linedata::Bs, "Array with Einstsin B (stimulated emission) coefficients.")
+        .def_readwrite(
+            "Bs", &Linedata::Bs, "Array with Einstsin B (stimulated emission) coefficients.")
         .def_readwrite("ncolpar", &Linedata::ncolpar, "Number of collision partners.")
         .def_readwrite("colpar", &Linedata::colpar, "Vector of collision partner objects.")
         // functions
@@ -536,18 +593,23 @@ PYBIND11_MODULE(core, module) {
         .def(py::init<>());
 
     // Colpartner
-    py::class_<CollisionPartner>(module, "CollisionPartner", "Class containing collision partner data.")
+    py::class_<CollisionPartner>(
+        module, "CollisionPartner", "Class containing collision partner data.")
         // attributes
         .def_readwrite("num_col_partner", &CollisionPartner::num_col_partner,
             "Number of the species corresponding to the collision partner.")
         .def_readwrite("orth_or_para_H2", &CollisionPartner::orth_or_para_H2,
             "In case the collision partner is H2, this indicates "
             "whether it is ortho (o) or para (p).")
-        .def_readwrite("ntmp", &CollisionPartner::ntmp, "Number of temperatures at which data is given.")
+        .def_readwrite(
+            "ntmp", &CollisionPartner::ntmp, "Number of temperatures at which data is given.")
         .def_readwrite("ncol", &CollisionPartner::ncol, "Number of collisional transitions.")
-        .def_readwrite("icol", &CollisionPartner::icol, "Array with upper levels of the collisional transitions.")
-        .def_readwrite("jcol", &CollisionPartner::jcol, "Array with lower levels of the collisional transitions.")
-        .def_readwrite("tmp", &CollisionPartner::tmp, "Array with temperatures corresponding to the collisional data.")
+        .def_readwrite("icol", &CollisionPartner::icol,
+            "Array with upper levels of the collisional transitions.")
+        .def_readwrite("jcol", &CollisionPartner::jcol,
+            "Array with lower levels of the collisional transitions.")
+        .def_readwrite("tmp", &CollisionPartner::tmp,
+            "Array with temperatures corresponding to the collisional data.")
         .def_readwrite("Ce", &CollisionPartner::Ce, "Array with collisional excitation rates.")
         .def_readwrite("Cd", &CollisionPartner::Cd, "Array with collisional de-excitation rates.")
         // functions
@@ -579,7 +641,8 @@ PYBIND11_MODULE(core, module) {
     // Frequencies
     py::class_<Frequencies>(module, "Frequencies", "Class containing the (local) frequency bins.")
         // attributes
-        .def_readonly("nu", &Frequencies::nu, "Array of frequency bins for each point in the model.")
+        .def_readonly(
+            "nu", &Frequencies::nu, "Array of frequency bins for each point in the model.")
         // functions
         .def("read", &Frequencies::read, "Read object from file.")
         .def("write", &Frequencies::write, "Write object to file.");
@@ -643,11 +706,11 @@ PYBIND11_MODULE(core, module) {
     py::class_<Matrix<Real>, Vector<Real>>(module, "MReal", py::buffer_protocol())
         // buffer
         .def_buffer([](Matrix<Real>& m) -> py::buffer_info {
-            return py::buffer_info(m.vec.data(),                        // Pointer to buffer
-                sizeof(Real),                                           // Size of one element
-                py::format_descriptor<Real>::format(),                  // Python struct-style format
-                                                                        // descriptor
-                2,                                                      // Number of dimensions
+            return py::buffer_info(m.vec.data(),       // Pointer to buffer
+                sizeof(Real),                          // Size of one element
+                py::format_descriptor<Real>::format(), // Python struct-style format
+                                                       // descriptor
+                2,                                     // Number of dimensions
                 py::detail::any_container<ssize_t>({m.nrows, m.ncols}), // Buffer dimensions
                 py::detail::any_container<ssize_t>(
                     {sizeof(Real) * m.ncols, sizeof(Real)}) // Strides (in bytes) for each index
@@ -665,14 +728,15 @@ PYBIND11_MODULE(core, module) {
     py::class_<Tensor<Real>, Vector<Real>>(module, "TReal", py::buffer_protocol())
         // buffer
         .def_buffer([](Tensor<Real>& t) -> py::buffer_info {
-            return py::buffer_info(t.vec.data(),                                 // Pointer to buffer
-                sizeof(Real),                                                    // Size of one element
-                py::format_descriptor<Real>::format(),                           // Python struct-style format
-                                                                                 // descriptor
-                3,                                                               // Number of dimensions
-                py::detail::any_container<ssize_t>({t.nrows, t.ncols, t.depth}), // Buffer dimensions
-                py::detail::any_container<ssize_t>({sizeof(Real) * t.ncols * t.depth, sizeof(Real) * t.depth,
-                    sizeof(Real)}) // Strides (in bytes) for each index
+            return py::buffer_info(t.vec.data(),       // Pointer to buffer
+                sizeof(Real),                          // Size of one element
+                py::format_descriptor<Real>::format(), // Python struct-style format
+                                                       // descriptor
+                3,                                     // Number of dimensions
+                py::detail::any_container<ssize_t>(
+                    {t.nrows, t.ncols, t.depth}), // Buffer dimensions
+                py::detail::any_container<ssize_t>({sizeof(Real) * t.ncols * t.depth,
+                    sizeof(Real) * t.depth, sizeof(Real)}) // Strides (in bytes) for each index
             );
         })
         .def_readwrite("vec", &Vector<Real>::vec)
@@ -688,18 +752,20 @@ PYBIND11_MODULE(core, module) {
     py::class_<Vector<Vector3D>>(module, "VVector3D", py::buffer_protocol())
         // buffer
         .def_buffer([](Vector<Vector3D>& v) -> py::buffer_info {
-            return py::buffer_info(v.vec.data(),                                         // Pointer to buffer
-                sizeof(double),                                                          // Size of one element
-                py::format_descriptor<double>::format(),                                 // Python struct-style
-                                                                                         // format descriptor
-                2,                                                                       // Number of dimensions
-                py::detail::any_container<ssize_t>({(ssize_t)v.vec.size(), (ssize_t)3}), // Buffer dimensions
+            return py::buffer_info(v.vec.data(),         // Pointer to buffer
+                sizeof(double),                          // Size of one element
+                py::format_descriptor<double>::format(), // Python struct-style
+                                                         // format descriptor
+                2,                                       // Number of dimensions
+                py::detail::any_container<ssize_t>(
+                    {(ssize_t)v.vec.size(), (ssize_t)3}), // Buffer dimensions
                 py::detail::any_container<ssize_t>(
                     {sizeof(double) * 3, sizeof(double)}) // Strides (in bytes) for each index
             );
         })
         // functions
-        .def("set", (void(Vector<Vector3D>::*)(py::array_t<double, py::array::c_style | py::array::forcecast>))
+        .def("set", (void(Vector<Vector3D>::*)(
+                        py::array_t<double, py::array::c_style | py::array::forcecast>))
                         & Vector<Vector3D>::set_2D_array)
         // constructor
         .def(py::init());

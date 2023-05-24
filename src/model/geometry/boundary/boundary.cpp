@@ -71,4 +71,6 @@ BoundaryCondition Boundary ::set_boundary_condition(const Size b, const Boundary
     return boundary_condition[b];
 }
 
-BoundaryCondition Boundary ::get_boundary_condition(const Size b) const { return boundary_condition[b]; }
+BoundaryCondition Boundary ::get_boundary_condition(const Size b) const {
+    return boundary_condition[b];
+}

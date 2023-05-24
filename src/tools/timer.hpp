@@ -15,8 +15,10 @@ using std::vector;
 class singleTimer {
 
   private:
-    std::chrono::high_resolution_clock::time_point start_ = std::chrono::high_resolution_clock::now();
-    std::chrono::high_resolution_clock::time_point stop_  = std::chrono::high_resolution_clock::now();
+    std::chrono::high_resolution_clock::time_point start_ =
+        std::chrono::high_resolution_clock::now();
+    std::chrono::high_resolution_clock::time_point stop_ =
+        std::chrono::high_resolution_clock::now();
 
   public:
     inline void start() { start_ = std::chrono::high_resolution_clock::now(); }
@@ -85,9 +87,13 @@ class Timer {
     ///  print: print time interval to screen
     /////////////////////////////////////////
 
-    string get_print_string() { return ("T   | " + name + " : " + to_string(intervals.back().count()) + " seconds"); }
+    string get_print_string() {
+        return ("T   | " + name + " : " + to_string(intervals.back().count()) + " seconds");
+    }
 
-    string get_print_total_string() { return ("Tot | " + name + " : " + to_string(total.count()) + " seconds"); }
+    string get_print_total_string() {
+        return ("Tot | " + name + " : " + to_string(total.count()) + " seconds");
+    }
 
     void print() { cout << get_print_string() << endl; }
 

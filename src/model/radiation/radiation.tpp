@@ -1,6 +1,8 @@
 #include "tools/interpolation.hpp"
 
-inline Size Radiation ::index(const Size p, const Size f) const { return f + p * parameters->nfreqs(); }
+inline Size Radiation ::index(const Size p, const Size f) const {
+    return f + p * parameters->nfreqs();
+}
 
 // inline void Radiation :: rescale_U_and_V (
 //     const Real &freq_scaled,

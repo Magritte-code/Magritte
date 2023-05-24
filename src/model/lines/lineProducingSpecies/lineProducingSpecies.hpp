@@ -58,7 +58,8 @@ struct LineProducingSpecies {
     SparseMatrix<Real> LambdaTest;
     SparseMatrix<Real> LambdaStar;
 
-    LineProducingSpecies(std::shared_ptr<Parameters> params) : parameters(params), quadrature(params), lambda(params){};
+    LineProducingSpecies(std::shared_ptr<Parameters> params) :
+        parameters(params), quadrature(params), lambda(params){};
 
     void read(const Io& io, const Size l);
     void write(const Io& io, const Size l) const;
@@ -77,9 +78,11 @@ struct LineProducingSpecies {
 
     inline void update_using_LTE(const Double2& abundance, const Vector<Real>& temperature);
 
-    inline void update_using_statistical_equilibrium(const Double2& abundance, const Vector<Real>& temperature);
+    inline void update_using_statistical_equilibrium(
+        const Double2& abundance, const Vector<Real>& temperature);
 
-    inline void update_using_statistical_equilibrium_sparse(const Double2& abundance, const Vector<Real>& temperature);
+    inline void update_using_statistical_equilibrium_sparse(
+        const Double2& abundance, const Vector<Real>& temperature);
 
     inline void update_using_Ng_acceleration();
     inline void update_using_acceleration(const Size order);

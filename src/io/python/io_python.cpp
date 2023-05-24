@@ -14,7 +14,8 @@ const string IoPython::io_folder = string(MAGRITTE_FOLDER) + "/src/io/python/";
 ///    @param[in] implementaion : name of python module with io implementation
 ///    @param[in] io_file       : file to read from and write to
 //////////////////////////////////////////////////////////////////////////////
-IoPython ::IoPython(const string& imp, const string& io_file) : Io(io_file), implementation("io_python_" + imp) {}
+IoPython ::IoPython(const string& imp, const string& io_file) :
+    Io(io_file), implementation("io_python_" + imp) {}
 
 ///  Reader for the length of a file
 ///    @param[in]  file_name : path to file containing the data
@@ -392,7 +393,8 @@ int IoPython ::read_3_vector(const string file_name, Double1& x, Double1& y, Dou
 ///    @param[in] y         : y component of the vector to be written
 ///    @param[in] z         : z component of the vector to be written
 /////////////////////////////////////////////////////////////////////
-int IoPython ::write_3_vector(const string file_name, const Double1& x, const Double1& y, const Double1& z) const {
+int IoPython ::write_3_vector(
+    const string file_name, const Double1& x, const Double1& y, const Double1& z) const {
     const long length = x.size();
 
     // Check if all 3 vectors are the same size
@@ -428,7 +430,8 @@ bool IoPython ::file_exists(const string file_name) const {
     // Add /Io folder to Python path
     py::module::import("sys").attr("path").attr("insert")(0, io_folder);
 
-    // Import function defined in "'implementation'.py". This will either be io_"python_text.py" or "io_python_hdf5.py".
+    // Import function defined in "'implementation'.py". This will either be io_"python_text.py" or
+    // "io_python_hdf5.py".
     py::object ioFunction = py::module::import(implementation.c_str()).attr("file_exists");
 
     // Execute io function
@@ -445,7 +448,8 @@ bool IoPython ::file_exists(const string file_name) const {
 ///    @param[in]  file_name : name of the file from which to read
 ///    @param[out] data      : data read from the file
 //////////////////////////////////////////////////////////////////
-template <class type> int IoPython ::read_in_python(const string function, const string file_name, type& data) const {
+template <class type>
+int IoPython ::read_in_python(const string function, const string file_name, type& data) const {
     try {
         py::initialize_interpreter();
     } catch (...) {
@@ -487,7 +491,8 @@ template <class type> int IoPython ::read_in_python(const string function, const
 ///    @param[out] data     : data read from the file
 ////////////////////////////////////////////////////////////////
 template <class type>
-int IoPython ::write_in_python(const string function, const string file_name, const type& data) const {
+int IoPython ::write_in_python(
+    const string function, const string file_name, const type& data) const {
     try {
         py::initialize_interpreter();
     } catch (...) {

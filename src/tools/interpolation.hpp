@@ -55,6 +55,7 @@ inline void search_with_notch(const Real1& vec, Size& notch, const Real value) {
 ///    @param[in] x: value at which the function has to be interpolated
 ///    @returns interpolated function value f(x)
 ///////////////////////////////////////////////////////////////////////
-inline Real interpolate_linear(const Real x1, const Real f1, const Real x2, const Real f2, const Real x) {
+inline Real interpolate_linear(
+    const Real x1, const Real f1, const Real x2, const Real f2, const Real x) {
     return (f2 - f1) / (x2 - x1) * (x - x1) + f1;
 }
