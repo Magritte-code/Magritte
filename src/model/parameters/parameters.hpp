@@ -14,7 +14,9 @@
     inline void set_##x(const type value) { x##__.set(value); }; \
     inline type x() const { return x##__.get(); };
 
-// Global variables may change their value at fixed times, explained in the comments, in constrast to static parameters
+// Global variables may change their value at fixed times,
+// explained in the comments, in constrast to static
+// parameters
 #define CREATE_MUTABLE_PARAMETER(type, x)                     \
   private:                                                    \
     type x##__;                                               \
@@ -47,53 +49,72 @@ struct Parameters {
 
     CREATE_PARAMETER(bool, spherical_symmetry, true);
 
-    // nonessential parameters which are automatically inferred by magritte
+    // nonessential parameters which are automatically
+    // inferred by magritte
     CREATE_PARAMETER(Size, hnrays, false);
     CREATE_PARAMETER(Size, nlines, false);
 
     // parameters which can be redefined
-    CREATE_MUTABLE_PARAMETER(
-        Size, nfreqs); // due to the fact that line radiative transfer and the imager require different amounts of
+    CREATE_MUTABLE_PARAMETER(Size, nfreqs); // due to the fact that line
+                                            // radiative transfer and the imager
+                                            // require different amounts of
 
     // Old things that are no more connected to anything...
     CREATE_PARAMETER(bool, use_scattering, false);
     CREATE_PARAMETER(bool, adaptive_ray_tracing, false);
 
     Size n_off_diag = 0;
-    // diff can by computed by comparing trapezoidal rule (w*(exp-(x)^2+exp-(x+w)^2)/2) and cdf of normal (std
-    // dev=1/sqrt pi) from x to x+w Real max_width_fraction          = 0.5;//max diff between the normal cdf and
-    // trapezoidal rule is +-5% Real max_width_fraction          = 0.4;//max diff is +-3%
+    // diff can by computed by comparing trapezoidal rule
+    // (w*(exp-(x)^2+exp-(x+w)^2)/2) and cdf of normal (std
+    // dev=1/sqrt pi) from x to x+w Real max_width_fraction
+    // = 0.5;//max diff between the normal cdf and
+    // trapezoidal rule is +-5% Real max_width_fraction =
+    // 0.4;//max diff is +-3%
     Real max_width_fraction = 0.35; // max diff is +-2.5%
-    // Real max_width_fraction          = 0.3;//max diff is +-2%
+    // Real max_width_fraction          = 0.3;//max diff is
+    // +-2%
     Real convergence_fraction        = 0.995;
     Real min_rel_pop_for_convergence = 1.0e-10;
     Real pop_prec                    = 1.0e-6;
     Real min_opacity                 = 1.0e-26;
     Real min_dtau                    = 1.0e-15;
     bool store_intensities           = false;
-    // bool use_Ng_acceleration         = true;//Not used, so may safely be removed
-    bool use_adaptive_Ng_acceleration =
-        true; // whether to use an adaptive version of Ng acceleration; only relevant if use_Ng_acceleration = true
-    Size Ng_acceleration_mem_limit =
-        6; // determines how many previous iterations we hold in memory when using adaptive ng-acceleration
-    Size adaptive_Ng_acceleration_min_order =
-        2; // Minimal order of adaptive ng acceleration used. Has to be larger than 1.
-    bool adaptive_Ng_acceleration_use_max_criterion =
-        true; // Whether or not to use max change as criterion for adaptive ng acceleration; uses mean change if false
-    Size Ng_acceleration_remove_N_its = 1; // Number of iterations to throw away when using adaptive ng acceleration
+    // bool use_Ng_acceleration         = true;//Not used,
+    // so may safely be removed
+    bool use_adaptive_Ng_acceleration = true;               // whether to use an adaptive version of Ng
+                                                            // acceleration; only relevant if
+                                                            // use_Ng_acceleration = true
+    Size Ng_acceleration_mem_limit = 6;                     // determines how many previous iterations we
+                                                            // hold in memory when using adaptive
+                                                            // ng-acceleration
+    Size adaptive_Ng_acceleration_min_order = 2;            // Minimal order of adaptive ng acceleration
+                                                            // used. Has to be larger than 1.
+    bool adaptive_Ng_acceleration_use_max_criterion = true; // Whether or not to use max change as
+                                                            // criterion for adaptive ng acceleration;
+                                                            // uses mean change if false
+    Size Ng_acceleration_remove_N_its = 1;                  // Number of iterations to throw away
+                                                            // when using adaptive ng acceleration
 
-    /// Approximations for summing over lines; by default, we only sum over the close lines in order to compute
-    /// opacity/emissivity (leading to O(Nline * ln(Nlines)) scaling behavior)
+    /// Approximations for summing over lines; by default,
+    /// we only sum over the close lines in order to compute
+    /// opacity/emissivity (leading to O(Nline * ln(Nlines))
+    /// scaling behavior)
 
-    // Warning: although this has O(Nlines) scaling behavior, one must check that no lines can overlap
+    // Warning: although this has O(Nlines) scaling
+    // behavior, one must check that no lines can overlap
     bool one_line_approximation = false;
 
-    // Warning: this is has O(Nlines^2) scaling behavior, so it is slow when computing using a lot of lines
-    // Note: this is just legacy behavior, for those who wish to compare the obtained results to previous results
+    // Warning: this is has O(Nlines^2) scaling behavior, so
+    // it is slow when computing using a lot of lines Note:
+    // this is just legacy behavior, for those who wish to
+    // compare the obtained results to previous results
     bool sum_opacity_emissivity_over_all_lines = false;
 
-    // When summing over the nearby lines, this parameter controls in what range we consider the lines to lie close
-    Real max_distance_opacity_contribution = 10.0; // maximal distance at which a line can contribute to a frequency
+    // When summing over the nearby lines, this parameter
+    // controls in what range we consider the lines to lie
+    // close
+    Real max_distance_opacity_contribution = 10.0; // maximal distance at which a line can
+                                                   // contribute to a frequency
 
     Parameters() {
         // Disable scattering

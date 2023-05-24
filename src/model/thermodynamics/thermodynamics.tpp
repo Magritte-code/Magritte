@@ -18,7 +18,8 @@ inline Real Thermodynamics ::profile(
     return profile(profile_width(inverse_mass, p, freq_line), freq - freq_line);
 }
 
-///  profile_width: line profile width due to thermal and turbulent Doppler shifts
+///  profile_width: line profile width due to thermal and turbulent Doppler
+///  shifts
 ///    @param[in] temperature_gas: temperature of the gas at this cell
 ///    @param[in] freq_line: frequency of the line under consideration
 ///    @return width of the correpsonding line profile

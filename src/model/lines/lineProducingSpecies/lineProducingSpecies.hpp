@@ -29,9 +29,11 @@ struct LineProducingSpecies {
     Matrix<Real> J;       ///< Isotropic radiation field
     Matrix<Real> J2_0;    ///< Anisotropic radiation field tensor element 0
     Matrix<Real> J2_1_Re; ///< Anisotropic radiation field tensor element 1 (real part)
-    Matrix<Real> J2_1_Im; ///< Anisotropic radiation field tensor element 1 (imaginary part)
+    Matrix<Real> J2_1_Im; ///< Anisotropic radiation field tensor element 1
+                          ///< (imaginary part)
     Matrix<Real> J2_2_Re; ///< Anisotropic radiation field tensor element 2 (real part)
-    Matrix<Real> J2_2_Im; ///< Anisotropic radiation field tensor element 2 (imaginary part)
+    Matrix<Real> J2_2_Im; ///< Anisotropic radiation field tensor element 2
+                          ///< (imaginary part)
 
     Size3 nr_line; ///< frequency number corresponing to line (p,k,z)
 
@@ -45,7 +47,8 @@ struct LineProducingSpecies {
     vector<VectorXr> populations; ///< list of populations in previous iterations
     vector<VectorXr> residuals;   ///< list of residuals in the populations
 
-    VectorXr trial_population; ///< level population generated in adaptive ng acceleration trial
+    VectorXr trial_population; ///< level population generated in adaptive ng
+                               ///< acceleration trial
 
     VectorXr population_prev1; ///< level populations 1 iteration  back
     VectorXr population_prev2; ///< level populations 2 iterations back

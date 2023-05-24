@@ -9,11 +9,12 @@ enum ApproximationType { None, OneLine, CloseLines };
 
 struct Solver {
 
-    // This seems to be the best value for the imager to avoid dead pixels, while somewhat decently handling the inner
+    // This seems to be the best value for the imager to avoid
+    // dead pixels, while somewhat decently handling the inner
     // boundary
     // TODO: for the imager: let the ray stop at the inner bdy
-    const Size MAX_CONSECUTIVE_BDY =
-        5; // for the new imager, we need some stopping criterion to determine when the ray ends
+    const Size MAX_CONSECUTIVE_BDY = 5; // for the new imager, we need some stopping
+                                        // criterion to determine when the ray ends
 
     pc::multi_threading::ThreadPrivate<Vector<double>> dZ_;    ///< distance increments along the ray
     pc::multi_threading::ThreadPrivate<Vector<Size>> nr_;      ///< corresponding point number on the ray
@@ -127,14 +128,16 @@ struct Solver {
     //           Model& model,
     //           const Size   o,
     //           const Size   r);
-    // accel inline void solve_shortchar_order_0_ray_backward (
+    // accel inline void solve_shortchar_order_0_ray_backward
+    // (
     //           Model& model,
     //           const Size   o,
     //           const Size   r);
 
     // Solvers for images
     /////////////////////
-    // algorithms for tracing the rays and extracting the information of the solver
+    // algorithms for tracing the rays and extracting the
+    // information of the solver
     template <ApproximationType approx> accel inline void image_feautrier_order_2(Model& model, const Size rr);
     template <ApproximationType approx>
     inline void image_feautrier_order_2_new_imager(
@@ -175,12 +178,15 @@ struct Solver {
 
     /// BUGGED: v computation is incorrect
     // template <ApproximationType approx>
-    // accel inline void solve_feautrier_order_2_uv (Model& model);
+    // accel inline void solve_feautrier_order_2_uv (Model&
+    // model);
     //
     // template <ApproximationType approx>
-    // accel inline void solve_feautrier_order_2_uv (Model& model, const Size o, const Size f);
+    // accel inline void solve_feautrier_order_2_uv (Model&
+    // model, const Size o, const Size f);
 
-    // Getters for emissivities, opacities, and boundary conditions
+    // Getters for emissivities, opacities, and boundary
+    // conditions
     ///////////////////////////////////////////////////////////////
     accel inline void set_eta_and_chi(Model& model, const Size rr) const;
     accel inline void set_boundary_condition(Model& model) const;

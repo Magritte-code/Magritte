@@ -71,6 +71,7 @@ inline Size Radiation ::index(const Size p, const Size f) const { return f + p *
 //         const Real I_bdy1 = get_I_bdy (R, b, f1);
 //         const Real I_bdy2 = get_I_bdy (R, b, f2);
 //
-//         I_bdy_scaled = interpolate_linear (nu1, I_bdy1, nu2, I_bdy2, freq_scaled);
+//         I_bdy_scaled = interpolate_linear (nu1, I_bdy1, nu2, I_bdy2,
+//         freq_scaled);
 //     }
 // }

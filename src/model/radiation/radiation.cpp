@@ -58,7 +58,7 @@ void Radiation ::write(const Io& io) const {
 ///  initialize: initialize vector with zero's
 //////////////////////////////////////////////
 void initialize(Real1& vec) {
-    threaded_for (i, vec.size(), { vec[i] = 0.0; })
+    threaded_for(i, vec.size(), { vec[i] = 0.0; })
 }
 
 ///  Initialize J (angular ean intensity)
@@ -94,56 +94,58 @@ void Radiation ::MPI_reduce_J()
 /////////////////////////////////////////////////////////////////////
 void Radiation ::calc_U_and_V()
 #if (MPI_PARALLEL)
-    {
-        //    Real1 U_local (parameters->npoints()*parameters->nfreqs());
-        //    Real1 V_local (parameters->npoints()*parameters->nfreqs());
-        //
-        //    for (Size w = 0; w < pc::message_passing::comm_size(); w++)
-        //    {
-        //        const Size start = ( w   *(parameters->hnrays())) / pc::message_passing::comm_size();
-        //        const Size stop  = ((w+1)*(parameters->hnrays())) / pc::message_passing::comm_size();
-        //
-        //        for (Size r1 = start; r1 < stop; r1++)
-        //        {
-        //            const Size R1 = r1 - start;
-        //
-        //            initialize (U_local);
-        //            initialize (V_local);
-        //
-        //            distributed_for (r2, R2, parameters->hnrays(),
-        //            {
-        //                threaded_for (p, parameters->npoints(),
-        //                {
-        //                    for (Size f = 0; f < parameters->nfreqs(); f++)
-        //              	    {
-        //                        U_local[index(p,f)] += u[R2][index(p,f)]; // * scattering.phase[r1][r2][f];
-        //                        V_local[index(p,f)] += v[R2][index(p,f)]; // * scattering.phase[r1][r2][f];
-        //                    }
-        //                })
-        //            }) // end of r2 loop over raypairs2
-        //
-        //            int ierr_u = MPI_Reduce (
-        //                           U_local.data(),     // pointer to the data to be reduced
-        //                           U[R1].data(),       // pointer to the data to be received
-        //                           U_local.size(),     // size of the data to be received
-        //                           MPI_DOUBLE,         // type of the reduced data
-        //                           MPI_SUM,            // reduction operation
-        //                           w,                  // rank of root to which we reduce
-        //                           MPI_COMM_WORLD);
-        //            assert (ierr_u == 0);
-        //
-        //            int ierr_v = MPI_Reduce (
-        //                           V_local.data(),     // pointer to the data to be reduced
-        //                           V[R1].data(),       // pointer to the data to be received
-        //                           V_local.size(),     // size of the data to be received
-        //                           MPI_DOUBLE,         // type of the reduced data
-        //                           MPI_SUM,            // reduction operation
-        //                           w,                  // rank of root to which we reduce
-        //                           MPI_COMM_WORLD);
-        //            assert (ierr_v == 0);
-        //        }
-        //    }
-    }
+{
+    //    Real1 U_local (parameters->npoints()*parameters->nfreqs());
+    //    Real1 V_local (parameters->npoints()*parameters->nfreqs());
+    //
+    //    for (Size w = 0; w < pc::message_passing::comm_size(); w++)
+    //    {
+    //        const Size start = ( w   *(parameters->hnrays())) /
+    //        pc::message_passing::comm_size(); const Size stop  =
+    //        ((w+1)*(parameters->hnrays())) / pc::message_passing::comm_size();
+    //
+    //        for (Size r1 = start; r1 < stop; r1++)
+    //        {
+    //            const Size R1 = r1 - start;
+    //
+    //            initialize (U_local);
+    //            initialize (V_local);
+    //
+    //            distributed_for (r2, R2, parameters->hnrays(),
+    //            {
+    //                threaded_for (p, parameters->npoints(),
+    //                {
+    //                    for (Size f = 0; f < parameters->nfreqs(); f++)
+    //              	    {
+    //                        U_local[index(p,f)] += u[R2][index(p,f)]; // *
+    //                        scattering.phase[r1][r2][f]; V_local[index(p,f)] +=
+    //                        v[R2][index(p,f)]; // * scattering.phase[r1][r2][f];
+    //                    }
+    //                })
+    //            }) // end of r2 loop over raypairs2
+    //
+    //            int ierr_u = MPI_Reduce (
+    //                           U_local.data(),     // pointer to the data to be
+    //                           reduced U[R1].data(),       // pointer to the
+    //                           data to be received U_local.size(),     // size
+    //                           of the data to be received MPI_DOUBLE,         //
+    //                           type of the reduced data MPI_SUM,            //
+    //                           reduction operation w,                  // rank
+    //                           of root to which we reduce MPI_COMM_WORLD);
+    //            assert (ierr_u == 0);
+    //
+    //            int ierr_v = MPI_Reduce (
+    //                           V_local.data(),     // pointer to the data to be
+    //                           reduced V[R1].data(),       // pointer to the
+    //                           data to be received V_local.size(),     // size
+    //                           of the data to be received MPI_DOUBLE,         //
+    //                           type of the reduced data MPI_SUM,            //
+    //                           reduction operation w,                  // rank
+    //                           of root to which we reduce MPI_COMM_WORLD);
+    //            assert (ierr_v == 0);
+    //        }
+    //    }
+}
 #else
 {
     //    Real1 U_local (parameters->npoints()*parameters->nfreqs());
@@ -160,8 +162,9 @@ void Radiation ::calc_U_and_V()
     //            {
     //                for (Size f = 0; f < parameters->nfreqs(); f++)
     //                {
-    //                    U_local[index(p,f)] += u[r2][index(p,f)]; // * scattering.phase[r1][r2][f];
-    //                    V_local[index(p,f)] += v[r2][index(p,f)]; // * scattering.phase[r1][r2][f];
+    //                    U_local[index(p,f)] += u[r2][index(p,f)]; // *
+    //                    scattering.phase[r1][r2][f]; V_local[index(p,f)] +=
+    //                    v[r2][index(p,f)]; // * scattering.phase[r1][r2][f];
     //                }
     //            })
     //        }

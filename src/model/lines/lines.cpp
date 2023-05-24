@@ -15,7 +15,8 @@ void Lines ::read(const Io& io) {
     parameters->set_nlspecs(io.get_length(prefix + "lineProducingSpecies_"));
 
     /// Read line producing species data
-    // lineProducingSpecies.resize (parameters->nlspecs(), LineProducingSpecies(parameters));
+    // lineProducingSpecies.resize (parameters->nlspecs(),
+    // LineProducingSpecies(parameters));
     resize_LineProducingSpecies(parameters->nlspecs());
 
     max_inverse_mass = 0.0;
@@ -173,24 +174,28 @@ void Lines ::iteration_using_statistical_equilibrium_sparse(
 //
 //     // Call MPI to gather the emissivity data
 //     int ierr_em = MPI_Allgatherv (
-//                       MPI_IN_PLACE,            // pointer to data to be send (here in place)
-//                       0,                       // number of elements in the send buffer
-//                       MPI_DATATYPE_NULL,       // type of the send data
-//                       emissivity.data(),       // pointer to the data to be received
-//                       buffer_lengths,          // number of elements in receive buffer
-//                       displacements,           // displacements between data blocks
+//                       MPI_IN_PLACE,            // pointer to data to be send
+//                       (here in place) 0,                       // number of
+//                       elements in the send buffer MPI_DATATYPE_NULL,       //
+//                       type of the send data emissivity.data(),       //
+//                       pointer to the data to be received buffer_lengths, //
+//                       number of elements in receive buffer displacements, //
+//                       displacements between data blocks
 //   	                  MPI_DOUBLE,              // type of the received data
 //                       MPI_COMM_WORLD );
 //     assert (ierr_em == 0);
 //
 //     // Call MPI to gather the opacity data
 //     int ierr_op = MPI_Allgatherv (
-//                       MPI_IN_PLACE,            // pointer to data to be send (here in place)
-//                       0,                       // number of elements in the send buffer
-//                       MPI_DATATYPE_NULL,       // type of the send data
-//                 	  opacity.data(),          // pointer to the data to be received
-//                 	  buffer_lengths,          // number of elements in receive buffer
-//                       displacements,           // displacements between data blocks
+//                       MPI_IN_PLACE,            // pointer to data to be send
+//                       (here in place) 0,                       // number of
+//                       elements in the send buffer MPI_DATATYPE_NULL,       //
+//                       type of the send data
+//                 	  opacity.data(),          // pointer to the data to be
+//                 received 	  buffer_lengths,          // number of elements
+//                 in receive buffer
+//                       displacements,           // displacements between data
+//                       blocks
 //                 	  MPI_DOUBLE,              // type of the received data
 //                       MPI_COMM_WORLD );
 //     assert (ierr_op == 0);

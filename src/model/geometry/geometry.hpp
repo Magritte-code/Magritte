@@ -16,8 +16,8 @@ enum Frame { CoMoving, Rest };
 enum Tracer {
     Defaulttracer,
     Imagetracer
-}; // for the new imaging ray-tracer, some extra precautions have to be made with respect to the treatment of boundary
-   // points
+}; // for the new imaging ray-tracer, some extra precautions have to be made
+   // with respect to the treatment of boundary points
 // Default: used for everything except the new imager
 // Image: used for the new imager
 

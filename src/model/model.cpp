@@ -5,8 +5,9 @@
 #include "tools/heapsort.hpp"
 
 void Model ::read(const Io& io) {
-    // Before reading a model, first check whether a file exists at the given location.
-    // Otherwise, magritte will try to read nonexistent information and thus segfault.
+    // Before reading a model, first check whether a file exists at the given
+    // location. Otherwise, magritte will try to read nonexistent information and
+    // thus segfault.
     if (!io.file_exists(parameters->model_name())) {
         std::cout << "Model file cannot be read." << std::endl;
         std::cout << "No file exists with path: " << parameters->model_name() << std::endl;
@@ -70,7 +71,7 @@ int Model ::compute_spectral_discretisation() {
     cout << "Computing spectral discretisation..." << endl;
     radiation.frequencies.resize_data(parameters->nlines() * parameters->nquads());
 
-    threaded_for (p, parameters->npoints(), {
+    threaded_for(p, parameters->npoints(), {
         Real1 freqs(parameters->nfreqs());
         // Size1 nmbrs (parameters->nfreqs());
 
@@ -100,10 +101,10 @@ int Model ::compute_spectral_discretisation() {
 
         // Sort frequencies
         // heapsort (freqs, nmbrs);
-        // Warning: when sorting the frequencies, no absolute ordering of the frequency in blocks of the individual
-        // lines can be possible
-        //  if one encounters overlapping lines. This will ruin some helper statistics, so it will be disabled from now
-        //  on.
+        // Warning: when sorting the frequencies, no absolute ordering of the
+        // frequency in blocks of the individual lines can be possible
+        //  if one encounters overlapping lines. This will ruin some helper
+        //  statistics, so it will be disabled from now on.
 
         // Set all frequencies nu
         for (Size fl = 0; fl < parameters->nfreqs(); fl++) {
@@ -128,8 +129,10 @@ int Model ::compute_spectral_discretisation() {
         for (Size l = 0; l < parameters->nlspecs(); l++) {
             for (Size k = 0; k < lines.lineProducingSpecies[l].nr_line[p].size(); k++) {
                 for (Size z = 0; z < lines.lineProducingSpecies[l].nr_line[p][k].size(); z++) {
-                    // NOTE: as the frequencies are no longer sorted, we do not need to include the point p as index
-                    //  lines.lineProducingSpecies[l].nr_line[p][k][z] = nmbrs_inverted[index2];
+                    // NOTE: as the frequencies are no longer sorted, we do not need
+                    // to include the point p as index
+                    //  lines.lineProducingSpecies[l].nr_line[p][k][z] =
+                    //  nmbrs_inverted[index2];
                     lines.lineProducingSpecies[l].nr_line[p][k][z] = index2;
 
                     radiation.frequencies.appears_in_line_integral[index2] = true;
@@ -143,13 +146,13 @@ int Model ::compute_spectral_discretisation() {
         }
     })
 
-        // Set corresponding frequencies
-        for (Size f = 0; f < parameters->nfreqs(); f++) {
-            const Size l = radiation.frequencies.corresponding_l_for_spec[f];
-            const Size k = radiation.frequencies.corresponding_k_for_tran[f];
+    // Set corresponding frequencies
+    for (Size f = 0; f < parameters->nfreqs(); f++) {
+        const Size l = radiation.frequencies.corresponding_l_for_spec[f];
+        const Size k = radiation.frequencies.corresponding_k_for_tran[f];
 
-            radiation.frequencies.corresponding_line[f] = lines.line_index(l, k);
-        }
+        radiation.frequencies.corresponding_line[f] = lines.line_index(l, k);
+    }
 
     // Set spectral discretisation setting
     spectralDiscretisation = SD_Lines;
@@ -165,7 +168,7 @@ int Model ::compute_spectral_discretisation(const Real width) {
     cout << "Computing spectral discretisation..." << endl;
     radiation.frequencies.resize_data(parameters->nlines() * parameters->nquads());
 
-    threaded_for (p, parameters->npoints(), {
+    threaded_for(p, parameters->npoints(), {
         Real1 freqs(parameters->nfreqs());
         // Size1 nmbrs (parameters->nfreqs());
 
@@ -216,7 +219,8 @@ int Model ::compute_spectral_discretisation(const Real width) {
         for (Size l = 0; l < parameters->nlspecs(); l++) {
             for (Size k = 0; k < lines.lineProducingSpecies[l].nr_line[p].size(); k++) {
                 for (Size z = 0; z < lines.lineProducingSpecies[l].nr_line[p][k].size(); z++) {
-                    // lines.lineProducingSpecies[l].nr_line[p][k][z] = nmbrs_inverted[index2];
+                    // lines.lineProducingSpecies[l].nr_line[p][k][z] =
+                    // nmbrs_inverted[index2];
                     lines.lineProducingSpecies[l].nr_line[p][k][z] = index2;
 
                     radiation.frequencies.appears_in_line_integral[index2] = true;
@@ -230,14 +234,15 @@ int Model ::compute_spectral_discretisation(const Real width) {
         }
     })
 
-        // Set spectral discretisation setting
-        spectralDiscretisation = SD_Image;
+    // Set spectral discretisation setting
+    spectralDiscretisation = SD_Image;
 
     return (0);
 }
 
-///  Wrapper for compute_spectral_discretisation, filling in parameters.nlines()*parameters.nquads() as number of
-///  frequencies, similar to old behavior
+///  Wrapper for compute_spectral_discretisation, filling in
+///  parameters.nlines()*parameters.nquads() as number of frequencies, similar
+///  to old behavior
 int Model ::compute_spectral_discretisation(const Real nu_min, const Real nu_max) {
     return compute_spectral_discretisation(nu_min, nu_max, parameters->nlines() * parameters->nquads());
 }
@@ -252,14 +257,15 @@ int Model ::compute_spectral_discretisation(const Real nu_min, const Real nu_max
     const Size n_image_freqs) // TODO: or use nquads() instead?
 {
     if (n_image_freqs < 1) {
-        throw std::runtime_error("At least a single frequency is needed to compute a spectral discretization.");
+        throw std::runtime_error("At least a single frequency is needed to compute "
+                                 "a spectral discretization.");
     }
 
     radiation.frequencies.resize_data(n_image_freqs);
     cout << "Computing spectral discretisation..." << endl;
 
     if (n_image_freqs == 1) { // avoiding division by 0
-        threaded_for (p, parameters->npoints(), {
+        threaded_for(p, parameters->npoints(), {
             radiation.frequencies.nu(p, 0) = (Real)(nu_min + nu_max) / 2.0;
 
             radiation.frequencies.appears_in_line_integral[0] = false;
@@ -270,7 +276,7 @@ int Model ::compute_spectral_discretisation(const Real nu_min, const Real nu_max
     } else {
         const long double dnu = (nu_max - nu_min) / (n_image_freqs - 1);
 
-        threaded_for (p, parameters->npoints(), {
+        threaded_for(p, parameters->npoints(), {
             for (Size f = 0; f < n_image_freqs; f++) {
                 radiation.frequencies.nu(p, f) = (Real)(nu_min + f * dnu);
 
@@ -284,8 +290,8 @@ int Model ::compute_spectral_discretisation(const Real nu_min, const Real nu_max
     // Set spectral discretisation setting
     spectralDiscretisation = SD_Image;
 
-    // TODO: for all frequencies, set the correct corresponding line. In this way, the OneLine approximation will be
-    // compatible with the imagers
+    // TODO: for all frequencies, set the correct corresponding line. In this way,
+    // the OneLine approximation will be compatible with the imagers
 
     return (0);
 }
@@ -419,7 +425,7 @@ int Model ::compute_radiation_field_feautrier_order_2_sparse() {
 ///////////////////////////////////////////////////
 int Model ::compute_Jeff() {
     for (LineProducingSpecies& lspec : lines.lineProducingSpecies) {
-        threaded_for (p, parameters->npoints(), {
+        threaded_for(p, parameters->npoints(), {
             for (Size k = 0; k < lspec.linedata.nrad; k++) {
                 const Size1 freq_nrs = lspec.nr_line[p][k];
 
@@ -453,7 +459,7 @@ int Model ::compute_Jeff() {
 ///////////////////////////////////////////////////
 int Model ::compute_Jeff_sparse() {
     for (LineProducingSpecies& lspec : lines.lineProducingSpecies) {
-        threaded_for (p, parameters->npoints(), {
+        threaded_for(p, parameters->npoints(), {
             for (Size k = 0; k < lspec.linedata.nrad; k++) {
                 double diff = 0.0;
 
@@ -482,7 +488,8 @@ int Model ::compute_level_populations_from_stateq() {
     return (0);
 }
 
-// Default ng-acceleration used after every 'parameters->Ng_acceleration_mem_limit' normal iteration steps
+// Default ng-acceleration used after every
+// 'parameters->Ng_acceleration_mem_limit' normal iteration steps
 template <>
 std::tuple<bool, Size> Model ::ng_acceleration_criterion<Default>(
     bool use_Ng_acceleration, Size prior_normal_iterations) {
@@ -503,14 +510,16 @@ template <>
 std::tuple<bool, Size> Model ::ng_acceleration_criterion<Adaptive>(
     bool use_Ng_acceleration, Size prior_normal_iterations) {
     const Size skip_N_its = parameters->Ng_acceleration_remove_N_its;
-    // Ng acceleration will not be used if we have no prior data (or the user does not allow it)
-    // For useful acceleration steps, the order needs to be at least 2
+    // Ng acceleration will not be used if we have no prior data (or the user does
+    // not allow it) For useful acceleration steps, the order needs to be at least
+    // 2
     if (use_Ng_acceleration == false
         || prior_normal_iterations < parameters->adaptive_Ng_acceleration_min_order + skip_N_its) {
         return std::make_tuple(false, 0);
     }
 
-    // Computing the current non-converged fraction to decide whether or not to use an early Ng-acceleration step
+    // Computing the current non-converged fraction to decide whether or not to
+    // use an early Ng-acceleration step
     double sum_fnc_curr = 0.0;
     for (int l = 0; l < parameters->nlspecs(); l++) {
         const double fnc = parameters->adaptive_Ng_acceleration_use_max_criterion
@@ -524,7 +533,8 @@ std::tuple<bool, Size> Model ::ng_acceleration_criterion<Adaptive>(
 
     lines.trial_iteration_using_adaptive_Ng_acceleration(parameters->pop_prec, nb_prev_iterations - skip_N_its);
 
-    // Computing the Ng-accelerated non-converged fraction to decide whether or not to use an early Ng-acceleration step
+    // Computing the Ng-accelerated non-converged fraction to decide whether or
+    // not to use an early Ng-acceleration step
     double sum_fnc_ng = 0.0;
     for (int l = 0; l < parameters->nlspecs(); l++) {
         const double fnc = parameters->adaptive_Ng_acceleration_use_max_criterion
@@ -533,7 +543,8 @@ std::tuple<bool, Size> Model ::ng_acceleration_criterion<Adaptive>(
         sum_fnc_ng += fnc;
     }
 
-    // std::cout<<"sum_fnc_ng: "<<sum_fnc_ng<<" sum_fnc_curr: "<<sum_fnc_curr<<std::endl;
+    // std::cout<<"sum_fnc_ng: "<<sum_fnc_ng<<" sum_fnc_curr:
+    // "<<sum_fnc_curr<<std::endl;
     if (sum_fnc_ng < sum_fnc_curr || prior_normal_iterations == (parameters->Ng_acceleration_mem_limit + skip_N_its)) {
         return std::make_tuple(true, nb_prev_iterations - skip_N_its);
     }
@@ -589,8 +600,8 @@ int Model ::compute_level_populations(const bool use_Ng_acceleration, const long
 
             iteration_normal = 0;
         } else {
-            iteration++; // only counting default iterations, as the ng-accelerated iterations are orders of magnitude
-                         // faster.
+            iteration++; // only counting default iterations, as the ng-accelerated
+                         // iterations are orders of magnitude faster.
             // logger.write ("Computing the radiation field...");
             cout << "Computing the radiation field..." << endl;
 
@@ -685,8 +696,8 @@ int Model ::compute_level_populations_sparse(const bool use_Ng_acceleration, con
 
             iteration_normal = 0;
         } else {
-            iteration++; // only counting default iterations, as the ng-accelerated iterations are orders of magnitude
-                         // faster.
+            iteration++; // only counting default iterations, as the ng-accelerated
+                         // iterations are orders of magnitude faster.
             // logger.write ("Computing the radiation field...");
             cout << "Computing the radiation field..." << endl;
 
@@ -783,8 +794,8 @@ int Model ::compute_level_populations_shortchar(const bool use_Ng_acceleration, 
 
             iteration_normal = 0;
         } else {
-            iteration++; // only counting default iterations, as the ng-accelerated iterations are orders of magnitude
-                         // faster.
+            iteration++; // only counting default iterations, as the ng-accelerated
+                         // iterations are orders of magnitude faster.
             // logger.write ("Computing the radiation field...");
             cout << "Computing the radiation field..." << endl;
 
@@ -878,20 +889,22 @@ int Model ::compute_image_new(const double rx, const double ry, const double rz,
     return compute_image_new(raydir, Nxpix, Nypix);
 }
 
-///  Computer for the radiation field, using a new imager TODO: check whether direction is correct (I suspect it is not)
+///  Computer for the radiation field, using a new imager TODO: check whether
+///  direction is correct (I suspect it is not)
 /////////////////////////////////////
 int Model ::compute_image_new(const Vector3D raydir, const Size Nxpix, const Size Nypix) {
     if (raydir.squaredNorm() == 0.0) {
-        throw std::runtime_error("The given ray direction vector does not point in a direction. Please use a non-zero "
-                                 "(normed) direction vector to generate an image.");
+        throw std::runtime_error("The given ray direction vector does not point in a direction. Please "
+                                 "use a non-zero (normed) direction vector to generate an image.");
     }
     const Vector3D normed_raydir = raydir * (1 / std::sqrt(raydir.squaredNorm()));
     cout << "Computing image new..." << endl;
 
     Solver solver;
-    // setup has to be handled after image creation, due to the rays themselves depend on the image pixels
-    //  solver.setup_new_imager <Rest> (*this);//traced ray length might be different, thus we might need longer data
-    //  types
+    // setup has to be handled after image creation, due to the rays themselves
+    // depend on the image pixels
+    //  solver.setup_new_imager <Rest> (*this);//traced ray length might be
+    //  different, thus we might need longer data types
     if (parameters->one_line_approximation) {
         throw std::runtime_error("One line approximation is not supported for imaging.");
         solver.image_feautrier_order_2_new_imager<OneLine>(*this, normed_raydir, Nxpix, Nypix);
@@ -973,8 +986,8 @@ int Model ::compute_image_optical_depth_new(
 //////////////////////////////////////
 int Model ::compute_image_optical_depth_new(const Vector3D raydir, const Size Nxpix, const Size Nypix) {
     if (raydir.squaredNorm() == 0.0) {
-        throw std::runtime_error("The given ray direction vector does not point in a direction. Please use a non-zero "
-                                 "(normed) direction vector to generate an image.");
+        throw std::runtime_error("The given ray direction vector does not point in a direction. Please "
+                                 "use a non-zero (normed) direction vector to generate an image.");
     }
     const Vector3D normed_raydir = raydir * (1 / std::sqrt(raydir.squaredNorm()));
     cout << "Computing image optical depth new..." << endl;
@@ -1024,7 +1037,7 @@ int Model ::set_dshift_max() {
     dshift_max.resize(parameters->npoints());
 
     // For all points
-    threaded_for (o, parameters->npoints(), {
+    threaded_for(o, parameters->npoints(), {
         dshift_max[o] = std::numeric_limits<Real>::max();
 
         for (const LineProducingSpecies& lspec : lines.lineProducingSpecies) {
@@ -1037,5 +1050,5 @@ int Model ::set_dshift_max() {
         }
     })
 
-        return (0);
+    return (0);
 }

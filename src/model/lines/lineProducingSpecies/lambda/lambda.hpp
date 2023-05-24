@@ -1,5 +1,6 @@
 #pragma once
 
+#include "model/parameters/parameters.hpp"
 #include "tools/types.hpp"
 
 struct Lambda {

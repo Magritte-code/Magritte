@@ -13,8 +13,8 @@ struct GetBeforeSetException : public std::exception {
     const char* what() const throw() { return "Tried to get SetOnce object before setting it."; }
 };
 
-// essential parameters will not be derived, so must be set by the user themselves when creating a model. Note:
-// currently does not actually do much
+// essential parameters will not be derived, so must be set by the user
+// themselves when creating a model. Note: currently does not actually do much
 template <typename type, bool essential> class SetOnce {
   private:
     bool already_set = false;

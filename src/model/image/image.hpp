@@ -10,28 +10,33 @@ enum ImageType { Intensity, OpticalDepth }; ///< What the image represents (eith
 enum ImagePointPosition {
     AllModelPoints,
     ProjectionSurface
-}; ///< How to trace the imaging rays (either throughout all point or starting from a surface outside the model)
+}; ///< How to trace the imaging rays (either throughout all point or starting
+   ///< from a surface outside the model)
 
 ///  Image: data structure for the images
 /////////////////////////////////////////
 struct Image {
-    const ImageType imageType; ///< Type of image (intensity or optical depth)
-    const ImagePointPosition
-        imagePointPosition;       ///< From which points the ray starts (model points or surface outside model)
-    const Size ray_nr;            ///< number of the ray to be imaged
-    const Vector3D ray_direction; ///< ray direction, if not imaging all model points
+    const ImageType imageType;                   ///< Type of image (intensity or optical depth)
+    const ImagePointPosition imagePointPosition; ///< From which points the ray starts (model points or
+                                                 ///< surface outside model)
+    const Size ray_nr;                           ///< number of the ray to be imaged
+    const Vector3D ray_direction;                ///< ray direction, if not imaging all model points
 
-    // Stuff which is practically const, but the compiler complains about because they are defined in a subfunction (not
-    // the constructor itself).
-    Size nfreqs;        ///< number of frequencies imaged
-    Vector<Real> freqs; ///< frequencies imaged
-    Size
-        closest_bdy_point; ///< position of closest bdy point to start tracing ray from, if imaging a projection surface
-    Vector3D surface_center_point; ///< position of 0 point of projection surface, if imaging a projection surface
+    // Stuff which is practically const, but the compiler complains about because
+    // they are defined in a subfunction (not the constructor itself).
+    Size nfreqs;                   ///< number of frequencies imaged
+    Vector<Real> freqs;            ///< frequencies imaged
+    Size closest_bdy_point;        ///< position of closest bdy point to start tracing
+                                   ///< ray from, if imaging a projection surface
+    Vector3D surface_center_point; ///< position of 0 point of projection surface,
+                                   ///< if imaging a projection surface
 
-    // The images themselves define some coordinate system, this is copied into these Vector3D's
-    Vector3D image_direction_x; ///< coordinate of image x direction in a 3D general geometry
-    Vector3D image_direction_y; ///< coordinate of image y direction in a 3D general geometry
+    // The images themselves define some coordinate system, this is copied into
+    // these Vector3D's
+    Vector3D image_direction_x; ///< coordinate of image x direction in a 3D
+                                ///< general geometry
+    Vector3D image_direction_y; ///< coordinate of image y direction in a 3D
+                                ///< general geometry
     Vector3D image_direction_z; ///< direction in which the image is taken
 
     Double1 ImX; ///< x coordinate of point in image

@@ -67,19 +67,21 @@ struct Model {
     std::tuple<bool, Size> ng_acceleration_criterion(bool use_Ng_acceleration, Size prior_normal_iterations);
     int compute_image(const Size ray_nr);
     int compute_image_optical_depth(const Size ray_nr);
-    int compute_image_new(
-        const Vector3D raydir, const Size Nxpix, const Size Nypix); // actual function for the new imager
+    int compute_image_new(const Vector3D raydir, const Size Nxpix,
+        const Size Nypix); // actual function for the new imager
     // convenient wrappers for the new imager
     int compute_image_new(const double rx, const double ry, const double rz, const Size Nxpix, const Size Nypix);
     int compute_image_new(const Size ray_nr, const Size Nxpix, const Size Nypix);
-    int compute_image_new(const Size ray_nr); // most similar function formulation to old imager
-    int compute_image_optical_depth_new(
-        const Vector3D raydir, const Size Nxpix, const Size Nypix); // actual function for the new imager
+    int compute_image_new(const Size ray_nr); // most similar function formulation
+                                              // to old imager
+    int compute_image_optical_depth_new(const Vector3D raydir, const Size Nxpix,
+        const Size Nypix); // actual function for the new imager
     // convenient wrappers for the new imager
     int compute_image_optical_depth_new(
         const double rx, const double ry, const double rz, const Size Nxpix, const Size Nypix);
     int compute_image_optical_depth_new(const Size ray_nr, const Size Nxpix, const Size Nypix);
-    int compute_image_optical_depth_new(const Size ray_nr); // most similar function formulation to old imager
+    int compute_image_optical_depth_new(const Size ray_nr); // most similar function formulation
+                                                            // to old imager
 
     Double1 error_max;
     Double1 error_mean;
@@ -99,7 +101,7 @@ struct Model {
 
     int compute_image_for_point(const Size ray_nr, const Size p);
 
-    // int compute_radiation_field_feautrier_order_2_uv     ();
+    // int compute_radiation_field_feautrier_order_2_uv ();
     int compute_radiation_field_feautrier_order_2_anis();
     int compute_radiation_field_feautrier_order_2_sparse();
 

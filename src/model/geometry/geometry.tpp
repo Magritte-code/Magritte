@@ -26,7 +26,8 @@ accel inline Size Geometry ::get_next_general_geometry<Defaulttracer>(
 
         if (Z_new > Z) {
             const double distance_from_ray2 = R.dot(R) - Z_new * Z_new;
-            // std::cout<<"n: "<<n<<" Z_new: "<<Z_new<<" dist2:"<<distance_from_ray2<<std::endl;
+            // std::cout<<"n: "<<n<<" Z_new: "<<Z_new<<"
+            // dist2:"<<distance_from_ray2<<std::endl;
 
             if (distance_from_ray2 < dmin) {
                 dmin = distance_from_ray2;
@@ -86,11 +87,13 @@ accel inline Size Geometry ::get_next_general_geometry<Imagetracer>(
     const double Z_c                     = R_c.dot(raydir);
     const double distance_curr_from_ray2 = R_c.dot(R_c) - Z_c * Z_c;
 
-    // Precaution against tracing stuff along the boundary, stopping when we move farther from the ray than the distance
-    // traveled using a safety factor of 2; TO DO: actually implement some manner of 'surface unit vector' to determine
-    // when to stop this ray; then this entire condition might be replaced by this (maybe also merge with 'regular'
-    // get_next_general_geometry) we also check whether the distance from the ray increases (as irregularly placed
-    // boundary points might result in stopping too early)
+    // Precaution against tracing stuff along the boundary, stopping when we move
+    // farther from the ray than the distance traveled using a safety factor of 2;
+    // TO DO: actually implement some manner of 'surface unit vector' to determine
+    // when to stop this ray; then this entire condition might be replaced by this
+    // (maybe also merge with 'regular' get_next_general_geometry) we also check
+    // whether the distance from the ray increases (as irregularly placed boundary
+    // points might result in stopping too early)
     if ((!not_on_boundary(c)) && (2.0 * maxdist_neighbors2 < dmin) && (distance_curr_from_ray2 < dmin)) {
         return parameters->npoints();
     }
@@ -101,8 +104,9 @@ accel inline Size Geometry ::get_next_general_geometry<Imagetracer>(
     return next;
 }
 
-///  Getter for the number of the next cell on ray and its distance along ray when
-///  assuming spherical symmetry and such that the positions are in ascending order!
+///  Getter for the number of the next cell on ray and its distance along ray
+///  when assuming spherical symmetry and such that the positions are in
+///  ascending order!
 ///    @param[in]      origin : origin from which the ray originates
 ///    @param[in]      raydir : direction of the ray along which we are looking
 ///    @param[in]      c : number of the cell put last on the ray
@@ -114,9 +118,10 @@ inline Size Geometry ::get_next_spherical_symmetry(
     const Vector3D& origin, const Vector3D& raydir, const Size c, double& Z, double& dZ) const {
     Size next;
 
-    // Even though no default ray in spherical symmetry has a z-component, any custom ray (for eg imaging) might have a
-    // z-component
-    //  R sin is a bit difficult to determine directly, thus we use the trivial angle identity to determine Rsin^2
+    // Even though no default ray in spherical symmetry has a z-component, any
+    // custom ray (for eg imaging) might have a z-component
+    //  R sin is a bit difficult to determine directly, thus we use the trivial
+    //  angle identity to determine Rsin^2
     const double Rcos        = origin.dot(raydir);
     const double R2          = origin.squaredNorm();
     const double Rsin2       = R2 - Rcos * Rcos;
@@ -146,13 +151,15 @@ inline Size Geometry ::get_next_spherical_symmetry(
     // Update distance along ray
     Z += dZ;
 
-    // cout << "o = " << o << "    r = " << r << "   c = " << c << "   next = " << next << "dZ = " << dZ << endl;
+    // cout << "o = " << o << "    r = " << r << "   c = " << c << "   next = " <<
+    // next << "dZ = " << dZ << endl;
 
     return next;
 }
 
-///  Computes the distance of the ray origin to the specified boundary point in any geometry.
-///  Able to both handle 3D general geometry and 1D spherical symmetry.
+///  Computes the distance of the ray origin to the specified boundary point in
+///  any geometry. Able to both handle 3D general geometry and 1D spherical
+///  symmetry.
 ///    @param[in]      origin : origin from which the ray originates
 ///    @param[in]      raydir : direction of the ray along which we are looking
 ///    @param[in]      bdy : point index of boundary point
@@ -160,31 +167,35 @@ inline double Geometry ::get_distance_origin_to_boundary(
     const Vector3D& origin, const Vector3D& raydir, const Size bdy) const {
     double Z = raydir.dot(points.position[bdy] - origin); // for a general 3D geometry, computing the distance is simple
 
-    if (parameters->spherical_symmetry()) { // in spherical symmetry, the distance needs to be computed differently;
+    if (parameters->spherical_symmetry()) { // in spherical symmetry, the distance
+                                            // needs to be computed differently;
                                             // TODO? put in geometry instead
         const double Rcos       = origin.dot(raydir);
         const double R2         = origin.squaredNorm();
         const double Rsin2      = R2 - Rcos * Rcos;
         const double horz_dist2 = points.position[bdy].squaredNorm() - Rsin2;
-        // If a ray falls outside of the spherically symmetric model, we just return the distance until the closest
-        // point to the model
+        // If a ray falls outside of the spherically symmetric model, we just return
+        // the distance until the closest point to the model
         if (horz_dist2 > 0) {
             Z = -sqrt(horz_dist2) - Rcos; // roughly copied from geometry::get_next_spherical_symmetry
         } else {
-            // Just put the distance in the middle, as the ray traced is outside of the domain; this corresponds to the
-            // large 'else' clause in get_next_spherical_symmetry. Then no next point will be found. We expect this, as
-            // we are tracing a ray outside the model.
+            // Just put the distance in the middle, as the ray traced is outside of
+            // the domain; this corresponds to the large 'else' clause in
+            // get_next_spherical_symmetry. Then no next point will be found. We
+            // expect this, as we are tracing a ray outside the model.
             Z = -Rcos;
         }
     }
     return Z;
 }
 
-///  Getter for the doppler shift along the ray between the current cell and the origin
+///  Getter for the doppler shift along the ray between the current cell and the
+///  origin
 ///    @param[in] o   : number of cell from which the ray originates
 ///    @param[in] r   : number of the ray along which we are looking
 ///    @param[in] crt : number of the cell for which we want the velocity
-///    @return doppler shift along the ray between the current cell and the origin
+///    @return doppler shift along the ray between the current cell and the
+///    origin
 ///////////////////////////////////////////////////////////////////////////////////////
 template <>
 inline double Geometry ::get_shift_general_geometry<CoMoving>(
@@ -192,11 +203,13 @@ inline double Geometry ::get_shift_general_geometry<CoMoving>(
     return 1.0 + (points.velocity[crt] - origin_velocity).dot(raydir);
 }
 
-///  Getter for the doppler shift along the ray between the current cell and the origin
+///  Getter for the doppler shift along the ray between the current cell and the
+///  origin
 ///    @param[in] o   : number of cell from which the ray originates
 ///    @param[in] r   : number of the ray along which we are looking
 ///    @param[in] crt : number of the cell for which we want the velocity
-///    @return doppler shift along the ray between the current cell and the origin
+///    @return doppler shift along the ray between the current cell and the
+///    origin
 ///////////////////////////////////////////////////////////////////////////////////////
 template <>
 inline double Geometry ::get_shift_general_geometry<Rest>(
@@ -228,7 +241,8 @@ accel inline Size Geometry ::get_ray_length(const Size o, const Size r, const do
         double shift_crt = get_shift<frame>(o, r, crt, 0.0);
         double shift_nxt = get_shift<frame>(o, r, nxt, Z);
 
-        l += 1; // no interpolation means only a single point added to the ray each time
+        l += 1; // no interpolation means only a single point added to the ray each
+                // time
 
         while (not_on_boundary(nxt)) {
             crt       = nxt;
@@ -237,7 +251,8 @@ accel inline Size Geometry ::get_ray_length(const Size o, const Size r, const do
             nxt       = get_next(o, r, nxt, Z, dZ);
             shift_nxt = get_shift<frame>(o, r, nxt, Z);
 
-            l += 1; // no interpolation means only a single point added to the ray each time
+            l += 1; // no interpolation means only a single point added to the ray
+                    // each time
 
             if (!valid_point(nxt)) {
                 printf("ERROR: no valid neighbor o=%u, r=%u, crt=%u\n", o, r, crt);
@@ -317,12 +332,16 @@ accel inline void Geometry ::get_next(
     shift = get_shift<CoMoving>(o, r, nxt, Z);
 }
 
-///  Getter for the number of the next closer boundary point on the ray and its distance along ray in
-///  the general case without any further assumptions. Can handle rays not originating from inside the model.
-///  Remark: we assume the outer boundary to be convex (as usual in Magritte) in order to find a consistent result when
-///  applying this multiple times to find the closest boundary point to the given ray
-///    @param[in] origin : coordinate of the origin point from which the ray originates
-///    @param[in] raydir : direction vector of the ray along which we are looking
+///  Getter for the number of the next closer boundary point on the ray and its
+///  distance along ray in the general case without any further assumptions. Can
+///  handle rays not originating from inside the model. Remark: we assume the
+///  outer boundary to be convex (as usual in Magritte) in order to find a
+///  consistent result when applying this multiple times to find the closest
+///  boundary point to the given ray
+///    @param[in] origin : coordinate of the origin point from which the ray
+///    originates
+///    @param[in] raydir : direction vector of the ray along which we are
+///    looking
 ///    @param[in] crt : number of the cell put last on the ray
 ///    @param[in/out] Z : reference to the current distance along the ray
 ///    @param[out] dZ : reference to the distance increment to the next ray
@@ -344,8 +363,8 @@ accel inline Size Geometry ::get_boundary_point_closer_to_custom_ray(
 
     for (Size i = 0; i < n_nbs; i++) {
         const Size n = points.neighbors[cum_n_nbs + i];
-        // TODO: Lazy implementation: define instead a neighbors structure using only boundary points (now we are
-        // looping over way too many points)
+        // TODO: Lazy implementation: define instead a neighbors structure using
+        // only boundary points (now we are looping over way too many points)
         if (!not_on_boundary(n)) {
             const Vector3D R_new            = points.position[n] - origin;
             const double Z_new              = R_new.dot(raydir);
@@ -371,7 +390,8 @@ accel inline Size Geometry ::get_closest_bdy_point_in_custom_raydir(const Vector
     }
     // first try out first boundary point
     Size closest_bdy_point = boundary.point2boundary[0]; // first best guess is the first boundary point
-    double projected_dmin  = raydir.dot(points.position[closest_bdy_point]); // and the corresponding projected distance
+    double projected_dmin  = raydir.dot(points.position[closest_bdy_point]); // and the corresponding
+                                                                             // projected distance
     for (Size bdy_index = 1; bdy_index < parameters->nboundary(); bdy_index++) {
         const Size bdy_point_index      = boundary.boundary2point[bdy_index];
         const double projected_distance = raydir.dot(points.position[bdy_point_index]);
@@ -385,17 +405,20 @@ accel inline Size Geometry ::get_closest_bdy_point_in_custom_raydir(const Vector
     return closest_bdy_point;
 }
 
-///  Getter for the doppler shift along the ray between the current cell and the origin
+///  Getter for the doppler shift along the ray between the current cell and the
+///  origin
 ///    @param[in] o   : number of cell from which the ray originates
 ///    @param[in] r   : number of the ray along which we are looking
 ///    @param[in] crt : number of the cell for which we want the velocity
 ///    @param[in] Z   : reference to the current distance along the ray
-///    @return doppler shift along the ray between the current cell and the origin
+///    @return doppler shift along the ray between the current cell and the
+///    origin
 ///////////////////////////////////////////////////////////////////////////////////////
 template <>
 inline double Geometry ::get_shift_spherical_symmetry<CoMoving>(const Vector3D& origin, const Vector3D& origin_velocity,
     const Vector3D& raydir, const Size c, const double Z) const {
-    // At the 0 point, we cannot have any velocity (otherwise not spherically symmetric)
+    // At the 0 point, we cannot have any velocity (otherwise not spherically
+    // symmetric)
     if (origin.squaredNorm() == 0.0) {
         return 1.0;
     }
@@ -409,12 +432,14 @@ inline double Geometry ::get_shift_spherical_symmetry<CoMoving>(const Vector3D& 
     return 1.0 + (points.velocity[c].x() * Rcos_plus_Z / points.position[c].x() - origin_velocity.dot(raydir));
 }
 
-///  Getter for the doppler shift along the ray between the current cell and the origin
+///  Getter for the doppler shift along the ray between the current cell and the
+///  origin
 ///    @param[in] o   : number of cell from which the ray originates
 ///    @param[in] r   : number of the ray along which we are looking
 ///    @param[in] crt : number of the cell for which we want the velocity
 ///    @param[in] Z   : reference to the current distance along the ray
-///    @return doppler shift along the ray between the current cell and the origin
+///    @return doppler shift along the ray between the current cell and the
+///    origin
 ///////////////////////////////////////////////////////////////////////////////////////
 template <>
 inline double Geometry ::get_shift_spherical_symmetry<Rest>(const Vector3D& origin, const Vector3D& origin_velocity,
@@ -428,32 +453,37 @@ inline double Geometry ::get_shift_spherical_symmetry<Rest>(const Vector3D& orig
     return 1.0 + points.velocity[c].x() * Rcos_plus_Z / points.position[c].x();
 }
 
-///  Getter for the doppler shift along the ray between the current cell and the origin
-///  Wrapper for compatibility with old api
+///  Getter for the doppler shift along the ray between the current cell and the
+///  origin Wrapper for compatibility with old api
 ///    @param[in] o   : number of cell from which the ray originates
 ///    @param[in] r   : number of the ray along which we are looking
 ///    @param[in] crt : number of the cell for which we want the velocity
 ///    @param[in] Z   : reference to the current distance along the ray
-///    @return doppler shift along the ray between the current cell and the origin
+///    @return doppler shift along the ray between the current cell and the
+///    origin
 ///////////////////////////////////////////////////////////////////////////////////////
 template <Frame frame>
 inline double Geometry ::get_shift(const Size o, const Size r, const Size c, const double Z) const {
     Vector3D raydir                = rays.direction[r];
     const Vector3D origin          = points.position[o];
     const Vector3D origin_velocity = points.velocity[o];
-    // Due to the old imager implementation, the computed shift might need to be reversed
+    // Due to the old imager implementation, the computed shift might need to be
+    // reversed
     const bool reverse = ((frame == Rest) && (r >= parameters->hnrays()));
 
     return get_shift<frame>(origin, origin_velocity, raydir, c, Z, reverse);
 }
 
-///  Getter for the doppler shift along the ray between the current cell and the origin
+///  Getter for the doppler shift along the ray between the current cell and the
+///  origin
 ///    @param[in] origin : position from which the ray originates
 ///    @param[in] raydir : direction of the ray along which we are looking
 ///    @param[in] crt : number of the cell for which we want the velocity
 ///    @param[in] Z   : reference to the current distance along the ray
-///    @param[in] reverse: whether to reverse the computed doppler shift (for imaging)
-///    @return doppler shift along the ray between the current cell and the origin
+///    @param[in] reverse: whether to reverse the computed doppler shift (for
+///    imaging)
+///    @return doppler shift along the ray between the current cell and the
+///    origin
 ///////////////////////////////////////////////////////////////////////////////////////
 template <Frame frame>
 inline double Geometry ::get_shift(const Vector3D& origin, const Vector3D& origin_velocity, const Vector3D& raydir,

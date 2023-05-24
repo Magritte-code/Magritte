@@ -43,7 +43,7 @@ inline Real LineProducingSpecies ::get_opacity(const Size p, const Size k) const
 ///    @param[in] l: number of line producing species
 ///////////////////////////////////////////////////////////
 inline void LineProducingSpecies ::update_using_LTE(const Double2& abundance, const Vector<Real>& temperature) {
-    threaded_for (p, parameters->npoints(), {
+    threaded_for(p, parameters->npoints(), {
         population_tot[p] = abundance[p][linedata.num];
 
         Real partition_function = 0.0;
@@ -63,10 +63,11 @@ inline void LineProducingSpecies ::update_using_LTE(const Double2& abundance, co
         }
     })
 
-        populations.push_back(population);
+    populations.push_back(population);
 }
 
-/// This function check whether the level populations have converged, using the specified precision
+/// This function check whether the level populations have converged, using the
+/// specified precision
 inline void LineProducingSpecies ::check_for_convergence(const Real pop_prec) {
     const Real weight = 1.0 / (parameters->npoints() * linedata.nlev);
 
@@ -82,9 +83,11 @@ inline void LineProducingSpecies ::check_for_convergence(const Real pop_prec) {
             if (population(ind) > parameters->min_rel_pop_for_convergence * population_tot[p]) {
                 // Real relative_change = 2.0;
                 //
-                // relative_change *= std::abs(population (ind) - population_prev1 (ind));
-                // relative_change /= (population (ind) + population_prev1 (ind));
-                // minor computed negative level populations might result in negative values for this
+                // relative_change *= std::abs(population (ind) - population_prev1
+                // (ind)); relative_change /= (population (ind) + population_prev1
+                // (ind));
+                // minor computed negative level populations might result in negative
+                // values for this
                 const Real relative_change =
                     2.0
                     * std::abs((population(ind) - population_prev1(ind)) / (population(ind) + population_prev1(ind)));
@@ -104,7 +107,8 @@ inline void LineProducingSpecies ::check_for_convergence(const Real pop_prec) {
     relative_change_max    = rcmax;
 }
 
-/// This function check whether the trial level populations have converged, using the specified precision
+/// This function check whether the trial level populations have converged,
+/// using the specified precision
 inline void LineProducingSpecies ::check_for_convergence_trial(const Real pop_prec) {
     const Real weight = 1.0 / (parameters->npoints() * linedata.nlev);
 
@@ -120,9 +124,11 @@ inline void LineProducingSpecies ::check_for_convergence_trial(const Real pop_pr
             if (population(ind) > parameters->min_rel_pop_for_convergence * population_tot[p]) {
                 // Real relative_change = 2.0;
                 //
-                // relative_change *= std::abs(trial_population (ind) - population (ind));
-                // relative_change /= (trial_population (ind) + population (ind));
-                // minor computed negative level populations might result in negative values for this
+                // relative_change *= std::abs(trial_population (ind) - population
+                // (ind)); relative_change /= (trial_population (ind) + population
+                // (ind));
+                // minor computed negative level populations might result in negative
+                // values for this
                 const Real relative_change =
                     2.0
                     * std::abs((trial_population(ind) - population(ind)) / (trial_population(ind) + population(ind)));
@@ -208,8 +214,8 @@ void LineProducingSpecies ::update_using_acceleration(const Size order) {
     residuals.push_back(population - populations.back());
     populations.push_back(population);
 
-    // inequality due to residuals needing to be computed from populations, but populations may be computed without
-    // computing residuals
+    // inequality due to residuals needing to be computed from populations, but
+    // populations may be computed without computing residuals
     if (populations.size() < (residuals.size() + 1)) {
         std::cout << "Inconsistent data sizes for ng acceleration." << std::endl;
         std::cout << "Size populations: " << populations.size() << " Size residuals: " << residuals.size() << std::endl;
@@ -218,7 +224,8 @@ void LineProducingSpecies ::update_using_acceleration(const Size order) {
     if (residuals.size() < order) {
         std::cout << "Ng acceleration order: " << order << std::endl;
         std::cout << "Size residuals: " << residuals.size() << std::endl;
-        throw std::runtime_error("Error during ng acceleration; order of acceleration greather than data stored.");
+        throw std::runtime_error("Error during ng acceleration; order of "
+                                 "acceleration greather than data stored.");
     }
 
     const Size popsize = populations.size();
@@ -242,8 +249,8 @@ void LineProducingSpecies ::update_using_acceleration(const Size order) {
         population += populations[popsize - 1 - i] * coef[order - 1 - i];
     }
 
-    // enforcing memory limit by removing almost all previous information after (general) ng-acceleration
-    // Last population must be kept to compute residuals
+    // enforcing memory limit by removing almost all previous information after
+    // (general) ng-acceleration Last population must be kept to compute residuals
     residuals.clear();
     populations.erase(populations.begin(), populations.end() - 1);
 }
@@ -251,14 +258,15 @@ void LineProducingSpecies ::update_using_acceleration(const Size order) {
 ///  update_using_acceleration: perform a Ng accelerated iteration step
 ///    for level populations. All variable names are based on lecture notes
 ///    by C.P. Dullemond which are based on Olson, Auer and Buchler (1985).
-///  Does not update the level populations, storing the results instead into a seperate array
+///  Does not update the level populations, storing the results instead into a
+///  seperate array
 ///////////////////////////////////////////////////////////////////////////
 void LineProducingSpecies ::update_using_acceleration_trial(const Size order) {
     residuals.push_back(population - populations.back());
     populations.push_back(population);
 
-    // inequality due to residuals needing to be computed from populations, but populations may be computed without
-    // computing residuals
+    // inequality due to residuals needing to be computed from populations, but
+    // populations may be computed without computing residuals
     if (populations.size() < (residuals.size() + 1)) {
         std::cout << "Inconsistent data sizes for ng acceleration." << std::endl;
         std::cout << "Size populations: " << populations.size() << " Size residuals: " << residuals.size() << std::endl;
@@ -267,7 +275,8 @@ void LineProducingSpecies ::update_using_acceleration_trial(const Size order) {
     if (populations.size() < order) {
         std::cout << "Ng acceleration order: " << order << std::endl;
         std::cout << "Size residuals: " << residuals.size() << std::endl;
-        throw std::runtime_error("Error during ng acceleration; order of acceleration greather than data stored.");
+        throw std::runtime_error("Error during ng acceleration; order of "
+                                 "acceleration greather than data stored.");
     }
 
     const Size popsize = populations.size();
@@ -297,7 +306,8 @@ void LineProducingSpecies ::update_using_acceleration_trial(const Size order) {
 }
 
 ///  update_using_statistical_equilibrium: computes level populations by solving
-///  the statistical equilibrium equation taking into account the radiation field
+///  the statistical equilibrium equation taking into account the radiation
+///  field
 ///    @param[in] abundance: chemical abundances of species in the model
 ///    @param[in] temperature: gas temperature in the model
 /////////////////////////////////////////////////////////////////////////////////
@@ -339,7 +349,8 @@ inline void LineProducingSpecies ::update_using_statistical_equilibrium(
             // const Real t_IJ = linedata.Bs[k] * Jdif[p][k];
             // const Real t_JI = linedata.Ba[k] * Jdif[p][k];
 
-            // Note: we define our transition matrix as the transpose of R in the paper.
+            // Note: we define our transition matrix as the transpose of R in the
+            // paper.
             const Size I = index(p, linedata.irad[k]);
             const Size J = index(p, linedata.jrad[k]);
 
@@ -367,7 +378,8 @@ inline void LineProducingSpecies ::update_using_statistical_equilibrium(
                 const Size nr   = lambda.get_nr(p, k, m);
                 const Real v_IJ = -lambda.get_Ls(p, k, m) * get_opacity(p, k);
 
-                // Note: we define our transition matrix as the transpose of R in the paper.
+                // Note: we define our transition matrix as the transpose of R in the
+                // paper.
                 const Size I = index(nr, linedata.irad[k]);
                 const Size J = index(p, linedata.jrad[k]);
 
@@ -396,7 +408,8 @@ inline void LineProducingSpecies ::update_using_statistical_equilibrium(
                 const Real v_IJ = colpar.Cd_intpld[k] * abn;
                 const Real v_JI = colpar.Ce_intpld[k] * abn;
 
-                // Note: we define our transition matrix as the transpose of R in the paper.
+                // Note: we define our transition matrix as the transpose of R in the
+                // paper.
                 const Size I = index(p, colpar.icol[k]);
                 const Size J = index(p, colpar.jcol[k]);
 
@@ -502,7 +515,8 @@ inline void LineProducingSpecies ::update_using_statistical_equilibrium(
 }
 
 ///  update_using_statistical_equilibrium: computes level populations by solving
-///  the statistical equilibrium equation taking into account the radiation field
+///  the statistical equilibrium equation taking into account the radiation
+///  field
 ///    @param[in] abundance: chemical abundances of species in the model
 ///    @param[in] temperature: gas temperature in the model
 /////////////////////////////////////////////////////////////////////////////////
@@ -533,7 +547,8 @@ inline void LineProducingSpecies ::update_using_statistical_equilibrium_sparse(
             const Real v_IJ = linedata.A[k] + linedata.Bs[k] * Jeff[p][k];
             const Real v_JI = linedata.Ba[k] * Jeff[p][k];
 
-            // Note: we define our transition matrix as the transpose of R in the paper.
+            // Note: we define our transition matrix as the transpose of R in the
+            // paper.
             const Size I = linedata.irad[k];
             const Size J = linedata.jrad[k];
 
@@ -553,7 +568,8 @@ inline void LineProducingSpecies ::update_using_statistical_equilibrium_sparse(
                     throw std::runtime_error("ERROR: non-local Approximated Lambda operator.");
                 }
 
-                // Note: we define our transition matrix as the transpose of R in the paper.
+                // Note: we define our transition matrix as the transpose of R in the
+                // paper.
                 const Size I = linedata.irad[k];
                 const Size J = linedata.jrad[k];
 
@@ -574,7 +590,8 @@ inline void LineProducingSpecies ::update_using_statistical_equilibrium_sparse(
                 const Real v_IJ = colpar.Cd_intpld[k] * abn;
                 const Real v_JI = colpar.Ce_intpld[k] * abn;
 
-                // Note: we define our transition matrix as the transpose of R in the paper.
+                // Note: we define our transition matrix as the transpose of R in the
+                // paper.
                 const Size I = colpar.icol[k];
                 const Size J = colpar.jcol[k];
 

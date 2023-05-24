@@ -19,7 +19,8 @@ PYBIND11_MAKE_OPAQUE(vector<CollisionPartner>);
 
 PYBIND11_MODULE(core, module) {
     // Module docstring
-    module.doc() = "Core module of Magritte: a modern software library for 3D radiative transfer.";
+    module.doc() = "Core module of Magritte: a modern software library for 3D "
+                   "radiative transfer.";
 
     // Paracabs
     module.def("pcmt_n_threads_avail", &paracabs::multi_threading::n_threads_avail,
@@ -31,11 +32,14 @@ PYBIND11_MODULE(core, module) {
     module.def("pcmp_comm_size", &paracabs::message_passing::comm_size,
         "Get the size of the current communicator (using MPI).");
     module.def("pcmp_length", &paracabs::message_passing::length,
-        "Get the size of an array with given length that is given to the current process (using MPI).");
+        "Get the size of an array with given length that is given to the "
+        "current process (using MPI).");
     module.def("pcmp_start", &paracabs::message_passing::start,
-        "Get the first index of an array with given length that will be given to this process (using MPI).");
+        "Get the first index of an array with given length that will be "
+        "given to this process (using MPI).");
     module.def("pcmp_stop", &paracabs::message_passing::stop,
-        "Get the last index of an array with given length that will be given to this process (using MPI).");
+        "Get the last index of an array with given length that will be "
+        "given to this process (using MPI).");
 
     // Define vector types
     py::bind_vector<vector<LineProducingSpecies>>(module, "vLineProducingSpecies");
@@ -127,93 +131,114 @@ PYBIND11_MODULE(core, module) {
         .def_readonly("error_max", &Model::error_max, "Max relative error in the level populaitons.")
         // functions
         .def("read", (void(Model::*)(void)) & Model::read,
-            "Read model file (using the hdf5 implementation of IoPython and using the model name specified in "
-            "parameters.)")
+            "Read model file (using the hdf5 implementation of IoPython and "
+            "using the model name specified in parameters.)")
         .def("write", (void(Model::*)(void) const) & Model::write,
-            "Write model file (using the hdf5 implementation of IoPython and using the model name specified in "
-            "parameters.)")
+            "Write model file (using the hdf5 implementation of IoPython and "
+            "using the model name specified in parameters.)")
         .def("read", (void(Model::*)(const Io&)) & Model::read, "Read model file using the given Io object.")
         .def("write", (void(Model::*)(const Io&) const) & Model::write, "Write model file using the given Io object.")
         .def("read", (void(Model::*)(const string)) & Model::read, "Read model file (assuming HDF5 file format).")
         .def("write", (void(Model::*)(const string) const) & Model::write,
             "Write model file (assuming HDF5 file format).")
         .def("compute_inverse_line_widths", &Model::compute_inverse_line_widths,
-            "Compute the inverse line widths for the model. (Needs to be recomputed whenever the temperature of "
-            "turbulence changes.)")
+            "Compute the inverse line widths for the model. (Needs to be "
+            "recomputed whenever the temperature of turbulence changes.)")
         .def("compute_spectral_discretisation", (int(Model::*)(void)) & Model::compute_spectral_discretisation,
-            "Compute the spectral discretisation for the model tailored for line (Gauss-Hermite) quadrature.")
+            "Compute the spectral discretisation for the model tailored for "
+            "line (Gauss-Hermite) quadrature.")
         .def("compute_spectral_discretisation",
             (int(Model::*)(const Real width)) & Model::compute_spectral_discretisation,
-            "Compute the spectral discretisation for the model tailored for images with the given spectral width.")
+            "Compute the spectral discretisation for the model tailored for "
+            "images with the given spectral width.")
         .def("compute_spectral_discretisation",
             (int(Model::*)(const Real nu_min, const Real nu_max)) & Model::compute_spectral_discretisation,
-            "Compute the spectral discretisation for the model tailored for images with the given min and max "
-            "frequency.")
+            "Compute the spectral discretisation for the model tailored for "
+            "images with the given min and max frequency.")
         .def("compute_spectral_discretisation",
             (int(Model::*)(const Real nu_min, const Real nu_max, const Size n_image_freqs))
                 & Model::compute_spectral_discretisation,
-            "Compute the spectral discretisation for the model tailored for images with the given min and max "
-            "frequency. Can also specify the amount of frequency bins to use (instead of defaulting to "
+            "Compute the spectral discretisation for the model tailored for "
+            "images with the given min and max frequency. Can also specify the "
+            "amount of frequency bins to use (instead of defaulting to "
             "parameters.nfreqs).")
         .def("compute_LTE_level_populations", &Model::compute_LTE_level_populations,
-            "Compute the level populations for the model assuming local thermodynamic equilibrium (LTE).")
+            "Compute the level populations for the model assuming local "
+            "thermodynamic equilibrium (LTE).")
         .def("compute_radiation_field_feautrier_order_2", &Model::compute_radiation_field_feautrier_order_2,
-            "Compute the radiation field for the modle using the 2nd-order Feautrier solver.")
+            "Compute the radiation field for the modle using the 2nd-order "
+            "Feautrier solver.")
         .def("compute_radiation_field_feautrier_order_2_sparse",
             &Model::compute_radiation_field_feautrier_order_2_sparse,
-            "Compute the radiation field for the modle using the 2nd-order Feautrier solver.")
-        /// Solver is bugged, so removed from the api, as the shortchar solver can replace it
+            "Compute the radiation field for the modle using the 2nd-order "
+            "Feautrier solver.")
+        /// Solver is bugged, so removed from the api, as the shortchar solver can
+        /// replace it
         // .def (
         //     "compute_radiation_field_feautrier_order_2_uv",
         //     &Model::compute_radiation_field_feautrier_order_2_uv,
-        //     "Compute the radiation field for the modle using the 2nd-order Feautrier solver."
+        //     "Compute the radiation field for the modle using the 2nd-order
+        //     Feautrier solver."
         // )
         .def("compute_radiation_field_feautrier_order_2_anis", &Model::compute_radiation_field_feautrier_order_2_anis,
-            "Compute the radiation field for the modle using the 2nd-order Feautrier solver, anisotropic case.")
+            "Compute the radiation field for the modle using the 2nd-order "
+            "Feautrier solver, anisotropic case.")
         .def("compute_radiation_field_shortchar_order_0", &Model::compute_radiation_field_shortchar_order_0,
-            "Compute the radiation field for the modle using the 0th-order short-characteristics methods.")
+            "Compute the radiation field for the modle using the 0th-order "
+            "short-characteristics methods.")
         .def("compute_Jeff", &Model::compute_Jeff, "Compute the effective mean intensity in the line.")
         .def("compute_level_populations_from_stateq", &Model::compute_level_populations_from_stateq,
-            "Compute the level populations for the model assuming statistical equilibrium.")
+            "Compute the level populations for the model assuming statistical "
+            "equilibrium.")
         .def("compute_level_populations", &Model::compute_level_populations,
-            "Compute the level populations for the model assuming statistical equilibrium until convergence, "
-            "optionally using Ng-acceleration, and for the given maximum number of iterations.")
+            "Compute the level populations for the model assuming statistical "
+            "equilibrium until convergence, optionally using Ng-acceleration, "
+            "and for the given maximum number of iterations.")
         .def("compute_level_populations_sparse", &Model::compute_level_populations_sparse,
-            "Compute the level populations for the model assuming statistical equilibrium until convergence, "
-            "optionally using Ng-acceleration, and for the given maximum number of iterations. (Memory sparse option.)")
+            "Compute the level populations for the model assuming statistical "
+            "equilibrium until convergence, optionally using Ng-acceleration, "
+            "and for the given maximum number of iterations. (Memory sparse "
+            "option.)")
         .def("compute_level_populations_shortchar", &Model::compute_level_populations_shortchar,
-            "Compute the level populations using the short-characteristics solver for the model assuming statistical "
-            "equilibrium until convergence, optionally using Ng-acceleration, and for the given maximum number of "
-            "iterations.")
+            "Compute the level populations using the short-characteristics "
+            "solver for the model assuming statistical equilibrium until "
+            "convergence, optionally using Ng-acceleration, and for the given "
+            "maximum number of iterations.")
         .def("compute_image", &Model::compute_image, "Compute an image for the model along the given ray.")
         .def("compute_image_new", (int(Model::*)(const Size ray_nr)) & Model::compute_image_new,
-            "Compute an image of the model along the given ray direction, using the new imager.")
+            "Compute an image of the model along the given ray direction, using "
+            "the new imager.")
         .def("compute_image_new",
             (int(Model::*)(const Size ray_nr, const Size Nxpix, const Size Nypix)) & Model::compute_image_new,
-            "Compute an image of the model along the given ray direction, using the new imager, specifying the image "
-            "resolution.")
+            "Compute an image of the model along the given ray direction, using "
+            "the new imager, specifying the image resolution.")
         .def("compute_image_new",
             (int(Model::*)(const double rx, const double ry, const double rz, const Size Nxpix, const Size Nypix))
                 & Model::compute_image_new,
-            "Compute an image of the model along the given ray direction, using the new imager, specifying the ray "
-            "direction and image resolution.")
+            "Compute an image of the model along the given ray direction, using "
+            "the new imager, specifying the ray direction and image resolution.")
         .def("compute_image_optical_depth", &Model::compute_image_optical_depth,
-            "Compute an image of the optical depth for the model along the given ray.")
+            "Compute an image of the optical depth for the model along the "
+            "given ray.")
         .def("compute_image_optical_depth_new",
             (int(Model::*)(const Size ray_nr)) & Model::compute_image_optical_depth_new,
-            "Compute an image of the optical depth for the model along the given ray direction, using the new imager.")
+            "Compute an image of the optical depth for the model along the "
+            "given ray direction, using the new imager.")
         .def("compute_image_optical_depth_new",
             (int(Model::*)(const Size ray_nr, const Size Nxpix, const Size Nypix))
                 & Model::compute_image_optical_depth_new,
-            "Compute an image of the optical depth for the model along the given ray direction, using the new imager, "
-            "specifying the image resolution.")
+            "Compute an image of the optical depth for the model along the "
+            "given ray direction, using the new imager, specifying the image "
+            "resolution.")
         .def("compute_image_optical_depth_new",
             (int(Model::*)(const double rx, const double ry, const double rz, const Size Nxpix, const Size Nypix))
                 & Model::compute_image_optical_depth_new,
-            "Compute an image of the optical depth for the model along the given ray direction, using the new imager, "
-            "specifying the ray direction and image resolution.")
+            "Compute an image of the optical depth for the model along the "
+            "given ray direction, using the new imager, specifying the ray "
+            "direction and image resolution.")
         .def("set_eta_and_chi", &Model::set_eta_and_chi,
-            "Set latest emissivity and opacity for the model in the eta and chi variables respectively.")
+            "Set latest emissivity and opacity for the model in the eta and chi "
+            "variables respectively.")
         .def("set_boundary_condition", &Model::set_boundary_condition, "Set boundary condition (internally).")
         .def("compute_image_for_point", &Model::compute_image_for_point,
             "Compute image (single pixel) for a single point.")
@@ -226,13 +251,16 @@ PYBIND11_MODULE(core, module) {
     py::class_<Parameters, std::shared_ptr<Parameters>>(module, "Parameters", "Class containing the model parameters.")
         // io
         .def_readwrite("n_off_diag", &Parameters::n_off_diag,
-            "Bandwidth of the ALO (0=diagonal, 1=tri-diaginal, 2=penta-diagonal, ...)")
+            "Bandwidth of the ALO (0=diagonal, 1=tri-diaginal, "
+            "2=penta-diagonal, ...)")
         .def_readwrite("max_width_fraction", &Parameters::max_width_fraction,
-            "Max tolerated Doppler shift as fraction of line width (default=0.5).")
+            "Max tolerated Doppler shift as fraction of line width "
+            "(default=0.5).")
         .def_readwrite("convergence_fraction", &Parameters::convergence_fraction,
             "Fraction of levels that should obey the convergence criterion.")
         .def_readwrite("min_rel_pop_for_convergence", &Parameters::min_rel_pop_for_convergence,
-            "Minimum relative level population to be considered in the convergence criterion.")
+            "Minimum relative level population to be considered in "
+            "the convergence criterion.")
         .def_readwrite("pop_prec", &Parameters::pop_prec, "Required precision for ALI.")
         .def_readwrite("min_opacity", &Parameters::min_opacity, "Minimum opacity that will be assumed in the solver.")
         .def_readwrite(
@@ -241,20 +269,24 @@ PYBIND11_MODULE(core, module) {
         .def_readwrite("one_line_approximation", &Parameters::one_line_approximation,
             "Whether or not to use one line approximation.")
         .def_readwrite("sum_opacity_emissivity_over_all_lines", &Parameters::sum_opacity_emissivity_over_all_lines,
-            "Whether or not to sum the opacity, emissivity over all lines (including the zero contributions).")
+            "Whether or not to sum the opacity, emissivity over all "
+            "lines (including the zero contributions).")
         .def_readwrite("max_distance_opacity_contribution", &Parameters::max_distance_opacity_contribution,
-            "The distance (scaled to line width) at which we ignore the opacity/emissivity contribution.")
+            "The distance (scaled to line width) at which we ignore "
+            "the opacity/emissivity contribution.")
         .def_readwrite("use_adaptive_Ng_acceleration", &Parameters::use_adaptive_Ng_acceleration,
             "Whether to use adaptive Ng acceleration.")
         .def_readwrite(
             "Ng_acceleration_mem_limit", &Parameters::Ng_acceleration_mem_limit, "Memory limit for ng acceleration.")
         .def_readwrite("adaptive_Ng_acceleration_use_max_criterion",
             &Parameters::adaptive_Ng_acceleration_use_max_criterion,
-            "Whether of not to use the maximum relative change as criterion for the adaptive ng-acceleration")
+            "Whether of not to use the maximum relative change as "
+            "criterion for the adaptive ng-acceleration")
         .def_readwrite("Ng_acceleration_remove_N_its", &Parameters::Ng_acceleration_remove_N_its,
             "Number of iterations to ignore when using ng-acceleration")
         .def_readwrite("adaptive_Ng_acceleration_min_order", &Parameters::adaptive_Ng_acceleration_min_order,
-            "Minimal order of ng acceleration when using adaptive Ng acceleration. Has to be larger than 1.")
+            "Minimal order of ng acceleration when using adaptive Ng "
+            "acceleration. Has to be larger than 1.")
         // setters
         .def("set_model_name", &Parameters::set_model_name, "Set model name.")
         .def("set_dimension", &Parameters::set_dimension, "Set spatial dimension of the model.")
@@ -263,8 +295,11 @@ PYBIND11_MODULE(core, module) {
         .def("set_hnrays", &Parameters::set_hnrays, "Set the half of the number of rays.")
         .def("set_nboundary", &Parameters::set_nboundary, "Set number of boundary points.")
         .def("set_nfreqs", &Parameters::set_nfreqs,
-            "Set number of frequency bins.") // TODO: phase this out, as this is a) not essential to model setup and b)
-                                             // dangerous to play around with (segfaults if wrong value is set)
+            "Set number of frequency bins.") // TODO: phase this out, as this is
+                                             // a) not essential to model setup
+                                             // and b) dangerous to play around
+                                             // with (segfaults if wrong value is
+                                             // set)
         .def("set_nspecs", &Parameters::set_nspecs, "Set number of species.")
         .def("set_nlspecs", &Parameters::set_nlspecs, "Set number of line producing species.")
         .def("set_nlines", &Parameters::set_nlines, "Set number of lines.")
@@ -300,8 +335,9 @@ PYBIND11_MODULE(core, module) {
         .def_readonly("points", &Geometry::points, "Points object.")
         .def_readonly("rays", &Geometry::rays, "Rays object.")
         .def_readonly("boundary", &Geometry::boundary, "Boundary object")
-        .def_readonly(
-            "lengths", &Geometry::lengths, "Array containing the lengths of the rays for each direction and point.")
+        .def_readonly("lengths", &Geometry::lengths,
+            "Array containing the lengths of the rays for each "
+            "direction and point.")
         // io
         .def("read", &Geometry::read, "Read object from file.")
         .def("write", &Geometry::write, "Write object to file.");
@@ -311,7 +347,8 @@ PYBIND11_MODULE(core, module) {
         // attributes
         .def_readwrite("position", &Points::position, "Array with position vectors of the points.")
         .def_readwrite("velocity", &Points::velocity,
-            "Array with velocity vectors of the points (as a fraction of the speed of light).")
+            "Array with velocity vectors of the points (as a fraction "
+            "of the speed of light).")
         .def_readwrite("neighbors", &Points::neighbors, "Linearised array of neighbours of each point.")
         .def_readwrite("n_neighbors", &Points::n_neighbors, "Number of neighbours of each point.")
         .def_readonly("cum_n_neighbors", &Points::cum_n_neighbors, "Cumulative number of neighbours of each point.")
@@ -324,8 +361,9 @@ PYBIND11_MODULE(core, module) {
         // attributes
         .def_readwrite("direction", &Rays::direction, "Array with direction vector of each ray.")
         .def_readonly("antipod", &Rays::antipod, "Array with the number of the antipodal ray for each ray.")
-        .def_readwrite(
-            "weight", &Rays::weight, "Array with the weights that each ray contributes in integrals over directions.")
+        .def_readwrite("weight", &Rays::weight,
+            "Array with the weights that each ray contributes in "
+            "integrals over directions.")
         // io
         .def("read", &Rays::read, "Read object from file.")
         .def("write", &Rays::write, "Write object to file.");
@@ -343,7 +381,8 @@ PYBIND11_MODULE(core, module) {
         .def_readwrite("boundary2point", &Boundary::boundary2point, "Array with point index for each boundary point.")
         .def_readonly("point2boundary", &Boundary::point2boundary, "Array with boundary index for each point.")
         .def_readwrite("boundary_temperature", &Boundary::boundary_temperature,
-            "Array with radiative temperature for each boundary point (only relevant for thermal boundary conditions).")
+            "Array with radiative temperature for each boundary point "
+            "(only relevant for thermal boundary conditions).")
         // functions
         .def("set_boundary_condition", &Boundary::set_boundary_condition, "Setter for the boundary condition.")
         .def("get_boundary_condition", &Boundary::get_boundary_condition, "Getter for the boundary condition.")
@@ -415,8 +454,8 @@ PYBIND11_MODULE(core, module) {
         // attributes
         .def_readonly("linedata", &LineProducingSpecies::linedata, "Linedata object.")
         .def_readonly("quadrature", &LineProducingSpecies::quadrature, "Quadrature object.")
-        .def_readonly(
-            "Lambda", &LineProducingSpecies::lambda, "Lambda object") // "lambda" is invalid in Python, use "Lambda"
+        .def_readonly("Lambda", &LineProducingSpecies::lambda,
+            "Lambda object") // "lambda" is invalid in Python, use "Lambda"
         .def_readwrite("Jeff", &LineProducingSpecies::Jeff, "Array with effective mean intensities in the lines.")
         .def_readwrite("Jlin", &LineProducingSpecies::Jlin)
         .def_readonly("Jdif", &LineProducingSpecies::Jdif)
@@ -435,8 +474,8 @@ PYBIND11_MODULE(core, module) {
         .def_readwrite("nr_line", &LineProducingSpecies::nr_line)
         .def_readwrite("population", &LineProducingSpecies::population, "Array with level populations for each point.")
         .def_readwrite("population_tot", &LineProducingSpecies::population_tot,
-            "Array with the sum of all level populations at each point. (Should be equal to the abundance of the "
-            "species.)")
+            "Array with the sum of all level populations at each point. (Should "
+            "be equal to the abundance of the species.)")
         .def_readonly("population_prev1", &LineProducingSpecies::population_prev1)
         .def_readonly("population_prev2", &LineProducingSpecies::population_prev2)
         .def_readonly("population_prev3", &LineProducingSpecies::population_prev3)
@@ -502,7 +541,8 @@ PYBIND11_MODULE(core, module) {
         .def_readwrite("num_col_partner", &CollisionPartner::num_col_partner,
             "Number of the species corresponding to the collision partner.")
         .def_readwrite("orth_or_para_H2", &CollisionPartner::orth_or_para_H2,
-            "In case the collision partner is H2, this indicates whether it is ortho (o) or para (p).")
+            "In case the collision partner is H2, this indicates "
+            "whether it is ortho (o) or para (p).")
         .def_readwrite("ntmp", &CollisionPartner::ntmp, "Number of temperatures at which data is given.")
         .def_readwrite("ncol", &CollisionPartner::ncol, "Number of collisional transitions.")
         .def_readwrite("icol", &CollisionPartner::icol, "Array with upper levels of the collisional transitions.")
@@ -520,12 +560,18 @@ PYBIND11_MODULE(core, module) {
     py::class_<Radiation>(module, "Radiation", "Class containing the radiation field.")
         // attributes
         .def_readonly("frequencies", &Radiation::frequencies, "Frequencies object.")
-        .def_readonly("I", &Radiation::I, "Array containing the intensity for each ray, point, and frequency bin.")
+        .def_readonly("I", &Radiation::I,
+            "Array containing the intensity for each ray, point, and "
+            "frequency bin.")
         .def_readonly("u", &Radiation::u,
-            "Array containing the mean intensity up and down a ray for each ray pair, point, and frequency bin.")
+            "Array containing the mean intensity up and down a ray for "
+            "each ray pair, point, and frequency bin.")
         .def_readonly("v", &Radiation::v,
-            "Array containing the flux up and down a ray for each ray pair, point, and frequency bin.")
-        .def_readonly("J", &Radiation::J, "Array containing the mean intensity for each point and frequency bin.")
+            "Array containing the flux up and down a ray for each ray "
+            "pair, point, and frequency bin.")
+        .def_readonly("J", &Radiation::J,
+            "Array containing the mean intensity for each point and "
+            "frequency bin.")
         // functions
         .def("read", &Radiation::read, "Read object from file.")
         .def("write", &Radiation::write, "Write object to file.");
@@ -544,7 +590,8 @@ PYBIND11_MODULE(core, module) {
         .def_buffer([](Vector<Size>& v) -> py::buffer_info {
             return py::buffer_info(v.vec.data(),       // Pointer to buffer
                 sizeof(Size),                          // Size of one element
-                py::format_descriptor<Size>::format(), // Python struct-style format descriptor
+                py::format_descriptor<Size>::format(), // Python struct-style format
+                                                       // descriptor
                 1,                                     // Number of dimensions
                 {v.vec.size()},                        // Buffer dimensions
                 {sizeof(Size)}                         // Strides (in bytes) for each index
@@ -561,7 +608,8 @@ PYBIND11_MODULE(core, module) {
         .def_buffer([](Vector<Real>& v) -> py::buffer_info {
             return py::buffer_info(v.vec.data(),       // Pointer to buffer
                 sizeof(Real),                          // Size of one element
-                py::format_descriptor<Real>::format(), // Python struct-style format descriptor
+                py::format_descriptor<Real>::format(), // Python struct-style format
+                                                       // descriptor
                 1,                                     // Number of dimensions
                 {v.vec.size()},                        // Buffer dimensions
                 {sizeof(Real)}                         // Strides (in bytes) for each index
@@ -578,14 +626,16 @@ PYBIND11_MODULE(core, module) {
         .def_buffer([](Vector3D& v) -> py::buffer_info {
             return py::buffer_info(&v.data[0],         // Pointer to buffer
                 sizeof(Real),                          // Size of one element
-                py::format_descriptor<Real>::format(), // Python struct-style format descriptor
+                py::format_descriptor<Real>::format(), // Python struct-style format
+                                                       // descriptor
                 1,                                     // Number of dimensions
                 {3},                                   // Buffer dimensions
                 {sizeof(Real)}                         // Strides (in bytes) for each index
             );
         })
-        // functions TODO IMPLEMENT when necessary (for now, no Vector3D is expected* to be set by the user). *We might
-        // in the future try to ask for a direction in '(numpy vector to) Vector3D' format .def ("set",
+        // functions TODO IMPLEMENT when necessary (for now, no Vector3D is
+        // expected* to be set by the user). *We might in the future try to ask
+        // for a direction in '(numpy vector to) Vector3D' format .def ("set",
         // &Vector3D<Real>::set_1D_array) constructor
         .def(py::init());
 
@@ -595,7 +645,8 @@ PYBIND11_MODULE(core, module) {
         .def_buffer([](Matrix<Real>& m) -> py::buffer_info {
             return py::buffer_info(m.vec.data(),                        // Pointer to buffer
                 sizeof(Real),                                           // Size of one element
-                py::format_descriptor<Real>::format(),                  // Python struct-style format descriptor
+                py::format_descriptor<Real>::format(),                  // Python struct-style format
+                                                                        // descriptor
                 2,                                                      // Number of dimensions
                 py::detail::any_container<ssize_t>({m.nrows, m.ncols}), // Buffer dimensions
                 py::detail::any_container<ssize_t>(
@@ -614,10 +665,11 @@ PYBIND11_MODULE(core, module) {
     py::class_<Tensor<Real>, Vector<Real>>(module, "TReal", py::buffer_protocol())
         // buffer
         .def_buffer([](Tensor<Real>& t) -> py::buffer_info {
-            return py::buffer_info(t.vec.data(),       // Pointer to buffer
-                sizeof(Real),                          // Size of one element
-                py::format_descriptor<Real>::format(), // Python struct-style format descriptor
-                3,                                     // Number of dimensions
+            return py::buffer_info(t.vec.data(),                                 // Pointer to buffer
+                sizeof(Real),                                                    // Size of one element
+                py::format_descriptor<Real>::format(),                           // Python struct-style format
+                                                                                 // descriptor
+                3,                                                               // Number of dimensions
                 py::detail::any_container<ssize_t>({t.nrows, t.ncols, t.depth}), // Buffer dimensions
                 py::detail::any_container<ssize_t>({sizeof(Real) * t.ncols * t.depth, sizeof(Real) * t.depth,
                     sizeof(Real)}) // Strides (in bytes) for each index
@@ -636,10 +688,11 @@ PYBIND11_MODULE(core, module) {
     py::class_<Vector<Vector3D>>(module, "VVector3D", py::buffer_protocol())
         // buffer
         .def_buffer([](Vector<Vector3D>& v) -> py::buffer_info {
-            return py::buffer_info(v.vec.data(),         // Pointer to buffer
-                sizeof(double),                          // Size of one element
-                py::format_descriptor<double>::format(), // Python struct-style format descriptor
-                2,                                       // Number of dimensions
+            return py::buffer_info(v.vec.data(),                                         // Pointer to buffer
+                sizeof(double),                                                          // Size of one element
+                py::format_descriptor<double>::format(),                                 // Python struct-style
+                                                                                         // format descriptor
+                2,                                                                       // Number of dimensions
                 py::detail::any_container<ssize_t>({(ssize_t)v.vec.size(), (ssize_t)3}), // Buffer dimensions
                 py::detail::any_container<ssize_t>(
                     {sizeof(double) * 3, sizeof(double)}) // Strides (in bytes) for each index
@@ -666,8 +719,9 @@ PYBIND11_MODULE(core, module) {
 //                 // if ( !convert and !py::array_t<T>::check_(src) )
 //                     // return false;
 //
-//                 // auto buf = py::array_t<Real, py::array::c_style | py::array::forcecast>::ensure(src);
-//                 auto buf = array::ensure(src);
+//                 // auto buf = py::array_t<Real, py::array::c_style |
+//                 py::array::forcecast>::ensure(src); auto buf =
+//                 array::ensure(src);
 //
 //                 if ( !buf )
 //                     return false;
@@ -682,11 +736,15 @@ PYBIND11_MODULE(core, module) {
 //
 //                 value = Vector3D (data[0], data[1], data[2]);
 //
-//                 // auto ref = reinterpret_steal<array>(eigen_ref_array<props>(value));
+//                 // auto ref =
+//                 reinterpret_steal<array>(eigen_ref_array<props>(value));
 //
-//                 // memcpy(value.vec.data(), buf.data(), shape[0]*sizeof(Vector3D));
+//                 // memcpy(value.vec.data(), buf.data(),
+//                 shape[0]*sizeof(Vector3D));
 //
-//                 // int result = detail::npy_api::get().PyArray_CopyInto_(ref.ptr(), buf.ptr());
+//                 // int result =
+//                 detail::npy_api::get().PyArray_CopyInto_(ref.ptr(),
+//                 buf.ptr());
 //
 //                 // if (result < 0)   // Copy failed!
 //                 // {
@@ -698,7 +756,8 @@ PYBIND11_MODULE(core, module) {
 //             }
 //
 //             //Conversion part 2 (C++ -> Python)
-//             static py::handle cast(const Vector3D& src, py::return_value_policy policy, py::handle parent)
+//             static py::handle cast(const Vector3D& src,
+//             py::return_value_policy policy, py::handle parent)
 //             {
 //                 std::vector<size_t> shape(1);
 //                 shape[0] = 3;
@@ -706,7 +765,8 @@ PYBIND11_MODULE(core, module) {
 //                 std::vector<size_t> strides(1);
 //                 strides[0] = sizeof(Real);
 //
-//                 py::array arr (std::move(shape), std::move(strides), &(src.data[0]));
+//                 py::array arr (std::move(shape), std::move(strides),
+//                 &(src.data[0]));
 //
 //                 return arr.release();
 //             }
@@ -744,11 +804,15 @@ PYBIND11_MODULE(core, module) {
 //
 //                 // Vector<Vector3D>* data = (Vector<Vector3D>*) buf.data();
 //
-//                 // auto ref = py::reinterpret_steal<array>(eigen_ref_array<props>(value));
+//                 // auto ref =
+//                 py::reinterpret_steal<array>(eigen_ref_array<props>(value));
 //
-//                 memcpy(&(value.vec[0].data[0]), buf.data(), shape[0]*shape[1]*sizeof(Real));
+//                 memcpy(&(value.vec[0].data[0]), buf.data(),
+//                 shape[0]*shape[1]*sizeof(Real));
 //
-//                 // int result = detail::npy_api::get().PyArray_CopyInto_(ref.ptr(), buf.ptr());
+//                 // int result =
+//                 detail::npy_api::get().PyArray_CopyInto_(ref.ptr(),
+//                 buf.ptr());
 //
 //                 // if (result < 0)   // Copy failed!
 //                 // {
@@ -760,7 +824,8 @@ PYBIND11_MODULE(core, module) {
 //             }
 //
 //             //Conversion part 2 (C++ -> Python)
-//             static py::handle cast(const Vector<Vector3D>& src, py::return_value_policy policy, py::handle parent)
+//             static py::handle cast(const Vector<Vector3D>& src,
+//             py::return_value_policy policy, py::handle parent)
 //             {
 //                 std::vector<size_t> shape(2);
 //                 shape[0] = src.vec.size();
@@ -770,7 +835,8 @@ PYBIND11_MODULE(core, module) {
 //                 strides[0] = sizeof(Real)*shape[1];
 //                 strides[1] = sizeof(Real);
 //
-//                 py::array arr (std::move(shape), std::move(strides), &(src.vec[0].data[0]));
+//                 py::array arr (std::move(shape), std::move(strides),
+//                 &(src.vec[0].data[0]));
 //
 //                 return arr.release();
 //             }
@@ -788,8 +854,10 @@ PYBIND11_MODULE(core, module) {
 //                 // if ( !convert and !py::array_t<T>::check_(src) )
 //                     // return false;
 //
-//                 // auto buf = py::array_t<Real, py::array::c_style | py::array::forcecast>::ensure(src);
-//                 auto buf = py::array_t<type, py::array::c_style | py::array::forcecast>::ensure(src);
+//                 // auto buf = py::array_t<Real, py::array::c_style |
+//                 py::array::forcecast>::ensure(src); auto buf =
+//                 py::array_t<type, py::array::c_style |
+//                 py::array::forcecast>::ensure(src);
 //
 //                 if ( !buf )
 //                     return false;
@@ -801,30 +869,36 @@ PYBIND11_MODULE(core, module) {
 //                 std::vector<size_t> shape(1);
 //                 shape[0] = buf.shape()[0];
 //
-//                 cout << "----------- value.data() IN  " << value.vec.data() << endl;
-//                 cout << "----------- value.dat    IN  " << value.dat        << endl;
+//                 cout << "----------- value.data() IN  " << value.vec.data()
+//                 << endl; cout << "----------- value.dat    IN  " << value.dat
+//                 << endl;
 //
 //                 value = Vector<type> (shape[0]);
 //
-//                 // std::copy (buf.data(), buf.data()+buf.size(), value.vec.data());
-//                 cout << "buf.size() = " << buf.size() << endl;
-//                 cout << "shape[0]   = " << shape[0]   << endl;
-//                 cout << "----------- value.data() IN  " << value.vec.data() << endl;
-//                 cout << "----------- value.dat    IN  " << value.dat        << endl;
+//                 // std::copy (buf.data(), buf.data()+buf.size(),
+//                 value.vec.data()); cout << "buf.size() = " << buf.size() <<
+//                 endl; cout << "shape[0]   = " << shape[0]   << endl; cout <<
+//                 "----------- value.data() IN  " << value.vec.data() << endl;
+//                 cout << "----------- value.dat    IN  " << value.dat << endl;
 //                 value.set_dat();
-//                 cout << "----------- value.data() IN  " << value.vec.data() << endl;
-//                 cout << "----------- value.dat    IN  " << value.dat        << endl;
-//                 std::copy (buf.data(), buf.data()+buf.size(), value.dat);
-//                 cout << "----------- value.data() OUT " << value.vec.data() << endl;
-//                 cout << "----------- value.dat    OUT " << value.dat        << endl;
+//                 cout << "----------- value.data() IN  " << value.vec.data()
+//                 << endl; cout << "----------- value.dat    IN  " << value.dat
+//                 << endl; std::copy (buf.data(), buf.data()+buf.size(),
+//                 value.dat); cout << "----------- value.data() OUT " <<
+//                 value.vec.data() << endl; cout << "----------- value.dat OUT
+//                 " << value.dat        << endl;
 //
-//                 // auto ref = reinterpret_steal<array>(eigen_ref_array<props>(value));
+//                 // auto ref =
+//                 reinterpret_steal<array>(eigen_ref_array<props>(value));
 //
 //
 //
-//                 // memcpy(value.vec.data(), buf.data(), shape[0]*sizeof(type));
+//                 // memcpy(value.vec.data(), buf.data(),
+//                 shape[0]*sizeof(type));
 //
-//                 // int result = detail::npy_api::get().PyArray_CopyInto_(ref.ptr(), buf.ptr());
+//                 // int result =
+//                 detail::npy_api::get().PyArray_CopyInto_(ref.ptr(),
+//                 buf.ptr());
 //
 //                 // if (result < 0)   // Copy failed!
 //                 // {
@@ -836,7 +910,8 @@ PYBIND11_MODULE(core, module) {
 //             }
 //
 //             //Conversion part 2 (C++ -> Python)
-//             static py::handle cast(const Vector<type>& src, py::return_value_policy policy, py::handle parent)
+//             static py::handle cast(const Vector<type>& src,
+//             py::return_value_policy policy, py::handle parent)
 //             {
 //                 std::vector<size_t> shape(1);
 //                 shape[0] = src.vec.size();
@@ -844,7 +919,8 @@ PYBIND11_MODULE(core, module) {
 //                 std::vector<size_t> strides(1);
 //                 strides[0] = sizeof(Real);
 //
-//                 py::array arr (std::move(shape), std::move(strides), src.dat);
+//                 py::array arr (std::move(shape), std::move(strides),
+//                 src.dat);
 //
 //                 return arr.release();
 //             }
@@ -862,8 +938,9 @@ PYBIND11_MODULE(core, module) {
 //                 // if ( !convert and !py::array_t<T>::check_(src) )
 //                     // return false;
 //
-//                 // auto buf = py::array_t<Real, py::array::c_style | py::array::forcecast>::ensure(src);
-//                 auto buf = array::ensure(src);
+//                 // auto buf = py::array_t<Real, py::array::c_style |
+//                 py::array::forcecast>::ensure(src); auto buf =
+//                 array::ensure(src);
 //
 //                 if ( !buf )
 //                     return false;
@@ -878,11 +955,15 @@ PYBIND11_MODULE(core, module) {
 //
 //                 value = Matrix<type> (shape[0], shape[1]);
 //
-//                 // auto ref = reinterpret_steal<array>(eigen_ref_array<props>(value));
+//                 // auto ref =
+//                 reinterpret_steal<array>(eigen_ref_array<props>(value));
 //
-//                 memcpy(value.vec.data(), buf.data(), shape[0]*shape[1]*sizeof(type));
+//                 memcpy(value.vec.data(), buf.data(),
+//                 shape[0]*shape[1]*sizeof(type));
 //
-//                 // int result = detail::npy_api::get().PyArray_CopyInto_(ref.ptr(), buf.ptr());
+//                 // int result =
+//                 detail::npy_api::get().PyArray_CopyInto_(ref.ptr(),
+//                 buf.ptr());
 //
 //                 // if (result < 0)   // Copy failed!
 //                 // {
@@ -894,7 +975,8 @@ PYBIND11_MODULE(core, module) {
 //             }
 //
 //             //Conversion part 2 (C++ -> Python)
-//             static py::handle cast(const Matrix<type>& src, py::return_value_policy policy, py::handle parent)
+//             static py::handle cast(const Matrix<type>& src,
+//             py::return_value_policy policy, py::handle parent)
 //             {
 //                 std::vector<size_t> shape(2);
 //                 shape[0] = src.nrows;
@@ -904,7 +986,8 @@ PYBIND11_MODULE(core, module) {
 //                 strides[0] = sizeof(Real)*shape[1];
 //                 strides[1] = sizeof(Real);
 //
-//                 py::array arr (std::move(shape), std::move(strides), src.vec.data());
+//                 py::array arr (std::move(shape), std::move(strides),
+//                 src.vec.data());
 //
 //                 return arr.release();
 //             }
