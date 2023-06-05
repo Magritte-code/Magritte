@@ -39,6 +39,7 @@ void LineProducingSpecies ::read(const Io& io, const Size l) {
     population_prev3.resize(parameters->npoints() * linedata.nlev);
     population.resize(parameters->npoints() * linedata.nlev);
     trial_population.resize(parameters->npoints() * linedata.nlev);
+    trial_population_prev.resize(parameters->npoints() * linedata.nlev);
     population_tot.resize(parameters->npoints());
 
     const string prefix_l = prefix + std::to_string(l) + "/";

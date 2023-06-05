@@ -84,7 +84,7 @@ struct Parameters {
     bool use_adaptive_Ng_acceleration = true;    // whether to use an adaptive version of Ng
                                                  // acceleration; only relevant if
                                                  // use_Ng_acceleration = true
-    Size Ng_acceleration_mem_limit = 6;          // determines how many previous iterations we
+    Size Ng_acceleration_mem_limit = 9;          // determines how many previous iterations we
                                                  // hold in memory when using adaptive
                                                  // ng-acceleration
     Size adaptive_Ng_acceleration_min_order = 2; // Minimal order of adaptive ng acceleration
@@ -93,7 +93,7 @@ struct Parameters {
         true;                              // Whether or not to use max change as
                                            // criterion for adaptive ng acceleration;
                                            // uses mean change if false
-    Size Ng_acceleration_remove_N_its = 1; // Number of iterations to throw away
+    Size Ng_acceleration_remove_N_its = 0; // Number of iterations to throw away
                                            // when using adaptive ng acceleration
 
     /// Approximations for summing over lines; by default,

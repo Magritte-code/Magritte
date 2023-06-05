@@ -9,12 +9,13 @@ This is repeated until the level populations are converged. To change the number
 
 .. code-block:: python
 
-   parameters.Ng_acceleration_mem_limit = N #(default = 6)
+   parameters.Ng_acceleration_mem_limit = N #(default = 9)
 
 In Magritte, we make two modifications to Ng-acceleration:
 
-1. We allow the Ng-acceleration to happen earlier than every N steps, if the relative change in level populations caused by the Ng-acceleration step
-would be less than the relative change when comparing the current level populations with the level populations of the previous iteration. In our experience, this allows the first Ng-acceleration step to happen earlier.
+1. We allow the Ng-acceleration to happen earlier than every N steps, if the relative change in level populations predicted by the Ng-acceleration steps
+would be less than the relative change when comparing the current level populations with the level populations of the previous iteration.
+In our experience, this prevents the algorithm from wasting time by computing too much NLTE iterations without doing a Ng-acceleration step.
 To disable this behavior, one can call
 
 .. code-block:: python
@@ -22,12 +23,12 @@ To disable this behavior, one can call
    parameters.use_adaptive_Ng_acceleration = False #(default = True)
 
 2. We can allow the Ng-acceleration to ignore the first iteration (and the first iteration after each Ng-acceleration step) when computing the extrapolation.
-As Ng-acceleration implicitly assumes some kind of linearity for the convergence for the level populations, pruning the first step can improve the convergence behavior.
+As Ng-acceleration implicitly assumes some kind of linearity for the convergence for the level populations, pruning the first step can impact the convergence behavior.
 To change the number of iterations M which we exclude from Ng-acceleration, one can set
 
 .. code-block:: python
 
-   parameters.Ng_acceleration_remove_N_its = M #(default = 1)
+   parameters.Ng_acceleration_remove_N_its = M #(default = 0)
 
 
 .. note::
@@ -35,10 +36,10 @@ To change the number of iterations M which we exclude from Ng-acceleration, one 
    These settings have been obtained by figuring out which options result in the fastest convergence for the optically thick Van Zadelhoff (2002) benchmarks.
    See the tables below for a more informed decision on how these parameters might influence the computation time.
 
-.. figure:: ../_static/ng_accel_convergence_iterations_1a.png
+.. figure:: ../_static/ng_accel_convergence_iterations_1a_new.png
 
    Amount of iterations required for convergence for the Van Zadelhoff 1a model.
 
-.. figure:: ../_static/ng_accel_convergence_iterations_1b.png
+.. figure:: ../_static/ng_accel_convergence_iterations_1b_new.png
 
    Amount of iterations required for convergence for the Van Zadelhoff 1b model.
