@@ -41,22 +41,26 @@ struct LineProducingSpecies {
     double relative_change_max;    ///< maximum relative change
     double fraction_not_converged; ///< fraction of levels that is not converged
 
-    VectorXr population;  ///< level population (most recent)
+    // For ng-acceleration purposes, the level populations must be stored as accurately as possible
+
+    VectorXld population; ///< level population (most recent)
     Real1 population_tot; ///< total level population (sum over levels)
 
-    vector<VectorXr> populations; ///< list of populations in previous iterations
-    vector<VectorXr> residuals;   ///< list of residuals in the populations
+    vector<VectorXld> populations; ///< list of populations in previous iterations
+    vector<VectorXld> residuals;   ///< list of residuals in the populations
 
-    VectorXr trial_population; ///< level population generated in adaptive ng
-                               ///< acceleration trial
+    VectorXld trial_population;      ///< level population generated in adaptive ng
+                                     ///< acceleration trial
+    VectorXld trial_population_prev; ///< level population generated in the previous adaptive ng
+                                     ///< acceleration trial
 
-    VectorXr population_prev1; ///< level populations 1 iteration  back
-    VectorXr population_prev2; ///< level populations 2 iterations back
-    VectorXr population_prev3; ///< level populations 3 iterations back
+    VectorXld population_prev1; ///< level populations 1 iteration  back
+    VectorXld population_prev2; ///< level populations 2 iterations back
+    VectorXld population_prev3; ///< level populations 3 iterations back
 
-    SparseMatrix<Real> RT;
-    SparseMatrix<Real> LambdaTest;
-    SparseMatrix<Real> LambdaStar;
+    SparseMatrix<long double> RT;
+    SparseMatrix<long double> LambdaTest;
+    SparseMatrix<long double> LambdaStar;
 
     LineProducingSpecies(std::shared_ptr<Parameters> params) :
         parameters(params), quadrature(params), lambda(params){};
@@ -73,7 +77,6 @@ struct LineProducingSpecies {
     inline Real get_opacity(const Size p, const Size k) const;
 
     inline void check_for_convergence(const Real pop_prec);
-
     inline void check_for_convergence_trial(const Real pop_prec);
 
     inline void update_using_LTE(const Double2& abundance, const Vector<Real>& temperature);

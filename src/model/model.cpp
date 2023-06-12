@@ -521,7 +521,7 @@ std::tuple<bool, Size> Model ::ng_acceleration_criterion<Adaptive>(
         return std::make_tuple(false, 0);
     }
 
-    // Computing the current non-converged fraction to decide whether or not to
+    // Computing the current relative change to decide whether or not to
     // use an early Ng-acceleration step
     double sum_fnc_curr = 0.0;
     for (int l = 0; l < parameters->nlspecs(); l++) {
@@ -537,8 +537,8 @@ std::tuple<bool, Size> Model ::ng_acceleration_criterion<Adaptive>(
     lines.trial_iteration_using_adaptive_Ng_acceleration(
         parameters->pop_prec, nb_prev_iterations - skip_N_its);
 
-    // Computing the Ng-accelerated non-converged fraction to decide whether or
-    // not to use an early Ng-acceleration step
+    // Computing the Ng-accelerated relative change to decide whether or
+    // not to use an early Ng-acceleration step; compares against previous acceleration step
     double sum_fnc_ng = 0.0;
     for (int l = 0; l < parameters->nlspecs(); l++) {
         const double fnc = parameters->adaptive_Ng_acceleration_use_max_criterion
@@ -547,9 +547,9 @@ std::tuple<bool, Size> Model ::ng_acceleration_criterion<Adaptive>(
         sum_fnc_ng += fnc;
     }
 
-    // std::cout<<"sum_fnc_ng: "<<sum_fnc_ng<<" sum_fnc_curr:
-    // "<<sum_fnc_curr<<std::endl;
-    if (sum_fnc_ng < sum_fnc_curr
+    // If the acceleration steps start to converge slower than default iterations, it is to to
+    // finally apply ng-accelerations
+    if ((sum_fnc_ng < sum_fnc_curr)
         || prior_normal_iterations == (parameters->Ng_acceleration_mem_limit + skip_N_its)) {
         return std::make_tuple(true, nb_prev_iterations - skip_N_its);
     }
@@ -583,11 +583,6 @@ int Model ::compute_level_populations(const bool use_Ng_acceleration, const long
 
     // Iterate as long as some levels are not converged
     while (some_not_converged && (iteration < max_niterations)) {
-        // logger.write ("Starting iteration ", iteration);
-        cout << "Starting iteration " << iteration << endl;
-
-        // Start assuming convergence
-        some_not_converged = false;
 
         std::tuple<bool, Size> tuple_ng_decision;
         if (parameters->use_adaptive_Ng_acceleration) {
@@ -610,6 +605,13 @@ int Model ::compute_level_populations(const bool use_Ng_acceleration, const long
         } else {
             iteration++; // only counting default iterations, as the ng-accelerated
                          // iterations are orders of magnitude faster.
+
+            // Start assuming convergence
+            some_not_converged = false;
+
+            // logger.write ("Starting iteration ", iteration);
+            cout << "Starting iteration " << iteration << endl;
+
             // logger.write ("Computing the radiation field...");
             cout << "Computing the radiation field..." << endl;
 
@@ -632,21 +634,21 @@ int Model ::compute_level_populations(const bool use_Ng_acceleration, const long
             timer_2.print_total();
 
             iteration_normal++;
-        }
 
-        for (int l = 0; l < parameters->nlspecs(); l++) {
-            error_mean.push_back(lines.lineProducingSpecies[l].relative_change_mean);
-            error_max.push_back(lines.lineProducingSpecies[l].relative_change_max);
+            for (int l = 0; l < parameters->nlspecs(); l++) {
+                error_mean.push_back(lines.lineProducingSpecies[l].relative_change_mean);
+                error_max.push_back(lines.lineProducingSpecies[l].relative_change_max);
 
-            if (lines.lineProducingSpecies[l].fraction_not_converged
-                > 1.0 - parameters->convergence_fraction) {
-                some_not_converged = true;
+                if (lines.lineProducingSpecies[l].fraction_not_converged
+                    > 1.0 - parameters->convergence_fraction) {
+                    some_not_converged = true;
+                }
+
+                const double fnc = lines.lineProducingSpecies[l].fraction_not_converged;
+
+                // logger.write ("Already ", 100 * (1.0 - fnc), " % converged!");
+                cout << "Already " << 100.0 * (1.0 - fnc) << " % converged!" << endl;
             }
-
-            const double fnc = lines.lineProducingSpecies[l].fraction_not_converged;
-
-            // logger.write ("Already ", 100 * (1.0 - fnc), " % converged!");
-            cout << "Already " << 100.0 * (1.0 - fnc) << " % converged!" << endl;
         }
     } // end of while loop of iterations
 
@@ -683,11 +685,6 @@ int Model ::compute_level_populations_sparse(
 
     // Iterate as long as some levels are not converged
     while (some_not_converged && (iteration < max_niterations)) {
-        // logger.write ("Starting iteration ", iteration);
-        cout << "Starting iteration " << iteration << endl;
-
-        // Start assuming convergence
-        some_not_converged = false;
 
         std::tuple<bool, Size> tuple_ng_decision;
         if (parameters->use_adaptive_Ng_acceleration) {
@@ -710,6 +707,13 @@ int Model ::compute_level_populations_sparse(
         } else {
             iteration++; // only counting default iterations, as the ng-accelerated
                          // iterations are orders of magnitude faster.
+
+            // Start assuming convergence
+            some_not_converged = false;
+
+            // logger.write ("Starting iteration ", iteration);
+            cout << "Starting iteration " << iteration << endl;
+
             // logger.write ("Computing the radiation field...");
             cout << "Computing the radiation field..." << endl;
 
@@ -732,21 +736,21 @@ int Model ::compute_level_populations_sparse(
             timer_2.print_total();
 
             iteration_normal++;
-        }
 
-        for (int l = 0; l < parameters->nlspecs(); l++) {
-            error_mean.push_back(lines.lineProducingSpecies[l].relative_change_mean);
-            error_max.push_back(lines.lineProducingSpecies[l].relative_change_max);
+            for (int l = 0; l < parameters->nlspecs(); l++) {
+                error_mean.push_back(lines.lineProducingSpecies[l].relative_change_mean);
+                error_max.push_back(lines.lineProducingSpecies[l].relative_change_max);
 
-            if (lines.lineProducingSpecies[l].fraction_not_converged
-                > 1.0 - parameters->convergence_fraction) {
-                some_not_converged = true;
+                if (lines.lineProducingSpecies[l].fraction_not_converged
+                    > 1.0 - parameters->convergence_fraction) {
+                    some_not_converged = true;
+                }
+
+                const double fnc = lines.lineProducingSpecies[l].fraction_not_converged;
+
+                // logger.write ("Already ", 100 * (1.0 - fnc), " % converged!");
+                cout << "Already " << 100.0 * (1.0 - fnc) << " % converged!" << endl;
             }
-
-            const double fnc = lines.lineProducingSpecies[l].fraction_not_converged;
-
-            // logger.write ("Already ", 100 * (1.0 - fnc), " % converged!");
-            cout << "Already " << 100.0 * (1.0 - fnc) << " % converged!" << endl;
         }
     } // end of while loop of iterations
 
@@ -783,13 +787,6 @@ int Model ::compute_level_populations_shortchar(
 
     // Iterate as long as some levels are not converged
     while (some_not_converged && (iteration < max_niterations)) {
-        iteration++;
-
-        // logger.write ("Starting iteration ", iteration);
-        cout << "Starting iteration " << iteration << endl;
-
-        // Start assuming convergence
-        some_not_converged = false;
 
         std::tuple<bool, Size> tuple_ng_decision;
         if (parameters->use_adaptive_Ng_acceleration) {
@@ -812,6 +809,13 @@ int Model ::compute_level_populations_shortchar(
         } else {
             iteration++; // only counting default iterations, as the ng-accelerated
                          // iterations are orders of magnitude faster.
+
+            // Start assuming convergence
+            some_not_converged = false;
+
+            // logger.write ("Starting iteration ", iteration);
+            cout << "Starting iteration " << iteration << endl;
+
             // logger.write ("Computing the radiation field...");
             cout << "Computing the radiation field..." << endl;
 
@@ -834,21 +838,21 @@ int Model ::compute_level_populations_shortchar(
             timer_2.print_total();
 
             iteration_normal++;
-        }
 
-        for (int l = 0; l < parameters->nlspecs(); l++) {
-            error_mean.push_back(lines.lineProducingSpecies[l].relative_change_mean);
-            error_max.push_back(lines.lineProducingSpecies[l].relative_change_max);
+            for (int l = 0; l < parameters->nlspecs(); l++) {
+                error_mean.push_back(lines.lineProducingSpecies[l].relative_change_mean);
+                error_max.push_back(lines.lineProducingSpecies[l].relative_change_max);
 
-            if (lines.lineProducingSpecies[l].fraction_not_converged
-                > 1.0 - parameters->convergence_fraction) {
-                some_not_converged = true;
+                if (lines.lineProducingSpecies[l].fraction_not_converged
+                    > 1.0 - parameters->convergence_fraction) {
+                    some_not_converged = true;
+                }
+
+                const double fnc = lines.lineProducingSpecies[l].fraction_not_converged;
+
+                // logger.write ("Already ", 100 * (1.0 - fnc), " % converged!");
+                cout << "Already " << 100.0 * (1.0 - fnc) << " % converged!" << endl;
             }
-
-            const double fnc = lines.lineProducingSpecies[l].fraction_not_converged;
-
-            // logger.write ("Already ", 100 * (1.0 - fnc), " % converged!");
-            cout << "Already " << 100.0 * (1.0 - fnc) << " % converged!" << endl;
         }
     } // end of while loop of iterations
 

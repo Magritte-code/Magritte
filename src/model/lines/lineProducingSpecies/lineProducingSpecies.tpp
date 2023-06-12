@@ -110,7 +110,7 @@ inline void LineProducingSpecies ::check_for_convergence(const Real pop_prec) {
     relative_change_max    = rcmax;
 }
 
-/// This function check whether the trial level populations have converged,
+/// This function checks whether the trial level populations have converged,
 /// using the specified precision
 inline void LineProducingSpecies ::check_for_convergence_trial(const Real pop_prec) {
     const Real weight = 1.0 / (parameters->npoints() * linedata.nlev);
@@ -124,25 +124,25 @@ inline void LineProducingSpecies ::check_for_convergence_trial(const Real pop_pr
         for (Size i = 0; i < linedata.nlev; i++) {
             const Size ind = index(p, i);
 
-            if (population(ind) > parameters->min_rel_pop_for_convergence * population_tot[p]) {
-                // Real relative_change = 2.0;
-                //
-                // relative_change *= std::abs(trial_population (ind) - population
-                // (ind)); relative_change /= (trial_population (ind) + population
-                // (ind));
-                // minor computed negative level populations might result in negative
-                // values for this
-                const Real relative_change = 2.0
-                                           * std::abs((trial_population(ind) - population(ind))
-                                                      / (trial_population(ind) + population(ind)));
+            // if (population(ind) > parameters->min_rel_pop_for_convergence * population_tot[p]) {
+            // Real relative_change = 2.0;
+            //
+            // relative_change *= std::abs(trial_population (ind) - trial_population_prev
+            // (ind)); relative_change /= (trial_population (ind) + trial_population_prev
+            // (ind)); minor computed negative level populations might result in negative values
+            // for this
+            const Real relative_change =
+                2.0
+                * std::abs((trial_population(ind) - trial_population_prev(ind))
+                           / (trial_population(ind) + trial_population_prev(ind)));
 
-                if (relative_change > pop_prec) {
-                    fnc += weight;
-                }
-
-                rcm += (weight * relative_change);
-                rcmax = std::max(relative_change, rcmax);
+            if (relative_change > pop_prec) {
+                fnc += weight;
             }
+
+            rcm += (weight * relative_change);
+            rcmax = std::max(relative_change, rcmax);
+            // }
         }
     }
 
@@ -156,11 +156,11 @@ inline void LineProducingSpecies ::check_for_convergence_trial(const Real pop_pr
 ///    by C.P. Dullemond which are based on Olson, Auer and Buchler (1985).
 ///////////////////////////////////////////////////////////////////////////
 void LineProducingSpecies ::update_using_Ng_acceleration() {
-    VectorXr Wt(parameters->npoints() * linedata.nlev);
+    VectorXld Wt(parameters->npoints() * linedata.nlev);
 
-    VectorXr Q1 = population - 2.0 * population_prev1 + population_prev2;
-    VectorXr Q2 = population - population_prev1 - population_prev2 + population_prev3;
-    VectorXr Q3 = population - population_prev1;
+    VectorXld Q1 = population - 2.0 * population_prev1 + population_prev2;
+    VectorXld Q2 = population - population_prev1 - population_prev2 + population_prev3;
+    VectorXld Q3 = population - population_prev1;
 
     // OMP_PARALLEL_FOR (ind, ncells*linedata.nlev)
     //{
@@ -181,21 +181,21 @@ void LineProducingSpecies ::update_using_Ng_acceleration() {
     // const double C1 = Q1.dot (Wt.asDiagonal()*Q3);
     // const double C2 = Q2.dot (Wt.asDiagonal()*Q3);
 
-    const Real A1 = Q1.dot(Q1);
-    const Real A2 = Q1.dot(Q2);
-    const Real B2 = Q2.dot(Q2);
-    const Real C1 = Q1.dot(Q3);
-    const Real C2 = Q2.dot(Q3);
+    const long double A1 = Q1.dot(Q1);
+    const long double A2 = Q1.dot(Q2);
+    const long double B2 = Q2.dot(Q2);
+    const long double C1 = Q1.dot(Q3);
+    const long double C2 = Q2.dot(Q3);
 
-    const Real B1 = A2;
+    const long double B1 = A2;
 
-    const Real denominator = A1 * B2 - A2 * B1;
+    const long double denominator = A1 * B2 - A2 * B1;
 
     if (denominator != 0.0) {
-        const VectorXr pop_tmp = population;
+        const VectorXld pop_tmp = population;
 
-        const Real a = (C1 * B2 - C2 * B1) / denominator;
-        const Real b = (C2 * A1 - C1 * A2) / denominator;
+        const long double a = (C1 * B2 - C2 * B1) / denominator;
+        const long double b = (C2 * A1 - C1 * A2) / denominator;
 
         population = (1.0 - a - b) * population + a * population_prev1 + b * population_prev2;
 
@@ -235,7 +235,7 @@ void LineProducingSpecies ::update_using_acceleration(const Size order) {
     const Size popsize = populations.size();
     const Size ressize = residuals.size();
 
-    MatrixXr RTR(order, order);
+    MatrixXld RTR(order, order);
 
     for (Size i = 0; i < order; i++) {
         for (Size j = 0; j < order; j++) {
@@ -243,11 +243,11 @@ void LineProducingSpecies ::update_using_acceleration(const Size order) {
         }
     }
 
-    VectorXr ones = VectorXr::Constant(order, 1.0);
-    VectorXr coef = RTR.colPivHouseholderQr().solve(ones);
+    VectorXld ones = VectorXld::Constant(order, 1.0);
+    VectorXld coef = RTR.colPivHouseholderQr().solve(ones);
     coef /= coef.sum();
 
-    population = VectorXr::Zero(population.size());
+    population = VectorXld::Zero(population.size());
 
     for (Size i = 0; i < order; i++) {
         population += populations[popsize - 1 - i] * coef[order - 1 - i];
@@ -269,6 +269,9 @@ void LineProducingSpecies ::update_using_acceleration_trial(const Size order) {
     residuals.push_back(population - populations.back());
     populations.push_back(population);
 
+    trial_population_prev = trial_population; // stores the previous ng acceleration estimate, used
+                                              // for the adaptive ng acceleration
+
     // inequality due to residuals needing to be computed from populations, but
     // populations may be computed without computing residuals
     if (populations.size() < (residuals.size() + 1)) {
@@ -287,7 +290,8 @@ void LineProducingSpecies ::update_using_acceleration_trial(const Size order) {
     const Size popsize = populations.size();
     const Size ressize = residuals.size();
 
-    MatrixXr RTR(order, order);
+    // MatrixXr RTR(order, order);
+    MatrixXld RTR(order, order);
 
     for (Size i = 0; i < order; i++) {
         for (Size j = 0; j < order; j++) {
@@ -295,11 +299,11 @@ void LineProducingSpecies ::update_using_acceleration_trial(const Size order) {
         }
     }
 
-    VectorXr ones = VectorXr::Constant(order, 1.0);
-    VectorXr coef = RTR.colPivHouseholderQr().solve(ones);
+    VectorXld ones = VectorXld::Constant(order, 1.0);
+    VectorXld coef = RTR.colPivHouseholderQr().solve(ones);
     coef /= coef.sum();
 
-    trial_population = VectorXr::Zero(population.size());
+    trial_population = VectorXld::Zero(population.size());
 
     for (Size i = 0; i < order; i++) {
         trial_population += populations[popsize - 1 - i] * coef[order - 1 - i];
@@ -334,9 +338,9 @@ inline void LineProducingSpecies ::update_using_statistical_equilibrium(
 
     //    SparseMatrix<double> RT (ncells*linedata.nlev, ncells*linedata.nlev);
 
-    VectorXr y = VectorXr::Zero(parameters->npoints() * linedata.nlev);
+    VectorXld y = VectorXld::Zero(parameters->npoints() * linedata.nlev);
 
-    vector<Triplet<Real, Size>> triplets;
+    vector<Triplet<long double, Size>> triplets;
     //    vector<Triplet<Real, Size>> triplets_LT;
     //    vector<Triplet<Real, Size>> triplets_LS;
 
@@ -350,8 +354,8 @@ inline void LineProducingSpecies ::update_using_statistical_equilibrium(
         // Radiative transitions
 
         for (Size k = 0; k < linedata.nrad; k++) {
-            const Real v_IJ = linedata.A[k] + linedata.Bs[k] * Jeff[p][k];
-            const Real v_JI = linedata.Ba[k] * Jeff[p][k];
+            const long double v_IJ = linedata.A[k] + linedata.Bs[k] * Jeff[p][k];
+            const long double v_JI = linedata.Ba[k] * Jeff[p][k];
 
             // const Real t_IJ = linedata.Bs[k] * Jdif[p][k];
             // const Real t_JI = linedata.Ba[k] * Jdif[p][k];
@@ -362,16 +366,16 @@ inline void LineProducingSpecies ::update_using_statistical_equilibrium(
             const Size J = index(p, linedata.jrad[k]);
 
             if (linedata.jrad[k] != linedata.nlev - 1) {
-                triplets.push_back(Triplet<Real, Size>(J, I, +v_IJ));
-                triplets.push_back(Triplet<Real, Size>(J, J, -v_JI));
+                triplets.push_back(Triplet<long double, Size>(J, I, +v_IJ));
+                triplets.push_back(Triplet<long double, Size>(J, J, -v_JI));
 
                 // triplets_LS.push_back (Triplet<Real, Size> (J, I, +t_IJ));
                 // triplets_LS.push_back (Triplet<Real, Size> (J, J, -t_JI));
             }
 
             if (linedata.irad[k] != linedata.nlev - 1) {
-                triplets.push_back(Triplet<Real, Size>(I, J, +v_JI));
-                triplets.push_back(Triplet<Real, Size>(I, I, -v_IJ));
+                triplets.push_back(Triplet<long double, Size>(I, J, +v_JI));
+                triplets.push_back(Triplet<long double, Size>(I, I, -v_IJ));
 
                 // triplets_LS.push_back (Triplet<Real, Size> (I, J, +t_JI));
                 // triplets_LS.push_back (Triplet<Real, Size> (I, I, -t_IJ));
@@ -382,8 +386,8 @@ inline void LineProducingSpecies ::update_using_statistical_equilibrium(
 
         for (Size k = 0; k < linedata.nrad; k++) {
             for (Size m = 0; m < lambda.get_size(p, k); m++) {
-                const Size nr   = lambda.get_nr(p, k, m);
-                const Real v_IJ = -lambda.get_Ls(p, k, m) * get_opacity(p, k);
+                const Size nr          = lambda.get_nr(p, k, m);
+                const long double v_IJ = -lambda.get_Ls(p, k, m) * get_opacity(p, k);
 
                 // Note: we define our transition matrix as the transpose of R in the
                 // paper.
@@ -391,12 +395,12 @@ inline void LineProducingSpecies ::update_using_statistical_equilibrium(
                 const Size J = index(p, linedata.jrad[k]);
 
                 if (linedata.jrad[k] != linedata.nlev - 1) {
-                    triplets.push_back(Triplet<Real, Size>(J, I, +v_IJ));
+                    triplets.push_back(Triplet<long double, Size>(J, I, +v_IJ));
                     // triplets_LT.push_back (Triplet<Real, Size> (J, I, +v_IJ));
                 }
 
                 if (linedata.irad[k] != linedata.nlev - 1) {
-                    triplets.push_back(Triplet<Real, Size>(I, I, -v_IJ));
+                    triplets.push_back(Triplet<long double, Size>(I, I, -v_IJ));
                     // triplets_LT.push_back (Triplet<Real, Size> (I, I, -v_IJ));
                 }
             }
@@ -412,8 +416,8 @@ inline void LineProducingSpecies ::update_using_statistical_equilibrium(
             colpar.interpolate_collision_coefficients(tmp);
 
             for (Size k = 0; k < colpar.ncol; k++) {
-                const Real v_IJ = colpar.Cd_intpld[k] * abn;
-                const Real v_JI = colpar.Ce_intpld[k] * abn;
+                const long double v_IJ = colpar.Cd_intpld[k] * abn;
+                const long double v_JI = colpar.Ce_intpld[k] * abn;
 
                 // Note: we define our transition matrix as the transpose of R in the
                 // paper.
@@ -421,13 +425,13 @@ inline void LineProducingSpecies ::update_using_statistical_equilibrium(
                 const Size J = index(p, colpar.jcol[k]);
 
                 if (colpar.jcol[k] != linedata.nlev - 1) {
-                    triplets.push_back(Triplet<Real, Size>(J, I, +v_IJ));
-                    triplets.push_back(Triplet<Real, Size>(J, J, -v_JI));
+                    triplets.push_back(Triplet<long double, Size>(J, I, +v_IJ));
+                    triplets.push_back(Triplet<long double, Size>(J, J, -v_JI));
                 }
 
                 if (colpar.icol[k] != linedata.nlev - 1) {
-                    triplets.push_back(Triplet<Real, Size>(I, J, +v_JI));
-                    triplets.push_back(Triplet<Real, Size>(I, I, -v_IJ));
+                    triplets.push_back(Triplet<long double, Size>(I, J, +v_JI));
+                    triplets.push_back(Triplet<long double, Size>(I, I, -v_IJ));
                 }
             }
         }
@@ -436,7 +440,7 @@ inline void LineProducingSpecies ::update_using_statistical_equilibrium(
             const Size I = index(p, linedata.nlev - 1);
             const Size J = index(p, i);
 
-            triplets.push_back(Triplet<Real, Size>(I, J, 1.0));
+            triplets.push_back(Triplet<long double, Size>(I, J, 1.0));
         }
 
         y[index(p, linedata.nlev - 1)] = population_tot[p];
@@ -474,7 +478,7 @@ inline void LineProducingSpecies ::update_using_statistical_equilibrium(
 
     // assert (false);
 
-    SparseLU<SparseMatrix<Real>, COLAMDOrdering<int>> solver;
+    SparseLU<SparseMatrix<long double>, COLAMDOrdering<int>> solver;
     // Eigen::SimplicialLDLT<Eigen::SparseMatrix<double>> solver;
 
     cout << "Analyzing system of rate equations..." << endl;
@@ -542,8 +546,8 @@ inline void LineProducingSpecies ::update_using_statistical_equilibrium_sparse(
     residuals.push_back(population - populations.back());
     populations.push_back(population);
 
-    MatrixXr StatEq(linedata.nlev, linedata.nlev);
-    VectorXr y = VectorXr::Zero(linedata.nlev);
+    MatrixXld StatEq(linedata.nlev, linedata.nlev);
+    VectorXld y = VectorXld::Zero(linedata.nlev);
 
     for (Size p = 0; p < parameters->npoints();
          p++) // !!! no OMP because push_back is not thread safe !!!
@@ -552,8 +556,8 @@ inline void LineProducingSpecies ::update_using_statistical_equilibrium_sparse(
 
         // Radiative transitions
         for (Size k = 0; k < linedata.nrad; k++) {
-            const Real v_IJ = linedata.A[k] + linedata.Bs[k] * Jeff[p][k];
-            const Real v_JI = linedata.Ba[k] * Jeff[p][k];
+            const long double v_IJ = linedata.A[k] + linedata.Bs[k] * Jeff[p][k];
+            const long double v_JI = linedata.Ba[k] * Jeff[p][k];
 
             // Note: we define our transition matrix as the transpose of R in the
             // paper.
@@ -569,8 +573,8 @@ inline void LineProducingSpecies ::update_using_statistical_equilibrium_sparse(
         // Approximated Lambda operator
         for (Size k = 0; k < linedata.nrad; k++) {
             for (Size m = 0; m < lambda.get_size(p, k); m++) {
-                const Size nr   = lambda.get_nr(p, k, m);
-                const Real v_IJ = -lambda.get_Ls(p, k, m) * get_opacity(p, k);
+                const Size nr          = lambda.get_nr(p, k, m);
+                const long double v_IJ = -lambda.get_Ls(p, k, m) * get_opacity(p, k);
 
                 if (nr != p) {
                     throw std::runtime_error("ERROR: non-local Approximated Lambda operator.");
@@ -595,8 +599,8 @@ inline void LineProducingSpecies ::update_using_statistical_equilibrium_sparse(
             colpar.interpolate_collision_coefficients(tmp);
 
             for (Size k = 0; k < colpar.ncol; k++) {
-                const Real v_IJ = colpar.Cd_intpld[k] * abn;
-                const Real v_JI = colpar.Ce_intpld[k] * abn;
+                const long double v_IJ = colpar.Cd_intpld[k] * abn;
+                const long double v_JI = colpar.Ce_intpld[k] * abn;
 
                 // Note: we define our transition matrix as the transpose of R in the
                 // paper.

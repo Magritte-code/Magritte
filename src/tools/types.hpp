@@ -113,6 +113,11 @@ typedef vector<VectorXr> VectorXr1;
 typedef vector<VectorXr1> VectorXr2;
 typedef vector<VectorXr2> VectorXr3;
 
+typedef Eigen::Matrix<long double, Eigen::Dynamic, 1> VectorXld;
+typedef vector<VectorXr> VectorXld1;
+typedef vector<VectorXr1> VectorXld2;
+typedef vector<VectorXr2> VectorXld3;
+
 // Vectors of Eigen::MatrixXd
 typedef vector<MatrixXd> MatrixXd1;
 typedef vector<MatrixXd1> MatrixXd2;
@@ -122,3 +127,8 @@ typedef Eigen::Matrix<Real, Eigen::Dynamic, Eigen::Dynamic> MatrixXr;
 typedef vector<MatrixXr> MatrixXr1;
 typedef vector<MatrixXr1> MatrixXr2;
 typedef vector<MatrixXr2> MatrixXr3;
+
+typedef Eigen::Matrix<long double, Eigen::Dynamic, Eigen::Dynamic> MatrixXld;
+typedef vector<MatrixXld> MatrixXld1;
+typedef vector<MatrixXld1> MatrixXld2;
+typedef vector<MatrixXld2> MatrixXld3;
