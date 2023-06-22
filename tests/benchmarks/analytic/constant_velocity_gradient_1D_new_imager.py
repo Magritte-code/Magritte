@@ -16,11 +16,11 @@ import magritte.core     as magritte
 
 
 dimension = 1
-npoints   = 100
-nrays     = 100
+npoints   = 50
+nrays     = 4
 nspecs    = 5
 nlspecs   = 1
-nquads    = 100
+nquads    = 10
 
 nH2  = 1.0E+12                 # [m^-3]
 nTT  = 1.0E+08                 # [m^-3]
@@ -38,7 +38,7 @@ def create_model ():
     Create a model file for the constant velocity gradient benchmark 1D.
     """
 
-    modelName = f'constant_velocity_gradient_1D'
+    modelName = f'constant_velocity_gradient_1D_image_new'
     modelFile = f'{moddir}{modelName}.hdf5'
     lamdaFile = f'{datdir}test.txt'
 
@@ -73,9 +73,9 @@ def create_model ():
     return #magritte.Model (modelFile)
 
 
-def run_model (nosave=False, benchindex=0, use_widgets=True):
+def run_model (nosave=False, benchindex = 1, use_widgets=True):
 
-    modelName = f'constant_velocity_gradient_1D'
+    modelName = f'constant_velocity_gradient_1D_image_new'
     modelFile = f'{moddir}{modelName}.hdf5'
     timestamp = tools.timestamp()
 
@@ -85,7 +85,7 @@ def run_model (nosave=False, benchindex=0, use_widgets=True):
     timer1.stop()
 
     #by default, benchmark uses default magritte settings for max_width_fraction; denotes when to switch over to more expensive, more accurate way of computing optical depths when encountering doppler shifts
-
+    model.parameters.max_width_fraction=0.5;
     #for controlling accuracy of optical depth computation during benchmark runs
     if (benchindex==1):
         model.parameters.max_width_fraction=0.5;#fast, but slightly inaccurate
@@ -94,10 +94,14 @@ def run_model (nosave=False, benchindex=0, use_widgets=True):
     elif (benchindex==3):
         model.parameters.max_width_fraction=0.10;#major performance hit, very accurate
 
+    fcen = model.lines.lineProducingSpecies[0].linedata.frequency[0]
+    dd = 1.0e+4 / magritte.CC
+    fmin = fcen - fcen*dd
+    fmax = fcen + fcen*dd
 
     timer2 = tools.Timer('setting model')
     timer2.start()
-    model.compute_spectral_discretisation ()
+    model.compute_spectral_discretisation (fmin, fmax)
     model.compute_inverse_line_widths     ()
     model.compute_LTE_level_populations   ()
     timer2.stop()
@@ -107,20 +111,19 @@ def run_model (nosave=False, benchindex=0, use_widgets=True):
     hnrays  = model.parameters.hnrays ()
     nfreqs  = model.parameters.nfreqs ()
 
-    timer3 = tools.Timer('shortchar 0  ')
+    ray_nr = hnrays - 1
+
+    timer3 = tools.Timer('image        ')
     timer3.start()
-    model.compute_radiation_field_shortchar_order_0 ()
+    model.compute_image_new (ray_nr, 50, 50)
     timer3.stop()
-    u_0s = np.array(model.radiation.u)
 
-    timer4 = tools.Timer('feautrier 2  ')
-    timer4.start()
-    model.compute_radiation_field_feautrier_order_2 ()
-    timer4.stop()
-    u_2f = np.array(model.radiation.u)
-
-    rs = np.array(model.geometry.points.position)[:,0]
     nu = np.array(model.radiation.frequencies.nu)[0]
+    positions = np.array(model.geometry.points.position)
+    im = np.array(model.images[-1].I,   copy=True)
+    imx = np.array(model.images[-1].ImX, copy=True)
+    imy = np.array(model.images[-1].ImY, copy=True)
+    rs = np.sqrt(np.power(imx, 2) + np.power(imy, 2))
 
     ld = model.lines.lineProducingSpecies[0].linedata
 
@@ -133,30 +136,15 @@ def run_model (nosave=False, benchindex=0, use_widgets=True):
     src = tools.lineSource     (ld, pop)[k]
     dnu = tools.dnu            (ld, k, temp, (turb/magritte.CC)**2)
 
-    r_in  = rs[ 0]
-    r_out = rs[-1]
+    r_in  = positions[0][0]
+    r_out = positions[-1][0]
 
-    def bdy (nu, r, theta):
-        if (theta < np.arcsin(r_in/r)):#inside bdy condition
-            # shift at position r is quite simple (just cos(θ)*v)
-            r_shift=np.cos(theta)*v_(r)
-            #for computing the shift at the edge, one need to compute first the closest distance to the center (of the ray); this is L=r*sin(θ)
-            #then one realizes that the sin of the angle α one needs corresponds with L/r_out (so cos(α)=√(1-sin^2(α))
-            #finally one evidently needs to multiply with the velocity at the boundary
-            r_in_shift=np.sqrt(1- ( (r/r_in)*np.abs(np.sin(theta)) )**2)*v_(r_in)
-            nu_shifted=nu* (1.0+(r_in_shift - r_shift))
-            return tools.I_CMB (nu_shifted)
-        else:#outside bdy condition
-            # shift at position r is quite simple (just cos(θ)*v)
-            r_shift=np.cos(theta)*v_(r)
-            #for computing the shift at the edge, one need to compute first the closest distance to the center (of the ray); this is L=r*sin(θ)
-            #then one realizes that the sin of the angle α one needs corresponds with L/r_out (so cos(α)=√(1-sin^2(α))
-            #finally one evidently needs to multiply with the velocity at the boundary
-            r_out_shift=np.sqrt(1- ( (r/r_out)*np.abs(np.sin(theta)) )**2)*v_(r_out)
-            nu_shifted=nu* (1.0+(r_out_shift - r_shift))
-            return tools.I_CMB (nu_shifted)
+    def bdy (nu):
+        return tools.I_CMB (nu)
 
     def z_max(r, theta):
+        if (r>=r_out):#image point outside domain
+            return 0.0
         if (theta < np.arcsin(r_in/r)):
             return r * np.cos(theta) - np.sqrt(r_in**2 - (r*np.sin(theta))**2)
         else:
@@ -166,39 +154,33 @@ def run_model (nosave=False, benchindex=0, use_widgets=True):
         l   = float (z_max(r, theta))
         arg = float ((nu - frq) / dnu)
         fct = float (vmax * nu / dnu)
-        return chi*L / (fct*dnu) * 0.5 * (sp.special.erf(-arg) + sp.special.erf(fct*l/L+arg))
+        tauup=chi*L / (fct*dnu) * 0.5 * (sp.special.erf(arg) - sp.special.erf(arg-fct*l/L))
+        taudown=chi*L / (-fct*dnu) * 0.5 * (sp.special.erf(arg) - sp.special.erf(arg+fct*l/L))
+        return tauup+taudown
 
-    def I_ (nu, r, theta):
-        return src + (bdy(nu, r, theta)-src)*np.exp(-tau(nu, r, theta))
+    def I_im (nu, r):
+        nu = nu + vmax/magritte.CC*frq
+        return src + (bdy(nu)-src)*np.exp(-tau(nu, r, 0.5*np.pi))
 
-    def v_(r):
-        return dv*(1+(r-r_in)/dx)
+    im_a = np.array([[I_im(f,r) for f in nu] for r in rs])
+    fs   = (nu-frq)/frq*magritte.CC
 
-    def u_ (nu, r, theta):
-        return 0.5 * (I_(nu, r, theta) + I_(nu, r, np.pi+theta))
+    def plot (p):
+        fig = plt.figure(dpi=150)
+        ax = fig.add_subplot(1, 1, 1)
+        ax.plot(fs, im  [p,:], marker='.')
+        ax.plot(fs, im_a[p,:])
+        ax.text(.05, .95,"(x,y)={x},{y}".format(x=imx[p], y=imy[p]), transform=ax.transAxes)
 
-    rx, ry, rz = np.array(model.geometry.rays.direction).T
-    angles     = np.arctan2(ry,rx)
-    angles     = angles[:hnrays]
-
-    us = np.array([[[u_(f,r,a) for f in nu] for r in rs] for a in angles])
-    fs = (nu-frq)/frq*magritte.CC
-
-    #hmm, do we need this widget if we are not plotting it?
-    def plot (r, p):
-        plt.figure(dpi=150)
-        plt.plot(fs, us  [r,p,:], marker='.')
-        plt.plot(fs, u_2f[r,p,:])
-
+    npix = np.size(imx)
     #during automated testing, the widgets only consume time to create
     if use_widgets:
-        widgets.interact(plot, r=(0,hnrays-1,1), p=(0,npoints-1,1))
+        widgets.interact(plot, p=(0,npix-1))#This plot the benchmark results for each pixel seperately.
 
-    error_u_0s = np.abs(tools.relative_error(us, u_0s))
-    error_u_2f = np.abs(tools.relative_error(us, u_2f))
+    error = np.abs(tools.relative_error(im, im_a))[:-1]
 
-    log_err_min = np.log10(np.min([error_u_0s, error_u_2f]))
-    log_err_max = np.log10(np.max([error_u_0s, error_u_2f]))
+    log_err_min = np.log10(np.min([error]))
+    log_err_max = np.log10(np.max([error]))
 
     bins = np.logspace(log_err_min, log_err_max, 100)
 
@@ -210,13 +192,11 @@ def run_model (nosave=False, benchindex=0, use_widgets=True):
     result += f'nrays     = {model.parameters.nrays    ()       }\n'
     result += f'nquads    = {model.parameters.nquads   ()       }\n'
     result += f'--- Accuracy ------------------------------------\n'
-    result += f'mean error in shortchar 0 = {np.mean(error_u_0s)}\n'
-    result += f'mean error in feautrier 2 = {np.mean(error_u_2f)}\n'
+    result += f'max error in imager = {np.max(error)            }\n'
     result += f'--- Timers --------------------------------------\n'
     result += f'{timer1.print()                                 }\n'
     result += f'{timer2.print()                                 }\n'
     result += f'{timer3.print()                                 }\n'
-    result += f'{timer4.print()                                 }\n'
     result += f'-------------------------------------------------\n'
 
     print(result)
@@ -227,45 +207,32 @@ def run_model (nosave=False, benchindex=0, use_widgets=True):
 
         plt.figure()
         plt.title(modelName)
-        plt.hist(error_u_0s.ravel(), bins=bins, histtype='step', label='0s')
-        plt.hist(error_u_2f.ravel(), bins=bins, histtype='step', label='2f')
+        plt.hist(error.ravel(), bins=bins, histtype='step')
         plt.xscale('log')
-        plt.legend()
         plt.savefig(f'{resdir}{modelName}_hist-{timestamp}.png', dpi=150)
 
         plt.figure()
-        plt.hist(error_u_0s.ravel(), bins=bins, histtype='step', label='0s', cumulative=True)
-        plt.hist(error_u_2f.ravel(), bins=bins, histtype='step', label='2f', cumulative=True)
+        plt.hist(error.ravel(), bins=bins, histtype='step', cumulative=True)
+        plt.hist(error.ravel(), bins=bins, histtype='step', cumulative=True)
         plt.xscale('log')
-        plt.legend()
         plt.savefig(f'{resdir}{modelName}_cumu-{timestamp}.png', dpi=150)
 
-
     FEAUTRIER_AS_EXPECTED=True
-    FIRSTORDER_AS_EXPECTED=True
     #if we are actually doing benchmarks, the accuracy will depend on how accurately we compute the optical depth
     if (benchindex==1):
-        FEAUTRIER_AS_EXPECTED=(np.mean(error_u_2f)<1e-6)
-        FIRSTORDER_AS_EXPECTED=(np.mean(error_u_0s)<1e-6)
+        FEAUTRIER_AS_EXPECTED=(np.max(error)<1.6e-5)
     elif(benchindex==2):
-        FEAUTRIER_AS_EXPECTED=(np.mean(error_u_2f)<5e-7)
-        FIRSTORDER_AS_EXPECTED=(np.mean(error_u_0s)<5e-7)
+        FEAUTRIER_AS_EXPECTED=(np.max(error)<1.2e-5)
     elif(benchindex==3):
-        FEAUTRIER_AS_EXPECTED=(np.mean(error_u_2f)<5.31e-8)
-        FIRSTORDER_AS_EXPECTED=(np.mean(error_u_0s)<5.42e-8)
+        FEAUTRIER_AS_EXPECTED=(np.max(error)<3.3e-7)
 
-    if not FIRSTORDER_AS_EXPECTED:
-        print("First order solver mean error too large: ", np.mean(error_u_0s), "bench nr: ", benchindex)
-    if not FEAUTRIER_AS_EXPECTED:
-        print("Feautrier solver mean error too large: ", np.mean(error_u_2f), "bench nr: ", benchindex)
-
-    return (FEAUTRIER_AS_EXPECTED&FIRSTORDER_AS_EXPECTED)
+    return (FEAUTRIER_AS_EXPECTED)
 
 
 def run_test (nosave=False):
 
-    create_model    ()
-    run_model (nosave)
+    create_model ()
+    run_model    (nosave)
 
     return
 
@@ -273,6 +240,5 @@ def run_test (nosave=False):
 if __name__ == '__main__':
 
     nosave = (len(sys.argv) > 1) and (sys.argv[1] == 'nosave')
-
 
     run_test (nosave)

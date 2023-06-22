@@ -1,6 +1,7 @@
 [submodule "dependencies/Paracabs"]
 	path = dependencies/Paracabs
 	url = https://github.com/Magritte-code/Paracabs
+	branch = main
 [submodule "dependencies/eigen"]
 	path = dependencies/eigen
 	url = https://gitlab.com/libeigen/eigen

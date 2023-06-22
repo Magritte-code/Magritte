@@ -40,54 +40,22 @@ def reduce_phantom():
     tmp      = np.array(model.thermodynamics.temperature.gas)
     trb      = np.array(model.thermodynamics.turbulence.vturb2)
 
-    print("Doing delaunay")
-
-    delaunay = Delaunay(position)
-
-    r_bdy = 0.99 * np.min(np.linalg.norm(position[boundary], axis=1))
-
-    boundary_reduced = mesher.boundary_sphere(radius = r_bdy)
-
-
-    print("Reducing model")
-
-
-# %%capture
-    mesher.reduce(
-        meshName  = redux_file,         # Name for reduced model
-        delaunay  = delaunay,           # Delaunay object of original mesh
-        tracer    = nCO,                # Tracer to optimise for sampling for
-        boundary  = boundary_reduced,   # Boundary of reduced mesh
-        scale_max = 1.0e+99,            # Maximum scale parameter
-        scale_min = 0.0e+00,            # Minimum scale parameter
-        # threshold = 0.21,               # Threashold rel. diff. for coarsening
-        # threshold = 0.25,               # Threashold rel. diff. for coarsening
-        threshold = 0.31,               # Threashold rel. diff. for coarsening
-        fmin      = 1.0,                # Don't allow refinenment
-        # ftarget   = 2.15                # 10^(-1/3) for approx 10x fewer points
-        # ftarget   = 3.11                # 30^(-1/3) for approx 50x fewer points
-        ftarget   = 3.68                # 50^(-1/3) for approx 50x fewer points
-        )
-
-    print("Meshing")
-
-    # %%capture
-    mesh = mesher.Mesh(f'{redux_file}.vtk')
+    positions_reduced, nb_boundary = mesher.remesh_point_cloud(position, nCO, max_depth = 12, threshold = 4e-1, hullorder = 3)
 
     print("Done meshing")
 
     npoints          = model.parameters.npoints()
-    npoints_reduced  = len(mesh.points)
+    npoints_reduced  = len(positions_reduced)
 
     print('npoints original =', npoints)
     print('npoints reduced  =', npoints_reduced)
     print('reduction factor =', npoints/npoints_reduced)
 
     # Find closest points
-    corresp_points = cKDTree(position).query(mesh.points)[1]
+    corresp_points = cKDTree(position).query(positions_reduced)[1]
 
     # Map data
-    position_reduced = position[corresp_points]
+    position_reduced = positions_reduced
     velocity_reduced = velocity[corresp_points]
     nCO_reduced      = nCO     [corresp_points]
     nH2_reduced      = nH2     [corresp_points]
@@ -128,8 +96,8 @@ def reduce_phantom():
     model.thermodynamics.temperature.gas  .set(tmp_reduced)
     model.thermodynamics.turbulence.vturb2.set(trb_reduced)
 
-    model.parameters.set_nboundary(len(mesh.boundary))
-    model.geometry.boundary.boundary2point.set(mesh.boundary)
+    model.parameters.set_nboundary(nb_boundary)
+    model.geometry.boundary.boundary2point.set(range(nb_boundary))
 
     # direction = np.array([[0,0,+1], [0,0,-1]])            # Comment out to use all directions
     # model.geometry.rays.direction.set(direction)          # Comment out to use all directions

@@ -2,6 +2,7 @@ import numpy as np
 import scipy as sp
 import healpy
 import re
+import astroquery.lamda as lamda
 
 from magritte.core import LineProducingSpecies, vLineProducingSpecies,            \
                           CollisionPartner, vCollisionPartner, CC, HH, KB, T_CMB, \
@@ -202,7 +203,7 @@ def set_uniform_rays(model, randomize=False, first_ray=np.array([1.0, 0.0, 0.0])
         direction  = healpy.pixelfunc.pix2vec(healpy.npix2nside(nrays), range(nrays))
         direction  = np.array(direction).transpose()
         if randomize:
-            direction = sp.spatial.transform.Rotation.random().apply(rays)
+            direction = sp.spatial.transform.Rotation.random().apply(direction)
 
         # Rotate such that the first ray is in the given direction
         R1 = create_rotation_matrix(direction[0])
@@ -220,7 +221,7 @@ def set_uniform_rays(model, randomize=False, first_ray=np.array([1.0, 0.0, 0.0])
     return model
 
 
-def set_rays_spherical_symmetry(model, nextra=0, uniform=True):
+def set_rays_spherical_symmetry(model, uniform=True, nextra=0, step=1):
     """
     Setter for rays in a 1D spherically symmetric model.
 
@@ -228,77 +229,109 @@ def set_rays_spherical_symmetry(model, nextra=0, uniform=True):
     ----------
     model : Magritte model object
         Magritte model object to set.
-    nextra : int
-        Number of extra rays to add.
     uniform : bool
         Whether or not to use uniformly distributed rays.
+    nextra : int
+        Number of extra rays to add.
+    step : int
+        Step size used to step through the points when shooting rays (step=1 uses all points).
 
     Returns
     -------
     out : Magritte model object
         Updated Magritte object.
     """
-
     if uniform:
+        # Treat every ray as "extra", since "extra" rays are added uniformly anyway
         nrays  = model.parameters.nrays()
         nextra = nrays//2-1
         rs     = []
     else:
-        nrays = 2*(1 + model.parameters.npoints() + nextra)
         rs    = np.array(model.geometry.points.position)[:,0]
-
-    # for i, ri in enumerate(points):
-
+        # Below we assume that rs is sorted and the last element is the largest, hence sort
+        rs = np.sort(rs)
+        R  = rs[-1]
+    
+    # Add the first ray, right through the centre, i.e. along the x-axis
     Rx = [1.0]
     Ry = [0.0]
     Rz = [0.0]
-
-    for j, rj in enumerate(rs):
-       Rx.append(ri / np.sqrt(ri**2 + rj**2))
-       Ry.append(rj / np.sqrt(ri**2 + rj**2))
-       Rz.append(0.0)
-
+    
+    # Add the other rays, such that for the outer shell each ray touches another shell
+    for ri in rs[0:-1:step]:
+        ry = ri / R
+        rx = np.sqrt(1.0 - ry**2)
+        Rx.append(rx)
+        Ry.append(ry)
+        Rz.append(0.0)
+    
+    # Determine up to which angle we already have rays
     angle_max   = np.arctan(Ry[-1] / Rx[-1])
     angle_extra = (0.5*np.pi - angle_max) / nextra
-
+    
+    # Fill the remaining angular space uniformly
     for k in range(1, nextra):
         Rx.append(np.cos(angle_max + k*angle_extra))
         Ry.append(np.sin(angle_max + k*angle_extra))
         Rz.append(0.0)
-
+    
+    # Add the last ray, orthogonal to the radial direction, i.e. along the y-axis
     Rx.append(0.0)
     Ry.append(1.0)
     Rz.append(0.0)
-
+    
+    # Determine the number of rays
+    assert len(Rx) == len(Ry)
+    assert len(Rx) == len(Rz)
+    nrays = 2*len(Rx)
+    
+    # Compute the weights for each ray
+    # \int_{half previous}^{half next} sin \theta d\theta
+    # = cos(half previous angle) - cos(half next angle)
     Wt = []
     for n in range(nrays//2):
         if   (n == 0):
             upper_x, upper_y = 0.5*(Rx[n]+Rx[n+1]), 0.5*(Ry[n]+Ry[n+1])
             lower_x, lower_y = Rx[ 0], Ry[ 0]
-        elif (n == nrays/2-1):
+        elif (n == nrays//2-1):
             upper_x, upper_y = Rx[-1], Ry[-1]
             lower_x, lower_y = 0.5*(Rx[n]+Rx[n-1]), 0.5*(Ry[n]+Ry[n-1])
         else:
             upper_x, upper_y = 0.5*(Rx[n]+Rx[n+1]), 0.5*(Ry[n]+Ry[n+1])
             lower_x, lower_y = 0.5*(Rx[n]+Rx[n-1]), 0.5*(Ry[n]+Ry[n-1])
-
+    
         Wt.append(  lower_x / np.sqrt(lower_x**2 + lower_y**2)
                   - upper_x / np.sqrt(upper_x**2 + upper_y**2) )
-
-    inverse_double_total = 1.0 / (2.0 * sum(Wt))
-
-    for n in range(nrays//2):
-        Wt[n] = Wt[n] * inverse_double_total
-
+    
     # Append the antipodal rays
     for n in range(nrays//2):
         Rx.append(-Rx[n])
         Ry.append(-Ry[n])
         Rz.append(-Rz[n])
         Wt.append( Wt[n])
-
-    model.geometry.rays.direction.set(np.array((Rx,Ry,Rz)).transpose())
-    model.geometry.rays.weight   .set(np.array(Wt))
+    
+    # Create numpy arrays
+    direction = np.array((Rx,Ry,Rz)).transpose()
+    weight    = np.array(Wt)
+    
+    # Normalize the weights
+    weight /= np.sum(weight)
+    
+    # Set the direction and the weights in the Magritte model
+    model.geometry.rays.direction.set(direction)
+    model.geometry.rays.weight   .set(weight)
+    
+    # Set nrays in the model
+    try:
+        model.parameters.set_nrays(nrays)
+    except:
+        raise RuntimeError(
+            f"The specified number of rays in the model (nrays={model.parameters.nrays()}) does not match\n"
+            f"with the specified nextra={nextra} and step={step}. Either don't specify the number of rays\n"
+            f"for the model (i.e. don't invoke model.parameters.set_nrays) so this function can\n"
+            f"set nrays, or specify the right number, which is {nrays} in this particular case."
+        )    
+    
     # Done
     return model
 
@@ -479,7 +512,7 @@ def getProperName(name):
     '''
     if name in ['e']:
         return 'e-'
-    if name in ['pH2', 'oH2', 'p-H2', 'o-H2']:
+    if name in ['pH2', 'oH2', 'p-H2', 'o-H2', 'PH2', 'OH2']:
         return 'H2'
     # If none of the above special cases, it should be fine
     return name
@@ -488,6 +521,17 @@ def getProperName(name):
 def getSpeciesNumber (species, name):
     '''
     Returns number of species given by 'name'
+
+    Parameters
+    ----------
+    species : Magritte species object
+        Contains the information about the chemical species in the model
+    name : str
+        name of the chemical species
+
+    Raises
+    ------
+    KeyError : if the species name is not found in the list of chemical species
     '''
     # Note that there are dummy species in Magritte at places 0 and NLSPEC
     if isinstance (name, list):
@@ -496,7 +540,7 @@ def getSpeciesNumber (species, name):
         for i in range (len (species.symbol)):
             if (species.symbol[i] == getProperName (name)):
                 return i
-        return 0
+        raise KeyError("Could not find species '" + str(getProperName(name)) + "' in the list of chemical species.")
 
 
 def extractCollisionPartner (fileName, line, species, elem):
@@ -513,6 +557,28 @@ def extractCollisionPartner (fileName, line, species, elem):
     else:
         orthoPara = 'n'
     return [getSpeciesNumber (species, partner), orthoPara]
+
+
+#Astroquery actually reads the number in front of the line to determine which collider is used.
+# Thus the names for H2 are limited to PH2, OH2.
+def extractCollisionPartnerAstroquery (partner, species):
+    orthopara = 'n'
+    if partner == 'PH2':
+        orthopara = 'p'
+    elif partner == 'OH2':
+        orthopara = 'o'
+
+    try:
+        return [getSpeciesNumber (species, partner), orthopara]
+    except KeyError as err:
+        print("Warning:", err, "Using dummy values for the density of this collision partner instead.")
+        return [0,orthopara]
+
+
+#Astroquery names the temperature colums for the collision rates in the following manner: "C_ij(T=temp)"
+def convertTempToColumnNameAstroquery (temp):
+    return "C_ij(T="+str(temp)+")"
+
 
 
 class LamdaFileReader ():
@@ -600,28 +666,30 @@ def set_linedata_from_LAMDA_file (model, fileNames, config={}):
     species = model.chemistry.species
     # Add data for each LAMDA file
     for lspec, fileName in enumerate(fileNames):
-        # Create reader for data file
-        rd = LamdaFileReader(fileName)
-        # Read radiative data
-        sym          = rd.readColumn(start= 1,      nElem=1,    columnNr=0, type='str')[0]
+        #new astroquery file read
+        collrates, radtransitions, enlevels = lamda.parse_lamda_datafile(fileName)
+        sym = enlevels.meta['molecule']# is given after ! MOLECULE
         num          = getSpeciesNumber(species, sym)
-        mass         = rd.readColumn(start= 3,      nElem=1,    columnNr=0, type='float')[0]
-        inverse_mass = float (1.0 / mass)
-        nlev         = rd.readColumn(start= 5,      nElem=1,    columnNr=0, type='int')[0]
-        energy       = rd.readColumn(start= 7,      nElem=nlev, columnNr=1, type='float')
-        weight       = rd.readColumn(start= 7,      nElem=nlev, columnNr=2, type='float')
-        nrad         = rd.readColumn(start= 8+nlev, nElem=1,    columnNr=0, type='int')[0]
-        irad         = rd.readColumn(start=10+nlev, nElem=nrad, columnNr=1, type='int')
-        jrad         = rd.readColumn(start=10+nlev, nElem=nrad, columnNr=2, type='int')
-        A            = rd.readColumn(start=10+nlev, nElem=nrad, columnNr=3, type='float')
+        mass = enlevels.meta['molwt']
+        inverse_mass = float (1.0/mass)
+        nlev = enlevels.meta['nenergylevels']
+        energy = enlevels['Energy']
+        weight = enlevels['Weight']
+        nrad = radtransitions.meta['radtrans']
+        irad = radtransitions['Upper'] #upper transition
+        jrad = radtransitions['Lower'] #lower transition
+        A = radtransitions['EinsteinA']
+
         # Change index range from [1, nlev] to [0, nlev-1]
         for k in range(nrad):
             irad[k] += -1
             jrad[k] += -1
+
         # Convert to SI units
         for i in range(nlev):
             # Energy from [cm^-1] to [J]
             energy[i] *= 1.0E+2*HH*CC
+
         # Set data
         model.lines.lineProducingSpecies[lspec].linedata.sym          = sym
         model.lines.lineProducingSpecies[lspec].linedata.num          = num
@@ -629,32 +697,33 @@ def set_linedata_from_LAMDA_file (model, fileNames, config={}):
         model.lines.lineProducingSpecies[lspec].linedata.nlev         = nlev
         model.lines.lineProducingSpecies[lspec].linedata.energy       = energy
         model.lines.lineProducingSpecies[lspec].linedata.weight       = weight
-        # Start reading collisional data
-        nlr = nlev + nrad
-        # Get number of collision partners
-        ncolpar = rd.readColumn(start=11+nlr, nElem=1,  columnNr=0, type='int')[0]
-        ind     = 13 + nlr
+
+        ncolpar = len(collrates)
+
         # Set number of collision partners
         model.lines.lineProducingSpecies[lspec].linedata.ncolpar = ncolpar
         # Create list of CollisionPartners
         model.lines.lineProducingSpecies[lspec].linedata.colpar = vCollisionPartner([CollisionPartner() for _ in range(ncolpar)])
+
         # Loop over the collision partners
-        for c in range(ncolpar):
-            num_col_partner = rd.extractCollisionPartner(line=ind, species=species, elem=sym)[0]
-            orth_or_para_H2 = rd.extractCollisionPartner(line=ind, species=species, elem=sym)[1]
-            ncol            = rd.readColumn(start=ind+2, nElem=1,    columnNr=0,   type='int')[0]
-            ntmp            = rd.readColumn(start=ind+4, nElem=1,    columnNr=0,   type='int')[0]
-            icol            = rd.readColumn(start=ind+8, nElem=ncol, columnNr=1,   type='int')
-            jcol            = rd.readColumn(start=ind+8, nElem=ncol, columnNr=2,   type='int')
+        for partner, c in zip(collrates.keys(), range(ncolpar)):
+            num_col_partner, orth_or_para_H2 = extractCollisionPartnerAstroquery (partner, species)
+            ncol = collrates[partner].meta['ntrans']
+            ntmp = collrates[partner].meta['ntemp']
+            icol = collrates[partner]['Upper']
+            jcol = collrates[partner]['Lower']
+
             # Change index range from [1, nlev] to [0, nlev-1]
             for k in range(ncol):
                 icol[k] += -1
                 jcol[k] += -1
-            tmp = []
+
+            tmp = collrates[partner].meta['temperatures']
             Cd  = []
-            for t in range (ntmp):
-                tmp.append (rd.readColumn(start=ind+6, nElem=1,    columnNr=t,   type='float')[0])
-                Cd .append (rd.readColumn(start=ind+8, nElem=ncol, columnNr=3+t, type='float'))
+
+            for temp in tmp:
+                Cd.append(collrates[partner][convertTempToColumnNameAstroquery(temp)])
+
             # Convert to SI units
             for t in range(ntmp):
                 for k in range(ncol):
@@ -677,8 +746,7 @@ def set_linedata_from_LAMDA_file (model, fileNames, config={}):
             model.lines.lineProducingSpecies[lspec].linedata.colpar[c].tmp             = tmp
             model.lines.lineProducingSpecies[lspec].linedata.colpar[c].Cd              = Cd
             model.lines.lineProducingSpecies[lspec].linedata.colpar[c].Ce              = Ce
-            # Increment index
-            ind += 9 + ncol
+
         # Limit to the specified lines if required
         if ('considered transitions' in config) and (config['considered transitions'] is not None):
             if not isinstance(config['considered transitions'], list):
@@ -689,6 +757,7 @@ def set_linedata_from_LAMDA_file (model, fileNames, config={}):
                 irad = [irad[k] for k in config['considered transitions']]
                 jrad = [jrad[k] for k in config['considered transitions']]
                 A    = [   A[k] for k in config['considered transitions']]
+
         # Set derived quantities
         Bs        = [0.0 for _ in range(nrad)]
         Ba        = [0.0 for _ in range(nrad)]
@@ -699,6 +768,7 @@ def set_linedata_from_LAMDA_file (model, fileNames, config={}):
             frequency[k] = (energy[i]-energy[j]) / HH
             Bs[k]        = A[k] * CC**2 / (2.0*HH*(frequency[k])**3)
             Ba[k]        = weight[i]/weight[j] * Bs[k]
+
         # Set data
         model.lines.lineProducingSpecies[lspec].linedata.nrad      = nrad
         model.lines.lineProducingSpecies[lspec].linedata.irad      = irad
@@ -707,5 +777,6 @@ def set_linedata_from_LAMDA_file (model, fileNames, config={}):
         model.lines.lineProducingSpecies[lspec].linedata.Bs        = Bs
         model.lines.lineProducingSpecies[lspec].linedata.Ba        = Ba
         model.lines.lineProducingSpecies[lspec].linedata.frequency = frequency
+
     # Done
     return model

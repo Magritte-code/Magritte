@@ -1,5 +1,13 @@
 import numpy as np
 import h5py  as hp
+import os.path
+
+
+def file_exists (file_name):
+    """
+    Checks whether the file exists.
+    """
+    return os.path.isfile(file_name)
 
 
 def read_length (io_file, file_name):
