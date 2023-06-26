@@ -297,11 +297,12 @@ struct Solver {
     Size n_off_diag;
 
     template <Frame frame> void setup(Model& model);
-
-    // template <Frame frame>
     void setup_new_imager(Model& model, Image& image, const Vector3D& ray_dir);
-
     void setup(const Size l, const Size w, const Size n_o_d);
+
+    void setup_comoving(Model& model);
+    void setup_comoving_new_imager(Model& model, Image& image, const Vector3D& ray_dir);
+    void setup_comoving(Model& model, const Size length, const Size width);
 
     accel inline Real get_dshift_max(const Model& model, const Size o);
 
@@ -379,7 +380,6 @@ struct Solver {
     accel inline void trace_ray_points(const Geometry& geometry, const Size o, const Size rdir,
         const Size rsav, const Size rayidx);
     // Complicated solver stuff
-    inline void setup_comoving(Model& model);
 
     inline void match_frequency_indices(Model& model, const Size nextpoint, const Size currpoint,
         const Real next_shift, const Real curr_shift, Size nextpointonrayindex,
@@ -481,6 +481,21 @@ struct Solver {
     // actual solver
     template <ApproximationType approx>
     accel inline void image_optical_depth(Model& model, const Size o, const Size f);
+
+    // Comoving solver
+    //////////////////
+    template <ApproximationType approx>
+    inline void image_comoving_new_imager(Model& model, const Vector3D& ray_dir, const Size nxpix,
+        const Size nypix, const Vector<Real>& image_freqs);
+
+    // actual solver; assumes the full ray computation has been set up correctly
+    inline void solve_comoving_image_single_step(Model& model, const Size rayposidx,
+        const bool is_upward_disc, const bool forward_ray, const Size initial_bdy);
+
+    // interpolation of computed comoving intensities
+    inline void interpolate_computed_comoving_intensities(Model& model, Image& image, Size pixidx,
+        const Size currpoint, const Size curr_point_on_ray_index, const Real curr_shift,
+        std::multimap<Real, Size>& multimap_image_freq_to_index);
 
     // Solvers only computing u
     ///////////////////////////

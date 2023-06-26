@@ -59,6 +59,7 @@ struct Image {
     Image(const Image& image);
 
     inline void set_freqs(const Frequencies& frequencies);
+    void set_freqs(const Vector<Real>& image_freqs);
     inline void set_coordinates_all_model_points(const Geometry& geometry);
     inline void set_coordinates_projection_surface(
         const Geometry& geometry, const Size Nxpix, const Size Nypix);

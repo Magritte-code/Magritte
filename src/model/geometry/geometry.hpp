@@ -33,6 +33,8 @@ struct Geometry {
     Matrix<Size> lengths;
     Size lengths_max;
 
+    Vector<Size> sorted_position_indices;
+
     Geometry(std::shared_ptr<Parameters> params) :
         parameters(params), points(params), rays(params), boundary(params){};
 

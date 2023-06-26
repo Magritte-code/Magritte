@@ -33,7 +33,7 @@ void Frequencies ::resize_data(const Size nfreqs) {
 
     // frequencies.nu has to be initialized (for unused entries)
     threaded_for(p, parameters->npoints(), {
-        for (Size f = 0; f < parameters->nfreqs; f++) {
+        for (Size f = 0; f < nfreqs; f++) {
             nu(p, f)        = 0.0;
             sorted_nu(p, f) = 0.0;
         }

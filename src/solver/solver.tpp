@@ -71,18 +71,45 @@ inline void Solver ::setup(const Size l, const Size w, const Size n_o_d) {
     }
 }
 
+inline void Solver::setup_comoving(Model& model) {
+    length = 2 * get_ray_lengths_max<Rest>(model) + 1;
+    width  = model.parameters->nfreqs();
+    // const Size n_o_d = model.parameters->n_off_diag;
+
+    model.set_dshift_max(); // err, probably belongs somewhere else, but we need to compute the max
+    // shift for each point
+
+    setup_comoving(model, length, width);
+
+    // Finally also trace the rays in advance to prune the unnecessary ones.
+    get_static_rays_to_trace(model);
+}
+
+inline void Solver::setup_comoving_new_imager(Model& model, Image& image, const Vector3D& ray_dir) {
+    length = 2 * get_ray_lengths_max_new_imager(model, image, ray_dir) + 1;
+    width  = model.parameters->nfreqs();
+    // const Size n_o_d  = model.parameters->n_off_diag;
+
+    model.set_dshift_max(); // err, probably belongs somewhere
+                            // else, but we need to compute
+                            // the max shift for each point
+
+    setup_comoving(model, length, width);
+}
+
 // l=max length of ray, w=nfreqs, n_o_d is number of off-diagonals; will be ignored
 //  inline void Solver :: setup_comoving (Model& model, const Size l, const Size w)
-inline void Solver ::setup_comoving(Model& model) {
-    length = 2 * get_ray_lengths_max<Rest>(model) + 1;
+inline void Solver ::setup_comoving(Model& model, const Size length, const Size width) {
     centre = length / 2;
-    width  = model.parameters->nfreqs();
+    // length = 2 * get_ray_lengths_max<Rest>(model) + 1;
+    // centre = length / 2;
+    // width  = model.parameters->nfreqs();
 
     model.set_dshift_max(); // err, probably belongs somewhere else, but we need to compute the max
                             // shift for each point
 
-    std::cout << "setup length: " << length << std::endl;
-    std::cout << "setup width: " << width << std::endl;
+    // std::cout << "setup length: " << length << std::endl;
+    // std::cout << "setup width: " << width << std::endl;
 
     points_to_trace_ray_through.resize(model.parameters->hnrays());
     for (Size i = 0; i < model.parameters->hnrays(); i++) {
@@ -116,6 +143,9 @@ inline void Solver ::setup_comoving(Model& model) {
         line_count_(i).resize(model.parameters->nlines());
         quad_range_weight_(i).resize(model.parameters->nquads());
 
+        // std::cout << "resize intensities: length, width: " << length << ", " << width <<
+        // std::endl;
+
         intensities_(i).resize(length, width);
         delta_tau_(i).resize(length, width);
         S_curr_(i).resize(length, width);
@@ -138,8 +168,8 @@ inline void Solver ::setup_comoving(Model& model) {
         dIdnu_index3_next_(i).resize(length, width);
     }
 
-    // Finally also trace the rays in advance to prune the unnecessary ones.
-    get_static_rays_to_trace(model);
+    // // Finally also trace the rays in advance to prune the unnecessary ones.
+    // get_static_rays_to_trace(model);
 }
 
 // l=max length of ray, w=nfreqs, n_o_d is number of off-diagonals; will be ignored
@@ -617,6 +647,10 @@ inline void Solver ::get_line_ranges(
         // increment number of freqs encountered if a non-boundary point is encountered (implicit
         // conversion from bool to int)
         line_count[lineidx] += quad_range_weight[quadidx];
+        // std::cout << "line count: " << line_count[lineidx] << std::endl;
+        // std::cout << "quadidx: " << quadidx << std::endl;
+        // std::cout << "quad range weight: " << quad_range_weight[quadidx] << std::endl;
+
         // if we have counted all relevant quads belonging to a specific line:
         if (line_count[lineidx] == tot_quad_range_weight) {
             line_count[lineidx] = 0;
@@ -723,6 +757,113 @@ inline void Solver ::set_implicit_boundary_frequencies(Model& model, const Size 
                     next_freq, std::make_tuple(nextpointonrayindex, freqidx));
             }
         }
+    }
+}
+
+///  Interpolates the computed intensities at currpoint for the frequencies given at
+///  multimap_image_freq_to_index Assumes the line ranges to be computed in advance Matches the
+///  overlapping boundary conditions, using the currently computed ranges Internal function for the
+///  (non-approximate) comoving solver
+inline void Solver ::interpolate_computed_comoving_intensities(Model& model, Image& image,
+    Size pixidx, const Size currpoint, const Size curr_point_on_ray_index, const Real curr_shift,
+    std::multimap<Real, Size>& multimap_image_freq_to_index) {
+    Vector<Real>& left_bound  = left_bound_();  // Specifies the left bounds of the ranges in [Hz]
+    Vector<Real>& right_bound = right_bound_(); // Specifies the right bounds of the ranges in [Hz]
+    Size& nb_ranges           = nb_ranges_();   // contains the number of ranges
+    Vector<Size>& left_bound_index = left_bound_index_(); // Specifies the corresponding freq index
+                                                          // to the left bounds of the ranges
+    Vector<Size>& right_bound_index =
+        right_bound_index_(); // Specifies the corresponding freq index to the right bounds of the
+                              // ranges
+
+    Matrix<Real>& intensities = intensities_(); // contains the computed intensities at each point
+
+    Size curr_range_index = 0;
+    Size curr_freq_index =
+        left_bound_index[curr_range_index]; // contains the current frequency index
+    // Assumption: at least a single line exists -> a single range exists
+    Real curr_range_min  = left_bound[curr_range_index];
+    Real curr_range_max  = right_bound[curr_range_index];
+    Real curr_range_freq = curr_range_min;
+    // std::cout << "currpoint: " << currpoint << std::endl;
+    // std::cout << "curr_range_min: " << curr_range_min << std::endl;
+    // std::cout << "curr_range_max: " << curr_range_max << std::endl;
+
+    // By just using the builtin lower_bound, one can easily find the boundary conditions
+    // overlapping with the current ranges
+    std::multimap<Real, Size>::iterator it =
+        multimap_image_freq_to_index.lower_bound(curr_range_min);
+    // Using a while loop, as we simulataneously iterate over the boundary conditions and over the
+    // line ranges
+    while (it != multimap_image_freq_to_index.end() && curr_range_index < nb_ranges) {
+        const Real bdy_freq     = it->first;  // get image freq (already in static frame)
+        const Size bdy_freq_idx = it->second; // get corresponding freq index for image
+        // check if bdy freq is smaller than the right bound
+        // std::cout << "bdy_freq: " << bdy_freq << std::endl;
+        // std::cout << "curr_range_index: " << curr_range_index << std::endl;
+        if (bdy_freq > curr_range_max) {
+            // The boundary frequency lies further than the current line, so use the next line
+            // instead
+            curr_range_index++;
+            if (curr_range_index == nb_ranges) { // no next line exist, so all remaining boundary
+                                                 // frequencies lie outside the last range
+                return;
+            }
+            // update info about ranges
+            curr_range_min  = left_bound[curr_range_index];
+            curr_range_max  = right_bound[curr_range_index];
+            curr_range_freq = curr_range_min;
+            curr_freq_index =
+                left_bound_index[curr_range_index]; // stores the freq index of curr point
+            it = multimap_image_freq_to_index.lower_bound(
+                curr_range_min); // and adjust iterator accordingly
+            continue;
+        }
+        // the bdy frequency now lies within the bounds, so just linearly iterate until we find the
+        // correct freqs of the ranges (static frame) to interpolate with
+
+        // Find which freq bounds at curr_point exactly correspond to the bdy freq (enclosing it
+        // from the right)
+        while (bdy_freq > curr_range_freq && curr_range_freq < curr_range_max) {
+            curr_freq_index++;
+            curr_range_freq = model.radiation.frequencies.sorted_nu(currpoint, curr_freq_index)
+                            * curr_shift; // in static frame
+        }
+
+        /// First order interpolation for the boundary frequency
+        Size left_curr_freq_idx  = curr_freq_index - 1;
+        Size right_curr_freq_idx = curr_freq_index;
+
+        // the curr range freq should now be larger/equal to the bdy freq
+        // In the case that bdy_freq lies on the left bound, doing left_bound-1 makes no sense as
+        // index for interpolation, so use curr_index as left bound instead
+        if (curr_freq_index == left_bound_index[curr_range_index]) {
+            left_curr_freq_idx  = curr_freq_index;
+            right_curr_freq_idx = curr_freq_index + 1;
+        }
+
+        // std::cout << "compute deltafreq" << std::endl;
+
+        const Real deltafreq =
+            (model.radiation.frequencies.sorted_nu(currpoint, right_curr_freq_idx)
+                - model.radiation.frequencies.sorted_nu(currpoint, left_curr_freq_idx))
+            * curr_shift; // in static frame
+
+        const Real delta_I = intensities(curr_point_on_ray_index, right_curr_freq_idx)
+                           - intensities(curr_point_on_ray_index, left_curr_freq_idx);
+
+        const Real interpolated_intensity =
+            intensities(curr_point_on_ray_index, left_curr_freq_idx)
+            + delta_I / deltafreq
+                  * (bdy_freq
+                      - model.radiation.frequencies.sorted_nu(currpoint, left_curr_freq_idx)
+                            * curr_shift);
+
+        image.I(pixidx, bdy_freq_idx) = interpolated_intensity;
+
+        // pop value from iterator, as we have succesfully interpolated the intensity for this
+        // frequency
+        it = multimap_image_freq_to_index.erase(it);
     }
 }
 
@@ -1571,14 +1712,8 @@ inline void Solver ::solve_comoving_order_2_sparse(Model& model) {
     })
 }
 
-// As stepping a single step should be exactly the same in both directions on the ray, we might as
-// well refactor it out
-//  //rayposidx==rayposidx_curr_point+-1
-// Ergo rayposidx stand for the ray position index of the next point
-// rr direction index necessary for determining whether to add intensity to J//TODO? replace with
-// bool denoting whether to add it (precompute if clause somewhere else)
-// TODO: figure out whether rayposidx_currpoint is needed!! As it should be replaced with
-// start_indices_...
+// Computes the intensities using the comoving solver for a single step. Assumes the datastructures
+// to be initialized correctly.
 inline void Solver ::solve_comoving_single_step(Model& model, const Size rayposidx,
     const Size rayidx, const Size rr, const bool is_upward_disc, const bool forward_ray) {
     Vector<Size>& nr = nr_(); // stores the exact point indices
@@ -1835,6 +1970,206 @@ inline void Solver ::solve_comoving_single_step(Model& model, const Size rayposi
             // L   = constante * frq * phi * L_lower(m,n) * inverse_chi[n];
 
             lspec.lambda.add_element(nextpointidx, k, nextpointidx, lambdaterm);
+        }
+    }
+}
+
+// Computes the intensities using the comoving solver for a single step. Assumes the datastructures
+// to be initialized correctly. Does not compute J, as this solver is used for imaging.
+inline void Solver::solve_comoving_image_single_step(Model& model, const Size rayposidx,
+    const bool is_upward_disc, const bool forward_ray, const Size initial_bdy) {
+    Vector<Size>& nr = nr_(); // stores the exact point indices
+    // Vector<unsigned char>& real_pt=real_pt_();//stores whether each point is real point (not
+    // added extra for interpolation purposes)
+    Vector<double>& shift =
+        shift_(); // stores the shifts versus the static frame; warning: for forward rays, this
+                  // should be changed to 2.0-shift; for backward rays, it is correct
+    Matrix<Vector<Size>>& start_indices =
+        start_indices_(); // for getting the previous indices associated with computing the
+                          // intensity for the next point
+    Matrix<Real>& delta_tau   = delta_tau_(); // stores the optical depths
+    Matrix<Real>& S_curr      = S_curr_();
+    Matrix<Real>& S_next      = S_next_();
+    Matrix<Real>& intensities = intensities_();
+
+    Matrix<Real>& dIdnu_coef1_curr = dIdnu_coef1_curr_(); // coefficient of the freq point itself
+    Matrix<Real>& dIdnu_coef2_curr = dIdnu_coef2_curr_();
+    Matrix<Real>& dIdnu_coef3_curr = dIdnu_coef3_curr_();
+
+    Matrix<Size>& dIdnu_index1_curr = dIdnu_index1_curr_();
+    Matrix<Size>& dIdnu_index2_curr = dIdnu_index2_curr_();
+    Matrix<Size>& dIdnu_index3_curr = dIdnu_index3_curr_();
+
+    Matrix<Real>& dIdnu_coef1_next = dIdnu_coef1_next_();
+    Matrix<Real>& dIdnu_coef2_next = dIdnu_coef2_next_();
+    Matrix<Real>& dIdnu_coef3_next = dIdnu_coef3_next_();
+
+    Matrix<Size>& dIdnu_index1_next = dIdnu_index1_next_();
+    Matrix<Size>& dIdnu_index2_next = dIdnu_index2_next_();
+    Matrix<Size>& dIdnu_index3_next = dIdnu_index3_next_();
+
+    // std::cout<<"after renaming all vars"<<std::endl;
+    // std::cout<<"rayposidx=next point on ray idx= "<<rayposidx<<std::endl;
+
+    // rayposidx represents the next position on the ray
+    const Size nextpointidx = nr[rayposidx];
+    const Real next_shift   = (forward_ray)
+                                ? 2.0 - shift[rayposidx]
+                                : shift[rayposidx]; // absolute shifts, versus static frame!
+
+    // Do the explicit part
+    for (Size next_freq_idx = 0; next_freq_idx < model.parameters->nfreqs(); next_freq_idx++) {
+        // std::cout<<"next_freq_idx: "<<next_freq_idx<<std::endl;
+        // Get the point indices
+        const Size curr_point_on_ray_index = start_indices_()(rayposidx, next_freq_idx)[0];
+        // std::cout<<"curr_point_on_ray_index: "<<curr_point_on_ray_index<<std::endl;
+        const Size curr_point_idx = nr[curr_point_on_ray_index];
+        const Size curr_freq_idx  = start_indices_()(rayposidx, next_freq_idx)[1];
+        const Real curr_shift =
+            (forward_ray) ? 2.0 - shift[curr_point_on_ray_index]
+                          : shift[curr_point_on_ray_index]; // absolute shift, versus static frame
+
+        const Real deltanu =
+            model.radiation.frequencies.nu(nextpointidx, next_freq_idx) * next_shift
+            - model.radiation.frequencies.nu(curr_point_idx, curr_freq_idx) * curr_shift;
+        const Real dtau = delta_tau(rayposidx, next_freq_idx);
+
+        const Real expl_term = (-expm1(-dtau) - dtau * exp(-dtau)) / dtau;
+
+        const Real expl_freq_der =
+            dIdnu_coef1_curr(rayposidx, next_freq_idx)
+                * intensities(curr_point_on_ray_index, dIdnu_index1_curr(rayposidx, next_freq_idx))
+            + dIdnu_coef2_curr(rayposidx, next_freq_idx)
+                  * intensities(
+                      curr_point_on_ray_index, dIdnu_index2_curr(rayposidx, next_freq_idx))
+            + dIdnu_coef3_curr(rayposidx, next_freq_idx)
+                  * intensities(
+                      curr_point_on_ray_index, dIdnu_index3_curr(rayposidx, next_freq_idx));
+
+        // Add every part together: past intensity, source term and frequency shift term
+        intensities(rayposidx, next_freq_idx) =
+            intensities(curr_point_on_ray_index, curr_freq_idx) * exp(-dtau)
+            + expl_term * S_curr(rayposidx, next_freq_idx) // source term
+            + expl_term * expl_freq_der * deltanu / dtau;  // frequency derivative term
+        if (intensities(rayposidx, next_freq_idx) < 0.0)   // DEBUG
+        {
+            std::cout << "negative I computed during explicit step" << std::endl;
+            std::cout << "computing at raypos, next_freq_idx, computed I: " << rayposidx << ", "
+                      << next_freq_idx << ", " << intensities(rayposidx, next_freq_idx)
+                      << std::endl;
+            std::cout << "prev I: " << intensities(curr_point_on_ray_index, curr_freq_idx)
+                      << std::endl;
+            std::cout << "expl_term: " << expl_term << std::endl;
+            std::cout << "expl_freq_der: " << expl_freq_der << std::endl;
+            std::cout << "deltanu/dtau: " << deltanu << std::endl;
+            std::cout << "dtau: " << dtau << std::endl;
+        }
+    }
+
+    // Implicit part ordering depends on the discretization direction
+    if (is_upward_disc) {
+        // std::cout<<"is_upward_disc"<<std::endl;
+        // in case of positive doppler shifts, we need to start from the largest frequencies (where
+        // we have extra boundary conditions on the end) reverse loop over unsigned int, so indices
+        // +1
+        for (Size next_freq_idx = model.parameters->nfreqs(); next_freq_idx > 0; next_freq_idx--) {
+            // TODO: actually do the implicit part
+            const Size curr_point_on_ray_index = start_indices_()(rayposidx, next_freq_idx - 1)[0];
+            const Size curr_point_idx          = nr[curr_point_on_ray_index];
+            const Size curr_freq_idx           = start_indices_()(rayposidx, next_freq_idx - 1)[1];
+            const Real curr_shift =
+                (forward_ray)
+                    ? 2.0 - shift[curr_point_on_ray_index]
+                    : shift[curr_point_on_ray_index]; // absolute shift, versus static frame
+            const Real deltanu =
+                model.radiation.frequencies.nu(nextpointidx, next_freq_idx - 1) * next_shift
+                - model.radiation.frequencies.nu(curr_point_idx, curr_freq_idx) * curr_shift;
+            const Real dtau      = delta_tau(rayposidx, next_freq_idx - 1);
+            const Real impl_term = (dtau + expm1(-dtau)) / dtau;
+            const Real impl_freq_der =
+                dIdnu_coef2_next(rayposidx, next_freq_idx - 1)
+                    * intensities(rayposidx, dIdnu_index2_next(rayposidx, next_freq_idx - 1))
+                + dIdnu_coef3_next(rayposidx, next_freq_idx - 1)
+                      * intensities(rayposidx, dIdnu_index3_next(rayposidx, next_freq_idx - 1));
+
+            // Do the implicit part of the computation: add current intensity and source term, then
+            // divide by the (1-freq derivative) term
+            intensities(rayposidx, next_freq_idx - 1) =
+                (intensities(rayposidx, next_freq_idx - 1)
+                    + impl_term * S_next(rayposidx, next_freq_idx - 1) // source term
+                    + impl_term * impl_freq_der * deltanu / dtau)
+                / (1.0
+                    - dIdnu_coef1_next(rayposidx, next_freq_idx - 1) * impl_term * deltanu
+                          / dtau); // freq derivative term
+
+            if (intensities(rayposidx, next_freq_idx - 1) < 0.0) // DEBUG
+            {
+                std::cout << "negative I computed during implicit step" << std::endl;
+                std::cout << "workaround applied; set I to Icmb" << std::endl;
+                intensities(rayposidx, next_freq_idx - 1) = boundary_intensity(model, initial_bdy,
+                    model.radiation.frequencies.nu(nextpointidx, next_freq_idx - 1) * next_shift);
+
+                std::cout << "computing at raypos, next_freq_idx, computed I: " << rayposidx << ", "
+                          << next_freq_idx << ", " << intensities(rayposidx, next_freq_idx - 1)
+                          << std::endl;
+                std::cout << "dIdnucoef1: " << dIdnu_coef1_next(rayposidx, next_freq_idx - 1)
+                          << std::endl;
+                // std::cout << "prev I: " << intensities(curr_point_on_ray_index, curr_freq_idx)
+                //           << std::endl;
+                std::cout << "expl_term: " << impl_term << std::endl;
+                std::cout << "expl_freq_der: " << impl_freq_der << std::endl;
+                std::cout << "deltanu: " << deltanu << std::endl;
+                std::cout << "dtau: " << dtau << std::endl;
+            }
+        }
+    } else {
+        for (Size next_freq_idx = 0; next_freq_idx < model.parameters->nfreqs(); next_freq_idx++) {
+            const Size curr_point_on_ray_index = start_indices_()(rayposidx, next_freq_idx)[0];
+            const Size curr_point_idx          = nr[curr_point_on_ray_index];
+            const Size curr_freq_idx           = start_indices_()(rayposidx, next_freq_idx)[1];
+            const Real curr_shift =
+                (forward_ray)
+                    ? 2.0 - shift[curr_point_on_ray_index]
+                    : shift[curr_point_on_ray_index]; // absolute shift, versus static frame
+            const Real deltanu =
+                model.radiation.frequencies.nu(nextpointidx, next_freq_idx) * next_shift
+                - model.radiation.frequencies.nu(curr_point_idx, curr_freq_idx) * curr_shift;
+            const Real dtau      = delta_tau(rayposidx, next_freq_idx);
+            const Real impl_term = (dtau + expm1(-dtau)) / dtau;
+            const Real impl_freq_der =
+                dIdnu_coef2_next(rayposidx, next_freq_idx)
+                    * intensities(rayposidx, dIdnu_index2_next(rayposidx, next_freq_idx))
+                + dIdnu_coef3_next(rayposidx, next_freq_idx)
+                      * intensities(rayposidx, dIdnu_index3_next(rayposidx, next_freq_idx));
+
+            // Do the implicit part of the computation: add current intensity and source term, then
+            // divide by the (1-freq derivative) term
+            intensities(rayposidx, next_freq_idx) =
+                (intensities(rayposidx, next_freq_idx)
+                    + impl_term * S_next(rayposidx, next_freq_idx) // source term
+                    + impl_term * impl_freq_der * deltanu / dtau)
+                / (1.0
+                    - dIdnu_coef1_next(rayposidx, next_freq_idx) * impl_term * deltanu
+                          / dtau); // freq derivative term
+
+            if (intensities(rayposidx, next_freq_idx) < 0.0) // DEBUG
+            {
+                std::cout << "workaround applied; set I to Icmb" << std::endl;
+                intensities(rayposidx, next_freq_idx) = boundary_intensity(model, initial_bdy,
+                    model.radiation.frequencies.nu(nextpointidx, next_freq_idx) * next_shift);
+                std::cout << "negative I computed during implicit step" << std::endl;
+                std::cout << "computing at raypos, next_freq_idx, computed I: " << rayposidx << ", "
+                          << next_freq_idx << ", " << intensities(rayposidx, next_freq_idx)
+                          << std::endl;
+                std::cout << "dIdnucoef1: " << dIdnu_coef1_next(rayposidx, next_freq_idx)
+                          << std::endl;
+                // std::cout << "prev I: " << intensities(curr_point_on_ray_index, curr_freq_idx)
+                //           << std::endl;
+                std::cout << "expl_term: " << impl_term << std::endl;
+                std::cout << "expl_freq_der: " << impl_freq_der << std::endl;
+                std::cout << "deltanu: " << deltanu << std::endl;
+                std::cout << "dtau: " << dtau << std::endl;
+            }
         }
     }
 }
@@ -3970,6 +4305,166 @@ inline void Solver ::image_feautrier_order_2_new_imager(
                 image.I(pixidx, f) = boundary_intensity(
                     model, closest_bdy_point, model.radiation.frequencies.nu(closest_bdy_point, f));
             }
+        }
+    })
+
+    pc::accelerator::synchronize();
+
+    model.images.push_back(image);
+}
+
+template <ApproximationType approx>
+inline void Solver ::image_comoving_new_imager(Model& model, const Vector3D& ray_dir,
+    const Size nxpix, const Size nypix, const Vector<Real>& image_freqs) {
+    // note: we compute the comoving intensities using only a limited amount of frequencies and
+    // interpolate the computed intensities afterwards
+
+    Image image =
+        Image(model.geometry, model.radiation.frequencies, Intensity, ray_dir, nxpix, nypix);
+    setup_new_imager(model, image, ray_dir);
+    image.set_freqs(image_freqs); // when setting up the imager, it assumes by default that the
+    // frequencies for the model are identical to the frequencies used
+    // for the image. This is not the case for this comoving imager.
+
+    setup_comoving_new_imager(model, image, ray_dir);
+
+    std::multimap<Real, Size> template_multimap_image_freq_to_index;
+
+    for (Size i; i < image_freqs.size(); i++) {
+        template_multimap_image_freq_to_index.insert({image_freqs[i], i});
+    }
+
+    // std::cout << "after init multimap" << std::endl;
+
+    // Note: number of pixels is constant for now, but may be
+    // adaptive in the future; (but then while loop will be
+    // required anyway)
+    const Size npixels             = image.ImX.size(); // is ImY.size(), is I.size()
+    const Vector3D origin_velocity = Vector3D(0.0);
+
+    const Size start_bdy_point = model.geometry.get_closest_bdy_point_in_custom_raydir(ray_dir);
+
+    // std::cout << "after boundary point" << std::endl;
+
+    accelerated_for(pixidx, npixels, {
+        // std::cout << "pixidx: " << pixidx << std::endl;
+        // copy the image freq map, as the data will be consumed when interpolating the frequencies
+        std::multimap<Real, Size> multimap_image_freq_to_index(
+            template_multimap_image_freq_to_index);
+
+        // std::cout << "after copy map" << std::endl;
+
+        const Vector3D origin =
+            image.surface_coords_to_3D_coordinates(image.ImX[pixidx], image.ImY[pixidx]);
+        Real Z = 0.0;
+        const Size closest_bdy_point =
+            trace_ray_imaging_get_start(model.geometry, origin, start_bdy_point, ray_dir, Z);
+        const Real dshift_max = get_dshift_max(model, closest_bdy_point);
+
+        nr_()[centre]    = closest_bdy_point;
+        shift_()[centre] = model.geometry.get_shift<Rest>(
+            origin, origin_velocity, ray_dir, closest_bdy_point, Z, false);
+
+        // std::cout << "at start of comoving" << std::endl;
+        // start of comoving computations
+
+        first_() = trace_ray_imaging<Rest>(model.geometry, origin, closest_bdy_point, ray_dir,
+                       dshift_max, -1, Z, centre - 1, centre - 1)
+                 + 1; // TODO: maybe instead compute the ray length, as we do not need to set
+                      // anything here...
+
+        // std::cout << "after imaging ray trace" << std::endl;
+        last_() = centre; // by definition, only boundary points
+                          // can lie in the backward direction
+        n_tot_() = (last_() + 1) - first_();
+
+        // std::cout << "first: " << first_() << " last: " << last_() << std::endl;
+
+        // Matrix<Real>& intensities = intensities_(); // will contain all computed intensities
+
+        // Vector<unsigned char>& real_pt= real_pt_();//for denoting whether the given point is a
+        // real point
+        Vector<Size>& nr = nr_();
+
+        Vector<double>& shift = shift_(); // contains the doppler shifts for all points on the ray
+        // for the forward ray, do 2.0-shift to get the shift direction I want for my frequencies
+        // This is due to the default computed shift mapping from static frame to comoving frame (I
+        // want to do the reverse) for the backward ray, this should be correct (as we need to do
+        // the reverse)
+
+        // const Real     wt = model.geometry.rays.weight   [rr];//ray direction weight
+
+        // double Z  = 0.0; // distance along ray
+        // double dZ = 0.0; // last distance increment
+
+        Size first_interesting_rayposidx = first_();
+        Size last_interesting_rayposidx  = last_();
+
+        // std::cout << "before forward setup" << std::endl;
+
+        // std::cout << "centre: " << centre << std::endl;
+        // std::cout << "first_(): " << first_() << std::endl;
+
+        // Now is the perfect time to setup the boundary conditions and data for the forward ray
+        comoving_ray_bdy_setup_forward<approx>(model, last_interesting_rayposidx);
+
+        // std::cout << "after setup forward" << std::endl;
+
+        Size rayposidx = first_() + 1; // ray position index -> point index through nr[rayposidx]
+        // from first_+1 to last_ index, trace the ray in
+        //  while (rayposidx<=last_())
+        while (rayposidx <= last_interesting_rayposidx) {
+            const Real shift_next     = 2.0 - shift_()[rayposidx];
+            const Real shift_curr     = 2.0 - shift_()[rayposidx - 1];
+            const bool is_upward_disc = (shift_next >= shift_curr);
+            // std::cout<<"solving single step"<<std::endl;
+            // std::cout<<"rayposidx: "<<rayposidx<<std::endl;
+            // std::cout<<"dtau rayposidx: "<<delta_tau_()(rayposidx, 0)<<std::endl;
+            solve_comoving_image_single_step(model, rayposidx, is_upward_disc, true, first_());
+            rayposidx++;
+        }
+
+        // std::cout << "end of computation" << std::endl;
+
+        // end of comoving computations
+
+        // now interpolate the computed intensities on the frequency grid
+
+        rayposidx = last_();
+
+        // std::cout << "start interpolating" << std::endl;
+
+        // we interpolate the computed intensities, starting from the last point
+        // Note that we can ignore the first point, as the intensities at this point are boundary
+        // intensities
+        while (rayposidx >= first_() + 1) {
+            // std::cout << "rayposidx" << rayposidx << std::endl;
+            const Real shift_curr     = 2.0 - shift_()[rayposidx];
+            const Real shift_prev     = 2.0 - shift_()[rayposidx - 1];
+            const bool is_upward_disc = (shift_curr >= shift_prev);
+
+            const Size currpoint = nr_()[rayposidx];
+
+            // First, we figure out which line ranges exist for the current point, excluding the
+            // boundary frequencies (interpolating them is not useful)
+            get_line_ranges(model, currpoint, is_upward_disc, shift_curr);
+            // And we check what boundary conditions need to be evaluated using the intensities at
+            // curr_point
+            interpolate_computed_comoving_intensities(model, image, pixidx, currpoint, rayposidx,
+                shift_curr, multimap_image_freq_to_index);
+            rayposidx--;
+        }
+
+        // std::cout << "match all remaining freqs" << std::endl;
+
+        // all remaining frequencies have not been matched, so use boundary frequency for them
+        for (std::pair<Real, Size> it : multimap_image_freq_to_index) {
+            const Real image_freq = std::get<0>(it); // get image freq
+            const Size f          = std::get<1>(it); // get corresponding freq index for image
+
+            image.I(pixidx, f) = boundary_intensity(model, closest_bdy_point, image_freq);
+            // std::cout << "bdy I: " << image.I(pixidx, f) << " at (pix, f): " << pixidx << ", " <<
+            // f << std::endl;
         }
     })
 

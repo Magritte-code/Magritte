@@ -466,28 +466,6 @@ int Model ::compute_radiation_field_feautrier_order_2_sparse() {
     Solver solver;
     solver.setup<CoMoving>(*this);
 
-    if (parameters->one_line_approximation) {
-        solver.solve_feautrier_order_2_sparse<OneLine>(*this);
-        return (0);
-    }
-
-    if (parameters->sum_opacity_emissivity_over_all_lines) {
-        solver.solve_feautrier_order_2_sparse<None>(*this);
-        return (0);
-    }
-
-    solver.solve_feautrier_order_2_sparse<CloseLines>(*this);
-    return (0);
-}
-
-///  Computer for the radiation field
-/////////////////////////////////////
-int Model ::compute_radiation_field_feautrier_order_2_sparse() {
-    cout << "Computing radiation field..." << endl;
-
-    Solver solver;
-    solver.setup<CoMoving>(*this);
-
     if (parameters->prune_zero_contribution_points) {
         std::cout << "pruning points on rays" << std::endl;
         solver.solve_feautrier_order_2_sparse_pruned_rays<CloseLines>(*this);
@@ -1185,8 +1163,7 @@ int Model ::compute_image_new(
     return compute_image_new(raydir, Nxpix, Nypix);
 }
 
-///  Computer for the radiation field, using a new imager TODO: check whether
-///  direction is correct (I suspect it is not)
+///  Computer for the radiation field, using a new imager
 /////////////////////////////////////
 int Model ::compute_image_new(const Vector3D raydir, const Size Nxpix, const Size Nypix) {
     if (raydir.squaredNorm() == 0.0) {
@@ -1214,6 +1191,82 @@ int Model ::compute_image_new(const Vector3D raydir, const Size Nxpix, const Siz
     }
 
     solver.image_feautrier_order_2_new_imager<CloseLines>(*this, normed_raydir, Nxpix, Nypix);
+    return (0);
+}
+
+///  Wrapper for the new imager
+///////////////////////////////
+int Model ::compute_image_new_comoving(
+    const Size ray_nr, const Size nfreqs, const Real nu_min, const Real nu_max) {
+    return compute_image_new_comoving(
+        geometry.rays.direction[ray_nr], nfreqs, nu_min, nu_max, 256, 256);
+}
+
+///  Wrapper for the new imager
+///////////////////////////////
+int Model ::compute_image_new_comoving(const Size ray_nr, const Size nfreqs, const Real nu_min,
+    const Real nu_max, const Size Nxpix, const Size Nypix) {
+    return compute_image_new_comoving(
+        geometry.rays.direction[ray_nr], nfreqs, nu_min, nu_max, Nxpix, Nypix);
+}
+
+///  Wrapper for the new imager
+///////////////////////////////
+int Model ::compute_image_new_comoving(const double rx, const double ry, const double rz,
+    const Size nfreqs, const Real nu_min, const Real nu_max, const Size Nxpix, const Size Nypix) {
+    const Vector3D raydir = Vector3D(rx, ry, rz); // will be normed later on (if not yet normed)
+    return compute_image_new_comoving(raydir, nfreqs, nu_min, nu_max, Nxpix, Nypix);
+}
+
+///  Computer for the radiation field, using a new imager
+/////////////////////////////////////
+int Model ::compute_image_new_comoving(const Vector3D raydir, const Size nfreqs, const Real nu_min,
+    const Real nu_max, const Size Nxpix, const Size Nypix) {
+    if (raydir.squaredNorm() == 0.0) {
+        throw std::runtime_error(
+            "The given ray direction vector does not point in a direction. Please "
+            "use a non-zero (normed) direction vector to generate an image.");
+    }
+
+    if (spectralDiscretisation != SD_Lines) {
+        throw std::runtime_error("Spectral discretisation was not set for Lines!");
+    }
+
+    const Vector3D normed_raydir = raydir * (1 / std::sqrt(raydir.squaredNorm()));
+    cout << "Computing image new..." << endl;
+
+    Vector<Real> image_freqs;
+    const Size n_image_freqs = nfreqs;
+    image_freqs.resize(n_image_freqs);
+
+    // Uniformly distribute the frequencies between both ends
+    if (n_image_freqs == 1) { // avoiding division by 0
+        image_freqs[0] = (nu_min + nu_max) / 2.0;
+    } else {
+        const long double dnu = (nu_max - nu_min) / (n_image_freqs - 1);
+
+        for (Size f = 0; f < n_image_freqs; f++) {
+            image_freqs[f] = (Real)(nu_min + f * dnu);
+        }
+    }
+
+    Solver solver;
+    // setup has to be handled after image creation, due to the rays themselves
+    // depend on the image pixels
+    //  solver.setup_new_imager <Rest> (*this);//traced ray length might be
+    //  different, thus we might need longer data types
+    if (parameters->one_line_approximation) {
+        throw std::runtime_error("One line approximation is not supported for imaging.");
+        solver.image_comoving_new_imager<OneLine>(*this, normed_raydir, Nxpix, Nypix, image_freqs);
+        return (0);
+    }
+
+    if (parameters->sum_opacity_emissivity_over_all_lines) {
+        solver.image_comoving_new_imager<None>(*this, normed_raydir, Nxpix, Nypix, image_freqs);
+        return (0);
+    }
+
+    solver.image_comoving_new_imager<CloseLines>(*this, normed_raydir, Nxpix, Nypix, image_freqs);
     return (0);
 }
 

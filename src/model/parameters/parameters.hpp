@@ -82,7 +82,8 @@ struct Parameters {
     bool store_intensities           = false;
     // bool use_Ng_acceleration         = true;//Not used,
     // so may safely be removed
-    bool use_smoothing = false;
+    bool use_smoothing = false; // whether or not to smooth out the computed J's before computing
+                                // the level populations
     bool prune_zero_contribution_points =
         false; // this setting removes/does not include the points with a zero contribution
     // This is done by checking whether any line lies close enough to the point; if not, we can

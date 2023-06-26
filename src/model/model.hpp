@@ -85,6 +85,18 @@ struct Model {
     int compute_image_new(const Size ray_nr, const Size Nxpix, const Size Nypix);
     int compute_image_new(const Size ray_nr); // most similar function formulation
                                               // to old imager
+    int compute_image_new_comoving(const Vector3D raydir, const Size nfreqs, const Real nu_min,
+        const Real nu_max, const Size Nxpix,
+        const Size Nypix); // actual function for the new imager
+    // convenient wrappers for the new imager
+    int compute_image_new_comoving(const double rx, const double ry, const double rz,
+        const Size nfreqs, const Real nu_min, const Real nu_max, const Size Nxpix,
+        const Size Nypix);
+    int compute_image_new_comoving(const Size ray_nr, const Size nfreqs, const Real nu_min,
+        const Real nu_max, const Size Nxpix, const Size Nypix);
+    int compute_image_new_comoving(const Size ray_nr, const Size nfreqs, const Real nu_min,
+        const Real nu_max); // most similar function formulation
+                            // to old imager
     int compute_image_optical_depth_new(const Vector3D raydir, const Size Nxpix,
         const Size Nypix); // actual function for the new imager
     // convenient wrappers for the new imager

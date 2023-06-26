@@ -212,6 +212,8 @@ PYBIND11_MODULE(core, module) {
             "local approximation for the boundary conditions.")
         .def("compute_Jeff", &Model::compute_Jeff,
             "Compute the effective mean intensity in the line.")
+        .def("compute_Jeff_sparse", &Model::compute_Jeff_sparse,
+            "Compute the effective mean intensity in the line, using a memory sparse algorithm.")
         .def("compute_level_populations_from_stateq", &Model::compute_level_populations_from_stateq,
             "Compute the level populations for the model assuming statistical "
             "equilibrium.")
@@ -256,6 +258,25 @@ PYBIND11_MODULE(core, module) {
                 & Model::compute_image_new,
             "Compute an image of the model along the given ray direction, using "
             "the new imager, specifying the ray direction and image resolution.")
+        .def("compute_image_new_comoving",
+            (int(Model::*)(
+                const Size ray_nr, const Size nfreqs, const Real nu_min, const Real nu_max))
+                & Model::compute_image_new_comoving,
+            "Compute an image of the model along the given ray direction, using "
+            "the comoving algorithm and new image ray tracer.")
+        .def("compute_image_new_comoving",
+            (int(Model::*)(const Size ray_nr, const Size nfreqs, const Real nu_min,
+                const Real nu_max, const Size Nxpix, const Size Nypix))
+                & Model::compute_image_new_comoving,
+            "Compute an image of the model along the given ray direction, using "
+            "the comoving algorithm and new image ray tracer, specifying the image resolution.")
+        .def("compute_image_new_comoving",
+            (int(Model::*)(const double rx, const double ry, const double rz, const Size nfreqs,
+                const Real nu_min, const Real nu_max, const Size Nxpix, const Size Nypix))
+                & Model::compute_image_new_comoving,
+            "Compute an image of the model along the given ray direction, using "
+            "the comoving algorithm and new image ray tracer, specifying the ray direction and "
+            "image resolution.")
         .def("compute_image_optical_depth", &Model::compute_image_optical_depth,
             "Compute an image of the optical depth for the model along the "
             "given ray.")
@@ -312,6 +333,8 @@ PYBIND11_MODULE(core, module) {
             "Minimum optical depth that will be assumed in the comoving solver.")
         .def_readwrite("store_intensities", &Parameters::store_intensities,
             "Whether or not to store intensities.")
+        .def_readwrite("use_smoothing", &Parameters::use_smoothing,
+            "Whether or not to smooth out the J's for the comoving methods.")
         .def_readwrite("one_line_approximation", &Parameters::one_line_approximation,
             "Whether or not to use one line approximation.")
         .def_readwrite("sum_opacity_emissivity_over_all_lines",

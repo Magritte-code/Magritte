@@ -107,6 +107,8 @@ Image ::Image(const Geometry& geometry, const Frequencies& frequencies, const Im
     set_coordinates_projection_surface(geometry, Nxpix, Nypix);
 }
 
+// Infers frequencies of the image by copying the data from Frequencies
+// Assumes the spectral discretiation has been set to one fit for imaging
 inline void Image ::set_freqs(const Frequencies& frequencies) {
     // if (model.spectralDiscretisation != SD_Image)
     // {
@@ -118,6 +120,18 @@ inline void Image ::set_freqs(const Frequencies& frequencies) {
     for (Size f = 0; f < nfreqs; f++) {
         freqs[f] = frequencies.nu(0, f); // assumes an imaging spectral discretization
     }
+}
+
+// For manually setting the frequencies of the image
+void Image ::set_freqs(const Vector<Real>& image_freqs) {
+    nfreqs = image_freqs.size();
+    // std::cout << "resize nfreqs: " << nfreqs << std::endl;
+    freqs.resize(nfreqs);
+    for (Size f = 0; f < nfreqs; f++) {
+        freqs[f] = image_freqs[f];
+    }
+    I.resize(
+        ImX.size(), nfreqs); // also resize image, as it must store that many different frequencies
 }
 
 ///  print: write out the images
