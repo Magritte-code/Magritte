@@ -52,17 +52,15 @@ and documented in the latest release of Magritte.
 
 
 ## Issues & Contact
-Please report any issues with Magritte or its documentation
-[here](https://github.com/UCL/Magritte/issues).
-If you need any further help, please contact
-[Frederik De Ceuster](https://freddeceuster.github.io/).
+Please report any issues with Magritte or its documentation [here](https://github.com/Magritte-code/Magritte/issues).
+If you need any further help, please contact [Thomas Ceulemans](https://thomasceulemans.github.io/) or [Frederik De Ceuster](https://freddeceuster.github.io/).
 
 
 ## Cite
 Please contact the authors of the papers referenced above if you want to use
 Magritte in your research. We are currently working on documentation and
 examples to facilitate its independent use. Until then, please
-[contact us](https://freddeceuster.github.io/).
+[contact us](https://thomasceulemans.github.io/).
 
 
 ## Developers & Contributors
