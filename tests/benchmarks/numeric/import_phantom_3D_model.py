@@ -143,7 +143,7 @@ def import_phantom():
     model.parameters.set_dimension          (3)            # This is a 3D model
     model.parameters.set_npoints            (npoints)      # Number of points
     model.parameters.set_nrays              (12)            # Number of rays
-    model.parameters.set_nspecs             (5)            # Number of species (min. 5)
+    model.parameters.set_nspecs             (3)            # Number of species (min. 5)
     model.parameters.set_nlspecs            (1)            # Number of line species
     model.parameters.set_nquads             (31)           # Number of quadrature points
 
@@ -153,8 +153,8 @@ def import_phantom():
     model.geometry.points.  neighbors.set(  nbs)
     model.geometry.points.n_neighbors.set(n_nbs)
 
-    model.chemistry.species.abundance = np.array((zeros, nCO, nH2, zeros, ones)).T
-    model.chemistry.species.symbol    = ['dummy0', 'CO', 'H2', 'e-', 'dummy1']
+    model.chemistry.species.abundance = np.array((nCO, nH2, zeros)).T
+    model.chemistry.species.symbol    = ['CO', 'H2', 'e-']
 
     model.thermodynamics.temperature.gas  .set(tmp)
     model.thermodynamics.turbulence.vturb2.set(trb)

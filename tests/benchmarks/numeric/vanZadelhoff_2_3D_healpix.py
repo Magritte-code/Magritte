@@ -33,7 +33,7 @@ def create_model (a_or_b):
     dimension = 3
     nshells   = len(r_shell)
     nrays     = 12 * 3**2
-    nspecs    = 5
+    nspecs    = 3
     nlspecs   = 1
     nquads    = 7
 
@@ -87,8 +87,8 @@ def create_model (a_or_b):
     model.geometry.points.position.set(position)
     model.geometry.points.velocity.set(velocity)
 
-    model.chemistry.species.abundance = [[     0.0, X_mol_int(r)*nH2_int(r), nH2_int(r),  0.0,      1.0] for r in rs]
-    model.chemistry.species.symbol    =  ['dummy0',                  'HCO+',       'H2', 'e-', 'dummy1']
+    model.chemistry.species.abundance = [[X_mol_int(r)*nH2_int(r), nH2_int(r), 0.0] for r in rs]
+    model.chemistry.species.symbol    = ['HCO+', 'H2', 'e-']
 
     model.thermodynamics.temperature.gas  .set([temp_int(r)    for r in rs])
     model.thermodynamics.turbulence.vturb2.set([turb_int(r)**2 for r in rs])
@@ -138,7 +138,7 @@ def run_model (a_or_b, nosave=False):
     nlev    = model.lines.lineProducingSpecies[0].linedata.nlev
 
     pops = np.array(model.lines.lineProducingSpecies[0].population).reshape((npoints, nlev))
-    abun = np.array(model.chemistry.species.abundance)[:,1]
+    abun = np.array(model.chemistry.species.abundance)[:,0]
     rs   = np.linalg.norm(np.array(model.geometry.points.position), axis=1)
 
     (i,ra,rb,nh,tk,nm,vr,db,td,lp0,lp1,lp2,lp3,lp4) = np.loadtxt (f'Ratran_results/vanZadelhoff_2{a_or_b}.out', skiprows=14, unpack=True, usecols=range(14))

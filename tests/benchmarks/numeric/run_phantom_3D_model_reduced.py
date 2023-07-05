@@ -59,7 +59,7 @@ def run_model (nosave=True):
     timer3.stop()
 
     pops = np.array(model.lines.lineProducingSpecies[0].population).reshape((model.parameters.npoints(), model.lines.lineProducingSpecies[0].linedata.nlev))
-    abun = np.array(model.chemistry.species.abundance)[:,1]
+    abun = np.array(model.chemistry.species.abundance)[:,0]
     rs   = np.linalg.norm(np.array(model.geometry.points.position), axis=1)
 
     # (i,ra,rb,nh,tk,nm,vr,db,td,lp0,lp1) = np.loadtxt (f'{curdir}/Ratran_results/vanZadelhoff_1{a_or_b}.out', skiprows=14, unpack=True)
