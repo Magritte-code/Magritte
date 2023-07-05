@@ -69,8 +69,8 @@ Issues & Contact
 
 Please report any `issues <https://github.com/Magritte-code/Magritte/issues>`_ with
 Magritte or its documentation `here <https://github.com/Magritte-code/Magritte/issues>`_.
-If you need any further help, please contact `Frederik De Ceuster
-<https://www.kuleuven.be/wieiswie/en/person/00101884>`_.
+If you need any further help, please contact `Thomas Ceulemans <https://thomasceulemans.github.io/>`_ or `Frederik De Ceuster
+<https://freddeceuster.github.io/>`_.
 
 
 Developers & Contributors
