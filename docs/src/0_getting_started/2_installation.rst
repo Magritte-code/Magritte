@@ -151,15 +151,7 @@ Corrently only the GNU gcc compiler is fully supported.
 We are currently further investigating Clang and Intel compiler (:literal:`icc`) support.
 
 
-Vectorisation
-=============
-
-🧑‍💻 Comming soon!
-
-
 GPU acceleration
 ================
 
-🧑‍💻 Comming soon!
-
-
+🧑‍💻 Coming soon(tm); GPU acceleration is expected to be implemented in 2024.
