@@ -2051,19 +2051,19 @@ inline void Solver::solve_comoving_image_single_step(Model& model, const Size ra
             intensities(curr_point_on_ray_index, curr_freq_idx) * exp(-dtau)
             + expl_term * S_curr(rayposidx, next_freq_idx) // source term
             + expl_term * expl_freq_der * deltanu / dtau;  // frequency derivative term
-        if (intensities(rayposidx, next_freq_idx) < 0.0)   // DEBUG
-        {
-            std::cout << "negative I computed during explicit step" << std::endl;
-            std::cout << "computing at raypos, next_freq_idx, computed I: " << rayposidx << ", "
-                      << next_freq_idx << ", " << intensities(rayposidx, next_freq_idx)
-                      << std::endl;
-            std::cout << "prev I: " << intensities(curr_point_on_ray_index, curr_freq_idx)
-                      << std::endl;
-            std::cout << "expl_term: " << expl_term << std::endl;
-            std::cout << "expl_freq_der: " << expl_freq_der << std::endl;
-            std::cout << "deltanu/dtau: " << deltanu << std::endl;
-            std::cout << "dtau: " << dtau << std::endl;
-        }
+        // if (intensities(rayposidx, next_freq_idx) < 0.0)   // DEBUG
+        // {
+        //     std::cout << "negative I computed during explicit step" << std::endl;
+        //     std::cout << "computing at raypos, next_freq_idx, computed I: " << rayposidx << ", "
+        //               << next_freq_idx << ", " << intensities(rayposidx, next_freq_idx)
+        //               << std::endl;
+        //     std::cout << "prev I: " << intensities(curr_point_on_ray_index, curr_freq_idx)
+        //               << std::endl;
+        //     std::cout << "expl_term: " << expl_term << std::endl;
+        //     std::cout << "expl_freq_der: " << expl_freq_der << std::endl;
+        //     std::cout << "deltanu/dtau: " << deltanu << std::endl;
+        //     std::cout << "dtau: " << dtau << std::endl;
+        // }
     }
 
     // Implicit part ordering depends on the discretization direction
@@ -2102,25 +2102,31 @@ inline void Solver::solve_comoving_image_single_step(Model& model, const Size ra
                     - dIdnu_coef1_next(rayposidx, next_freq_idx - 1) * impl_term * deltanu
                           / dtau); // freq derivative term
 
-            if (intensities(rayposidx, next_freq_idx - 1) < 0.0) // DEBUG
-            {
-                std::cout << "negative I computed during implicit step" << std::endl;
-                std::cout << "workaround applied; set I to Icmb" << std::endl;
-                intensities(rayposidx, next_freq_idx - 1) = boundary_intensity(model, initial_bdy,
-                    model.radiation.frequencies.nu(nextpointidx, next_freq_idx - 1) * next_shift);
+            // if (intensities(rayposidx, next_freq_idx - 1) < 0.0) // DEBUG
+            // {
+            //     // std::cout << "negative I computed during implicit step" << std::endl;
+            //     // std::cout << "workaround applied; set I to Icmb" << std::endl;
+            //     intensities(rayposidx, next_freq_idx - 1) = boundary_intensity(model,
+            //     initial_bdy,
+            //         model.radiation.frequencies.nu(nextpointidx, next_freq_idx - 1) *
+            //         next_shift);
 
-                std::cout << "computing at raypos, next_freq_idx, computed I: " << rayposidx << ", "
-                          << next_freq_idx << ", " << intensities(rayposidx, next_freq_idx - 1)
-                          << std::endl;
-                std::cout << "dIdnucoef1: " << dIdnu_coef1_next(rayposidx, next_freq_idx - 1)
-                          << std::endl;
-                // std::cout << "prev I: " << intensities(curr_point_on_ray_index, curr_freq_idx)
-                //           << std::endl;
-                std::cout << "expl_term: " << impl_term << std::endl;
-                std::cout << "expl_freq_der: " << impl_freq_der << std::endl;
-                std::cout << "deltanu: " << deltanu << std::endl;
-                std::cout << "dtau: " << dtau << std::endl;
-            }
+            //     // std::cout << "computing at raypos, next_freq_idx, computed I: " << rayposidx
+            //     <<
+            //     // ", "
+            //     //           << next_freq_idx << ", " << intensities(rayposidx, next_freq_idx -
+            //     1)
+            //     //           << std::endl;
+            //     // std::cout << "dIdnucoef1: " << dIdnu_coef1_next(rayposidx, next_freq_idx - 1)
+            //     //           << std::endl;
+            //     // // std::cout << "prev I: " << intensities(curr_point_on_ray_index,
+            //     curr_freq_idx)
+            //     // //           << std::endl;
+            //     // std::cout << "expl_term: " << impl_term << std::endl;
+            //     // std::cout << "expl_freq_der: " << impl_freq_der << std::endl;
+            //     // std::cout << "deltanu: " << deltanu << std::endl;
+            //     // std::cout << "dtau: " << dtau << std::endl;
+            // }
         }
     } else {
         for (Size next_freq_idx = 0; next_freq_idx < model.parameters->nfreqs(); next_freq_idx++) {
@@ -2152,24 +2158,27 @@ inline void Solver::solve_comoving_image_single_step(Model& model, const Size ra
                     - dIdnu_coef1_next(rayposidx, next_freq_idx) * impl_term * deltanu
                           / dtau); // freq derivative term
 
-            if (intensities(rayposidx, next_freq_idx) < 0.0) // DEBUG
-            {
-                std::cout << "workaround applied; set I to Icmb" << std::endl;
-                intensities(rayposidx, next_freq_idx) = boundary_intensity(model, initial_bdy,
-                    model.radiation.frequencies.nu(nextpointidx, next_freq_idx) * next_shift);
-                std::cout << "negative I computed during implicit step" << std::endl;
-                std::cout << "computing at raypos, next_freq_idx, computed I: " << rayposidx << ", "
-                          << next_freq_idx << ", " << intensities(rayposidx, next_freq_idx)
-                          << std::endl;
-                std::cout << "dIdnucoef1: " << dIdnu_coef1_next(rayposidx, next_freq_idx)
-                          << std::endl;
-                // std::cout << "prev I: " << intensities(curr_point_on_ray_index, curr_freq_idx)
-                //           << std::endl;
-                std::cout << "expl_term: " << impl_term << std::endl;
-                std::cout << "expl_freq_der: " << impl_freq_der << std::endl;
-                std::cout << "deltanu: " << deltanu << std::endl;
-                std::cout << "dtau: " << dtau << std::endl;
-            }
+            // if (intensities(rayposidx, next_freq_idx) < 0.0) // DEBUG
+            // {
+            //     // std::cout << "workaround applied; set I to Icmb" << std::endl;
+            //     intensities(rayposidx, next_freq_idx) = boundary_intensity(model, initial_bdy,
+            //         model.radiation.frequencies.nu(nextpointidx, next_freq_idx) * next_shift);
+            //     // std::cout << "negative I computed during implicit step" << std::endl;
+            //     // std::cout << "computing at raypos, next_freq_idx, computed I: " << rayposidx
+            //     <<
+            //     // ", "
+            //     //           << next_freq_idx << ", " << intensities(rayposidx, next_freq_idx)
+            //     //           << std::endl;
+            //     // std::cout << "dIdnucoef1: " << dIdnu_coef1_next(rayposidx, next_freq_idx)
+            //     //           << std::endl;
+            //     // // std::cout << "prev I: " << intensities(curr_point_on_ray_index,
+            //     curr_freq_idx)
+            //     // //           << std::endl;
+            //     // std::cout << "expl_term: " << impl_term << std::endl;
+            //     // std::cout << "expl_freq_der: " << impl_freq_der << std::endl;
+            //     // std::cout << "deltanu: " << deltanu << std::endl;
+            //     // std::cout << "dtau: " << dtau << std::endl;
+            // }
         }
     }
 }
@@ -4314,6 +4323,57 @@ inline void Solver ::image_feautrier_order_2_new_imager(
 }
 
 template <ApproximationType approx>
+inline void Solver ::image_shortchar_order_0_new_imager(
+    Model& model, const Vector3D& ray_dir, const Size nxpix, const Size nypix) {
+    Image image =
+        Image(model.geometry, model.radiation.frequencies, Intensity, ray_dir, nxpix, nypix);
+    setup_new_imager(model, image, ray_dir);
+
+    // Note: number of pixels is constant for now, but may be
+    // adaptive in the future; (but then while loop will be
+    // required anyway)
+    const Size npixels             = image.ImX.size(); // is ImY.size(), is I.size()
+    const Vector3D origin_velocity = Vector3D(0.0);
+
+    const Size start_bdy_point = model.geometry.get_closest_bdy_point_in_custom_raydir(ray_dir);
+
+    accelerated_for(pixidx, npixels, {
+        const Vector3D origin =
+            image.surface_coords_to_3D_coordinates(image.ImX[pixidx], image.ImY[pixidx]);
+        Real Z = 0.0;
+        const Size closest_bdy_point =
+            trace_ray_imaging_get_start(model.geometry, origin, start_bdy_point, ray_dir, Z);
+        const Real dshift_max = get_dshift_max(model, closest_bdy_point);
+
+        nr_()[centre]    = closest_bdy_point;
+        shift_()[centre] = model.geometry.get_shift<Rest>(
+            origin, origin_velocity, ray_dir, closest_bdy_point, Z, false);
+        first_() = trace_ray_imaging<Rest>(model.geometry, origin, closest_bdy_point, ray_dir,
+                       dshift_max, -1, Z, centre - 1, centre - 1)
+                 + 1;
+        last_() = centre; // by definition, only boundary points
+                          // can lie in the backward direction
+
+        n_tot_() = (last_() + 1) - first_();
+
+        if (n_tot_() > 1) {
+            for (Size f = 0; f < model.parameters->nfreqs(); f++) {
+                image.I(pixidx, f) = image_shortchar_order_0<approx>(model, closest_bdy_point, f);
+            }
+        } else {
+            for (Size f = 0; f < model.parameters->nfreqs(); f++) {
+                image.I(pixidx, f) = boundary_intensity(
+                    model, closest_bdy_point, model.radiation.frequencies.nu(closest_bdy_point, f));
+            }
+        }
+    })
+
+    pc::accelerator::synchronize();
+
+    model.images.push_back(image);
+}
+
+template <ApproximationType approx>
 inline void Solver ::image_comoving_new_imager(Model& model, const Vector3D& ray_dir,
     const Size nxpix, const Size nypix, const Vector<Real>& image_freqs) {
     // note: we compute the comoving intensities using only a limited amount of frequencies and
@@ -5260,6 +5320,131 @@ accel inline void Solver ::solve_shortchar_order_0(Model& model, const Size o, c
             model.radiation.J(o, f) += model.geometry.rays.weight[r] * model.radiation.I(r, o, f);
         }
     }
+}
+
+// Imager using long characteristics
+// returns the computed specific intensity at the end of the ray
+template <ApproximationType approx>
+accel inline Real Solver ::image_shortchar_order_0(Model& model, const Size o, const Size f) {
+    const Size l    = model.radiation.frequencies.corresponding_line[f];
+    const Real freq = model.radiation.frequencies.nu(o, f);
+    Real intensity  = 0.0;
+
+    const Size first = first_();
+    const Size last  = last_();
+    const Size n_tot = n_tot_();
+    Size curr        = first;
+
+    Vector<double>& dZ    = dZ_();
+    Vector<Size>& nr      = nr_();
+    Vector<double>& shift = shift_();
+
+    Vector<Real>& eta_c = eta_c_();
+    Vector<Real>& eta_n = eta_n_();
+
+    Vector<Real>& chi_c = chi_c_();
+    Vector<Real>& chi_n = chi_n_();
+
+    Vector<Real>& source_c = source_c_();
+    Vector<Real>& source_n = source_n_();
+
+    Vector<Real>& tau = tau_();
+
+    Size crt = nr[first];
+    Size nxt = nr[first + 1];
+
+    Real term_c, term_n, dtau;
+    bool compute_curr_opacity, prev_compute_curr_opacity;
+
+    if (last > curr) {
+        double shift_c = shift[first];
+        double shift_n = shift[first + 1];
+
+        const Size l = model.radiation.frequencies.corresponding_line[f]; // line index
+
+        compute_curr_opacity = true; // for the first point, we need to compute
+                                     // both the curr and next opacity (and source)
+
+        compute_source_dtau<approx>(model, crt, nxt, l, freq * shift_c, freq * shift_n, shift_c,
+            shift_n, dZ[curr], compute_curr_opacity, dtau, chi_c[f], chi_n[f], source_c[f],
+            source_n[f]);
+        dtau = std::max(model.parameters->min_dtau, dtau);
+
+        // proper implementation of 2nd order shortchar (not
+        // yet times reducing factor of exp(-tau))
+        //  model.radiation.I(r,o,f) = term_c *
+        //  (expm1(-dtau)+dtau) / dtau
+        //                           + term_n *
+        //                           (-expm1(-dtau)-dtau*expf(-dtau))
+        //                           /dtau;
+        // Rewrite, trying to use less exponentials
+        const Real factor = expm1f(-dtau) / dtau;
+
+        intensity = factor * (source_c[f] - source_n[f] * (1.0 + dtau)) + source_c[f] - source_n[f];
+        tau[f]    = dtau;
+
+        // For all frequencies, we need to use the same method
+        // for computing the optical depth
+        //  bool
+        //  prev_compute_curr_opacity=compute_curr_opacity;//technically,
+        //  we could also keep this bool individually for every
+        //  frequency
+        prev_compute_curr_opacity = compute_curr_opacity; // technically, we could also
+                                                          // keep this bool individually
+                                                          // for every frequency
+        curr += 1;
+
+        while (curr < last) {
+            crt     = nr[curr];
+            nxt     = nr[curr + 1];
+            shift_c = shift[curr];
+            shift_n = shift[curr + 1];
+
+            // model.geometry.get_next(o, r, crt, nxt, Z, dZ, shift_n);
+
+            // for (Size f = 0; f < model.parameters->nfreqs(); f++) {
+            source_c[f] = source_n[f];
+            chi_c[f]    = chi_n[f];
+            // const Real freq = model.radiation.frequencies.nu(o, f);
+            // const Size l    = model.radiation.frequencies.corresponding_line[f];
+
+            compute_curr_opacity = prev_compute_curr_opacity;
+
+            compute_source_dtau<approx>(model, crt, nxt, l, freq * shift_c, freq * shift_n, shift_c,
+                shift_n, dZ[curr], compute_curr_opacity, dtau, chi_c[f], chi_n[f], source_c[f],
+                source_n[f]);
+            dtau = std::max(model.parameters->min_dtau, dtau);
+
+            // proper implementation of 2nd order shortchar (not
+            // yet times reducing factor of exp(-tau))
+            //  model.radiation.I(r,o,f) += expf(-tau[f]) *
+            //                           ( term_c *
+            //                           (expm1(-dtau)+dtau) /
+            //                           dtau
+            //                           + term_n *
+            //                           (-expm1(-dtau)-dtau*expf(-dtau))
+            //                           /dtau);
+            // Rewrite, trying to use less exponentials
+            intensity += expf(-tau[f])
+                       * (expm1f(-dtau) / dtau * (source_c[f] - source_n[f] * (1.0 + dtau))
+                           + source_c[f] - source_n[f]);
+            // TODO: check order of addition, as we might be
+            // starting with the largest contributions, before
+            // adding the smaller ones...
+            tau[f] += dtau;
+            // }
+
+            // save setting for use for all frequencies for the
+            // next interval
+            prev_compute_curr_opacity = compute_curr_opacity;
+            curr += 1;
+        }
+
+        intensity += boundary_intensity(model, nxt, freq * shift_n) * expf(-tau[f]);
+        return intensity;
+    }
+
+    return boundary_intensity(model, crt, freq);
 }
 
 // accel inline void Solver ::

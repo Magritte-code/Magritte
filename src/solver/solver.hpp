@@ -463,9 +463,14 @@ struct Solver {
     template <ApproximationType approx>
     inline void image_feautrier_order_2_new_imager(
         Model& model, const Vector3D& ray_dir, const Size nxpix, const Size nypix);
+    template <ApproximationType approx>
+    inline void image_shortchar_order_0_new_imager(
+        Model& model, const Vector3D& ray_dir, const Size nxpix, const Size nypix);
     // actual solver
     template <ApproximationType approx>
     accel inline void image_feautrier_order_2(Model& model, const Size o, const Size f);
+    template <ApproximationType approx>
+    accel inline Real image_shortchar_order_0(Model& model, const Size o, const Size f);
 
     template <ApproximationType approx>
     accel inline void image_feautrier_order_2_for_point(Model& model, const Size rr, const Size p);

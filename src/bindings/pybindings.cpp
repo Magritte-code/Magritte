@@ -258,6 +258,17 @@ PYBIND11_MODULE(core, module) {
                 & Model::compute_image_new,
             "Compute an image of the model along the given ray direction, using "
             "the new imager, specifying the ray direction and image resolution.")
+        .def("compute_image_new_shortchar",
+            (int(Model::*)(const Size ray_nr, const Size Nxpix, const Size Nypix))
+                & Model::compute_image_new_shortchar,
+            "Compute an image of the model along the given ray direction, using "
+            "the new imager, specifying the image resolution.")
+        .def("compute_image_new_shortchar",
+            (int(Model::*)(const double rx, const double ry, const double rz, const Size Nxpix,
+                const Size Nypix))
+                & Model::compute_image_new_shortchar,
+            "Compute an image of the model along the given ray direction, using "
+            "the new imager, specifying the ray direction and image resolution.")
         .def("compute_image_new_comoving",
             (int(Model::*)(
                 const Size ray_nr, const Size nfreqs, const Real nu_min, const Real nu_max))

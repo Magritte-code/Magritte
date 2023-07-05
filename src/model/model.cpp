@@ -1196,6 +1196,57 @@ int Model ::compute_image_new(const Vector3D raydir, const Size Nxpix, const Siz
 
 ///  Wrapper for the new imager
 ///////////////////////////////
+int Model ::compute_image_new_shortchar(const Size ray_nr) {
+    return compute_image_new_shortchar(geometry.rays.direction[ray_nr], 256, 256);
+}
+
+///  Wrapper for the new imager
+///////////////////////////////
+int Model ::compute_image_new_shortchar(const Size ray_nr, const Size Nxpix, const Size Nypix) {
+    return compute_image_new_shortchar(geometry.rays.direction[ray_nr], Nxpix, Nypix);
+}
+
+///  Wrapper for the new imager
+///////////////////////////////
+int Model ::compute_image_new_shortchar(
+    const double rx, const double ry, const double rz, const Size Nxpix, const Size Nypix) {
+    const Vector3D raydir = Vector3D(rx, ry, rz); // will be normed later on (if not yet normed)
+    return compute_image_new_shortchar(raydir, Nxpix, Nypix);
+}
+
+///  Computer for the radiation field, using a new imager
+/////////////////////////////////////
+int Model ::compute_image_new_shortchar(const Vector3D raydir, const Size Nxpix, const Size Nypix) {
+    if (raydir.squaredNorm() == 0.0) {
+        throw std::runtime_error(
+            "The given ray direction vector does not point in a direction. Please "
+            "use a non-zero (normed) direction vector to generate an image.");
+    }
+    const Vector3D normed_raydir = raydir * (1 / std::sqrt(raydir.squaredNorm()));
+    cout << "Computing image new..." << endl;
+
+    Solver solver;
+    // setup has to be handled after image creation, due to the rays themselves
+    // depend on the image pixels
+    //  solver.setup_new_imager <Rest> (*this);//traced ray length might be
+    //  different, thus we might need longer data types
+    if (parameters->one_line_approximation) {
+        throw std::runtime_error("One line approximation is not supported for imaging.");
+        solver.image_shortchar_order_0_new_imager<OneLine>(*this, normed_raydir, Nxpix, Nypix);
+        return (0);
+    }
+
+    if (parameters->sum_opacity_emissivity_over_all_lines) {
+        solver.image_shortchar_order_0_new_imager<None>(*this, normed_raydir, Nxpix, Nypix);
+        return (0);
+    }
+
+    solver.image_shortchar_order_0_new_imager<CloseLines>(*this, normed_raydir, Nxpix, Nypix);
+    return (0);
+}
+
+///  Wrapper for the new imager
+///////////////////////////////
 int Model ::compute_image_new_comoving(
     const Size ray_nr, const Size nfreqs, const Real nu_min, const Real nu_max) {
     return compute_image_new_comoving(
