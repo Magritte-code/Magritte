@@ -16,7 +16,7 @@ import magritte.core     as magritte
 dimension = 1
 npoints   = 50
 nrays     = 2
-nspecs    = 5
+nspecs    = 3
 nlspecs   = 1
 nquads    = 1
 
@@ -51,8 +51,8 @@ def create_model ():
     model.geometry.points.position.set([[i*dx, 0, 0] for i in range(npoints)])
     model.geometry.points.velocity.set([[i*dv, 0, 0] for i in range(npoints)])
 
-    model.chemistry.species.abundance = [[     0.0,    nTT,  nH2,  0.0,      1.0] for _ in range(npoints)]
-    model.chemistry.species.symbol    =  ['dummy0', 'test', 'H2', 'e-', 'dummy1']
+    model.chemistry.species.abundance = [[nTT, nH2, 0.0] for _ in range(npoints)]
+    model.chemistry.species.symbol    = ['test', 'H2', 'e-']
 
     model.thermodynamics.temperature.gas  .set( temp                 * np.ones(npoints))
     model.thermodynamics.turbulence.vturb2.set((turb/magritte.CC)**2 * np.ones(npoints))
