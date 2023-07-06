@@ -21,7 +21,7 @@ from scipy.interpolate import interp1d
 dimension = 1
 npoints   = 25
 nrays     = 20
-nspecs    = 5
+nspecs    = 3
 nlspecs   = 1
 nquads    = 11
 
@@ -67,8 +67,8 @@ def create_model():
     model.geometry.points.position.set([[r, 0, 0] for r in rs])
     model.geometry.points.velocity.set(np.zeros((npoints, 3)))
 
-    model.chemistry.species.abundance = [[     0.0, nTT(r), nH2(r),  0.0,      1.0] for r in rs]
-    model.chemistry.species.symbol    =  ['dummy0', 'test',   'H2', 'e-', 'dummy1']
+    model.chemistry.species.abundance = [[nTT(r), nH2(r), 0.0] for r in rs]
+    model.chemistry.species.symbol    = ['test', 'H2', 'e-']
 
     model.thermodynamics.temperature.gas  .set( temp                 * np.ones(npoints))
     model.thermodynamics.turbulence.vturb2.set((turb/magritte.CC)**2 * np.ones(npoints))

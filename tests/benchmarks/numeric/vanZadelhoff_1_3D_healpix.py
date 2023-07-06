@@ -20,7 +20,7 @@ from scipy.interpolate import interp1d
 dimension = 3
 nshells   = 20
 nrays     = 12*2**2 #reduced number of rays to speed up test
-nspecs    = 5
+nspecs    = 3
 nlspecs   = 1
 nquads    = 11
 
@@ -80,8 +80,8 @@ def create_model (a_or_b):
     model.geometry.points.position.set(position)
     model.geometry.points.velocity.set(np.zeros((npoints, 3)))
 
-    model.chemistry.species.abundance = [[     0.0, nTT(r), nH2(r),  0.0,      1.0] for r in rs]
-    model.chemistry.species.symbol    =  ['dummy0', 'test',   'H2', 'e-', 'dummy1']
+    model.chemistry.species.abundance = [[nTT(r), nH2(r), 0.0] for r in rs]
+    model.chemistry.species.symbol    = ['test', 'H2', 'e-']
 
     model.thermodynamics.temperature.gas  .set( temp                 * np.ones(npoints))
     model.thermodynamics.turbulence.vturb2.set((turb/magritte.CC)**2 * np.ones(npoints))
@@ -128,7 +128,7 @@ def run_model (a_or_b, nosave=False):
     timer3.stop()
 
     pops = np.array(model.lines.lineProducingSpecies[0].population).reshape((model.parameters.npoints(), 2))
-    abun = np.array(model.chemistry.species.abundance)[:,1]
+    abun = np.array(model.chemistry.species.abundance)[:,0]
     rs   = np.linalg.norm(np.array(model.geometry.points.position), axis=1)
 
     (i,ra,rb,nh,tk,nm,vr,db,td,lp0,lp1) = np.loadtxt (f'{curdir}/Ratran_results/vanZadelhoff_1{a_or_b}.out', skiprows=14, unpack=True)
