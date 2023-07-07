@@ -494,8 +494,8 @@ struct Solver {
         const Size nypix, const Vector<Real>& image_freqs);
 
     // actual solver; assumes the full ray computation has been set up correctly
-    inline void solve_comoving_image_single_step(Model& model, const Size rayposidx,
-        const bool is_upward_disc, const bool forward_ray, const Size initial_bdy);
+    inline void solve_comoving_image_single_step(
+        Model& model, const Size rayposidx, const bool is_upward_disc, const bool forward_ray);
 
     // interpolation of computed comoving intensities
     inline void interpolate_computed_comoving_intensities(Model& model, Image& image, Size pixidx,
