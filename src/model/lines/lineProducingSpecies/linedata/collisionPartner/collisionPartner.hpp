@@ -19,8 +19,8 @@ struct CollisionPartner {
     Real2 Ce; ///< Collisional excitation rates for each temperature
     Real2 Cd; ///< Collisional de-excitation rates for each temperature
 
-    Real1 Ce_intpld; ///< interpolated Collisional excitation
-    Real1 Cd_intpld; ///< interpolated Collisional de-excitation
+    pc::multi_threading::ThreadPrivate<Real1> Ce_intpld; ///< interpolated Collisional excitation
+    pc::multi_threading::ThreadPrivate<Real1> Cd_intpld; ///< interpolated Collisional de-excitation
 
     void read(const Io& io, const Size l, const Size c);
     void write(const Io& io, const Size l, const Size c) const;

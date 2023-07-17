@@ -7,17 +7,17 @@ inline void CollisionPartner ::interpolate_collision_coefficients(const Real tem
     const Size t = search(tmp, temperature_gas);
 
     if (t == 0) {
-        Ce_intpld = Ce[0];
-        Cd_intpld = Cd[0];
+        Ce_intpld() = Ce[0];
+        Cd_intpld() = Cd[0];
     } else if (t == ntmp - 1) {
-        Ce_intpld = Ce[ntmp - 1];
-        Cd_intpld = Cd[ntmp - 1];
+        Ce_intpld() = Ce[ntmp - 1];
+        Cd_intpld() = Cd[ntmp - 1];
     } else {
         const Real step = (temperature_gas - tmp[t - 1]) / (tmp[t] - tmp[t - 1]);
 
         for (Size k = 0; k < ncol; k++) {
-            Ce_intpld[k] = Ce[t - 1][k] + (Ce[t][k] - Ce[t - 1][k]) * step;
-            Cd_intpld[k] = Cd[t - 1][k] + (Cd[t][k] - Cd[t - 1][k]) * step;
+            Ce_intpld()[k] = Ce[t - 1][k] + (Ce[t][k] - Ce[t - 1][k]) * step;
+            Cd_intpld()[k] = Cd[t - 1][k] + (Cd[t][k] - Cd[t - 1][k]) * step;
         }
     }
 }

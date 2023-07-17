@@ -316,7 +316,7 @@ void LineProducingSpecies ::update_using_acceleration_trial(const Size order) {
 
 ///  update_using_statistical_equilibrium: computes level populations by solving
 ///  the statistical equilibrium equation taking into account the radiation
-///  field
+///  field. This function is not parallellized, as it constructs a single large sparse matrix.
 ///    @param[in] abundance: chemical abundances of species in the model
 ///    @param[in] temperature: gas temperature in the model
 /////////////////////////////////////////////////////////////////////////////////
@@ -416,8 +416,8 @@ inline void LineProducingSpecies ::update_using_statistical_equilibrium(
             colpar.interpolate_collision_coefficients(tmp);
 
             for (Size k = 0; k < colpar.ncol; k++) {
-                const long double v_IJ = colpar.Cd_intpld[k] * abn;
-                const long double v_JI = colpar.Ce_intpld[k] * abn;
+                const long double v_IJ = colpar.Cd_intpld()[k] * abn;
+                const long double v_JI = colpar.Ce_intpld()[k] * abn;
 
                 // Note: we define our transition matrix as the transpose of R in the
                 // paper.
@@ -526,8 +526,8 @@ inline void LineProducingSpecies ::update_using_statistical_equilibrium(
 }
 
 ///  update_using_statistical_equilibrium: computes level populations by solving
-///  the statistical equilibrium equation taking into account the radiation
-///  field
+///  the statistical equilibrium equation taking into account the local radiation
+///  field. Is parallelized over the different positions.
 ///    @param[in] abundance: chemical abundances of species in the model
 ///    @param[in] temperature: gas temperature in the model
 /////////////////////////////////////////////////////////////////////////////////
@@ -546,84 +546,90 @@ inline void LineProducingSpecies ::update_using_statistical_equilibrium_sparse(
     residuals.push_back(population - populations.back());
     populations.push_back(population);
 
-    MatrixXld StatEq(linedata.nlev, linedata.nlev);
-    VectorXld y = VectorXld::Zero(linedata.nlev);
+    pc::multi_threading::ThreadPrivate<MatrixXld> StatEq;
+    pc::multi_threading::ThreadPrivate<VectorXld> y;
+    for (Size i = 0; i < pc::multi_threading::n_threads_avail(); i++) {
+        StatEq(i).resize(linedata.nlev, linedata.nlev);
+        y(i) = VectorXld::Zero(linedata.nlev);
+    }
 
-    for (Size p = 0; p < parameters->npoints();
-         p++) // !!! no OMP because push_back is not thread safe !!!
-    {
-        StatEq.setZero();
+    threaded_for(p,
+        parameters->npoints(), //)
+                               // for (Size p = 0; p < parameters->npoints();
+                               //      p++) // !!! no OMP because push_back is not thread safe !!!
+        {
+            StatEq().setZero();
 
-        // Radiative transitions
-        for (Size k = 0; k < linedata.nrad; k++) {
-            const long double v_IJ = linedata.A[k] + linedata.Bs[k] * Jeff[p][k];
-            const long double v_JI = linedata.Ba[k] * Jeff[p][k];
-
-            // Note: we define our transition matrix as the transpose of R in the
-            // paper.
-            const Size I = linedata.irad[k];
-            const Size J = linedata.jrad[k];
-
-            StatEq(J, I) += v_IJ;
-            StatEq(J, J) -= v_JI;
-            StatEq(I, J) += v_JI;
-            StatEq(I, I) -= v_IJ;
-        }
-
-        // Approximated Lambda operator
-        for (Size k = 0; k < linedata.nrad; k++) {
-            for (Size m = 0; m < lambda.get_size(p, k); m++) {
-                const Size nr          = lambda.get_nr(p, k, m);
-                const long double v_IJ = -lambda.get_Ls(p, k, m) * get_opacity(p, k);
-
-                if (nr != p) {
-                    throw std::runtime_error("ERROR: non-local Approximated Lambda operator.");
-                }
+            // Radiative transitions
+            for (Size k = 0; k < linedata.nrad; k++) {
+                const long double v_IJ = linedata.A[k] + linedata.Bs[k] * Jeff[p][k];
+                const long double v_JI = linedata.Ba[k] * Jeff[p][k];
 
                 // Note: we define our transition matrix as the transpose of R in the
                 // paper.
                 const Size I = linedata.irad[k];
                 const Size J = linedata.jrad[k];
 
-                StatEq(J, I) += v_IJ;
-                StatEq(I, I) -= v_IJ;
+                StatEq()(J, I) += v_IJ;
+                StatEq()(J, J) -= v_JI;
+                StatEq()(I, J) += v_JI;
+                StatEq()(I, I) -= v_IJ;
             }
-        }
 
-        // Collisional transitions
-        for (CollisionPartner& colpar : linedata.colpar) {
-            Real abn = abundance[p][colpar.num_col_partner];
-            Real tmp = temperature[p];
+            // Approximated Lambda operator
+            for (Size k = 0; k < linedata.nrad; k++) {
+                for (Size m = 0; m < lambda.get_size(p, k); m++) {
+                    const Size nr          = lambda.get_nr(p, k, m);
+                    const long double v_IJ = -lambda.get_Ls(p, k, m) * get_opacity(p, k);
 
-            colpar.adjust_abundance_for_ortho_or_para(tmp, abn);
-            colpar.interpolate_collision_coefficients(tmp);
+                    if (nr != p) {
+                        throw std::runtime_error("ERROR: non-local Approximated Lambda operator.");
+                    }
 
-            for (Size k = 0; k < colpar.ncol; k++) {
-                const long double v_IJ = colpar.Cd_intpld[k] * abn;
-                const long double v_JI = colpar.Ce_intpld[k] * abn;
+                    // Note: we define our transition matrix as the transpose of R in the
+                    // paper.
+                    const Size I = linedata.irad[k];
+                    const Size J = linedata.jrad[k];
 
-                // Note: we define our transition matrix as the transpose of R in the
-                // paper.
-                const Size I = colpar.icol[k];
-                const Size J = colpar.jcol[k];
-
-                StatEq(J, I) += v_IJ;
-                StatEq(J, J) -= v_JI;
-                StatEq(I, J) += v_JI;
-                StatEq(I, I) -= v_IJ;
+                    StatEq()(J, I) += v_IJ;
+                    StatEq()(I, I) -= v_IJ;
+                }
             }
-        }
 
-        // Replace the last row with normalisation
-        StatEq.row(linedata.nlev - 1).setOnes();
+            // Collisional transitions
+            for (CollisionPartner& colpar : linedata.colpar) {
+                Real abn = abundance[p][colpar.num_col_partner];
+                Real tmp = temperature[p];
 
-        y[linedata.nlev - 1] = population_tot[p];
+                colpar.adjust_abundance_for_ortho_or_para(tmp, abn);
+                colpar.interpolate_collision_coefficients(tmp);
 
-        // Solve statistical equilibrium and store level populations
-        population.segment(p * linedata.nlev, linedata.nlev) =
-            StatEq.colPivHouseholderQr().solve(y);
+                for (Size k = 0; k < colpar.ncol; k++) {
+                    const long double v_IJ = colpar.Cd_intpld()[k] * abn;
+                    const long double v_JI = colpar.Ce_intpld()[k] * abn;
 
-    } // for all cells
+                    // Note: we define our transition matrix as the transpose of R in the
+                    // paper.
+                    const Size I = colpar.icol[k];
+                    const Size J = colpar.jcol[k];
+
+                    StatEq()(J, I) += v_IJ;
+                    StatEq()(J, J) -= v_JI;
+                    StatEq()(I, J) += v_JI;
+                    StatEq()(I, I) -= v_IJ;
+                }
+            }
+
+            // Replace the last row with normalisation
+            StatEq().row(linedata.nlev - 1).setOnes();
+
+            y()[linedata.nlev - 1] = population_tot[p];
+
+            // Solve statistical equilibrium and store level populations
+            population.segment(p * linedata.nlev, linedata.nlev) =
+                StatEq().colPivHouseholderQr().solve(y());
+        });
+    // for all cells
 
     // OMP_PARALLEL_FOR (p, ncells)
     //{
