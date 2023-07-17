@@ -38,8 +38,10 @@ void CollisionPartner ::read(const Io& io, const Size l, const Size c) {
         io.read_array(prefix_lc + "Cd", Cd);
     }
 
-    Ce_intpld.resize(ncol);
-    Cd_intpld.resize(ncol);
+    for (Size i = 0; i < pc::multi_threading::n_threads_avail(); i++) {
+        Ce_intpld(i).resize(ncol);
+        Cd_intpld(i).resize(ncol);
+    }
 }
 
 ///  write: read in collision partner data
