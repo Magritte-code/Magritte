@@ -35,8 +35,8 @@ def reduce_phantom():
     position = np.array(model.geometry.points.position)
     velocity = np.array(model.geometry.points.velocity)
     boundary = np.array(model.geometry.boundary.boundary2point)
-    nCO      = np.array(model.chemistry.species.abundance)[:,1]
-    nH2      = np.array(model.chemistry.species.abundance)[:,2]
+    nCO      = np.array(model.chemistry.species.abundance)[:,0]
+    nH2      = np.array(model.chemistry.species.abundance)[:,1]
     tmp      = np.array(model.thermodynamics.temperature.gas)
     trb      = np.array(model.thermodynamics.turbulence.vturb2)
 
@@ -80,7 +80,7 @@ def reduce_phantom():
     model.parameters.set_dimension          (3)                      # This is a 3D model
     model.parameters.set_npoints            (npoints_reduced)        # Number of points
     model.parameters.set_nrays              (12)                     # Number of rays
-    model.parameters.set_nspecs             (5)                      # Number of species (min. 5)
+    model.parameters.set_nspecs             (3)                      # Number of species (min. 5)
     model.parameters.set_nlspecs            (1)                      # Number of line species
     model.parameters.set_nquads             (21)                     # Number of quadrature points
 
@@ -90,8 +90,8 @@ def reduce_phantom():
     model.geometry.points.  neighbors.set(  nbs)
     model.geometry.points.n_neighbors.set(n_nbs)
 
-    model.chemistry.species.abundance = np.array((zeros, nCO_reduced, nH2_reduced, zeros, ones)).T
-    model.chemistry.species.symbol    = ['dummy0', 'CO', 'H2', 'e-', 'dummy1']
+    model.chemistry.species.abundance = np.array((nCO_reduced, nH2_reduced, zeros)).T
+    model.chemistry.species.symbol    = ['CO', 'H2', 'e-']
 
     model.thermodynamics.temperature.gas  .set(tmp_reduced)
     model.thermodynamics.turbulence.vturb2.set(trb_reduced)
