@@ -724,6 +724,28 @@ PYBIND11_MODULE(core, module) {
         // constructor
         .def(py::init());
 
+    // Matrix <Size>
+    py::class_<Matrix<Size>, Vector<Size>>(module, "MSize", py::buffer_protocol())
+        // buffer
+        .def_buffer([](Matrix<Size>& m) -> py::buffer_info {
+            return py::buffer_info(m.vec.data(),       // Pointer to buffer
+                sizeof(Size),                          // Size of one element
+                py::format_descriptor<Size>::format(), // Python struct-style format
+                                                       // descriptor
+                2,                                     // Number of dimensions
+                py::detail::any_container<ssize_t>({m.nrows, m.ncols}), // Buffer dimensions
+                py::detail::any_container<ssize_t>(
+                    {sizeof(Size) * m.ncols, sizeof(Size)}) // Strides (in bytes) for each index
+            );
+        })
+        .def_readwrite("vec", &Vector<Size>::vec)
+        .def_readwrite("nrows", &Matrix<Size>::nrows)
+        .def_readwrite("ncols", &Matrix<Size>::ncols)
+        // functions
+        .def("set", &Matrix<Size>::set_2D_array)
+        // constructor
+        .def(py::init());
+
     // Tensor <Real>
     py::class_<Tensor<Real>, Vector<Real>>(module, "TReal", py::buffer_protocol())
         // buffer
