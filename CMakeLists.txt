@@ -3,6 +3,8 @@ cmake_minimum_required (VERSION 3.18)
 
 # Read version number
 file (STRINGS "version.txt" VERSION_NUMBER)
+# For access in C++ itself
+add_compile_definitions(VERSION_NUMBER="${VERSION_NUMBER}")
 
 # Set CMake version policy
 cmake_policy (SET CMP0048 NEW)
@@ -13,7 +15,7 @@ project (
     VERSION      ${VERSION_NUMBER}
     DESCRIPTION  "A modern software library for simulating radiation transport."
     HOMEPAGE_URL "https://github.com/Magritte-code/Magritte"
-)
+    )
 
 # Forces rebuild on change of version file
 set_property(

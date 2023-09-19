@@ -51,6 +51,8 @@ PYBIND11_MODULE(core, module) {
     module.attr("KB")    = KB;
     module.attr("AMU")   = AMU;
     module.attr("T_CMB") = T_CMB;
+    // Version
+    module.attr("__version__") = VERSION_NUMBER;
 
     // Io, base class
     py::class_<Io>(module, "Io", "Abstract input/output base class.");
