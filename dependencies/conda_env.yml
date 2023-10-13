@@ -1,14 +1,15 @@
 name: magritte
 channels:
+  - ensor
   - conda-forge
   - anaconda
   - defaults
 # The order of the channels above is critical!!!
 dependencies:
-  - python=3.9
+  - python>=3.9
   - cmake
   - k3d
-  - numpy=1.23 #Temporary error with numba calling numpy calling ufunc with no exceptions in latest numpy; see https://github.com/numba/numba/issues/8615
+  # - numpy=1.23 #Temporary error with numba calling numpy calling ufunc with no exceptions in latest numpy; see https://github.com/numba/numba/issues/8615
   - vtk
   - jupyterlab
   - yt
@@ -36,3 +37,4 @@ dependencies:
   - nbsphinx
   - sphinx_rtd_theme
   - pytest
+  - plons #for importing Phantom models
