@@ -22,7 +22,7 @@ def reduce_phantom():
 
     modeldir= path+"/../../models"
     datadir = path+"/../../data"
-    model_file = os.path.join(modeldir, 'wind.hdf5' )   # Resulting Magritte model
+    model_file = os.path.join(modeldir, 'model_Phantom_3D.hdf5' )   # Resulting Magritte model
     redux_file = os.path.join(modeldir, 'wind_red' )   # Reduced Magritte model (no extension!)
     lamda_file = os.path.join(datadir, 'co.txt'                )   # Line data file
 
