@@ -47,7 +47,7 @@ def import_phantom():
     setupData = plons.LoadSetup(datadir, "wind")
     dumpData  = plons.LoadFullDump(dump_file, setupData)
 
-    position = dumpData["position"]*1e2      # position vectors        [cm   -> m]
+    position = dumpData["position"]*1e-2      # position vectors       [cm   -> m]
     velocity = dumpData["velocity"]*1e3      # velocity vectors        [km/s -> m/s]
     velocity = velocity/constants.c.si.value # velocity vectors        [m/s  -> 1/c]
     rho      = dumpData["rho"]               # density                 [g/cm^3]
