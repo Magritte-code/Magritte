@@ -58,7 +58,8 @@ def image_mpl(
         npix_y     = 300,
         x_unit     = units.au,
         v_unit     = units.km/units.s,
-        method     = 'nearest'
+        method     = 'nearest',
+        directory = 'images'
     ):
     """
     Create plots of the channel maps of a synthetic observation (image) with matplotlib.
@@ -81,6 +82,8 @@ def image_mpl(
         Unit of length for the vertical (y) axis.
     method : str
         Method to interpolate the scattered intensity data onto a regular image grid.
+    directory : str
+        Name of the directory in which to store the images.
 
     Returns
     -------
@@ -92,7 +95,7 @@ def image_mpl(
         return
 
     # Get path of image directory
-    im_dir = os.path.dirname(os.path.abspath(model.parameters.model_name())) + '/images/'
+    im_dir =  os.path.join(os.path.dirname(os.path.abspath(model.parameters.model_name())), str(directory))
 
     # If no image directory exists yet
     if not os.path.exists(im_dir):
