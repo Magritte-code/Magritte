@@ -82,6 +82,7 @@ void Lines ::write(const Io& io) const {
 void Lines ::iteration_using_LTE(const Double2& abundance, const Vector<Real>& temperature) {
     for (LineProducingSpecies& lspec : lineProducingSpecies) {
         lspec.update_using_LTE(abundance, temperature);
+        // LTE cannot produce negative populations, so no need to correct
     }
 
     set_emissivity_and_opacity();
@@ -92,6 +93,7 @@ void Lines ::iteration_using_LTE(const Double2& abundance, const Vector<Real>& t
 void Lines ::iteration_using_Ng_acceleration(const Real pop_prec) {
     for (LineProducingSpecies& lspec : lineProducingSpecies) {
         lspec.update_using_Ng_acceleration();
+        lspec.correct_negative_populations();
         lspec.check_for_convergence(pop_prec);
     }
 
@@ -103,6 +105,7 @@ void Lines ::iteration_using_Ng_acceleration(const Real pop_prec) {
 void Lines ::iteration_using_Ng_acceleration(const Real pop_prec, const Size order) {
     for (LineProducingSpecies& lspec : lineProducingSpecies) {
         lspec.update_using_acceleration(order);
+        lspec.correct_negative_populations();
         lspec.check_for_convergence(pop_prec);
     }
 
@@ -122,6 +125,7 @@ void Lines ::iteration_using_statistical_equilibrium(
     const Double2& abundance, const Vector<Real>& temperature, const Real pop_prec) {
     for (LineProducingSpecies& lspec : lineProducingSpecies) {
         lspec.update_using_statistical_equilibrium(abundance, temperature);
+        lspec.correct_negative_populations();
         lspec.check_for_convergence(pop_prec);
     }
 
@@ -134,6 +138,7 @@ void Lines ::iteration_using_statistical_equilibrium_sparse(
     const Double2& abundance, const Vector<Real>& temperature, const Real pop_prec) {
     for (LineProducingSpecies& lspec : lineProducingSpecies) {
         lspec.update_using_statistical_equilibrium_sparse(abundance, temperature);
+        lspec.correct_negative_populations();
         lspec.check_for_convergence(pop_prec);
     }
 

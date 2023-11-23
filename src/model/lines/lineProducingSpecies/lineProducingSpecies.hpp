@@ -90,6 +90,7 @@ struct LineProducingSpecies {
     inline void update_using_Ng_acceleration();
     inline void update_using_acceleration(const Size order);
     inline void update_using_acceleration_trial(const Size order);
+    inline void correct_negative_populations();
 };
 
 #include "lineProducingSpecies.tpp"
