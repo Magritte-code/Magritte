@@ -11,9 +11,14 @@ The following examples show how to create synthetic observations with Magritte.
     on how to create a Magritte model, please refer to the :ref:`creating models
     <link-creating_models>` or :ref:`post-processing examples <link-post-processing>`.
 
+Most of the following notebooks create synthetic channel maps. These are a series of 2D images that show which part of the model is visible at a given frequency.
+Because of the interaction of the Doppler shift with the velocity field, we can observe 
+which part of the model is moving away from us (thus redshifted; denoted with positive velocity) 
+and which part is moving towards us (thus blueshifted; denoted with negative velocity).
+
 .. Warning::
-    Compared to Magritte versions before 0.3.0, the frequency discretization of images is flipped.
-    This is due to a bug in the computation of the doppler shift in versions of Magritte prior to 0.3.0.
+    In Magritte versions between 0.3.0 and before 0.4.0, due to a programming oversight, the velocity definitions for channel maps were reversed.
+    This was due to a mistake in the formula for the velocity in the example plotting functions.
 
 .. toctree::
    :maxdepth: 1
