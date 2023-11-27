@@ -654,7 +654,7 @@ inline void LineProducingSpecies::update_using_statistical_equilibrium_sparse(
 ///  determination
 inline void LineProducingSpecies::correct_negative_populations() {
     threaded_for(p, parameters->npoints(), {
-        if (population_tot[p] < 0.0) {
+        if (population_tot[p] > 0.0) {
             Real total_positive_population = 0.0;
             for (Size i = 0; i < linedata.nlev; i++) {
                 if (population(p * linedata.nlev + i) < 0.0) {
