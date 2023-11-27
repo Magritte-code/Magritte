@@ -320,7 +320,7 @@ void LineProducingSpecies ::update_using_acceleration_trial(const Size order) {
 ///    @param[in] abundance: chemical abundances of species in the model
 ///    @param[in] temperature: gas temperature in the model
 /////////////////////////////////////////////////////////////////////////////////
-inline void LineProducingSpecies ::update_using_statistical_equilibrium(
+inline void LineProducingSpecies::update_using_statistical_equilibrium(
     const Double2& abundance, const Vector<Real>& temperature) {
     RT.resize(parameters->npoints() * linedata.nlev, parameters->npoints() * linedata.nlev);
     LambdaStar.resize(parameters->npoints() * linedata.nlev, parameters->npoints() * linedata.nlev);
@@ -531,7 +531,7 @@ inline void LineProducingSpecies ::update_using_statistical_equilibrium(
 ///    @param[in] abundance: chemical abundances of species in the model
 ///    @param[in] temperature: gas temperature in the model
 /////////////////////////////////////////////////////////////////////////////////
-inline void LineProducingSpecies ::update_using_statistical_equilibrium_sparse(
+inline void LineProducingSpecies::update_using_statistical_equilibrium_sparse(
     const Double2& abundance, const Vector<Real>& temperature) {
 
     if (parameters->n_off_diag != 0) {
@@ -646,4 +646,30 @@ inline void LineProducingSpecies ::update_using_statistical_equilibrium_sparse(
     //    //}
     //  }
     //}
+}
+
+///  correct_negative_populations: sets negative values in the level populations to zero and
+///  renormalizes the other populations As numerical issues can cause negative populations, this
+///  function corrects for this. It should therefore be called after each level population
+///  determination
+inline void LineProducingSpecies::correct_negative_populations() {
+    threaded_for(p, parameters->npoints(), {
+        if (population_tot[p] > 0.0) {
+            Real total_positive_population = 0.0;
+            for (Size i = 0; i < linedata.nlev; i++) {
+                if (population(p * linedata.nlev + i) < 0.0) {
+                    population(p * linedata.nlev + i) = 0.0;
+                } else {
+                    total_positive_population += population(p * linedata.nlev + i);
+                }
+            }
+            // and renormalize the level populations
+            for (Size i = 0; i < linedata.nlev;
+                 i++) { // TODO: use more fancy operation to divide entire column at once
+                        // Also just floor the entire vector by 0
+                population(p * linedata.nlev + i) = population(p * linedata.nlev + i)
+                                                  * population_tot[p] / total_positive_population;
+            }
+        }
+    });
 }
