@@ -66,7 +66,7 @@ class Mesh:
     def del_non_point(self, p):
         # remove the non-connected point
         self.points    = np.delete(self.points,    p, 0)
-        self.neighbors = np.delete(self.neighbors, p, 0)
+        self.neighbors.pop(p)
         # Change all indices, since a point got removed
         self.tetras    = relocate_indices(self.tetras,    p)
         self.edges     = relocate_indices(self.edges,     p)
