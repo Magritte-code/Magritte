@@ -1583,11 +1583,9 @@ inline void Solver ::compute_S_dtau_line_integrated<OneLine>(Model& model, Size 
     Real& Snext) {
     dtau  = compute_dtau_single_line(model, currpoint, nextpoint, lineidx, currfreq, nextfreq, dZ);
     Scurr = model.lines.emissivity(currpoint, lineidx)
-          / (model.lines.opacity(currpoint, lineidx)
-              + model.parameters->min_opacity); // current source
-    Snext =
-        model.lines.emissivity(nextpoint, lineidx)
-        / (model.lines.opacity(nextpoint, lineidx) + model.parameters->min_opacity); // next source
+          / (model.lines.opacity(currpoint, lineidx)); // current source
+    Snext = model.lines.emissivity(nextpoint, lineidx)
+          / (model.lines.opacity(nextpoint, lineidx)); // next source
     // note: due to interaction with dtau when computing all
     // sources individually, we do need to recompute Scurr and
     // Snext for all position increments
@@ -1625,12 +1623,10 @@ inline void Solver ::compute_S_dtau_line_integrated<None>(Model& model, Size cur
     for (Size l = 0; l < model.parameters->nlines(); l++) {
         Real line_dtau =
             compute_dtau_single_line(model, currpoint, nextpoint, l, currfreq, nextfreq, dZ);
-        Real line_Scurr =
-            model.lines.emissivity(currpoint, l)
-            / (model.lines.opacity(currpoint, l) + model.parameters->min_opacity); // current source
-        Real line_Snext =
-            model.lines.emissivity(nextpoint, l)
-            / (model.lines.opacity(nextpoint, l) + model.parameters->min_opacity); // next source
+        Real line_Scurr = model.lines.emissivity(currpoint, l)
+                        / (model.lines.opacity(currpoint, l)); // current source
+        Real line_Snext = model.lines.emissivity(nextpoint, l)
+                        / (model.lines.opacity(nextpoint, l)); // next source
         sum_dtau += line_dtau;
         sum_dtau_times_Scurr += line_dtau * line_Scurr;
         sum_dtau_times_Snext += line_dtau * line_Snext;
@@ -1713,12 +1709,10 @@ inline void Solver ::compute_S_dtau_line_integrated<CloseLines>(Model& model, Si
 
         Real line_dtau =
             compute_dtau_single_line(model, currpoint, nextpoint, l, currfreq, nextfreq, dZ);
-        Real line_Scurr =
-            model.lines.emissivity(currpoint, l)
-            / (model.lines.opacity(currpoint, l) + model.parameters->min_opacity); // current source
-        Real line_Snext =
-            model.lines.emissivity(nextpoint, l)
-            / (model.lines.opacity(nextpoint, l) + model.parameters->min_opacity); // next source
+        Real line_Scurr = model.lines.emissivity(currpoint, l)
+                        / (model.lines.opacity(currpoint, l)); // current source
+        Real line_Snext = model.lines.emissivity(nextpoint, l)
+                        / (model.lines.opacity(nextpoint, l)); // next source
         sum_dtau += line_dtau;
         sum_dtau_times_Scurr += line_dtau * line_Scurr;
         sum_dtau_times_Snext += line_dtau * line_Snext;
@@ -1728,11 +1722,8 @@ inline void Solver ::compute_S_dtau_line_integrated<CloseLines>(Model& model, Si
     // first place (above for loop may have looped over 0
     // elements)
     const Real bound_min_dtau = model.parameters->min_opacity * dZ;
-    // Correct way of bounding from below; should be able to
-    // deal with very minor computation errors around 0.
-    if (-bound_min_dtau < dtau) {
-        dtau = std::max(bound_min_dtau, dtau);
-    }
+    // Bounding from below, as the feautrier solver can't handle zero/negative optical depths
+    dtau = std::max(bound_min_dtau, dtau);
     // Note: 0 source functions can be returned if no lines
     // are nearby; but then the negligible lower bound gets
     // returned

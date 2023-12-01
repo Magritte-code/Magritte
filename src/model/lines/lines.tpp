@@ -37,6 +37,29 @@ inline void Lines ::set_emissivity_and_opacity() {
             }
         }
     })
+
+    Real min_opacity = opacity.min();
+    if (min_opacity < parameters->line_opacity_warning_threshold) {
+        cout << "Warning: Significant negative line opacity detected. Magritte does not handle "
+                "masers and will ignore this. Minimum line opacity in the model: "
+             << min_opacity << " [m^-1 Hz]" << endl;
+    } else if (min_opacity < 0) {
+        cout << "Minor warning: Negative opacity detected. This can be a numerical error, and will "
+                "be ignored by Magritte."
+             << endl;
+    }
+    // Now also setting the opacity to the minimum allowed value
+    threaded_for(p, parameters->npoints(), {
+        for (Size l = 0; l < parameters->nlspecs(); l++) {
+            for (Size k = 0; k < lineProducingSpecies[l].linedata.nrad; k++) {
+                const Size lid = line_index(l, k);
+
+                if (opacity(p, lid) < parameters->min_line_opacity) {
+                    opacity(p, lid) = parameters->min_line_opacity;
+                }
+            }
+        }
+    })
 }
 
 ///  Setter for line widths

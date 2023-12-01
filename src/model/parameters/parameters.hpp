@@ -76,9 +76,13 @@ struct Parameters {
     Real convergence_fraction        = 0.995;
     Real min_rel_pop_for_convergence = 1.0e-10;
     Real pop_prec                    = 1.0e-6;
-    Real min_opacity                 = 1.0e-26;
-    Real min_dtau                    = 1.0e-15;
-    bool store_intensities           = false;
+    Real min_opacity      = 1.0e-26; // mimimum allowed evaluated opacity [m^-1], must be positive
+    Real min_line_opacity = 1.0e-20; // minimum allowed line opacity [m^-1 Hz], must be positive
+    Real line_opacity_warning_threshold =
+        -1.0e-18; // If the opacity of a line is below this threshold, a warning is printed, as
+                  // Magritte does not handle masers and ignores negative opacities
+    Real min_dtau          = 1.0e-15;
+    bool store_intensities = false;
     // bool use_Ng_acceleration         = true;//Not used,
     // so may safely be removed
     bool use_adaptive_Ng_acceleration = true;    // whether to use an adaptive version of Ng
