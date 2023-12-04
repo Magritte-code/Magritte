@@ -1012,7 +1012,7 @@ accel inline void Solver ::get_eta_and_chi<None>(const Model& model, const Size 
     const Real freq, Real& eta, Real& chi) const {
     // Initialize
     eta = 0.0;
-    chi = model.parameters->min_opacity;
+    chi = 0.0;
 
     // Set line emissivity and opacity
     for (Size l = 0; l < model.parameters->nlines(); l++) {
@@ -1022,6 +1022,7 @@ accel inline void Solver ::get_eta_and_chi<None>(const Model& model, const Size 
         eta += prof * model.lines.emissivity(p, l);
         chi += prof * model.lines.opacity(p, l);
     }
+    chi = std::max(chi, model.parameters->min_opacity);
 }
 
 ///  Getter for the emissivity (eta) and the opacity (chi)
@@ -1039,7 +1040,7 @@ accel inline void Solver ::get_eta_and_chi<CloseLines>(const Model& model, const
     const Real freq, Real& eta, Real& chi) const {
     // Initialize
     eta = 0.0;
-    chi = model.parameters->min_opacity;
+    chi = 0.0;
 
     const Real upper_bound_line_width =
         model.parameters->max_distance_opacity_contribution
@@ -1067,6 +1068,7 @@ accel inline void Solver ::get_eta_and_chi<CloseLines>(const Model& model, const
         eta += prof * model.lines.emissivity(p, l);
         chi += prof * model.lines.opacity(p, l);
     }
+    chi = std::max(chi, model.parameters->min_opacity);
 }
 
 ///  Getter for the emissivity (eta) and the opacity (chi)
@@ -1086,7 +1088,7 @@ accel inline void Solver ::get_eta_and_chi<OneLine>(
     const Real prof = freq * gaussian(model.lines.inverse_width(p, l), diff);
 
     eta = prof * model.lines.emissivity(p, l);
-    chi = prof * model.lines.opacity(p, l) + model.parameters->min_opacity;
+    chi = std::max(prof * model.lines.opacity(p, l), model.parameters->min_opacity);
 }
 
 ///  Apply trapezium rule to x_crt and x_nxt
@@ -1798,7 +1800,7 @@ accel inline void Solver ::compute_source_dtau(Model& model, Size currpoint, Siz
         Snext = eta_n / chinext;
 
         dtaunext = half * (chicurr + chinext) * dZ;
-    }
+            }
 }
 
 ///  Solver for Feautrier equation along ray pairs using the
@@ -2001,7 +2003,7 @@ inline Real Solver ::compute_dtau_single_line(Model& model, Size curridx, Size n
         const Real prof            = gaussian(average_inverse_line_width, diff);
         const Real average_opacity = (curr_line_opacity + next_line_opacity) / 2.0;
 
-        return dz * (prof * average_opacity + model.parameters->min_opacity);
+        return dz * std::max(prof * average_opacity, model.parameters->min_opacity);
     }
 
     // We assume a linear interpolation of these dimensionless
@@ -2048,7 +2050,7 @@ inline Real Solver ::compute_dtau_single_line(Model& model, Size curridx, Size n
     // correcting to bound opacity from below to the minimum
     // opacity (assumes positive opacities occuring in the
     // model)
-    return dz * (average_inverse_line_width * erfterm + model.parameters->min_opacity);
+    return dz * std::max(average_inverse_line_width * erfterm, model.parameters->min_opacity);
 }
 
 ///  Solver for Feautrier equation along ray pairs using the
