@@ -1800,7 +1800,7 @@ accel inline void Solver ::compute_source_dtau(Model& model, Size currpoint, Siz
         Snext = eta_n / chinext;
 
         dtaunext = half * (chicurr + chinext) * dZ;
-            }
+    }
 }
 
 ///  Solver for Feautrier equation along ray pairs using the

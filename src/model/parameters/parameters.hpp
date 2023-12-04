@@ -77,7 +77,8 @@ struct Parameters {
     Real min_rel_pop_for_convergence = 1.0e-10;
     Real pop_prec                    = 1.0e-6;
     Real min_opacity      = 1.0e-26; // mimimum allowed evaluated opacity [m^-1], must be positive
-    Real min_line_opacity = 1.0e-35; // minimum allowed line opacity, divided by the line frequency [m^-1], must be positive
+    Real min_line_opacity = 1.0e-35; // minimum allowed line opacity, divided by the line frequency
+                                     // [m^-1], must be positive
     Real line_opacity_warning_threshold =
         -1.0e-18; // If the opacity of a line is below this threshold, a warning is printed, as
                   // Magritte does not handle masers and ignores negative opacities
