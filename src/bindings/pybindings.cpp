@@ -291,8 +291,9 @@ PYBIND11_MODULE(core, module) {
         .def_readwrite("pop_prec", &Parameters::pop_prec, "Required precision for ALI.")
         .def_readwrite("min_opacity", &Parameters::min_opacity,
             "Minimum opacity that will be assumed in the solver.")
-        .def_readwrite("min_line_opacity", &Parameters::min_line_opacity,
-            "Minimum line opacity that will be assumed in the solver.")
+        .def_readwrite("min_emissivity", &Parameters::min_emissivity,
+            "Value for emissivity that will be used when the minimum opacity is used in the "
+            "solver.")
         .def_readwrite("min_dtau", &Parameters::min_dtau,
             "Minimum optical depth increment that will be assumed in the solver.")
         .def_readwrite("store_intensities", &Parameters::store_intensities,

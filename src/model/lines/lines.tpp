@@ -49,17 +49,17 @@ inline void Lines ::set_emissivity_and_opacity() {
              << endl;
     }
     // Now also setting the opacity to the minimum allowed value
-    threaded_for(p, parameters->npoints(), {
-        for (Size l = 0; l < parameters->nlspecs(); l++) {
-            for (Size k = 0; k < lineProducingSpecies[l].linedata.nrad; k++) {
-                const Size lid = line_index(l, k);
+    // threaded_for(p, parameters->npoints(), {
+    //     for (Size l = 0; l < parameters->nlspecs(); l++) {
+    //         for (Size k = 0; k < lineProducingSpecies[l].linedata.nrad; k++) {
+    //             const Size lid = line_index(l, k);
 
-                if (opacity(p, lid) < parameters->min_line_opacity) {
-                    opacity(p, lid) = parameters->min_line_opacity;
-                }
-            }
-        }
-    })
+    //             if (opacity(p, lid) < parameters->min_line_opacity) {
+    //                 opacity(p, lid) = parameters->min_line_opacity;
+    //             }
+    //         }
+    //     }
+    // })
 }
 
 ///  Setter for line widths
