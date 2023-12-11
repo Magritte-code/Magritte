@@ -1023,11 +1023,13 @@ accel inline void Solver ::get_eta_and_chi<None>(const Model& model, const Size 
         chi += prof * model.lines.opacity(p, l);
     }
 
-    if (chi < model.parameters->min_opacity) {
-        chi = model.parameters->min_opacity;
-        eta = model.parameters->min_emissivity;
-    }
-    // chi = std::max(chi, model.parameters->min_opacity);
+    // if (chi < model.parameters->min_opacity) {
+    //     chi = model.parameters->min_opacity;
+    //     eta = model.parameters->min_emissivity;
+    // }
+    // Bound the mimimum opacity, not the emissivity.
+    // In this way, the source function will be adjusted automatically
+    chi = std::max(chi, model.parameters->min_opacity);
 }
 
 ///  Getter for the emissivity (eta) and the opacity (chi)
@@ -1074,11 +1076,13 @@ accel inline void Solver ::get_eta_and_chi<CloseLines>(const Model& model, const
         chi += prof * model.lines.opacity(p, l);
     }
 
-    if (chi < model.parameters->min_opacity) {
-        chi = model.parameters->min_opacity;
-        eta = model.parameters->min_emissivity;
-    }
-    // chi = std::max(chi, model.parameters->min_opacity);
+    // if (chi < model.parameters->min_opacity) {
+    //     chi = model.parameters->min_opacity;
+    //     eta = model.parameters->min_emissivity;
+    // }
+    // Bound the mimimum opacity, not the emissivity.
+    // In this way, the source function will be adjusted automatically
+    chi = std::max(chi, model.parameters->min_opacity);
 }
 
 ///  Getter for the emissivity (eta) and the opacity (chi)
@@ -1099,10 +1103,11 @@ accel inline void Solver ::get_eta_and_chi<OneLine>(
 
     eta = prof * model.lines.emissivity(p, l);
     chi = prof * model.lines.opacity(p, l);
-    if (chi < model.parameters->min_opacity) {
-        chi = model.parameters->min_opacity;
-        eta = model.parameters->min_emissivity;
-    }
+    // if (chi < model.parameters->min_opacity) {
+    //     chi = model.parameters->min_opacity;
+    //     eta = model.parameters->min_emissivity;
+    // }:
+    chi = std::max(chi, model.parameters->min_opacity);
 }
 
 ///  Apply trapezium rule to x_crt and x_nxt
@@ -1599,16 +1604,18 @@ inline void Solver ::compute_S_dtau_line_integrated<OneLine>(Model& model, Size 
     Real& Snext) {
     dtau  = compute_dtau_single_line(model, currpoint, nextpoint, lineidx, currfreq, nextfreq, dZ);
     Scurr = model.lines.emissivity(currpoint, lineidx)
-          / (model.lines.opacity(currpoint, lineidx)); // current source
+          / (std::max(model.lines.opacity(currpoint, lineidx),
+              model.parameters->min_opacity)); // current source
     Snext = model.lines.emissivity(nextpoint, lineidx)
-          / (model.lines.opacity(nextpoint, lineidx)); // next source
+          / (std::max(model.lines.opacity(nextpoint, lineidx),
+              model.parameters->min_opacity)); // next source
     // note: due to interaction with dtau when computing all
     // sources individually, we do need to recompute Scurr and
     // Snext for all position increments
     if (dtau < model.parameters->min_opacity * dZ) {
-        Scurr = model.parameters->min_emissivity / model.parameters->min_opacity;
-        Snext = model.parameters->min_emissivity / model.parameters->min_opacity;
-        dtau  = model.parameters->min_opacity * dZ;
+        //     Scurr = model.parameters->min_emissivity / model.parameters->min_opacity;
+        //     Snext = model.parameters->min_emissivity / model.parameters->min_opacity;
+        dtau = model.parameters->min_opacity * dZ;
     }
 }
 
@@ -1645,13 +1652,15 @@ inline void Solver ::compute_S_dtau_line_integrated<None>(Model& model, Size cur
         Real line_dtau =
             compute_dtau_single_line(model, currpoint, nextpoint, l, currfreq, nextfreq, dZ);
         Real line_Scurr = model.lines.emissivity(currpoint, l)
-                        / (model.lines.opacity(currpoint, l)); // current source
+                        / (std::max(model.lines.opacity(currpoint, l),
+                            model.parameters->min_line_opacity)); // current source
         Real line_Snext = model.lines.emissivity(nextpoint, l)
-                        / (model.lines.opacity(nextpoint, l)); // next source
+                        / (std::max(model.lines.opacity(nextpoint, l),
+                            model.parameters->min_line_opacity)); // next source
         if (line_dtau < model.parameters->min_opacity * dZ) {
-            line_Scurr = model.parameters->min_emissivity / model.parameters->min_opacity;
-            line_Snext = model.parameters->min_emissivity / model.parameters->min_opacity;
-            line_dtau  = model.parameters->min_opacity * dZ;
+            line_Scurr *= line_dtau / model.parameters->min_opacity;
+            line_Snext *= line_dtau / model.parameters->min_opacity;
+            line_dtau = model.parameters->min_opacity * dZ;
         }
         sum_dtau += line_dtau;
         sum_dtau_times_Scurr += line_dtau * line_Scurr;
@@ -1660,6 +1669,13 @@ inline void Solver ::compute_S_dtau_line_integrated<None>(Model& model, Size cur
     dtau  = sum_dtau;
     Scurr = sum_dtau_times_Scurr / sum_dtau;
     Snext = sum_dtau_times_Snext / sum_dtau;
+    // if (dtau < model.parameters->min_opacity * dZ) {
+    //     // Scurr = model.parameters->min_emissivity / model.parameters->min_opacity;
+    //     // Snext = model.parameters->min_emissivity / model.parameters->min_opacity;
+    //     Scurr = 0.0;
+    //     Snext = 0.0;
+    //     dtau  = model.parameters->min_opacity * dZ;
+    // }
 }
 
 ///  Computer for the optical depth and source function when
@@ -1727,6 +1743,7 @@ inline void Solver ::compute_S_dtau_line_integrated<CloseLines>(Model& model, Si
         model.lines.sorted_line.begin(), model.lines.sorted_line.end(), left_freq_bound);
     auto right_line_bound = std::upper_bound(
         model.lines.sorted_line.begin(), model.lines.sorted_line.end(), right_freq_bound);
+    Real curr_eta, curr_chi, next_eta, next_chi;
 
     for (auto freq_sort_l = left_line_bound; freq_sort_l != right_line_bound; freq_sort_l++) {
         const Size sort_l = freq_sort_l - model.lines.sorted_line.begin();
@@ -1735,33 +1752,56 @@ inline void Solver ::compute_S_dtau_line_integrated<CloseLines>(Model& model, Si
 
         Real line_dtau =
             compute_dtau_single_line(model, currpoint, nextpoint, l, currfreq, nextfreq, dZ);
+        // get_eta_and_chi<CloseLines>(model, currpoint, l, currfreq, curr_eta,
+        //     curr_chi); // current source
+        // Real line_Scurr = curr_eta / curr_chi;
+        // get_eta_and_chi<CloseLines>(model, nextpoint, l, nextfreq, next_eta,
+        //     next_chi); // next source
+        // Real line_Snext = next_eta / next_chi;
+        // TODO: check how to bound dtau
         Real line_Scurr = model.lines.emissivity(currpoint, l)
-                        / (model.lines.opacity(currpoint, l)); // current source
+                        / (std::max(model.lines.opacity(currpoint, l),
+                            model.parameters->min_line_opacity)); // current source
         Real line_Snext = model.lines.emissivity(nextpoint, l)
-                        / (model.lines.opacity(nextpoint, l)); // next source
-        if (line_dtau < model.parameters->min_opacity * dZ) {
-            line_Scurr = model.parameters->min_emissivity / model.parameters->min_opacity;
-            line_Snext = model.parameters->min_emissivity / model.parameters->min_opacity;
-            line_dtau  = model.parameters->min_opacity * dZ;
-        }
+                        / (std::max(model.lines.opacity(nextpoint, l),
+                            model.parameters->min_line_opacity)); // next source
+        //  if (model.lines.opacity(nextpoint, l) * prof)
+        //  if (line_dtau < model.parameters->min_opacity * dZ) {
+        //      line_Scurr = model.parameters->min_emissivity / model.parameters->min_opacity;
+        //      line_Snext = model.parameters->min_emissivity / model.parameters->min_opacity;
+        //      line_dtau  = model.parameters->min_opacity * dZ;
+        //  }
+        // Rescale S, dtau such that S*dtau is still the same, while setting the optical depth to a
+        // minimum value
+        // if (line_dtau < model.parameters->min_opacity * dZ) {
+        //     line_Scurr *= line_dtau / model.parameters->min_opacity;
+        //     line_Snext *= line_dtau / model.parameters->min_opacity;
+        //     line_dtau = model.parameters->min_opacity * dZ;
+        // }
         sum_dtau += line_dtau;
         sum_dtau_times_Scurr += line_dtau * line_Scurr;
         sum_dtau_times_Snext += line_dtau * line_Snext;
     }
-    dtau  = sum_dtau;
-    Scurr = sum_dtau_times_Scurr / dtau;
-    Snext = sum_dtau_times_Snext / dtau;
+    // dtau = sum_dtau;
+    std::cout << "sum dtau: " << sum_dtau << " sum_dtau_Scurr" << sum_dtau_times_Scurr
+              << " sum_dtau_Snext" << sum_dtau_times_Snext << std::endl;
+    dtau = std::max(model.parameters->min_opacity * dZ, sum_dtau);
+
     // needs extra bounding, as nothing may be added in the first place (above for loop may have
     // looped over 0 elements). Bounding from below, as the feautrier solver can't handle
     // zero/negative optical depths
-    if (dtau < model.parameters->min_opacity * dZ) {
-        dtau  = model.parameters->min_opacity * dZ;
-        Scurr = model.parameters->min_emissivity / model.parameters->min_opacity;
-        Snext = model.parameters->min_emissivity / model.parameters->min_opacity;
-    }
+    // if (dtau < model.parameters->min_opacity * dZ) {
+    //     // Scurr *= dtau / model.parameters->min_opacity;
+    //     // Snext *= dtau / model.parameters->min_opacity;
+    //     dtau = model.parameters->min_opacity * dZ;
+    // }
     // Note: 0 source functions can be returned if no lines
     // are nearby; but then the negligible lower bound gets
     // returned
+    Scurr = sum_dtau_times_Scurr / dtau;
+    Snext = sum_dtau_times_Snext / dtau;
+    std::cout << "source function: " << Scurr << " " << Snext << "optical depth: " << dtau
+              << std::endl;
 
     // note: due to interaction with dtau when computing all
     // sources individually, we do need to recompute Scurr and
@@ -1914,6 +1954,7 @@ accel inline void Solver ::solve_feautrier_order_2(Model& model, const Size o, c
         const Real dtau_avg = half * (dtau_c + dtau_n);
         inverse_A[n]        = dtau_avg * dtau_c;
         inverse_C[n]        = dtau_avg * dtau_n;
+        // std::cout << "dtau_c: " << dtau_c << " dtau_n: " << dtau_n << std::endl;
 
         A[n] = one / inverse_A[n];
         C[n] = one / inverse_C[n];
@@ -2020,6 +2061,12 @@ inline Real Solver ::compute_dtau_single_line(Model& model, Size curridx, Size n
         / 2.0;
 
     // opacity is stored divided by the linefreq, so multiply by it
+    // const Real curr_line_opacity =
+    //     linefreq
+    //     * std::max(model.lines.opacity(curridx, lineidx), model.parameters->min_line_opacity);
+    // const Real next_line_opacity =
+    //     linefreq
+    //     * std::max(model.lines.opacity(nextidx, lineidx), model.parameters->min_line_opacity);
     const Real curr_line_opacity = linefreq * model.lines.opacity(curridx, lineidx);
     const Real next_line_opacity = linefreq * model.lines.opacity(nextidx, lineidx);
 
@@ -2033,10 +2080,11 @@ inline Real Solver ::compute_dtau_single_line(Model& model, Size curridx, Size n
         const Real prof            = gaussian(average_inverse_line_width, diff);
         const Real average_opacity = (curr_line_opacity + next_line_opacity) / 2.0;
 
-        // return dz * std::max(prof * average_opacity, model.parameters->min_opacity);
+        return dz * std::max(prof * average_opacity, model.parameters->min_opacity);
+        // return dz * (prof * average_opacity + model.parameters->min_opacity);
         // no checking here for whether this is positive, this will be done in the function calling
         // this, as the source function needs to be set correspondingly
-        return dz * prof * average_opacity;
+        // return dz * prof * average_opacity;
     }
 
     // We assume a linear interpolation of these dimensionless
@@ -2085,8 +2133,12 @@ inline Real Solver ::compute_dtau_single_line(Model& model, Size curridx, Size n
     // model)
     // no checking here for whether this is positive, this will be done in the function calling
     // this, as the source function needs to be set correspondingly
-    return dz * average_inverse_line_width * erfterm;
-    // return dz * std::max(average_inverse_line_width * erfterm, model.parameters->min_opacity);
+    // std::cout << "original optical depth: " << dz * average_inverse_line_width * erfterm
+    //           << " dz: " << dz << " inv_width: " << average_inverse_line_width
+    //           << " erfterm: " << erfterm << std::endl;
+    // return dz * average_inverse_line_width * erfterm;
+    // return dz * (average_inverse_line_width * erfterm + model.parameters->min_opacity);
+    return dz * std::max(average_inverse_line_width * erfterm, model.parameters->min_opacity);
 }
 
 ///  Solver for Feautrier equation along ray pairs using the
