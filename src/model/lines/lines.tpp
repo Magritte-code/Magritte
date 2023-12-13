@@ -37,6 +37,34 @@ inline void Lines ::set_emissivity_and_opacity() {
             }
         }
     })
+
+    // // check whether negative opacities are present, and set the corresponding species to LTE
+    // // And recomputes the emissivity and opacity (for those species); but TODO: i'm just
+    // recomputing
+    // // for everything
+    // for (Size p = 0; p < parameters->npoints(); p++) {
+    //     for (Size l = 0; l < parameters->nlspecs(); l++) {
+    //         for (Size k = 0; k < lineProducingSpecies[l].linedata.nrad; k++) {
+    //             const Size lid = line_index(l, k);
+
+    //             if (opacity(p, lid) < 0.0) {
+    //                 lineProducingSpecies[l].set_LTE(p);
+    //                 break;
+    //             }
+    //         }
+    //     }
+    // }
+
+    // threaded_for(p, parameters->npoints(), {
+    //     for (Size l = 0; l < parameters->nlspecs(); l++) {
+    //         for (Size k = 0; k < lineProducingSpecies[l].linedata.nrad; k++) {
+    //             const Size lid = line_index(l, k);
+
+    //             emissivity(p, lid) = lineProducingSpecies[l].get_emissivity(p, k);
+    //             opacity(p, lid)    = lineProducingSpecies[l].get_opacity(p, k);
+    //         }
+    //     }
+    // })
 }
 
 ///  Setter for line widths

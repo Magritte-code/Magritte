@@ -90,10 +90,11 @@ void Lines ::iteration_using_LTE(const Double2& abundance, const Vector<Real>& t
     // gather_emissivities_and_opacities ();
 }
 
-void Lines ::iteration_using_Ng_acceleration(const Real pop_prec) {
+void Lines ::iteration_using_Ng_acceleration(
+    const Double2& abundance, const Vector<Real>& temperature, const Real pop_prec) {
     for (LineProducingSpecies& lspec : lineProducingSpecies) {
         lspec.update_using_Ng_acceleration();
-        lspec.correct_negative_populations();
+        lspec.correct_negative_populations(abundance, temperature);
         lspec.check_for_convergence(pop_prec);
     }
 
@@ -102,10 +103,11 @@ void Lines ::iteration_using_Ng_acceleration(const Real pop_prec) {
     // gather_emissivities_and_opacities ();
 }
 
-void Lines ::iteration_using_Ng_acceleration(const Real pop_prec, const Size order) {
+void Lines ::iteration_using_Ng_acceleration(const Double2& abundance,
+    const Vector<Real>& temperature, const Real pop_prec, const Size order) {
     for (LineProducingSpecies& lspec : lineProducingSpecies) {
         lspec.update_using_acceleration(order);
-        lspec.correct_negative_populations();
+        lspec.correct_negative_populations(abundance, temperature);
         lspec.check_for_convergence(pop_prec);
     }
 
@@ -125,7 +127,7 @@ void Lines ::iteration_using_statistical_equilibrium(
     const Double2& abundance, const Vector<Real>& temperature, const Real pop_prec) {
     for (LineProducingSpecies& lspec : lineProducingSpecies) {
         lspec.update_using_statistical_equilibrium(abundance, temperature);
-        lspec.correct_negative_populations();
+        lspec.correct_negative_populations(abundance, temperature);
         lspec.check_for_convergence(pop_prec);
     }
 
@@ -138,7 +140,7 @@ void Lines ::iteration_using_statistical_equilibrium_sparse(
     const Double2& abundance, const Vector<Real>& temperature, const Real pop_prec) {
     for (LineProducingSpecies& lspec : lineProducingSpecies) {
         lspec.update_using_statistical_equilibrium_sparse(abundance, temperature);
-        lspec.correct_negative_populations();
+        lspec.correct_negative_populations(abundance, temperature);
         lspec.check_for_convergence(pop_prec);
     }
 

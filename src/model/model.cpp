@@ -599,7 +599,8 @@ int Model ::compute_level_populations(const bool use_Ng_acceleration, const long
         if (use_ng_acceleration_step) {
             std::cout << "max order: " << iteration_normal
                       << " used order: " << ng_acceleration_order << std::endl;
-            lines.iteration_using_Ng_acceleration(parameters->pop_prec, ng_acceleration_order);
+            lines.iteration_using_Ng_acceleration(chemistry.species.abundance,
+                thermodynamics.temperature.gas, parameters->pop_prec, ng_acceleration_order);
 
             iteration_normal = 0;
         } else {
@@ -701,7 +702,8 @@ int Model ::compute_level_populations_sparse(
         if (use_ng_acceleration_step) {
             std::cout << "Ng acceleration max order: " << iteration_normal
                       << " used order: " << ng_acceleration_order << std::endl;
-            lines.iteration_using_Ng_acceleration(parameters->pop_prec, ng_acceleration_order);
+            lines.iteration_using_Ng_acceleration(chemistry.species.abundance,
+                thermodynamics.temperature.gas, parameters->pop_prec, ng_acceleration_order);
 
             iteration_normal = 0;
         } else {
@@ -803,7 +805,8 @@ int Model ::compute_level_populations_shortchar(
         if (use_ng_acceleration_step) {
             std::cout << "Ng acceleration max order: " << iteration_normal
                       << " used order: " << ng_acceleration_order << std::endl;
-            lines.iteration_using_Ng_acceleration(parameters->pop_prec, ng_acceleration_order);
+            lines.iteration_using_Ng_acceleration(chemistry.species.abundance,
+                thermodynamics.temperature.gas, parameters->pop_prec, ng_acceleration_order);
 
             iteration_normal = 0;
         } else {
