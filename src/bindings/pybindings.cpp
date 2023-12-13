@@ -296,6 +296,9 @@ PYBIND11_MODULE(core, module) {
             "solver.")
         .def_readwrite("min_dtau", &Parameters::min_dtau,
             "Minimum optical depth increment that will be assumed in the solver.")
+        .def_readwrite("min_line_opacity", &Parameters::min_line_opacity,
+            "Minimum line opacity that will be assumed in the solver. Used when large velocity "
+            "gradients are present.")
         .def_readwrite("store_intensities", &Parameters::store_intensities,
             "Whether or not to store intensities.")
         .def_readwrite("one_line_approximation", &Parameters::one_line_approximation,

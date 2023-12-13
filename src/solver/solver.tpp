@@ -1708,6 +1708,8 @@ inline void Solver ::compute_S_dtau_line_integrated<CloseLines>(Model& model, Si
     Real sum_dtau = 0.0; // division by zero might occur otherwise
     // Real sum_dtau=model.parameters->min_dtau; //division by
     // zero might occur otherwise
+    // Real sum_dtau_times_S = 0.0;
+    Real line_dtau, line_Scurr, line_Snext;
     Real sum_dtau_times_Scurr = 0.0;
     Real sum_dtau_times_Snext = 0.0;
 
@@ -1750,8 +1752,11 @@ inline void Solver ::compute_S_dtau_line_integrated<CloseLines>(Model& model, Si
         // Map sorted line index to original line index
         const Size l = model.lines.sorted_line_map[sort_l];
 
-        Real line_dtau =
-            compute_dtau_single_line(model, currpoint, nextpoint, l, currfreq, nextfreq, dZ);
+        compute_S_dtau_single_line(model, currpoint, nextpoint, l, currfreq, nextfreq, dZ,
+            line_Scurr, line_Snext, line_dtau);
+
+        // Real line_dtau =
+        //     compute_dtau_single_line(model, currpoint, nextpoint, l, currfreq, nextfreq, dZ);
         // get_eta_and_chi<CloseLines>(model, currpoint, l, currfreq, curr_eta,
         //     curr_chi); // current source
         // Real line_Scurr = curr_eta / curr_chi;
@@ -1759,12 +1764,12 @@ inline void Solver ::compute_S_dtau_line_integrated<CloseLines>(Model& model, Si
         //     next_chi); // next source
         // Real line_Snext = next_eta / next_chi;
         // TODO: check how to bound dtau
-        Real line_Scurr = model.lines.emissivity(currpoint, l)
-                        / (std::max(model.lines.opacity(currpoint, l),
-                            model.parameters->min_line_opacity)); // current source
-        Real line_Snext = model.lines.emissivity(nextpoint, l)
-                        / (std::max(model.lines.opacity(nextpoint, l),
-                            model.parameters->min_line_opacity)); // next source
+        // Real line_Scurr = model.lines.emissivity(currpoint, l)
+        //                 / (std::max(model.lines.opacity(currpoint, l),
+        //                     model.parameters->min_line_opacity)); // current source
+        // Real line_Snext = model.lines.emissivity(nextpoint, l)
+        //                 / (std::max(model.lines.opacity(nextpoint, l),
+        //                     model.parameters->min_line_opacity)); // next source
         //  if (model.lines.opacity(nextpoint, l) * prof)
         //  if (line_dtau < model.parameters->min_opacity * dZ) {
         //      line_Scurr = model.parameters->min_emissivity / model.parameters->min_opacity;
@@ -1779,13 +1784,15 @@ inline void Solver ::compute_S_dtau_line_integrated<CloseLines>(Model& model, Si
         //     line_dtau = model.parameters->min_opacity * dZ;
         // }
         sum_dtau += line_dtau;
+        // sum_dtau_times_S += line_dtau * line_S;
         sum_dtau_times_Scurr += line_dtau * line_Scurr;
         sum_dtau_times_Snext += line_dtau * line_Snext;
     }
     // dtau = sum_dtau;
-    std::cout << "sum dtau: " << sum_dtau << " sum_dtau_Scurr" << sum_dtau_times_Scurr
-              << " sum_dtau_Snext" << sum_dtau_times_Snext << std::endl;
-    dtau = std::max(model.parameters->min_opacity * dZ, sum_dtau);
+    // std::cout << "sum dtau: " << sum_dtau << " sum_dtau_Scurr" << sum_dtau_times_Scurr
+    //           << " sum_dtau_Snext" << sum_dtau_times_Snext << std::endl;
+    // dtau = std::max(model.parameters->min_opacity * dZ, sum_dtau);
+    dtau = std::max(model.parameters->min_dtau, sum_dtau);
 
     // needs extra bounding, as nothing may be added in the first place (above for loop may have
     // looped over 0 elements). Bounding from below, as the feautrier solver can't handle
@@ -1800,8 +1807,10 @@ inline void Solver ::compute_S_dtau_line_integrated<CloseLines>(Model& model, Si
     // returned
     Scurr = sum_dtau_times_Scurr / dtau;
     Snext = sum_dtau_times_Snext / dtau;
-    std::cout << "source function: " << Scurr << " " << Snext << "optical depth: " << dtau
-              << std::endl;
+    // Scurr = sum_dtau_times_S / dtau;
+    // Snext = sum_dtau_times_S / dtau;
+    // std::cout << "source function: " << Scurr << " " << Snext << "optical depth: " << dtau
+    //           << std::endl;
 
     // note: due to interaction with dtau when computing all
     // sources individually, we do need to recompute Scurr and
@@ -2139,6 +2148,123 @@ inline Real Solver ::compute_dtau_single_line(Model& model, Size curridx, Size n
     // return dz * average_inverse_line_width * erfterm;
     // return dz * (average_inverse_line_width * erfterm + model.parameters->min_opacity);
     return dz * std::max(average_inverse_line_width * erfterm, model.parameters->min_opacity);
+}
+
+///   Computes the optical depth and source function assuming only a single line
+///   exists.
+///    @param[in] curridx: index of the current point
+///    @param[in] nextidx: index of the next point
+///    @param[in] lineidx: index of the line for which to
+///    compute the optical depth
+///    @param[in] curr_freq: current frequency (in comoving
+///    frame)
+///    @param[in] next_freq: next frequency (in comoving
+///    frame)
+///    @param[in] dz: distance increment
+///    @param[out] Scurr: source function to compute at current point
+///    @param[out] Snext: source function to compute at next point
+///    @param[out] dtau: optical depth to compute
+inline void Solver ::compute_S_dtau_single_line(Model& model, Size curridx, Size nextidx,
+    Size lineidx, Real curr_freq, Real next_freq, Real dz, Real& Scurr, Real& Snext, Real& dtau) {
+    const Real linefreq = model.lines.line[lineidx];
+    const Real average_inverse_line_width =
+        (model.lines.inverse_width(curridx, lineidx) + model.lines.inverse_width(nextidx, lineidx))
+        / 2.0;
+
+    // First averaging out the opacity and emissivity, as we only take into account the gaussian
+    // profile function shape
+    const Real curr_line_opacity    = linefreq * model.lines.opacity(curridx, lineidx);
+    const Real next_line_opacity    = linefreq * model.lines.opacity(nextidx, lineidx);
+    const Real average_opacity      = (next_line_opacity + curr_line_opacity) / 2.0;
+    const Real curr_line_emissivity = linefreq * model.lines.emissivity(curridx, lineidx);
+    const Real next_line_emissivity = linefreq * model.lines.emissivity(nextidx, lineidx);
+    // const Real average_emissivity   = (next_line_emissivity + curr_line_emissivity) / 2.0;
+
+    // if frequencies are equal, division by zero (due to the
+    // optical depth formula) happens if we were not to use
+    // this branch
+    if (curr_freq == next_freq) {
+        // doing the default computation instead (no shifting)
+        const Real diff = curr_freq - model.lines.line[lineidx]; // curr_freq==next_freq,
+                                                                 // so choice is arbitrary
+        const Real prof = gaussian(average_inverse_line_width, diff);
+        // const Real average_opacity = (curr_line_opacity + next_line_opacity) / 2.0;
+
+        // dtau  = dz * std::max(prof * average_opacity, model.parameters->min_opacity);
+        // const Real dtau_curr =
+        //     dz * std::max(prof * curr_line_opacity, model.parameters->min_opacity);
+        // const Real dtau_next =
+        //     dz * std::max(prof * next_line_opacity, model.parameters->min_opacity);
+        const Real dtau_curr = std::max(dz * prof * curr_line_opacity, model.parameters->min_dtau);
+        const Real dtau_next = std::max(dz * prof * next_line_opacity, model.parameters->min_dtau);
+        dtau                 = (dtau_curr + dtau_next) * 0.5;
+        Scurr                = (dz * prof * curr_line_emissivity) / dtau;
+        Snext                = (dz * prof * next_line_emissivity) / dtau;
+        return;
+    }
+
+    // We assume a linear interpolation of these dimensionless
+    // frequency positions We will also assume the line width
+    // to be somewhat constant, replacing the values with the
+    // averages
+    const Real next_pos = (linefreq - next_freq) * average_inverse_line_width;
+    const Real curr_pos = (linefreq - curr_freq) * average_inverse_line_width;
+
+    // In this way, the diff_pos can be computed quite simple,
+    // and we do not have a discrepancy between the
+    // interpolation and the bounds
+    const Real diff_pos = next_pos - curr_pos;
+
+    /// the more correct approach, taking into account also
+    /// the line opacity change; however, it does not make too
+    /// much of a difference in the actual result and is quite
+    /// a bit slower
+    // const Real
+    // delta_opacity=(next_line_opacity-curr_line_opacity);
+    // const Real deltanu=-next_freq+curr_freq;//differences
+    // in curr freqs; +-1 due to shift being defined in the
+    // other direction
+    //
+    // //note: opacity can also be extrapolated; however the
+    // correction term (expterm) accounts for that const Real
+    // interp_opacity=curr_line_opacity+delta_opacity*(curr_freq-linefreq)/deltanu;
+    //
+    // //This term is a constant term, giving the usual ... as
+    // if the opacity were static const Real
+    // erfterm=interp_opacity/diff_pos/2.0*(std::erf(next_pos)-std::erf(curr_pos));
+    // //This term corrects for the fact that the opacity
+    // between points changes const Real
+    // expterm=delta_opacity/2.0*INVERSE_SQRT_PI/diff_pos/diff_pos*(std::exp(-curr_pos*curr_pos)-std::exp(-next_pos*next_pos));
+    // return
+    // dz*std::max(average_inverse_line_width*(erfterm+expterm),
+    // model.parameters->min_opacity);
+
+    // If we instead use an average opacity, the computation
+    // is quite a bit faster
+    // const Real average_opacity = (next_line_opacity + curr_line_opacity) / 2.0;
+    // const Real erfterm =
+    //     average_opacity / diff_pos / 2.0 * (std::erff(next_pos) - std::erff(curr_pos));
+    const Real prefactor =
+        average_inverse_line_width * (std::erff(next_pos) - std::erff(curr_pos)) / diff_pos / 2.0;
+    // correcting to bound opacity from below to the minimum
+    // opacity (assumes positive opacities occuring in the
+    // model)
+    // dtau = dz * std::max(average_opacity * prefactor, model.parameters->min_opacity);
+    // const Real dtau_curr =
+    //     dz * std::max(curr_line_opacity * prefactor, model.parameters->min_opacity);
+    // const Real dtau_next =
+    //     dz * std::max(next_line_opacity * prefactor, model.parameters->min_opacity);
+    // dtau            = (dtau_curr + dtau_next) * 0.5;
+    // Scurr = (dz * curr_line_emissivity * prefactor) / dtau_curr;
+    // Snext = (dz * next_line_emissivity * prefactor) / dtau_next;
+    const Real dtau_curr = std::max(dz * curr_line_opacity * prefactor, model.parameters->min_dtau);
+    const Real dtau_next = std::max(dz * next_line_opacity * prefactor, model.parameters->min_dtau);
+    dtau                 = (dtau_curr + dtau_next) * 0.5;
+    Scurr                = (dz * curr_line_emissivity * prefactor) / dtau;
+    Snext                = (dz * next_line_emissivity * prefactor) / dtau;
+
+    // std::cout << "dtau: " << dtau << " S: " << S << " Sdtau: " << S * dtau << std::endl;
+    return;
 }
 
 ///  Solver for Feautrier equation along ray pairs using the

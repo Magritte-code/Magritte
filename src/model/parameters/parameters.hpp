@@ -76,6 +76,8 @@ struct Parameters {
     Real convergence_fraction        = 0.995;
     Real min_rel_pop_for_convergence = 1.0e-10;
     Real pop_prec                    = 1.0e-6;
+    Real min_line_opacity            = 1.0e-30; // mimimum allowed evaluated opacity [m^-1 Hz^-1],
+                                                // must be positive
     Real min_opacity    = 1.0e-26; // mimimum allowed evaluated opacity [m^-1], must be positive
     Real min_emissivity = 1.0e-46; // minimum allowed evaluated emissivity [W sr^-1 m^-3 Hz^-1],
                                    // must be must be positive

@@ -120,6 +120,9 @@ struct Solver {
     inline Real compute_dtau_single_line(Model& model, Size curridx, Size nextidx, Size lineidx,
         Real curr_freq, Real next_freq, Real dz);
 
+    inline void compute_S_dtau_single_line(Model& model, Size curridx, Size nextidx, Size lineidx,
+        Real curr_freq, Real next_freq, Real dz, Real& Scurr, Real& Snext, Real& dtau);
+
     template <ApproximationType approx>
     accel inline void compute_source_dtau(Model& model, Size currpoint, Size nextpoint, Size line,
         Real curr_freq, Real next_freq, double curr_shift, double next_shift, Real dZ,
