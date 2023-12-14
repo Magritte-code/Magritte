@@ -293,6 +293,9 @@ PYBIND11_MODULE(core, module) {
             "Minimum opacity that will be assumed in the solver.")
         .def_readwrite("min_dtau", &Parameters::min_dtau,
             "Minimum optical depth increment that will be assumed in the solver.")
+        .def_readwrite("population_inversion_fraction", &Parameters::population_inversion_fraction,
+            "Threshold factor for population inversion required for LTE to be used; set this "
+            "higher than 1")
         .def_readwrite("store_intensities", &Parameters::store_intensities,
             "Whether or not to store intensities.")
         .def_readwrite("one_line_approximation", &Parameters::one_line_approximation,

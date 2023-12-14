@@ -80,6 +80,8 @@ struct LineProducingSpecies {
     inline void check_for_convergence_trial(const Real pop_prec);
 
     inline void update_using_LTE(const Double2& abundance, const Vector<Real>& temperature);
+    inline void set_LTE(
+        const Double2& abundance, const Vector<Real>& temperature, const Size p, const Size k);
 
     inline void update_using_statistical_equilibrium(
         const Double2& abundance, const Vector<Real>& temperature);
@@ -90,7 +92,8 @@ struct LineProducingSpecies {
     inline void update_using_Ng_acceleration();
     inline void update_using_acceleration(const Size order);
     inline void update_using_acceleration_trial(const Size order);
-    inline void correct_negative_populations();
+    inline void correct_negative_populations(
+        const Double2& abundance, const Vector<Real>& temperature);
 };
 
 #include "lineProducingSpecies.tpp"

@@ -69,6 +69,30 @@ inline void LineProducingSpecies ::update_using_LTE(
     populations.push_back(population);
 }
 
+///  Set a single species, at a given point to LTE
+///    @param[in] p: number of cell
+///    @param[in] k: number of line
+/// Note: do call this from back to front in the loop over k, as otherwise new population inversions
+/// might occur
+///////////////////////////////////////////////////////////
+inline void LineProducingSpecies ::set_LTE(
+    const Double2& abundance, const Vector<Real>& temperature, const Size p, const Size k) {
+    // population_tot[p] = abundance[p][linedata.num];
+    const Size i = index(p, linedata.irad[k]);
+    const Size j = index(p, linedata.jrad[k]);
+
+    Real population_tot_line = population(i) + population(j);
+    Real partition_function  = 0.0;
+
+    population(i) = linedata.weight[linedata.irad[k]]
+                  * exp(-linedata.energy[linedata.irad[k]] / (KB * temperature[p]));
+    population(j) = linedata.weight[linedata.jrad[k]]
+                  * exp(-linedata.energy[linedata.jrad[k]] / (KB * temperature[p]));
+    partition_function = population(i) + population(j);
+    population(i) *= population_tot_line / partition_function;
+    population(j) *= population_tot_line / partition_function;
+}
+
 /// This function check whether the level populations have converged, using the
 /// specified precision
 inline void LineProducingSpecies ::check_for_convergence(const Real pop_prec) {
@@ -649,10 +673,11 @@ inline void LineProducingSpecies::update_using_statistical_equilibrium_sparse(
 }
 
 ///  correct_negative_populations: sets negative values in the level populations to zero and
-///  renormalizes the other populations As numerical issues can cause negative populations, this
-///  function corrects for this. It should therefore be called after each level population
-///  determination
-inline void LineProducingSpecies::correct_negative_populations() {
+///  renormalizes the other populations. It also sets masering levels to LTE. This function should
+///  therefore be called after each level population, as Magritte does not handle negative line
+///  opacities.
+inline void LineProducingSpecies::correct_negative_populations(
+    const Double2& abundance, const Vector<Real>& temperature) {
     threaded_for(p, parameters->npoints(), {
         if (population_tot[p] > 0.0) {
             Real total_positive_population = 0.0;
@@ -672,4 +697,27 @@ inline void LineProducingSpecies::correct_negative_populations() {
             }
         }
     });
+
+    bool population_inversions = false;
+    // Also check if some population inversions (negative opacities) are present; set these points
+    // to LTE instead
+    threaded_for(p, parameters->npoints(), {
+        for (Size k = linedata.nrad - 1; k != static_cast<Size>(-1);
+             k--) { // reversed loop, stops at 0
+            Size i = index(p, linedata.irad[k]);
+            Size j = index(p, linedata.jrad[k]);
+            if (population(j) < linedata.Bs[k] / linedata.Ba[k] * population(i)
+                                    * parameters->population_inversion_fraction) {
+                set_LTE(abundance, temperature, p, k);
+                population_inversions = true; // err, technically this isn't thread safe, but we
+                                              // are only trying to set a flag to true
+            }
+        }
+    });
+
+    if (population_inversions) {
+        std::cout << "Minor warning: population inversions detected; Magritte does not handle "
+                     "masers, so setting affected populations to LTE."
+                  << std::endl;
+    }
 }
