@@ -73,12 +73,14 @@ struct Parameters {
     Real max_width_fraction = 0.35; // max diff is +-2.5%
     // Real max_width_fraction          = 0.3;//max diff is
     // +-2%
-    Real convergence_fraction        = 0.995;
-    Real min_rel_pop_for_convergence = 1.0e-10;
-    Real pop_prec                    = 1.0e-6;
-    Real min_opacity                 = 1.0e-26;
-    Real min_dtau                    = 1.0e-15;
-    bool store_intensities           = false;
+    Real convergence_fraction          = 0.995;
+    Real min_rel_pop_for_convergence   = 1.0e-10;
+    Real pop_prec                      = 1.0e-6;
+    Real min_opacity                   = 1.0e-26;
+    Real min_dtau                      = 1.0e-15;
+    Real population_inversion_fraction = 1.01; // threshold factor for population inversion required
+                                               // for LTE to be used; set this higher than 1
+    bool store_intensities = false;
     // bool use_Ng_acceleration         = true;//Not used,
     // so may safely be removed
     bool use_adaptive_Ng_acceleration = true;    // whether to use an adaptive version of Ng

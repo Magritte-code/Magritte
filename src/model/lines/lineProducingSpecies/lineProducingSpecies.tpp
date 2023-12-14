@@ -91,20 +91,6 @@ inline void LineProducingSpecies ::set_LTE(
     partition_function = population(i) + population(j);
     population(i) *= population_tot_line / partition_function;
     population(j) *= population_tot_line / partition_function;
-
-    // for (Size i = 0; i < linedata.nlev; i++) {
-    //     const Size ind = index(p, i);
-
-    //     population(ind) = linedata.weight[i] * exp(-linedata.energy[i] / (KB * temperature[p]));
-
-    //     partition_function += population(ind);
-    // }
-
-    // for (Size i = 0; i < linedata.nlev; i++) {
-    //     const Size ind = index(p, i);
-
-    //     population(ind) *= population_tot_line / partition_function;
-    // }
 }
 
 /// This function check whether the level populations have converged, using the
@@ -687,9 +673,9 @@ inline void LineProducingSpecies::update_using_statistical_equilibrium_sparse(
 }
 
 ///  correct_negative_populations: sets negative values in the level populations to zero and
-///  renormalizes the other populations As numerical issues can cause negative populations, this
-///  function corrects for this. It should therefore be called after each level population
-///  determination
+///  renormalizes the other populations. It also sets masering levels to LTE. This function should
+///  therefore be called after each level population, as Magritte does not handle negative line
+///  opacities.
 inline void LineProducingSpecies::correct_negative_populations(
     const Double2& abundance, const Vector<Real>& temperature) {
     threaded_for(p, parameters->npoints(), {
@@ -717,13 +703,14 @@ inline void LineProducingSpecies::correct_negative_populations(
     // to LTE instead
     threaded_for(p, parameters->npoints(), {
         for (Size k = linedata.nrad - 1; k != static_cast<Size>(-1);
-             --k) { // reversed loop, stops at 0
-            // for (Size k = 0; k < linedata.nrad; k++) {
-            if (get_opacity(p, k) < 0.0) {
+             k--) { // reversed loop, stops at 0
+            Size i = index(p, linedata.irad[k]);
+            Size j = index(p, linedata.jrad[k]);
+            if (population(j) < linedata.Bs[k] / linedata.Ba[k] * population(i)
+                                    * parameters->population_inversion_fraction) {
                 set_LTE(abundance, temperature, p, k);
-                population_inversions = true; // err, technically this isn't thread safe, but we are
-                                              // only trying to set a flag to true
-                // break;
+                population_inversions = true; // err, technically this isn't thread safe, but we
+                                              // are only trying to set a flag to true
             }
         }
     });
