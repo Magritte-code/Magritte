@@ -38,12 +38,8 @@ class Timer {
 
   private:
     string name;
-
-    vector<std::chrono::high_resolution_clock::time_point> starts;
-    vector<std::chrono::high_resolution_clock::time_point> stops;
-
+    std::chrono::high_resolution_clock::time_point time_start;
     vector<std::chrono::duration<double>> intervals;
-
     std::chrono::duration<double> total;
 
   public:
@@ -54,45 +50,26 @@ class Timer {
 
     ///  start: start timer i.e. set initial time stamp
     ///////////////////////////////////////////////////
-
-    void start() { starts.push_back(std::chrono::high_resolution_clock::now()); }
+    void start() { time_start = std::chrono::high_resolution_clock::now(); }
 
     ///  stop: stop timer and calculate interval for every process
     //////////////////////////////////////////////////////////////
-
     void stop() {
-        stops.push_back(std::chrono::high_resolution_clock::now());
-
-        const std::chrono::duration<double> interval = stops.back() - starts.back();
-
+        const std::chrono::high_resolution_clock::time_point time_stop =
+            std::chrono::high_resolution_clock::now();
+        const std::chrono::duration<double> interval = time_stop - time_start;
         intervals.push_back(interval);
-
         total += interval;
     }
 
-    ///  print_to_file: print time interval to file
-    ///////////////////////////////////////////////
-
-    // void print_to_file ()
-    //{
-    //  string file_name = output_folder + "timer_" + name + ".txt";
-
-    //	ofstream outFile (file_name, ios_base::app);
-
-    //  outFile << interval.count() << endl;
-
-    //	outFile.close();
-    //}
-
     ///  print: print time interval to screen
     /////////////////////////////////////////
-
     string get_print_string() {
-        return ("T   | " + name + " : " + to_string(intervals.back().count()) + " seconds");
+        return ("T   | " + name + " : " + std::to_string(intervals.back().count()) + " seconds");
     }
 
     string get_print_total_string() {
-        return ("Tot | " + name + " : " + to_string(total.count()) + " seconds");
+        return ("Tot | " + name + " : " + std::to_string(total.count()) + " seconds");
     }
 
     void print() { cout << get_print_string() << endl; }
