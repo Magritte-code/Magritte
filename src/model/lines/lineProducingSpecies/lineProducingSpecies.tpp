@@ -39,7 +39,7 @@ inline Real LineProducingSpecies ::get_opacity(const Size p, const Size k) const
 }
 
 ///  set_LTE_level_populations
-///    @param[in] abundance_lspec: abundance of line species
+///    @param[in] abundance: abundance of line species
 ///    @param[in] temperature: local gas temperature
 ///    @param[in] p: number of cell
 ///    @param[in] l: number of line producing species
@@ -69,14 +69,15 @@ inline void LineProducingSpecies ::update_using_LTE(
     populations.push_back(population);
 }
 
-///  Set a single species, at a given point to LTE
+///  Set a single line, at a given point to LTE
+///    @param[in] temperature: local gas temperature
 ///    @param[in] p: number of cell
 ///    @param[in] k: number of line
 /// Note: do call this from back to front in the loop over k, as otherwise new population inversions
 /// might occur
 ///////////////////////////////////////////////////////////
 inline void LineProducingSpecies ::set_LTE(
-    const Double2& abundance, const Vector<Real>& temperature, const Size p, const Size k) {
+    const Vector<Real>& temperature, const Size p, const Size k) {
     // population_tot[p] = abundance[p][linedata.num];
     const Size i = index(p, linedata.irad[k]);
     const Size j = index(p, linedata.jrad[k]);
@@ -91,6 +92,30 @@ inline void LineProducingSpecies ::set_LTE(
     partition_function = population(i) + population(j);
     population(i) *= population_tot_line / partition_function;
     population(j) *= population_tot_line / partition_function;
+}
+
+///  Set the given levels, at a given point to LTE
+///    @param[in] temperature: local gas temperature
+///    @param[in] p: number of cell
+///    @param[in] level_mask: vector of bools, indicating which levels should be set to LTE
+inline void LineProducingSpecies ::set_LTE_specific_levels(
+    const Vector<Real>& temperature, const Size p, const vector<char>& level_mask) {
+    Real population_tot_levels = 0.0;
+    Real partition_function    = 0.0;
+    for (Size i = 0; i < linedata.nlev; i++) {
+        if (level_mask[i]) {
+            const Size ind = index(p, i);
+            population_tot_levels += population(ind);
+            population(ind) = linedata.weight[i] * exp(-linedata.energy[i] / (KB * temperature[p]));
+            partition_function += population(ind);
+        }
+    }
+    for (Size i = 0; i < linedata.nlev; i++) {
+        if (level_mask[i]) {
+            const Size ind = index(p, i);
+            population(ind) *= population_tot_levels / partition_function;
+        }
+    }
 }
 
 /// This function check whether the level populations have converged, using the
@@ -148,8 +173,8 @@ inline void LineProducingSpecies ::check_for_convergence_trial(const Real pop_pr
         for (Size i = 0; i < linedata.nlev; i++) {
             const Size ind = index(p, i);
 
-            // if (population(ind) > parameters->min_rel_pop_for_convergence * population_tot[p]) {
-            // Real relative_change = 2.0;
+            // if (population(ind) > parameters->min_rel_pop_for_convergence *
+            // population_tot[p]) { Real relative_change = 2.0;
             //
             // relative_change *= std::abs(trial_population (ind) - trial_population_prev
             // (ind)); relative_change /= (trial_population (ind) + trial_population_prev
@@ -293,8 +318,8 @@ void LineProducingSpecies ::update_using_acceleration_trial(const Size order) {
     residuals.push_back(population - populations.back());
     populations.push_back(population);
 
-    trial_population_prev = trial_population; // stores the previous ng acceleration estimate, used
-                                              // for the adaptive ng acceleration
+    trial_population_prev = trial_population; // stores the previous ng acceleration estimate,
+                                              // used for the adaptive ng acceleration
 
     // inequality due to residuals needing to be computed from populations, but
     // populations may be computed without computing residuals
@@ -673,9 +698,9 @@ inline void LineProducingSpecies::update_using_statistical_equilibrium_sparse(
 }
 
 ///  correct_negative_populations: sets negative values in the level populations to zero and
-///  renormalizes the other populations. It also sets masering levels to LTE. This function should
-///  therefore be called after each level population, as Magritte does not handle negative line
-///  opacities.
+///  renormalizes the other populations. It also sets masering levels to LTE. This function
+///  should therefore be called after each level population, as Magritte does not handle
+///  negative line opacities.
 inline void LineProducingSpecies::correct_negative_populations(
     const Double2& abundance, const Vector<Real>& temperature) {
     threaded_for(p, parameters->npoints(), {
@@ -699,19 +724,33 @@ inline void LineProducingSpecies::correct_negative_populations(
     });
 
     bool population_inversions = false;
-    // Also check if some population inversions (negative opacities) are present; set these points
-    // to LTE instead
+    // Also check if some population inversions (negative opacities) are present; set these
+    // points to LTE instead
     threaded_for(p, parameters->npoints(), {
+        // keep track of which levels have been modified, in order to do a final pass later
+        // use char, because vector<bool> is not a std::vector
+        std::vector<char> modified_level(linedata.nlev, false);
+        bool population_inversion_at_point = false;
+
+        // start by checking transitions one by one to get an idea of which ones need to be set to
+        // LTE
         for (Size k = linedata.nrad - 1; k != static_cast<Size>(-1);
              k--) { // reversed loop, stops at 0
             Size i = index(p, linedata.irad[k]);
             Size j = index(p, linedata.jrad[k]);
             if (population(j) < linedata.Bs[k] / linedata.Ba[k] * population(i)
                                     * parameters->population_inversion_fraction) {
-                set_LTE(abundance, temperature, p, k);
+                set_LTE(temperature, p, k);
+                modified_level[linedata.irad[k]] = true;
+                modified_level[linedata.jrad[k]] = true;
+                population_inversion_at_point    = true;
                 population_inversions = true; // err, technically this isn't thread safe, but we
                                               // are only trying to set a flag to true
             }
+        }
+        // and finally set all modified level to LTE
+        if (population_inversion_at_point) {
+            set_LTE_specific_levels(temperature, p, modified_level);
         }
     });
 
