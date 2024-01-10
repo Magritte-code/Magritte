@@ -725,33 +725,66 @@ inline void LineProducingSpecies::correct_negative_populations(
 
     bool population_inversions = false;
     // Also check if some population inversions (negative opacities) are present; set these
-    // points to LTE instead
+    // points to LTE instead; This is due to us using the Feautrier solver, which cannot handle
+    // negative optical depths, even if no significant masers exist in the model
     threaded_for(p, parameters->npoints(), {
         // keep track of which levels have been modified, in order to do a final pass later
         // use char, because vector<bool> is not a std::vector
         std::vector<char> modified_level(linedata.nlev, false);
-        bool population_inversion_at_point = false;
 
-        // start by checking transitions one by one to get an idea of which ones need to be set to
-        // LTE
-        for (Size k = linedata.nrad - 1; k != static_cast<Size>(-1);
-             k--) { // reversed loop, stops at 0
-            Size i = index(p, linedata.irad[k]);
-            Size j = index(p, linedata.jrad[k]);
-            if (population(j) < linedata.Bs[k] / linedata.Ba[k] * population(i)
-                                    * parameters->population_inversion_fraction) {
-                set_LTE(temperature, p, k);
-                modified_level[linedata.irad[k]] = true;
-                modified_level[linedata.jrad[k]] = true;
-                population_inversion_at_point    = true;
-                population_inversions = true; // err, technically this isn't thread safe, but we
-                                              // are only trying to set a flag to true
+        // keep track of how many levels have been modified, as stopping criterion
+        Size next_n_modified_levels = 0;
+        Size curr_n_modified_levels = 0;
+
+        // We try to keep fixing the levels until they are finally fully consistent...
+        // This do while loop is guaranteed to finish, as the number of modified levels can only
+        // increase and is bounded from above by linedata.nlev
+        do {
+            curr_n_modified_levels = next_n_modified_levels;
+
+            bool population_inversion_at_point = false;
+
+            // start by checking transitions one by one to get an idea of which ones need to be set
+            // to LTE
+            for (Size k = linedata.nrad - 1; k != static_cast<Size>(-1);
+                 k--) { // reversed loop, stops at 0
+                Size i = index(p, linedata.irad[k]);
+                Size j = index(p, linedata.jrad[k]);
+                if (population(j) < linedata.Bs[k] / linedata.Ba[k] * population(i)
+                                        * parameters->population_inversion_fraction) {
+                    set_LTE(temperature, p, k);
+                    modified_level[linedata.irad[k]] = true;
+                    modified_level[linedata.jrad[k]] = true;
+                    population_inversion_at_point    = true;
+                    population_inversions = true; // err, technically this isn't thread safe, but we
+                                                  // are only trying to set a flag to true
+                }
             }
-        }
-        // and finally set all modified level to LTE
-        if (population_inversion_at_point) {
-            set_LTE_specific_levels(temperature, p, modified_level);
-        }
+            // And also check from low to high
+            for (Size k = 0; k < linedata.nrad; k++) {
+                Size i = index(p, linedata.irad[k]);
+                Size j = index(p, linedata.jrad[k]);
+                if (population(j) < linedata.Bs[k] / linedata.Ba[k] * population(i)
+                                        * parameters->population_inversion_fraction) {
+                    set_LTE(temperature, p, k);
+                    modified_level[linedata.irad[k]] = true;
+                    modified_level[linedata.jrad[k]] = true;
+                    population_inversion_at_point    = true;
+                    population_inversions = true; // err, technically this isn't thread safe, but we
+                                                  // are only trying to set a flag to true
+                }
+            }
+
+            // and finally set all modified levels simultaneously to LTE
+            if (population_inversion_at_point) {
+                set_LTE_specific_levels(temperature, p, modified_level);
+            }
+
+            // and count how many levels have been modified
+            next_n_modified_levels =
+                std::accumulate(modified_level.begin(), modified_level.end(), static_cast<Size>(0));
+        } while (next_n_modified_levels != curr_n_modified_levels);
+        // If no additional levels have been modified, we are done
     });
 
     if (population_inversions) {
