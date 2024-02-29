@@ -83,9 +83,9 @@ void LineProducingSpecies ::write(const Io& io, const Size l) const {
 
     write_populations(io, l, "");
 
-    // const string prefix_l = prefix + std::to_string (l) + "/";
+    const string prefix_l = prefix + std::to_string(l) + "/";
 
-    // io.write_list (prefix_l + "population_tot", population_tot);
+    io.write_list(prefix_l + "population_tot", population_tot);
 
     // Double2 pops_prev1 (parameters->npoints(), Double1 (linedata.nlev));
     // Double2 pops_prev2 (parameters->npoints(), Double1 (linedata.nlev));

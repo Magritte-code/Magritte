@@ -3,6 +3,7 @@ import magritte.core  as magritte             # Core functionality
 import numpy          as np                   # Data structures
 import warnings                               # Hide warnings
 warnings.filterwarnings('ignore')             # especially for yt
+import plons                                  # Phantom import
 import yt                                     # 3D plotting
 import os
 import subprocess
@@ -21,75 +22,52 @@ def import_phantom():
     modeldir= path+"/../../models"
     datadir = path+"/../../data"
 
-    #TODO maybe rename this ascii file (seems random number)
+    dump_file  = os.path.join(datadir, 'model_Phantom_3D'     )   # Phantom full dump (snapshot)
+    setup_file = os.path.join(datadir, 'wind.setup'           )   # Phantom setup file
+    input_file = os.path.join(datadir, 'wind.in'              )   # Phantom input file
+    model_file = os.path.join(modeldir, 'model_Phantom_3D.hdf5')   # Resulting Magritte model
+    lamda_file = os.path.join(datadir, 'co.txt'               )   # Line data file
 
-    input_file = os.path.join(modeldir, 'wind.ascii')   # Phantom snapshot
-    model_file = os.path.join(modeldir, 'wind.hdf5' )   # Resulting Magritte model
-    lamda_file = os.path.join(datadir, 'co.txt'                )   # Line data file
-
-    input_link="https://owncloud.ster.kuleuven.be/index.php/s/Z7NfRBJrPeQa85g/download"
+    dump_link  = "https://github.com/Ensor-code/phantom-models/raw/main/Malfait+2021/v05e50/wind_v05e50?download="
+    setup_link = "https://raw.githubusercontent.com/Ensor-code/phantom-models/main/Malfait%2B2021/v05e50/wind.setup"
+    input_link = "https://raw.githubusercontent.com/Ensor-code/phantom-models/main/Malfait%2B2021/v05e50/wind.in"
     lamda_link = "https://home.strw.leidenuniv.nl/~moldata/datafiles/co.dat"
 
     # %%capture
+    subprocess.run(['wget', dump_link,  '--output-document', dump_file ])
+    subprocess.run(['wget', setup_link, '--output-document', setup_file])
     subprocess.run(['wget', input_link, '--output-document', input_file])
-    subprocess.run(['wget', lamda_link, '--output-document', lamda_file])
+    subprocess.run(['wget', lamda_link, '--output-document', lamda_file]) 
+    # !wget $dump_link  --output-document $dump_file
+    # !wget $setup_link --output-document $setup_file
     # !wget $input_link --output-document $input_file
     # !wget $lamda_link --output-document $lamda_file
 
-    #converting file to magritte model
+    # Loading the data with plons
+    setupData = plons.LoadSetup(datadir, "wind")
+    dumpData  = plons.LoadFullDump(dump_file, setupData)
 
-    # Read the Phantom ascii file
-    (x,y,z, h, rho, vx,vy,vz, u) = np.loadtxt(input_file, skiprows=14, usecols=(0,1,2,4,5,6,7,8,9), unpack=True)
-
-    # Constants that can be read from ascii file
-    # TODO: automate reading this is possible
-    velocity_cte = 2.9784608e+06
-    density_cte  = 5.9410314e-07
-    energy_cte   = 8.8712277e+12
-
-    nonzero_abundance=rho>0.0
-
-    print("number points:", len(rho))
-    print("number nonzero abundances:", len(nonzero_abundance[nonzero_abundance==True]))
-
-    keep = np.logical_and(h>0.0, nonzero_abundance)
-
-    # Exclude unphysical points and points with zero abundances
-    x   = x  [keep]
-    y   = y  [keep]
-    z   = z  [keep]
-    vx  = vx [keep]
-    vy  = vy [keep]
-    vz  = vz [keep]
-    u   = u  [keep]
-    rho = rho[keep]
-
-    # x   = x  [h>0.0]
-    # y   = y  [h>0.0]
-    # z   = z  [h>0.0]
-    # vx  = vx [h>0.0]
-    # vy  = vy [h>0.0]
-    # vz  = vz [h>0.0]
-    # u   = u  [h>0.0]
-    # rho = rho[h>0.0]
+    position = dumpData["position"]*1e-2      # position vectors       [cm   -> m]
+    velocity = dumpData["velocity"]*1e3      # velocity vectors        [km/s -> m/s]
+    velocity = velocity/constants.c.si.value # velocity vectors        [m/s  -> 1/c]
+    rho      = dumpData["rho"]               # density                 [g/cm^3]
+    u        = dumpData["u"]                 # internal energy density [erg/g]
+    tmp      = dumpData["Tgas"]              # temperature             [K]
+    tmp[tmp<2.725] = 2.725                   # Cut-off temperatures below 2.725 K
 
     # Extract the number of points
-    npoints = len(x)
-
-    # Convert rho (total density) to abundances
-    nH2 = rho * density_cte * 1.0e+6 * constants.N_A.si.value / 2.02
-    nCO = nH2 * 1.0e-4
+    npoints = len(rho)
 
     # Convenience arrays
     zeros = np.zeros(npoints)
     ones  = np.ones (npoints)
 
-    position = np.array((x, y, z )).transpose()
-    velocity = np.array((vx,vy,vz)).transpose()
+    # Convert rho (total density) to abundances
+    nH2 = rho * 1.0e+6 * constants.N_A.si.value / 2.02
+    nCO = nH2 * 1.0e-4
 
-    # Convert units
-    position *= constants.au.si.value                    # Convert au to m
-    velocity *= (velocity_cte / constants.c.cgs.value)   # cm/s to c fraction
+    # Define turbulence at 150 m/s
+    trb = (150.0/constants.c.si.value)**2 * ones
 
     # Extract Delaunay vertices (= Voronoi neighbors)
     delaunay = Delaunay(position)
@@ -98,20 +76,16 @@ def import_phantom():
     nbs       = [n for sublist in neighbors for n in sublist]
     n_nbs     = [len(sublist) for sublist in neighbors]
 
-    # Compute the indices of the boundary particles of the mesh
+    # Compute the indices of the boundary particles of the mesh, extracted from the Delaunay vertices
     boundary = set([])
     for i in tqdm(range(delaunay.neighbors.shape[0])):
-        m1  = (delaunay.neighbors[i] == -1)
-        nm1 = np.sum(m1)
-        if   (nm1 == 0):
-            pass
-        elif (nm1 == 1):
-            for b in delaunay.simplices[i][m1]:
-                boundary.add(b)
-        elif (nm1 >= 2):
-            for b in delaunay.simplices[i]:
-                boundary.add(b)
-
+        for k in range(4):
+            if (delaunay.neighbors[i][k] == -1):
+                nk1,nk2,nk3 = (k+1)%4, (k+2)%4, (k+3)%4 
+                boundary.add(delaunay.simplices[i][nk1])
+                boundary.add(delaunay.simplices[i][nk2])
+                boundary.add(delaunay.simplices[i][nk3])
+                
     boundary = list(boundary)
     boundary = np.array(boundary)
 
@@ -121,18 +95,6 @@ def import_phantom():
     b_nms = np.linalg.norm(position[boundary], axis=1)
     p_nms = np.linalg.norm(position,           axis=1)
     boundary = np.array([i[0] for i in np.argwhere(p_nms >= np.min(b_nms))])
-
-    # Derive temperature from internal energy (assuming adiabatic heating/cooling)
-    gamma = 1.2
-    mu    = 2.381
-    tmp   = mu * (gamma-1.0) * u * energy_cte * 1.00784 * (units.erg/units.g * constants.u/constants.k_B).to(units.K).value
-
-    # Cut-off temperatures below 2.725 K
-    tmp[tmp<2.725] = 2.725
-
-    # Define turbulence at 150 m/s
-    trb = (150.0/constants.c.si.value)**2 * ones
-
 
     ##creating model
 

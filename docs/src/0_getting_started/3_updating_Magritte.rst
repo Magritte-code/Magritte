@@ -13,7 +13,7 @@ To get the latest magritte version, we pull from the repository, including all s
 
 .. code-block:: shell
 
-    git pull --recurse-submodule
+    git pull --recurse-submodules
 
 
 Update dependencies

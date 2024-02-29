@@ -51,6 +51,8 @@ PYBIND11_MODULE(core, module) {
     module.attr("KB")    = KB;
     module.attr("AMU")   = AMU;
     module.attr("T_CMB") = T_CMB;
+    // Version
+    module.attr("__version__") = VERSION_NUMBER;
 
     // Io, base class
     py::class_<Io>(module, "Io", "Abstract input/output base class.");
@@ -342,6 +344,9 @@ PYBIND11_MODULE(core, module) {
             "Minimum optical depth increment that will be assumed in the solver.")
         .def_readwrite("comoving_min_dtau", &Parameters::comoving_min_dtau,
             "Minimum optical depth that will be assumed in the comoving solver.")
+        .def_readwrite("population_inversion_fraction", &Parameters::population_inversion_fraction,
+            "Threshold factor for population inversion required for LTE to be used; set this "
+            "higher than 1")
         .def_readwrite("store_intensities", &Parameters::store_intensities,
             "Whether or not to store intensities.")
         .def_readwrite("use_smoothing", &Parameters::use_smoothing,
@@ -774,6 +779,28 @@ PYBIND11_MODULE(core, module) {
         .def_readwrite("ncols", &Matrix<Real>::ncols)
         // functions
         .def("set", &Matrix<Real>::set_2D_array)
+        // constructor
+        .def(py::init());
+
+    // Matrix <Size>
+    py::class_<Matrix<Size>, Vector<Size>>(module, "MSize", py::buffer_protocol())
+        // buffer
+        .def_buffer([](Matrix<Size>& m) -> py::buffer_info {
+            return py::buffer_info(m.vec.data(),       // Pointer to buffer
+                sizeof(Size),                          // Size of one element
+                py::format_descriptor<Size>::format(), // Python struct-style format
+                                                       // descriptor
+                2,                                     // Number of dimensions
+                py::detail::any_container<ssize_t>({m.nrows, m.ncols}), // Buffer dimensions
+                py::detail::any_container<ssize_t>(
+                    {sizeof(Size) * m.ncols, sizeof(Size)}) // Strides (in bytes) for each index
+            );
+        })
+        .def_readwrite("vec", &Vector<Size>::vec)
+        .def_readwrite("nrows", &Matrix<Size>::nrows)
+        .def_readwrite("ncols", &Matrix<Size>::ncols)
+        // functions
+        .def("set", &Matrix<Size>::set_2D_array)
         // constructor
         .def(py::init());
 

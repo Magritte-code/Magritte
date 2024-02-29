@@ -83,6 +83,7 @@ the model files.
 * :mod:`nodejs`, for interactivity in some advanced plots;
 * :mod:`ipywidgets`, for interactive plotting;
 * :mod:`jupyterlab`, for convenient use of the jupyter notebooks;
+* :mod:`plons`, for importing `Phantom <https://phantomsph.bitbucket.io/>`_ sph models;
 
 All of these packages can also be found in the `conda environment file <https://github.com/Magritte-code/Magritte/blob/stable/dependencies/conda_env.yml>`_.
 
