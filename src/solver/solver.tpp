@@ -2467,7 +2467,6 @@ accel inline void Solver ::comoving_local_approx_map_data(Model& model, const Si
                                         // need to care about doppler shifts
                 curr_line_idx = model.radiation.frequencies.corresponding_line[unsorted_freqidx];
                 encountered_lines.insert(curr_line_idx);
-                curr_freq_count++;
 
                 // whenever we encounter a new line, the size of encountered_lines will increase
                 // This condition is only satisfied whenever we encounter a new line after all quads
@@ -2480,6 +2479,8 @@ accel inline void Solver ::comoving_local_approx_map_data(Model& model, const Si
                 } else {
                     is_in_bounds = true;
                 }
+                curr_freq_count++; // increment after checking, otherwise off by one error
+
             } else // freq matching index must be determined if it is just higher than the freq at
                    // the previous point
             {
@@ -2489,6 +2490,9 @@ accel inline void Solver ::comoving_local_approx_map_data(Model& model, const Si
                 const Real next_freq =
                     model.radiation.frequencies.sorted_nu(next_point, next_freq_idx - 1)
                     * next_shift; // index - 1 due to size
+
+                is_in_bounds = (curr_freq_count
+                                > (encountered_lines.size() - 1) * model.parameters->nquads() + 2);
                 comoving_approx_map_single_data<approx>(model, curr_point, next_point, dZ,
                     is_in_bounds, in_bounds_count, next_freq_idx - 1, curr_freq_idx - 1, next_freq,
                     curr_freq, next_shift, curr_shift, curr_line_idx, is_upward_disc, bdy_point);
@@ -2541,7 +2545,6 @@ accel inline void Solver ::comoving_local_approx_map_data(Model& model, const Si
                     curr_point, curr_freq_idx); // arbitrary frame, as within a single point, one
                                                 // does not need to care about doppler shifts
                 curr_line_idx = model.radiation.frequencies.corresponding_line[unsorted_freqidx];
-                curr_freq_count++;
                 encountered_lines.insert(curr_line_idx);
 
                 // whenever we encounter a new line, the size of encountered_lines will increase
@@ -2555,6 +2558,8 @@ accel inline void Solver ::comoving_local_approx_map_data(Model& model, const Si
                 } else {
                     is_in_bounds = true;
                 }
+                curr_freq_count++; // increment after checking, otherwise off by one error
+
             } else // freq matching index must be determined if it is just higher than the freq at
                    // the previous point
             {
@@ -2562,6 +2567,8 @@ accel inline void Solver ::comoving_local_approx_map_data(Model& model, const Si
                     model.radiation.frequencies.sorted_nu(curr_point, curr_freq_idx) * curr_shift;
                 const Real next_freq =
                     model.radiation.frequencies.sorted_nu(next_point, next_freq_idx) * next_shift;
+                is_in_bounds = (curr_freq_count
+                                > (encountered_lines.size() - 1) * model.parameters->nquads() + 2);
                 comoving_approx_map_single_data<approx>(model, curr_point, next_point, dZ,
                     is_in_bounds, in_bounds_count, next_freq_idx, curr_freq_idx, next_freq,
                     curr_freq, next_shift, curr_shift, curr_line_idx, is_upward_disc, bdy_point);
