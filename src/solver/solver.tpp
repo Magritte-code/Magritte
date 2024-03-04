@@ -1738,15 +1738,14 @@ inline void Solver ::solve_comoving_order_2_sparse(Model& model) {
 
     std::cout << "hnrays: " << model.parameters->hnrays() << std::endl;
     // For each ray, solve the radiative transfer equation in a comoving manner.
-    accelerated_for(rr, model.parameters->hnrays(), {
+    for (Size rr = 0; rr < model.parameters->hnrays(); rr++) {
         const Size ar = model.geometry.rays.antipod[rr];
 
         std::cout << "--- rr = " << rr << std::endl;
 
         // for every ray to trace
         const Size n_rays_to_trace = points_to_trace_ray_through[rr].size();
-        for (Size rayidx = 0; rayidx < n_rays_to_trace; rayidx++) {
-
+        accelerated_for(rayidx, n_rays_to_trace, {
             // get corresponding origins of the rays
             const Size o            = points_to_trace_ray_through[rr][rayidx];
             const double dshift_max = get_dshift_max(model, o);
@@ -1758,8 +1757,8 @@ inline void Solver ::solve_comoving_order_2_sparse(Model& model) {
                 model, o, rr, rayidx, dshift_max); // solves both for forward and backward ray
             // complicated to decouple ray tracing from solving, so more logic is moved inside this
             // functions
-        }
-    })
+        })
+    }
 }
 
 ///  Solver for the non-approximate comoving methods. Computes the intensities for a single step on
@@ -2249,13 +2248,13 @@ inline void Solver ::solve_comoving_local_approx_order_2_sparse(Model& model) {
 
     std::cout << "hnrays: " << model.parameters->hnrays() << std::endl;
     // For each ray, solve the radiative transfer equation in a comoving manner
-    accelerated_for(rr, model.parameters->hnrays(), {
+    for (Size rr = 0; rr < model.parameters->hnrays(); rr++) {
         const Size ar = model.geometry.rays.antipod[rr];
 
         std::cout << "--- rr = " << rr << std::endl;
         // for every ray to trace
         const Size n_rays_to_trace = points_to_trace_ray_through[rr].size();
-        for (Size rayidx = 0; rayidx < n_rays_to_trace; rayidx++) {
+        accelerated_for(rayidx, n_rays_to_trace, {
             // get corresponding origins of the rays
             const Size o            = points_to_trace_ray_through[rr][rayidx];
             const double dshift_max = get_dshift_max(model, o);
@@ -2263,8 +2262,8 @@ inline void Solver ::solve_comoving_local_approx_order_2_sparse(Model& model) {
                 model, o, rr, rayidx, dshift_max); // solves both for forward and backward ray
             // complicated to decouple ray tracing from solving, so more logic is moved inside this
             // functions
-        }
-    })
+        })
+    }
 }
 
 ///  Solver for the approximate comoving shortcharacteristics method. This is a first order in
