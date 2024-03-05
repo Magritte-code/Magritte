@@ -1738,27 +1738,26 @@ inline void Solver ::solve_comoving_order_2_sparse(Model& model) {
 
     std::cout << "hnrays: " << model.parameters->hnrays() << std::endl;
     // For each ray, solve the radiative transfer equation in a comoving manner.
+
+    std::vector<Size> cum_n_points_to_trace_ray_through(model.parameters->hnrays() + 1, 0);
+    Size counter = 0; // will contain the total number of points to trace through
     for (Size rr = 0; rr < model.parameters->hnrays(); rr++) {
-        const Size ar = model.geometry.rays.antipod[rr];
-
-        std::cout << "--- rr = " << rr << std::endl;
-
-        // for every ray to trace
-        const Size n_rays_to_trace = points_to_trace_ray_through[rr].size();
-        accelerated_for(rayidx, n_rays_to_trace, {
-            // get corresponding origins of the rays
-            const Size o            = points_to_trace_ray_through[rr][rayidx];
-            const double dshift_max = get_dshift_max(model, o);
-            // FIXME?: using dshift_max computed from a single point only works when the line width
-            // does not change too much; however, all other solvers are already using this bad
-            // approximation trace and solve over the ray in both directions, incrementing J as
-            // necessary; also, the max doppler shift currently (6/7/2023) does not do anything
-            solve_comoving_order_2_sparse<approx>(
-                model, o, rr, rayidx, dshift_max); // solves both for forward and backward ray
-            // complicated to decouple ray tracing from solving, so more logic is moved inside this
-            // functions
-        })
+        counter += points_to_trace_ray_through[rr].size();
+        cum_n_points_to_trace_ray_through[rr + 1] = counter;
     }
+
+    // Parallelization over both rays and ray directions, as otherwise the load balancing might be a
+    // bit iffy for smaller models
+    accelerated_for(totalidx, counter, {
+        auto cum_n_points_pointer = std::upper_bound(cum_n_points_to_trace_ray_through.begin(),
+            cum_n_points_to_trace_ray_through.end(), totalidx);
+        Size rr =
+            std::distance(cum_n_points_to_trace_ray_through.begin(), cum_n_points_pointer) - 1;
+        Size rayidx             = totalidx - cum_n_points_to_trace_ray_through[rr];
+        const Size o            = points_to_trace_ray_through[rr][rayidx];
+        const double dshift_max = get_dshift_max(model, o);
+        solve_comoving_order_2_sparse<approx>(model, o, rr, rayidx, dshift_max);
+    })
 }
 
 ///  Solver for the non-approximate comoving methods. Computes the intensities for a single step on
@@ -2247,23 +2246,26 @@ inline void Solver ::solve_comoving_local_approx_order_2_sparse(Model& model) {
     }
 
     std::cout << "hnrays: " << model.parameters->hnrays() << std::endl;
-    // For each ray, solve the radiative transfer equation in a comoving manner
-    for (Size rr = 0; rr < model.parameters->hnrays(); rr++) {
-        const Size ar = model.geometry.rays.antipod[rr];
 
-        std::cout << "--- rr = " << rr << std::endl;
-        // for every ray to trace
-        const Size n_rays_to_trace = points_to_trace_ray_through[rr].size();
-        accelerated_for(rayidx, n_rays_to_trace, {
-            // get corresponding origins of the rays
-            const Size o            = points_to_trace_ray_through[rr][rayidx];
-            const double dshift_max = get_dshift_max(model, o);
-            solve_comoving_local_approx_order_2_sparse<approx>(
-                model, o, rr, rayidx, dshift_max); // solves both for forward and backward ray
-            // complicated to decouple ray tracing from solving, so more logic is moved inside this
-            // functions
-        })
+    std::vector<Size> cum_n_points_to_trace_ray_through(model.parameters->hnrays() + 1, 0);
+    Size counter = 0; // will contain the total number of points to trace through
+    for (Size rr = 0; rr < model.parameters->hnrays(); rr++) {
+        counter += points_to_trace_ray_through[rr].size();
+        cum_n_points_to_trace_ray_through[rr + 1] = counter;
     }
+
+    // Parallelization over both rays and ray directions, as otherwise the load balancing might be a
+    // bit iffy for smaller models
+    accelerated_for(totalidx, counter, {
+        auto cum_n_points_pointer = std::upper_bound(cum_n_points_to_trace_ray_through.begin(),
+            cum_n_points_to_trace_ray_through.end(), totalidx);
+        Size rr =
+            std::distance(cum_n_points_to_trace_ray_through.begin(), cum_n_points_pointer) - 1;
+        Size rayidx             = totalidx - cum_n_points_to_trace_ray_through[rr];
+        const Size o            = points_to_trace_ray_through[rr][rayidx];
+        const double dshift_max = get_dshift_max(model, o);
+        solve_comoving_local_approx_order_2_sparse<approx>(model, o, rr, rayidx, dshift_max);
+    })
 }
 
 ///  Solver for the approximate comoving shortcharacteristics method. This is a first order in
