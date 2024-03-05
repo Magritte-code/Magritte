@@ -59,7 +59,7 @@ def image_mpl(
         x_unit     = units.au,
         v_unit     = units.km/units.s,
         method     = 'nearest',
-        save_fig   = False
+        save_fig   = True
     ):
     """
     Create plots of the channel maps of a synthetic observation (image) with matplotlib.
@@ -247,7 +247,7 @@ def image_plotly(
         method     = 'nearest',
         width      = 620,   # Yields approx square channel map
         height     = 540,   # Yields approx square channel map
-        save_fig   = False
+        save_fig   = True
     ):
     """
     Create plots of the channel maps of a synthetic observation (image) with plotly.
