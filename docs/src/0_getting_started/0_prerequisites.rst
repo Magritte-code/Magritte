@@ -11,7 +11,7 @@ Below is a list of the software required to be able to compile and run Magritte.
 * `GCC <https://gcc.gnu.org/>`_ (version :literal:`5.0.0` or later): to compile the C++ part of Magritte.
 * `CMake <https://cmake.org/>`_ (version :literal:`3.18.0` or later): for building Magritte, organising compilation and linking;
 * `Anaconda <https://www.anaconda.com/blog/individual-edition-2020-11>`_ (optional): for managing the required Python packages;
-* `Gmsh <https://gmsh.info/>`_ (optional): for custructing geometric meshes for the models;
+* `Gmsh <https://gmsh.info/>`_ (optional): for constructing geometric meshes for the models;
 
 Although Anaconda is optional and you could, in priciple, use any other way of installing the required Python dependencies, we recommend and assume the use of Anaconda.
 The list of required Python packages can be found in the `conda environment file <https://github.com/Magritte-code/Magritte/blob/stable/dependencies/conda_env.yml>`_.

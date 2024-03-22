@@ -111,7 +111,7 @@ All of these packages can also be found in the `conda environment file <https://
 
     Magritte uses plotly for some interactive plots. Plotly requires additional
     extensions to be able to render plots in a jupyter notebook or in jupyter lab. Please
-    consult their `intstallation notes <https://plotly.com/python/getting-started/>`_ to get
+    consult their `installation notes <https://plotly.com/python/getting-started/>`_ to get
     plotly working with jupyter.
 
 
@@ -155,4 +155,6 @@ We are currently further investigating Clang and Intel compiler (:literal:`icc`)
 GPU acceleration
 ================
 
-🧑‍💻 Coming soon(tm); GPU acceleration is expected to be implemented in 2024.
+A GPU-enabled port of Magritte to python using pytorch can be found on `GitHub <https://github.com/Magritte-code/Magritte-torch>`_.
+Unless GPU acceleration is required, the C++ version of Magritte should be used, as the compiled C++ code is faster on CPU than the python version.
+Not all features of the C++ version are available in the python version.
