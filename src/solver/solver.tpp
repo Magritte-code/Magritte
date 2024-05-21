@@ -1298,6 +1298,7 @@ inline void Solver ::comoving_ray_bdy_setup_forward(Model& model, Size last_inte
             // TODO: figure out a way to only selectively need to compute the opacities twice (for
             // each frequency seperately); i.e replace: compute_curr_opacity = true; with something
             // more elaborate
+            compute_curr_opacity = true;
             compute_source_dtau<approx>(model, currpoint, nextpoint, nextlineidx, currfreq,
                 nextfreq, shift_curr, shift_next, dZ, compute_curr_opacity, dtau, chicurr, chinext,
                 Scurr, Snext);
@@ -1553,6 +1554,7 @@ inline void Solver ::comoving_ray_bdy_setup_backward(
             // TODO: figure out a way to only selectively need to compute the opacities twice (for
             // each frequency seperately); i.e replace: compute_curr_opacity = true; with something
             // more elaborate
+            compute_curr_opacity = true;
             compute_source_dtau<approx>(model, currpoint, nextpoint, nextlineidx, currfreq,
                 nextfreq, shift_curr, shift_next, dZ, compute_curr_opacity, dtau, chicurr, chinext,
                 Scurr, Snext);
