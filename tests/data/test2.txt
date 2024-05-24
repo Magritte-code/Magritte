@@ -1,0 +1,32 @@
+!MOLECULE
+test
+!MOLECULAR WEIGHT
+29.0
+!NUMBER OF ENERGY LEVELS
+3
+!LEVEL + ENERGIES(cm^-1) + WEIGHT + J
+    1     0.000000000   1.0     0
+    2     2.975008479   3.0     1
+    3     8.924959478   5.0     2
+!NUMBER OF RADIATIVE TRANSITIONS
+2
+!TRANS + UP + LOW + EINSTEINA(s^-1) + FREQ(GHz) + E_u(K)
+    1     2     1  4.251e-05          89.18839570     4.28
+    2     3     2  4.081e-04         178.37481404    12.84
+!NUMBER OF COLL PARTNERS
+1
+!COLLISIONS BETWEEN
+1  test - H2 from Flower (1999)
+!NUMBER OF COLL TRANS
+3
+!NUMBER OF COLL TEMPS
+12
+!COLL TEMPS
+   10.0   20.0   30.0   50.0   70.0  100.0  150.0  200.0  250.0  300.0  350.0  400.0
+!TRANS + UP + LOW + COLLRATES(cm^3 s^-1)
+    1     2     1  2.6e-10 2.3e-10 2.1e-10 2.0e-10 1.9e-10 1.8e-10 2.0e-10 2.2e-10 2.3e-10 2.5e-10 2.7e-10 2.8e-10
+    2     3     1  1.4e-10 1.2e-10 1.1e-10 1.0e-10 9.2e-11 8.8e-11 8.4e-11 8.2e-11 8.1e-11 8.3e-11 8.1e-11 8.5e-11
+    3     3     2  3.9e-10 3.8e-10 3.7e-10 3.4e-10 3.4e-10 3.3e-10 3.5e-10 3.6e-10 3.8e-10 4.0e-10 4.2e-10 4.4e-10
+!NOTES:
+!Test file not of spectroscopic accuracy. mu=3.93D (Botschwina)
+!Pruned to only contain 3 levels
