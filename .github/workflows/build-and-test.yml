@@ -125,7 +125,7 @@ jobs:
       # retrying setting up conda: 3 tries, with 5 seconds wait inbetween
       - name: Install conda packages (try 1)
         id: setupcondatry1
-        uses: conda-incubator/setup-miniconda@v2
+        uses: conda-incubator/setup-miniconda@v3
         with:
           activate-environment: magritte
           environment-file: dependencies/conda_env.yml
@@ -138,7 +138,7 @@ jobs:
       - name: Install conda packages (try 2)
         id: setupcondatry2
         if: steps.setupcondatry1.outcome == 'failure'
-        uses: conda-incubator/setup-miniconda@v2
+        uses: conda-incubator/setup-miniconda@v3
         with:
           activate-environment: magritte
           environment-file: dependencies/conda_env.yml
@@ -151,7 +151,7 @@ jobs:
       - name: Install conda packages (try 3)
         id: setupcondatry3
         if: steps.setupcondatry2.outcome == 'failure'
-        uses: conda-incubator/setup-miniconda@v2
+        uses: conda-incubator/setup-miniconda@v3
         with:
           activate-environment: magritte
           environment-file: dependencies/conda_env.yml
