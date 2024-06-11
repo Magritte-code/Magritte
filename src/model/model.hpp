@@ -106,7 +106,7 @@ struct Model {
 
     int compute_image_for_point(const Size ray_nr, const Size p);
 
-    // int compute_radiation_field_feautrier_order_2_uv ();
+    int compute_radiation_field_feautrier_order_2_uv();
     int compute_radiation_field_feautrier_order_2_anis();
     int compute_radiation_field_feautrier_order_2_sparse();
 

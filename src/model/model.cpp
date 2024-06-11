@@ -355,28 +355,25 @@ int Model ::compute_radiation_field_feautrier_order_2() {
 /// BUGGED: v computation is incorrect
 // ///  Computer for the radiation field
 // /////////////////////////////////////
-// int Model :: compute_radiation_field_feautrier_order_2_uv ()
-// {
-//     cout << "Computing radiation field..." << endl;
-//
-//     Solver solver;
-//     solver.setup <CoMoving>                  (*this);
-//
-//     if (parameters->one_line_approximation)
-//     {
-//         solver.solve_feautrier_order_2_uv <OneLine> (*this);
-//         return (0);
-//     }
-//
-//     if (parameters->sum_opacity_emissivity_over_all_lines)
-//     {
-//         solver.solve_feautrier_order_2_uv <None> (*this);
-//         return (0);
-//     }
-//
-//     solver.solve_feautrier_order_2_uv <CloseLines> (*this);
-//     return (0);
-// }
+int Model ::compute_radiation_field_feautrier_order_2_uv() {
+    cout << "Computing radiation field..." << endl;
+
+    Solver solver;
+    solver.setup<CoMoving>(*this);
+
+    if (parameters->one_line_approximation) {
+        solver.solve_feautrier_order_2_uv<OneLine>(*this);
+        return (0);
+    }
+
+    if (parameters->sum_opacity_emissivity_over_all_lines) {
+        solver.solve_feautrier_order_2_uv<None>(*this);
+        return (0);
+    }
+
+    solver.solve_feautrier_order_2_uv<CloseLines>(*this);
+    return (0);
+}
 
 ///  Computer for the radiation field
 /////////////////////////////////////

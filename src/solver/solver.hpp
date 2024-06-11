@@ -187,13 +187,10 @@ struct Solver {
     accel inline void solve_shortchar_order_0(Model& model, const Size o, const Size r);
 
     /// BUGGED: v computation is incorrect
-    // template <ApproximationType approx>
-    // accel inline void solve_feautrier_order_2_uv (Model&
-    // model);
-    //
-    // template <ApproximationType approx>
-    // accel inline void solve_feautrier_order_2_uv (Model&
-    // model, const Size o, const Size f);
+    template <ApproximationType approx> accel inline void solve_feautrier_order_2_uv(Model& model);
+
+    template <ApproximationType approx>
+    accel inline void solve_feautrier_order_2_uv(Model& model, const Size o, const Size f);
 
     // Getters for emissivities, opacities, and boundary
     // conditions
