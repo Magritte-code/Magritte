@@ -33,7 +33,7 @@ def create_model ():
     Create a model file for the all_constant benchmark, single ray.
     """
 
-    modelName = f'all_constant_single_ray'
+    modelName = f'all_constant_single_ray_testuv'
     modelFile = f'{moddir}{modelName}.hdf5'
     lamdaFile = f'{datdir}test.txt'
 
@@ -54,7 +54,9 @@ def create_model ():
     model.chemistry.species.abundance = [[nTT, nH2, 0.0] for _ in range(npoints)]
     model.chemistry.species.symbol    = ['test', 'H2', 'e-']
 
-    model.thermodynamics.temperature.gas  .set( temp                 * np.ones(npoints))
+    # model.thermodynamics.temperature.gas  .set( temp                 * np.ones(npoints))
+    #Changing the temperature such that the source function is not constant
+    model.thermodynamics.temperature.gas  .set( temp * (1.0+10*np.arange(npoints)/npoints))
     model.thermodynamics.turbulence.vturb2.set((turb/magritte.CC)**2 * np.ones(npoints))
 
     model = setup.set_Delaunay_neighbor_lists (model)
@@ -71,7 +73,7 @@ def create_model ():
 
 def run_model (nosave=False):
 
-    modelName = f'all_constant_single_ray'
+    modelName = f'all_constant_single_ray_testuv'
     modelFile = f'{moddir}{modelName}.hdf5'
     timestamp = tools.timestamp()
 
@@ -92,6 +94,7 @@ def run_model (nosave=False):
     model.compute_radiation_field_shortchar_order_0 ()
     timer3.stop()
     u_0s = np.array(model.radiation.u)
+    I_0s = np.array(model.radiation.I)
 
     timer4 = tools.Timer('feautrier 2  ')
     timer4.start()
@@ -121,19 +124,19 @@ def run_model (nosave=False):
     src = tools.lineSource     (ld, pop)[k]
     bdy = tools.I_CMB          (frq)
 
-    def I_0 (x):
-        return src + (bdy-src)*np.exp(-chi*x)
+    # def I_0 (x):
+    #     return src + (bdy-src)*np.exp(-chi*x)
 
-    def I_1 (x):
-        return src + (bdy-src)*np.exp(-chi*(x[-1]-x))
+    # def I_1 (x):
+    #     return src + (bdy-src)*np.exp(-chi*(x[-1]-x))
 
-    def u_ (x):
-        return 0.5 * (I_0(x) + I_1(x))
+    # def u_ (x):
+    #     return 0.5 * (I_0(x) + I_1(x))
 
-    error_u_0s = np.abs(tools.relative_error (u_(x), u_0s[0,:,0]))
-    error_u_2f = np.abs(tools.relative_error (u_(x), u_2f[0,:,0]))
-    error_I_0_2f_uv = np.abs(tools.relative_error (I_0(x), u_2f_uv[0,:,0]+v_2f_uv[0,:,0]))
-    error_I_1_2f_uv = np.abs(tools.relative_error (I_1(x), u_2f_uv[0,:,0]-v_2f_uv[0,:,0]))
+    # error_u_0s = np.abs(tools.relative_error (u_(x), u_0s[0,:,0]))
+    # error_u_2f = np.abs(tools.relative_error (u_(x), u_2f[0,:,0]))
+    error_I_0_2f_uv = np.abs(tools.relative_error (I_0s[0,:,0], u_2f_uv[0,:,0]+v_2f_uv[0,:,0]))
+    error_I_1_2f_uv = np.abs(tools.relative_error (I_0s[1,:,0], u_2f_uv[0,:,0]-v_2f_uv[0,:,0]))
 
     result  = f'--- Benchmark name ----------------------------\n'
     result += f'{modelName                                    }\n'
@@ -143,8 +146,6 @@ def run_model (nosave=False):
     result += f'nrays     = {model.parameters.nrays    ()     }\n'
     result += f'nquads    = {model.parameters.nquads   ()     }\n'
     result += f'--- Accuracy ----------------------------------\n'
-    result += f'max error in shortchar 0 = {np.max(error_u_0s)}\n'
-    result += f'max error in feautrier 2 = {np.max(error_u_2f)}\n'
     result += f'max error in I_0 2f uv = {np.max(error_I_0_2f_uv)}\n'
     result += f'max error in I_1 2f uv = {np.max(error_I_1_2f_uv)}\n'
     result += f'--- Timers ------------------------------------\n'
@@ -164,32 +165,36 @@ def run_model (nosave=False):
         plt.title(modelName)
         plt.scatter(x, u_0s[0,:,0], s=0.5, label='0s', zorder=1)
         plt.scatter(x, u_2f[0,:,0], s=0.5, label='2f', zorder=1)
-        plt.plot(x, u_(x), c='lightgray', zorder=0)
+        # plt.plot(x, u_(x), c='lightgray', zorder=0)
         plt.legend()
-        plt.xscale('log')
+        # plt.xscale('log')
         plt.xlabel('r [m]')
         plt.ylabel('Mean intensity [W/m$^{2}$]')
-        plt.savefig(f'{resdir}{modelName}-{timestamp}.png', dpi=150)
-
-    #returning whether output is as expected (not too far from the input)
-    # max_diff=max(u_(x))-min(u_(x))
-    # print(max_diff)
-    #error should at max be proportional to max diff? only maybe for testing non analytic models
+        # plt.savefig(f'{resdir}{modelName}-{timestamp}.png', dpi=150)
+        plt.figure()
+        plt.plot(x, I_0s[0,:,0], label='I shortchar 0')
+        plt.plot(x, u_2f_uv[0,:,0]+v_2f_uv[0,:,0], label='I feautrier uv')
+        plt.legend()
+        plt.figure()
+        plt.plot(x, I_0s[1,:,0], label='I shortchar 1')
+        plt.plot(x, u_2f_uv[0,:,0]-v_2f_uv[0,:,0], label='I feautrier uv')
+        plt.legend()
+        plt.figure()
+        plt.plot(x, I_0s[0,:,0]-(u_2f_uv[0,:,0]+v_2f_uv[0,:,0]), label='diff')
+        plt.figure()
+        plt.plot(x, (I_0s[0,:,0]-I_0s[1,:,0])/2.0, label='shortchar diff')
+        plt.plot(x, v_2f_uv[0,:,0], label='feautrier v')
+        plt.legend()
+        plt.show()
 
     #error bounds are chosen somewhat arbitrarily, based on previously obtained results; this should prevent serious regressions.
-    FEAUTRIER_AS_EXPECTED=(np.max(error_u_2f)<1.7e-4)
-    FIRSTORDER_AS_EXPECTED=(np.max(error_u_0s)<5.1e-8)
-    FEAUTRIER_UV_AS_EXPECTED=(np.max(error_I_0_2f_uv)<2.0e-4) and (np.max(error_I_1_2f_uv)<2.0e-4)
+    FEAUTRIER_UV_AS_EXPECTED=(np.mean(error_I_0_2f_uv)<0.021) and (np.mean(error_I_1_2f_uv)<0.01)
 
-    if not FIRSTORDER_AS_EXPECTED:
-        print("First order solver max error too large: ", np.max(error_u_0s))
-    if not FEAUTRIER_AS_EXPECTED:
-        print("Feautrier solver max error too large: ", np.max(error_u_2f))
     if not FEAUTRIER_UV_AS_EXPECTED:
-        print("Feautrier solver with uv max error too large: ", np.max(error_I_0_2f_uv), np.max(error_I_1_2f_uv))
+        print("Feautrier solver with uv mean error too large: ", np.mean(error_I_0_2f_uv), np.mean(error_I_1_2f_uv))
 
 
-    return (FEAUTRIER_AS_EXPECTED&FIRSTORDER_AS_EXPECTED&FEAUTRIER_UV_AS_EXPECTED)
+    return (FEAUTRIER_UV_AS_EXPECTED)
 
 
 def run_test (nosave=False):

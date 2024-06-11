@@ -2331,13 +2331,16 @@ accel inline void Solver ::image_optical_depth(Model& model, const Size o, const
     optical_depth_() = tau;
 }
 
-/// BUGGED: v computation is incorrect; TODO: fix both boundary and rhs
 ///  Solver for Feautrier equation along ray pairs using the (ordinary)
 ///  2nd-order solver, without adaptive optical depth increments
 ///  Computes both the mean intensity u and the flux v
-// ///////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
 template <ApproximationType approx>
 accel inline void Solver ::solve_feautrier_order_2_uv(Model& model, const Size o, const Size f) {
+    // Note: in comments, we have another option for computing v (Sv at every location), by
+    // mirroring the solution steps for u with slightly different data. This might be slower, and a
+    // bit more work to make second-order accurate.
+    // Currently, only sv at the center position gets computed using du/dtau = -v
     const Real freq = model.radiation.frequencies.nu(o, f);
     const Size l    = model.radiation.frequencies.corresponding_line[f];
 
@@ -2381,15 +2384,16 @@ accel inline void Solver ::solve_feautrier_order_2_uv(Model& model, const Size o
     const Real Bf_min_Cf = one + two * inverse_dtau_f;
     const Real Bf        = Bf_min_Cf + C[first];
     const Real I_bdy_f   = boundary_intensity(model, nr[first], freq * shift[first]);
-    Real dSdtau          = (term_n - term_c) / dtau_n;
+    // TODO: if re-implementing other option, make this dSdtau second order accurate
+    // Real dSdtau          = (term_n - term_c) / dtau_n;
     // only first order accurate dSdtau, as otherwise the solver needs to be rewritten
     // Current algorithm only allows us to access the data at current and next point
 
     Su[first] = term_c + two * I_bdy_f * inverse_dtau_f;
-    Sv[first] = -dSdtau + two * inverse_dtau_f * (I_bdy_f - term_c);
+    // Sv[first] = -dSdtau + two * inverse_dtau_f * (I_bdy_f - term_c);
 
     Su[first] /= Bf;
-    Sv[first] /= Bf;
+    // Sv[first] /= Bf;
 
     /// Write economically: F[first] = (B[first] - C[first]) / C[first];
     FF[first] = half * Bf_min_Cf * dtau_n * dtau_n;
@@ -2407,9 +2411,10 @@ accel inline void Solver ::solve_feautrier_order_2_uv(Model& model, const Size o
             chi_n, term_c, term_n);
 
         const Real dtau_avg = half * (dtau_c + dtau_n);
-        dSdtau              = (term_n - term_c) / dtau_n;
-        inverse_A[n]        = dtau_avg * dtau_c;
-        inverse_C[n]        = dtau_avg * dtau_n;
+        // TODO: if re-implementing other option, make this dSdtau second order accurate
+        // dSdtau              = (term_n - term_c) / dtau_n;
+        inverse_A[n] = dtau_avg * dtau_c;
+        inverse_C[n] = dtau_avg * dtau_n;
 
         A[n] = one / inverse_A[n];
         C[n] = one / inverse_C[n];
@@ -2420,7 +2425,7 @@ accel inline void Solver ::solve_feautrier_order_2_uv(Model& model, const Size o
         FF[n] = (A[n] * FF[n - 1] * FI[n - 1] + one) * inverse_C[n];
         FI[n] = one / (one + FF[n]);
         Su[n] = (A[n] * Su[n - 1] + Su[n]) * FI[n] * inverse_C[n];
-        Sv[n] = (A[n] * Sv[n - 1] - dSdtau) * FI[n] * inverse_C[n];
+        // Sv[n] = (A[n] * Sv[n - 1] - dSdtau) * FI[n] * inverse_C[n];
     }
 
     /// Set boundary conditions
@@ -2436,19 +2441,49 @@ accel inline void Solver ::solve_feautrier_order_2_uv(Model& model, const Size o
     const Real I_bdy_l = boundary_intensity(model, nr[last], freq * shift[last]);
 
     Su[last] = term_n + two * I_bdy_l * inverse_dtau_l;
-    Sv[last] = -dSdtau - two * inverse_dtau_l * (I_bdy_l - term_n);
+    // Sv[last] = -dSdtau - two * inverse_dtau_l * (I_bdy_l - term_n);
     // Different sign for Sv last boundary condition extra term (2/dtau(I-S))! (should be
     // assymetric)
 
     Su[last] = (A[last] * Su[last - 1] + Su[last]) * (one + FF[last - 1]) * denominator;
-    Sv[last] = (A[last] * Sv[last - 1] + Sv[last]) * (one + FF[last - 1]) * denominator;
+    // Sv[last] = (A[last] * Sv[last - 1] + Sv[last]) * (one + FF[last - 1]) * denominator;
 
     if (centre < last) {
         for (long n = last - 1; n >= centre; n--) // use long in reverse loops !
         {
             Su[n] += Su[n + 1] * FI[n];
-            Sv[n] += Sv[n + 1] * FI[n];
+            // Sv[n] += Sv[n + 1] * FI[n];
         }
+    } else {
+        // Compute v using boundary at the end
+        Sv[last] = Su[last] - I_bdy_l;
+        return;
+    }
+    // Do one extra step for computing the derivative of the mean intensity
+    if (centre > first) {
+        Su[centre - 1] += Su[centre] * FI[centre - 1];
+        // Recompute the optical depth increments, as we forgot to save them; FIXME: add
+        // threadprivate dtau_() to solver.hpp
+        compute_curr_opacity = true;
+        compute_source_dtau<approx>(model, nr[centre - 1], nr[centre], l, freq * shift[centre - 1],
+            freq * shift[centre], shift[centre - 1], shift[centre], dZ[centre - 1],
+            compute_curr_opacity, dtau_n, chi_c, chi_n, term_c, term_n);
+        const Real dtaumin = dtau_n;
+        compute_source_dtau<approx>(model, nr[centre], nr[centre + 1], l, freq * shift[centre],
+            freq * shift[centre + 1], shift[centre], shift[centre + 1], dZ[centre],
+            compute_curr_opacity, dtau_n, chi_c, chi_n, term_c, term_n);
+        const Real dtauplus = dtau_n;
+        // TODO: optimize this calculation
+        const Real coeffmin  = -dtauplus / (dtaumin * dtaumin + dtaumin * dtauplus);
+        const Real coeffplus = dtaumin / (dtaumin * dtauplus + dtauplus * dtauplus);
+        const Real coeffzero = -coeffmin - coeffplus;
+
+        Sv[centre] =
+            -(coeffmin * Su[centre - 1] + coeffplus * Su[centre + 1] + coeffzero * Su[centre]);
+    } else {
+        // Compute v using boundary at the start
+        Sv[first] = I_bdy_f - Su[first];
+        return;
     }
 }
 
