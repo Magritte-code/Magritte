@@ -52,7 +52,7 @@ class TestAnalytic:
     @pytest.mark.incremental
     class TestUVFeautrier:
         def test_uv_feautrier_setup(self):
-            all_constant_setup()
+            all_constant_testuv_setup()
 
         def test_uv_feautrier_run(self):
             assert all_constant_testuv_run(nosave=True)
