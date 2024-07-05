@@ -71,6 +71,7 @@ def run_model (nosave=True):
     reldiff = tools.relative_error(reference_intensity, np.array(model.images[0].I))
 
     print(result)
+    print("maximum relative difference: ", np.max(reldiff))
 
     # for debugging, plot of the level populations
     # if not nosave:
