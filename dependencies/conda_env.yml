@@ -13,7 +13,7 @@ dependencies:
   - vtk
   - jupyterlab
   - yt
-  - scipy
+  - scipy<=1.13
   - mpi4py
   - plotly
   - pyyaml
