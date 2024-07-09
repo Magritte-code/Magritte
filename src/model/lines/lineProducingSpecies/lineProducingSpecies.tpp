@@ -21,9 +21,10 @@ inline Size LineProducingSpecies ::index(const Size p, const Size i) const {
 ///    @return line emissivity for cell p and transition k
 //////////////////////////////////////////////////////////
 inline Real LineProducingSpecies ::get_emissivity(const Size p, const Size k) const {
-    const Size i = index(p, linedata.irad[k]);
+    const Size i    = index(p, linedata.irad[k]);
+    const Real freq = linedata.frequency[k];
 
-    return HH_OVER_FOUR_PI * linedata.A[k] * population(i);
+    return freq * HH_OVER_FOUR_PI * linedata.A[k] * population(i);
 }
 
 ///  Getter for the line opacity
@@ -32,10 +33,13 @@ inline Real LineProducingSpecies ::get_emissivity(const Size p, const Size k) co
 ///    @return line opacity for cell p and transition k
 ///////////////////////////////////////////////////////
 inline Real LineProducingSpecies ::get_opacity(const Size p, const Size k) const {
-    const Size i = index(p, linedata.irad[k]);
-    const Size j = index(p, linedata.jrad[k]);
+    const Size i    = index(p, linedata.irad[k]);
+    const Size j    = index(p, linedata.jrad[k]);
+    const Real freq = linedata.frequency[k];
 
-    return HH_OVER_FOUR_PI * (population(j) * linedata.Ba[k] - population(i) * linedata.Bs[k]);
+    return std::max(
+        freq * HH_OVER_FOUR_PI * (population(j) * linedata.Ba[k] - population(i) * linedata.Bs[k]),
+        parameters->min_line_opacity);
 }
 
 ///  set_LTE_level_populations
@@ -435,8 +439,9 @@ inline void LineProducingSpecies::update_using_statistical_equilibrium(
 
         for (Size k = 0; k < linedata.nrad; k++) {
             for (Size m = 0; m < lambda.get_size(p, k); m++) {
+                const Real freq        = linedata.frequency[k]; // line frequency
                 const Size nr          = lambda.get_nr(p, k, m);
-                const long double v_IJ = -lambda.get_Ls(p, k, m) * get_opacity(p, k);
+                const long double v_IJ = -lambda.get_Ls(p, k, m) * get_opacity(p, k) / freq;
 
                 // Note: we define our transition matrix as the transpose of R in the
                 // paper.
@@ -628,8 +633,9 @@ inline void LineProducingSpecies::update_using_statistical_equilibrium_sparse(
             // Approximated Lambda operator
             for (Size k = 0; k < linedata.nrad; k++) {
                 for (Size m = 0; m < lambda.get_size(p, k); m++) {
+                    const Real freq        = linedata.frequency[k]; // line frequency
                     const Size nr          = lambda.get_nr(p, k, m);
-                    const long double v_IJ = -lambda.get_Ls(p, k, m) * get_opacity(p, k);
+                    const long double v_IJ = -lambda.get_Ls(p, k, m) * get_opacity(p, k) / freq;
 
                     if (nr != p) {
                         throw std::runtime_error("ERROR: non-local Approximated Lambda operator.");

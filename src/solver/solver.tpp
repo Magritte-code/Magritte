@@ -992,7 +992,7 @@ accel inline void Solver ::get_eta_and_chi<None>(const Model& model, const Size 
     // Set line emissivity and opacity
     for (Size l = 0; l < model.parameters->nlines(); l++) {
         const Real diff = freq - model.lines.line[l];
-        const Real prof = freq * gaussian(model.lines.inverse_width(p, l), diff);
+        const Real prof = gaussian(model.lines.inverse_width(p, l), diff);
 
         eta += prof * model.lines.emissivity(p, l);
         chi += prof * model.lines.opacity(p, l);
@@ -1038,7 +1038,7 @@ accel inline void Solver ::get_eta_and_chi<CloseLines>(const Model& model, const
         const Real diff = freq - *freq_sort_l; // should be equal to the
                                                // previous line of code
         const Real inv_width = model.lines.inverse_width(p, l);
-        const Real prof      = freq * gaussian(model.lines.inverse_width(p, l), diff);
+        const Real prof      = gaussian(model.lines.inverse_width(p, l), diff);
         eta += prof * model.lines.emissivity(p, l);
         chi += prof * model.lines.opacity(p, l);
     }
@@ -1058,7 +1058,7 @@ template <>
 accel inline void Solver ::get_eta_and_chi<OneLine>(
     const Model& model, const Size p, const Size l, const Real freq, Real& eta, Real& chi) const {
     const Real diff = freq - model.lines.line[l];
-    const Real prof = freq * gaussian(model.lines.inverse_width(p, l), diff);
+    const Real prof = gaussian(model.lines.inverse_width(p, l), diff);
 
     eta = prof * model.lines.emissivity(p, l);
     chi = prof * model.lines.opacity(p, l) + model.parameters->min_opacity;
@@ -1558,11 +1558,9 @@ inline void Solver ::compute_S_dtau_line_integrated<OneLine>(Model& model, Size 
     Real& Snext) {
     dtau  = compute_dtau_single_line(model, currpoint, nextpoint, lineidx, currfreq, nextfreq, dZ);
     Scurr = model.lines.emissivity(currpoint, lineidx)
-          / (model.lines.opacity(currpoint, lineidx)
-              + model.parameters->min_opacity); // current source
-    Snext =
-        model.lines.emissivity(nextpoint, lineidx)
-        / (model.lines.opacity(nextpoint, lineidx) + model.parameters->min_opacity); // next source
+          / model.lines.opacity(currpoint, lineidx); // current source
+    Snext = model.lines.emissivity(nextpoint, lineidx)
+          / model.lines.opacity(nextpoint, lineidx); // next source
     // note: due to interaction with dtau when computing all
     // sources individually, we do need to recompute Scurr and
     // Snext for all position increments
@@ -1600,12 +1598,10 @@ inline void Solver ::compute_S_dtau_line_integrated<None>(Model& model, Size cur
     for (Size l = 0; l < model.parameters->nlines(); l++) {
         Real line_dtau =
             compute_dtau_single_line(model, currpoint, nextpoint, l, currfreq, nextfreq, dZ);
-        Real line_Scurr =
-            model.lines.emissivity(currpoint, l)
-            / (model.lines.opacity(currpoint, l) + model.parameters->min_opacity); // current source
+        Real line_Scurr = model.lines.emissivity(currpoint, l)
+                        / model.lines.opacity(currpoint, l); // current source
         Real line_Snext =
-            model.lines.emissivity(nextpoint, l)
-            / (model.lines.opacity(nextpoint, l) + model.parameters->min_opacity); // next source
+            model.lines.emissivity(nextpoint, l) / model.lines.opacity(nextpoint, l); // next source
         sum_dtau += line_dtau;
         sum_dtau_times_Scurr += line_dtau * line_Scurr;
         sum_dtau_times_Snext += line_dtau * line_Snext;
@@ -1688,12 +1684,10 @@ inline void Solver ::compute_S_dtau_line_integrated<CloseLines>(Model& model, Si
 
         Real line_dtau =
             compute_dtau_single_line(model, currpoint, nextpoint, l, currfreq, nextfreq, dZ);
-        Real line_Scurr =
-            model.lines.emissivity(currpoint, l)
-            / (model.lines.opacity(currpoint, l) + model.parameters->min_opacity); // current source
+        Real line_Scurr = model.lines.emissivity(currpoint, l)
+                        / model.lines.opacity(currpoint, l); // current source
         Real line_Snext =
-            model.lines.emissivity(nextpoint, l)
-            / (model.lines.opacity(nextpoint, l) + model.parameters->min_opacity); // next source
+            model.lines.emissivity(nextpoint, l) / model.lines.opacity(nextpoint, l); // next source
         sum_dtau += line_dtau;
         sum_dtau_times_Scurr += line_dtau * line_Scurr;
         sum_dtau_times_Snext += line_dtau * line_Snext;
@@ -1972,8 +1966,8 @@ inline Real Solver ::compute_dtau_single_line(Model& model, Size curridx, Size n
 
     // opacity is stored divided by the linefreq, so multiply
     // by it
-    const Real curr_line_opacity = linefreq * model.lines.opacity(curridx, lineidx);
-    const Real next_line_opacity = linefreq * model.lines.opacity(nextidx, lineidx);
+    const Real curr_line_opacity = model.lines.opacity(curridx, lineidx);
+    const Real next_line_opacity = model.lines.opacity(nextidx, lineidx);
 
     // if frequencies are equal, division by zero (due to the
     // optical depth formula) happens if we were not to use
