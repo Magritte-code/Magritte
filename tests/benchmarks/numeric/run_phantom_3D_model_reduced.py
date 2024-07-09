@@ -72,6 +72,7 @@ def run_model (nosave=True):
 
     print(result)
     print("maximum relative difference: ", np.max(reldiff))
+    print("mean absolute difference: ", np.mean(np.abs(reldiff)))
 
     # for debugging, plot of the level populations
     # if not nosave:
