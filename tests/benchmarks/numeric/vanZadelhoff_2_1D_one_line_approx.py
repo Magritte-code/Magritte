@@ -94,6 +94,8 @@ def run_model (a_or_b, nosave=False):
     model = magritte.Model (modelFile)
     timer1.stop()
 
+    model.parameters.min_line_opacity = 1.0e-13
+
     timer2 = tools.Timer('setting model')
     timer2.start()
     model.compute_spectral_discretisation ()

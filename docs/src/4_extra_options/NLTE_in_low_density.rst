@@ -3,14 +3,14 @@ NLTE in very low density regimes
 
 In low density regimes, the level populations might start to maser. 
 This means that the resulting line opacity (and optical depth) can become close to zero or even negative.
-Unfortunately, our solvers cannot handle this situation too well, and might produce unphysical results.
+Unfortunately, our solvers cannot handle a rapid change in source function (emissivity/opacity) too well, and might produce unphysical results.
 
 This is why we implement a workaround by setting the minimum allowed value for the line opacity (starting from version 0.7.0).
-This value is set to 1e-13 [W sr−1 m−3] by default, but can be changed by the user. Higher values might overestimate the impact of the less dense model regions on the intensity, while lower value can lead to numerical artifacts in the NLTE intensities.
+This value is set to 1e-10 [W sr−1 m−3] by default, but can be changed by the user. Higher values might overestimate the impact of the less dense model regions on the intensity, while lower value can lead to numerical artifacts in the NLTE intensities.
 
 .. code-block:: python
 
-    parameters.min_line_opacity = 1e-13#default
+    parameters.min_line_opacity = 1e-10#default
 
 In versions 0.5.3 until 0.6.0, the code implemented another workaround to avoid this situation by resetting specific levels at specific places to LTE.
 This might work in some cases (with the caveat of some artifacts being produced in the resulting spectrum), 

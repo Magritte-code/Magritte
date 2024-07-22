@@ -13,7 +13,7 @@ import magritte.tools    as tools
 import magritte.setup    as setup
 import magritte.core     as magritte
 
-VERSION = "0.7.0"#reference version of Magritte to compare against; should correspond to a commited intensity file
+VERSION = "0.7.2"#reference version of Magritte to compare against; should correspond to a commited intensity file
 
 path = os.path.dirname(os.path.realpath(__file__))
 

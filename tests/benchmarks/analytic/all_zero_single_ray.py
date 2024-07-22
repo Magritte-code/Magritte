@@ -88,6 +88,8 @@ def run_model (nosave=False):
     timer1.start()
     model = magritte.Model (modelFile)
     timer1.stop()
+    
+    model.parameters.min_line_opacity = 1.0e-13
 
     timer2 = tools.Timer('setting model')
     timer2.start()
@@ -95,6 +97,7 @@ def run_model (nosave=False):
     model.compute_inverse_line_widths     ()
     model.compute_LTE_level_populations   ()
     timer2.stop()
+
 
     timer3 = tools.Timer('shortchar 0  ')
     timer3.start()
