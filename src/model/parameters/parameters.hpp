@@ -77,7 +77,7 @@ struct Parameters {
     Real min_rel_pop_for_convergence = 1.0e-10;
     Real pop_prec                    = 1.0e-6;
     Real min_opacity                 = 1.0e-26;
-    long double min_line_opacity     = 1.0e-13;
+    long double min_line_opacity     = 1.0e-10;
     Real min_dtau                    = 1.0e-15;
     Real population_inversion_fraction =
         -1.0; // previously 1.01; // threshold factor for population inversion required

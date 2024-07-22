@@ -103,6 +103,8 @@ def run_model (a_or_b, nosave=False):
     model.compute_LTE_level_populations   ()
     timer2.stop()
 
+    model.parameters.min_line_opacity = 1.0e-13
+
     timer3 = tools.Timer('running model')
     timer3.start()
     model.compute_level_populations_sparse (True, 100)

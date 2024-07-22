@@ -96,6 +96,8 @@ def run_model (a_or_b, nosave=False, use_widgets=True):
     model = magritte.Model (modelFile)
     timer1.stop()
 
+    model.parameters.min_line_opacity = 1.0e-13
+
     fcen = model.lines.lineProducingSpecies[0].linedata.frequency[0]
     dd = 3.0e+3 / magritte.CC
     fmin = fcen - fcen*dd
