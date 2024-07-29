@@ -6,7 +6,7 @@ This means that the resulting line opacity (and optical depth) can become close 
 Unfortunately, our solvers cannot handle a rapid change in source function (emissivity/opacity) too well, and might produce unphysical results.
 
 This is why we implement a workaround by setting the minimum allowed value for the line opacity (starting from version 0.7.0).
-This value is set to 1e-10 [W sr−1 m−3] by default, but can be changed by the user. Higher values might overestimate the impact of the less dense model regions on the intensity, while lower value can lead to numerical artifacts in the NLTE intensities.
+This value is set to 1e-10 [W sr−1 m−3] by default, but can be changed by the user. Higher values can overestimate the impact of the less dense model regions on the intensity, while lower value can lead to numerical artifacts in the NLTE intensities (ring-like structures in the channel maps).
 
 .. code-block:: python
 
