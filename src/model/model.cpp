@@ -894,13 +894,13 @@ int Model ::compute_image(const Size ray_nr) {
 ///  Wrapper for the new imager
 ///////////////////////////////
 int Model ::compute_image_new(const Size ray_nr) {
-    return compute_image_new(geometry.rays.direction[ray_nr], 256, 256);
+    return compute_image_new(geometry.rays.get_direction(0, ray_nr), 256, 256);
 }
 
 ///  Wrapper for the new imager
 ///////////////////////////////
 int Model ::compute_image_new(const Size ray_nr, const Size Nxpix, const Size Nypix) {
-    return compute_image_new(geometry.rays.direction[ray_nr], Nxpix, Nypix);
+    return compute_image_new(geometry.rays.get_direction(0, ray_nr), Nxpix, Nypix);
 }
 
 ///  Wrapper for the new imager
@@ -988,13 +988,13 @@ int Model ::compute_image_optical_depth(const Size ray_nr) {
 ///  Wrapper for the new imager
 ///////////////////////////////
 int Model ::compute_image_optical_depth_new(const Size ray_nr) {
-    return compute_image_optical_depth_new(geometry.rays.direction[ray_nr], 256, 256);
+    return compute_image_optical_depth_new(geometry.rays.get_direction(0, ray_nr), 256, 256);
 }
 
 ///  Wrapper for the new imager
 ///////////////////////////////
 int Model ::compute_image_optical_depth_new(const Size ray_nr, const Size Nxpix, const Size Nypix) {
-    return compute_image_optical_depth_new(geometry.rays.direction[ray_nr], Nxpix, Nypix);
+    return compute_image_optical_depth_new(geometry.rays.get_direction(0, ray_nr), Nxpix, Nypix);
 }
 
 ///  Wrapper for the new imager

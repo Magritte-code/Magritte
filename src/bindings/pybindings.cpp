@@ -405,6 +405,14 @@ PYBIND11_MODULE(core, module) {
         .def_readwrite("weight", &Rays::weight,
             "Array with the weights that each ray contributes in "
             "integrals over directions.")
+        .def_readwrite("use_adaptive_directions", &Rays::use_adaptive_directions,
+            "Whether to use a different set of directions for each ray.")
+        .def("get_direction_index", &Rays::get_direction_index,
+            "Get the linearized direction index for a given point and ray.")
+        .def("get_direction", &Rays::get_direction, "Get the direction of a ray.")
+        .def("get_antipod", &Rays::get_antipod, "Get the antipodal direction of a ray.")
+        .def("get_antipod_index", &Rays::get_antipod_index, "Get the index of the antipodal ray.")
+        .def("get_weight", &Rays::get_weight, "Get the weight of a ray.")
         // io
         .def("read", &Rays::read, "Read object from file.")
         .def("write", &Rays::write, "Write object to file.");

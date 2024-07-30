@@ -317,7 +317,7 @@ accel inline Size Geometry ::get_next(
 accel inline Size Geometry ::get_next(
     const Size o, const Size r, const Size crt, double& Z, double& dZ) const {
     const Vector3D origin = points.position[o];
-    const Vector3D raydir = rays.direction[r];
+    const Vector3D raydir = rays.get_direction(o, r);
 
     return get_next<Defaulttracer>(origin, raydir, crt, Z, dZ);
 }
@@ -472,7 +472,7 @@ inline double Geometry ::get_shift_spherical_symmetry<Rest>(const Vector3D& orig
 ///////////////////////////////////////////////////////////////////////////////////////
 template <Frame frame>
 inline double Geometry ::get_shift(const Size o, const Size r, const Size c, const double Z) const {
-    Vector3D raydir                = rays.direction[r];
+    Vector3D raydir                = rays.get_direction(o, r);
     const Vector3D origin          = points.position[o];
     const Vector3D origin_velocity = points.velocity[o];
     // Due to the old imager implementation, the computed shift might need to be

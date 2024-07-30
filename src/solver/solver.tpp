@@ -93,9 +93,10 @@ accel inline Real Solver ::get_dshift_max(const Model& model, const Size o) {
 
 template <Frame frame> inline void Solver ::get_ray_lengths(Model& model) {
     for (Size rr = 0; rr < model.parameters->hnrays(); rr++) {
-        const Size ar = model.geometry.rays.antipod[rr];
 
         accelerated_for(o, model.parameters->npoints(), {
+            const Size ar = model.geometry.rays.get_antipod_index(rr);
+
             const Real dshift_max = get_dshift_max(model, o);
 
             model.geometry.lengths(rr, o) = model.geometry.get_ray_length<frame>(o, rr, dshift_max)
@@ -164,11 +165,11 @@ template <ApproximationType approx> inline void Solver ::solve_shortchar_order_0
 
     // For each ray, solve transfer equation
     for (Size rr = 0; rr < model.parameters->hnrays(); rr++) {
-        const Size ar = model.geometry.rays.antipod[rr];
 
         cout << "--- rr = " << rr << endl;
 
         accelerated_for(o, model.parameters->npoints(), {
+            const Size ar = model.geometry.rays.get_antipod_index(rr);
             // Approach which just accumulates the intensity
             // contributions as the ray is traced
 
@@ -245,11 +246,12 @@ template <ApproximationType approx> inline void Solver ::solve_feautrier_order_2
 
     // For each ray, solve transfer equation
     for (Size rr = 0; rr < model.parameters->hnrays(); rr++) {
-        const Size ar = model.geometry.rays.antipod[rr];
 
         cout << "--- rr = " << rr << endl;
 
         accelerated_for(o, model.parameters->npoints(), {
+            const Size ar = model.geometry.rays.get_antipod_index(rr);
+
             const Real dshift_max = get_dshift_max(model, o);
 
             nr_()[centre]    = o;
@@ -302,14 +304,15 @@ inline void Solver ::solve_feautrier_order_2_sparse(Model& model) {
 
     // For each ray, solve transfer equation
     for (Size rr = 0; rr < model.parameters->hnrays(); rr++) {
-        const Size ar     = model.geometry.rays.antipod[rr];
-        const Real wt     = model.geometry.rays.weight[rr] * two;
-        const Vector3D nn = model.geometry.rays.direction[rr];
 
         cout << "--- rr = " << rr << endl;
 
         for (LineProducingSpecies& lspec : model.lines.lineProducingSpecies) {
             threaded_for(o, model.parameters->npoints(), {
+                const Vector3D nn = model.geometry.rays.get_direction(o, rr);
+                const Size ar     = model.geometry.rays.get_antipod_index(rr);
+                const Real wt     = model.geometry.rays.get_weight(o, rr) * two;
+
                 const Real dshift_max = get_dshift_max(model, o);
 
                 nr_()[centre]    = o;
@@ -375,20 +378,21 @@ inline void Solver ::solve_feautrier_order_2_anis(Model& model) {
 
     // For each ray, solve transfer equation
     for (Size rr = 0; rr < model.parameters->hnrays(); rr++) {
-        const Size ar     = model.geometry.rays.antipod[rr];
-        const Real wt     = model.geometry.rays.weight[rr];
-        const Vector3D nn = model.geometry.rays.direction[rr];
-
-        const Real wt_0    = inv_sqrt2 * (three * nn.z() * nn.z() - one);
-        const Real wt_1_Re = -sqrt3 * nn.x() * nn.z();
-        const Real wt_1_Im = -sqrt3 * nn.y() * nn.z();
-        const Real wt_2_Re = half * sqrt3 * (nn.x() * nn.x() - nn.y() * nn.y());
-        const Real wt_2_Im = sqrt3 * nn.x() * nn.y();
 
         cout << "--- rr = " << rr << endl;
 
         for (LineProducingSpecies& lspec : model.lines.lineProducingSpecies) {
             threaded_for(o, model.parameters->npoints(), {
+                const Size ar     = model.geometry.rays.get_antipod_index(rr);
+                const Real wt     = model.geometry.rays.get_weight(o, rr);
+                const Vector3D nn = model.geometry.rays.get_direction(o, rr);
+
+                const Real wt_0    = inv_sqrt2 * (three * nn.z() * nn.z() - one);
+                const Real wt_1_Re = -sqrt3 * nn.x() * nn.z();
+                const Real wt_1_Im = -sqrt3 * nn.y() * nn.z();
+                const Real wt_2_Re = half * sqrt3 * (nn.x() * nn.x() - nn.y() * nn.y());
+                const Real wt_2_Im = sqrt3 * nn.x() * nn.y();
+
                 const Real dshift_max = get_dshift_max(model, o);
 
                 nr_()[centre]    = o;
@@ -460,11 +464,11 @@ template <ApproximationType approx> inline void Solver ::solve_feautrier_order_2
     // For each ray, solve transfer equation
     distributed_for(rr, rr_loc, model.parameters->hnrays(),
         {
-            const Size ar = model.geometry.rays.antipod[rr];
-
             cout << "--- rr = " << rr << endl;
 
             accelerated_for(o, model.parameters->npoints(), {
+                const Size ar = model.geometry.rays.get_antipod_index(rr);
+
                 const Real dshift_max = get_dshift_max(model, o);
 
                 nr_()[centre]    = o;
@@ -484,7 +488,7 @@ template <ApproximationType approx> inline void Solver ::solve_feautrier_order_2
 
                         model.radiation.u(rr_loc, o, f) = Su_()[centre];
                         model.radiation.J(o, f) +=
-                            Su_()[centre] * two * model.geometry.rays.weight[rr];
+                            Su_()[centre] * two * model.geometry.rays.get_weight(o, rr);
 
                         update_Lambda<approx>(model, rr, f);
                     }
@@ -492,8 +496,8 @@ template <ApproximationType approx> inline void Solver ::solve_feautrier_order_2
                     for (Size f = 0; f < model.parameters->nfreqs(); f++) {
                         model.radiation.u(rr_loc, o, f) =
                             boundary_intensity(model, o, model.radiation.frequencies.nu(o, f));
-                        model.radiation.J(o, f) +=
-                            two * model.geometry.rays.weight[rr] * model.radiation.u(rr_loc, o, f);
+                        model.radiation.J(o, f) += two * model.geometry.rays.get_weight(o, rr)
+                                                 * model.radiation.u(rr_loc, o, f);
                     }
                 }
             })
@@ -520,9 +524,9 @@ template <ApproximationType approx>
 inline void Solver ::image_feautrier_order_2(Model& model, const Size rr) {
     Image image = Image(model.geometry, model.radiation.frequencies, Intensity, rr);
 
-    const Size ar = model.geometry.rays.antipod[rr];
-
     accelerated_for(o, model.parameters->npoints(), {
+        const Size ar = model.geometry.rays.get_antipod_index(rr);
+
         const Real dshift_max = get_dshift_max(model, o);
 
         nr_()[centre]    = o;
@@ -614,7 +618,7 @@ inline void Solver ::image_feautrier_order_2_for_point(Model& model, const Size 
     // image_feautrier_order_2 as possible
     const Size o = p;
 
-    const Size ar = model.geometry.rays.antipod[rr];
+    const Size ar = model.geometry.rays.get_antipod_index(rr);
 
     const Real dshift_max = get_dshift_max(model, o);
 
@@ -640,9 +644,9 @@ template <ApproximationType approx>
 inline void Solver ::image_optical_depth(Model& model, const Size rr) {
     Image image = Image(model.geometry, model.radiation.frequencies, Intensity, rr);
 
-    const Size ar = model.geometry.rays.antipod[rr];
-
     accelerated_for(o, model.parameters->npoints(), {
+        const Size ar = model.geometry.rays.get_antipod_index(rr);
+
         const Real dshift_max = get_dshift_max(model, o);
 
         nr_()[centre]    = o;
@@ -1094,6 +1098,7 @@ accel inline void Solver ::solve_shortchar_order_0(Model& model, const Size o, c
     Size nxt = model.geometry.get_next(o, r, o, Z, dZ);
     Real term_c, term_n, dtau;
     bool compute_curr_opacity, prev_compute_curr_opacity;
+    const Real ray_weight = model.geometry.rays.get_weight(o, r);
 
     if (model.geometry.valid_point(nxt)) {
         double shift_c = 1.0;
@@ -1133,7 +1138,7 @@ accel inline void Solver ::solve_shortchar_order_0(Model& model, const Size o, c
             const Size z =
                 model.radiation.frequencies.corresponding_z_for_line[f]; // index of
                                                                          // quadrature point
-            const Real w_ang = model.geometry.rays.weight[r];
+            const Real w_ang = ray_weight;
 
             LineProducingSpecies& lspec = model.lines.lineProducingSpecies[l_spec];
 
@@ -1226,7 +1231,7 @@ accel inline void Solver ::solve_shortchar_order_0(Model& model, const Size o, c
 
             model.radiation.I(r, o, f) +=
                 boundary_intensity(model, nxt, freq * shift_n) * expf(-tau[f]);
-            model.radiation.J(o, f) += model.geometry.rays.weight[r] * model.radiation.I(r, o, f);
+            model.radiation.J(o, f) += ray_weight * model.radiation.I(r, o, f);
         }
     }
 
@@ -1235,7 +1240,7 @@ accel inline void Solver ::solve_shortchar_order_0(Model& model, const Size o, c
             const Real freq = model.radiation.frequencies.nu(o, f);
 
             model.radiation.I(r, o, f) = boundary_intensity(model, crt, freq);
-            model.radiation.J(o, f) += model.geometry.rays.weight[r] * model.radiation.I(r, o, f);
+            model.radiation.J(o, f) += ray_weight * model.radiation.I(r, o, f);
         }
     }
 }
@@ -1456,7 +1461,7 @@ accel inline void Solver ::update_Lambda(Model& model, const Size rr, const Size
         Matrix<Real>& L_lower = L_lower_();
         // Vector<Real  >& inverse_chi = inverse_chi_();
 
-        const Real w_ang = two * model.geometry.rays.weight[rr];
+        const Real w_ang = two * model.geometry.rays.get_weight(nr[centre], rr);
 
         const Size l = freqs.corresponding_l_for_spec[f]; // index of species
         const Size k = freqs.corresponding_k_for_tran[f]; // index of transition
@@ -2515,11 +2520,11 @@ inline void Solver ::set_column(Model& model) const {
     model.column.resize(model.parameters->nrays(), model.parameters->npoints());
 
     for (Size rr = 0; rr < model.parameters->hnrays(); rr++) {
-        const Size ar = model.geometry.rays.antipod[rr];
 
         cout << "--- rr = " << rr << endl;
 
         accelerated_for(o, model.parameters->npoints(), {
+            const Size ar       = model.geometry.rays.get_antipod_index(rr);
             model.column(rr, o) = get_column(model, o, rr);
             model.column(ar, o) = get_column(model, o, ar);
         })
