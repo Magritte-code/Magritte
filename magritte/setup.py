@@ -3,7 +3,7 @@ import scipy as sp
 import healpy
 import re
 import astroquery.lamda as lamda
-import adaptive_ray_directions as ard
+import magritte.adaptive_ray_directions as ard
 
 from magritte.core import LineProducingSpecies, vLineProducingSpecies,            \
                           CollisionPartner, vCollisionPartner, CC, HH, KB, T_CMB, \
@@ -368,7 +368,7 @@ def set_adaptive_rays(model, Ntop: int = 2, Nrefiments: int = 4, Ncomparisons: i
 
     # Set the direction and the weights in the Magritte model
     model.geometry.rays.direction.set(np.reshape(adaptive_directions, (npoints * nadaptivedir, 3)))
-    model.geometry.rays.weight.set(np.reshape(adaptive_weights, (npoints*nadaptivedir, 3)))
+    model.geometry.rays.weight.set(np.reshape(adaptive_weights, (npoints*nadaptivedir)))
     model.geometry.rays.antipod.set(antipod)
     model.geometry.rays.use_adaptive_directions = True
     model.parameters.set_nrays(nadaptivedir)

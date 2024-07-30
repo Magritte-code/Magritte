@@ -5,21 +5,17 @@ const string prefix = "geometry/rays/";
 void Rays ::read(const Io& io) {
     cout << "Reading rays..." << endl;
 
-    parameters->set_nrays(
-        io.get_length(prefix + "antipod")); // unlike direction, antipod is of a fixed length nrays
-    parameters->set_hnrays(parameters->nrays() / 2);
-
     Size len_dir =
         io.get_length(prefix + "direction"); // length of first axis of the direction array
+
     if (len_dir == parameters->nrays()) {
+        parameters->set_hnrays(parameters->nrays() / 2);
         use_adaptive_directions = false;
     } else if (len_dir == parameters->nrays() * parameters->npoints()) {
+        parameters->set_hnrays(parameters->nrays() / 2);
         use_adaptive_directions = true;
     } else {
-        cout
-            << "Error: The length of the direction array is not compatible with the number of rays."
-            << endl;
-        exit(1);
+        parameters->set_nrays(len_dir);//will error, and give some more info on the sizes of the arrays
     }
 
     antipod.resize(parameters->nrays());
@@ -37,7 +33,7 @@ void Rays ::read(const Io& io) {
             direction[r] =
                 Vector3D(direction_buffer[r][0], direction_buffer[r][1], direction_buffer[r][2]);
         }
-    } else {
+    } else {//use adaptive directions == true
         weight.resize(parameters->nrays() * parameters->npoints());
         io.read_list(prefix + "weight", weight);
 

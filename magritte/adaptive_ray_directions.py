@@ -171,6 +171,8 @@ class AdaptiveRayDirectionHelper:
         index_starts = np.arange(0, self.positions.shape[0], points_per_thread)
         index_ends = np.append(index_starts[1:], self.positions.shape[0])
 
+        print("Computing adaptive rays for points:")
+
         with concurrent.futures.ThreadPoolExecutor() as executor:
             adaptive_directions_weights = executor.map(self.get_adaptive_directions_block, index_starts, index_ends)
             for i, (directions, weights) in enumerate(adaptive_directions_weights):
