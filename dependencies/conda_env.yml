@@ -8,9 +8,7 @@ channels:
 dependencies:
   - python>=3.9
   - cmake
-  - k3d
-  # - numpy=1.23 #Temporary error with numba calling numpy calling ufunc with no exceptions in latest numpy; see https://github.com/numba/numba/issues/8615
-  - vtk
+  - numpy
   - jupyterlab
   - yt
   - scipy<=1.13
@@ -18,7 +16,6 @@ dependencies:
   - plotly
   - pyyaml
   - ipywidgets
-  - meshio=5.2
   - tqdm
   - palettable
   - h5py
@@ -31,8 +28,11 @@ dependencies:
   - pandas
   - nodejs
   - twine
-  - sphinx=4.4.0
-  - breathe
+  - sphinx #=4.4.0
+  - pip
+  - pip:
+    - breathe
+  # - breathe #install with pip, otherwise it will install the wrong version, not compatible with sphinx
   - sphinx-copybutton
   - nbsphinx
   - sphinx_rtd_theme

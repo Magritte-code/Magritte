@@ -49,7 +49,6 @@ Magritte has several dependencies, some of which are optional.
 **Optional**
 
 * `Anaconda <https://www.anaconda.com/blog/individual-edition-2020-11>`_, for managing the required Python packages;
-* `Gmsh <https://gmsh.info/>`_, version :literal:`4.6.0` or later, for meshing model geometries.
 
 
 Please note that :literal:`Paracabs` might have further dependencies depending
@@ -71,8 +70,6 @@ the model files.
 * :mod:`scipy`, for interpolation and spatial functions such as nearest neighbour calculations;
 * :mod:`healpy`, to sample directions from a discretized unit sphere;
 * :mod:`astropy`, for unit conversions and physical constants;
-* :mod:`meshio`, for reading and writing several types of mesh data structures;
-* :mod:`vtk`, for reading and writing vtk files;
 * :mod:`pyyaml`, for reading and writing yaml files;
 * :mod:`mpi4py`, for MPI (Message Passing Interface) functionality in Python;
 * :mod:`tqdm`, for progress bars;
