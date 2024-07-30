@@ -50,7 +50,6 @@ setup(
         'scipy',
         'astropy',
         'numba',
-        'meshio',
         'healpy',
         'yt',
         'mpi4py',

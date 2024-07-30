@@ -33,7 +33,7 @@ def create_model (a_or_b):
     # Parameters
     dimension = 3
     nshells   = len(r_shell)
-    nrays     = 12 * 3**2
+    nrays     = 12 * 2**2
     nspecs    = 3
     nlspecs   = 1
     nquads    = 7
@@ -61,34 +61,21 @@ def create_model (a_or_b):
     r_in  = min(r_shell)
     r_out = max(r_shell)
 
-    scale_max = 0.1 * r_out
-    scale_min = 0.1 * r_in
-    scale_cte = 0.1 * r_in
-    scale_fun = f'{scale_cte / r_in**2} * (x*x + y*y + z*z)'
+    #generate log grid for remeshing
+    posoneDvals = np.logspace(np.log10(r_in/2), np.log10(r_out), 100)#slightly smaller r to allow for better refinement
+    oneDvals = np.concatenate((-posoneDvals[::-1], posoneDvals))
+    XYZ = np.meshgrid(oneDvals, oneDvals, oneDvals)
+    positions = np.array([XYZ[0].flatten(), XYZ[1].flatten(), XYZ[2].flatten()]).T
 
-    meshName = f'{moddir}/vanZadelhoff_2_3D_mesher.vtk'
+    #remeshed the log grid #fairly low resolution
+    r = np.sqrt(positions[:,0]**2 + positions[:,1]**2 + positions[:,2]**2)
+    remesh_fun = nH2_int(r)#approximately how the density drops
+    remesh_points, nbound = mesher.remesh_point_cloud(positions, remesh_fun, max_depth=10, threshold=3.5e-1, hullorder=3)
+    remesh_points, nbound = mesher.point_cloud_add_spherical_outer_boundary(remesh_points, nbound, r_out)
+    npoints = len(remesh_points)
+    rs = np.linalg.norm(remesh_points, axis=1)
 
-    mesher.create_mesh_from_function(
-        meshName       = meshName,
-        boundary       = mesher.boundary_sphere_in_sphere(
-                             radius_in  = r_in,
-                             radius_out = r_out),
-        scale_min      = scale_min,
-        scale_max      = scale_max,
-        scale_function = scale_fun )
-
-    mesh = mesher.Mesh(meshName)
-
-    position = mesh.points
-
-    npoints = len(mesh.points)
-    print(npoints)
-#     nbs     = [n for sublist in mesh.neighbors for n in sublist]
-#     n_nbs   = [len(sublist) for sublist in mesh.neighbors]
-
-    rs = np.linalg.norm(mesh.points, axis=1)
-
-    velocity = (vs_int(rs) / rs * position.T).T
+    velocity = (vs_int(rs) / rs * remesh_points.T).T
 
     model = magritte.Model ()
     model.parameters.set_spherical_symmetry(False)
@@ -100,7 +87,7 @@ def create_model (a_or_b):
     model.parameters.set_nlspecs           (nlspecs)
     model.parameters.set_nquads            (nquads)
 
-    model.geometry.points.position.set(position)
+    model.geometry.points.position.set(remesh_points)
     model.geometry.points.velocity.set(velocity)
 
 #     model.geometry.points.  neighbors.set(  nbs)
@@ -114,8 +101,8 @@ def create_model (a_or_b):
 
     model = setup.set_Delaunay_neighbor_lists (model)
 
-    model.parameters.set_nboundary(len(mesh.boundary))
-    model.geometry.boundary.boundary2point.set(mesh.boundary)
+    model.parameters.set_nboundary(nbound)
+    model.geometry.boundary.boundary2point.set(np.arange(nbound))
 
     model = setup.set_boundary_condition_CMB  (model)
     model = setup.set_uniform_rays            (model)
@@ -152,7 +139,7 @@ def run_model (a_or_b, nosave=False):
     model.compute_level_populations (True, 100)
     timer3.stop()
 
-    pops = np.array(model.lines.lineProducingSpecies[0].population).reshape((model.parameters.npoints(), 2))
+    pops = np.array(model.lines.lineProducingSpecies[0].population).reshape((model.parameters.npoints(), 21))
     abun = np.array(model.chemistry.species.abundance)[:,0]
     rs   = np.linalg.norm(np.array(model.geometry.points.position), axis=1)
 
