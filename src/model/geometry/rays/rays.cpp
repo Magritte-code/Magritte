@@ -95,13 +95,23 @@ void Rays ::write(const Io& io) const {
 // }
 
 
-template <bool use_adaptive_directions>
-Size Rays ::get_direction_index(const Size pointidx, const Size rayidx) const {
-    if constexpr (use_adaptive_directions) {
-        return pointidx * parameters->nrays() + rayidx;
-    } else {
-        return rayidx;
-    }
+// template <bool use_adaptive_directions>
+// Size Rays ::get_direction_index(const Size pointidx, const Size rayidx) const {
+//     if constexpr (use_adaptive_directions) {
+//         return pointidx * parameters->nrays() + rayidx;
+//     } else {
+//         return rayidx;
+//     }
+// }
+
+template <>
+Size Rays ::get_direction_index<true>(const Size pointidx, const Size rayidx) const {
+    return pointidx * parameters->nrays() + rayidx;
+}
+
+template <>
+Size Rays ::get_direction_index<false>(const Size pointidx, const Size rayidx) const {
+    return rayidx;
 }
 
 /// Get the direction of a ray
