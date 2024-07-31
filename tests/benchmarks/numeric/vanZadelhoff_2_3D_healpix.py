@@ -93,7 +93,7 @@ def create_model (a_or_b):
     model.thermodynamics.temperature.gas  .set([temp_int(r)    for r in rs])
     model.thermodynamics.turbulence.vturb2.set([turb_int(r)**2 for r in rs])
 
-    model = setup.set_Delaunay_neighbor_lists (model)
+    setup.set_Delaunay_neighbor_lists (model)
 
     boundary2point  = [b for b in range(npoints_in_shell[0])]
     boundary2point += [b for b in range(npoints-npoints_in_shell[-1], npoints)]
@@ -101,10 +101,10 @@ def create_model (a_or_b):
     model.parameters.set_nboundary(len(boundary2point))
     model.geometry.boundary.boundary2point.set(boundary2point)
 
-    model = setup.set_boundary_condition_CMB  (model)
-    model = setup.set_uniform_rays            (model)
-    model = setup.set_linedata_from_LAMDA_file(model, lamdaFile)
-    model = setup.set_quadrature              (model)
+    setup.set_boundary_condition_CMB  (model)
+    setup.set_uniform_rays            (model)
+    setup.set_linedata_from_LAMDA_file(model, lamdaFile)
+    setup.set_quadrature              (model)
 
     model.write()
 

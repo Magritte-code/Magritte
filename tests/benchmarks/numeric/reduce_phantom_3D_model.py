@@ -101,11 +101,11 @@ def reduce_phantom():
     # model.geometry.rays.direction.set(direction)          # Comment out to use all directions
     # model.geometry.rays.weight   .set(0.5 * np.ones(2))   # Comment out to use all directions
 
-    model = setup.set_uniform_rays            (model)   # Uncomment to use all directions
-    model = setup.set_boundary_condition_CMB  (model)
-    model = setup.set_linedata_from_LAMDA_file(model, lamda_file, {'considered transitions': [0]})
+    setup.set_uniform_rays            (model)   # Uncomment to use all directions
+    setup.set_boundary_condition_CMB  (model)
+    setup.set_linedata_from_LAMDA_file(model, lamda_file, {'considered transitions': [0]})
     # model = setup.set_linedata_from_LAMDA_file(model, lamda_file)   # Consider all transitions
-    model = setup.set_quadrature              (model)
+    setup.set_quadrature              (model)
 
     model.write()
 
