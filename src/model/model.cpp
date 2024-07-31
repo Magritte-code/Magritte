@@ -314,19 +314,38 @@ int Model ::compute_radiation_field_shortchar_order_0() {
     cout << "Computing radiation field..." << endl;
 
     Solver solver;
-    solver.setup<CoMoving>(*this);
+    const bool use_adaptive_directions = geometry.rays.use_adaptive_directions;
+    //TODO: create macro for this substitution instead of doing the if-else manually
+    if (use_adaptive_directions) {
+        cout << "Using adaptive directions" << endl;
+        solver.setup<CoMoving, true>(*this);
+    }
+    else {
+        solver.setup<CoMoving, false>(*this);
+    }
 
     if (parameters->one_line_approximation) {
-        solver.solve_shortchar_order_0<OneLine>(*this);
+        if (use_adaptive_directions) {
+            solver.solve_shortchar_order_0<OneLine, true>(*this);
+        } else {
+            solver.solve_shortchar_order_0<OneLine, false>(*this);
+        }
         return (0);
     }
 
     if (parameters->sum_opacity_emissivity_over_all_lines) {
-        solver.solve_shortchar_order_0<None>(*this);
+        if (use_adaptive_directions) {
+            solver.solve_shortchar_order_0<None, true>(*this);
+        } else {
+            solver.solve_shortchar_order_0<None, false>(*this);
+        }
         return (0);
     }
-
-    solver.solve_shortchar_order_0<CloseLines>(*this);
+    if (use_adaptive_directions) {
+        solver.solve_shortchar_order_0<CloseLines, true>(*this);
+    } else {
+        solver.solve_shortchar_order_0<CloseLines, false>(*this);
+    }
     return (0);
 }
 
@@ -336,19 +355,39 @@ int Model ::compute_radiation_field_feautrier_order_2() {
     cout << "Computing radiation field..." << endl;
 
     Solver solver;
-    solver.setup<CoMoving>(*this);
+    const bool use_adaptive_directions = geometry.rays.use_adaptive_directions;
+    //TODO: create macro for this substitution instead of doing the if-else manually
+    if (use_adaptive_directions) {
+        cout << "Using adaptive directions" << endl;
+        solver.setup<CoMoving, true>(*this);
+    }
+    else {
+        solver.setup<CoMoving, false>(*this);
+    }
 
     if (parameters->one_line_approximation) {
-        solver.solve_feautrier_order_2<OneLine>(*this);
+        if (use_adaptive_directions) {
+            solver.solve_feautrier_order_2<OneLine, true>(*this);
+        } else {
+            solver.solve_feautrier_order_2<OneLine, false>(*this);
+        }
         return (0);
     }
 
     if (parameters->sum_opacity_emissivity_over_all_lines) {
-        solver.solve_feautrier_order_2<None>(*this);
+        if (use_adaptive_directions) {
+            solver.solve_feautrier_order_2<None, true>(*this);
+        } else {
+            solver.solve_feautrier_order_2<None, false>(*this);
+        }
         return (0);
     }
 
-    solver.solve_feautrier_order_2<CloseLines>(*this);
+    if (use_adaptive_directions) {
+        solver.solve_feautrier_order_2<CloseLines, true>(*this);
+    } else {
+        solver.solve_feautrier_order_2<CloseLines, false>(*this);
+    }
     return (0);
 }
 
@@ -359,19 +398,38 @@ int Model ::compute_radiation_field_feautrier_order_2_uv() {
     cout << "Computing radiation field..." << endl;
 
     Solver solver;
-    solver.setup<CoMoving>(*this);
+    const bool use_adaptive_directions = geometry.rays.use_adaptive_directions;
+    if (use_adaptive_directions) {
+        cout << "Using adaptive directions" << endl;
+        solver.setup<CoMoving, true>(*this);
+    }
+    else {
+        solver.setup<CoMoving, false>(*this);
+    }
 
     if (parameters->one_line_approximation) {
-        solver.solve_feautrier_order_2_uv<OneLine>(*this);
+        if (use_adaptive_directions) {
+            solver.solve_feautrier_order_2_uv<OneLine, true>(*this);
+        } else {
+            solver.solve_feautrier_order_2_uv<OneLine, false>(*this);
+        }
         return (0);
     }
 
     if (parameters->sum_opacity_emissivity_over_all_lines) {
-        solver.solve_feautrier_order_2_uv<None>(*this);
+        if (use_adaptive_directions) {
+            solver.solve_feautrier_order_2_uv<None, true>(*this);
+        } else {
+            solver.solve_feautrier_order_2_uv<None, false>(*this);
+        }
         return (0);
     }
 
-    solver.solve_feautrier_order_2_uv<CloseLines>(*this);
+    if (use_adaptive_directions) {
+        solver.solve_feautrier_order_2_uv<CloseLines, true>(*this);
+    } else {
+        solver.solve_feautrier_order_2_uv<CloseLines, false>(*this);
+    }
     return (0);
 }
 
@@ -381,19 +439,37 @@ int Model ::compute_radiation_field_feautrier_order_2_anis() {
     cout << "Computing radiation field..." << endl;
 
     Solver solver;
-    solver.setup<CoMoving>(*this);
+    const bool use_adaptive_directions = geometry.rays.use_adaptive_directions;
+    if (use_adaptive_directions) {
+        cout << "Using adaptive directions" << endl;
+        solver.setup<CoMoving, true>(*this);
+    }
+    else {
+        solver.setup<CoMoving, false>(*this);
+    }
 
     if (parameters->one_line_approximation) {
-        solver.solve_feautrier_order_2_anis<OneLine>(*this);
+        if (use_adaptive_directions) {
+            solver.solve_feautrier_order_2_anis<OneLine, true>(*this);
+        } else {
+            solver.solve_feautrier_order_2_anis<OneLine, false>(*this);
+        }
         return (0);
     }
 
     if (parameters->sum_opacity_emissivity_over_all_lines) {
-        solver.solve_feautrier_order_2_anis<None>(*this);
+        if (use_adaptive_directions) {
+            solver.solve_feautrier_order_2_anis<None, true>(*this);
+        } else {
+            solver.solve_feautrier_order_2_anis<None, false>(*this);
+        }
         return (0);
     }
-
-    solver.solve_feautrier_order_2_anis<CloseLines>(*this);
+    if (use_adaptive_directions) {
+        solver.solve_feautrier_order_2_anis<CloseLines, true>(*this);
+    } else {
+        solver.solve_feautrier_order_2_anis<CloseLines, false>(*this);
+    }
     return (0);
 }
 
@@ -403,19 +479,38 @@ int Model ::compute_radiation_field_feautrier_order_2_sparse() {
     cout << "Computing radiation field..." << endl;
 
     Solver solver;
-    solver.setup<CoMoving>(*this);
+    const bool use_adaptive_directions = geometry.rays.use_adaptive_directions;
+    if (use_adaptive_directions) {
+        cout << "Using adaptive directions" << endl;
+        solver.setup<CoMoving, true>(*this);
+    }
+    else {
+        solver.setup<CoMoving, false>(*this);
+    }
 
     if (parameters->one_line_approximation) {
-        solver.solve_feautrier_order_2_sparse<OneLine>(*this);
+        if (use_adaptive_directions) {
+            solver.solve_feautrier_order_2_sparse<OneLine, true>(*this);
+        } else {
+            solver.solve_feautrier_order_2_sparse<OneLine, false>(*this);
+        }
         return (0);
     }
 
     if (parameters->sum_opacity_emissivity_over_all_lines) {
-        solver.solve_feautrier_order_2_sparse<None>(*this);
+        if (use_adaptive_directions) {
+            solver.solve_feautrier_order_2_sparse<None, true>(*this);
+        } else {
+            solver.solve_feautrier_order_2_sparse<None, false>(*this);
+        }
         return (0);
     }
 
-    solver.solve_feautrier_order_2_sparse<CloseLines>(*this);
+    if (use_adaptive_directions) {
+        solver.solve_feautrier_order_2_sparse<CloseLines, true>(*this);
+    } else {
+        solver.solve_feautrier_order_2_sparse<CloseLines, false>(*this);
+    }
     return (0);
 }
 
@@ -868,7 +963,8 @@ int Model ::compute_image(const Size ray_nr) {
     cout << "Computing image..." << endl;
 
     Solver solver;
-    solver.setup<Rest>(*this);
+    solver.setup<Rest, false>(*this);
+
     if (parameters->one_line_approximation) {
         throw std::runtime_error("One line approximation is currently not supported for imaging.");
         solver.image_feautrier_order_2<OneLine>(*this, ray_nr);
@@ -894,13 +990,13 @@ int Model ::compute_image(const Size ray_nr) {
 ///  Wrapper for the new imager
 ///////////////////////////////
 int Model ::compute_image_new(const Size ray_nr) {
-    return compute_image_new(geometry.rays.get_direction(0, ray_nr), 256, 256);
+    return compute_image_new(geometry.rays.get_direction<false>(0, ray_nr), 256, 256);
 }
 
 ///  Wrapper for the new imager
 ///////////////////////////////
 int Model ::compute_image_new(const Size ray_nr, const Size Nxpix, const Size Nypix) {
-    return compute_image_new(geometry.rays.get_direction(0, ray_nr), Nxpix, Nypix);
+    return compute_image_new(geometry.rays.get_direction<false>(0, ray_nr), Nxpix, Nypix);
 }
 
 ///  Wrapper for the new imager
@@ -949,7 +1045,7 @@ int Model ::compute_image_for_point(const Size ray_nr, const Size p) {
     cout << "Computing image for point " << p << "..." << endl;
 
     Solver solver;
-    solver.setup<Rest>(*this);
+    solver.setup<Rest, false>(*this);
     if (parameters->one_line_approximation) {
         throw std::runtime_error("One line approximation is currently not supported for imaging.");
         solver.image_feautrier_order_2_for_point<OneLine>(*this, ray_nr, p);
@@ -969,7 +1065,7 @@ int Model ::compute_image_for_point(const Size ray_nr, const Size p) {
 //////////////////////////////////////
 int Model ::compute_image_optical_depth(const Size ray_nr) {
     Solver solver;
-    solver.setup<Rest>(*this);
+    solver.setup<Rest, false>(*this);
     if (parameters->one_line_approximation) {
         throw std::runtime_error("One line approximation is currently not supported for imaging.");
         solver.image_optical_depth<OneLine>(*this, ray_nr);
@@ -988,13 +1084,13 @@ int Model ::compute_image_optical_depth(const Size ray_nr) {
 ///  Wrapper for the new imager
 ///////////////////////////////
 int Model ::compute_image_optical_depth_new(const Size ray_nr) {
-    return compute_image_optical_depth_new(geometry.rays.get_direction(0, ray_nr), 256, 256);
+    return compute_image_optical_depth_new(geometry.rays.get_direction<false>(0, ray_nr), 256, 256);
 }
 
 ///  Wrapper for the new imager
 ///////////////////////////////
 int Model ::compute_image_optical_depth_new(const Size ray_nr, const Size Nxpix, const Size Nypix) {
-    return compute_image_optical_depth_new(geometry.rays.get_direction(0, ray_nr), Nxpix, Nypix);
+    return compute_image_optical_depth_new(geometry.rays.get_direction<false>(0, ray_nr), Nxpix, Nypix);
 }
 
 ///  Wrapper for the new imager
@@ -1050,7 +1146,14 @@ int Model ::set_boundary_condition() {
 
 int Model ::set_column() {
     Solver solver;
-    solver.set_column(*this);
+    const bool use_adaptive_directions = geometry.rays.use_adaptive_directions;
+    if (use_adaptive_directions) {
+        cout << "Using adaptive directions" << endl;
+        solver.set_column<true>(*this);
+    }
+    else {
+        solver.set_column<false>(*this);
+    }
 
     return (0);
 }

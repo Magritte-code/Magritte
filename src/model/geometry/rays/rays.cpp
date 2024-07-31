@@ -86,26 +86,38 @@ void Rays ::write(const Io& io) const {
     io.write_list(prefix + "weight", weight);
 }
 
+// Size Rays ::get_direction_index(const Size pointidx, const Size rayidx) const {
+//     // if (!use_adaptive_directions) {
+//     //     return rayidx;
+//     // } else {
+//     return use_adaptive_directions * pointidx * parameters->nrays() + rayidx;
+//     // }
+// }
+
+
+template <bool use_adaptive_directions>
 Size Rays ::get_direction_index(const Size pointidx, const Size rayidx) const {
-    if (!use_adaptive_directions) {
-        return rayidx;
-    } else {
+    if constexpr (use_adaptive_directions) {
         return pointidx * parameters->nrays() + rayidx;
+    } else {
+        return rayidx;
     }
 }
 
 /// Get the direction of a ray
 /// @param[in] pointidx: Index of the point
 /// @param[in] rayidx: Index of the ray
+template <bool use_adaptive_directions>
 Vector3D Rays ::get_direction(const Size pointidx, const Size rayidx) const {
-    return direction[get_direction_index(pointidx, rayidx)];
+    return direction[get_direction_index<use_adaptive_directions>(pointidx, rayidx)];
 }
 
 /// Get the antipodal direction of a ray
 /// @param[in] pointidx: Index of the point
 /// @param[in] rayidx: Index of the ray
+template <bool use_adaptive_directions>
 Vector3D Rays ::get_antipod(const Size pointidx, const Size rayidx) const {
-    return direction[get_direction_index(pointidx, get_antipod_index(rayidx))];
+    return direction[get_direction_index<use_adaptive_directions>(pointidx, get_antipod_index(rayidx))];
 }
 
 /// Get the antipodal direction index
@@ -115,6 +127,7 @@ Size Rays ::get_antipod_index(const Size rayidx) const { return antipod[rayidx];
 /// Get the weight of a ray
 /// @param[in] pointidx: Index of the point
 /// @param[in] rayidx: Index of the ray
+template <bool use_adaptive_directions>
 Real Rays ::get_weight(const Size pointidx, const Size rayidx) const {
-    return weight[get_direction_index(pointidx, rayidx)];
+    return weight[get_direction_index<use_adaptive_directions>(pointidx, rayidx)];
 }

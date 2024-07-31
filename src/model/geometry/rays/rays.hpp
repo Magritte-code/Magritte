@@ -20,10 +20,14 @@ struct Rays {
     void read(const Io& io);
     void write(const Io& io) const;
 
+    template <bool use_adaptive_directions>
     Size get_direction_index(
         const Size pointidx, const Size rayidx) const; // linearized direction index
+    template <bool use_adaptive_directions>
     Vector3D get_direction(const Size pointidx, const Size rayidx) const;
+    template <bool use_adaptive_directions>
     Vector3D get_antipod(const Size pointidx, const Size rayidx) const;
     Size get_antipod_index(const Size rayidx) const;
+    template <bool use_adaptive_directions>
     Real get_weight(const Size pointidx, const Size rayidx) const;
 };

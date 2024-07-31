@@ -13,9 +13,9 @@ Image ::Image(
     const Geometry& geometry, const Frequencies& frequencies, const ImageType it, const Size rr) :
     imageType(it),
     imagePointPosition(AllModelPoints), ray_nr(rr),
-    ray_direction(Vector3D(geometry.rays.get_direction(0, ray_nr))) {
+    ray_direction(Vector3D(geometry.rays.get_direction<false>(0, ray_nr))) {
     if (geometry.parameters->dimension() == 1) {
-        const Vector3D raydir = geometry.rays.get_direction(0, ray_nr);
+        const Vector3D raydir = geometry.rays.get_direction<false>(0, ray_nr);
         if ((raydir.x() != 0.0) || (raydir.y() != 1.0) || (raydir.z() != 0.0)) {
             throw std::runtime_error("In 1D, the image ray has to be (0,1,0)");
         }
@@ -31,9 +31,9 @@ Image ::Image(const Geometry& geometry, const Frequencies& frequencies, const Im
     const Size rr, const Size Nxpix, const Size Nypix) :
     imageType(it),
     imagePointPosition(ProjectionSurface), ray_nr(rr),
-    ray_direction(Vector3D(geometry.rays.get_direction(0, ray_nr))) {
+    ray_direction(Vector3D(geometry.rays.get_direction<false>(0, ray_nr))) {
     if (geometry.parameters->dimension() == 1) {
-        const Vector3D raydir = geometry.rays.get_direction(0, ray_nr);
+        const Vector3D raydir = geometry.rays.get_direction<false>(0, ray_nr);
         if ((raydir.x() != 0.0) || (raydir.y() != 1.0) || (raydir.z() != 0.0)) {
             throw std::runtime_error("In 1D, the image ray has to be (0,1,0)");
         }

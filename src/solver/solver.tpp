@@ -1,5 +1,5 @@
-template <Frame frame> inline void Solver ::setup(Model& model) {
-    const Size length = 2 * get_ray_lengths_max<frame>(model) + 1;
+template <Frame frame, bool use_adaptive_directions> inline void Solver ::setup(Model& model) {
+    const Size length = 2 * get_ray_lengths_max<frame, use_adaptive_directions>(model) + 1;
     const Size width  = model.parameters->nfreqs();
     const Size n_o_d  = model.parameters->n_off_diag;
 
@@ -91,7 +91,8 @@ accel inline Real Solver ::get_dshift_max(const Model& model, const Size o) {
     return dshift_max;
 }
 
-template <Frame frame> inline void Solver ::get_ray_lengths(Model& model) {
+template <Frame frame, bool use_adaptive_directions> 
+inline void Solver ::get_ray_lengths(Model& model) {
     for (Size rr = 0; rr < model.parameters->hnrays(); rr++) {
 
         accelerated_for(o, model.parameters->npoints(), {
@@ -99,8 +100,8 @@ template <Frame frame> inline void Solver ::get_ray_lengths(Model& model) {
 
             const Real dshift_max = get_dshift_max(model, o);
 
-            model.geometry.lengths(rr, o) = model.geometry.get_ray_length<frame>(o, rr, dshift_max)
-                                          + model.geometry.get_ray_length<frame>(o, ar, dshift_max);
+            model.geometry.lengths(rr, o) = model.geometry.get_ray_length<frame, use_adaptive_directions>(o, rr, dshift_max)
+                                          + model.geometry.get_ray_length<frame, use_adaptive_directions>(o, ar, dshift_max);
         })
 
         pc::accelerator::synchronize();
@@ -109,8 +110,8 @@ template <Frame frame> inline void Solver ::get_ray_lengths(Model& model) {
     model.geometry.lengths.copy_ptr_to_vec();
 }
 
-template <Frame frame> inline Size Solver ::get_ray_lengths_max(Model& model) {
-    get_ray_lengths<frame>(model);
+template <Frame frame, bool use_adaptive_directions> inline Size Solver ::get_ray_lengths_max(Model& model) {
+    get_ray_lengths<frame, use_adaptive_directions>(model);
 
     Geometry& geo = model.geometry;
 
@@ -143,7 +144,8 @@ inline Size Solver ::get_ray_lengths_max_new_imager(
     return max_ray_length;
 }
 
-template <ApproximationType approx> inline void Solver ::solve_shortchar_order_0(Model& model) {
+template <ApproximationType approx, bool use_adaptive_directions>
+inline void Solver ::solve_shortchar_order_0(Model& model) {
     // Allocate memory if not pre-allocated
     if (!model.parameters->store_intensities) {
         model.radiation.I.resize(
@@ -173,8 +175,8 @@ template <ApproximationType approx> inline void Solver ::solve_shortchar_order_0
             // Approach which just accumulates the intensity
             // contributions as the ray is traced
 
-            solve_shortchar_order_0<approx>(model, o, rr);
-            solve_shortchar_order_0<approx>(model, o, ar);
+            solve_shortchar_order_0<approx, use_adaptive_directions>(model, o, rr);
+            solve_shortchar_order_0<approx, use_adaptive_directions>(model, o, ar);
 
             for (Size f = 0; f < model.parameters->nfreqs(); f++) {
                 model.radiation.u(rr, o, f) =
@@ -235,7 +237,8 @@ template <ApproximationType approx> inline void Solver ::solve_shortchar_order_0
 }
 
 /// BUGGED: v computation is incorrect
-template <ApproximationType approx> inline void Solver ::solve_feautrier_order_2_uv(Model& model) {
+template <ApproximationType approx, bool use_adaptive_directions>
+inline void Solver ::solve_feautrier_order_2_uv(Model& model) {
     // Allocate memory if not pre-allocated
     if (!model.parameters->store_intensities) {
         model.radiation.u.resize(
@@ -258,10 +261,10 @@ template <ApproximationType approx> inline void Solver ::solve_feautrier_order_2
             shift_()[centre] = 1.0;
 
             first_() =
-                trace_ray<CoMoving>(model.geometry, o, rr, dshift_max, -1, centre - 1, centre - 1)
+                trace_ray<CoMoving, use_adaptive_directions>(model.geometry, o, rr, dshift_max, -1, centre - 1, centre - 1)
                 + 1;
             last_() =
-                trace_ray<CoMoving>(model.geometry, o, ar, dshift_max, +1, centre + 1, centre) - 1;
+                trace_ray<CoMoving, use_adaptive_directions>(model.geometry, o, ar, dshift_max, +1, centre + 1, centre) - 1;
             n_tot_() = (last_() + 1) - first_();
 
             if (n_tot_() > 1) {
@@ -287,7 +290,7 @@ template <ApproximationType approx> inline void Solver ::solve_feautrier_order_2
     model.radiation.v.copy_ptr_to_vec();
 }
 
-template <ApproximationType approx>
+template <ApproximationType approx, bool use_adaptive_directions>
 inline void Solver ::solve_feautrier_order_2_sparse(Model& model) {
     // Initialise variables
     for (LineProducingSpecies& lspec : model.lines.lineProducingSpecies) {
@@ -309,20 +312,20 @@ inline void Solver ::solve_feautrier_order_2_sparse(Model& model) {
 
         for (LineProducingSpecies& lspec : model.lines.lineProducingSpecies) {
             threaded_for(o, model.parameters->npoints(), {
-                const Vector3D nn = model.geometry.rays.get_direction(o, rr);
+                const Vector3D nn = model.geometry.rays.get_direction<use_adaptive_directions>(o, rr);
                 const Size ar     = model.geometry.rays.get_antipod_index(rr);
-                const Real wt     = model.geometry.rays.get_weight(o, rr) * two;
+                const Real wt     = model.geometry.rays.get_weight<use_adaptive_directions>(o, rr) * two;
 
                 const Real dshift_max = get_dshift_max(model, o);
 
                 nr_()[centre]    = o;
                 shift_()[centre] = 1.0;
 
-                first_() = trace_ray<CoMoving>(
+                first_() = trace_ray<CoMoving, use_adaptive_directions>(
                                model.geometry, o, rr, dshift_max, -1, centre - 1, centre - 1)
                          + 1;
                 last_() =
-                    trace_ray<CoMoving>(model.geometry, o, ar, dshift_max, +1, centre + 1, centre)
+                    trace_ray<CoMoving, use_adaptive_directions>(model.geometry, o, ar, dshift_max, +1, centre + 1, centre)
                     - 1;
                 n_tot_() = (last_() + 1) - first_();
 
@@ -334,7 +337,7 @@ inline void Solver ::solve_feautrier_order_2_sparse(Model& model) {
 
                             lspec.J(o, k) += lspec.quadrature.weights[z] * wt * Su_()[centre];
 
-                            update_Lambda<approx>(model, rr, lspec.nr_line[o][k][z]);
+                            update_Lambda<approx, use_adaptive_directions>(model, rr, lspec.nr_line[o][k][z]);
                         }
                     }
                 } else {
@@ -353,7 +356,7 @@ inline void Solver ::solve_feautrier_order_2_sparse(Model& model) {
     }
 }
 
-template <ApproximationType approx>
+template <ApproximationType approx, bool use_adaptive_directions>
 inline void Solver ::solve_feautrier_order_2_anis(Model& model) {
     // Initialise variables
     for (LineProducingSpecies& lspec : model.lines.lineProducingSpecies) {
@@ -384,8 +387,8 @@ inline void Solver ::solve_feautrier_order_2_anis(Model& model) {
         for (LineProducingSpecies& lspec : model.lines.lineProducingSpecies) {
             threaded_for(o, model.parameters->npoints(), {
                 const Size ar     = model.geometry.rays.get_antipod_index(rr);
-                const Real wt     = model.geometry.rays.get_weight(o, rr);
-                const Vector3D nn = model.geometry.rays.get_direction(o, rr);
+                const Real wt     = model.geometry.rays.get_weight<use_adaptive_directions>(o, rr);
+                const Vector3D nn = model.geometry.rays.get_direction<use_adaptive_directions>(o, rr);
 
                 const Real wt_0    = inv_sqrt2 * (three * nn.z() * nn.z() - one);
                 const Real wt_1_Re = -sqrt3 * nn.x() * nn.z();
@@ -398,11 +401,11 @@ inline void Solver ::solve_feautrier_order_2_anis(Model& model) {
                 nr_()[centre]    = o;
                 shift_()[centre] = 1.0;
 
-                first_() = trace_ray<CoMoving>(
+                first_() = trace_ray<CoMoving, use_adaptive_directions>(
                                model.geometry, o, rr, dshift_max, -1, centre - 1, centre - 1)
                          + 1;
                 last_() =
-                    trace_ray<CoMoving>(model.geometry, o, ar, dshift_max, +1, centre + 1, centre)
+                    trace_ray<CoMoving, use_adaptive_directions>(model.geometry, o, ar, dshift_max, +1, centre + 1, centre)
                     - 1;
                 n_tot_() = (last_() + 1) - first_();
 
@@ -445,7 +448,8 @@ inline void Solver ::solve_feautrier_order_2_anis(Model& model) {
     }
 }
 
-template <ApproximationType approx> inline void Solver ::solve_feautrier_order_2(Model& model) {
+template <ApproximationType approx, bool use_adaptive_directions>
+inline void Solver ::solve_feautrier_order_2(Model& model) {
     // Allocate memory if not pre-allocated
     if (!model.parameters->store_intensities) {
         model.radiation.u.resize(
@@ -474,11 +478,11 @@ template <ApproximationType approx> inline void Solver ::solve_feautrier_order_2
                 nr_()[centre]    = o;
                 shift_()[centre] = 1.0;
 
-                first_() = trace_ray<CoMoving>(
+                first_() = trace_ray<CoMoving, use_adaptive_directions>(
                                model.geometry, o, rr, dshift_max, -1, centre - 1, centre - 1)
                          + 1;
                 last_() =
-                    trace_ray<CoMoving>(model.geometry, o, ar, dshift_max, +1, centre + 1, centre)
+                    trace_ray<CoMoving, use_adaptive_directions>(model.geometry, o, ar, dshift_max, +1, centre + 1, centre)
                     - 1;
                 n_tot_() = (last_() + 1) - first_();
 
@@ -488,15 +492,15 @@ template <ApproximationType approx> inline void Solver ::solve_feautrier_order_2
 
                         model.radiation.u(rr_loc, o, f) = Su_()[centre];
                         model.radiation.J(o, f) +=
-                            Su_()[centre] * two * model.geometry.rays.get_weight(o, rr);
+                            Su_()[centre] * two * model.geometry.rays.get_weight<use_adaptive_directions>(o, rr);
 
-                        update_Lambda<approx>(model, rr, f);
+                        update_Lambda<approx, use_adaptive_directions>(model, rr, f);
                     }
                 } else {
                     for (Size f = 0; f < model.parameters->nfreqs(); f++) {
                         model.radiation.u(rr_loc, o, f) =
                             boundary_intensity(model, o, model.radiation.frequencies.nu(o, f));
-                        model.radiation.J(o, f) += two * model.geometry.rays.get_weight(o, rr)
+                        model.radiation.J(o, f) += two * model.geometry.rays.get_weight<use_adaptive_directions>(o, rr)
                                                  * model.radiation.u(rr_loc, o, f);
                     }
                 }
@@ -530,12 +534,12 @@ inline void Solver ::image_feautrier_order_2(Model& model, const Size rr) {
         const Real dshift_max = get_dshift_max(model, o);
 
         nr_()[centre]    = o;
-        shift_()[centre] = model.geometry.get_shift<Rest>(o, rr, o, 0.0);
+        shift_()[centre] = model.geometry.get_shift<Rest, false>(o, rr, o, 0.0);
         ;
 
         first_() =
-            trace_ray<Rest>(model.geometry, o, rr, dshift_max, -1, centre - 1, centre - 1) + 1;
-        last_()  = trace_ray<Rest>(model.geometry, o, ar, dshift_max, +1, centre + 1, centre) - 1;
+            trace_ray<Rest, false>(model.geometry, o, rr, dshift_max, -1, centre - 1, centre - 1) + 1;
+        last_()  = trace_ray<Rest, false>(model.geometry, o, ar, dshift_max, +1, centre + 1, centre) - 1;
         n_tot_() = (last_() + 1) - first_();
 
         if (n_tot_() > 1) {
@@ -623,10 +627,10 @@ inline void Solver ::image_feautrier_order_2_for_point(Model& model, const Size 
     const Real dshift_max = get_dshift_max(model, o);
 
     nr_()[centre]    = o;
-    shift_()[centre] = model.geometry.get_shift<Rest>(o, rr, o, 0.0);
+    shift_()[centre] = model.geometry.get_shift<Rest, false>(o, rr, o, 0.0);
 
-    first_() = trace_ray<Rest>(model.geometry, o, rr, dshift_max, -1, centre - 1, centre - 1) + 1;
-    last_()  = trace_ray<Rest>(model.geometry, o, ar, dshift_max, +1, centre + 1, centre) - 1;
+    first_() = trace_ray<Rest, false>(model.geometry, o, rr, dshift_max, -1, centre - 1, centre - 1) + 1;
+    last_()  = trace_ray<Rest, false>(model.geometry, o, ar, dshift_max, +1, centre + 1, centre) - 1;
     n_tot_() = (last_() + 1) - first_();
 
     model.S_ray.resize(n_tot_(), model.parameters->nfreqs());
@@ -650,12 +654,12 @@ inline void Solver ::image_optical_depth(Model& model, const Size rr) {
         const Real dshift_max = get_dshift_max(model, o);
 
         nr_()[centre]    = o;
-        shift_()[centre] = model.geometry.get_shift<Rest>(o, rr, o, 0.0);
+        shift_()[centre] = model.geometry.get_shift<Rest, false>(o, rr, o, 0.0);
         ;
 
         first_() =
-            trace_ray<Rest>(model.geometry, o, rr, dshift_max, -1, centre - 1, centre - 1) + 1;
-        last_()  = trace_ray<Rest>(model.geometry, o, ar, dshift_max, +1, centre + 1, centre) - 1;
+            trace_ray<Rest, false>(model.geometry, o, rr, dshift_max, -1, centre - 1, centre - 1) + 1;
+        last_()  = trace_ray<Rest, false>(model.geometry, o, ar, dshift_max, +1, centre + 1, centre) - 1;
         n_tot_() = (last_() + 1) - first_();
 
         if (n_tot_() > 1) {
@@ -731,18 +735,18 @@ inline void Solver ::image_optical_depth_new_imager(
 // Because of the new method for computing the optical
 // depth, adding extra frequency points for counteracting
 // the large doppler shift is no longer necessary
-template <Frame frame>
+template <Frame frame, bool use_adaptive_directions>
 accel inline Size Solver ::trace_ray(const Geometry& geometry, const Size o, const Size r,
     const double dshift_max, const int increment, Size id1, Size id2) {
     double Z  = 0.0; // distance from origin (o)
     double dZ = 0.0; // last increment in Z
 
-    Size nxt = geometry.get_next(o, r, o, Z, dZ);
+    Size nxt = geometry.get_next<use_adaptive_directions>(o, r, o, Z, dZ);
 
     if (geometry.valid_point(nxt)) {
         Size crt         = o;
-        double shift_crt = geometry.get_shift<frame>(o, r, crt, 0.0);
-        double shift_nxt = geometry.get_shift<frame>(o, r, nxt, Z);
+        double shift_crt = geometry.get_shift<frame, use_adaptive_directions>(o, r, crt, 0.0);
+        double shift_nxt = geometry.get_shift<frame, use_adaptive_directions>(o, r, nxt, Z);
 
         set_data(crt, nxt, shift_crt, shift_nxt, dZ, dshift_max, increment, id1, id2);
 
@@ -750,8 +754,8 @@ accel inline Size Solver ::trace_ray(const Geometry& geometry, const Size o, con
             crt       = nxt;
             shift_crt = shift_nxt;
 
-            nxt       = geometry.get_next(o, r, nxt, Z, dZ);
-            shift_nxt = geometry.get_shift<frame>(o, r, nxt, Z);
+            nxt       = geometry.get_next<use_adaptive_directions>(o, r, nxt, Z, dZ);
+            shift_nxt = geometry.get_shift<frame, use_adaptive_directions>(o, r, nxt, Z);
 
             set_data(crt, nxt, shift_crt, shift_nxt, dZ, dshift_max, increment, id1, id2);
         }
@@ -1078,7 +1082,7 @@ accel inline Real trap(const Real x_crt, const Real x_nxt, const double dZ) {
     return half * (x_crt + x_nxt) * dZ;
 }
 
-template <ApproximationType approx>
+template <ApproximationType approx, bool use_adaptive_directions>
 accel inline void Solver ::solve_shortchar_order_0(Model& model, const Size o, const Size r) {
     Vector<Real>& eta_c = eta_c_();
     Vector<Real>& eta_n = eta_n_();
@@ -1095,14 +1099,14 @@ accel inline void Solver ::solve_shortchar_order_0(Model& model, const Size o, c
     double dZ = 0.0; // last distance increment
 
     Size crt = o;
-    Size nxt = model.geometry.get_next(o, r, o, Z, dZ);
+    Size nxt = model.geometry.get_next<use_adaptive_directions>(o, r, o, Z, dZ);
     Real term_c, term_n, dtau;
     bool compute_curr_opacity, prev_compute_curr_opacity;
-    const Real ray_weight = model.geometry.rays.get_weight(o, r);
+    const Real ray_weight = model.geometry.rays.get_weight<use_adaptive_directions>(o, r);
 
     if (model.geometry.valid_point(nxt)) {
         double shift_c = 1.0;
-        double shift_n = model.geometry.get_shift<CoMoving>(o, r, nxt, Z);
+        double shift_n = model.geometry.get_shift<CoMoving, use_adaptive_directions>(o, r, nxt, Z);
 
         for (Size f = 0; f < model.parameters->nfreqs(); f++) {
             const Real freq = model.radiation.frequencies.nu(o, f);
@@ -1186,7 +1190,7 @@ accel inline void Solver ::solve_shortchar_order_0(Model& model, const Size o, c
             crt     = nxt;
             shift_c = shift_n;
 
-            model.geometry.get_next(o, r, crt, nxt, Z, dZ, shift_n);
+            model.geometry.get_next<use_adaptive_directions>(o, r, crt, nxt, Z, dZ, shift_n);
 
             for (Size f = 0; f < model.parameters->nfreqs(); f++) {
                 source_c[f]     = source_n[f];
@@ -1444,7 +1448,7 @@ accel inline void Solver ::solve_shortchar_order_0(Model& model, const Size o, c
 //     }
 // }
 
-template <ApproximationType approx>
+template <ApproximationType approx, bool use_adaptive_directions>
 accel inline void Solver ::update_Lambda(Model& model, const Size rr, const Size f) {
     const Frequencies& freqs        = model.radiation.frequencies;
     const Thermodynamics& thermodyn = model.thermodynamics;
@@ -1461,7 +1465,7 @@ accel inline void Solver ::update_Lambda(Model& model, const Size rr, const Size
         Matrix<Real>& L_lower = L_lower_();
         // Vector<Real  >& inverse_chi = inverse_chi_();
 
-        const Real w_ang = two * model.geometry.rays.get_weight(nr[centre], rr);
+        const Real w_ang = two * model.geometry.rays.get_weight<use_adaptive_directions>(nr[centre], rr);
 
         const Size l = freqs.corresponding_l_for_spec[f]; // index of species
         const Size k = freqs.corresponding_k_for_tran[f]; // index of transition
@@ -2493,7 +2497,7 @@ accel inline void Solver ::set_eta_and_chi(Model& model, const Size rr) const {
     for (Size p = 0; p < model.parameters->npoints(); p++) {
         for (Size f = 0; f < model.parameters->nfreqs(); f++) {
             // Extract the Doppler shift
-            const double shift = model.geometry.get_shift<Rest>(0, rr, p, 0.0);
+            const double shift = model.geometry.get_shift<Rest, false>(0, rr, p, 0.0);
             const Real freq    = model.radiation.frequencies.nu(0, f);
             const Size l       = model.radiation.frequencies.corresponding_line[f];
 
@@ -2516,6 +2520,7 @@ accel inline void Solver ::set_boundary_condition(Model& model) const {
     }
 }
 
+template <bool use_adaptive_directions>
 inline void Solver ::set_column(Model& model) const {
     model.column.resize(model.parameters->nrays(), model.parameters->npoints());
 
@@ -2525,19 +2530,20 @@ inline void Solver ::set_column(Model& model) const {
 
         accelerated_for(o, model.parameters->npoints(), {
             const Size ar       = model.geometry.rays.get_antipod_index(rr);
-            model.column(rr, o) = get_column(model, o, rr);
-            model.column(ar, o) = get_column(model, o, ar);
+            model.column(rr, o) = get_column<use_adaptive_directions>(model, o, rr);
+            model.column(ar, o) = get_column<use_adaptive_directions>(model, o, ar);
         })
     }
 }
 
+template <bool use_adaptive_directions>
 accel inline Real Solver ::get_column(const Model& model, const Size o, const Size r) const {
     Real column = 0.0;
 
     double Z  = 0.0; // distance from origin (o)
     double dZ = 0.0; // last increment in Z
 
-    Size nxt = model.geometry.get_next(o, r, o, Z, dZ);
+    Size nxt = model.geometry.get_next<use_adaptive_directions>(o, r, o, Z, dZ);
 
     if (model.geometry.valid_point(nxt)) {
         Size crt = o;
@@ -2546,7 +2552,7 @@ accel inline Real Solver ::get_column(const Model& model, const Size o, const Si
 
         while (model.geometry.not_on_boundary(nxt)) {
             crt = nxt;
-            nxt = model.geometry.get_next(o, r, nxt, Z, dZ);
+            nxt = model.geometry.get_next<use_adaptive_directions>(o, r, nxt, Z, dZ);
 
             column += 0.5 * (model.density[crt] + model.density[nxt]) * dZ;
         }
