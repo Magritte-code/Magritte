@@ -86,23 +86,8 @@ void Rays ::write(const Io& io) const {
     io.write_list(prefix + "weight", weight);
 }
 
-// Size Rays ::get_direction_index(const Size pointidx, const Size rayidx) const {
-//     // if (!use_adaptive_directions) {
-//     //     return rayidx;
-//     // } else {
-//     return use_adaptive_directions * pointidx * parameters->nrays() + rayidx;
-//     // }
-// }
-
-
-// template <bool use_adaptive_directions>
-// Size Rays ::get_direction_index(const Size pointidx, const Size rayidx) const {
-//     if constexpr (use_adaptive_directions) {
-//         return pointidx * parameters->nrays() + rayidx;
-//     } else {
-//         return rayidx;
-//     }
-// }
+// Note: I can't seem to get constexpr to work correctly (linker error), thus manual template specialization instead
+// Note2: It might be that pybind11 expects the manual specialization, so all other template functions in this file are manually specialized
 
 template <>
 Size Rays ::get_direction_index<true>(const Size pointidx, const Size rayidx) const {
@@ -117,17 +102,33 @@ Size Rays ::get_direction_index<false>(const Size pointidx, const Size rayidx) c
 /// Get the direction of a ray
 /// @param[in] pointidx: Index of the point
 /// @param[in] rayidx: Index of the ray
-template <bool use_adaptive_directions>
-Vector3D Rays ::get_direction(const Size pointidx, const Size rayidx) const {
-    return direction[get_direction_index<use_adaptive_directions>(pointidx, rayidx)];
+template <>
+Vector3D Rays ::get_direction<true>(const Size pointidx, const Size rayidx) const {
+    return direction[get_direction_index<true>(pointidx, rayidx)];
+}
+
+/// Get the direction of a ray
+/// @param[in] pointidx: Index of the point
+/// @param[in] rayidx: Index of the ray
+template <>
+Vector3D Rays ::get_direction<false>(const Size pointidx, const Size rayidx) const {
+    return direction[get_direction_index<false>(pointidx, rayidx)];
 }
 
 /// Get the antipodal direction of a ray
 /// @param[in] pointidx: Index of the point
 /// @param[in] rayidx: Index of the ray
-template <bool use_adaptive_directions>
-Vector3D Rays ::get_antipod(const Size pointidx, const Size rayidx) const {
-    return direction[get_direction_index<use_adaptive_directions>(pointidx, get_antipod_index(rayidx))];
+template <>
+Vector3D Rays ::get_antipod<true>(const Size pointidx, const Size rayidx) const {
+    return direction[get_direction_index<true>(pointidx, get_antipod_index(rayidx))];
+}
+
+/// Get the antipodal direction of a ray
+/// @param[in] pointidx: Index of the point
+/// @param[in] rayidx: Index of the ray
+template <>
+Vector3D Rays ::get_antipod<false>(const Size pointidx, const Size rayidx) const {
+    return direction[get_direction_index<false>(pointidx, get_antipod_index(rayidx))];
 }
 
 /// Get the antipodal direction index
@@ -137,7 +138,15 @@ Size Rays ::get_antipod_index(const Size rayidx) const { return antipod[rayidx];
 /// Get the weight of a ray
 /// @param[in] pointidx: Index of the point
 /// @param[in] rayidx: Index of the ray
-template <bool use_adaptive_directions>
-Real Rays ::get_weight(const Size pointidx, const Size rayidx) const {
-    return weight[get_direction_index<use_adaptive_directions>(pointidx, rayidx)];
+template <>
+Real Rays ::get_weight<true>(const Size pointidx, const Size rayidx) const {
+    return weight[get_direction_index<true>(pointidx, rayidx)];
+}
+
+/// Get the weight of a ray
+/// @param[in] pointidx: Index of the point
+/// @param[in] rayidx: Index of the ray
+template <>
+Real Rays ::get_weight<false>(const Size pointidx, const Size rayidx) const {
+    return weight[get_direction_index<false>(pointidx, rayidx)];
 }
