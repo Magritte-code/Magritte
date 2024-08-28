@@ -408,16 +408,24 @@ PYBIND11_MODULE(core, module) {
         .def_readwrite("use_adaptive_directions", &Rays::use_adaptive_directions,
             "Whether to use a different set of directions for each ray.")
         .def("get_direction_index", &Rays::get_direction_index<false>,
-            "Get the linearized direction index for a given point and ray, when not using an adaptive ray discretization.")
+            "Get the linearized direction index for a given point and ray, when not using an "
+            "adaptive ray discretization.")
         .def("get_direction_index_adaptive", &Rays::get_direction_index<true>,
-            "Get the linearized direction index for a given point and ray, when using the adaptive ray discretization.")
-        .def("get_direction", &Rays::get_direction<false>, "Get the direction of a ray, when not using an adaptive ray discretization.")
-        .def("get_direction_adaptive", &Rays::get_direction<true>, "Get the direction of a ray, when using the adaptive ray discretization.")
-        .def("get_antipod", &Rays::get_antipod<false>, "Get the antipodal direction of a ray, when not using an adaptive ray discretization.")
-        .def("get_antipod_adaptive", &Rays::get_antipod<true>, "Get the antipodal direction of a ray, when using the adaptive ray discretization.")
+            "Get the linearized direction index for a given point and ray, when using the adaptive "
+            "ray discretization.")
+        .def("get_direction", &Rays::get_direction<false>,
+            "Get the direction of a ray, when not using an adaptive ray discretization.")
+        .def("get_direction_adaptive", &Rays::get_direction<true>,
+            "Get the direction of a ray, when using the adaptive ray discretization.")
+        .def("get_antipod", &Rays::get_antipod<false>,
+            "Get the antipodal direction of a ray, when not using an adaptive ray discretization.")
+        .def("get_antipod_adaptive", &Rays::get_antipod<true>,
+            "Get the antipodal direction of a ray, when using the adaptive ray discretization.")
         .def("get_antipod_index", &Rays::get_antipod_index, "Get the index of the antipodal ray.")
-        .def("get_weight", &Rays::get_weight<false>, "Get the weight of a ray, when not using an adaptive ray discretization.")
-        .def("get_weight_adaptive", &Rays::get_weight<true>, "Get the weight of a ray, when using the adaptive ray discretization.")
+        .def("get_weight", &Rays::get_weight<false>,
+            "Get the weight of a ray, when not using an adaptive ray discretization.")
+        .def("get_weight_adaptive", &Rays::get_weight<true>,
+            "Get the weight of a ray, when using the adaptive ray discretization.")
         // io
         .def("read", &Rays::read, "Read object from file.")
         .def("write", &Rays::write, "Write object to file.");

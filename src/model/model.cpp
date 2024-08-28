@@ -315,12 +315,11 @@ int Model ::compute_radiation_field_shortchar_order_0() {
 
     Solver solver;
     const bool use_adaptive_directions = geometry.rays.use_adaptive_directions;
-    //TODO: create macro for this substitution instead of doing the if-else manually
+    // TODO: create macro for this substitution instead of doing the if-else manually
     if (use_adaptive_directions) {
         cout << "Using adaptive directions" << endl;
         solver.setup<CoMoving, true>(*this);
-    }
-    else {
+    } else {
         solver.setup<CoMoving, false>(*this);
     }
 
@@ -356,12 +355,11 @@ int Model ::compute_radiation_field_feautrier_order_2() {
 
     Solver solver;
     const bool use_adaptive_directions = geometry.rays.use_adaptive_directions;
-    //TODO: create macro for this substitution instead of doing the if-else manually
+    // TODO: create macro for this substitution instead of doing the if-else manually
     if (use_adaptive_directions) {
         cout << "Using adaptive directions" << endl;
         solver.setup<CoMoving, true>(*this);
-    }
-    else {
+    } else {
         solver.setup<CoMoving, false>(*this);
     }
 
@@ -402,8 +400,7 @@ int Model ::compute_radiation_field_feautrier_order_2_uv() {
     if (use_adaptive_directions) {
         cout << "Using adaptive directions" << endl;
         solver.setup<CoMoving, true>(*this);
-    }
-    else {
+    } else {
         solver.setup<CoMoving, false>(*this);
     }
 
@@ -443,8 +440,7 @@ int Model ::compute_radiation_field_feautrier_order_2_anis() {
     if (use_adaptive_directions) {
         cout << "Using adaptive directions" << endl;
         solver.setup<CoMoving, true>(*this);
-    }
-    else {
+    } else {
         solver.setup<CoMoving, false>(*this);
     }
 
@@ -483,8 +479,7 @@ int Model ::compute_radiation_field_feautrier_order_2_sparse() {
     if (use_adaptive_directions) {
         cout << "Using adaptive directions" << endl;
         solver.setup<CoMoving, true>(*this);
-    }
-    else {
+    } else {
         solver.setup<CoMoving, false>(*this);
     }
 
@@ -1090,7 +1085,8 @@ int Model ::compute_image_optical_depth_new(const Size ray_nr) {
 ///  Wrapper for the new imager
 ///////////////////////////////
 int Model ::compute_image_optical_depth_new(const Size ray_nr, const Size Nxpix, const Size Nypix) {
-    return compute_image_optical_depth_new(geometry.rays.get_direction<false>(0, ray_nr), Nxpix, Nypix);
+    return compute_image_optical_depth_new(
+        geometry.rays.get_direction<false>(0, ray_nr), Nxpix, Nypix);
 }
 
 ///  Wrapper for the new imager
@@ -1150,8 +1146,7 @@ int Model ::set_column() {
     if (use_adaptive_directions) {
         cout << "Using adaptive directions" << endl;
         solver.set_column<true>(*this);
-    }
-    else {
+    } else {
         solver.set_column<false>(*this);
     }
 
