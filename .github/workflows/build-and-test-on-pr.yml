@@ -46,8 +46,8 @@ jobs:
       matrix:
         include:
           - os: macos-latest
-            C-COMPILER: gcc-11
-            CXX-COMPILER: g++-11
+            C-COMPILER: gcc-14
+            CXX-COMPILER: g++-14
           - os: ubuntu-latest
             C-COMPILER: gcc
             CXX-COMPILER: g++
