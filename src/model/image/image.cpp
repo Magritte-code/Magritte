@@ -13,11 +13,10 @@ Image ::Image(
     const Geometry& geometry, const Frequencies& frequencies, const ImageType it, const Size rr) :
     imageType(it),
     imagePointPosition(AllModelPoints), ray_nr(rr),
-    ray_direction(Vector3D(geometry.rays.direction[ray_nr])) {
+    ray_direction(Vector3D(geometry.rays.get_direction<false>(0, ray_nr))) {
     if (geometry.parameters->dimension() == 1) {
-        if ((geometry.rays.direction[ray_nr].x() != 0.0)
-            || (geometry.rays.direction[ray_nr].y() != 1.0)
-            || (geometry.rays.direction[ray_nr].z() != 0.0)) {
+        const Vector3D raydir = geometry.rays.get_direction<false>(0, ray_nr);
+        if ((raydir.x() != 0.0) || (raydir.y() != 1.0) || (raydir.z() != 0.0)) {
             throw std::runtime_error("In 1D, the image ray has to be (0,1,0)");
         }
     }
@@ -32,11 +31,10 @@ Image ::Image(const Geometry& geometry, const Frequencies& frequencies, const Im
     const Size rr, const Size Nxpix, const Size Nypix) :
     imageType(it),
     imagePointPosition(ProjectionSurface), ray_nr(rr),
-    ray_direction(Vector3D(geometry.rays.direction[ray_nr])) {
+    ray_direction(Vector3D(geometry.rays.get_direction<false>(0, ray_nr))) {
     if (geometry.parameters->dimension() == 1) {
-        if ((geometry.rays.direction[ray_nr].x() != 0.0)
-            || (geometry.rays.direction[ray_nr].y() != 1.0)
-            || (geometry.rays.direction[ray_nr].z() != 0.0)) {
+        const Vector3D raydir = geometry.rays.get_direction<false>(0, ray_nr);
+        if ((raydir.x() != 0.0) || (raydir.y() != 1.0) || (raydir.z() != 0.0)) {
             throw std::runtime_error("In 1D, the image ray has to be (0,1,0)");
         }
     }
@@ -173,9 +171,9 @@ inline void Image ::set_coordinates_all_model_points(const Geometry& geometry) {
     }
 
     if (geometry.parameters->dimension() == 3) {
-        const double rx = geometry.rays.direction[ray_nr].x();
-        const double ry = geometry.rays.direction[ray_nr].y();
-        const double rz = geometry.rays.direction[ray_nr].z();
+        const double rx = ray_direction.x();
+        const double ry = ray_direction.y();
+        const double rz = ray_direction.z();
 
         const double denominator         = sqrt(rx * rx + ry * ry);
         const double inverse_denominator = 1.0 / denominator;
