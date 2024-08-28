@@ -91,7 +91,7 @@ accel inline Real Solver ::get_dshift_max(const Model& model, const Size o) {
     return dshift_max;
 }
 
-template <Frame frame, bool use_adaptive_directions> 
+template <Frame frame, bool use_adaptive_directions>
 inline void Solver ::get_ray_lengths(Model& model) {
     for (Size rr = 0; rr < model.parameters->hnrays(); rr++) {
 
@@ -100,8 +100,9 @@ inline void Solver ::get_ray_lengths(Model& model) {
 
             const Real dshift_max = get_dshift_max(model, o);
 
-            model.geometry.lengths(rr, o) = model.geometry.get_ray_length<frame, use_adaptive_directions>(o, rr, dshift_max)
-                                          + model.geometry.get_ray_length<frame, use_adaptive_directions>(o, ar, dshift_max);
+            model.geometry.lengths(rr, o) =
+                model.geometry.get_ray_length<frame, use_adaptive_directions>(o, rr, dshift_max)
+                + model.geometry.get_ray_length<frame, use_adaptive_directions>(o, ar, dshift_max);
         })
 
         pc::accelerator::synchronize();
@@ -110,7 +111,8 @@ inline void Solver ::get_ray_lengths(Model& model) {
     model.geometry.lengths.copy_ptr_to_vec();
 }
 
-template <Frame frame, bool use_adaptive_directions> inline Size Solver ::get_ray_lengths_max(Model& model) {
+template <Frame frame, bool use_adaptive_directions>
+inline Size Solver ::get_ray_lengths_max(Model& model) {
     get_ray_lengths<frame, use_adaptive_directions>(model);
 
     Geometry& geo = model.geometry;
@@ -260,11 +262,12 @@ inline void Solver ::solve_feautrier_order_2_uv(Model& model) {
             nr_()[centre]    = o;
             shift_()[centre] = 1.0;
 
-            first_() =
-                trace_ray<CoMoving, use_adaptive_directions>(model.geometry, o, rr, dshift_max, -1, centre - 1, centre - 1)
-                + 1;
-            last_() =
-                trace_ray<CoMoving, use_adaptive_directions>(model.geometry, o, ar, dshift_max, +1, centre + 1, centre) - 1;
+            first_() = trace_ray<CoMoving, use_adaptive_directions>(
+                           model.geometry, o, rr, dshift_max, -1, centre - 1, centre - 1)
+                     + 1;
+            last_() = trace_ray<CoMoving, use_adaptive_directions>(
+                          model.geometry, o, ar, dshift_max, +1, centre + 1, centre)
+                    - 1;
             n_tot_() = (last_() + 1) - first_();
 
             if (n_tot_() > 1) {
@@ -312,9 +315,11 @@ inline void Solver ::solve_feautrier_order_2_sparse(Model& model) {
 
         for (LineProducingSpecies& lspec : model.lines.lineProducingSpecies) {
             threaded_for(o, model.parameters->npoints(), {
-                const Vector3D nn = model.geometry.rays.get_direction<use_adaptive_directions>(o, rr);
-                const Size ar     = model.geometry.rays.get_antipod_index(rr);
-                const Real wt     = model.geometry.rays.get_weight<use_adaptive_directions>(o, rr) * two;
+                const Vector3D nn =
+                    model.geometry.rays.get_direction<use_adaptive_directions>(o, rr);
+                const Size ar = model.geometry.rays.get_antipod_index(rr);
+                const Real wt =
+                    model.geometry.rays.get_weight<use_adaptive_directions>(o, rr) * two;
 
                 const Real dshift_max = get_dshift_max(model, o);
 
@@ -324,9 +329,9 @@ inline void Solver ::solve_feautrier_order_2_sparse(Model& model) {
                 first_() = trace_ray<CoMoving, use_adaptive_directions>(
                                model.geometry, o, rr, dshift_max, -1, centre - 1, centre - 1)
                          + 1;
-                last_() =
-                    trace_ray<CoMoving, use_adaptive_directions>(model.geometry, o, ar, dshift_max, +1, centre + 1, centre)
-                    - 1;
+                last_() = trace_ray<CoMoving, use_adaptive_directions>(
+                              model.geometry, o, ar, dshift_max, +1, centre + 1, centre)
+                        - 1;
                 n_tot_() = (last_() + 1) - first_();
 
                 if (n_tot_() > 1) {
@@ -337,7 +342,8 @@ inline void Solver ::solve_feautrier_order_2_sparse(Model& model) {
 
                             lspec.J(o, k) += lspec.quadrature.weights[z] * wt * Su_()[centre];
 
-                            update_Lambda<approx, use_adaptive_directions>(model, rr, lspec.nr_line[o][k][z]);
+                            update_Lambda<approx, use_adaptive_directions>(
+                                model, rr, lspec.nr_line[o][k][z]);
                         }
                     }
                 } else {
@@ -386,9 +392,10 @@ inline void Solver ::solve_feautrier_order_2_anis(Model& model) {
 
         for (LineProducingSpecies& lspec : model.lines.lineProducingSpecies) {
             threaded_for(o, model.parameters->npoints(), {
-                const Size ar     = model.geometry.rays.get_antipod_index(rr);
-                const Real wt     = model.geometry.rays.get_weight<use_adaptive_directions>(o, rr);
-                const Vector3D nn = model.geometry.rays.get_direction<use_adaptive_directions>(o, rr);
+                const Size ar = model.geometry.rays.get_antipod_index(rr);
+                const Real wt = model.geometry.rays.get_weight<use_adaptive_directions>(o, rr);
+                const Vector3D nn =
+                    model.geometry.rays.get_direction<use_adaptive_directions>(o, rr);
 
                 const Real wt_0    = inv_sqrt2 * (three * nn.z() * nn.z() - one);
                 const Real wt_1_Re = -sqrt3 * nn.x() * nn.z();
@@ -404,9 +411,9 @@ inline void Solver ::solve_feautrier_order_2_anis(Model& model) {
                 first_() = trace_ray<CoMoving, use_adaptive_directions>(
                                model.geometry, o, rr, dshift_max, -1, centre - 1, centre - 1)
                          + 1;
-                last_() =
-                    trace_ray<CoMoving, use_adaptive_directions>(model.geometry, o, ar, dshift_max, +1, centre + 1, centre)
-                    - 1;
+                last_() = trace_ray<CoMoving, use_adaptive_directions>(
+                              model.geometry, o, ar, dshift_max, +1, centre + 1, centre)
+                        - 1;
                 n_tot_() = (last_() + 1) - first_();
 
                 if (n_tot_() > 1) {
@@ -481,9 +488,9 @@ inline void Solver ::solve_feautrier_order_2(Model& model) {
                 first_() = trace_ray<CoMoving, use_adaptive_directions>(
                                model.geometry, o, rr, dshift_max, -1, centre - 1, centre - 1)
                          + 1;
-                last_() =
-                    trace_ray<CoMoving, use_adaptive_directions>(model.geometry, o, ar, dshift_max, +1, centre + 1, centre)
-                    - 1;
+                last_() = trace_ray<CoMoving, use_adaptive_directions>(
+                              model.geometry, o, ar, dshift_max, +1, centre + 1, centre)
+                        - 1;
                 n_tot_() = (last_() + 1) - first_();
 
                 if (n_tot_() > 1) {
@@ -492,7 +499,8 @@ inline void Solver ::solve_feautrier_order_2(Model& model) {
 
                         model.radiation.u(rr_loc, o, f) = Su_()[centre];
                         model.radiation.J(o, f) +=
-                            Su_()[centre] * two * model.geometry.rays.get_weight<use_adaptive_directions>(o, rr);
+                            Su_()[centre] * two
+                            * model.geometry.rays.get_weight<use_adaptive_directions>(o, rr);
 
                         update_Lambda<approx, use_adaptive_directions>(model, rr, f);
                     }
@@ -500,8 +508,9 @@ inline void Solver ::solve_feautrier_order_2(Model& model) {
                     for (Size f = 0; f < model.parameters->nfreqs(); f++) {
                         model.radiation.u(rr_loc, o, f) =
                             boundary_intensity(model, o, model.radiation.frequencies.nu(o, f));
-                        model.radiation.J(o, f) += two * model.geometry.rays.get_weight<use_adaptive_directions>(o, rr)
-                                                 * model.radiation.u(rr_loc, o, f);
+                        model.radiation.J(o, f) +=
+                            two * model.geometry.rays.get_weight<use_adaptive_directions>(o, rr)
+                            * model.radiation.u(rr_loc, o, f);
                     }
                 }
             })
@@ -538,8 +547,10 @@ inline void Solver ::image_feautrier_order_2(Model& model, const Size rr) {
         ;
 
         first_() =
-            trace_ray<Rest, false>(model.geometry, o, rr, dshift_max, -1, centre - 1, centre - 1) + 1;
-        last_()  = trace_ray<Rest, false>(model.geometry, o, ar, dshift_max, +1, centre + 1, centre) - 1;
+            trace_ray<Rest, false>(model.geometry, o, rr, dshift_max, -1, centre - 1, centre - 1)
+            + 1;
+        last_() =
+            trace_ray<Rest, false>(model.geometry, o, ar, dshift_max, +1, centre + 1, centre) - 1;
         n_tot_() = (last_() + 1) - first_();
 
         if (n_tot_() > 1) {
@@ -629,8 +640,9 @@ inline void Solver ::image_feautrier_order_2_for_point(Model& model, const Size 
     nr_()[centre]    = o;
     shift_()[centre] = model.geometry.get_shift<Rest, false>(o, rr, o, 0.0);
 
-    first_() = trace_ray<Rest, false>(model.geometry, o, rr, dshift_max, -1, centre - 1, centre - 1) + 1;
-    last_()  = trace_ray<Rest, false>(model.geometry, o, ar, dshift_max, +1, centre + 1, centre) - 1;
+    first_() =
+        trace_ray<Rest, false>(model.geometry, o, rr, dshift_max, -1, centre - 1, centre - 1) + 1;
+    last_() = trace_ray<Rest, false>(model.geometry, o, ar, dshift_max, +1, centre + 1, centre) - 1;
     n_tot_() = (last_() + 1) - first_();
 
     model.S_ray.resize(n_tot_(), model.parameters->nfreqs());
@@ -658,8 +670,10 @@ inline void Solver ::image_optical_depth(Model& model, const Size rr) {
         ;
 
         first_() =
-            trace_ray<Rest, false>(model.geometry, o, rr, dshift_max, -1, centre - 1, centre - 1) + 1;
-        last_()  = trace_ray<Rest, false>(model.geometry, o, ar, dshift_max, +1, centre + 1, centre) - 1;
+            trace_ray<Rest, false>(model.geometry, o, rr, dshift_max, -1, centre - 1, centre - 1)
+            + 1;
+        last_() =
+            trace_ray<Rest, false>(model.geometry, o, ar, dshift_max, +1, centre + 1, centre) - 1;
         n_tot_() = (last_() + 1) - first_();
 
         if (n_tot_() > 1) {
@@ -1465,7 +1479,8 @@ accel inline void Solver ::update_Lambda(Model& model, const Size rr, const Size
         Matrix<Real>& L_lower = L_lower_();
         // Vector<Real  >& inverse_chi = inverse_chi_();
 
-        const Real w_ang = two * model.geometry.rays.get_weight<use_adaptive_directions>(nr[centre], rr);
+        const Real w_ang =
+            two * model.geometry.rays.get_weight<use_adaptive_directions>(nr[centre], rr);
 
         const Size l = freqs.corresponding_l_for_spec[f]; // index of species
         const Size k = freqs.corresponding_k_for_tran[f]; // index of transition
@@ -2520,8 +2535,7 @@ accel inline void Solver ::set_boundary_condition(Model& model) const {
     }
 }
 
-template <bool use_adaptive_directions>
-inline void Solver ::set_column(Model& model) const {
+template <bool use_adaptive_directions> inline void Solver ::set_column(Model& model) const {
     model.column.resize(model.parameters->nrays(), model.parameters->npoints());
 
     for (Size rr = 0; rr < model.parameters->hnrays(); rr++) {

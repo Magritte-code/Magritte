@@ -80,7 +80,8 @@ struct Solver {
 
     template <Frame frame, bool use_adaptive_directions> inline void get_ray_lengths(Model& model);
 
-    template <Frame frame, bool use_adaptive_directions> inline Size get_ray_lengths_max(Model& model);
+    template <Frame frame, bool use_adaptive_directions>
+    inline Size get_ray_lengths_max(Model& model);
 
     // template <Frame frame>
     inline Size get_ray_lengths_max_new_imager(Model& model, Image& image, const Vector3D& ray_dir);
@@ -168,7 +169,7 @@ struct Solver {
 
     // Solvers only computing u
     ///////////////////////////
-    template <ApproximationType approx, bool use_adaptive_directions> 
+    template <ApproximationType approx, bool use_adaptive_directions>
     accel inline void solve_feautrier_order_2(Model& model);
 
     template <ApproximationType approx, bool use_adaptive_directions>
@@ -202,8 +203,7 @@ struct Solver {
 
     // Solvers for column densities
     ///////////////////////////////
-    template <bool use_adaptive_directions>
-    accel inline void set_column(Model& model) const;
+    template <bool use_adaptive_directions> accel inline void set_column(Model& model) const;
     template <bool use_adaptive_directions>
     accel inline Real get_column(const Model& model, const Size o, const Size r) const;
 };
