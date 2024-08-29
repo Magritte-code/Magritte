@@ -49,7 +49,6 @@ Magritte has several dependencies, some of which are optional.
 **Optional**
 
 * `Anaconda <https://www.anaconda.com/blog/individual-edition-2020-11>`_, for managing the required Python packages;
-* `Gmsh <https://gmsh.info/>`_, version :literal:`4.6.0` or later, for meshing model geometries.
 
 
 Please note that :literal:`Paracabs` might have further dependencies depending
@@ -71,8 +70,6 @@ the model files.
 * :mod:`scipy`, for interpolation and spatial functions such as nearest neighbour calculations;
 * :mod:`healpy`, to sample directions from a discretized unit sphere;
 * :mod:`astropy`, for unit conversions and physical constants;
-* :mod:`meshio`, for reading and writing several types of mesh data structures;
-* :mod:`vtk`, for reading and writing vtk files;
 * :mod:`pyyaml`, for reading and writing yaml files;
 * :mod:`mpi4py`, for MPI (Message Passing Interface) functionality in Python;
 * :mod:`tqdm`, for progress bars;
@@ -111,7 +108,7 @@ All of these packages can also be found in the `conda environment file <https://
 
     Magritte uses plotly for some interactive plots. Plotly requires additional
     extensions to be able to render plots in a jupyter notebook or in jupyter lab. Please
-    consult their `intstallation notes <https://plotly.com/python/getting-started/>`_ to get
+    consult their `installation notes <https://plotly.com/python/getting-started/>`_ to get
     plotly working with jupyter.
 
 
@@ -155,4 +152,6 @@ We are currently further investigating Clang and Intel compiler (:literal:`icc`)
 GPU acceleration
 ================
 
-🧑‍💻 Coming soon(tm); GPU acceleration is expected to be implemented in 2024.
+A GPU-enabled port of Magritte to python using pytorch can be found on `GitHub <https://github.com/Magritte-code/Magritte-torch>`_.
+Unless GPU acceleration is required, the C++ version of Magritte should be used, as the compiled C++ code is faster on CPU than the python version.
+Not all features of the C++ version are available in the python version.

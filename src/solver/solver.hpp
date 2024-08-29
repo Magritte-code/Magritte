@@ -296,7 +296,9 @@ struct Solver {
 
     Size n_off_diag;
 
-    template <Frame frame> void setup(Model& model);
+    template <Frame frame, bool use_adaptive_directions> void setup(Model& model);
+
+    // template <Frame frame>
     void setup_new_imager(Model& model, Image& image, const Vector3D& ray_dir);
     void setup(const Size l, const Size w, const Size n_o_d);
 
@@ -306,9 +308,10 @@ struct Solver {
 
     accel inline Real get_dshift_max(const Model& model, const Size o);
 
-    template <Frame frame> inline void get_ray_lengths(Model& model);
+    template <Frame frame, bool use_adaptive_directions> inline void get_ray_lengths(Model& model);
 
-    template <Frame frame> inline Size get_ray_lengths_max(Model& model);
+    template <Frame frame, bool use_adaptive_directions>
+    inline Size get_ray_lengths_max(Model& model);
 
     // template <Frame frame>
     inline Size get_ray_lengths_max_new_imager(Model& model, Image& image, const Vector3D& ray_dir);
@@ -316,7 +319,7 @@ struct Solver {
     accel inline Size get_ray_length_new_imager(const Geometry& geometry, const Vector3D& origin,
         const Size start_bdy, const Vector3D& raydir);
 
-    template <Frame frame>
+    template <Frame frame, bool use_adaptive_directions>
     accel inline Size trace_ray(const Geometry& geometry, const Size o, const Size r,
         const double dshift_max, const int increment, Size id1, Size id2);
 
@@ -360,7 +363,7 @@ struct Solver {
         bool& compute_curr_opacity, Real& dtaunext, Real& chicurr, Real& chinext, Real& Scurr,
         Real& Snext);
 
-    template <ApproximationType approx>
+    template <ApproximationType approx, bool use_adaptive_directions>
     accel inline void update_Lambda(Model& model, const Size rr, const Size f);
     // accel inline void solve_shortchar_order_0_ray_forward (
     //           Model& model,
@@ -504,12 +507,13 @@ struct Solver {
 
     // Solvers only computing u
     ///////////////////////////
-    template <ApproximationType approx> accel inline void solve_feautrier_order_2(Model& model);
+    template <ApproximationType approx, bool use_adaptive_directions>
+    accel inline void solve_feautrier_order_2(Model& model);
 
-    template <ApproximationType approx>
+    template <ApproximationType approx, bool use_adaptive_directions>
     accel inline void solve_feautrier_order_2_sparse(Model& model);
 
-    template <ApproximationType approx>
+    template <ApproximationType approx, bool use_adaptive_directions>
     accel inline void solve_feautrier_order_2_anis(Model& model);
 
     template <ApproximationType approx>
@@ -518,18 +522,16 @@ struct Solver {
     // // Solvers for both u and v
     // ///////////////////////////
 
-    template <ApproximationType approx> accel inline void solve_shortchar_order_0(Model& model);
-    template <ApproximationType approx>
+    template <ApproximationType approx, bool use_adaptive_directions>
+    accel inline void solve_shortchar_order_0(Model& model);
+    template <ApproximationType approx, bool use_adaptive_directions>
     accel inline void solve_shortchar_order_0(Model& model, const Size o, const Size r);
 
-    /// BUGGED: v computation is incorrect
-    // template <ApproximationType approx>
-    // accel inline void solve_feautrier_order_2_uv (Model&
-    // model);
-    //
-    // template <ApproximationType approx>
-    // accel inline void solve_feautrier_order_2_uv (Model&
-    // model, const Size o, const Size f);
+    template <ApproximationType approx, bool use_adaptive_directions>
+    accel inline void solve_feautrier_order_2_uv(Model& model);
+
+    template <ApproximationType approx>
+    accel inline void solve_feautrier_order_2_uv(Model& model, const Size o, const Size f);
 
     // Getters for emissivities, opacities, and boundary
     // conditions
@@ -539,7 +541,8 @@ struct Solver {
 
     // Solvers for column densities
     ///////////////////////////////
-    accel inline void set_column(Model& model) const;
+    template <bool use_adaptive_directions> accel inline void set_column(Model& model) const;
+    template <bool use_adaptive_directions>
     accel inline Real get_column(const Model& model, const Size o, const Size r) const;
 };
 

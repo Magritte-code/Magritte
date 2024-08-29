@@ -73,13 +73,13 @@ def create_model():
     model.thermodynamics.temperature.gas  .set( temp                 * np.ones(npoints))
     model.thermodynamics.turbulence.vturb2.set((turb/magritte.CC)**2 * np.ones(npoints))
 
-    model = setup.set_Delaunay_neighbor_lists (model)
-    model = setup.set_Delaunay_boundary       (model)
+    setup.set_Delaunay_neighbor_lists (model)
+    setup.set_Delaunay_boundary       (model)
     #boundary intensity should be approx 0 for the frequencies we care about
-    model = setup.set_boundary_condition_1D   (model, T_bound, T_bound)
-    model = setup.set_rays_spherical_symmetry (model)
-    model = setup.set_linedata_from_LAMDA_file(model, lamdaFile)
-    model = setup.set_quadrature              (model)
+    setup.set_boundary_condition_1D   (model, T_bound, T_bound)
+    setup.set_rays_spherical_symmetry (model)
+    setup.set_linedata_from_LAMDA_file(model, lamdaFile)
+    setup.set_quadrature              (model)
 
     model.write()
 

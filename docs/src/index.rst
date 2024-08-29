@@ -92,11 +92,12 @@ Developers & Contributors
 
 **Contributors**
 
-* Silke Maes
 * Jolien Malfait
+* Silke Maes
 * Atulit Srivastava
-* Mats Esseldeurs
+* `Mats Esseldeurs <https://matsesseldeurs.github.io>`_
 * Arnout Coenegrachts
+* Owen Vermeulen
 
 Acknowledgements
 ****************

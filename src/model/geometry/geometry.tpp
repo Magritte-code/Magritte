@@ -231,19 +231,19 @@ accel inline Size Geometry ::get_n_interpl(
     }
 }
 
-template <Frame frame>
+template <Frame frame, bool use_adaptive_directions>
 accel inline Size Geometry ::get_ray_length(
     const Size o, const Size r, const double dshift_max) const {
     Size l    = 0;   // ray length
     double Z  = 0.0; // distance from origin (o)
     double dZ = 0.0; // last increment in Z
 
-    Size nxt = get_next(o, r, o, Z, dZ);
+    Size nxt = get_next<use_adaptive_directions>(o, r, o, Z, dZ);
 
     if (valid_point(nxt)) {
         Size crt         = o;
-        double shift_crt = get_shift<frame>(o, r, crt, 0.0);
-        double shift_nxt = get_shift<frame>(o, r, nxt, Z);
+        double shift_crt = get_shift<frame, use_adaptive_directions>(o, r, crt, 0.0);
+        double shift_nxt = get_shift<frame, use_adaptive_directions>(o, r, nxt, Z);
 
         l += 1; // no interpolation means only a single point added to the ray each
                 // time
@@ -252,8 +252,8 @@ accel inline Size Geometry ::get_ray_length(
             crt       = nxt;
             shift_crt = shift_nxt;
 
-            nxt       = get_next(o, r, nxt, Z, dZ);
-            shift_nxt = get_shift<frame>(o, r, nxt, Z);
+            nxt       = get_next<use_adaptive_directions>(o, r, nxt, Z, dZ);
+            shift_nxt = get_shift<frame, use_adaptive_directions>(o, r, nxt, Z);
 
             l += 1; // no interpolation means only a single point added to the ray
                     // each time
@@ -314,10 +314,11 @@ accel inline Size Geometry ::get_next(
 ///    @param[out]    dZ : reference to the distance increment to the next ray
 ///    @return number of the next cell on the ray after the current cell
 ///////////////////////////////////////////////////////////////////////////////////
+template <bool use_adaptive_directions>
 accel inline Size Geometry ::get_next(
     const Size o, const Size r, const Size crt, double& Z, double& dZ) const {
     const Vector3D origin = points.position[o];
-    const Vector3D raydir = rays.direction[r];
+    const Vector3D raydir = rays.get_direction<use_adaptive_directions>(o, r);
 
     return get_next<Defaulttracer>(origin, raydir, crt, Z, dZ);
 }
@@ -331,10 +332,11 @@ accel inline Size Geometry ::get_next(
 ///    @param[out]    dZ : reference to the distance increment to the next ray
 ///    @return number of the next cell on the ray after the current cell
 ///////////////////////////////////////////////////////////////////////////////////
+template <bool use_adaptive_directions>
 accel inline void Geometry ::get_next(const Size o, const Size r, const Size crt, Size& nxt,
     double& Z, double& dZ, double& shift) const {
-    nxt   = get_next(o, r, crt, Z, dZ);
-    shift = get_shift<CoMoving>(o, r, nxt, Z);
+    nxt   = get_next<use_adaptive_directions>(o, r, crt, Z, dZ);
+    shift = get_shift<CoMoving, use_adaptive_directions>(o, r, nxt, Z);
 }
 
 ///  Getter for the number of the next closer boundary point on the ray and its
@@ -470,9 +472,9 @@ inline double Geometry ::get_shift_spherical_symmetry<Rest>(const Vector3D& orig
 ///    @return doppler shift along the ray between the current cell and the
 ///    origin
 ///////////////////////////////////////////////////////////////////////////////////////
-template <Frame frame>
+template <Frame frame, bool use_adaptive_directions>
 inline double Geometry ::get_shift(const Size o, const Size r, const Size c, const double Z) const {
-    Vector3D raydir                = rays.direction[r];
+    Vector3D raydir                = rays.get_direction<use_adaptive_directions>(o, r);
     const Vector3D origin          = points.position[o];
     const Vector3D origin_velocity = points.velocity[o];
     // Due to the old imager implementation, the computed shift might need to be

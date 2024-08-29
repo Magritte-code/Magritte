@@ -2,7 +2,6 @@ import magritte.setup  as setup                        # Model setup
 import magritte.core   as magritte                     # Core functionality
 import magritte.mesher as mesher                       # Mesher
 import numpy           as np                           # Data structures
-import vtk                                             # Reading the model
 import warnings                                        # Hide warnings
 warnings.filterwarnings('ignore')                      # especially for yt
 import yt                                              # 3D plotting
@@ -10,7 +9,6 @@ import os
 
 from tqdm                   import tqdm                # Progress bars
 from astropy                import constants           # Unit conversions
-from vtk.util.numpy_support import vtk_to_numpy        # Converting data
 from scipy.spatial          import Delaunay, cKDTree   # Finding neighbors
 from yt.funcs               import mylog               # To avoid yt output
 mylog.setLevel(40)                                     # as error messages
@@ -103,11 +101,11 @@ def reduce_phantom():
     # model.geometry.rays.direction.set(direction)          # Comment out to use all directions
     # model.geometry.rays.weight   .set(0.5 * np.ones(2))   # Comment out to use all directions
 
-    model = setup.set_uniform_rays            (model)   # Uncomment to use all directions
-    model = setup.set_boundary_condition_CMB  (model)
-    model = setup.set_linedata_from_LAMDA_file(model, lamda_file, {'considered transitions': [0]})
+    setup.set_uniform_rays            (model)   # Uncomment to use all directions
+    setup.set_boundary_condition_CMB  (model)
+    setup.set_linedata_from_LAMDA_file(model, lamda_file, {'considered transitions': [0]})
     # model = setup.set_linedata_from_LAMDA_file(model, lamda_file)   # Consider all transitions
-    model = setup.set_quadrature              (model)
+    setup.set_quadrature              (model)
 
     model.write()
 

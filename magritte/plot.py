@@ -58,7 +58,8 @@ def image_mpl(
         npix_y     = 300,
         x_unit     = units.au,
         v_unit     = units.km/units.s,
-        method     = 'nearest'
+        method     = 'nearest',
+        save_fig   = True
     ):
     """
     Create plots of the channel maps of a synthetic observation (image) with matplotlib.
@@ -81,6 +82,8 @@ def image_mpl(
         Unit of length for the vertical (y) axis.
     method : str
         Method to interpolate the scattered intensity data onto a regular image grid.
+    save_fig : bool
+        Whether to save the output figure.
 
     Returns
     -------
@@ -220,7 +223,8 @@ def image_mpl(
             ax0.set_xlabel('Optical depth [.]',      labelpad=11)
             ax2.set_ylabel('Relative optical depth', labelpad=15)
 
-        plt.savefig(f"{im_dir}/image_{f:0>3d}.png", bbox_inches='tight')
+        if save_fig:
+            plt.savefig(f"{im_dir}/image_{f:0>3d}.png", bbox_inches='tight')
 
         figs.append(fig)
 
@@ -242,7 +246,8 @@ def image_plotly(
         v_unit     = units.km/units.s,
         method     = 'nearest',
         width      = 620,   # Yields approx square channel map
-        height     = 540    # Yields approx square channel map
+        height     = 540,   # Yields approx square channel map
+        save_fig   = True
     ):
     """
     Create plots of the channel maps of a synthetic observation (image) with plotly.
@@ -269,6 +274,8 @@ def image_plotly(
         Width of the resulting figure.
     height : float
         Height of the resulting figure.
+    save_fig : bool
+        Whether to save the output figure.
 
     Returns
     -------
@@ -549,8 +556,9 @@ def image_plotly(
         "scrollZoom": True
     }
 
-    # Save figure as html file
-    fig.write_html(f"{im_dir}/image.html", config=config)
+    if save_fig:
+        # Save figure as html file
+        fig.write_html(f"{im_dir}/image.html", config=config)
 
     return fig.show(config=config)
 

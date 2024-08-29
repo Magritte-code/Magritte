@@ -70,12 +70,12 @@ def create_model (a_or_b):
     model.thermodynamics.temperature.gas  .set( temp                 * np.ones(npoints))
     model.thermodynamics.turbulence.vturb2.set((turb/magritte.CC)**2 * np.ones(npoints))
 
-    model = setup.set_Delaunay_neighbor_lists (model)
-    model = setup.set_Delaunay_boundary       (model)
-    model = setup.set_boundary_condition_CMB  (model)
-    model = setup.set_uniform_rays            (model)
-    model = setup.set_linedata_from_LAMDA_file(model, lamdaFile)
-    model = setup.set_quadrature              (model)
+    setup.set_Delaunay_neighbor_lists (model)
+    setup.set_Delaunay_boundary       (model)
+    setup.set_boundary_condition_CMB  (model)
+    setup.set_uniform_rays            (model)
+    setup.set_linedata_from_LAMDA_file(model, lamdaFile)
+    setup.set_quadrature              (model)
 
     model.write()
 
@@ -94,6 +94,8 @@ def run_model (a_or_b, nosave=False):
     timer1.start()
     model = magritte.Model (modelFile)
     timer1.stop()
+
+    model.parameters.min_line_opacity = 1.0e-13
 
     timer2 = tools.Timer('setting model')
     timer2.start()

@@ -79,8 +79,10 @@ struct Parameters {
     Real min_opacity                   = 1.0e-26;
     Real min_dtau                      = 1.0e-15;
     Real comoving_min_dtau             = 1.0e-10;
-    Real population_inversion_fraction = 1.01; // threshold factor for population inversion required
-                                               // for LTE to be used; set this higher than 1
+    long double min_line_opacity     = 1.0e-10;
+    Real population_inversion_fraction =
+        -1.0; // previously 1.01; // threshold factor for population inversion required
+              //  for LTE to be used; set this higher than 1
     bool store_intensities = false;
     // bool use_Ng_acceleration         = true;//Not used,
     // so may safely be removed

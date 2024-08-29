@@ -3,6 +3,7 @@ import scipy as sp
 import healpy
 import re
 import astroquery.lamda as lamda
+import magritte.adaptive_ray_directions as ard
 
 from magritte.core import LineProducingSpecies, vLineProducingSpecies,            \
                           CollisionPartner, vCollisionPartner, CC, HH, KB, T_CMB, \
@@ -217,6 +218,7 @@ def set_uniform_rays(model, randomize=False, first_ray=np.array([1.0, 0.0, 0.0])
     # Cast to numpy arrays of appropriate type and shape
     model.geometry.rays.direction.set(direction)
     model.geometry.rays.weight   .set((1.0/nrays) * np.ones(nrays))
+    model.geometry.rays.use_adaptive_directions = False
     # Done
     return model
 
@@ -320,6 +322,7 @@ def set_rays_spherical_symmetry(model, uniform=True, nextra=0, step=1):
     # Set the direction and the weights in the Magritte model
     model.geometry.rays.direction.set(direction)
     model.geometry.rays.weight   .set(weight)
+    model.geometry.rays.use_adaptive_directions = False
     
     # Set nrays in the model
     try:
@@ -332,6 +335,44 @@ def set_rays_spherical_symmetry(model, uniform=True, nextra=0, step=1):
             f"set nrays, or specify the right number, which is {nrays} in this particular case."
         )    
     
+    # Done
+    return model
+
+def set_adaptive_rays(model, Ntop: int = 2, Nrefiments: int = 4, Ncomparisons: int = 4000):
+    """
+    Setter for rays to uniformly distributed directions.
+
+    Parameters
+    ----------
+    model : Magritte model object
+        Magritte model object to set.
+    Ntop (int, optional): Refinement parameter. Determines how much can be refined in each level. Should correspond to at least the number of interesting regions in the model. Defaults to 2.
+    Nrefinements (int, optional): Refinement parameter. Determines the amount of refinement levels. Defaults to 4.
+    Ncomparisons (int, optional): Randomly sample Ncomparison positions for determine the adaptive ray directions. Required computation time scales linearly. Defaults to 4000.
+
+    TODO: ADD ALL OPTIONAL PARAMETERS
+
+    Returns
+    -------
+    out : Magritte model object
+        Updated Magritte object.
+    """
+    if (model.parameters.dimension() != 3):
+        raise ValueError ('Only dimension = 3 is supported.')
+    
+    ardhelper = ard.AdaptiveRayDirectionHelper(np.array(model.geometry.points.position), Ntop, Nrefiments, Ncomparisons)
+    nadaptivedir: int = ardhelper.get_number_adaptive_directions()
+    npoints: int = model.parameters.npoints()
+    adaptive_directions, adaptive_weights = ardhelper.get_adaptive_directions()
+    antipod = ardhelper.get_antipod_indices()
+
+    # Set the direction and the weights in the Magritte model
+    model.geometry.rays.direction.set(np.reshape(adaptive_directions, (npoints * nadaptivedir, 3)))
+    model.geometry.rays.weight.set(np.reshape(adaptive_weights, (npoints*nadaptivedir)))
+    model.geometry.rays.antipod.set(antipod)
+    model.geometry.rays.use_adaptive_directions = True
+    model.parameters.set_nrays(nadaptivedir)
+
     # Done
     return model
 

@@ -93,10 +93,10 @@ def create_model ():
     model.geometry.boundary.boundary2point.set(boundary2point)
     model.parameters.set_nboundary(len(boundary2point))
 
-    model = setup.set_boundary_condition_CMB  (model)
-    model = setup.set_uniform_rays (model)
-    model = setup.set_linedata_from_LAMDA_file(model, lamdaFile)
-    model = setup.set_quadrature              (model)
+    setup.set_boundary_condition_CMB  (model)
+    setup.set_uniform_rays (model)
+    setup.set_linedata_from_LAMDA_file(model, lamdaFile)
+    setup.set_quadrature              (model)
 
     model.write()
 

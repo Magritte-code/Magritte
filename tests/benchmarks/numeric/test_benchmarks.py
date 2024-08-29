@@ -59,7 +59,7 @@ class TestNumeric:
 
         #currently only checks whether it is able to run succesfully, does not yet check whether the results make sense
         def test_run_phantom_model(self):
-            run_phantom()
+            assert run_phantom()
 
 
 

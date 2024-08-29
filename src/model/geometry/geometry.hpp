@@ -41,9 +41,11 @@ struct Geometry {
     void read(const Io& io);
     void write(const Io& io) const;
 
+    template <bool use_adaptive_directions>
     accel inline void get_next(const Size o, const Size r, const Size crt, Size& nxt, double& Z,
         double& dZ, double& shift) const;
 
+    template <bool use_adaptive_directions>
     accel inline Size get_next(
         const Size o, const Size r, const Size crt, double& Z, double& dZ) const;
 
@@ -67,7 +69,7 @@ struct Geometry {
 
     accel inline Size get_closest_bdy_point_in_custom_raydir(const Vector3D& raydir) const;
 
-    template <Frame frame>
+    template <Frame frame, bool use_adaptive_directions>
     accel inline double get_shift(const Size o, const Size r, const Size crt, const double Z) const;
 
     template <Frame frame>
@@ -86,7 +88,7 @@ struct Geometry {
     accel inline Size get_n_interpl(
         const double shift_crt, const double shift_nxt, const double dshift_max) const;
 
-    template <Frame frame>
+    template <Frame frame, bool use_adaptive_directions>
     accel inline Size get_ray_length(const Size o, const Size r, const double dshift_max) const;
 
     accel inline double get_dist2_ray_point(const Size o, const Size p, const Size r) const;

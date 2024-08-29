@@ -57,12 +57,12 @@ def create_model ():
     model.thermodynamics.temperature.gas  .set( temp                 * np.ones(npoints))
     model.thermodynamics.turbulence.vturb2.set((turb/magritte.CC)**2 * np.ones(npoints))
 
-    model = setup.set_Delaunay_neighbor_lists (model)
-    model = setup.set_Delaunay_boundary       (model)
-    model = setup.set_boundary_condition_CMB  (model)
-    model = setup.set_uniform_rays            (model)
-    model = setup.set_linedata_from_LAMDA_file(model, lamdaFile)
-    model = setup.set_quadrature              (model)
+    setup.set_Delaunay_neighbor_lists (model)
+    setup.set_Delaunay_boundary       (model)
+    setup.set_boundary_condition_CMB  (model)
+    setup.set_uniform_rays            (model)
+    setup.set_linedata_from_LAMDA_file(model, lamdaFile)
+    setup.set_quadrature              (model)
 
     model.write()
 
@@ -99,6 +99,13 @@ def run_model (nosave=False):
     timer4.stop()
     u_2f = np.array(model.radiation.u)
 
+    timer5 = tools.Timer('feautrier 2 uv')
+    timer5.start()
+    model.compute_radiation_field_feautrier_order_2_uv ()
+    timer5.stop()
+    u_2f_uv = np.array(model.radiation.u)
+    v_2f_uv = np.array(model.radiation.v)
+
     x  = np.array(model.geometry.points.position)[:,0]
     nu = np.array(model.radiation.frequencies.nu)
 
@@ -125,6 +132,8 @@ def run_model (nosave=False):
 
     error_u_0s = np.abs(tools.relative_error (u_(x), u_0s[0,:,0]))
     error_u_2f = np.abs(tools.relative_error (u_(x), u_2f[0,:,0]))
+    error_I_0_2f_uv = np.abs(tools.relative_error (I_0(x), u_2f_uv[0,:,0]+v_2f_uv[0,:,0]))
+    error_I_1_2f_uv = np.abs(tools.relative_error (I_1(x), u_2f_uv[0,:,0]-v_2f_uv[0,:,0]))
 
     result  = f'--- Benchmark name ----------------------------\n'
     result += f'{modelName                                    }\n'
@@ -136,6 +145,8 @@ def run_model (nosave=False):
     result += f'--- Accuracy ----------------------------------\n'
     result += f'max error in shortchar 0 = {np.max(error_u_0s)}\n'
     result += f'max error in feautrier 2 = {np.max(error_u_2f)}\n'
+    result += f'max error in I_0 2f uv = {np.max(error_I_0_2f_uv)}\n'
+    result += f'max error in I_1 2f uv = {np.max(error_I_1_2f_uv)}\n'
     result += f'--- Timers ------------------------------------\n'
     result += f'{timer1.print()                               }\n'
     result += f'{timer2.print()                               }\n'
@@ -168,14 +179,17 @@ def run_model (nosave=False):
     #error bounds are chosen somewhat arbitrarily, based on previously obtained results; this should prevent serious regressions.
     FEAUTRIER_AS_EXPECTED=(np.max(error_u_2f)<1.7e-4)
     FIRSTORDER_AS_EXPECTED=(np.max(error_u_0s)<5.1e-8)
+    FEAUTRIER_UV_AS_EXPECTED=(np.max(error_I_0_2f_uv)<2.0e-4) and (np.max(error_I_1_2f_uv)<2.0e-4)
 
     if not FIRSTORDER_AS_EXPECTED:
         print("First order solver max error too large: ", np.max(error_u_0s))
     if not FEAUTRIER_AS_EXPECTED:
         print("Feautrier solver max error too large: ", np.max(error_u_2f))
+    if not FEAUTRIER_UV_AS_EXPECTED:
+        print("Feautrier solver with uv max error too large: ", np.max(error_I_0_2f_uv), np.max(error_I_1_2f_uv))
 
 
-    return (FEAUTRIER_AS_EXPECTED&FIRSTORDER_AS_EXPECTED)
+    return (FEAUTRIER_AS_EXPECTED&FIRSTORDER_AS_EXPECTED&FEAUTRIER_UV_AS_EXPECTED)
 
 
 def run_test (nosave=False):

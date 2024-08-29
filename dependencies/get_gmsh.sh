@@ -19,7 +19,7 @@ case "`uname -s`" in
     ;;
     Darwin*)
         echo "Recognized macOS as OS (assuming x86_64), installing..."
-        wget https://gmsh.info/bin/MacOSX/gmsh-4.7.1-MacOSX-sdk.tgz -O gmsh.tgz
+        curl -o gmsh.tgz https://gmsh.info/bin/MacOSX/gmsh-4.7.1-MacOSX-sdk.tgz
         # Untar the file
         tar -zxvf gmsh.tgz
         # Rename directory

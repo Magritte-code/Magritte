@@ -1,6 +1,8 @@
 from reject_nonexistent_species import create_model as reject_nonexistent_species_setup
 from all_constant_single_ray import create_model as all_constant_setup
 from all_constant_single_ray import run_model as all_constant_run
+from all_constant_single_ray_testuv import create_model as all_constant_testuv_setup
+from all_constant_single_ray_testuv import run_model as all_constant_testuv_run
 from all_zero_single_ray import create_model as all_zero_setup
 from all_zero_single_ray import run_model as all_zero_run
 from density_distribution_1D import create_model as density_dist_setup
@@ -47,6 +49,13 @@ class TestAnalytic:
         def test_all_constant_run(self):
             assert all_constant_run(nosave=True)
 
+    @pytest.mark.incremental
+    class TestUVFeautrier:
+        def test_uv_feautrier_setup(self):
+            all_constant_testuv_setup()
+
+        def test_uv_feautrier_run(self):
+            assert all_constant_testuv_run(nosave=True)
 
     @pytest.mark.incremental
     class TestAllZero:
@@ -125,5 +134,3 @@ class TestNewImager:
         def test_velocity_gradient_3D_new_imager_run(self):
             assert velocity_gradient_new_imager_run(nosave=True, use_widgets=False)
 
-
-#TODO ADD ALL ANALYTIC BENCHMARKS, get some manner of performance somewhere else
