@@ -363,7 +363,14 @@ int Model ::compute_radiation_field_shortchar_order_0() {
 int Model ::compute_radiation_field_comoving() {
     std::cout << "Computing radiation field..." << std::endl;
     Solver solver;
-    solver.setup_comoving(*this);
+    const bool use_adaptive_directions = geometry.rays.use_adaptive_directions;
+    // TODO: create macro for this substitution instead of doing the if-else manually
+    if (use_adaptive_directions) {
+        cout << "Using adaptive directions" << endl;
+        solver.setup_comoving<true>(*this);
+    } else {
+        solver.setup_comoving<false>(*this);
+    }
 
     // Sperical symmetry is not supported due to changing angles
     if (parameters->spherical_symmetry()) {
@@ -371,14 +378,27 @@ int Model ::compute_radiation_field_comoving() {
     }
 
     if (parameters->one_line_approximation) {
-        solver.solve_comoving_order_2_sparse<OneLine>(*this);
+        if (use_adaptive_directions) {
+            solver.solve_comoving_order_2_sparse<OneLine, true>(*this);
+        } else {
+            solver.solve_comoving_order_2_sparse<OneLine, false>(*this);
+        }
     }
 
     if (parameters->sum_opacity_emissivity_over_all_lines) {
-        solver.solve_comoving_order_2_sparse<None>(*this);
+        if (use_adaptive_directions) {
+            solver.solve_comoving_order_2_sparse<None, true>(*this);
+        } else {
+            solver.solve_comoving_order_2_sparse<None, false>(*this);
+        }
     }
 
-    solver.solve_comoving_order_2_sparse<CloseLines>(*this);
+    if (use_adaptive_directions) {
+        solver.solve_comoving_order_2_sparse<CloseLines, true>(*this);
+    } else {
+        solver.solve_comoving_order_2_sparse<CloseLines, false>(*this);
+    }
+
     return (0);
 }
 
@@ -387,7 +407,13 @@ int Model ::compute_radiation_field_comoving() {
 int Model ::compute_radiation_field_comoving_local_approx() {
     std::cout << "Computing radiation field..." << std::endl;
     Solver solver;
-    solver.setup_comoving_local_approx(*this);
+    const bool use_adaptive_directions = geometry.rays.use_adaptive_directions;
+    if (use_adaptive_directions) {
+        cout << "Using adaptive directions" << endl;
+        solver.setup_comoving_local_approx<true>(*this);
+    } else {
+        solver.setup_comoving_local_approx<false>(*this);
+    }
 
     // Sperical symmetry is not supported due to changing angles
     if (parameters->spherical_symmetry()) {
@@ -395,14 +421,26 @@ int Model ::compute_radiation_field_comoving_local_approx() {
     }
 
     if (parameters->one_line_approximation) {
-        solver.solve_comoving_local_approx_order_2_sparse<OneLine>(*this);
+        if (use_adaptive_directions) {
+            solver.solve_comoving_local_approx_order_2_sparse<OneLine, true>(*this);
+        } else {
+            solver.solve_comoving_local_approx_order_2_sparse<OneLine, false>(*this);
+        }
     }
 
     if (parameters->sum_opacity_emissivity_over_all_lines) {
-        solver.solve_comoving_local_approx_order_2_sparse<None>(*this);
+        if (use_adaptive_directions) {
+            solver.solve_comoving_local_approx_order_2_sparse<None, true>(*this);
+        } else {
+            solver.solve_comoving_local_approx_order_2_sparse<None, false>(*this);
+        }
+    }
+    if (use_adaptive_directions) {
+        solver.solve_comoving_local_approx_order_2_sparse<CloseLines, true>(*this);
+    } else {
+        solver.solve_comoving_local_approx_order_2_sparse<CloseLines, false>(*this);
     }
 
-    solver.solve_comoving_local_approx_order_2_sparse<CloseLines>(*this);
     return (0);
 }
 
@@ -543,7 +581,11 @@ int Model ::compute_radiation_field_feautrier_order_2_sparse() {
 
     if (parameters->prune_zero_contribution_points) {
         std::cout << "pruning points on rays" << std::endl;
-        solver.solve_feautrier_order_2_sparse_pruned_rays<CloseLines>(*this);
+        if (use_adaptive_directions) {
+            solver.solve_feautrier_order_2_sparse_pruned_rays<CloseLines, true>(*this);
+        } else {
+            solver.solve_feautrier_order_2_sparse_pruned_rays<CloseLines, false>(*this);
+        }
         return (0);
     }
 

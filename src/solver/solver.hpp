@@ -63,14 +63,17 @@ struct Solver {
 
     // Comoving approach: TODO: clean up
 
+    //TODO: make sure that the index ordering is consistent
     // For tracing the rays and keeping track of the closest ones
+    Matrix<std::tuple<Size, Size>> corresponding_ray; // original point index, original direction index mapping to ray origin and the corresponding direction index
+    Vector<std::map<std::tuple<Size, Size>, Size>> intensity_origin; // for every point, contains a map with as keys a set of origin points and corresponding directions (for the origins) and as values the direction index to be used for that point
     Vector<Vector<Size>> points_to_trace_ray_through; // raydir, rays to trace
     Matrix<Size>
         n_rays_through_point; // raydir, point ; might not be used that much in the future, as we
                               // might instead just use the closest ray for determining the result
     // hmm, we need to weight the rays somehow; for now we just only use the closest ray to
     // determine intensity
-    Matrix<Size> closest_ray;     // raydir, point (contains closest rayid?)
+    // Matrix<Size> closest_ray;     // raydir, point (contains closest rayid?)
     Matrix<Size> min_ray_distsqr; // raydir, pointid
     // I will assume no more than 2^16-1 rays go through a specific point if choosing unsigned int
     // However, just go with a Size for absolute safety (max upper bound on number rays traced can
@@ -302,7 +305,7 @@ struct Solver {
     void setup_new_imager(Model& model, Image& image, const Vector3D& ray_dir);
     void setup(const Size l, const Size w, const Size n_o_d);
 
-    void setup_comoving(Model& model);
+    template <bool use_adaptive_directions> void setup_comoving(Model& model);
     void setup_comoving_new_imager(Model& model, Image& image, const Vector3D& ray_dir);
     void setup_comoving(Model& model, const Size length, const Size width);
 
@@ -324,7 +327,7 @@ struct Solver {
         const double dshift_max, const int increment, Size id1, Size id2);
 
     // With extra functionality to figure out when to stop our computations on the ray
-    template <Frame frame>
+    template <Frame frame, bool use_adaptive_directions>
     accel inline Size trace_ray_comoving(const Geometry& geometry, const Size o, const Size r,
         const Size rr, const Size rayidx, const double dshift_max, const int increment, Size id1,
         Size id2, Size& outermost_interesting_point_rayidx);
@@ -379,7 +382,9 @@ struct Solver {
     /////////////////////////
     // general ray tracing differences
     //  inline void setup_comoving (Model& model, const Size l, const Size w);
+    template <bool use_adaptive_directions>
     inline void get_static_rays_to_trace(Model& model);
+    template <bool use_adaptive_directions>
     accel inline void trace_ray_points(const Geometry& geometry, const Size o, const Size rdir,
         const Size rsav, const Size rayidx);
     // Complicated solver stuff
@@ -404,10 +409,12 @@ struct Solver {
     inline void comoving_ray_bdy_setup_forward(Model& model, Size first_interesting_rayposidx);
     template <ApproximationType approx>
     inline void comoving_ray_bdy_setup_backward(Model& model, Size last_interesting_rayposidx);
-    template <ApproximationType approx> inline void solve_comoving_order_2_sparse(Model& model);
-    inline void solve_comoving_single_step(Model& model, const Size rayposidx, const Size rayidx,
+    template <ApproximationType approx, bool use_adaptive_directions>
+    inline void solve_comoving_order_2_sparse(Model& model);
+    template <bool use_adaptive_directions>
+    inline void solve_comoving_single_step(Model& model, const Size rayposidx, const Size o,
         const Size rr, const bool is_upward_disc, const bool forward_ray);
-    template <ApproximationType approx>
+    template <ApproximationType approx, bool use_adaptive_directions>
     inline void solve_comoving_order_2_sparse(Model& model,
         const Size o,      // ray origin point
         const Size r,      // ray direction index
@@ -420,10 +427,11 @@ struct Solver {
         const double dshift_max, const int increment, Size& id1, Size& id2);
 
     // Comoving approx solver stuff
+    template <bool use_adaptive_directions>
     accel inline void setup_comoving_local_approx(Model& model);
-    template <ApproximationType approx>
+    template <ApproximationType approx, bool use_adaptive_directions>
     accel inline void solve_comoving_local_approx_order_2_sparse(Model& model);
-    template <ApproximationType approx>
+    template <ApproximationType approx, bool use_adaptive_directions>
     accel inline void solve_comoving_local_approx_order_2_sparse(Model& model,
         const Size o,      // ray origin point
         const Size r,      // ray direction index
@@ -439,8 +447,9 @@ struct Solver {
         const Size next_freq_idx, const Size curr_freq_idx, const Real next_freq,
         const Real curr_freq, const Real next_shift, const Real curr_shift,
         const Size curr_line_idx, const bool is_upward_disc, const Size bdy_point);
+    template <bool use_adaptive_directions>
     accel inline void solve_comoving_local_approx_single_step(Model& model, const Size next_point,
-        const Size rayidx, const Size rr, const bool is_upward_disc);
+        const Size o, const Size rr, const bool is_upward_disc);
 
     // Point pruning solvers stuff
     //////////////////////////////
@@ -450,11 +459,11 @@ struct Solver {
     // accel inline bool check_close_line (const Real prevfreq, const Real currfreq, const Real
     // nextfreq, const Size prevpoint, const Size currpoint, const Size nextpoint, const Model&
     // model);
-    template <Frame frame>
+    template <Frame frame, bool use_adaptive_directions>
     accel inline Size trace_ray_pruned(const Model& model, const Size o, const Size r,
         const double dshift_max, const int increment, Size id1, Size id2, const Real freq);
 
-    template <ApproximationType approx>
+    template <ApproximationType approx, bool use_adaptive_directions>
     inline void solve_feautrier_order_2_sparse_pruned_rays(Model& model);
 
     // Solvers for images

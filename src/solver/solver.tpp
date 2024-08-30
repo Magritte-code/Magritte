@@ -137,11 +137,15 @@ inline void Solver ::setup_comoving(Model& model, const Size length, const Size 
     }
     // TODO: implement new datastructures for interpolating the computed intensities (healpix based)
     // Also implement the functions for getting the corresponding directions for each individual point (if it can be mapped) 
+    corresponding_ray.resize(model.parameters->npoints(), model.parameters->hnrays());
+    intensity_origin.resize(model.parameters->npoints());
+
+
 
     // For determining which ray lies closest to each point
     n_rays_through_point.resize(model.parameters->hnrays(), model.parameters->npoints());
     min_ray_distsqr.resize(model.parameters->hnrays(), model.parameters->npoints());
-    closest_ray.resize(model.parameters->hnrays(), model.parameters->npoints());
+    // closest_ray.resize(model.parameters->hnrays(), model.parameters->npoints());
 
     for (Size i = 0; i < pc::multi_threading::n_threads_avail(); i++) {
         // general ray tracing variables
@@ -206,8 +210,9 @@ inline void Solver ::setup_comoving(Model& model, const Size length, const Size 
 
 ///  Prepares datastructures for NLTE calculations for the approximate comoving solver
 ///   @param[in] model: model to apply the solver to
+template <bool use_adaptive_directions>
 inline void Solver ::setup_comoving_local_approx(Model& model) {
-    length = 2 * get_ray_lengths_max<Rest>(model) + 1;
+    length = 2 * get_ray_lengths_max<Rest, use_adaptive_directions>(model) + 1;
     centre = length / 2;
     width  = model.parameters->nfreqs();
 
@@ -222,11 +227,13 @@ inline void Solver ::setup_comoving_local_approx(Model& model) {
     for (Size i = 0; i < model.parameters->hnrays(); i++) {
         points_to_trace_ray_through[i].resize(model.parameters->npoints());
     }
+    corresponding_ray.resize(model.parameters->npoints(), model.parameters->hnrays());
+    intensity_origin.resize(model.parameters->npoints());
 
     // for determining which ray lies closest to each point
     n_rays_through_point.resize(model.parameters->hnrays(), model.parameters->npoints());
     min_ray_distsqr.resize(model.parameters->hnrays(), model.parameters->npoints());
-    closest_ray.resize(model.parameters->hnrays(), model.parameters->npoints());
+    // closest_ray.resize(model.parameters->hnrays(), model.parameters->npoints());
 
     for (Size i = 0; i < pc::multi_threading::n_threads_avail(); i++) {
         // general ray tracing variables
@@ -262,7 +269,7 @@ inline void Solver ::setup_comoving_local_approx(Model& model) {
     }
 
     // Finally also trace the rays in advance to prune the unnecessary ones.
-    get_static_rays_to_trace(model);
+    get_static_rays_to_trace<use_adaptive_directions>(model);
 }
 
 ///  Getter for the maximum allowed shift value determined by the smallest line
@@ -326,6 +333,7 @@ inline Size Solver ::get_ray_lengths_max(Model& model) {
 ///  traced rays) to the given ray. Should be called in both directions, but as tracing antipodal
 ///  rays should be symmetric, we only need to keep track of one direction. Used in setup for doing
 ///  NLTE computations using the (approximate) comoving solver
+template <bool use_adaptive_directions>
 accel inline void Solver ::trace_ray_points(const Geometry& geometry,
     const Size o,      // origin point of ray
     const Size rdir,   // ray direction to trace ∈ [0, nrays-1]
@@ -336,32 +344,45 @@ accel inline void Solver ::trace_ray_points(const Geometry& geometry,
     double Z  = 0.0; // distance from origin (o)
     double dZ = 0.0; // last increment in Z
 
-    Size nxt = geometry.get_next(o, rdir, o, Z, dZ);
+    Size nxt = geometry.get_next<use_adaptive_directions>(o, rdir, o, Z, dZ);
 
     if (geometry.valid_point(nxt)) {
         // get distance and check if closest ray
         Real dist2 = geometry.get_dist2_ray_point(o, nxt, rdir);
-        // If it is the first time we encounter this point, or this is the closest ray: assign this
-        // ray to compute the stuff (J, lambda) of the point
-        if (n_rays_through_point(rsav, nxt) == 0 || dist2 < min_ray_distsqr(rsav, nxt)) {
-            min_ray_distsqr(rsav, nxt) = dist2;
-            closest_ray(rsav, nxt)     = rayidx;
-        }
+        // Compute the direction index at nxt (if valid).
+        std::tuple<bool, Size> valid_rcur = geometry.rays.get_correspoding_direction_index<use_adaptive_directions>(o, rsav, nxt);
+        bool valid = std::get<0>(valid_rcur);
+        Size rcur  = std::get<1>(valid_rcur);
+        if (valid)
+        {
+            // If it is the first time we encounter this point, or this is the closest ray: assign this
+            // ray to compute the stuff (J, lambda) of the point
+            if (n_rays_through_point(rcur, nxt) == 0 || dist2 < min_ray_distsqr(rcur, nxt)) {
+                min_ray_distsqr(rcur, nxt) = dist2;
+                corresponding_ray(nxt, rcur) = {o, rsav};
+                // closest_ray(rcur, nxt)     = rayidx;
+            }
 
-        n_rays_through_point(rsav, nxt)++;
+            n_rays_through_point(rcur, nxt)++;
+        }
 
         Size crt = o;
 
         while (geometry.not_on_boundary(nxt)) {
             crt = nxt;
-            nxt = geometry.get_next(o, rdir, nxt, Z, dZ);
+            nxt = geometry.get_next<use_adaptive_directions>(o, rdir, nxt, Z, dZ);
 
             // get distance and check if closest ray
             Real dist2 = geometry.get_dist2_ray_point(o, nxt, rdir);
 
-            if (n_rays_through_point(rsav, nxt) == 0 || dist2 < min_ray_distsqr(rsav, nxt)) {
+            // Compute the direction index at nxt (if valid).
+            std::tuple<bool, Size> valid_rcur = geometry.rays.get_correspoding_direction_index<use_adaptive_directions>(o, rsav, nxt);
+            bool valid = std::get<0>(valid_rcur);
+            Size rcur  = std::get<1>(valid_rcur);
+            if (valid &&(n_rays_through_point(rsav, nxt) == 0 || dist2 < min_ray_distsqr(rsav, nxt))) {
                 min_ray_distsqr(rsav, nxt) = dist2;
-                closest_ray(rsav, nxt)     = rayidx;
+                corresponding_ray(nxt, rcur) = {o, rsav};
+                // closest_ray(rsav, nxt)     = rayidx;
             }
 
             n_rays_through_point(rsav, nxt)++;
@@ -372,10 +393,13 @@ accel inline void Solver ::trace_ray_points(const Geometry& geometry,
 ///  For all directions, determines a ray covering of the points for the (approximate) comoving
 ///  solver
 ///   @param[in] model: the model for which we want to use the comoving solver
+template <bool use_adaptive_directions>
 inline void Solver ::get_static_rays_to_trace(Model& model) {
+    Vector<Size> n_points_to_trace_ray_through(model.parameters->hnrays());
+
     accelerated_for(rr, model.parameters->hnrays(), {
         Size n_rays_to_trace = 0;
-        const Size ar        = model.geometry.rays.antipod[rr];
+        const Size ar        = model.geometry.rays.get_antipod_index(rr);
         // To make sure that we order the rays starting from the largest elements
         for (Size pointidx = 0; pointidx < model.parameters->npoints(); pointidx++) {
             const Size o = model.geometry.sorted_position_indices[pointidx];
@@ -396,19 +420,28 @@ inline void Solver ::get_static_rays_to_trace(Model& model) {
 
             // For generality, I assign a ray index to each ray of a given direction rsav
             // Also the ray direction is identified with the forward dir
-            closest_ray(rr, o)     = n_rays_to_trace;
+            // closest_ray(rr, o)     = n_rays_to_trace;
+            corresponding_ray(o, rr) = {o, rr};
+
             min_ray_distsqr(rr, o) = 0.0;
 
             // now trace ray through rest of model
-            trace_ray_points(model.geometry, o, rr, rr, n_rays_to_trace);
-            trace_ray_points(model.geometry, o, ar, rr, n_rays_to_trace);
+            trace_ray_points<use_adaptive_directions>(model.geometry, o, rr, rr, n_rays_to_trace);
+            trace_ray_points<use_adaptive_directions>(model.geometry, o, ar, rr, n_rays_to_trace);
 
             n_rays_to_trace++;
         }
-        // n_points_to_trace_ray_through[rr]=n_rays_to_trace;
+        n_points_to_trace_ray_through[rr]=n_rays_to_trace;
         points_to_trace_ray_through[rr].resize(
             n_rays_to_trace); // and now the correct size, instead of parameters->npoints()
     })
+
+    // Convert the datastructure to something more usable
+    for (Size idx = 0; idx<model.parameters->npoints(); idx++) {
+        for (Size rr = 0; rr < model.parameters->hnrays(); rr++) {
+            intensity_origin[idx][corresponding_ray(idx, rr)] = rr;
+        }
+    }
 
     // debug print stuff
     for (Size rr = 0; rr < model.parameters->hnrays(); rr++) {
@@ -1774,14 +1807,16 @@ inline void Solver ::solve_comoving_order_2_sparse(Model& model) {
 ///  the ray. Assumes the datastructures to be setup correctly.
 ///   @param[in] model: the model to apply the comoving solver to
 ///   @param[in] rayposidx: ray position inddex of the next point
-///   @param[in] rayidx: index of ray to trace in the given direction
+// CHANGED ///   @param[in] rayidx: index of ray to trace in the given direction
+///   @param[in] o: position index of ray origin used to trace the ray
 ///   @param[in] rr: ray direction index to check whether to save the current intensities (if the
 ///   ray lies closest in the current direction to the point)
 ///   @param[in] is_upward_disc: determines the ordering of the implicit parts of the computation
 ///   @param[in] forward_ray: whether or not the ray is traversed in the forward direction. changes
 ///   the sign of the doppler shift
+template <bool use_adaptive_directions>
 inline void Solver ::solve_comoving_single_step(Model& model, const Size rayposidx,
-    const Size rayidx, const Size rr, const bool is_upward_disc, const bool forward_ray) {
+    const Size o, const Size rr, const bool is_upward_disc, const bool forward_ray) {
     Vector<Size>& nr = nr_(); // stores the exact point indices
     Vector<double>& shift =
         shift_(); // stores the shifts versus the static frame; warning: for forward rays, this
@@ -1919,9 +1954,14 @@ inline void Solver ::solve_comoving_single_step(Model& model, const Size rayposi
         }
     }
 
+    if (intensity_origin[nextpointidx].count(std::tuple(o, rr)))
+    {
+        //We have assigned this ray to contain data for this nextpointindex, so I assume the ray direction to be valid
+        std::tuple<bool, Size> valid_rcur = model.geometry.rays.get_correspoding_direction_index<use_adaptive_directions>(o, rr, nextpointidx);
+        Size rcur  = std::get<1>(valid_rcur);
     // Finally increment J if this ray lies closest to the point in the raydirection rr
-    if (closest_ray(rr, nextpointidx) == rayidx) {
-        const Real wt = model.geometry.rays.weight[rr];
+    // if (closest_ray(rr, nextpointidx) == rayidx) {
+        const Real wt = model.geometry.rays.get_weight<use_adaptive_directions>(nextpointidx, rcur);
         // then obviously add (weighted) to J
         for (Size freqid = 0; freqid < model.parameters->nfreqs(); freqid++) {
             // Get the details about the line to which the current frequency belongs
@@ -2125,7 +2165,7 @@ inline void Solver::solve_comoving_image_single_step(
 ///   @param[in] dshift_max: maximum doppler shift (currently does not do anything)
 ///   @note This solver might suffer a bit from spatial inaccuracies, as the traced rays might not
 ///   go exactly through the positions
-template <ApproximationType approx>
+template <ApproximationType approx, bool use_adaptive_directions>
 inline void Solver ::solve_comoving_order_2_sparse(Model& model,
     const Size o,      // ray origin point
     const Size r,      // ray direction index
@@ -2154,24 +2194,29 @@ inline void Solver ::solve_comoving_order_2_sparse(Model& model,
     // Trace the ray, getting all points on the ray and indicating until which point I actually need
     // to compute anything. Note: technically, it does not matter which frame I use, as long as it
     // is a fixed frame for the entire ray
-    first_() = trace_ray_comoving<Rest>(model.geometry, o, rr, rr, rayidx, dshift_max, -1,
+    first_() = trace_ray_comoving<Rest, use_adaptive_directions>(model.geometry, o, rr, rr, rayidx, dshift_max, -1,
                    centre - 1, centre - 1, first_interesting_rayposidx)
              + 1;
-    last_() = trace_ray_comoving<Rest>(model.geometry, o, ar, rr, rayidx, dshift_max, +1,
+    last_() = trace_ray_comoving<Rest, use_adaptive_directions>(model.geometry, o, ar, rr, rayidx, dshift_max, +1,
                   centre + 1, centre, last_interesting_rayposidx)
             - 1;
 
     nr_()[centre]    = o;
-    shift_()[centre] = model.geometry.get_shift<Rest>(o, rr, o, 0);
+    shift_()[centre] = model.geometry.get_shift<Rest, use_adaptive_directions>(o, rr, o, 0);
     n_tot_()         = (last_() + 1) - first_();
 
     // Now is the perfect time to setup the boundary conditions and data for the forward ray
     comoving_ray_bdy_setup_forward<approx>(model, last_interesting_rayposidx);
 
+    if (intensity_origin[nr[first_()]].count(std::tuple(o, rr)))
+    {
+        //We have assigned this ray to contain data for this nextpointindex, so I assume the ray direction to be valid
+        std::tuple<bool, Size> valid_rcur = model.geometry.rays.get_correspoding_direction_index<use_adaptive_directions>(o, rr, nr[first_()]);
+        Size rcur  = std::get<1>(valid_rcur);
     // Check if closest ray // maybe todo: replace with some weights 0/1 for eliminating the
     // if-clause
-    if (closest_ray(rr, nr[first_()]) == rayidx) {
-        const Real wt = model.geometry.rays.weight[rr];
+    // if (closest_ray(rr, nr[first_()]) == rayidx) {
+        const Real wt = model.geometry.rays.get_weight<use_adaptive_directions>(nr[first_()], rcur);
         // then obviously add (weighted) to J
         for (Size freqid = 0; freqid < model.parameters->nfreqs(); freqid++) {
             const Size unsorted_freqidx =
@@ -2194,18 +2239,24 @@ inline void Solver ::solve_comoving_order_2_sparse(Model& model,
         const Real shift_curr     = 2.0 - shift_()[rayposidx - 1];
         const bool is_upward_disc = (shift_next >= shift_curr);
 
-        solve_comoving_single_step(model, rayposidx, rayidx, r, is_upward_disc, true);
+        // solve_comoving_single_step(model, rayposidx, rayidx, r, is_upward_disc, true);
+        solve_comoving_single_step<use_adaptive_directions>(model, rayposidx, o, r, is_upward_disc, true);
         rayposidx++;
     }
 
     // Now is the perfect time to setup the boundary conditions and data for the backward ray
     comoving_ray_bdy_setup_backward<approx>(model, first_interesting_rayposidx);
 
+    if (intensity_origin[nr[last_()]].count(std::tuple(o, rr)))
+    {
+        //We have assigned this ray to contain data for this nextpointindex, so I assume the ray direction to be valid
+        std::tuple<bool, Size> valid_rcur = model.geometry.rays.get_correspoding_direction_index<use_adaptive_directions>(o, rr, nr[last_()]);
+        Size rcur  = std::get<1>(valid_rcur);
     // Check if closest ray // maybe todo: replace with some weights 0/1 for eliminating the
     // if-clause
-    if (closest_ray(rr, nr[last_()]) == rayidx) {
+    // if (closest_ray(rr, nr[last_()]) == rayidx) {
         // std::cout<<"setting bdy intensities at last"<<std::endl;
-        const Real wt = model.geometry.rays.weight[rr];
+        const Real wt = model.geometry.rays.get_weight<use_adaptive_directions>(nr[last_()], rcur);
         // then obviously add (weighted) to J
         for (Size freqid = 0; freqid < model.parameters->nfreqs(); freqid++) {
             const Size unsorted_freqidx =
@@ -2229,7 +2280,8 @@ inline void Solver ::solve_comoving_order_2_sparse(Model& model,
         const Real shift_curr     = shift_()[rayposidx + 1];
         const bool is_upward_disc = (shift_next >= shift_curr);
 
-        solve_comoving_single_step(model, rayposidx, rayidx, r, is_upward_disc, false);
+        // solve_comoving_single_step(model, rayposidx, rayidx, r, is_upward_disc, false);
+        solve_comoving_single_step<use_adaptive_directions>(model, rayposidx, o, r, is_upward_disc, false);
         rayposidx--;
     }
 }
@@ -2240,7 +2292,7 @@ inline void Solver ::solve_comoving_order_2_sparse(Model& model,
 ///   @param[in] model: the model to apply the comoving solver to
 ///   @note This solver might suffer a bit from spatial inaccuracies, as the traced rays might not
 ///   go exactly through the positions
-template <ApproximationType approx, bool use_adaptive_rays>
+template <ApproximationType approx, bool use_adaptive_directions>
 inline void Solver ::solve_comoving_local_approx_order_2_sparse(Model& model) {
     // Initialise variables
     for (LineProducingSpecies& lspec : model.lines.lineProducingSpecies) {
@@ -2288,7 +2340,7 @@ inline void Solver ::solve_comoving_local_approx_order_2_sparse(Model& model) {
 ///   @param[in] dshift_max: maximum doppler shift (currently does not do anything)
 ///   @note This solver might suffer a bit from spatial inaccuracies, as the traced rays might not
 ///   go exactly through the positions
-template <ApproximationType approx>
+template <ApproximationType approx, bool use_adaptive_directions>
 accel inline void Solver ::solve_comoving_local_approx_order_2_sparse(Model& model,
     const Size o,      // ray origin point
     const Size r,      // ray direction index
@@ -2318,15 +2370,15 @@ accel inline void Solver ::solve_comoving_local_approx_order_2_sparse(Model& mod
     // as it is a fixed frame for the entire ray
     Size first_interesting_rayposidx = centre;
     Size last_interesting_rayposidx  = centre;
-    first_() = trace_ray_comoving<Rest>(model.geometry, o, rr, rr, rayidx, dshift_max, -1,
+    first_() = trace_ray_comoving<Rest, use_adaptive_directions>(model.geometry, o, rr, rr, rayidx, dshift_max, -1,
                    centre - 1, centre - 1, first_interesting_rayposidx)
              + 1;
-    last_() = trace_ray_comoving<Rest>(model.geometry, o, ar, rr, rayidx, dshift_max, +1,
+    last_() = trace_ray_comoving<Rest, use_adaptive_directions>(model.geometry, o, ar, rr, rayidx, dshift_max, +1,
                   centre + 1, centre, last_interesting_rayposidx)
             - 1;
 
     nr_()[centre]    = o;
-    shift_()[centre] = model.geometry.get_shift<Rest>(o, rr, o, 0);
+    shift_()[centre] = model.geometry.get_shift<Rest, use_adaptive_directions>(o, rr, o, 0);
     n_tot_()         = (last_() + 1) - first_();
 
     // Doppler shifts are computed in the opposite direction as usual, so correcting for this
@@ -2344,10 +2396,15 @@ accel inline void Solver ::solve_comoving_local_approx_order_2_sparse(Model& mod
             model.radiation.frequencies.sorted_nu(nr_()[first_()], freqidx));
     }
 
+    if (intensity_origin[nr[first_()]].count(std::tuple(o, rr)))
+    {
+        //We have assigned this ray to contain data for this nextpointindex, so I assume the ray direction to be valid
+        std::tuple<bool, Size> valid_rcur = model.geometry.rays.get_correspoding_direction_index<use_adaptive_directions>(o, rr, nr[first_()]);
+        Size rcur  = std::get<1>(valid_rcur);
     // check if closest ray of the starting boundary point // maybe todo: replace with some weights
     // 0/1 for eliminating the if-clause
-    if (closest_ray(rr, nr[first_()]) == rayidx) {
-        const Real wt = model.geometry.rays.weight[rr];
+    // if (closest_ray(rr, nr[first_()]) == rayidx) {
+        const Real wt = model.geometry.rays.get_weight<use_adaptive_directions>(nr[first_()], rcur);
         // then obviously add (weighted) to J
         for (Size freqid = 0; freqid < model.parameters->nfreqs(); freqid++) {
             const Size unsorted_freqidx =
@@ -2373,7 +2430,8 @@ accel inline void Solver ::solve_comoving_local_approx_order_2_sparse(Model& mod
         // approximate boundary conditions do not retain memory of intensities at previous positions
         comoving_local_approx_map_data<approx>(model, nr_()[rayposidx - 1], nr_()[rayposidx],
             shift_curr, shift_next, is_upward_disc, dZ_()[rayposidx - 1], nr_()[first_()]);
-        solve_comoving_local_approx_single_step(model, nr_()[rayposidx], rayidx, r, is_upward_disc);
+        // solve_comoving_local_approx_single_step(model, nr_()[rayposidx], rayidx, r, is_upward_disc);
+        solve_comoving_local_approx_single_step<use_adaptive_directions>(model, nr_()[rayposidx], o, r, is_upward_disc);
         rayposidx++;
     }
 
@@ -2390,10 +2448,15 @@ accel inline void Solver ::solve_comoving_local_approx_order_2_sparse(Model& mod
             model, nr_()[last_()], model.radiation.frequencies.sorted_nu(nr_()[last_()], freqidx));
     }
 
+    if (intensity_origin[nr[last_()]].count(std::tuple(o, rr)))
+    {
+        //We have assigned this ray to contain data for this nextpointindex, so I assume the ray direction to be valid
+        std::tuple<bool, Size> valid_rcur = model.geometry.rays.get_correspoding_direction_index<use_adaptive_directions>(o, rr, nr[last_()]);
+        Size rcur  = std::get<1>(valid_rcur);
     // check if closest ray // maybe todo: replace with some weights 0/1 for eliminating the
     // if-clause
-    if (closest_ray(rr, nr[last_()]) == rayidx) {
-        const Real wt = model.geometry.rays.weight[rr];
+    // if (closest_ray(rr, nr[last_()]) == rayidx) {
+        const Real wt = model.geometry.rays.get_weight<use_adaptive_directions>(nr[last_()], rcur);
         // then obviously add (weighted) to J
         for (Size freqid = 0; freqid < model.parameters->nfreqs(); freqid++) {
             const Size unsorted_freqidx =
@@ -2420,7 +2483,8 @@ accel inline void Solver ::solve_comoving_local_approx_order_2_sparse(Model& mod
         // approximate boundary conditions do not retain memory of intensities at previous positions
         comoving_local_approx_map_data<approx>(model, nr_()[rayposidx + 1], nr_()[rayposidx],
             shift_curr, shift_next, is_upward_disc, dZ_()[rayposidx], nr_()[last_()]);
-        solve_comoving_local_approx_single_step(model, nr_()[rayposidx], rayidx, r, is_upward_disc);
+        // solve_comoving_local_approx_single_step(model, nr_()[rayposidx], rayidx, r, is_upward_disc);
+        solve_comoving_local_approx_single_step<use_adaptive_directions>(model, nr_()[rayposidx], o, r, is_upward_disc);
         rayposidx--;
     }
 }
@@ -2858,14 +2922,16 @@ accel inline void Solver ::comoving_approx_map_single_data(Model& model, const S
 ///  Approximate comoving solver: solves the comoving equations for a single step
 ///   @param[in] model: the model to apply the comoving solver to
 ///   @param[in] next_point: point index of the next point
-///   @param[in] rayidx: index of ray to trace in the given direction
+// DEPRECATED///   @param[in] rayidx: index of ray to trace in the given direction
+///   @param[in] o: position index of ray origin used to trace ray
 ///   @param[in] rr: ray direction index to check whether to save the current intensities (if the
 ///   ray lies closest in the current direction to the point)
 ///   @param[in] is_upward_disc: determines on which side of the frequency spectrum to put extra
 ///   boundary conditions
 ///   @note: assume the data to be setup correctly using Solver::comoving_local_approx_map_data
+template <bool use_adaptive_directions>
 accel inline void Solver ::solve_comoving_local_approx_single_step(Model& model,
-    const Size next_point, const Size rayidx, const Size rr, const bool is_upward_disc) {
+    const Size next_point, const Size o, const Size rr, const bool is_upward_disc) {
     Vector<Size>& nr      = nr_();    // stores the exact point indices
     Vector<double>& shift = shift_(); // stores the shift; should already be in the correct
                                       // direction
@@ -3040,9 +3106,14 @@ accel inline void Solver ::solve_comoving_local_approx_single_step(Model& model,
         }
     }
 
+    if (intensity_origin[nextpointidx].count(std::tuple(o, rr)))
+    {
+        //We have assigned this ray to contain data for this nextpointindex, so I assume the ray direction to be valid
+        std::tuple<bool, Size> valid_rcur = model.geometry.rays.get_correspoding_direction_index<use_adaptive_directions>(o, rr, nextpointidx);
+        Size rcur  = std::get<1>(valid_rcur);
     // Finally increment J if this ray lies closest to the point in the raydirection rr
-    if (closest_ray(rr, nextpointidx) == rayidx) {
-        const Real wt = model.geometry.rays.weight[rr];
+    // if (closest_ray(rr, nextpointidx) == rayidx) {
+        const Real wt = model.geometry.rays.get_weight<use_adaptive_directions>(nextpointidx, rcur);
         // then obviously add (weighted) to J
         for (Size freqid = 0; freqid < model.parameters->nfreqs(); freqid++) {
             // Get the details about the line to which the current frequency belongs
@@ -3374,7 +3445,7 @@ inline void Solver ::solve_feautrier_order_2_anis(Model& model) {
 }
 
 // sparse Feautrier solver, but now does not put point without close lines on the ray
-template <ApproximationType approx, bool use_adaptive_rays>
+template <ApproximationType approx, bool use_adaptive_directions>
 inline void Solver ::solve_feautrier_order_2_sparse_pruned_rays(Model& model) {
     // Initialise variables
     for (LineProducingSpecies& lspec : model.lines.lineProducingSpecies) {
@@ -3392,14 +3463,14 @@ inline void Solver ::solve_feautrier_order_2_sparse_pruned_rays(Model& model) {
     // For each ray, solve transfer equation
     for (Size rr = 0; rr < model.parameters->hnrays(); rr++) {
         const Size ar     = model.geometry.rays.antipod[rr];
-        const Real wt     = model.geometry.rays.weight[rr] * two;
-        const Vector3D nn = model.geometry.rays.direction[rr];
 
         cout << "--- rr = " << rr << endl;
 
         for (LineProducingSpecies& lspec : model.lines.lineProducingSpecies) {
             threaded_for(o, model.parameters->npoints(), {
                 const Real dshift_max = get_dshift_max(model, o);
+                const Real wt     = model.geometry.rays.get_weight<use_adaptive_directions>(o, rr) * two;
+                const Vector3D nn = model.geometry.rays.get_direction<use_adaptive_directions>(o, rr);
 
                 // first_() = trace_ray <CoMoving> (model.geometry, o, rr, dshift_max, -1, centre-1,
                 // centre-1) + 1; last_ () = trace_ray <CoMoving> (model.geometry, o, ar,
@@ -3411,8 +3482,8 @@ inline void Solver ::solve_feautrier_order_2_sparse_pruned_rays(Model& model) {
                 //  we will at least include the origin of the ray and the neighbors in the pruning
                 //  process.
                 const Size tot_ray_length =
-                    1 + model.geometry.get_ray_length<CoMoving>(o, rr, dshift_max)
-                    + model.geometry.get_ray_length<CoMoving>(o, ar, dshift_max);
+                    1 + model.geometry.get_ray_length<CoMoving, use_adaptive_directions>(o, rr, dshift_max)
+                    + model.geometry.get_ray_length<CoMoving, use_adaptive_directions>(o, ar, dshift_max);
 
                 // if (n_tot_() > 1)
                 if (tot_ray_length > 1) {
@@ -3423,10 +3494,10 @@ inline void Solver ::solve_feautrier_order_2_sparse_pruned_rays(Model& model) {
                         nr_()[centre]    = o;
                         shift_()[centre] = 1.0;
 
-                        first_() = trace_ray_pruned<CoMoving>(model, o, rr, dshift_max, -1,
+                        first_() = trace_ray_pruned<CoMoving, use_adaptive_directions>(model, o, rr, dshift_max, -1,
                                        centre - 1, centre - 1, line_frequency)
                                  + 1;
-                        last_() = trace_ray_pruned<CoMoving>(model, o, ar, dshift_max, +1,
+                        last_() = trace_ray_pruned<CoMoving, use_adaptive_directions>(model, o, ar, dshift_max, +1,
                                       centre + 1, centre, line_frequency)
                                 - 1;
                         n_tot_() = (last_() + 1) - first_();
@@ -3438,7 +3509,7 @@ inline void Solver ::solve_feautrier_order_2_sparse_pruned_rays(Model& model) {
 
                             lspec.J(o, k) += lspec.quadrature.weights[z] * wt * Su_()[centre];
 
-                            update_Lambda<approx>(model, rr, lspec.nr_line[o][k][z]);
+                            update_Lambda<approx, use_adaptive_directions>(model, rr, lspec.nr_line[o][k][z]);
                         }
                     }
                 } else {
@@ -4068,23 +4139,29 @@ accel inline Size Solver ::trace_ray_imaging(const Geometry& geometry, const Vec
 /// @param[out] outermost_interesting_point_rayidx: position index on ray of the last point for
 /// which the traced ray lies closest to the point in the given ray direction
 /// @return ray position index of last point put on ray + increment
-template <Frame frame>
+/// TODO: deprecate rayidx usage
+template <Frame frame, bool use_adaptive_directions>
 accel inline Size Solver ::trace_ray_comoving(const Geometry& geometry, const Size o, const Size r,
     const Size rr, const Size rayidx, const double dshift_max, const int increment, Size id1,
     Size id2, Size& outermost_interesting_point_rayidx) {
     double Z  = 0.0; // distance from origin (o)
     double dZ = 0.0; // last increment in Z
 
-    Size nxt = geometry.get_next(o, r, o, Z, dZ);
+    Size nxt = geometry.get_next<use_adaptive_directions>(o, r, o, Z, dZ);
 
     if (geometry.valid_point(nxt)) {
         Size crt         = o;
-        double shift_crt = geometry.get_shift<frame>(o, r, crt, 0.0);
-        double shift_nxt = geometry.get_shift<frame>(o, r, nxt, Z);
+        double shift_crt = geometry.get_shift<frame, use_adaptive_directions>(o, r, crt, 0.0);
+        double shift_nxt = geometry.get_shift<frame, use_adaptive_directions>(o, r, nxt, Z);
 
-        if (closest_ray(rr, nxt) == rayidx) {
-            outermost_interesting_point_rayidx =
-                id1; // as the data is set there, this should? be fine
+        // if (closest_ray(rr, nxt) == rayidx) {
+        //     outermost_interesting_point_rayidx =
+        //         id1; // as the data is set there, this should? be fine
+        // }
+        // Check whether we need to use this ray to compute some intensity data at point nxt
+        if (intensity_origin[nxt].count(std::tuple(o, rr)))
+        {
+            outermost_interesting_point_rayidx = id1; // as the data is set there, this should? be fine
         }
 
         set_data(crt, nxt, shift_crt, shift_nxt, dZ, dshift_max, increment, id1, id2);
@@ -4093,12 +4170,16 @@ accel inline Size Solver ::trace_ray_comoving(const Geometry& geometry, const Si
             crt       = nxt;
             shift_crt = shift_nxt;
 
-            nxt       = geometry.get_next(o, r, nxt, Z, dZ);
-            shift_nxt = geometry.get_shift<frame>(o, r, nxt, Z);
+            nxt       = geometry.get_next<use_adaptive_directions>(o, r, nxt, Z, dZ);
+            shift_nxt = geometry.get_shift<frame, use_adaptive_directions>(o, r, nxt, Z);
 
-            if (closest_ray(rr, nxt) == rayidx) {
-                outermost_interesting_point_rayidx =
-                    id1; // as the data is set there, this should? be fine
+            // if (closest_ray(rr, nxt) == rayidx) {
+            //     outermost_interesting_point_rayidx =
+            //         id1; // as the data is set there, this should? be fine
+            // }
+            if (intensity_origin[nxt].count(std::tuple(o, rr)))
+            {
+                outermost_interesting_point_rayidx = id1; // as the data is set there, this should? be fine
             }
 
             set_data(crt, nxt, shift_crt, shift_nxt, dZ, dshift_max, increment, id1, id2);
@@ -4111,7 +4192,7 @@ accel inline Size Solver ::trace_ray_comoving(const Geometry& geometry, const Si
 // Tracing the ray, ignoring all points for which the given CMF frequency lies too far from all line
 // centers; TODO: either remove, or make compatible with imaging (different ray length for each
 // frequency?)
-template <Frame frame>
+template <Frame frame, bool use_adaptive_directions>
 accel inline Size Solver ::trace_ray_pruned(const Model& model, const Size o, const Size r,
     const double dshift_max, const int increment, Size id1, Size id2, const Real freq) {
     double Z     = 0.0; // distance from origin (o)
@@ -4120,14 +4201,14 @@ accel inline Size Solver ::trace_ray_pruned(const Model& model, const Size o, co
 
     bool is_crt_set = true; // Whether the current point is already set
 
-    Size nxt = model.geometry.get_next(o, r, o, Z, dZ);
+    Size nxt = model.geometry.get_next<use_adaptive_directions>(o, r, o, Z, dZ);
 
     if (model.geometry.valid_point(nxt)) {
         Size crt = o;
         // Size         prv = crt;
-        double shift_crt = model.geometry.get_shift<frame>(o, r, crt, 0.0);
+        double shift_crt = model.geometry.get_shift<frame, use_adaptive_directions>(o, r, crt, 0.0);
         // double shift_prv = shift_crt;
-        double shift_nxt = model.geometry.get_shift<frame>(o, r, nxt, Z);
+        double shift_nxt = model.geometry.get_shift<frame, use_adaptive_directions>(o, r, nxt, Z);
 
         // As we must make sure that all lines are traced fine
         // check whether position increment has any close lines
@@ -4149,8 +4230,8 @@ accel inline Size Solver ::trace_ray_pruned(const Model& model, const Size o, co
 
             dZcrt = dZ; // current dZ required
 
-            nxt       = model.geometry.get_next(o, r, nxt, Z, dZ);
-            shift_nxt = model.geometry.get_shift<frame>(o, r, nxt, Z);
+            nxt       = model.geometry.get_next<use_adaptive_directions>(o, r, nxt, Z, dZ);
+            shift_nxt = model.geometry.get_shift<frame, use_adaptive_directions>(o, r, nxt, Z);
 
             // As we must make sure that all lines are traced fine
             // check whether position increment has any close lines

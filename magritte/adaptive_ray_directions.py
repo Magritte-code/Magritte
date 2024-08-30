@@ -189,3 +189,14 @@ class AdaptiveRayDirectionHelper:
         """
         ind = np.arange(self.half_N_adaptive_angles)
         return np.concatenate((ind + self.half_N_adaptive_angles, ind))
+
+    def weight_to_nside(self, weights: np.ndarray) -> np.ndarray:
+        """Converts the weights from the adaptive ray directions to the corresponding nside of healpix
+
+        Args:
+            weights (np.ndarray): Weights of the adaptive ray directions
+
+        Returns:
+            np.ndarray: Weights of the adaptive ray directions in the nside of healpix
+        """
+        return np.round(np.sqrt(1/(12*weights))).astype(int)

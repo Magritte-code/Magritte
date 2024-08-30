@@ -366,12 +366,27 @@ def set_adaptive_rays(model, Ntop: int = 2, Nrefiments: int = 4, Ncomparisons: i
     adaptive_directions, adaptive_weights = ardhelper.get_adaptive_directions()
     antipod = ardhelper.get_antipod_indices()
 
+    #For the comoving solver, we reverse-engineer the corresponding indices (a better implementation might be to compute them at the same time, but this is not performance-critical)
+    nside_per_direction = ardhelper.weight_to_nside(adaptive_weights)
+    # get the pixel index for each direction; note: they still refer to different nside values
+    base_pixel_index = healpy.vec2pix(nside_per_direction, adaptive_directions[:,0], adaptive_directions[:,1], adaptive_directions[:,2])
+    # Thus we now need to convert the pixel indices to the correct nside value
+    max_nside = ardhelper.Nside
+    multiplication_factor = max_nside//nside_per_direction
+    start_healpix_index = base_pixel_index*multiplication_factor
+    end_healpix_index = (base_pixel_index+1)*multiplication_factor
+    
+
+
     # Set the direction and the weights in the Magritte model
     model.geometry.rays.direction.set(np.reshape(adaptive_directions, (npoints * nadaptivedir, 3)))
     model.geometry.rays.weight.set(np.reshape(adaptive_weights, (npoints*nadaptivedir)))
     model.geometry.rays.antipod.set(antipod)
     model.geometry.rays.use_adaptive_directions = True
     model.parameters.set_nrays(nadaptivedir)
+    # And the corresponding healpix indices for the comoving solver
+    model.geometry.rays.healpix_start_index.set(start_healpix_index)
+    model.geometry.rays.healpix_end_index.set(end_healpix_index)
 
     # Done
     return model

@@ -460,6 +460,10 @@ PYBIND11_MODULE(core, module) {
             "integrals over directions.")
         .def_readwrite("use_adaptive_directions", &Rays::use_adaptive_directions,
             "Whether to use a different set of directions for each ray.")
+        .def_readwrite("healpix_start_indices", &Rays::healpix_start_indices,
+            "Array with the start index for the range of the lowest levels of the healpix discretization corresponding to a particular direction.")
+        .def_readwrite("healpix_end_indices", &Rays::healpix_end_indices,
+            "Array with the end+1 index for the range of the lowest levels of the healpix discretization corresponding to a particular direction")
         .def("get_direction_index", &Rays::get_direction_index<false>,
             "Get the linearized direction index for a given point and ray, when not using an "
             "adaptive ray discretization.")
