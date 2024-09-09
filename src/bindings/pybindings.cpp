@@ -483,6 +483,12 @@ PYBIND11_MODULE(core, module) {
             "Get the weight of a ray, when not using an adaptive ray discretization.")
         .def("get_weight_adaptive", &Rays::get_weight<true>,
             "Get the weight of a ray, when using the adaptive ray discretization.")
+        .def("get_corresponding_direction_index", &Rays::get_corresponding_direction_index<false>,
+            "Get the corresponding direction index for a given ray index, when not using an adaptive ray discretization.")
+        .def("get_corresponding_direction_index_adaptive",
+            &Rays::get_corresponding_direction_index<true>,
+            "Get the corresponding direction index for a given ray index, when using the adaptive "
+            "ray discretization.")
         // io
         .def("read", &Rays::read, "Read object from file.")
         .def("write", &Rays::write, "Write object to file.");

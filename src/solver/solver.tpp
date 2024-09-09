@@ -350,7 +350,7 @@ accel inline void Solver ::trace_ray_points(const Geometry& geometry,
         // get distance and check if closest ray
         Real dist2 = geometry.get_dist2_ray_point(o, nxt, rdir);
         // Compute the direction index at nxt (if valid).
-        std::tuple<bool, Size> valid_rcur = geometry.rays.get_correspoding_direction_index<use_adaptive_directions>(o, rsav, nxt);
+        std::tuple<bool, Size> valid_rcur = geometry.rays.get_corresponding_direction_index<use_adaptive_directions>(o, rsav, nxt);
         bool valid = std::get<0>(valid_rcur);
         Size rcur  = std::get<1>(valid_rcur);
         if (valid)
@@ -376,16 +376,20 @@ accel inline void Solver ::trace_ray_points(const Geometry& geometry,
             Real dist2 = geometry.get_dist2_ray_point(o, nxt, rdir);
 
             // Compute the direction index at nxt (if valid).
-            std::tuple<bool, Size> valid_rcur = geometry.rays.get_correspoding_direction_index<use_adaptive_directions>(o, rsav, nxt);
+            std::tuple<bool, Size> valid_rcur = geometry.rays.get_corresponding_direction_index<use_adaptive_directions>(o, rsav, nxt);
             bool valid = std::get<0>(valid_rcur);
             Size rcur  = std::get<1>(valid_rcur);
-            if (valid &&(n_rays_through_point(rsav, nxt) == 0 || dist2 < min_ray_distsqr(rsav, nxt))) {
-                min_ray_distsqr(rsav, nxt) = dist2;
-                corresponding_ray(nxt, rcur) = {o, rsav};
-                // closest_ray(rsav, nxt)     = rayidx;
-            }
 
-            n_rays_through_point(rsav, nxt)++;
+            if (valid)
+            {
+                if (n_rays_through_point(rcur, nxt) == 0 || dist2 < min_ray_distsqr(rcur, nxt)) {
+                    min_ray_distsqr(rcur, nxt) = dist2;
+                    corresponding_ray(nxt, rcur) = {o, rsav};
+                    // closest_ray(rsav, nxt)     = rayidx;
+                }
+
+                n_rays_through_point(rcur, nxt)++;
+            }
         }
     }
 }
@@ -397,6 +401,11 @@ template <bool use_adaptive_directions>
 inline void Solver ::get_static_rays_to_trace(Model& model) {
     Vector<Size> n_points_to_trace_ray_through(model.parameters->hnrays());
 
+    // DEBUG NOT PARALLEL
+    // reversed loop to make sure that the rays with highest weight are traced first
+    // for (Size rrr = model.parameters->hnrays(); rrr > 0; rrr--) {
+    //     Size rr = rrr - 1;
+    // for (Size rr = 0; rr < model.parameters->hnrays(); rr++) {
     accelerated_for(rr, model.parameters->hnrays(), {
         Size n_rays_to_trace = 0;
         const Size ar        = model.geometry.rays.get_antipod_index(rr);
@@ -425,6 +434,7 @@ inline void Solver ::get_static_rays_to_trace(Model& model) {
 
             min_ray_distsqr(rr, o) = 0.0;
 
+            //DEBUG: commenting out the comovingness
             // now trace ray through rest of model
             trace_ray_points<use_adaptive_directions>(model.geometry, o, rr, rr, n_rays_to_trace);
             trace_ray_points<use_adaptive_directions>(model.geometry, o, ar, rr, n_rays_to_trace);
@@ -456,6 +466,22 @@ inline void Solver ::get_static_rays_to_trace(Model& model) {
             // std::cout<<"closest ray: "<<closest_ray(rr,p)<<std::endl;
             // std::cout<<"point: "<<p<<"#: "<<n_rays_through_point(rr, p)<<std::endl;
         }
+    }
+    for (Size p = 0; p < model.parameters->npoints(); p++) {
+        // std::cout<<"len rays for each point p: "<<p<<" = "<<intensity_origin[p].size()<<std::endl;
+        // std::cout<<"point: "<<p<<"#: "<<n_rays_through_point(rr, p)<<std::endl;
+        // for (auto &pair: intensity_origin[p]) {
+        //     std::cout<<"point: "<<p<<" origin point index: "<<std::get<0>(pair.first)<<" origin ray idx: "<<std::get<1>(pair.first)<<std::endl;
+        // }
+        // Real sum_of_weights = 0.0;
+        // for (const auto &[key, value]: intensity_origin[p]) {
+        //     sum_of_weights += model.geometry.rays.get_weight<use_adaptive_directions>(p, value);
+        // }
+        // std::cout<<"sum of weights: "<<sum_of_weights<<std::endl;
+        // // also print the corresponding ray stuff
+        // for (Size rr = 0; rr < model.parameters->hnrays(); rr++) {
+        //     std::cout<<"point: "<<p<<" ray: "<<rr<<" closest ray: "<<std::get<0>(corresponding_ray(p, rr))<<" "<<std::get<1>(corresponding_ray(p, rr))<<std::endl;
+        // }
     }
 }
 
@@ -1956,12 +1982,15 @@ inline void Solver ::solve_comoving_single_step(Model& model, const Size rayposi
 
     if (intensity_origin[nextpointidx].count(std::tuple(o, rr)))
     {
+        Size rcur = intensity_origin[nextpointidx][std::tuple(o, rr)];
         //We have assigned this ray to contain data for this nextpointindex, so I assume the ray direction to be valid
-        std::tuple<bool, Size> valid_rcur = model.geometry.rays.get_correspoding_direction_index<use_adaptive_directions>(o, rr, nextpointidx);
-        Size rcur  = std::get<1>(valid_rcur);
+        // std::tuple<bool, Size> valid_rcur = model.geometry.rays.get_corresponding_direction_index<use_adaptive_directions>(o, rr, nextpointidx);
+        // Size rcur  = std::get<1>(valid_rcur);
+        // std::cout << "rcur: " << rcur << " rr: " << rr << std::endl;
     // Finally increment J if this ray lies closest to the point in the raydirection rr
     // if (closest_ray(rr, nextpointidx) == rayidx) {
         const Real wt = model.geometry.rays.get_weight<use_adaptive_directions>(nextpointidx, rcur);
+        const Real prev_J = model.lines.lineProducingSpecies[0].J(nextpointidx, 0);
         // then obviously add (weighted) to J
         for (Size freqid = 0; freqid < model.parameters->nfreqs(); freqid++) {
             // Get the details about the line to which the current frequency belongs
@@ -2004,6 +2033,9 @@ inline void Solver ::solve_comoving_single_step(Model& model, const Size rayposi
 
             lspec.lambda.add_element(nextpointidx, k, nextpointidx, lambdaterm);
         }
+        const Real curr_J = model.lines.lineProducingSpecies[0].J(nextpointidx, 0);//debug
+        const Real intensity_without_weight = (curr_J - prev_J) / wt;
+        // std::cout << "increment point: " << nextpointidx << " origin: " << o << " rcur: " << rcur << " wt: " << wt << " J: " << intensity_without_weight << " a " << std::endl;
     }
 }
 
@@ -2210,14 +2242,16 @@ inline void Solver ::solve_comoving_order_2_sparse(Model& model,
 
     if (intensity_origin[nr[first_()]].count(std::tuple(o, rr)))
     {
+        Size rcur = intensity_origin[nr[first_()]][std::tuple(o, rr)];
         //We have assigned this ray to contain data for this nextpointindex, so I assume the ray direction to be valid
-        std::tuple<bool, Size> valid_rcur = model.geometry.rays.get_correspoding_direction_index<use_adaptive_directions>(o, rr, nr[first_()]);
-        Size rcur  = std::get<1>(valid_rcur);
+        // std::tuple<bool, Size> valid_rcur = model.geometry.rays.get_corresponding_direction_index<use_adaptive_directions>(o, rr, nr[first_()]);
+        // Size rcur  = std::get<1>(valid_rcur);
     // Check if closest ray // maybe todo: replace with some weights 0/1 for eliminating the
     // if-clause
     // if (closest_ray(rr, nr[first_()]) == rayidx) {
         const Real wt = model.geometry.rays.get_weight<use_adaptive_directions>(nr[first_()], rcur);
         // then obviously add (weighted) to J
+        const Real prev_J = model.lines.lineProducingSpecies[0].J(nr[first_()], 0);//debug
         for (Size freqid = 0; freqid < model.parameters->nfreqs(); freqid++) {
             const Size unsorted_freqidx =
                 model.radiation.frequencies.corresponding_nu_index(nr[first_()], freqid);
@@ -2230,6 +2264,9 @@ inline void Solver ::solve_comoving_order_2_sparse(Model& model,
                 lspec.quadrature.weights[z] * wt * intensities(first_(), freqid);
             // Lambda term does not apply to boundary points
         }
+        const Real curr_J = model.lines.lineProducingSpecies[0].J(nr[first_()], 0);//debug
+        const Real intensity_without_weight = (curr_J - prev_J) / wt;
+        // std::cout << "increment point: " << nr[first_()] << " origin: " << o << " rcur: " << rcur << " wt: " << wt << " J: " << intensity_without_weight << " b " << std::endl;
     }
 
     Size rayposidx = first_() + 1; // ray position index -> point index through nr[rayposidx]
@@ -2249,14 +2286,16 @@ inline void Solver ::solve_comoving_order_2_sparse(Model& model,
 
     if (intensity_origin[nr[last_()]].count(std::tuple(o, rr)))
     {
+        Size rcur = intensity_origin[nr[last_()]][std::tuple(o, rr)];
         //We have assigned this ray to contain data for this nextpointindex, so I assume the ray direction to be valid
-        std::tuple<bool, Size> valid_rcur = model.geometry.rays.get_correspoding_direction_index<use_adaptive_directions>(o, rr, nr[last_()]);
-        Size rcur  = std::get<1>(valid_rcur);
+        // std::tuple<bool, Size> valid_rcur = model.geometry.rays.get_corresponding_direction_index<use_adaptive_directions>(o, rr, nr[last_()]);
+        // Size rcur  = std::get<1>(valid_rcur);
     // Check if closest ray // maybe todo: replace with some weights 0/1 for eliminating the
     // if-clause
     // if (closest_ray(rr, nr[last_()]) == rayidx) {
         // std::cout<<"setting bdy intensities at last"<<std::endl;
         const Real wt = model.geometry.rays.get_weight<use_adaptive_directions>(nr[last_()], rcur);
+        Real prev_J = model.lines.lineProducingSpecies[0].J(nr[last_()], 0);
         // then obviously add (weighted) to J
         for (Size freqid = 0; freqid < model.parameters->nfreqs(); freqid++) {
             const Size unsorted_freqidx =
@@ -2270,6 +2309,9 @@ inline void Solver ::solve_comoving_order_2_sparse(Model& model,
                 lspec.quadrature.weights[z] * wt * intensities(last_(), freqid);
             // Lambda term does not apply to boundary points
         }
+        const Real curr_J = model.lines.lineProducingSpecies[0].J(nr[last_()], 0);//debug
+        const Real intensity_without_weight = (curr_J - prev_J) / wt;
+        // std::cout << "increment point: " << nr[last_()] << " origin: " << o << " rcur: " << rcur << " wt: " << wt << " J: " << intensity_without_weight << " c " << std::endl;
     }
 
     rayposidx = last_() - 1; // ray position index -> point index through nr[rayposidx]
@@ -2398,13 +2440,15 @@ accel inline void Solver ::solve_comoving_local_approx_order_2_sparse(Model& mod
 
     if (intensity_origin[nr[first_()]].count(std::tuple(o, rr)))
     {
+        Size rcur = intensity_origin[nr[first_()]][std::tuple(o, rr)];
         //We have assigned this ray to contain data for this nextpointindex, so I assume the ray direction to be valid
-        std::tuple<bool, Size> valid_rcur = model.geometry.rays.get_correspoding_direction_index<use_adaptive_directions>(o, rr, nr[first_()]);
-        Size rcur  = std::get<1>(valid_rcur);
+        // std::tuple<bool, Size> valid_rcur = model.geometry.rays.get_corresponding_direction_index<use_adaptive_directions>(o, rr, nr[first_()]);
+        // Size rcur  = std::get<1>(valid_rcur);
     // check if closest ray of the starting boundary point // maybe todo: replace with some weights
     // 0/1 for eliminating the if-clause
     // if (closest_ray(rr, nr[first_()]) == rayidx) {
         const Real wt = model.geometry.rays.get_weight<use_adaptive_directions>(nr[first_()], rcur);
+        const Real prev_J = model.lines.lineProducingSpecies[0].J(nr[first_()], 0);//debug
         // then obviously add (weighted) to J
         for (Size freqid = 0; freqid < model.parameters->nfreqs(); freqid++) {
             const Size unsorted_freqidx =
@@ -2417,6 +2461,9 @@ accel inline void Solver ::solve_comoving_local_approx_order_2_sparse(Model& mod
             lspec.J(nr[first_()], k) += lspec.quadrature.weights[z] * wt * cma_intensities[freqid];
             // Lambda term does not apply to the boundary
         }
+        const Real curr_J = model.lines.lineProducingSpecies[0].J(nr[first_()], 0);//debug
+        const Real intensity_without_weight = (curr_J - prev_J) / wt;
+        // std::cout << "increment point: " << nr[first_()] << " origin: " << o << " rcur: " << rcur << " wt: " << wt << " J: " << intensity_without_weight << " d " << std::endl;
     }
 
     Size rayposidx = first_() + 1; // ray position index -> point index through nr[rayposidx]
@@ -2450,14 +2497,16 @@ accel inline void Solver ::solve_comoving_local_approx_order_2_sparse(Model& mod
 
     if (intensity_origin[nr[last_()]].count(std::tuple(o, rr)))
     {
+        Size rcur = intensity_origin[nr[last_()]][std::tuple(o, rr)];
         //We have assigned this ray to contain data for this nextpointindex, so I assume the ray direction to be valid
-        std::tuple<bool, Size> valid_rcur = model.geometry.rays.get_correspoding_direction_index<use_adaptive_directions>(o, rr, nr[last_()]);
-        Size rcur  = std::get<1>(valid_rcur);
+        // std::tuple<bool, Size> valid_rcur = model.geometry.rays.get_corresponding_direction_index<use_adaptive_directions>(o, rr, nr[last_()]);
+        // Size rcur  = std::get<1>(valid_rcur);
     // check if closest ray // maybe todo: replace with some weights 0/1 for eliminating the
     // if-clause
     // if (closest_ray(rr, nr[last_()]) == rayidx) {
         const Real wt = model.geometry.rays.get_weight<use_adaptive_directions>(nr[last_()], rcur);
         // then obviously add (weighted) to J
+        const Real prev_J = model.lines.lineProducingSpecies[0].J(nr[last_()], 0);//debug
         for (Size freqid = 0; freqid < model.parameters->nfreqs(); freqid++) {
             const Size unsorted_freqidx =
                 model.radiation.frequencies.corresponding_nu_index(nr[last_()], freqid);
@@ -2469,6 +2518,9 @@ accel inline void Solver ::solve_comoving_local_approx_order_2_sparse(Model& mod
             lspec.J(nr[last_()], k) += lspec.quadrature.weights[z] * wt * cma_intensities[freqid];
             // Lambda term does not apply to the boundary
         }
+        const Real curr_J = model.lines.lineProducingSpecies[0].J(nr[last_()], 0);//debug
+        const Real intensity_without_weight = (curr_J - prev_J) / wt;
+        // std::cout << "increment point: " << nr[last_()] << " origin: " << o << " rcur: " << rcur << " wt: " << wt << " J: " << intensity_without_weight << " e " << std::endl;
     }
 
     rayposidx = last_() - 1; // ray position index -> point index through nr[rayposidx]
@@ -3108,12 +3160,14 @@ accel inline void Solver ::solve_comoving_local_approx_single_step(Model& model,
 
     if (intensity_origin[nextpointidx].count(std::tuple(o, rr)))
     {
+        Size rcur = intensity_origin[nextpointidx][std::tuple(o, rr)];
         //We have assigned this ray to contain data for this nextpointindex, so I assume the ray direction to be valid
-        std::tuple<bool, Size> valid_rcur = model.geometry.rays.get_correspoding_direction_index<use_adaptive_directions>(o, rr, nextpointidx);
-        Size rcur  = std::get<1>(valid_rcur);
+        // std::tuple<bool, Size> valid_rcur = model.geometry.rays.get_corresponding_direction_index<use_adaptive_directions>(o, rr, nextpointidx);
+        // Size rcur  = std::get<1>(valid_rcur);
     // Finally increment J if this ray lies closest to the point in the raydirection rr
     // if (closest_ray(rr, nextpointidx) == rayidx) {
         const Real wt = model.geometry.rays.get_weight<use_adaptive_directions>(nextpointidx, rcur);
+        const Real prev_J = model.lines.lineProducingSpecies[0].J(nextpointidx, 0);//debug
         // then obviously add (weighted) to J
         for (Size freqid = 0; freqid < model.parameters->nfreqs(); freqid++) {
             // Get the details about the line to which the current frequency belongs
@@ -3143,6 +3197,10 @@ accel inline void Solver ::solve_comoving_local_approx_single_step(Model& model,
 
             lspec.lambda.add_element(nextpointidx, k, nextpointidx, lambdaterm);
         }
+        const Real curr_J = model.lines.lineProducingSpecies[0].J(nextpointidx, 0);//debug
+        const Real intensity_without_weight = (curr_J - prev_J) / wt;
+        // std::cout << "increment point: " << nextpointidx << " origin: " << o << " rcur: " << rcur << " wt: " << wt << " J: " << intensity_without_weight << " f " << std::endl;
+
     }
 
     // Finally overwrite some variables with their value at the next point; in this way, we prepare

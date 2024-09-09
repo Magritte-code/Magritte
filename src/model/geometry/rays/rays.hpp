@@ -40,5 +40,5 @@ struct Rays {
     template <bool use_adaptive_directions>
     Real get_weight(const Size pointidx, const Size rayidx) const;
     template <bool use_adaptive_directions>
-    std::tuple<bool, Size> get_correspoding_direction_index(const Size origin_position_index, const Size origin_ray_index, const Size target_position_index) const;
+    std::tuple<bool, Size> get_corresponding_direction_index(const Size origin_position_index, const Size origin_ray_index, const Size target_position_index) const;
 };
