@@ -60,6 +60,7 @@ struct Solver {
     pc::multi_threading::ThreadPrivate<Matrix<Real>> L_lower_;
 
     pc::multi_threading::ThreadPrivate<Real> optical_depth_;
+    pc::multi_threading::ThreadPrivate<Vector<Real>> intensity_;
 
     // Comoving approach: TODO: clean up
 
@@ -71,6 +72,8 @@ struct Solver {
     Matrix<Size>
         n_rays_through_point; // raydir, point ; might not be used that much in the future, as we
                               // might instead just use the closest ray for determining the result
+    Matrix<Size> elements_in_rays_starting_from_origin; // raydir, point
+    Vector<std::tuple<Size, Size>> rays_single_datapoint; // arbitrary idx to raydir, pointidx
     // hmm, we need to weight the rays somehow; for now we just only use the closest ray to
     // determine intensity
     // Matrix<Size> closest_ray;     // raydir, point (contains closest rayid?)
@@ -535,6 +538,8 @@ struct Solver {
     accel inline void solve_shortchar_order_0(Model& model);
     template <ApproximationType approx, bool use_adaptive_directions>
     accel inline void solve_shortchar_order_0(Model& model, const Size o, const Size r);
+    template <ApproximationType approx, bool use_adaptive_directions>
+    accel inline void solve_shortchar_order_0_sparse(Model& model, const Size o, const Size r);
 
     template <ApproximationType approx, bool use_adaptive_directions>
     accel inline void solve_feautrier_order_2_uv(Model& model);

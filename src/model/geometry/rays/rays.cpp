@@ -235,19 +235,15 @@ std::tuple<bool, Size> Rays ::get_corresponding_direction_index<true>(const Size
     auto upper_index_sorted = std::lower_bound(healpix_end_indices_sorted.dat+first_ray_index, healpix_end_indices_sorted.dat+last_ray_index, origin_ray_end_healpix_index);
     bool equal_indices = (lower_index_sorted - healpix_start_indices_sorted.dat) == (upper_index_sorted - healpix_end_indices_sorted.dat);
 
-    //DEBUG: test if limiting to up to 1 layer up works; assumes that the weights of the finer layers are equal to 1/4 of the coarser layer
     Real weight_origin_ray = get_weight<true>(origin_position_index, origin_ray_index);
     const Size target_ray_index = healpix_sorted_corresponding_index[lower_index_sorted - healpix_start_indices_sorted.dat] - first_ray_index;
     Real weight_target_ray = get_weight<true>(target_position_index, healpix_sorted_corresponding_index[lower_index_sorted - healpix_start_indices_sorted.dat] - first_ray_index);
-    // std::cout<<"origin_ray_index: "<<origin_ray_index<<" target ray index: "<<target_ray_index<<std::endl;
-    // std::cout<<"origin_ray_weight: "<<weight_origin_ray<<" target ray weight: "<<weight_target_ray<<std::endl;
+    //For now, I only allow rays with the same weight (for safety; floating point comparison, i check if the weight is less than a factor)
+    // In practice, this means exactly the same direction
+    //Note: The healpix weights of different levels always scale with a factor of 4, so this should be safe
     if (weight_origin_ray < 1.0/2.0 * weight_target_ray) {
-    // if (weight_origin_ray < 1.0/5.0 * weight_target_ray) {
-        // std::cout<<"false"<<std::endl;
         equal_indices = false;
     }
-    // equal_indices = false;
 
-    // return std::make_tuple(equal_indices, healpix_sorted_corresponding_index[lower_index_sorted - healpix_start_indices_sorted.dat] - first_ray_index);
     return std::make_tuple(equal_indices, target_ray_index);
 }
