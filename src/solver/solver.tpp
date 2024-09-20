@@ -3,9 +3,8 @@ template <Frame frame, bool use_adaptive_directions> inline void Solver ::setup(
     const Size width  = model.parameters->nfreqs();
     const Size n_o_d  = model.parameters->n_off_diag;
 
-    model.set_dshift_max(); // err, probably belongs somewhere
-                            // else, but we need to compute
-                            // the max shift for each point
+    model.set_dshift_max(); // err, probably belongs somewhere else, but we need to compute the max
+                            // shift for each point
 
     setup(length, width, n_o_d);
 }
@@ -18,9 +17,8 @@ inline void Solver ::setup_new_imager(Model& model, Image& image, const Vector3D
     const Size width  = model.parameters->nfreqs();
     const Size n_o_d  = model.parameters->n_off_diag;
 
-    model.set_dshift_max(); // err, probably belongs somewhere
-                            // else, but we need to compute
-                            // the max shift for each point
+    model.set_dshift_max(); // err, probably belongs somewhere else, but we need to compute the max
+                            // shift for each point
 
     setup(length, width, n_o_d);
 }
@@ -70,26 +68,54 @@ inline void Solver ::setup(const Size l, const Size w, const Size n_o_d) {
     }
 }
 
-// /  Getter for the maximum allowed shift value determined
-// by the smallest line /    @param[in] o : number of point
-// under consideration /    @retrun maximum allowed shift
-// value determined by the smallest line
-// /////////////////////////////////////////////////////////////////////////////
-accel inline Real Solver ::get_dshift_max(const Model& model, const Size o) {
-    Real dshift_max = std::numeric_limits<Real>::max();
+// // /  Getter for the maximum allowed shift value determined
+// // by the smallest line /    @param[in] o : number of point
+// // under consideration /    @retrun maximum allowed shift
+// // value determined by the smallest line
+// // /////////////////////////////////////////////////////////////////////////////
+// accel inline Real Solver ::get_dshift_max(const Model& model, const Size o) {
+//     Real dshift_max = std::numeric_limits<Real>::max();
 
-    for (const LineProducingSpecies& lspec : model.lines.lineProducingSpecies) {
-        const Real inverse_mass   = lspec.linedata.inverse_mass;
-        const Real new_dshift_max = model.parameters->max_width_fraction
-                                  * model.thermodynamics.profile_width(inverse_mass, o);
+//     for (const LineProducingSpecies& lspec : model.lines.lineProducingSpecies) {
+//         const Real inverse_mass   = lspec.linedata.inverse_mass;
+//         const Real new_dshift_max = model.parameters->max_width_fraction
+//                                   * model.thermodynamics.profile_width(inverse_mass, o);
 
-        if (dshift_max > new_dshift_max) {
-            dshift_max = new_dshift_max;
+//         if (dshift_max > new_dshift_max) {
+//             dshift_max = new_dshift_max;
+//         }
+//     }
+
+//     return dshift_max;
+// }
+
+template <Frame frame, bool use_adaptive_directions>
+accel inline Size Solver ::get_ray_length(Model& model,
+    const Size o, const Size r) const {
+    Size l    = 0;   // ray length
+    double Z  = 0.0; // distance from origin (o)
+    double dZ = 0.0; // last increment in Z
+
+    Size nxt = model.geometry.get_next<use_adaptive_directions>(o, r, o, Z, dZ);
+
+    if (model.geometry.valid_point(nxt)) {
+        Size crt         = o;
+        l+= interp_helper.get_n_interp(model, crt, nxt);
+
+        while (model.geometry.not_on_boundary(nxt)) {
+            crt = nxt;
+            nxt = model.geometry.get_next<use_adaptive_directions>(o, r, nxt, Z, dZ);
+            l  += interp_helper.get_n_interp(model, crt, nxt);
+
+            if (!model.geometry.valid_point(nxt)) {
+                printf("ERROR: no valid neighbor o=%u, r=%u, crt=%u\n", o, r, crt);
+            }
         }
     }
 
-    return dshift_max;
+    return l;
 }
+
 
 template <Frame frame, bool use_adaptive_directions>
 inline void Solver ::get_ray_lengths(Model& model) {
@@ -98,28 +124,26 @@ inline void Solver ::get_ray_lengths(Model& model) {
         accelerated_for(o, model.parameters->npoints(), {
             const Size ar = model.geometry.rays.get_antipod_index(rr);
 
-            const Real dshift_max = get_dshift_max(model, o);
+            // const Real dshift_max = get_dshift_max(model, o);
 
-            model.geometry.lengths(rr, o) =
-                model.geometry.get_ray_length<frame, use_adaptive_directions>(o, rr, dshift_max)
-                + model.geometry.get_ray_length<frame, use_adaptive_directions>(o, ar, dshift_max);
+            ray_lengths(rr, o) =
+                get_ray_length<frame, use_adaptive_directions>(model, o, rr)
+                + get_ray_length<frame, use_adaptive_directions>(model, o, ar);
         })
 
         pc::accelerator::synchronize();
     }
 
-    model.geometry.lengths.copy_ptr_to_vec();
+    ray_lengths.copy_ptr_to_vec();
 }
 
 template <Frame frame, bool use_adaptive_directions>
 inline Size Solver ::get_ray_lengths_max(Model& model) {
     get_ray_lengths<frame, use_adaptive_directions>(model);
 
-    Geometry& geo = model.geometry;
+    Size lengths_max = *std::max_element(ray_lengths.vec.begin(), ray_lengths.vec.end());
 
-    geo.lengths_max = *std::max_element(geo.lengths.vec.begin(), geo.lengths.vec.end());
-
-    return geo.lengths_max;
+    return lengths_max;
 }
 
 // template <Frame frame>
@@ -257,16 +281,16 @@ inline void Solver ::solve_feautrier_order_2_uv(Model& model) {
         accelerated_for(o, model.parameters->npoints(), {
             const Size ar = model.geometry.rays.get_antipod_index(rr);
 
-            const Real dshift_max = get_dshift_max(model, o);
+            // const Real dshift_max = get_dshift_max(model, o);
 
             nr_()[centre]    = o;
             shift_()[centre] = 1.0;
 
             first_() = trace_ray<CoMoving, use_adaptive_directions>(
-                           model.geometry, o, rr, dshift_max, -1, centre - 1, centre - 1)
+                           model.geometry, o, rr, -1, centre - 1, centre - 1)
                      + 1;
             last_() = trace_ray<CoMoving, use_adaptive_directions>(
-                          model.geometry, o, ar, dshift_max, +1, centre + 1, centre)
+                          model.geometry, o, ar, +1, centre + 1, centre)
                     - 1;
             n_tot_() = (last_() + 1) - first_();
 
@@ -321,16 +345,16 @@ inline void Solver ::solve_feautrier_order_2_sparse(Model& model) {
                 const Real wt =
                     model.geometry.rays.get_weight<use_adaptive_directions>(o, rr) * two;
 
-                const Real dshift_max = get_dshift_max(model, o);
+                // const Real dshift_max = get_dshift_max(model, o);
 
                 nr_()[centre]    = o;
                 shift_()[centre] = 1.0;
 
                 first_() = trace_ray<CoMoving, use_adaptive_directions>(
-                               model.geometry, o, rr, dshift_max, -1, centre - 1, centre - 1)
+                               model.geometry, o, rr, -1, centre - 1, centre - 1)
                          + 1;
                 last_() = trace_ray<CoMoving, use_adaptive_directions>(
-                              model.geometry, o, ar, dshift_max, +1, centre + 1, centre)
+                              model.geometry, o, ar, +1, centre + 1, centre)
                         - 1;
                 n_tot_() = (last_() + 1) - first_();
 
@@ -403,16 +427,16 @@ inline void Solver ::solve_feautrier_order_2_anis(Model& model) {
                 const Real wt_2_Re = half * sqrt3 * (nn.x() * nn.x() - nn.y() * nn.y());
                 const Real wt_2_Im = sqrt3 * nn.x() * nn.y();
 
-                const Real dshift_max = get_dshift_max(model, o);
+                // const Real dshift_max = get_dshift_max(model, o);
 
                 nr_()[centre]    = o;
                 shift_()[centre] = 1.0;
 
                 first_() = trace_ray<CoMoving, use_adaptive_directions>(
-                               model.geometry, o, rr, dshift_max, -1, centre - 1, centre - 1)
+                               model.geometry, o, rr, -1, centre - 1, centre - 1)
                          + 1;
                 last_() = trace_ray<CoMoving, use_adaptive_directions>(
-                              model.geometry, o, ar, dshift_max, +1, centre + 1, centre)
+                              model.geometry, o, ar, +1, centre + 1, centre)
                         - 1;
                 n_tot_() = (last_() + 1) - first_();
 
@@ -480,16 +504,16 @@ inline void Solver ::solve_feautrier_order_2(Model& model) {
             accelerated_for(o, model.parameters->npoints(), {
                 const Size ar = model.geometry.rays.get_antipod_index(rr);
 
-                const Real dshift_max = get_dshift_max(model, o);
+                // const Real dshift_max = get_dshift_max(model, o);
 
                 nr_()[centre]    = o;
                 shift_()[centre] = 1.0;
 
                 first_() = trace_ray<CoMoving, use_adaptive_directions>(
-                               model.geometry, o, rr, dshift_max, -1, centre - 1, centre - 1)
+                               model.geometry, o, rr, -1, centre - 1, centre - 1)
                          + 1;
                 last_() = trace_ray<CoMoving, use_adaptive_directions>(
-                              model.geometry, o, ar, dshift_max, +1, centre + 1, centre)
+                              model.geometry, o, ar, +1, centre + 1, centre)
                         - 1;
                 n_tot_() = (last_() + 1) - first_();
 
@@ -540,17 +564,17 @@ inline void Solver ::image_feautrier_order_2(Model& model, const Size rr) {
     accelerated_for(o, model.parameters->npoints(), {
         const Size ar = model.geometry.rays.get_antipod_index(rr);
 
-        const Real dshift_max = get_dshift_max(model, o);
+        // const Real dshift_max = get_dshift_max(model, o);
 
         nr_()[centre]    = o;
         shift_()[centre] = model.geometry.get_shift<Rest, false>(o, rr, o, 0.0);
         ;
 
         first_() =
-            trace_ray<Rest, false>(model.geometry, o, rr, dshift_max, -1, centre - 1, centre - 1)
+            trace_ray<Rest, false>(model.geometry, o, rr, -1, centre - 1, centre - 1)
             + 1;
         last_() =
-            trace_ray<Rest, false>(model.geometry, o, ar, dshift_max, +1, centre + 1, centre) - 1;
+            trace_ray<Rest, false>(model.geometry, o, ar, +1, centre + 1, centre) - 1;
         n_tot_() = (last_() + 1) - first_();
 
         if (n_tot_() > 1) {
@@ -594,13 +618,12 @@ inline void Solver ::image_feautrier_order_2_new_imager(
         Real Z = 0.0;
         const Size closest_bdy_point =
             trace_ray_imaging_get_start(model.geometry, origin, start_bdy_point, ray_dir, Z);
-        const Real dshift_max = get_dshift_max(model, closest_bdy_point);
+        // const Real dshift_max = get_dshift_max(model, closest_bdy_point);
 
         nr_()[centre]    = closest_bdy_point;
         shift_()[centre] = model.geometry.get_shift<Rest>(
             origin, origin_velocity, ray_dir, closest_bdy_point, Z, false);
-        first_() = trace_ray_imaging<Rest>(model.geometry, origin, closest_bdy_point, ray_dir,
-                       dshift_max, -1, Z, centre - 1, centre - 1)
+        first_() = trace_ray_imaging<Rest>(model.geometry, origin, closest_bdy_point, ray_dir, -1, Z, centre - 1, centre - 1)
                  + 1;
         last_() = centre; // by definition, only boundary points
                           // can lie in the backward direction
@@ -635,14 +658,14 @@ inline void Solver ::image_feautrier_order_2_for_point(Model& model, const Size 
 
     const Size ar = model.geometry.rays.get_antipod_index(rr);
 
-    const Real dshift_max = get_dshift_max(model, o);
+    // const Real dshift_max = get_dshift_max(model, o);
 
     nr_()[centre]    = o;
     shift_()[centre] = model.geometry.get_shift<Rest, false>(o, rr, o, 0.0);
 
     first_() =
-        trace_ray<Rest, false>(model.geometry, o, rr, dshift_max, -1, centre - 1, centre - 1) + 1;
-    last_() = trace_ray<Rest, false>(model.geometry, o, ar, dshift_max, +1, centre + 1, centre) - 1;
+        trace_ray<Rest, false>(model.geometry, o, rr, -1, centre - 1, centre - 1) + 1;
+    last_() = trace_ray<Rest, false>(model.geometry, o, ar, +1, centre + 1, centre) - 1;
     n_tot_() = (last_() + 1) - first_();
 
     model.S_ray.resize(n_tot_(), model.parameters->nfreqs());
@@ -663,17 +686,17 @@ inline void Solver ::image_optical_depth(Model& model, const Size rr) {
     accelerated_for(o, model.parameters->npoints(), {
         const Size ar = model.geometry.rays.get_antipod_index(rr);
 
-        const Real dshift_max = get_dshift_max(model, o);
+        // const Real dshift_max = get_dshift_max(model, o);
 
         nr_()[centre]    = o;
         shift_()[centre] = model.geometry.get_shift<Rest, false>(o, rr, o, 0.0);
         ;
 
         first_() =
-            trace_ray<Rest, false>(model.geometry, o, rr, dshift_max, -1, centre - 1, centre - 1)
+            trace_ray<Rest, false>(model.geometry, o, rr, -1, centre - 1, centre - 1)
             + 1;
         last_() =
-            trace_ray<Rest, false>(model.geometry, o, ar, dshift_max, +1, centre + 1, centre) - 1;
+            trace_ray<Rest, false>(model.geometry, o, ar, +1, centre + 1, centre) - 1;
         n_tot_() = (last_() + 1) - first_();
 
         if (n_tot_() > 1) {
@@ -715,13 +738,12 @@ inline void Solver ::image_optical_depth_new_imager(
         Real Z = 0.0;
         const Size closest_bdy_point =
             trace_ray_imaging_get_start(model.geometry, origin, start_bdy_point, ray_dir, Z);
-        const Real dshift_max = get_dshift_max(model, closest_bdy_point);
+        // const Real dshift_max = get_dshift_max(model, closest_bdy_point);
 
         nr_()[centre]    = closest_bdy_point;
         shift_()[centre] = model.geometry.get_shift<Rest>(
             origin, origin_velocity, ray_dir, closest_bdy_point, Z, false);
-        first_() = trace_ray_imaging<Rest>(model.geometry, origin, closest_bdy_point, ray_dir,
-                       dshift_max, -1, Z, centre - 1, centre - 1)
+        first_() = trace_ray_imaging<Rest>(model.geometry, origin, closest_bdy_point, ray_dir, -1, Z, centre - 1, centre - 1)
                  + 1;
         last_() = centre; // by definition, only boundary points
                           // can lie in the backward direction
@@ -750,8 +772,7 @@ inline void Solver ::image_optical_depth_new_imager(
 // depth, adding extra frequency points for counteracting
 // the large doppler shift is no longer necessary
 template <Frame frame, bool use_adaptive_directions>
-accel inline Size Solver ::trace_ray(const Geometry& geometry, const Size o, const Size r,
-    const double dshift_max, const int increment, Size id1, Size id2) {
+accel inline Size Solver ::trace_ray(const Geometry& geometry, const Size o, const Size r, const int increment, Size id1, Size id2) {
     double Z  = 0.0; // distance from origin (o)
     double dZ = 0.0; // last increment in Z
 
@@ -762,7 +783,7 @@ accel inline Size Solver ::trace_ray(const Geometry& geometry, const Size o, con
         double shift_crt = geometry.get_shift<frame, use_adaptive_directions>(o, r, crt, 0.0);
         double shift_nxt = geometry.get_shift<frame, use_adaptive_directions>(o, r, nxt, Z);
 
-        set_data(crt, nxt, shift_crt, shift_nxt, dZ, dshift_max, increment, id1, id2);
+        set_data(crt, nxt, shift_crt, shift_nxt, dZ, increment, id1, id2);
 
         while (geometry.not_on_boundary(nxt)) {
             crt       = nxt;
@@ -771,7 +792,7 @@ accel inline Size Solver ::trace_ray(const Geometry& geometry, const Size o, con
             nxt       = geometry.get_next<use_adaptive_directions>(o, r, nxt, Z, dZ);
             shift_nxt = geometry.get_shift<frame, use_adaptive_directions>(o, r, nxt, Z);
 
-            set_data(crt, nxt, shift_crt, shift_nxt, dZ, dshift_max, increment, id1, id2);
+            set_data(crt, nxt, shift_crt, shift_nxt, dZ, increment, id1, id2);
         }
     }
 
@@ -816,7 +837,7 @@ accel inline Size Solver ::trace_ray_imaging_get_start(const Geometry& geometry,
 // correctly start tracing the ray
 template <Frame frame>
 accel inline Size Solver ::trace_ray_imaging(const Geometry& geometry, const Vector3D& origin,
-    const Size start_bdy, const Vector3D& raydir, const double dshift_max, const int increment,
+    const Size start_bdy, const Vector3D& raydir, const int increment,
     Real& Z, // distance from origin can be non-zero to start,
              // as this measures the distance from the
              // projection plane
@@ -834,7 +855,7 @@ accel inline Size Solver ::trace_ray_imaging(const Geometry& geometry, const Vec
         double shift_nxt =
             geometry.get_shift<frame>(origin, origin_velocity, raydir, nxt, Z, false);
 
-        set_data(crt, nxt, shift_crt, shift_nxt, dZ, dshift_max, increment, id1, id2);
+        set_data(crt, nxt, shift_crt, shift_nxt, dZ, increment, id1, id2);
 
         // Due to boundary points begin slightly annoying to
         // start a ray from, we must make sure the ray only end
@@ -870,7 +891,7 @@ accel inline Size Solver ::trace_ray_imaging(const Geometry& geometry, const Vec
             nxt       = geometry.get_next<Imagetracer>(origin, raydir, nxt, Z, dZ);
             shift_nxt = geometry.get_shift<frame>(origin, origin_velocity, raydir, nxt, Z, false);
 
-            set_data(crt, nxt, shift_crt, shift_nxt, dZ, dshift_max, increment, id1, id2);
+            set_data(crt, nxt, shift_crt, shift_nxt, dZ, increment, id1, id2);
         }
     }
 
@@ -933,22 +954,119 @@ accel inline Size Solver ::get_ray_length_new_imager(const Geometry& geometry,
 // Because of the new method for computing the optical
 // depth, adding extra frequency points for counteracting
 // the large doppler shift is no longer necessary
-accel inline void Solver ::set_data(const Size crt, const Size nxt, const double shift_crt,
-    const double shift_nxt, const double dZ_loc, const double dshift_max, const int increment,
+accel inline void Solver ::set_data(Model& model, const Size crt, const Size nxt, const double shift_crt,
+    const double shift_nxt, const double dZ_loc, const int increment,
     Size& id1, Size& id2) {
     Vector<double>& dZ    = dZ_();
     Vector<Size>& nr      = nr_();
+    Vector<Size>& nr_interp = nr_interp_();
+    Vector<double>& interp_factor = interp_factor_();
+
     Vector<double>& shift = shift_();
 
     const double dshift     = shift_nxt - shift_crt;
     const double dshift_abs = fabs(dshift);
 
-    nr[id1]    = nxt;
-    shift[id1] = shift_nxt;
-    dZ[id2]    = dZ_loc;
 
-    id1 += increment;
-    id2 += increment;
+    TODO: take a look at the old implementation for correct syntax
+    //get number of interpolation points
+    Size n_interp_points = interp_helper.get_n_interp(model, crt, nxt);
+
+    if (n_interp_points > 1)
+    {
+        const double dZ_interpl = dZ_loc / n_interp_points;
+        const double dshift_interpl = dshift / n_interp_points;
+        for (Size i=1; i<=n_interp_points; i++)
+        {
+            nr   [id1] = nxt;
+            shift[id1] = shift_crt + m*dshift_interpl;
+            dZ   [id2] = dZ_interpl;
+
+            id1 += increment;
+            id2 += increment;
+        }
+        TODO: implement interpolation
+
+        // interpolate the doppler shift // copy old implementation
+
+        // add data for interpolating the emissivity and opacity
+    }
+    else
+    {
+        nr[id1]    = nxt;
+        shift[id1] = shift_nxt;
+        nr_interp[id1] = crt;
+        // Note: id2 != id1 or == id1, depending on whether we are tracing the original or antipodal ray
+        // This is to prevent collisions when saving the distances
+        dZ[id2]    = dZ_loc;
+
+        id1 += increment;
+        id2 += increment;
+    }
+
+//     accel inline void Solver :: set_data (
+//     const Size   crt,
+//     const Size   nxt,
+//     const double shift_crt,
+//     const double shift_nxt,
+//     const double dZ_loc,
+//     const double dshift_max,
+//     const int    increment,
+//           Size&  id1,
+//           Size&  id2 )
+// {
+//     Vector<double>& dZ    = dZ_   ();
+//     Vector<Size  >& nr    = nr_   ();
+//     Vector<double>& shift = shift_();
+//     const double dshift     = shift_nxt - shift_crt;
+//     const double dshift_abs = fabs (dshift);
+
+//     if (dshift_abs > dshift_max) // If velocity gradient is not well-sampled enough
+//     {
+//         // Interpolate velocity gradient field
+//         const Size        n_interpl = dshift_abs / dshift_max + 1;
+//         const Size   half_n_interpl = 0.5 * n_interpl;
+//         const double     dZ_interpl =     dZ_loc / n_interpl;
+//         const double dshift_interpl =     dshift / n_interpl;
+
+//         if (n_interpl > 10000)
+//         {
+//             printf ("ERROR (n_intpl > 10 000) || (dshift_max < 0, probably due to overflow)\n");
+//         }
+
+//         // Assign current cell to first half of interpolation points
+//         for (Size m = 1; m < half_n_interpl; m++)
+//         {
+//             nr   [id1] = crt;
+//             shift[id1] = shift_crt + m*dshift_interpl;
+//             dZ   [id2] = dZ_interpl;
+
+//             id1 += increment;
+//             id2 += increment;
+//         }
+
+//         // Assign next cell to second half of interpolation points
+//         for (Size m = half_n_interpl; m <= n_interpl; m++)
+//         {
+//             nr   [id1] = nxt;
+//             shift[id1] = shift_crt + m*dshift_interpl;
+//             dZ   [id2] = dZ_interpl;
+
+//             id1 += increment;
+//             id2 += increment;
+//         }
+//     }
+
+//     else
+//     {
+//         nr   [id1] = nxt;
+//         shift[id1] = shift_nxt;
+//         dZ   [id2] = dZ_loc;
+
+//         id1 += increment;
+//         id2 += increment;
+//     }
+// }
 }
 
 ///  Gaussian line profile function
@@ -1021,6 +1139,32 @@ accel inline void Solver ::get_eta_and_chi<None>(const Model& model, const Size 
     }
 }
 
+template <>
+accel inline void Solver ::get_eta_and_chi_interpolated<None>(const Model& model, 
+    const Size p1, const Size p2, const Real interp_factor,
+    const Size ll, // dummy variable
+    const Real freq, Real& eta, Real& chi) const {
+    // Initialize
+    eta = 0.0;
+    chi = model.parameters->min_opacity;
+
+    // Set line emissivity and opacity
+    for (Size l = 0; l < model.parameters->nlines(); l++) {
+        const Real diff = freq - model.lines.line[l];
+        const Real interp_inv_width = interp_helper.interpolate_linear(
+            model.lines.inverse_width(p1, l), model.lines.inverse_width(p2, l), interp_factor);
+        const Real prof = gaussian(interp_inv_width, diff);
+
+        const Real interp_emissivity = interp_helper.interpolate_log(
+            model.lines.emissivity(p1, l), model.lines.emissivity(p2, l), interp_factor);
+        const Real interp_opacity = interp_helper.interpolate_log(
+            model.lines.opacity(p1, l), model.lines.opacity(p2, l), interp_factor);
+
+        eta += prof * interp_emissivity;
+        chi += prof * interp_opacity;
+    }
+}
+
 ///  Getter for the emissivity (eta) and the opacity (chi)
 ///  function uses only the nearby lines to save computation
 ///  time
@@ -1066,6 +1210,50 @@ accel inline void Solver ::get_eta_and_chi<CloseLines>(const Model& model, const
     }
 }
 
+template <>
+accel inline void Solver ::get_eta_and_chi_interpolated<CloseLines>(const Model& model, 
+    const Size p1, const Size p2, const Real interp_factor,
+    const Size ll, // dummy variable
+    const Real freq, Real& eta, Real& chi) const {
+    // Initialize
+    eta = 0.0;
+    chi = model.parameters->min_opacity;
+
+    const Real upper_bound_line_width =
+        model.parameters->max_distance_opacity_contribution * 
+        model.thermodynamics.profile_width_upper_bound_with_linefreq(
+            p1, freq, model.lines.max_inverse_mass);//note: assumes that the profile width does not significantly change between p1 and p2
+    const Real left_freq_bound  = freq - upper_bound_line_width;
+    const Real right_freq_bound = freq + upper_bound_line_width;
+
+    // Just using default search algorithms, obtaining
+    // iterators
+    auto left_line_bound = std::lower_bound(
+        model.lines.sorted_line.begin(), model.lines.sorted_line.end(), left_freq_bound);
+    auto right_line_bound = std::upper_bound(
+        model.lines.sorted_line.begin(), model.lines.sorted_line.end(), right_freq_bound);
+
+    for (auto freq_sort_l = left_line_bound; freq_sort_l != right_line_bound; freq_sort_l++) {
+        const Size sort_l = freq_sort_l - model.lines.sorted_line.begin();
+        // mapping sorted line index to original line index
+        const Size l = model.lines.sorted_line_map[sort_l];
+        // const Real diff = freq - model.lines.line[l];
+        const Real diff = freq - *freq_sort_l; // should be equal to the
+                                               // previous line of code
+        const Real interp_inv_width = interp_helper.interpolate_linear(
+            model.lines.inverse_width(p1, l), model.lines.inverse_width(p2, l), interp_factor);
+        const Real prof = gaussian(interp_inv_width, diff);
+
+        const Real interp_emissivity = interp_helper.interpolate_log(
+            model.lines.emissivity(p1, l), model.lines.emissivity(p2, l), interp_factor);
+        const Real interp_opacity = interp_helper.interpolate_log(
+            model.lines.opacity(p1, l), model.lines.opacity(p2, l), interp_factor);
+
+        eta += prof * interp_emissivity;
+        chi += prof * interp_opacity;
+    }
+}
+
 ///  Getter for the emissivity (eta) and the opacity (chi)
 ///  in the "one line" approixmation
 ///    @param[in]  model : reference to model object
@@ -1084,6 +1272,22 @@ accel inline void Solver ::get_eta_and_chi<OneLine>(
 
     eta = prof * model.lines.emissivity(p, l);
     chi = prof * model.lines.opacity(p, l) + model.parameters->min_opacity;
+}
+
+template <>
+accel inline void Solver ::get_eta_and_chi_interpolated<OneLine>(
+    const Model& model, const Size p1, const Size p2, const Real interp_factor, 
+    const Size l, const Real freq, Real& eta, Real& chi) const {
+
+    const Real diff = freq - model.lines.line[l];
+    const Real interp_inv_width = interp_helper.interpolate_linear(model.lines.inverse_width(p1, l), model.lines.inverse_width(p2, l), interp_factor);
+    const Real prof = gaussian(interp_inv_width, diff);
+
+    const Real interp_emissivity = interp_helper.interpolate_log(model.lines.emissivity(p1, l), model.lines.emissivity(p2, l), interp_factor);
+    const Real interp_opacity = interp_helper.interpolate_log(model.lines.opacity(p1, l), model.lines.opacity(p2, l), interp_factor);
+
+    eta = prof * interp_emissivity;
+    chi = prof * interp_opacity + model.parameters->min_opacity;
 }
 
 ///  Apply trapezium rule to x_crt and x_nxt
@@ -1744,6 +1948,8 @@ inline void Solver ::compute_S_dtau_line_integrated<CloseLines>(Model& model, Si
 ///    using the trapezoidal rule
 ///    @param[in] currpoint : index of current point
 ///    @param[in] nextpoint : index of next point
+///    @param[in] currpoint_interp_idx : index of interpolation point for current point
+///    @param[in] nextpoint_interp_idx : index of interpolation point for next point
 ///    @param[in] lineidx : index of line to integrate over
 ///    @param[in] currfreq : frequency at current point (in
 ///    comoving frame)
@@ -1752,6 +1958,7 @@ inline void Solver ::compute_S_dtau_line_integrated<CloseLines>(Model& model, Si
 ///    @param[in] currshift : shift at curr point
 ///    @param[in] nextshift : shift at next point
 ///    @param[in] dZ : position increment
+///    @param[in] curr_interp : interpolation fraction at current point
 ///    @param[out] dtau : optical depth increment to compute
 ///    @param[out] Scurr : source function at current point
 ///    to compute
@@ -1761,9 +1968,12 @@ inline void Solver ::compute_S_dtau_line_integrated<CloseLines>(Model& model, Si
 /// the opacity is NOT computed.
 template <ApproximationType approx>
 accel inline void Solver ::compute_source_dtau(Model& model, Size currpoint, Size nextpoint,
-    Size line, Real curr_freq, Real next_freq, double curr_shift, double next_shift, Real dZ,
+    Size currpoint_interp_idx, Size nextpoint_interp_idx, Size line, Real curr_freq, Real next_freq,
+    double curr_shift, double next_shift, Real dZ, double curr_interp, double next_interp,
     bool& compute_curr_opacity, Real& dtaunext, Real& chicurr, Real& chinext, Real& Scurr,
     Real& Snext) {
+
+TODO: also ask for interpolation_factor as input
     // deciding which optical depth computation to use,
     // depending on the doppler shift
     const double dshift     = next_shift - curr_shift; // shift[first+1]-shift[first];TODO

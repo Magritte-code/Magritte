@@ -30,8 +30,8 @@ struct Geometry {
     Rays rays;         ///< data structure containing ray (direction) data
     Boundary boundary; ///< data structure containing boundary data
 
-    Matrix<Size> lengths;
-    Size lengths_max;
+    // Matrix<Size> lengths;
+    // Size lengths_max;
 
     Geometry(std::shared_ptr<Parameters> params) :
         parameters(params), points(params), rays(params), boundary(params){};
@@ -83,11 +83,11 @@ struct Geometry {
         const Vector3D& origin_velocity, const Vector3D& raydir, const Size crt,
         const double Z) const;
 
-    accel inline Size get_n_interpl(
-        const double shift_crt, const double shift_nxt, const double dshift_max) const;
+    // accel inline Size get_n_interpl(
+    //     const double shift_crt, const double shift_nxt, const double dshift_max) const;
 
-    template <Frame frame, bool use_adaptive_directions>
-    accel inline Size get_ray_length(const Size o, const Size r, const double dshift_max) const;
+    // template <Frame frame, bool use_adaptive_directions>
+    // accel inline Size get_ray_length(const Size o, const Size r, const double dshift_max) const;
 
     inline bool valid_point(const Size p) const;
     inline bool not_on_boundary(const Size p) const;

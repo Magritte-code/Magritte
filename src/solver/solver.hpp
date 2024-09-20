@@ -2,6 +2,7 @@
 
 #include "model/model.hpp"
 #include "tools/types.hpp"
+#include "solver/solver_interp_helper.hpp"
 
 ///  Approximation used in the solver
 /////////////////////////////////////
@@ -18,6 +19,8 @@ struct Solver {
 
     pc::multi_threading::ThreadPrivate<Vector<double>> dZ_; ///< distance increments along the ray
     pc::multi_threading::ThreadPrivate<Vector<Size>> nr_; ///< corresponding point number on the ray
+    pc::multi_threading::ThreadPrivate<Vector<Size>> nr_interp_; ///< corresponding point number for interpolation on the ray
+    pc::multi_threading::ThreadPrivate<Vector<double>> interp_factor_; ///< Distance along interpolation between nr_ and nr_interp_ (contains values between 0 and 1)
     pc::multi_threading::ThreadPrivate<Vector<double>> shift_; ///< Doppler shift along the ray
 
     pc::multi_threading::ThreadPrivate<Vector<Real>> eta_c_;
@@ -69,6 +72,9 @@ struct Solver {
 
     Size n_off_diag;
 
+    InterpHelper interp_helper;
+    Matrix<Size> ray_lengths;
+
     template <Frame frame, bool use_adaptive_directions> void setup(Model& model);
 
     // template <Frame frame>
@@ -76,7 +82,11 @@ struct Solver {
 
     void setup(const Size l, const Size w, const Size n_o_d);
 
-    accel inline Real get_dshift_max(const Model& model, const Size o);
+    // accel inline Real get_dshift_max(const Model& model, const Size o);
+
+
+    template <Frame frame, bool use_adaptive_directions>
+    inline Size get_ray_length(Model& model, const Size o, const Size r) const;
 
     template <Frame frame, bool use_adaptive_directions> inline void get_ray_lengths(Model& model);
 
@@ -112,6 +122,10 @@ struct Solver {
 
     template <ApproximationType approx>
     accel inline void get_eta_and_chi(const Model& model, const Size p, const Size l,
+        const Real freq, Real& eta, Real& chi) const;
+
+    template <ApproximationType approx>
+    accel inline void get_eta_and_chi_interpolated(const Model& model, const Size p1, const Size p2, const Real factor, const Size l,
         const Real freq, Real& eta, Real& chi) const;
 
     template <ApproximationType approx>
