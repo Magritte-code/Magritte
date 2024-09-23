@@ -372,9 +372,9 @@ PYBIND11_MODULE(core, module) {
         .def_readonly("points", &Geometry::points, "Points object.")
         .def_readonly("rays", &Geometry::rays, "Rays object.")
         .def_readonly("boundary", &Geometry::boundary, "Boundary object")
-        .def_readonly("lengths", &Geometry::lengths,
-            "Array containing the lengths of the rays for each "
-            "direction and point.")
+        // .def_readonly("lengths", &Geometry::lengths,
+        //     "Array containing the lengths of the rays for each "
+        //     "direction and point.")
         // io
         .def("read", &Geometry::read, "Read object from file.")
         .def("write", &Geometry::write, "Write object to file.");
