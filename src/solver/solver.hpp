@@ -75,8 +75,8 @@ struct Solver {
 
     Size n_off_diag;
 
-    std::optional<InterpHelper> interp_helper;
-    Matrix<Size> ray_lengths;
+    InterpHelper interp_helper;
+    // Matrix<Size> ray_lengths;
 
     template <Frame frame, bool use_adaptive_directions> void setup(Model& model);
 
@@ -90,7 +90,8 @@ struct Solver {
     template <Frame frame, bool use_adaptive_directions>
     inline Size get_ray_length(Model& model, const Size o, const Size r) const;
 
-    template <Frame frame, bool use_adaptive_directions> inline void get_ray_lengths(Model& model);
+    // template <Frame frame, bool use_adaptive_directions> inline void get_ray_lengths(Model&
+    // model);
 
     template <Frame frame, bool use_adaptive_directions>
     inline Size get_ray_lengths_max(Model& model);
@@ -104,6 +105,9 @@ struct Solver {
     template <Frame frame, bool use_adaptive_directions>
     accel inline Size trace_ray(
         const Model& model, const Size o, const Size r, const int increment, Size id1, Size id2);
+    template <Frame frame, bool use_adaptive_directions>
+    accel inline Size trace_ray_for_line(const Model& model, const Size l, const Size o,
+        const Size r, const int increment, Size id1, Size id2);
 
     accel inline Size trace_ray_imaging_get_start(const Geometry& geometry, const Vector3D& origin,
         const Size start_bdy, const Vector3D& raydir, Real& Z);
@@ -112,10 +116,17 @@ struct Solver {
     accel inline Size trace_ray_imaging(const Model& model, const Vector3D& origin,
         const Size start_bdy, const Vector3D& raydir, const int increment, Real& Z, Size id1,
         Size id2);
+    template <Frame frame>
+    accel inline Size trace_ray_imaging_for_line(const Model& model, const Size l,
+        const Vector3D& origin, const Size start_bdy, const Vector3D& raydir, const int increment,
+        Real& Z, Size id1, Size id2);
 
     accel inline void set_data(const Model& model, const Size crt, const Size nxt,
         const double shift_crt, const double shift_nxt, const double dZ_loc, const int increment,
         Size& id1, Size& id2);
+    accel inline void set_data_for_line(const Model& model, const Size l, const Size crt,
+        const Size nxt, const double shift_crt, const double shift_nxt, const double dZ_loc,
+        const int increment, Size& id1, Size& id2);
 
     accel inline Real gaussian(const Real width, const Real diff) const;
     accel inline Real planck(const Real temp, const Real freq) const;
