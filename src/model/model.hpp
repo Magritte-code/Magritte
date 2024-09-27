@@ -100,7 +100,9 @@ struct Model {
 
     Matrix<Real> boundary_condition;
 
-    Vector<Real> dshift_max;
+    Vector<Real> dshift_max; // maximum allowed value of the Doppler shift in each point, before
+                             // applying either an analytic approach for the optical depth or adding
+                             // extra interpolation
 
     int set_dshift_max();
 

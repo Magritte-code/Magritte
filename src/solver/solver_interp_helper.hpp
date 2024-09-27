@@ -8,19 +8,13 @@ class InterpHelper {
 
   public:
     Real max_source_diff;
-    // Model model;
     std::vector<Real> interpolation_criterion; // Note: contains the density normalized line opacity
     ///  Constructor
     ///    @param[in] dshift_max : maximum shift between two points
     /////////////////////////////////////////////////
     InterpHelper(Model& model) : max_source_diff(model.parameters->max_interpolation_diff) {
-        // std::vector<Real> line_sources;
-        // model_ptr = std::make_shared(model);
-        // line_sources.reserve(model.lines.emissivity.vec.size());
-        // std::transform(model.lines.emissivity.vec.begin(), model.lines.emissivity.vec.end(),
-        //     model.lines.opacity.vec.begin(), line_sources.begin(),
-        //     [&](Real x, Real y) { return x / y; });
-        // line_sources = model.lines.opacity.vec;
+        // current interpolation criterion based on the line opacity (normalized by the total
+        // population)
         interpolation_criterion.resize(model.lines.emissivity.vec.size());
         threaded_for(p, model.parameters->npoints(), {
             for (Size l = 0; l < model.parameters->nlspecs(); l++) {
@@ -36,13 +30,15 @@ class InterpHelper {
     }
 
     /// DO NOT USE THIS CONSTRUCTOR
+    // TODO: in solver.hpp/.tpp, replace the object with an std::optional<...> version.
     InterpHelper() : max_source_diff(-1){};
 
+    // NOTE: interpolation is done in log space, as linear space would take far too many points
     inline Size get_n_interp(const Model& model, const Size curr_idx, const Size next_idx) const;
     inline Size get_n_interp_for_line(
         const Model& model, const Size l, const Size curr_idx, const Size next_idx) const;
-    inline std::vector<Real> get_subvector_interpolation_criterion(
-        const Model& model, const Size curr_idx) const;
+
+    // Interpolation functions themselves
     inline Real interpolate_linear(const Real f_start, const Real f_end, const Real factor) const;
     inline Real interpolate_log(const Real f_start, const Real f_end, const Real factor) const;
 };

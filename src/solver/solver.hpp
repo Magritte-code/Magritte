@@ -75,8 +75,8 @@ struct Solver {
 
     Size n_off_diag;
 
-    InterpHelper interp_helper;
-    // Matrix<Size> ray_lengths;
+    InterpHelper interp_helper; // FIXME: replace with std::optional<InterpHelper> in the future;
+                                // then remove the default constructor definition
 
     template <Frame frame, bool use_adaptive_directions> void setup(Model& model);
 
@@ -85,13 +85,8 @@ struct Solver {
 
     void setup(const Size l, const Size w, const Size n_o_d);
 
-    // accel inline Real get_dshift_max(const Model& model, const Size o);
-
     template <Frame frame, bool use_adaptive_directions>
     inline Size get_ray_length(Model& model, const Size o, const Size r) const;
-
-    // template <Frame frame, bool use_adaptive_directions> inline void get_ray_lengths(Model&
-    // model);
 
     template <Frame frame, bool use_adaptive_directions>
     inline Size get_ray_lengths_max(Model& model);

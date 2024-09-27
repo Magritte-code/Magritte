@@ -76,27 +76,6 @@ inline void Solver ::setup(const Size l, const Size w, const Size n_o_d) {
     }
 }
 
-// // /  Getter for the maximum allowed shift value determined
-// // by the smallest line /    @param[in] o : number of point
-// // under consideration /    @retrun maximum allowed shift
-// // value determined by the smallest line
-// // /////////////////////////////////////////////////////////////////////////////
-// accel inline Real Solver ::get_dshift_max(const Model& model, const Size o) {
-//     Real dshift_max = std::numeric_limits<Real>::max();
-
-//     for (const LineProducingSpecies& lspec : model.lines.lineProducingSpecies) {
-//         const Real inverse_mass   = lspec.linedata.inverse_mass;
-//         const Real new_dshift_max = model.parameters->max_width_fraction
-//                                   * model.thermodynamics.profile_width(inverse_mass, o);
-
-//         if (dshift_max > new_dshift_max) {
-//             dshift_max = new_dshift_max;
-//         }
-//     }
-
-//     return dshift_max;
-// }
-
 template <Frame frame, bool use_adaptive_directions>
 accel inline Size Solver ::get_ray_length(Model& model, const Size o, const Size r) const {
     Size l    = 0;   // ray length
@@ -123,33 +102,8 @@ accel inline Size Solver ::get_ray_length(Model& model, const Size o, const Size
     return l;
 }
 
-// template <Frame frame, bool use_adaptive_directions>
-// inline void Solver ::get_ray_lengths(Model& model) {
-//     Matrix<Size> ray_lengths;
-//     ray_lengths.resize(model.parameters->hnrays(), model.parameters->npoints());
-//     for (Size rr = 0; rr < model.parameters->hnrays(); rr++) {
-
-//         accelerated_for(o, model.parameters->npoints(), {
-//             const Size ar = model.geometry.rays.get_antipod_index(rr);
-
-//             // const Real dshift_max = get_dshift_max(model, o);
-
-//             ray_lengths(rr, o) = get_ray_length<frame, use_adaptive_directions>(model, o, rr)
-//                                + get_ray_length<frame, use_adaptive_directions>(model, o, ar);
-//             std::cout << "ray_lengths(" << rr << ", " << o << ") = " << ray_lengths(rr, o)
-//                       << std::endl;
-//         })
-
-//         pc::accelerator::synchronize();
-//     }
-
-//     ray_lengths.copy_ptr_to_vec();
-// }
-
 template <Frame frame, bool use_adaptive_directions>
 inline Size Solver ::get_ray_lengths_max(Model& model) {
-    // get_ray_lengths<frame, use_adaptive_directions>(model);
-
     Matrix<Size> ray_lengths;
     ray_lengths.resize(model.parameters->hnrays(), model.parameters->npoints());
     for (Size rr = 0; rr < model.parameters->hnrays(); rr++) {
@@ -157,12 +111,8 @@ inline Size Solver ::get_ray_lengths_max(Model& model) {
         accelerated_for(o, model.parameters->npoints(), {
             const Size ar = model.geometry.rays.get_antipod_index(rr);
 
-            // const Real dshift_max = get_dshift_max(model, o);
-
             ray_lengths(rr, o) = get_ray_length<frame, use_adaptive_directions>(model, o, rr)
                                + get_ray_length<frame, use_adaptive_directions>(model, o, ar);
-            // std::cout << "ray_lengths(" << rr << ", " << o << ") = " << ray_lengths(rr, o)
-            //           << std::endl;
         })
 
         pc::accelerator::synchronize();
@@ -175,7 +125,6 @@ inline Size Solver ::get_ray_lengths_max(Model& model) {
     return lengths_max;
 }
 
-// template <Frame frame>
 inline Size Solver ::get_ray_lengths_max_new_imager(
     Model& model, Image& image, const Vector3D& ray_dir) {
     const Size npixels = image.ImX.size(); // is ImY.size() (number of pixels in image)
@@ -304,15 +253,12 @@ inline void Solver ::solve_feautrier_order_2_uv(Model& model) {
         for (Size lspec_idx = 0; lspec_idx < model.parameters->nlspecs(); lspec_idx++) {
             LineProducingSpecies& lspec = model.lines.lineProducingSpecies[lspec_idx];
             accelerated_for(o, model.parameters->npoints(), {
-                // const Real dshift_max = get_dshift_max(model, o);
-
                 nr_()[centre]    = o;
                 shift_()[centre] = 1.0;
 
                 for (Size k = 0; k < lspec.linedata.nrad; k++) {
                     const Size l = model.lines.line_index(lspec_idx, k);
                     // For every individual line, the required interpolation can differ
-
                     first_() = trace_ray_for_line<CoMoving, use_adaptive_directions>(
                                    model, l, o, rr, -1, centre - 1, centre - 1)
                              + 1;
@@ -445,7 +391,6 @@ inline void Solver ::solve_feautrier_order_2_anis(Model& model) {
         cout << "--- rr = " << rr << endl;
 
         const Size ar = model.geometry.rays.get_antipod_index(rr);
-        // for (LineProducingSpecies& lspec : model.lines.lineProducingSpecies) {
         for (Size lspec_idx = 0; lspec_idx < model.parameters->nlspecs(); lspec_idx++) {
             LineProducingSpecies& lspec = model.lines.lineProducingSpecies[lspec_idx];
 
@@ -459,8 +404,6 @@ inline void Solver ::solve_feautrier_order_2_anis(Model& model) {
                 const Real wt_1_Im = -sqrt3 * nn.y() * nn.z();
                 const Real wt_2_Re = half * sqrt3 * (nn.x() * nn.x() - nn.y() * nn.y());
                 const Real wt_2_Im = sqrt3 * nn.x() * nn.y();
-
-                // const Real dshift_max = get_dshift_max(model, o);
 
                 nr_()[centre]    = o;
                 shift_()[centre] = 1.0;
@@ -530,7 +473,6 @@ inline void Solver ::solve_feautrier_order_2(Model& model) {
     model.radiation.initialize_J();
 
     // For each ray, solve transfer equation
-    // distributed_for(rr, rr_loc, model.parameters->hnrays(),
     for (Size rr = 0; rr < model.parameters->hnrays(); rr++) {
         cout << "--- rr = " << rr << endl;
 
@@ -539,8 +481,6 @@ inline void Solver ::solve_feautrier_order_2(Model& model) {
             LineProducingSpecies& lspec = model.lines.lineProducingSpecies[lspec_idx];
 
             accelerated_for(o, model.parameters->npoints(), {
-                // const Real dshift_max = get_dshift_max(model, o);
-
                 nr_()[centre]    = o;
                 shift_()[centre] = 1.0;
 
@@ -582,7 +522,7 @@ inline void Solver ::solve_feautrier_order_2(Model& model) {
         }
 
         pc::accelerator::synchronize();
-    } //)
+    }
 
     model.radiation.u.copy_ptr_to_vec();
     model.radiation.J.copy_ptr_to_vec();
@@ -606,11 +546,8 @@ inline void Solver ::image_feautrier_order_2(Model& model, const Size rr) {
     accelerated_for(o, model.parameters->npoints(), {
         const Size ar = model.geometry.rays.get_antipod_index(rr);
 
-        // const Real dshift_max = get_dshift_max(model, o);
-
         nr_()[centre]    = o;
         shift_()[centre] = model.geometry.get_shift<Rest, false>(o, rr, o, 0.0);
-        ;
 
         first_() = trace_ray<Rest, false>(model, o, rr, -1, centre - 1, centre - 1) + 1;
         last_()  = trace_ray<Rest, false>(model, o, ar, +1, centre + 1, centre) - 1;
@@ -657,7 +594,6 @@ inline void Solver ::image_feautrier_order_2_new_imager(
         Real Z = 0.0;
         const Size closest_bdy_point =
             trace_ray_imaging_get_start(model.geometry, origin, start_bdy_point, ray_dir, Z);
-        // const Real dshift_max = get_dshift_max(model, closest_bdy_point);
 
         nr_()[centre]    = closest_bdy_point;
         shift_()[centre] = model.geometry.get_shift<Rest>(
@@ -698,8 +634,6 @@ inline void Solver ::image_feautrier_order_2_for_point(Model& model, const Size 
 
     const Size ar = model.geometry.rays.get_antipod_index(rr);
 
-    // const Real dshift_max = get_dshift_max(model, o);
-
     nr_()[centre]    = o;
     shift_()[centre] = model.geometry.get_shift<Rest, false>(o, rr, o, 0.0);
 
@@ -725,11 +659,8 @@ inline void Solver ::image_optical_depth(Model& model, const Size rr) {
     accelerated_for(o, model.parameters->npoints(), {
         const Size ar = model.geometry.rays.get_antipod_index(rr);
 
-        // const Real dshift_max = get_dshift_max(model, o);
-
         nr_()[centre]    = o;
         shift_()[centre] = model.geometry.get_shift<Rest, false>(o, rr, o, 0.0);
-        ;
 
         first_() = trace_ray<Rest, false>(model, o, rr, -1, centre - 1, centre - 1) + 1;
         last_()  = trace_ray<Rest, false>(model, o, ar, +1, centre + 1, centre) - 1;
@@ -774,7 +705,6 @@ inline void Solver ::image_optical_depth_new_imager(
         Real Z = 0.0;
         const Size closest_bdy_point =
             trace_ray_imaging_get_start(model.geometry, origin, start_bdy_point, ray_dir, Z);
-        // const Real dshift_max = get_dshift_max(model, closest_bdy_point);
 
         nr_()[centre]    = closest_bdy_point;
         shift_()[centre] = model.geometry.get_shift<Rest>(
@@ -854,7 +784,6 @@ accel inline Size Solver ::trace_ray_for_line(const Model& model, const Size l, 
         double shift_nxt = model.geometry.get_shift<frame, use_adaptive_directions>(o, r, nxt, Z);
 
         set_data_for_line(model, l, crt, nxt, shift_crt, shift_nxt, dZ, increment, id1, id2);
-        // set_data(model, crt, nxt, shift_crt, shift_nxt, dZ, increment, id1, id2);
 
         while (model.geometry.not_on_boundary(nxt)) {
             crt       = nxt;
@@ -864,19 +793,18 @@ accel inline Size Solver ::trace_ray_for_line(const Model& model, const Size l, 
             shift_nxt = model.geometry.get_shift<frame, use_adaptive_directions>(o, r, nxt, Z);
 
             set_data_for_line(model, l, crt, nxt, shift_crt, shift_nxt, dZ, increment, id1, id2);
-            // set_data(model, crt, nxt, shift_crt, shift_nxt, dZ, increment, id1, id2);
         }
     }
 
     return id1;
 }
 
-// Because of the new method for computing the optical
-// depth, adding extra frequency points for counteracting
-// the large doppler shift is no longer necessary
-// Specialized raytracer for imaging the model. Note:
-// assumes the outer boundary to be convex in order to
-// correctly start tracing the ray
+/// Obtain the starting point for the imaging raytracer
+/// @param[in] geometry: The geometry of the model
+/// @param[in] origin: The origin of the ray (outside of the model)
+/// @param[in] start_bdy: The starting boundary point for the search
+/// @param[in] raydir: The direction of the ray
+/// @param[out] Z: The distance from the origin to the boundary point
 accel inline Size Solver ::trace_ray_imaging_get_start(const Geometry& geometry,
     const Vector3D& origin, const Size start_bdy, const Vector3D& raydir, Real& Z) {
 
@@ -884,7 +812,7 @@ accel inline Size Solver ::trace_ray_imaging_get_start(const Geometry& geometry,
     // first figure out which boundary point lies closest to
     // the custom ray
     // TODO: is slightly inefficient implementation, can be
-    // improved by only checking bdy point neighbors We use
+    // improved by only checking bdy point neighbors. We use
     // here the assumption that the outer boundary is convex,
     // to obtain the closest point on the boundary
     while (true) {
@@ -901,12 +829,15 @@ accel inline Size Solver ::trace_ray_imaging_get_start(const Geometry& geometry,
     return initial_point;
 }
 
-// Because of the new method for computing the optical
-// depth, adding extra frequency points for counteracting
-// the large doppler shift is no longer necessary
-// Specialized raytracer for imaging the model. Note:
-// assumes the outer boundary to be convex in order to
-// correctly start tracing the ray
+/// Sets the data required for the imaging raytracer
+/// @param[in] model: The model
+/// @param[in] origin: The origin of the ray
+/// @param[in] start_bdy: The starting boundary point
+/// @param[in] raydir: The direction of the ray
+/// @param[in] increment: The increment of the data index (-1 or +1)
+/// @param[in] Z: The distance from the origin to the boundary point
+/// @param[in/out] id1: The first data index (used for all data)
+/// @param[in/out] id2: The second data index (only used for dZ)
 template <Frame frame>
 accel inline Size Solver ::trace_ray_imaging(const Model& model, const Vector3D& origin,
     const Size start_bdy, const Vector3D& raydir, const int increment,
@@ -974,6 +905,7 @@ accel inline Size Solver ::trace_ray_imaging(const Model& model, const Vector3D&
 // Traces rays for the imager, and sets the data required
 // Note: only does this for a single line at a time, as the interpolation might be different
 // for the different lines
+/// TODO: implement in the imagers, to save computation time
 template <Frame frame>
 accel inline Size Solver ::trace_ray_imaging_for_line(const Model& model, const Size l,
     const Vector3D& origin, const Size start_bdy, const Vector3D& raydir, const int increment,
@@ -1038,13 +970,13 @@ accel inline Size Solver ::trace_ray_imaging_for_line(const Model& model, const 
     return id1;
 }
 
-// function corresponds to a combination of
-// trace_ray_imaging_get_start and trace_ray_imaging,
-// deleting all unneccesary computations (shift) and
-// replacing the data setting with incrementing the ray
-// length.
-//  This will be an overestimate, as we should theoretically
-//  first iterated until template <Frame frame>
+/// Returns the length of a ray for the new imager
+/// @param[in] model : model object
+/// @param[in] origin : origin of the ray (outside of the model)
+/// @param[in] start_bdy : starting boundary point
+/// @param[in] raydir : direction of the ray
+/// @return : length of the ray
+/// Note: does not efficiently use the interpolation, as all lines will assumed to be relevant
 accel inline Size Solver ::get_ray_length_new_imager(
     const Model& model, const Vector3D& origin, const Size start_bdy, const Vector3D& raydir) {
     Size l             = 0; // ray length, which we need to compute
@@ -1101,6 +1033,8 @@ accel inline Size Solver ::get_ray_length_new_imager(
 /// @param[in] increment : increment for the data vectors (either 1 or -1, depending on direction)
 /// @param[in/out] id1 : index for the first data vector (everything except dZ)
 /// @param[in/out] id2 : index for the second data vector (dZ); is stored from first_() to last_()-1
+/// @note The interpolation is done assuming all lines are relevant for all frequencies. This
+/// results in increased computation time
 accel inline void Solver ::set_data(const Model& model, const Size crt, const Size nxt,
     const double shift_crt, const double shift_nxt, const double dZ_loc, const int increment,
     Size& id1, Size& id2) {
@@ -1114,7 +1048,6 @@ accel inline void Solver ::set_data(const Model& model, const Size crt, const Si
     const double dshift     = shift_nxt - shift_crt;
     const double dshift_abs = fabs(dshift);
 
-    // TODO: take a look at the old implementation for correct syntax
     // get number of interpolation points
     Size n_interp_points = interp_helper.get_n_interp(model, crt, nxt);
 
@@ -1132,18 +1065,12 @@ accel inline void Solver ::set_data(const Model& model, const Size crt, const Si
             id1 += increment;
             id2 += increment;
         }
-
-        // interpolate the doppler shift // copy old implementation
-
-        // add data for interpolating the emissivity and opacity
     } else {
         nr[id1]            = nxt;
         shift[id1]         = shift_nxt;
         nr_interp[id1]     = crt;
         interp_factor[id1] = 0.0;
-        // Note: id2 != id1 or == id1, depending on whether we are tracing the original or
-        // antipodal ray This is to prevent collisions when saving the distances
-        dZ[id2] = dZ_loc;
+        dZ[id2]            = dZ_loc;
 
         id1 += increment;
         id2 += increment;
@@ -1197,80 +1124,12 @@ accel inline void Solver ::set_data_for_line(const Model& model, const Size l, c
         shift[id1]         = shift_nxt;
         nr_interp[id1]     = crt;
         interp_factor[id1] = 0.0;
-        // Note: id2 != id1 or == id1, depending on whether we are tracing the original or
-        // antipodal ray This is to prevent collisions when saving the distances
-        dZ[id2] = dZ_loc;
+        dZ[id2]            = dZ_loc;
 
         id1 += increment;
         id2 += increment;
     }
 }
-
-/// OLD IMPLEMENTATION
-//     accel inline void Solver :: set_data (
-//     const Size   crt,
-//     const Size   nxt,
-//     const double shift_crt,
-//     const double shift_nxt,
-//     const double dZ_loc,
-//     const double dshift_max,
-//     const int    increment,
-//           Size&  id1,
-//           Size&  id2 )
-// {
-//     Vector<double>& dZ    = dZ_   ();
-//     Vector<Size  >& nr    = nr_   ();
-//     Vector<double>& shift = shift_();
-//     const double dshift     = shift_nxt - shift_crt;
-//     const double dshift_abs = fabs (dshift);
-
-//     if (dshift_abs > dshift_max) // If velocity gradient is not well-sampled enough
-//     {
-//         // Interpolate velocity gradient field
-//         const Size        n_interpl = dshift_abs / dshift_max + 1;
-//         const Size   half_n_interpl = 0.5 * n_interpl;
-//         const double     dZ_interpl =     dZ_loc / n_interpl;
-//         const double dshift_interpl =     dshift / n_interpl;
-
-//         if (n_interpl > 10000)
-//         {
-//             printf ("ERROR (n_intpl > 10 000) || (dshift_max < 0, probably due to
-//             overflow)\n");
-//         }
-
-//         // Assign current cell to first half of interpolation points
-//         for (Size m = 1; m < half_n_interpl; m++)
-//         {
-//             nr   [id1] = crt;
-//             shift[id1] = shift_crt + m*dshift_interpl;
-//             dZ   [id2] = dZ_interpl;
-
-//             id1 += increment;
-//             id2 += increment;
-//         }
-
-//         // Assign next cell to second half of interpolation points
-//         for (Size m = half_n_interpl; m <= n_interpl; m++)
-//         {
-//             nr   [id1] = nxt;
-//             shift[id1] = shift_crt + m*dshift_interpl;
-//             dZ   [id2] = dZ_interpl;
-
-//             id1 += increment;
-//             id2 += increment;
-//         }
-//     }
-
-//     else
-//     {
-//         nr   [id1] = nxt;
-//         shift[id1] = shift_nxt;
-//         dZ   [id2] = dZ_loc;
-
-//         id1 += increment;
-//         id2 += increment;
-//     }
-// }
 
 ///  Gaussian line profile function
 ///    @param[in] width : profile width
@@ -1342,6 +1201,15 @@ accel inline void Solver ::get_eta_and_chi<None>(const Model& model, const Size 
     }
 }
 
+/// Getter for the emissivity (eta) and the opacity (chi), with interpolation support
+/// @param[in] model : reference to model object
+/// @param[in] p1 : index of the first point
+/// @param[in] p2 : index of the second point
+/// @param[in] interp_factor : interpolation factor between both points (0->p1, 1->p2)
+/// @param[in] l : line index corresponding to the frequency
+/// @param[in] freq : frequency (in co-moving frame)
+/// @param[out] eta : emissivity
+/// @param[out] chi : opacity
 template <>
 accel inline void Solver ::get_eta_and_chi_interpolated<None>(const Model& model, const Size p1,
     const Size p2, const Real interp_factor,
@@ -1413,6 +1281,16 @@ accel inline void Solver ::get_eta_and_chi<CloseLines>(const Model& model, const
     }
 }
 
+/// Getter for the emissivity (eta) and the opacity (chi), with interpolation support.
+/// This function uses only the nearby lines to save computation time
+/// @param[in] model : reference to model object
+/// @param[in] p1 : index of the first point
+/// @param[in] p2 : index of the second point
+/// @param[in] interp_factor : interpolation factor between both points (0->p1, 1->p2)
+/// @param[in] l : line index corresponding to the frequency
+/// @param[in] freq : frequency (in co-moving frame)
+/// @param[out] eta : emissivity
+/// @param[out] chi : opacity
 template <>
 accel inline void Solver ::get_eta_and_chi_interpolated<CloseLines>(const Model& model,
     const Size p1, const Size p2, const Real interp_factor,
@@ -1478,6 +1356,16 @@ accel inline void Solver ::get_eta_and_chi<OneLine>(
     chi = prof * model.lines.opacity(p, l) + model.parameters->min_opacity;
 }
 
+/// Getter for the emissivity (eta) and the opacity (chi), with interpolation support
+/// This functions uses only a single line for the computations
+/// @param[in] model : reference to model object
+/// @param[in] p1 : index of the first point
+/// @param[in] p2 : index of the second point
+/// @param[in] interp_factor : interpolation factor between both points (0->p1, 1->p2)
+/// @param[in] l : line index corresponding to the frequency
+/// @param[in] freq : frequency (in co-moving frame)
+/// @param[out] eta : emissivity
+/// @param[out] chi : opacity
 template <>
 accel inline void Solver ::get_eta_and_chi_interpolated<OneLine>(const Model& model, const Size p1,
     const Size p2, const Real interp_factor, const Size l, const Real freq, Real& eta,
@@ -1507,57 +1395,58 @@ accel inline Real trap(const Real x_crt, const Real x_nxt, const double dZ) {
     return half * (x_crt + x_nxt) * dZ;
 }
 
-// Approach which included raytracing in the solver itself; was incompatible with the
-// interpolation implementation template <ApproximationType approx, bool
-// use_adaptive_directions> accel inline void Solver ::solve_shortchar_order_0(Model& model,
+// Approach for shortchar solver which included raytracing in the solver itself; was incompatible
+// with the interpolation implementation
+// template <ApproximationType approx, bool use_adaptive_directions>
+// accel inline void Solver ::solve_shortchar_order_0(Model& model,
 // const Size o, const Size r) {
 //     Vector<Real>& eta_c = eta_c_();
 //     Vector<Real>& eta_n = eta_n_();
-
+//
 //     Vector<Real>& chi_c = chi_c_();
 //     Vector<Real>& chi_n = chi_n_();
-
+//
 //     Vector<Real>& source_c = source_c_();
 //     Vector<Real>& source_n = source_n_();
-
+//
 //     Vector<Real>& tau = tau_();
-
+//
 //     double Z  = 0.0; // distance along ray
 //     double dZ = 0.0; // last distance increment
-
+//
 //     Size crt = o;
 //     Size nxt = model.geometry.get_next<use_adaptive_directions>(o, r, o, Z, dZ);
 //     Real term_c, term_n, dtau;
 //     bool compute_curr_opacity, prev_compute_curr_opacity;
 //     const Real ray_weight = model.geometry.rays.get_weight<use_adaptive_directions>(o,
 //     r);
-
+//
 //     if (model.geometry.valid_point(nxt)) {
 //         double shift_c = 1.0;
 //         double shift_n = model.geometry.get_shift<CoMoving, use_adaptive_directions>(o,
 //         r, nxt, Z);
-
+//
 //         for (Size f = 0; f < model.parameters->nfreqs(); f++) {
 //             const Real freq = model.radiation.frequencies.nu(o, f);
 //             const Size l    = model.radiation.frequencies.corresponding_line[f]; // line
 //             index
-
+//
 //             compute_curr_opacity = true; // for the first point, we need to compute
 //                                          // both the curr and next opacity (and source)
-
+//
 //             // TODO: refactor such that this also uses set_data()
 //             Size crt_interp_idx = crt;
 //             Size nxt_interp_idx = nxt;
 //             Real curr_interp    = 1.0;
 //             Real next_interp    = 1.0;
-
+//
 //             compute_source_dtau<approx>(model, crt, nxt, crt_interp_idx, nxt_interp_idx,
 //             l,
 //                 freq * shift_c, freq * shift_n, shift_c, shift_n, dZ, curr_interp,
 //                 next_interp, compute_curr_opacity, dtau, chi_c[f], chi_n[f], source_c[f],
 //                 source_n[f]);
 //             dtau = std::max(model.parameters->min_dtau, dtau);
-
+//
 //             // proper implementation of 2nd order shortchar (not
 //             // yet times reducing factor of exp(-tau))
 //             //  model.radiation.I(r,o,f) = term_c *
@@ -1567,12 +1456,12 @@ accel inline Real trap(const Real x_crt, const Real x_nxt, const double dZ) {
 //             //                           /dtau;
 //             // Rewrite, trying to use less exponentials
 //             const Real factor = expm1f(-dtau) / dtau;
-
+//
 //             model.radiation.I(r, o, f) =
 //                 factor * (source_c[f] - source_n[f] * (1.0 + dtau)) + source_c[f] -
 //                 source_n[f];
 //             tau[f] = dtau;
-
+//
 //             // Compute local lambda operator
 //             const Size l_spec =
 //                 model.radiation.frequencies.corresponding_l_for_spec[f]; // index of
@@ -1586,14 +1475,14 @@ accel inline Real trap(const Real x_crt, const Real x_nxt, const double dZ) {
 //                                                                          // quadrature
 //                                                                          point
 //             const Real w_ang = ray_weight;
-
+//
 //             LineProducingSpecies& lspec = model.lines.lineProducingSpecies[l_spec];
-
+//
 //             const Real freq_line = lspec.linedata.frequency[k];
 //             const Real invr_mass = lspec.linedata.inverse_mass;
 //             const Real constante = lspec.linedata.A[k] * lspec.quadrature.weights[z] *
 //             w_ang;
-
+//
 //             Real eta, chi; // eta is dummy var
 //             // chi is not necessarily computed, so compute it to
 //             // be sure
@@ -1613,14 +1502,14 @@ accel inline Real trap(const Real x_crt, const Real x_nxt, const double dZ) {
 //                                   // small; but then the lambda
 //                                   // elements are also negligible
 //             lspec.lambda.add_element(o, k, o, L);
-
+//
 //             // TODO: possible nonlocal lambda part // FIXME:
 //             // probably incorrect chi used
 //             //  L   = constante * freq * phi * (-factor *
 //             //  (1.0+dtau) - 1.0) * inverse_chi;
 //             //  lspec.lambda.add_element(o, k, nxt, L);
 //         }
-
+//
 //         // For all frequencies, we need to use the same method
 //         // for computing the optical depth
 //         //  bool
@@ -1630,27 +1519,27 @@ accel inline Real trap(const Real x_crt, const Real x_nxt, const double dZ) {
 //         prev_compute_curr_opacity = compute_curr_opacity; // technically, we could also
 //                                                           // keep this bool individually
 //                                                           // for every frequency
-
+//
 //         while (model.geometry.not_on_boundary(nxt)) {
 //             crt     = nxt;
 //             shift_c = shift_n;
-
+//
 //             model.geometry.get_next<use_adaptive_directions>(o, r, crt, nxt, Z, dZ,
 //             shift_n);
-
+//
 //             for (Size f = 0; f < model.parameters->nfreqs(); f++) {
 //                 source_c[f]     = source_n[f];
 //                 chi_c[f]        = chi_n[f];
 //                 const Real freq = model.radiation.frequencies.nu(o, f);
 //                 const Size l    = model.radiation.frequencies.corresponding_line[f];
-
+//
 //                 compute_curr_opacity = prev_compute_curr_opacity;
-
+//
 //                 Size crt_interp_idx = crt;
 //                 Size nxt_interp_idx = nxt;
 //                 Real curr_interp    = 1.0;
 //                 Real next_interp    = 1.0;
-
+//
 //                 compute_source_dtau<approx>(model, crt, nxt, crt_interp_idx,
 //                 nxt_interp_idx, l,
 //                     freq * shift_c, freq * shift_n, shift_c, shift_n, dZ, curr_interp,
@@ -1677,25 +1566,25 @@ accel inline Real trap(const Real x_crt, const Real x_nxt, const double dZ) {
 //                 // adding the smaller ones...
 //                 tau[f] += dtau;
 //             }
-
+//
 //             // save setting for use for all frequencies for the
 //             // next interval
 //             prev_compute_curr_opacity = compute_curr_opacity;
 //         }
-
+//
 //         for (Size f = 0; f < model.parameters->nfreqs(); f++) {
 //             const Real freq = model.radiation.frequencies.nu(o, f);
-
+//
 //             model.radiation.I(r, o, f) +=
 //                 boundary_intensity(model, nxt, freq * shift_n) * expf(-tau[f]);
 //             model.radiation.J(o, f) += ray_weight * model.radiation.I(r, o, f);
 //         }
 //     }
-
+//
 //     else {
 //         for (Size f = 0; f < model.parameters->nfreqs(); f++) {
 //             const Real freq = model.radiation.frequencies.nu(o, f);
-
+//
 //             model.radiation.I(r, o, f) = boundary_intensity(model, crt, freq);
 //             model.radiation.J(o, f) += ray_weight * model.radiation.I(r, o, f);
 //         }
@@ -1844,7 +1733,6 @@ accel inline Real Solver ::solve_shortchar_order_0_ray_backward(
         shift_c        = shift[indexp1];
         shift_n        = shift[indexp1 - 1];
 
-        // for (Size f = 0; f < model.parameters->nfreqs(); f++) {
         chi_c    = chi_n;
         source_c = source_n;
 
@@ -2041,14 +1929,6 @@ inline void Solver ::compute_S_dtau_line_integrated<OneLine>(Model& model, Size 
             model.lines.emissivity(nextpoint_interp_idx, lineidx), next_interp);
     Scurr = curr_emissivity / curr_opacity;
     Snext = next_emissivity / next_opacity;
-    // before interpolation
-    // Scurr = model.lines.emissivity(currpoint, lineidx)
-    //       / model.lines.opacity(currpoint, lineidx); // current source
-    // Snext = model.lines.emissivity(nextpoint, lineidx)
-    //       / model.lines.opacity(nextpoint, lineidx); // next source
-    // note: due to interaction with dtau when computing all
-    // sources individually, we do need to recompute Scurr and
-    // Snext for all position increments
 }
 
 ///  Computer for the optical depth and source function when
@@ -2086,16 +1966,6 @@ inline void Solver ::compute_S_dtau_line_integrated<None>(Model& model, Size cur
     Real sum_dtau_times_Scurr = 0.0;
     Real sum_dtau_times_Snext = 0.0;
     for (Size l = 0; l < model.parameters->nlines(); l++) {
-        // without interpolation
-        // Real line_dtau =
-        //     compute_dtau_single_line(model, currpoint, nextpoint, l, currfreq, nextfreq,
-        //     dZ);
-        // Real line_Scurr = model.lines.emissivity(currpoint, l)
-        //                 / model.lines.opacity(currpoint, l); // current source
-        // Real line_Snext =
-        //     model.lines.emissivity(nextpoint, l) / model.lines.opacity(nextpoint, l); //
-        //     next source
-
         Real line_dtau = compute_dtau_single_line(model, currpoint, nextpoint, currpoint_interp_idx,
             nextpoint_interp_idx, lineidx, currfreq, nextfreq, curr_interp, next_interp, dZ);
         const Real curr_opacity =
@@ -2123,14 +1993,14 @@ inline void Solver ::compute_S_dtau_line_integrated<None>(Model& model, Size cur
 }
 
 ///  Computer for the optical depth and source function when
-///  computing using the formal line integration In case of
-///  low velocity differences, almost two times slower For
+///  computing using the formal line integration. In case of
+///  low velocity differences, almost two times slower. For
 ///  high velocity increments however, this does not need
 ///  any extra interpolation points (-> way faster) (and
 ///  some extra optimizations are made in the limit of
 ///  extremely large doppler shift (as erf goes to its limit
-///  value) This function only takes into account the nearby
-///  lines, saving some computation time
+///  value). This function only takes into account the nearby
+///  lines, saving some computation time.
 ///    @param[in] curr_point : index of current point
 ///    @param[in] next_point : index of next point
 ///    @param[in] curr_point_interp_idx : index of interpolation point for curr_point
@@ -2197,15 +2067,6 @@ inline void Solver ::compute_S_dtau_line_integrated<CloseLines>(Model& model, Si
         const Size sort_l = freq_sort_l - model.lines.sorted_line.begin();
         // Map sorted line index to original line index
         const Size l = model.lines.sorted_line_map[sort_l];
-
-        // Real line_dtau =
-        //     compute_dtau_single_line(model, currpoint, nextpoint, l, currfreq, nextfreq,
-        //     dZ);
-        // Real line_Scurr = model.lines.emissivity(currpoint, l)
-        //                 / model.lines.opacity(currpoint, l); // current source
-        // Real line_Snext =
-        //     model.lines.emissivity(nextpoint, l) / model.lines.opacity(nextpoint, l); //
-        //     next source
 
         Real line_dtau = compute_dtau_single_line(model, currpoint, nextpoint, currpoint_interp_idx,
             nextpoint_interp_idx, lineidx, currfreq, nextfreq, curr_interp, next_interp, dZ);
@@ -2281,11 +2142,9 @@ accel inline void Solver ::compute_source_dtau(Model& model, Size currpoint, Siz
     double curr_shift, double next_shift, Real dZ, double curr_interp, double next_interp,
     bool& compute_curr_opacity, Real& dtaunext, Real& chicurr, Real& chinext, Real& Scurr,
     Real& Snext) {
-
-    // TODO: check correctness of interpolation
     // deciding which optical depth computation to use,
     // depending on the doppler shift
-    const double dshift     = next_shift - curr_shift; // shift[first+1]-shift[first];TODO
+    const double dshift     = next_shift - curr_shift;
     const double dshift_abs = fabs(dshift);
     const double dshift_max = std::min(model.dshift_max[currpoint], model.dshift_max[nextpoint]);
     const bool using_large_shift = (dshift_abs > dshift_max);
@@ -2298,7 +2157,6 @@ accel inline void Solver ::compute_source_dtau(Model& model, Size currpoint, Siz
             dtaunext, Scurr, Snext);
         // OPACITY IS NOT COMPUTED IN THIS BRANCH!
     } else {
-        // TODO: do other branch also with interpolation
         // default computation using trapezoidal rule
         if (compute_curr_opacity) // fancy computation does not
                                   // compute the current
@@ -2318,7 +2176,6 @@ accel inline void Solver ::compute_source_dtau(Model& model, Size currpoint, Siz
 
         Real eta_n = 0.0;
         // Get new radiative properties
-        // get_eta_and_chi<approx>(model, nextpoint, line, next_freq, eta_n, chinext);
         get_eta_and_chi_interpolated<approx>(
             model, nextpoint, nextpoint_interp_idx, next_interp, line, next_freq, eta_n, chinext);
 
@@ -2525,9 +2382,6 @@ inline Real Solver ::compute_dtau_single_line(Model& model, Size curridx, Size n
         interp_helper.interpolate_linear(model.lines.inverse_width(nextidx, lineidx),
             model.lines.inverse_width(nextpoint_interp_idx, lineidx), next_interp);
     const Real average_inverse_line_width = (inv_width_curr_point + inv_width_next_point) / 2.0;
-    // const Real average_inverse_line_width =
-    //     (model.lines.inverse_width(curridx, lineidx) + model.lines.inverse_width(nextidx,
-    //     lineidx)) / 2.0;
 
     // opacity is stored divided by the linefreq, so multiply
     // by it
@@ -2537,8 +2391,6 @@ inline Real Solver ::compute_dtau_single_line(Model& model, Size curridx, Size n
     const Real next_line_opacity =
         interp_helper.interpolate_log(model.lines.opacity(nextidx, lineidx),
             model.lines.opacity(nextpoint_interp_idx, lineidx), next_interp);
-    // const Real curr_line_opacity = model.lines.opacity(curridx, lineidx);
-    // const Real next_line_opacity = model.lines.opacity(nextidx, lineidx);
 
     // if frequencies are equal, division by zero (due to the
     // optical depth formula) happens if we were not to use
