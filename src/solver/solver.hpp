@@ -160,15 +160,12 @@ struct Solver {
 
     template <ApproximationType approx, bool use_adaptive_directions>
     accel inline void update_Lambda(Model& model, const Size rr, const Size f);
-    // accel inline void solve_shortchar_order_0_ray_forward (
-    //           Model& model,
-    //           const Size   o,
-    //           const Size   r);
-    // accel inline void solve_shortchar_order_0_ray_backward
-    // (
-    //           Model& model,
-    //           const Size   o,
-    //           const Size   r);
+    template <ApproximationType approx, bool use_adaptive_directions>
+    accel inline Real solve_shortchar_order_0_ray_forward(
+        Model& model, const Size o, const Size r, const Size f);
+    template <ApproximationType approx, bool use_adaptive_directions>
+    accel inline Real solve_shortchar_order_0_ray_backward(
+        Model& model, const Size o, const Size r, const Size f);
 
     // Solvers for images
     /////////////////////
@@ -217,8 +214,8 @@ struct Solver {
 
     template <ApproximationType approx, bool use_adaptive_directions>
     accel inline void solve_shortchar_order_0(Model& model);
-    template <ApproximationType approx, bool use_adaptive_directions>
-    accel inline void solve_shortchar_order_0(Model& model, const Size o, const Size r);
+    // template <ApproximationType approx, bool use_adaptive_directions>
+    // accel inline void solve_shortchar_order_0(Model& model, const Size o, const Size r);
 
     template <ApproximationType approx, bool use_adaptive_directions>
     accel inline void solve_feautrier_order_2_uv(Model& model);

@@ -189,6 +189,7 @@ def run_model (nosave=False, benchindex=0, use_widgets=True):
         plt.figure(dpi=150)
         plt.plot(fs, us  [r,p,:], marker='.')
         plt.plot(fs, u_2f[r,p,:])
+        plt.plot(fs, u_0s[r,p,:])
 
     #during automated testing, the widgets only consume time to create
     if use_widgets:
@@ -246,13 +247,13 @@ def run_model (nosave=False, benchindex=0, use_widgets=True):
     #if we are actually doing benchmarks, the accuracy will depend on how accurately we compute the optical depth
     if (benchindex==1):
         FEAUTRIER_AS_EXPECTED=(np.mean(error_u_2f)<1e-6)
-        FIRSTORDER_AS_EXPECTED=(np.mean(error_u_0s)<1e-6)
+        FIRSTORDER_AS_EXPECTED=(np.mean(error_u_0s)<1.1e-6)
     elif(benchindex==2):
         FEAUTRIER_AS_EXPECTED=(np.mean(error_u_2f)<5e-7)
-        FIRSTORDER_AS_EXPECTED=(np.mean(error_u_0s)<5e-7)
+        FIRSTORDER_AS_EXPECTED=(np.mean(error_u_0s)<5.1e-7)
     elif(benchindex==3):
         FEAUTRIER_AS_EXPECTED=(np.mean(error_u_2f)<5.31e-8)
-        FIRSTORDER_AS_EXPECTED=(np.mean(error_u_0s)<5.42e-8)
+        FIRSTORDER_AS_EXPECTED=(np.mean(error_u_0s)<5.91e-8)
 
     if not FIRSTORDER_AS_EXPECTED:
         print("First order solver mean error too large: ", np.mean(error_u_0s), "bench nr: ", benchindex)

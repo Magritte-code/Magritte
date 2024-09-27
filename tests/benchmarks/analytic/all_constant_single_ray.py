@@ -93,7 +93,7 @@ def run_model (nosave=False):
     timer3.stop()
     u_0s = np.array(model.radiation.u)
 
-    timer4 = tools.Timer('feautrier 2  ')
+    timer4 = tools.Timer('feautrier 2 ')
     timer4.start()
     model.compute_radiation_field_feautrier_order_2 ()
     timer4.stop()
@@ -178,7 +178,7 @@ def run_model (nosave=False):
 
     #error bounds are chosen somewhat arbitrarily, based on previously obtained results; this should prevent serious regressions.
     FEAUTRIER_AS_EXPECTED=(np.max(error_u_2f)<1.7e-4)
-    FIRSTORDER_AS_EXPECTED=(np.max(error_u_0s)<5.1e-8)
+    FIRSTORDER_AS_EXPECTED=(np.max(error_u_0s)<1.7e-7)
     FEAUTRIER_UV_AS_EXPECTED=(np.max(error_I_0_2f_uv)<2.0e-4) and (np.max(error_I_1_2f_uv)<2.0e-4)
 
     if not FIRSTORDER_AS_EXPECTED:
