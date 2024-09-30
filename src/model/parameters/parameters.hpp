@@ -78,7 +78,7 @@ struct Parameters {
     Real pop_prec                    = 1.0e-6;
     Real min_opacity                 = 1.0e-26;
     long double min_line_opacity     = 1.0e-13;
-    long double min_line_emissivity  = 1.0e-100;
+    long double min_line_emissivity  = 1.0e-50;
     Real min_dtau                    = 1.0e-15;
     Real max_interpolation_diff =
         1.4; // max relative differences between successive line source functions

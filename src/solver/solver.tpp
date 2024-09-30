@@ -1915,20 +1915,35 @@ inline void Solver ::compute_S_dtau_line_integrated<OneLine>(Model& model, Size 
     Size nextpoint, Size currpoint_interp_idx, Size nextpoint_interp_idx, Size lineidx,
     Real currfreq, Real nextfreq, Real curr_interp, Real next_interp, Real dZ, Real& dtau,
     Real& Scurr, Real& Snext) {
+    // FIXME: line idx is wrong
     dtau = compute_dtau_single_line(model, currpoint, nextpoint, currpoint_interp_idx,
         nextpoint_interp_idx, lineidx, currfreq, nextfreq, curr_interp, next_interp, dZ);
-    const Real curr_opacity = interp_helper.interpolate_log(model.lines.opacity(currpoint, lineidx),
-        model.lines.opacity(currpoint_interp_idx, lineidx), curr_interp);
-    const Real next_opacity = interp_helper.interpolate_log(model.lines.opacity(nextpoint, lineidx),
-        model.lines.opacity(nextpoint_interp_idx, lineidx), next_interp);
-    const Real curr_emissivity =
-        interp_helper.interpolate_log(model.lines.emissivity(currpoint, lineidx),
-            model.lines.emissivity(currpoint_interp_idx, lineidx), curr_interp);
-    const Real next_emissivity =
-        interp_helper.interpolate_log(model.lines.emissivity(nextpoint, lineidx),
-            model.lines.emissivity(nextpoint_interp_idx, lineidx), next_interp);
-    Scurr = curr_emissivity / curr_opacity;
-    Snext = next_emissivity / next_opacity;
+    // const Real curr_opacity = interp_helper.interpolate_log(model.lines.opacity(currpoint,
+    // lineidx),
+    //     model.lines.opacity(currpoint_interp_idx, lineidx), curr_interp);
+    // const Real next_opacity = interp_helper.interpolate_log(model.lines.opacity(nextpoint,
+    // lineidx),
+    //     model.lines.opacity(nextpoint_interp_idx, lineidx), next_interp);
+    // const Real curr_emissivity =
+    //     interp_helper.interpolate_log(model.lines.emissivity(currpoint, lineidx),
+    //         model.lines.emissivity(currpoint_interp_idx, lineidx), curr_interp);
+    // const Real next_emissivity =
+    //     interp_helper.interpolate_log(model.lines.emissivity(nextpoint, lineidx),
+    //         model.lines.emissivity(nextpoint_interp_idx, lineidx), next_interp);
+    // Scurr = curr_emissivity / curr_opacity;
+    // Snext = next_emissivity / next_opacity;
+
+    Real Scurr_p =
+        model.lines.emissivity(currpoint, lineidx) / model.lines.opacity(currpoint, lineidx);
+    Real Snext_p =
+        model.lines.emissivity(nextpoint, lineidx) / model.lines.opacity(nextpoint, lineidx);
+    Real Scurr_interp_p = model.lines.emissivity(currpoint_interp_idx, lineidx)
+                        / model.lines.opacity(currpoint_interp_idx, lineidx);
+    Real Snext_interp_p = model.lines.emissivity(nextpoint_interp_idx, lineidx)
+                        / model.lines.opacity(nextpoint_interp_idx, lineidx);
+
+    Scurr = interp_helper.interpolate_log(Scurr_p, Scurr_interp_p, curr_interp);
+    Snext = interp_helper.interpolate_log(Snext_p, Snext_interp_p, next_interp);
 }
 
 ///  Computer for the optical depth and source function when
@@ -1967,21 +1982,31 @@ inline void Solver ::compute_S_dtau_line_integrated<None>(Model& model, Size cur
     Real sum_dtau_times_Snext = 0.0;
     for (Size l = 0; l < model.parameters->nlines(); l++) {
         Real line_dtau = compute_dtau_single_line(model, currpoint, nextpoint, currpoint_interp_idx,
-            nextpoint_interp_idx, lineidx, currfreq, nextfreq, curr_interp, next_interp, dZ);
-        const Real curr_opacity =
-            interp_helper.interpolate_log(model.lines.opacity(currpoint, lineidx),
-                model.lines.opacity(currpoint_interp_idx, lineidx), curr_interp);
-        const Real next_opacity =
-            interp_helper.interpolate_log(model.lines.opacity(nextpoint, lineidx),
-                model.lines.opacity(nextpoint_interp_idx, lineidx), next_interp);
-        const Real curr_emissivity =
-            interp_helper.interpolate_log(model.lines.emissivity(currpoint, lineidx),
-                model.lines.emissivity(currpoint_interp_idx, lineidx), curr_interp);
-        const Real next_emissivity =
-            interp_helper.interpolate_log(model.lines.emissivity(nextpoint, lineidx),
-                model.lines.emissivity(nextpoint_interp_idx, lineidx), next_interp);
-        Real line_Scurr = curr_emissivity / curr_opacity;
-        Real line_Snext = next_emissivity / next_opacity;
+            nextpoint_interp_idx, l, currfreq, nextfreq, curr_interp, next_interp, dZ);
+        // const Real curr_opacity =
+        //     interp_helper.interpolate_log(model.lines.opacity(currpoint, lineidx),
+        //         model.lines.opacity(currpoint_interp_idx, lineidx), curr_interp);
+        // const Real next_opacity =
+        //     interp_helper.interpolate_log(model.lines.opacity(nextpoint, lineidx),
+        //         model.lines.opacity(nextpoint_interp_idx, lineidx), next_interp);
+        // const Real curr_emissivity =
+        //     interp_helper.interpolate_log(model.lines.emissivity(currpoint, lineidx),
+        //         model.lines.emissivity(currpoint_interp_idx, lineidx), curr_interp);
+        // const Real next_emissivity =
+        //     interp_helper.interpolate_log(model.lines.emissivity(nextpoint, lineidx),
+        //         model.lines.emissivity(nextpoint_interp_idx, lineidx), next_interp);
+        // Real line_Scurr = curr_emissivity / curr_opacity;
+        // Real line_Snext = next_emissivity / next_opacity;
+
+        Real Scurr_p = model.lines.emissivity(currpoint, l) / model.lines.opacity(currpoint, l);
+        Real Snext_p = model.lines.emissivity(nextpoint, l) / model.lines.opacity(nextpoint, l);
+        Real Scurr_interp_p = model.lines.emissivity(currpoint_interp_idx, l)
+                            / model.lines.opacity(currpoint_interp_idx, l);
+        Real Snext_interp_p = model.lines.emissivity(nextpoint_interp_idx, l)
+                            / model.lines.opacity(nextpoint_interp_idx, l);
+
+        Real line_Scurr = interp_helper.interpolate_log(Scurr_p, Scurr_interp_p, curr_interp);
+        Real line_Snext = interp_helper.interpolate_log(Snext_p, Snext_interp_p, next_interp);
 
         sum_dtau += line_dtau;
         sum_dtau_times_Scurr += line_dtau * line_Scurr;
@@ -2069,21 +2094,31 @@ inline void Solver ::compute_S_dtau_line_integrated<CloseLines>(Model& model, Si
         const Size l = model.lines.sorted_line_map[sort_l];
 
         Real line_dtau = compute_dtau_single_line(model, currpoint, nextpoint, currpoint_interp_idx,
-            nextpoint_interp_idx, lineidx, currfreq, nextfreq, curr_interp, next_interp, dZ);
-        const Real curr_opacity =
-            interp_helper.interpolate_log(model.lines.opacity(currpoint, lineidx),
-                model.lines.opacity(currpoint_interp_idx, lineidx), curr_interp);
-        const Real next_opacity =
-            interp_helper.interpolate_log(model.lines.opacity(nextpoint, lineidx),
-                model.lines.opacity(nextpoint_interp_idx, lineidx), next_interp);
-        const Real curr_emissivity =
-            interp_helper.interpolate_log(model.lines.emissivity(currpoint, lineidx),
-                model.lines.emissivity(currpoint_interp_idx, lineidx), curr_interp);
-        const Real next_emissivity =
-            interp_helper.interpolate_log(model.lines.emissivity(nextpoint, lineidx),
-                model.lines.emissivity(nextpoint_interp_idx, lineidx), next_interp);
-        Real line_Scurr = curr_emissivity / curr_opacity;
-        Real line_Snext = next_emissivity / next_opacity;
+            nextpoint_interp_idx, l, currfreq, nextfreq, curr_interp, next_interp, dZ);
+        // const Real curr_opacity =
+        //     interp_helper.interpolate_log(model.lines.opacity(currpoint, lineidx),
+        //         model.lines.opacity(currpoint_interp_idx, lineidx), curr_interp);
+        // const Real next_opacity =
+        //     interp_helper.interpolate_log(model.lines.opacity(nextpoint, lineidx),
+        //         model.lines.opacity(nextpoint_interp_idx, lineidx), next_interp);
+        // const Real curr_emissivity =
+        //     interp_helper.interpolate_log(model.lines.emissivity(currpoint, lineidx),
+        //         model.lines.emissivity(currpoint_interp_idx, lineidx), curr_interp);
+        // const Real next_emissivity =
+        //     interp_helper.interpolate_log(model.lines.emissivity(nextpoint, lineidx),
+        //         model.lines.emissivity(nextpoint_interp_idx, lineidx), next_interp);
+        // Real line_Scurr = curr_emissivity / curr_opacity;
+        // Real line_Snext = next_emissivity / next_opacity;
+
+        Real Scurr_p = model.lines.emissivity(currpoint, l) / model.lines.opacity(currpoint, l);
+        Real Snext_p = model.lines.emissivity(nextpoint, l) / model.lines.opacity(nextpoint, l);
+        Real Scurr_interp_p = model.lines.emissivity(currpoint_interp_idx, l)
+                            / model.lines.opacity(currpoint_interp_idx, l);
+        Real Snext_interp_p = model.lines.emissivity(nextpoint_interp_idx, l)
+                            / model.lines.opacity(nextpoint_interp_idx, l);
+
+        Real line_Scurr = interp_helper.interpolate_log(Scurr_p, Scurr_interp_p, curr_interp);
+        Real line_Snext = interp_helper.interpolate_log(Snext_p, Snext_interp_p, next_interp);
 
         sum_dtau += line_dtau;
         sum_dtau_times_Scurr += line_dtau * line_Scurr;
@@ -2396,6 +2431,8 @@ inline Real Solver ::compute_dtau_single_line(Model& model, Size curridx, Size n
     // optical depth formula) happens if we were not to use
     // this branch
     if (curr_freq == next_freq) {
+        std::cout << "Warning: Frequencies are equal, using default computation for optical depth"
+                  << std::endl;
         // doing the default computation instead (no shifting)
         const Real diff = curr_freq - model.lines.line[lineidx]; // curr_freq==next_freq,
                                                                  // so choice is arbitrary
