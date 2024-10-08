@@ -20,7 +20,8 @@ result_dir= path+"/../../results/"
 redux_file = os.path.join(modeldir, 'wind_red.hdf5' )   # Reduced Magritte model
 # lamda_file = os.path.join(datadir, 'co.txt'                )   # Line data file
 
-VERSION = version('magritte')
+VERSION = version('magritte')#TODO: figure out how to instead use the next version here, instead pf manually settiing it
+
 
 def run_model (nosave=True):
 

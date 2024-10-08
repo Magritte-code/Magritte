@@ -77,8 +77,11 @@ struct Parameters {
     Real min_rel_pop_for_convergence = 1.0e-10;
     Real pop_prec                    = 1.0e-6;
     Real min_opacity                 = 1.0e-26;
-    long double min_line_opacity     = 1.0e-10;
+    long double min_line_opacity     = 1.0e-13;
+    long double min_line_emissivity  = 1.0e-50;
     Real min_dtau                    = 1.0e-15;
+    Real max_interpolation_diff =
+        1.4; // max relative differences between successive line source functions
     Real population_inversion_fraction =
         -1.0; // previously 1.01; // threshold factor for population inversion required
               //  for LTE to be used; set this higher than 1

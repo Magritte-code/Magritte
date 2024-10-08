@@ -12,8 +12,10 @@ import matplotlib.pyplot as plt
 import magritte.tools    as tools
 import magritte.setup    as setup
 import magritte.core     as magritte
+import magritte.plot as plot
 
-VERSION = "0.7.2"#reference version of Magritte to compare against; should correspond to a commited intensity file
+VERSION = "0.9.0"#reference version of Magritte to compare against; should correspond to a commited intensity file
+#starting from 0.9.0, we compute the intensity for 4 lines at the same time, instead of just a single line. This is still not a realistic usecase, but suffices for regression testing.
 
 path = os.path.dirname(os.path.realpath(__file__))
 

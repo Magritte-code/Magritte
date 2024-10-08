@@ -194,7 +194,7 @@ def run_model (a_or_b, nosave=False, use_widgets=True):
     error_u_0s = np.abs(tools.relative_error(us, u_0s)[:-1, :-1, :])
     error_u_2f = np.abs(tools.relative_error(us, u_2f)[:-1, :-1, :])
 
-    log_err_min = np.log10(np.min([error_u_0s, error_u_2f]))
+    log_err_min = np.log10(max(np.min([error_u_0s, error_u_2f]), 1e-10))
     log_err_max = np.log10(np.max([error_u_0s, error_u_2f]))
 
     bins = np.logspace(log_err_min, log_err_max, 100)

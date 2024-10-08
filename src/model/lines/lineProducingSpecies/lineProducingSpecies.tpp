@@ -24,7 +24,8 @@ inline Real LineProducingSpecies ::get_emissivity(const Size p, const Size k) co
     const Size i    = index(p, linedata.irad[k]);
     const Real freq = linedata.frequency[k];
 
-    return freq * HH_OVER_FOUR_PI * linedata.A[k] * population(i);
+    return std::max(
+        freq * HH_OVER_FOUR_PI * linedata.A[k] * population(i), parameters->min_line_emissivity);
 }
 
 ///  Getter for the line opacity

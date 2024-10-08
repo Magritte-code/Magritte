@@ -290,6 +290,10 @@ PYBIND11_MODULE(core, module) {
             "Minimum opacity that will be assumed in the solver.")
         .def_readwrite("min_line_opacity", &Parameters::min_line_opacity,
             "Minimum line opacity that will be assumed in the solver.")
+        .def_readwrite("min_line_emissivity", &Parameters::min_line_emissivity,
+            "Minimum line emissivity that will be assumed in the solver.")
+        .def_readwrite("max_interpolation_diff", &Parameters::max_interpolation_diff,
+            "Maximum relative difference between successive line source functions.")
         .def_readwrite("min_dtau", &Parameters::min_dtau,
             "Minimum optical depth increment that will be assumed in the solver.")
         .def_readwrite("population_inversion_fraction", &Parameters::population_inversion_fraction,
@@ -372,9 +376,9 @@ PYBIND11_MODULE(core, module) {
         .def_readonly("points", &Geometry::points, "Points object.")
         .def_readonly("rays", &Geometry::rays, "Rays object.")
         .def_readonly("boundary", &Geometry::boundary, "Boundary object")
-        .def_readonly("lengths", &Geometry::lengths,
-            "Array containing the lengths of the rays for each "
-            "direction and point.")
+        // .def_readonly("lengths", &Geometry::lengths,
+        //     "Array containing the lengths of the rays for each "
+        //     "direction and point.")
         // io
         .def("read", &Geometry::read, "Read object from file.")
         .def("write", &Geometry::write, "Write object to file.");

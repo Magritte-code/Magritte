@@ -1,6 +1,7 @@
 #pragma once
 
 #include "model/model.hpp"
+#include "solver/solver_interp_helper.hpp"
 #include "tools/types.hpp"
 
 ///  Approximation used in the solver
@@ -18,6 +19,11 @@ struct Solver {
 
     pc::multi_threading::ThreadPrivate<Vector<double>> dZ_; ///< distance increments along the ray
     pc::multi_threading::ThreadPrivate<Vector<Size>> nr_; ///< corresponding point number on the ray
+    pc::multi_threading::ThreadPrivate<Vector<Size>>
+        nr_interp_; ///< corresponding point number for interpolation on the ray
+    pc::multi_threading::ThreadPrivate<Vector<double>>
+        interp_factor_; ///< Distance along interpolation between nr_ and nr_interp_ (contains
+                        ///< values between 0 and 1)
     pc::multi_threading::ThreadPrivate<Vector<double>> shift_; ///< Doppler shift along the ray
 
     pc::multi_threading::ThreadPrivate<Vector<Real>> eta_c_;
@@ -69,6 +75,9 @@ struct Solver {
 
     Size n_off_diag;
 
+    InterpHelper interp_helper; // FIXME: replace with std::optional<InterpHelper> in the future;
+                                // then remove the default constructor definition
+
     template <Frame frame, bool use_adaptive_directions> void setup(Model& model);
 
     // template <Frame frame>
@@ -76,9 +85,8 @@ struct Solver {
 
     void setup(const Size l, const Size w, const Size n_o_d);
 
-    accel inline Real get_dshift_max(const Model& model, const Size o);
-
-    template <Frame frame, bool use_adaptive_directions> inline void get_ray_lengths(Model& model);
+    template <Frame frame, bool use_adaptive_directions>
+    inline Size get_ray_length(Model& model, const Size o, const Size r) const;
 
     template <Frame frame, bool use_adaptive_directions>
     inline Size get_ray_lengths_max(Model& model);
@@ -86,24 +94,34 @@ struct Solver {
     // template <Frame frame>
     inline Size get_ray_lengths_max_new_imager(Model& model, Image& image, const Vector3D& ray_dir);
 
-    accel inline Size get_ray_length_new_imager(const Geometry& geometry, const Vector3D& origin,
-        const Size start_bdy, const Vector3D& raydir);
+    accel inline Size get_ray_length_new_imager(
+        const Model& model, const Vector3D& origin, const Size start_bdy, const Vector3D& raydir);
 
     template <Frame frame, bool use_adaptive_directions>
-    accel inline Size trace_ray(const Geometry& geometry, const Size o, const Size r,
-        const double dshift_max, const int increment, Size id1, Size id2);
+    accel inline Size trace_ray(
+        const Model& model, const Size o, const Size r, const int increment, Size id1, Size id2);
+    template <Frame frame, bool use_adaptive_directions>
+    accel inline Size trace_ray_for_line(const Model& model, const Size l, const Size o,
+        const Size r, const int increment, Size id1, Size id2);
 
     accel inline Size trace_ray_imaging_get_start(const Geometry& geometry, const Vector3D& origin,
         const Size start_bdy, const Vector3D& raydir, Real& Z);
 
     template <Frame frame>
-    accel inline Size trace_ray_imaging(const Geometry& geometry, const Vector3D& origin,
-        const Size start_bdy, const Vector3D& raydir, const double dshift_max, const int increment,
+    accel inline Size trace_ray_imaging(const Model& model, const Vector3D& origin,
+        const Size start_bdy, const Vector3D& raydir, const int increment, Real& Z, Size id1,
+        Size id2);
+    template <Frame frame>
+    accel inline Size trace_ray_imaging_for_line(const Model& model, const Size l,
+        const Vector3D& origin, const Size start_bdy, const Vector3D& raydir, const int increment,
         Real& Z, Size id1, Size id2);
 
-    accel inline void set_data(const Size crt, const Size nxt, const double shift_crt,
-        const double shift_nxt, const double dZ_loc, const double dshift_max, const int increment,
+    accel inline void set_data(const Model& model, const Size crt, const Size nxt,
+        const double shift_crt, const double shift_nxt, const double dZ_loc, const int increment,
         Size& id1, Size& id2);
+    accel inline void set_data_for_line(const Model& model, const Size l, const Size crt,
+        const Size nxt, const double shift_crt, const double shift_nxt, const double dZ_loc,
+        const int increment, Size& id1, Size& id2);
 
     accel inline Real gaussian(const Real width, const Real diff) const;
     accel inline Real planck(const Real temp, const Real freq) const;
@@ -115,29 +133,34 @@ struct Solver {
         const Real freq, Real& eta, Real& chi) const;
 
     template <ApproximationType approx>
-    inline void compute_S_dtau_line_integrated(Model& model, Size currpoint, Size nextpoint,
-        Size lineidx, Real currfreq, Real nextfreq, Real dZ, Real& dtau, Real& Scurr, Real& Snext);
-
-    inline Real compute_dtau_single_line(Model& model, Size curridx, Size nextidx, Size lineidx,
-        Real curr_freq, Real next_freq, Real dz);
+    accel inline void get_eta_and_chi_interpolated(const Model& model, const Size p1, const Size p2,
+        const Real factor, const Size l, const Real freq, Real& eta, Real& chi) const;
 
     template <ApproximationType approx>
-    accel inline void compute_source_dtau(Model& model, Size currpoint, Size nextpoint, Size line,
-        Real curr_freq, Real next_freq, double curr_shift, double next_shift, Real dZ,
-        bool& compute_curr_opacity, Real& dtaunext, Real& chicurr, Real& chinext, Real& Scurr,
+    inline void compute_S_dtau_line_integrated(Model& model, Size currpoint, Size nextpoint,
+        Size currpoint_interp_idx, Size nextpoint_interp_idx, Size lineidx, Real currfreq,
+        Real nextfreq, Real dZ, Real curr_interp, Real next_interp, Real& dtau, Real& Scurr,
         Real& Snext);
+
+    inline Real compute_dtau_single_line(Model& model, Size curridx, Size nextidx,
+        Size currpoint_interp_idx, Size nextpoint_interp_idx, Size lineidx, Real curr_freq,
+        Real next_freq, Real curr_interp, Real next_interp, Real dz);
+
+    template <ApproximationType approx>
+    accel inline void compute_source_dtau(Model& model, Size currpoint, Size nextpoint,
+        Size currpoint_interp_idx, Size nextpoint_interp_idx, Size line, Real curr_freq,
+        Real next_freq, double curr_shift, double next_shift, Real curr_interp, Real next_interp,
+        Real dZ, bool& compute_curr_opacity, Real& dtaunext, Real& chicurr, Real& chinext,
+        Real& Scurr, Real& Snext);
 
     template <ApproximationType approx, bool use_adaptive_directions>
     accel inline void update_Lambda(Model& model, const Size rr, const Size f);
-    // accel inline void solve_shortchar_order_0_ray_forward (
-    //           Model& model,
-    //           const Size   o,
-    //           const Size   r);
-    // accel inline void solve_shortchar_order_0_ray_backward
-    // (
-    //           Model& model,
-    //           const Size   o,
-    //           const Size   r);
+    template <ApproximationType approx, bool use_adaptive_directions>
+    accel inline Real solve_shortchar_order_0_ray_forward(
+        Model& model, const Size o, const Size r, const Size f);
+    template <ApproximationType approx, bool use_adaptive_directions>
+    accel inline Real solve_shortchar_order_0_ray_backward(
+        Model& model, const Size o, const Size r, const Size f);
 
     // Solvers for images
     /////////////////////
@@ -186,8 +209,8 @@ struct Solver {
 
     template <ApproximationType approx, bool use_adaptive_directions>
     accel inline void solve_shortchar_order_0(Model& model);
-    template <ApproximationType approx, bool use_adaptive_directions>
-    accel inline void solve_shortchar_order_0(Model& model, const Size o, const Size r);
+    // template <ApproximationType approx, bool use_adaptive_directions>
+    // accel inline void solve_shortchar_order_0(Model& model, const Size o, const Size r);
 
     template <ApproximationType approx, bool use_adaptive_directions>
     accel inline void solve_feautrier_order_2_uv(Model& model);

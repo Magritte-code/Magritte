@@ -1153,8 +1153,8 @@ int Model ::set_column() {
     return (0);
 }
 
-// /  Setter for the maximum allowed shift value determined by the smallest line
-// /////////////////////////////////////////////////////////////////////////////
+///  Setter for the maximum allowed shift value determined by the smallest line
+///////////////////////////////////////////////////////////////////////////////
 int Model ::set_dshift_max() {
     // Allocate memory
     dshift_max.resize(parameters->npoints());

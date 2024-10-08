@@ -220,53 +220,6 @@ inline double Geometry ::get_shift_general_geometry<Rest>(
     return 1.0 + points.velocity[crt].dot(raydir);
 }
 
-accel inline Size Geometry ::get_n_interpl(
-    const double shift_crt, const double shift_nxt, const double dshift_max) const {
-    const double dshift_abs = fabs(shift_nxt - shift_crt);
-
-    if (dshift_abs > dshift_max) {
-        return dshift_abs / dshift_max + 1;
-    } else {
-        return 1;
-    }
-}
-
-template <Frame frame, bool use_adaptive_directions>
-accel inline Size Geometry ::get_ray_length(
-    const Size o, const Size r, const double dshift_max) const {
-    Size l    = 0;   // ray length
-    double Z  = 0.0; // distance from origin (o)
-    double dZ = 0.0; // last increment in Z
-
-    Size nxt = get_next<use_adaptive_directions>(o, r, o, Z, dZ);
-
-    if (valid_point(nxt)) {
-        Size crt         = o;
-        double shift_crt = get_shift<frame, use_adaptive_directions>(o, r, crt, 0.0);
-        double shift_nxt = get_shift<frame, use_adaptive_directions>(o, r, nxt, Z);
-
-        l += 1; // no interpolation means only a single point added to the ray each
-                // time
-
-        while (not_on_boundary(nxt)) {
-            crt       = nxt;
-            shift_crt = shift_nxt;
-
-            nxt       = get_next<use_adaptive_directions>(o, r, nxt, Z, dZ);
-            shift_nxt = get_shift<frame, use_adaptive_directions>(o, r, nxt, Z);
-
-            l += 1; // no interpolation means only a single point added to the ray
-                    // each time
-
-            if (!valid_point(nxt)) {
-                printf("ERROR: no valid neighbor o=%u, r=%u, crt=%u\n", o, r, crt);
-            }
-        }
-    }
-
-    return l;
-}
-
 ///  Check whether a point index is valid
 ///    @param[in] p : point index
 ///    @returns true if p is a valid index

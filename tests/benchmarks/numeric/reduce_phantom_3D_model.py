@@ -103,7 +103,7 @@ def reduce_phantom():
 
     setup.set_uniform_rays            (model)   # Uncomment to use all directions
     setup.set_boundary_condition_CMB  (model)
-    setup.set_linedata_from_LAMDA_file(model, lamda_file, {'considered transitions': [0]})
+    setup.set_linedata_from_LAMDA_file(model, lamda_file, {'considered transitions': [0]})#first transition for testing
     # model = setup.set_linedata_from_LAMDA_file(model, lamda_file)   # Consider all transitions
     setup.set_quadrature              (model)
 
