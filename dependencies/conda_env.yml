@@ -1,4 +1,4 @@
-name: magrittedocs
+name: magritte
 channels:
   - ensor
   - conda-forge
