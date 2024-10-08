@@ -1,4 +1,4 @@
-name: magritte
+name: magrittedocs
 channels:
   - ensor
   - conda-forge
@@ -11,7 +11,7 @@ dependencies:
   - numpy
   - jupyterlab
   - yt
-  - scipy<=1.13
+  - scipy
   - mpi4py
   - plotly
   - pyyaml
@@ -28,7 +28,7 @@ dependencies:
   - pandas
   - nodejs
   - twine
-  - sphinx #=4.4.0
+  - sphinx
   - pip
   - pip:
     - breathe
