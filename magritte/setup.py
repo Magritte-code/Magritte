@@ -350,8 +350,6 @@ def set_adaptive_rays(model, Ntop: int = 2, Nrefiments: int = 4, Ncomparisons: i
     Nrefinements (int, optional): Refinement parameter. Determines the amount of refinement levels. Defaults to 4.
     Ncomparisons (int, optional): Randomly sample Ncomparison positions for determine the adaptive ray directions. Required computation time scales linearly. Defaults to 4000.
 
-    TODO: ADD ALL OPTIONAL PARAMETERS
-
     Returns
     -------
     out : Magritte model object
