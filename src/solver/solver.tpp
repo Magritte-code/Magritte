@@ -1637,7 +1637,7 @@ accel inline Real Solver ::solve_shortchar_order_0_ray_forward(
         const Real freq = model.radiation.frequencies.nu(o, f);
         const Size l    = model.radiation.frequencies.corresponding_line[f];
 
-        compute_source_dtau<None>(model, crt, nxt, crt_interp_idx, nxt_interp_idx, l,
+        compute_source_dtau<approx>(model, crt, nxt, crt_interp_idx, nxt_interp_idx, l,
             freq * shift_c, freq * shift_n, shift_c, shift_n, dZ[idx - 1], crt_interp, nxt_interp,
             compute_curr_opacity, dtau, chi_c, chi_n, source_c, source_n);
         dtau = std::max(model.parameters->min_dtau, dtau);
@@ -1739,7 +1739,7 @@ accel inline Real Solver ::solve_shortchar_order_0_ray_backward(
         const Real freq = model.radiation.frequencies.nu(o, f);
         const Size l    = model.radiation.frequencies.corresponding_line[f];
 
-        compute_source_dtau<None>(model, crt, nxt, crt_interp_idx, nxt_interp_idx, l,
+        compute_source_dtau<approx>(model, crt, nxt, crt_interp_idx, nxt_interp_idx, l,
             freq * shift_c, freq * shift_n, shift_c, shift_n, dZ[indexp1 - 1], crt_interp,
             nxt_interp, compute_curr_opacity, dtau, chi_c, chi_n, source_c, source_n);
         dtau = std::max(model.parameters->min_dtau, dtau);
