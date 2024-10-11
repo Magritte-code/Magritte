@@ -58,9 +58,9 @@ accel inline Size Geometry ::get_next_general_geometry<Imagetracer>(
     const Size n_nbs     = points.n_neighbors[c];
     const Size cum_n_nbs = points.cum_n_neighbors[c];
 
-    double dmin               = std::numeric_limits<Real>::max(); // Initialize to "infinity"
-    Size next                 = parameters->npoints(); // return npoints when there is no next
-    double maxdist_neighbors2 = 0.0;
+    double dmin = std::numeric_limits<Real>::max(); // Initialize to "infinity"
+    Size next   = parameters->npoints();            // return npoints when there is no next
+    // double maxdist_neighbors2 = 0.0;
 
     for (Size i = 0; i < n_nbs; i++) {
         const Size n       = points.neighbors[cum_n_nbs + i];
@@ -76,28 +76,28 @@ accel inline Size Geometry ::get_next_general_geometry<Imagetracer>(
                 dZ   = Z_new - Z; // such that dZ > 0.0
             }
         }
-        const Vector3D diff_nxt_crt = points.position[n] - points.position[c];
-        const double dist_neighbor2 = diff_nxt_crt.dot(diff_nxt_crt);
-        if (dist_neighbor2 > maxdist_neighbors2) {
-            maxdist_neighbors2 = dist_neighbor2;
-        }
+        // const Vector3D diff_nxt_crt = points.position[n] - points.position[c];
+        // const double dist_neighbor2 = diff_nxt_crt.dot(diff_nxt_crt);
+        // if (dist_neighbor2 > maxdist_neighbors2) {
+        //     maxdist_neighbors2 = dist_neighbor2;
+        // }
     }
 
-    const Vector3D R_c                   = points.position[c] - origin;
-    const double Z_c                     = R_c.dot(raydir);
-    const double distance_curr_from_ray2 = R_c.dot(R_c) - Z_c * Z_c;
+    // const Vector3D R_c                   = points.position[c] - origin;
+    // const double Z_c                     = R_c.dot(raydir);
+    // const double distance_curr_from_ray2 = R_c.dot(R_c) - Z_c * Z_c;
 
-    // Precaution against tracing stuff along the boundary, stopping when we move
-    // farther from the ray than the distance traveled using a safety factor of 2;
-    // TO DO: actually implement some manner of 'surface unit vector' to determine
-    // when to stop this ray; then this entire condition might be replaced by this
-    // (maybe also merge with 'regular' get_next_general_geometry) we also check
-    // whether the distance from the ray increases (as irregularly placed boundary
-    // points might result in stopping too early)
-    if ((!not_on_boundary(c)) && (2.0 * maxdist_neighbors2 < dmin)
-        && (distance_curr_from_ray2 < dmin)) {
-        return parameters->npoints();
-    }
+    // // Precaution against tracing stuff along the boundary, stopping when we move
+    // // farther from the ray than the distance traveled using a safety factor of 2;
+    // // TO DO: actually implement some manner of 'surface unit vector' to determine
+    // // when to stop this ray; then this entire condition might be replaced by this
+    // // (maybe also merge with 'regular' get_next_general_geometry) we also check
+    // // whether the distance from the ray increases (as irregularly placed boundary
+    // // points might result in stopping too early)
+    // if ((!not_on_boundary(c)) && (2.0 * maxdist_neighbors2 < dmin)
+    //     && (distance_curr_from_ray2 < dmin)) {
+    //     return parameters->npoints();
+    // }
 
     // Update distance along ray
     Z += dZ;
