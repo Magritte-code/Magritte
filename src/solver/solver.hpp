@@ -209,6 +209,8 @@ struct Solver {
 
     template <ApproximationType approx, bool use_adaptive_directions>
     accel inline void solve_shortchar_order_0(Model& model);
+    template <ApproximationType approx, bool use_adaptive_directions>
+    accel inline void solve_shortchar_order_0_sparse(Model& model);
     // template <ApproximationType approx, bool use_adaptive_directions>
     // accel inline void solve_shortchar_order_0(Model& model, const Size o, const Size r);
 

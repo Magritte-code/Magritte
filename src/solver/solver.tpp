@@ -235,6 +235,89 @@ inline void Solver ::solve_shortchar_order_0(Model& model) {
 }
 
 template <ApproximationType approx, bool use_adaptive_directions>
+inline void Solver ::solve_shortchar_order_0_sparse(Model& model) {
+
+    std::cout << "before init" << std::endl;
+    // Initialise sparse mean intensity
+    for (LineProducingSpecies& lspec : model.lines.lineProducingSpecies) {
+        lspec.lambda.clear();
+
+        lspec.J.resize(model.parameters->npoints(), lspec.linedata.nrad);
+
+        threaded_for(o, model.parameters->npoints(), {
+            for (Size k = 0; k < lspec.linedata.nrad; k++) {
+                lspec.J(o, k) = 0.0;
+            }
+        })
+    }
+
+    std::cout << "after init" << std::endl;
+
+    // Initialise Lambda operator
+    for (auto& lspec : model.lines.lineProducingSpecies) {
+        lspec.lambda.clear();
+    }
+
+    // For each ray, solve transfer equation
+    for (Size rr = 0; rr < model.parameters->hnrays(); rr++) {
+
+        cout << "--- rr = " << rr << endl;
+
+        for (Size lspec_idx = 0; lspec_idx < model.lines.lineProducingSpecies.size(); lspec_idx++) {
+            LineProducingSpecies& lspec = model.lines.lineProducingSpecies[lspec_idx];
+            accelerated_for(o, model.parameters->npoints(), {
+                const Real wt =
+                    model.geometry.rays.get_weight<use_adaptive_directions>(o, rr) * two;
+                const Size ar = model.geometry.rays.get_antipod_index(rr);
+
+                nr_()[centre]    = o;
+                shift_()[centre] = 1.0;
+
+                for (Size k = 0; k < lspec.linedata.nrad; k++) {
+                    const Size l = model.lines.line_index(lspec_idx, k);
+                    // For every individual line, the required interpolation can differ
+                    first_() = trace_ray_for_line<CoMoving, use_adaptive_directions>(
+                                   model, l, o, rr, -1, centre - 1, centre - 1)
+                             + 1;
+                    last_() = trace_ray_for_line<CoMoving, use_adaptive_directions>(
+                                  model, l, o, ar, +1, centre + 1, centre)
+                            - 1;
+                    n_tot_() = (last_() + 1) - first_();
+                    // std::cout << "o: " << o << " n_tot_ = " << n_tot_() << std::endl;
+
+                    if (n_tot_() > 1) {
+                        // Integrate over the line
+                        for (Size z = 0; z < model.parameters->nquads(); z++) {
+                            const Size f   = lspec.nr_line[o][k][z];
+                            const Real I_f = solve_shortchar_order_0_ray_forward<approx,
+                                use_adaptive_directions>(model, o, rr, f);
+                            const Real I_b = solve_shortchar_order_0_ray_backward<approx,
+                                use_adaptive_directions>(model, o, rr, f);
+
+                            const Real u = 0.5 * (I_f + I_b);
+                            lspec.J(o, k) += lspec.quadrature.weights[z] * wt * u;
+                        }
+                    } else {
+                        // Integrate over the line
+                        for (Size z = 0; z < model.parameters->nquads(); z++) {
+                            const Size f = lspec.nr_line[o][k][z];
+                            const Real bdy_I =
+                                boundary_intensity(model, o, model.radiation.frequencies.nu(o, f));
+
+                            lspec.J(o, k) += lspec.quadrature.weights[z] * wt * bdy_I;
+                        }
+                    }
+                }
+            })
+        }
+
+        pc::accelerator::synchronize();
+    }
+
+    model.radiation.J.copy_ptr_to_vec();
+}
+
+template <ApproximationType approx, bool use_adaptive_directions>
 inline void Solver ::solve_feautrier_order_2_uv(Model& model) {
     // Allocate memory if not pre-allocated
     if (!model.parameters->store_intensities) {

@@ -201,7 +201,11 @@ PYBIND11_MODULE(core, module) {
             "Feautrier solver, anisotropic case.")
         .def("compute_radiation_field_shortchar_order_0",
             &Model::compute_radiation_field_shortchar_order_0,
-            "Compute the radiation field for the modle using the 0th-order "
+            "Compute the radiation field for the model using the 0th-order "
+            "short-characteristics methods.")
+        .def("compute_radiation_field_shortchar_order_0_sparse",
+            &Model::compute_radiation_field_shortchar_order_0_sparse,
+            "Compute the radiation field for the model using the 0th-order "
             "short-characteristics methods.")
         .def("compute_Jeff", &Model::compute_Jeff,
             "Compute the effective mean intensity in the line.")
@@ -222,6 +226,12 @@ PYBIND11_MODULE(core, module) {
             "solver for the model assuming statistical equilibrium until "
             "convergence, optionally using Ng-acceleration, and for the given "
             "maximum number of iterations.")
+        .def("compute_level_populations_shortchar_sparse",
+            &Model::compute_level_populations_shortchar_sparse,
+            "Compute the level populations using the short-characteristics "
+            "solver for the model assuming statistical equilibrium until "
+            "convergence, optionally using Ng-acceleration, and for the given "
+            "maximum number of iterations. (Memory sparse option.)")
         .def("compute_image", &Model::compute_image,
             "Compute an image for the model along the given ray.")
         .def("compute_image_new", (int(Model::*)(const Size ray_nr)) & Model::compute_image_new,

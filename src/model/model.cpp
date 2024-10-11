@@ -310,6 +310,46 @@ int Model ::compute_LTE_level_populations() {
 
 ///  Computer for the radiation field
 /////////////////////////////////////
+int Model ::compute_radiation_field_shortchar_order_0_sparse() {
+    cout << "Computing radiation field..." << endl;
+
+    Solver solver;
+    const bool use_adaptive_directions = geometry.rays.use_adaptive_directions;
+    // TODO: create macro for this substitution instead of doing the if-else manually
+    if (use_adaptive_directions) {
+        cout << "Using adaptive directions" << endl;
+        solver.setup<CoMoving, true>(*this);
+    } else {
+        solver.setup<CoMoving, false>(*this);
+    }
+
+    if (parameters->one_line_approximation) {
+        if (use_adaptive_directions) {
+            solver.solve_shortchar_order_0_sparse<OneLine, true>(*this);
+        } else {
+            solver.solve_shortchar_order_0_sparse<OneLine, false>(*this);
+        }
+        return (0);
+    }
+
+    if (parameters->sum_opacity_emissivity_over_all_lines) {
+        if (use_adaptive_directions) {
+            solver.solve_shortchar_order_0_sparse<None, true>(*this);
+        } else {
+            solver.solve_shortchar_order_0_sparse<None, false>(*this);
+        }
+        return (0);
+    }
+    if (use_adaptive_directions) {
+        solver.solve_shortchar_order_0_sparse<CloseLines, true>(*this);
+    } else {
+        solver.solve_shortchar_order_0_sparse<CloseLines, false>(*this);
+    }
+    return (0);
+}
+
+///  Computer for the radiation field
+/////////////////////////////////////
 int Model ::compute_radiation_field_shortchar_order_0() {
     cout << "Computing radiation field..." << endl;
 
@@ -810,6 +850,109 @@ int Model ::compute_level_populations_sparse(
             timer_1.start();
 
             compute_radiation_field_feautrier_order_2_sparse();
+            compute_Jeff_sparse();
+
+            timer_1.stop();
+            timer_1.print_total();
+
+            Timer timer_2("Compute Statistical Equilibrium");
+            timer_2.start();
+
+            lines.iteration_using_statistical_equilibrium_sparse(
+                chemistry.species.abundance, thermodynamics.temperature.gas, parameters->pop_prec);
+
+            timer_2.stop();
+            timer_2.print_total();
+
+            iteration_normal++;
+
+            for (int l = 0; l < parameters->nlspecs(); l++) {
+                error_mean.push_back(lines.lineProducingSpecies[l].relative_change_mean);
+                error_max.push_back(lines.lineProducingSpecies[l].relative_change_max);
+
+                if (lines.lineProducingSpecies[l].fraction_not_converged
+                    > 1.0 - parameters->convergence_fraction) {
+                    some_not_converged = true;
+                }
+
+                const double fnc = lines.lineProducingSpecies[l].fraction_not_converged;
+
+                // logger.write ("Already ", 100 * (1.0 - fnc), " % converged!");
+                cout << "Already " << 100.0 * (1.0 - fnc) << " % converged!" << endl;
+            }
+        }
+    } // end of while loop of iterations
+
+    // Print convergence stats
+    cout << "Converged after " << iteration << " iterations" << endl;
+
+    return iteration;
+}
+
+///  Compute level populations self-consistenly with the radiation field
+///  assuming statistical equilibrium (detailed balance for the levels)
+///  @param[in] io                  : io object (for writing level populations)
+///  @param[in] use_Ng_acceleration : true if Ng acceleration has to be used
+///  @param[in] max_niterations     : maximum number of iterations
+///  @return number of iteration done
+///////////////////////////////////////////////////////////////////////////////
+int Model ::compute_level_populations_shortchar_sparse(
+    const bool use_Ng_acceleration, const long max_niterations) {
+    // Check spectral discretisation setting
+    if (spectralDiscretisation != SD_Lines) {
+        throw std::runtime_error("Spectral discretisation was not set for Lines!");
+    }
+
+    // Initialize the number of iterations
+    int iteration        = 0;
+    int iteration_normal = 0;
+
+    // Initialize errors
+    error_mean.clear();
+    error_max.clear();
+
+    // Initialize some_not_converged
+    bool some_not_converged = true;
+
+    // Iterate as long as some levels are not converged
+    while (some_not_converged && (iteration < max_niterations)) {
+
+        std::tuple<bool, Size> tuple_ng_decision;
+        if (parameters->use_adaptive_Ng_acceleration) {
+            tuple_ng_decision =
+                ng_acceleration_criterion<Adaptive>(use_Ng_acceleration, iteration_normal);
+        } else {
+            tuple_ng_decision =
+                ng_acceleration_criterion<Default>(use_Ng_acceleration, iteration_normal);
+        }
+
+        const bool use_ng_acceleration_step = std::get<0>(tuple_ng_decision);
+        const Size ng_acceleration_order    = std::get<1>(tuple_ng_decision);
+
+        if (use_ng_acceleration_step) {
+            std::cout << "Ng acceleration max order: " << iteration_normal
+                      << " used order: " << ng_acceleration_order << std::endl;
+            lines.iteration_using_Ng_acceleration(chemistry.species.abundance,
+                thermodynamics.temperature.gas, parameters->pop_prec, ng_acceleration_order);
+
+            iteration_normal = 0;
+        } else {
+            iteration++; // only counting default iterations, as the ng-accelerated
+                         // iterations are orders of magnitude faster.
+
+            // Start assuming convergence
+            some_not_converged = false;
+
+            // logger.write ("Starting iteration ", iteration);
+            cout << "Starting iteration " << iteration << endl;
+
+            // logger.write ("Computing the radiation field...");
+            cout << "Computing the radiation field..." << endl;
+
+            Timer timer_1("Compute Radiation Field");
+            timer_1.start();
+
+            compute_radiation_field_shortchar_order_0_sparse();
             compute_Jeff_sparse();
 
             timer_1.stop();
