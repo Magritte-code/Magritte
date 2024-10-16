@@ -888,7 +888,9 @@ accel inline Size Solver ::trace_ray_imaging(const Model& model, const Vector3D&
         }
     }
 
-    if (!accessed_non_boundary) {
+    // Spherically symmetric models have a correct boundary treatment already, thus no need to
+    // reduce their accuracy in a region between the outer boundary and the nearest point.
+    if (!accessed_non_boundary && !model.parameters->spherical_symmetry()) {
         return original_id1;
     }
     return id1;
