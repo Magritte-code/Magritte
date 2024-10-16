@@ -19,11 +19,27 @@ void Points ::read(const Io& io) {
     io.read_array(prefix + "position", position_buffer);
     io.read_array(prefix + "velocity", velocity_buffer);
 
+    Real min_x = std::numeric_limits<Real>::max();
+    Real max_x = std::numeric_limits<Real>::min();
+    Real min_y = std::numeric_limits<Real>::max();
+    Real max_y = std::numeric_limits<Real>::min();
+    Real min_z = std::numeric_limits<Real>::max();
+    Real max_z = std::numeric_limits<Real>::min();
+
     for (Size p = 0; p < parameters->npoints(); p++) {
         position[p] = Vector3D(position_buffer[p][0], position_buffer[p][1], position_buffer[p][2]);
 
         velocity[p] = Vector3D(velocity_buffer[p][0], velocity_buffer[p][1], velocity_buffer[p][2]);
+
+        if (position[p].x() < min_x) min_x = position[p].x();
+        if (position[p].x() > max_x) max_x = position[p].x();
+        if (position[p].y() < min_y) min_y = position[p].y();
+        if (position[p].y() > max_y) max_y = position[p].y();
+        if (position[p].z() < min_z) min_z = position[p].z();
+        if (position[p].z() > max_z) max_z = position[p].z();
     }
+
+    center = Vector3D((min_x + max_x) / 2, (min_y + max_y) / 2, (min_z + max_z) / 2);
 
     const Size totnnbs = io.get_length(prefix + "neighbors");
 

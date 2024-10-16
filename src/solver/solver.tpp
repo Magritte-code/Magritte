@@ -852,46 +852,35 @@ accel inline Size Solver ::trace_ray_imaging(const Model& model, const Vector3D&
 
     Size nxt = model.geometry.get_next<Imagetracer>(origin, raydir, start_bdy, Z, dZ);
 
+    bool accessed_non_boundary = false;
+    Size original_id1 =
+        id1; // initial ray index to return in case of only boundary points on the ray
+
     if (model.geometry.valid_point(nxt)) {
+        // Size crt = o;
         double shift_crt =
-            model.geometry.get_shift<frame>(origin, origin_velocity, raydir, crt, Z, false);
+            model.geometry.get_shift<frame>(origin, origin_velocity, raydir, crt, Z - dZ, false);
         double shift_nxt =
             model.geometry.get_shift<frame>(origin, origin_velocity, raydir, nxt, Z, false);
 
         set_data(model, crt, nxt, shift_crt, shift_nxt, dZ, increment, id1, id2);
 
-        // Due to boundary points begin slightly annoying to
-        // start a ray from, we must make sure the ray only end
-        // when we are sure that we stay on the boundary
-        while (true) {
-            if (!model.geometry.not_on_boundary(nxt)) {
-                Size curr_cons_bdy = 1;
-                Size temp_nxt      = nxt;
-                double temp_Z      = Z;
-                double temp_dZ     = dZ;
-
-                while (true) {
-                    temp_nxt = model.geometry.get_next<Imagetracer>(
-                        origin, raydir, temp_nxt, temp_Z, temp_dZ);
-                    if ((!model.geometry.valid_point(temp_nxt))
-                        || (curr_cons_bdy == MAX_CONSECUTIVE_BDY)) {
-                        return id1; // the ray ends if we cannot find
-                                    // any points anymore, or we have
-                                    // too many boundary points after
-                                    // eachother
-                    }
-                    if (model.geometry.not_on_boundary(temp_nxt)) {
-                        break; // the ray continues, as we find once
-                               // again non-boundary points
-                    }
-                    curr_cons_bdy += 1;
-                }
-            }
-
+        while (model.geometry.not_on_boundary(nxt)
+               || (model.geometry.points.position[nxt] - model.geometry.points.center).dot(raydir)
+                      < 0) {
             crt       = nxt;
             shift_crt = shift_nxt;
 
+            if (model.geometry.not_on_boundary(nxt)) {
+                accessed_non_boundary = true;
+            }
+
             nxt = model.geometry.get_next<Imagetracer>(origin, raydir, nxt, Z, dZ);
+
+            if (!model.geometry.valid_point(nxt)) {
+                break;
+            }
+
             shift_nxt =
                 model.geometry.get_shift<frame>(origin, origin_velocity, raydir, nxt, Z, false);
 
@@ -899,6 +888,11 @@ accel inline Size Solver ::trace_ray_imaging(const Model& model, const Vector3D&
         }
     }
 
+    // Spherically symmetric models have a correct boundary treatment already, thus no need to
+    // reduce their accuracy in a region between the outer boundary and the nearest point.
+    if (!accessed_non_boundary && !model.parameters->spherical_symmetry()) {
+        return original_id1;
+    }
     return id1;
 }
 
@@ -920,51 +914,41 @@ accel inline Size Solver ::trace_ray_imaging_for_line(const Model& model, const 
 
     Size nxt = model.geometry.get_next<Imagetracer>(origin, raydir, start_bdy, Z, dZ);
 
+    bool accessed_non_boundary = false;
+    Size original_id1 =
+        id1; // initial ray index to return in case of only boundary points on the rays
+
     if (model.geometry.valid_point(nxt)) {
         double shift_crt =
-            model.geometry.get_shift<frame>(origin, origin_velocity, raydir, crt, Z, false);
-        double shift_nxt =
-            model.geometry.get_shift<frame>(origin, origin_velocity, raydir, nxt, Z, false);
+            model.geometry.get_shift<frame>(origin, origin_velocity, raydir, crt, Z - dZ, false);
+        double shift_nxt = model.geometry.get_shift<frame>(origin, origin_velocity, raydir, nxt, Z);
 
         set_data_for_line(model, l, crt, nxt, shift_crt, shift_nxt, dZ, increment, id1, id2);
 
-        // Due to boundary points begin slightly annoying to
-        // start a ray from, we must make sure the ray only end
-        // when we are sure that we stay on the boundary
-        while (true) {
-            if (!model.geometry.not_on_boundary(nxt)) {
-                Size curr_cons_bdy = 1;
-                Size temp_nxt      = nxt;
-                double temp_Z      = Z;
-                double temp_dZ     = dZ;
-
-                while (true) {
-                    temp_nxt = model.geometry.get_next<Imagetracer>(
-                        origin, raydir, temp_nxt, temp_Z, temp_dZ);
-                    if ((!model.geometry.valid_point(temp_nxt))
-                        || (curr_cons_bdy == MAX_CONSECUTIVE_BDY)) {
-                        return id1; // the ray ends if we cannot find
-                                    // any points anymore, or we have
-                                    // too many boundary points after
-                                    // eachother
-                    }
-                    if (model.geometry.not_on_boundary(temp_nxt)) {
-                        break; // the ray continues, as we find once
-                               // again non-boundary points
-                    }
-                    curr_cons_bdy += 1;
-                }
-            }
-
+        while (model.geometry.not_on_boundary(nxt)
+               || (model.geometry.points.position[nxt] - model.geometry.points.center).dot(raydir)
+                      < 0) {
             crt       = nxt;
             shift_crt = shift_nxt;
 
+            if (model.geometry.not_on_boundary(nxt)) {
+                accessed_non_boundary = true;
+            }
+
             nxt = model.geometry.get_next<Imagetracer>(origin, raydir, nxt, Z, dZ);
-            shift_nxt =
-                model.geometry.get_shift<frame>(origin, origin_velocity, raydir, nxt, Z, false);
+
+            if (!model.geometry.valid_point(nxt)) {
+                break;
+            }
+
+            shift_nxt = model.geometry.get_shift<frame>(origin, origin_velocity, raydir, nxt, Z);
 
             set_data_for_line(model, l, crt, nxt, shift_crt, shift_nxt, dZ, increment, id1, id2);
         }
+    }
+
+    if (!accessed_non_boundary) {
+        return original_id1;
     }
 
     return id1;
@@ -989,37 +973,18 @@ accel inline Size Solver ::get_ray_length_new_imager(
     if (model.geometry.valid_point(nxt)) {
         l += interp_helper.get_n_interp(model, crt, nxt);
 
-        // Due to boundary points begin slightly annoying to
-        // start a ray from, we must make sure the ray only end
-        // when we are sure that we stay on the boundary
-        while (true) {
-            if (!model.geometry.not_on_boundary(nxt)) {
-                Size curr_cons_bdy = 1;
-                Size temp_nxt      = nxt;
-                double temp_Z      = Z;
-                double temp_dZ     = dZ;
-                while (true) {
-                    temp_nxt = model.geometry.get_next<Imagetracer>(
-                        origin, raydir, temp_nxt, temp_Z, temp_dZ);
-                    if ((!model.geometry.valid_point(temp_nxt))
-                        || (curr_cons_bdy == MAX_CONSECUTIVE_BDY)) {
-                        return l; // the ray ends if we cannot find any
-                                  // points anymore, or we have too many
-                                  // boundary points after eachother
-                    }
-                    if (model.geometry.not_on_boundary(temp_nxt)) {
-                        break; // the ray continues, as we find once
-                               // again non-boundary points
-                    }
-                    curr_cons_bdy += interp_helper.get_n_interp(model, temp_nxt, temp_nxt);
-                }
-            }
-
+        while (model.geometry.not_on_boundary(nxt)
+               || (model.geometry.points.position[nxt] - model.geometry.points.center).dot(raydir)
+                      < 0) {
             crt = nxt;
             nxt = model.geometry.get_next<Imagetracer>(origin, raydir, nxt, Z, dZ);
+            if (!model.geometry.valid_point(nxt)) {
+                break;
+            }
             l += interp_helper.get_n_interp(model, crt, nxt);
         }
     }
+
     return l;
 }
 
