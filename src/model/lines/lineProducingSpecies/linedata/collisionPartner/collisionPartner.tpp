@@ -9,7 +9,7 @@ inline void CollisionPartner ::interpolate_collision_coefficients(const Real tem
     if (t == 0) {
         Ce_intpld() = Ce[0];
         Cd_intpld() = Cd[0];
-    } else if (t == ntmp - 1) {
+    } else if (t == ntmp) {
         Ce_intpld() = Ce[ntmp - 1];
         Cd_intpld() = Cd[ntmp - 1];
     } else {

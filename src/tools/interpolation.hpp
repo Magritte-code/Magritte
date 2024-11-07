@@ -2,7 +2,7 @@
 
 #include "tools/types.hpp"
 
-///  Binary search for the index of a value right above a value in a list
+///  Binary search for the index with value just above the given value
 ///  @param[in] x: vector of tabulated argument values
 ///  @param[in] value: value to search for
 ///  @return index of x table just above value
@@ -12,7 +12,7 @@ inline Size search(const Real1& x, const Real value) {
     Size stop  = x.size() - 1;
 
     if (value >= x[stop]) {
-        return stop;
+        return stop + 1; // need additional value to indicate out of bounds for max value
     } else if (value <= x[start]) {
         return start;
     }
