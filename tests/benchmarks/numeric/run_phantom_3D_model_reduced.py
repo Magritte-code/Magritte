@@ -14,7 +14,7 @@ import magritte.setup    as setup
 import magritte.core     as magritte
 import magritte.plot as plot
 
-VERSION = "0.9.0"#reference version of Magritte to compare against; should correspond to a commited intensity file
+VERSION = "0.9.5"#reference version of Magritte to compare against; should correspond to a commited intensity file
 #starting from 0.9.0, we compute the intensity for 4 lines at the same time, instead of just a single line. This is still not a realistic usecase, but suffices for regression testing.
 
 path = os.path.dirname(os.path.realpath(__file__))
@@ -71,6 +71,15 @@ def run_model (nosave=True):
 
     reference_intensity = np.load(f'{datadir}{modelName}_NLTE_intensity_magritte_{VERSION}.npy')
     reldiff = tools.relative_error(reference_intensity, np.array(model.images[0].I))
+    # For debugging, plot the intensity and reference intensity
+    # plt.figure()
+    # plt.imshow(np.log10(np.array(model.images[0].I).reshape(256, 256, -1))[:, :, 10], origin='lower')
+    # plt.colorbar()
+    # plt.title('log10(intensity)')
+    # plt.figure()
+    # plt.imshow(np.log10(reference_intensity).reshape(256, 256, -1)[:, :, 10], origin='lower')
+    # plt.colorbar()
+    # plt.show()
 
     print(result)
     print("maximum relative difference: ", np.max(reldiff))#only for a few points a significant difference can be seen
