@@ -28,10 +28,11 @@ def import_phantom():
     model_file = os.path.join(modeldir, 'model_Phantom_3D.hdf5')   # Resulting Magritte model
     lamda_file = os.path.join(datadir, 'co.txt'               )   # Line data file
 
-    dump_link  = "https://github.com/Ensor-code/phantom-models/raw/main/Malfait+2021/v05e50/wind_v05e50?download="
-    setup_link = "https://raw.githubusercontent.com/Ensor-code/phantom-models/main/Malfait%2B2021/v05e50/wind.setup"
-    input_link = "https://raw.githubusercontent.com/Ensor-code/phantom-models/main/Malfait%2B2021/v05e50/wind.in"
     lamda_link = "https://home.strw.leidenuniv.nl/~moldata/datafiles/co.dat"
+    # dump_link = "https://owncloud.ster.kuleuven.be/index.php/s/qgxytfnqW7dSiLo/download/wind_00574"
+    dump_link = "https://owncloud.ster.kuleuven.be/index.php/s/Et6CXYpZwjBXsJe/download/wind_00350"
+    input_link = "https://owncloud.ster.kuleuven.be/index.php/s/w9tgWmC2CfkPm7p/download/wind.in"
+    setup_link = "https://owncloud.ster.kuleuven.be/index.php/s/ZP6KwiASYgAayaK/download/wind.setup"
 
     # %%capture
     subprocess.run(['wget', dump_link,  '--output-document', dump_file ])
@@ -44,6 +45,8 @@ def import_phantom():
     # !wget $lamda_link --output-document $lamda_file
 
     # Loading the data with plons
+    print("datadir: ", datadir)
+    print("dump_file: ", dump_file)
     setupData = plons.LoadSetup(datadir, "wind")
     dumpData  = plons.LoadFullDump(dump_file, setupData)
 
