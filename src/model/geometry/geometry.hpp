@@ -82,6 +82,7 @@ struct Geometry {
 
     inline bool valid_point(const Size p) const;
     inline bool not_on_boundary(const Size p) const;
+    inline bool not_inner_boundary(const Size p) const;
 };
 
 #include "geometry.tpp"

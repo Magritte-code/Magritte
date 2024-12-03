@@ -28,6 +28,7 @@ void Boundary ::read(const Io& io) {
     // Set boundary conditions
     boundary_condition.resize(parameters->nboundary());
     boundary_temperature.resize(parameters->nboundary());
+    is_inner_boundary.resize(parameters->nboundary());
 
     Size1 boundary_condition_int(parameters->nboundary());
 
@@ -38,6 +39,16 @@ void Boundary ::read(const Io& io) {
         if (boundary_condition_int[b] == 0) boundary_condition[b] = Zero;
         if (boundary_condition_int[b] == 1) boundary_condition[b] = Thermal;
         if (boundary_condition_int[b] == 2) boundary_condition[b] = CMB;
+    }
+
+    // Older versions of magritte do not specify whether a boundary is an inner boundary. Therefore,
+    // we set all boundaries to be outer boundaries by default.
+    int err = io.read_list(prefix + "is_inner_boundary", is_inner_boundary);
+
+    if (err != 0) {
+        for (Size b = 0; b < parameters->nboundary(); b++) {
+            is_inner_boundary[b] = 0;
+        }
     }
 
     boundary2point.copy_vec_to_ptr();
@@ -62,11 +73,15 @@ void Boundary ::write(const Io& io) const {
 
     io.write_list(prefix + "boundary_temperature", boundary_temperature);
     io.write_list(prefix + "boundary_condition", boundary_condition_int);
+    io.write_list(prefix + "is_inner_boundary", is_inner_boundary);
 }
 
-BoundaryCondition Boundary ::set_boundary_condition(const Size b, const BoundaryCondition cd) {
+BoundaryCondition Boundary ::set_boundary_condition(
+    const Size b, const BoundaryCondition cd, const bool is_inner) {
     boundary_condition.resize(parameters->nboundary());
     boundary_condition[b] = cd;
+    is_inner_boundary.resize(parameters->nboundary());
+    is_inner_boundary[b] = (int)is_inner;
 
     return boundary_condition[b];
 }

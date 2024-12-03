@@ -453,7 +453,7 @@ PYBIND11_MODULE(core, module) {
             "(only relevant for thermal boundary conditions).")
         // functions
         .def("set_boundary_condition", &Boundary::set_boundary_condition,
-            "Setter for the boundary condition.")
+            "Setter for the boundary condition.", py::arg("b"), py::arg("cd"), py::arg("is_inner"))
         .def("get_boundary_condition", &Boundary::get_boundary_condition,
             "Getter for the boundary condition.")
         // io
