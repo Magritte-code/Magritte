@@ -865,9 +865,11 @@ accel inline Size Solver ::trace_ray_imaging(const Model& model, const Vector3D&
 
         set_data(model, crt, nxt, shift_crt, shift_nxt, dZ, increment, id1, id2);
 
-        while (model.geometry.not_on_boundary(nxt)
-               || (model.geometry.points.position[nxt] - model.geometry.points.center).dot(raydir)
-                      < 0) {
+        while (
+            model.geometry.not_on_boundary(nxt)
+            || (model.geometry.not_inner_boundary(nxt)
+                && (model.geometry.points.position[nxt] - model.geometry.points.center).dot(raydir)
+                       < 0)) {
             crt       = nxt;
             shift_crt = shift_nxt;
 
@@ -925,9 +927,11 @@ accel inline Size Solver ::trace_ray_imaging_for_line(const Model& model, const 
 
         set_data_for_line(model, l, crt, nxt, shift_crt, shift_nxt, dZ, increment, id1, id2);
 
-        while (model.geometry.not_on_boundary(nxt)
-               || (model.geometry.points.position[nxt] - model.geometry.points.center).dot(raydir)
-                      < 0) {
+        while (
+            model.geometry.not_on_boundary(nxt)
+            || (model.geometry.not_inner_boundary(nxt)
+                && (model.geometry.points.position[nxt] - model.geometry.points.center).dot(raydir)
+                       < 0)) {
             crt       = nxt;
             shift_crt = shift_nxt;
 
@@ -973,9 +977,11 @@ accel inline Size Solver ::get_ray_length_new_imager(
     if (model.geometry.valid_point(nxt)) {
         l += interp_helper.get_n_interp(model, crt, nxt);
 
-        while (model.geometry.not_on_boundary(nxt)
-               || (model.geometry.points.position[nxt] - model.geometry.points.center).dot(raydir)
-                      < 0) {
+        while (
+            model.geometry.not_on_boundary(nxt)
+            || (model.geometry.not_inner_boundary(nxt)
+                && (model.geometry.points.position[nxt] - model.geometry.points.center).dot(raydir)
+                       < 0)) {
             crt = nxt;
             nxt = model.geometry.get_next<Imagetracer>(origin, raydir, nxt, Z, dZ);
             if (!model.geometry.valid_point(nxt)) {

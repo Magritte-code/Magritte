@@ -234,6 +234,16 @@ inline bool Geometry ::not_on_boundary(const Size p) const {
     return (boundary.point2boundary[p] == parameters->npoints());
 }
 
+///  Check whether a point is not an inner boundary point
+///    @param[in] p : point index
+///    @returns true if p is not on the boundary
+inline bool Geometry ::not_inner_boundary(const Size p) const {
+    if (not_on_boundary(p)) {
+        return true;
+    }
+    return (boundary.is_inner_boundary[boundary.point2boundary[p]] == 0);
+}
+
 ///  Getter for the number of the next cell on ray and its distance along ray in
 ///  the general case without any further assumptions
 ///    @param[in]      origin : position from which the ray originates

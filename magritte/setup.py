@@ -419,7 +419,7 @@ def set_boundary_condition_zero (model):
         Updated Magritte object.
     """
     for b in range(model.parameters.nboundary()):
-        model.geometry.boundary.set_boundary_condition (b, BoundaryCondition.Zero)
+        model.geometry.boundary.set_boundary_condition (b, BoundaryCondition.Zero, False)
     # Done
     return model
 
@@ -439,9 +439,36 @@ def set_boundary_condition_CMB (model):
         Updated Magritte object.
     """
     for b in range(model.parameters.nboundary()):
-        model.geometry.boundary.set_boundary_condition (b, BoundaryCondition.CMB)
+        model.geometry.boundary.set_boundary_condition (b, BoundaryCondition.CMB, False)
     model.geometry.boundary.boundary_temperature.set([T_CMB for _ in range(model.parameters.nboundary())])
     # Done
+    return model
+
+
+def set_inner_boundary_condition_thermal (model, T_in, bdy_end, bdy_start = 0):
+    """
+    Setter for incoming black body radiation boundary condition at the inner boundary point.
+
+    Parameters
+    ----------
+    model : Magritte model object
+        Magritte model object to set.
+    T_in : float
+        Boundary temperature at the inner boundary.
+    bdy_end : int
+        Boundary index of the last boundary point where the boundary condition should be set + 1.
+    bdy_start : int = 0
+        Boundary index of the first boundary point where the boundary condition should be set.
+    Returns
+    -------
+    out : Magritte model object
+        Updated Magritte object.
+    """
+    Tmp = np.array([T_CMB for _ in range(model.parameters.nboundary())])
+    for b in range(bdy_start, bdy_end):
+        Tmp[b] = T_in
+        model.geometry.boundary.set_boundary_condition (b, BoundaryCondition.Thermal, True)
+    model.geometry.boundary.boundary_temperature.set(Tmp)
     return model
 
 
@@ -470,7 +497,7 @@ def set_boundary_condition_1D (model, T_in=T_CMB, T_out=T_CMB):
     else:
         # Set all boundary conditions to Thermal
         for b in range(model.parameters.nboundary()):
-            model.geometry.boundary.set_boundary_condition (b, BoundaryCondition.Thermal)
+            model.geometry.boundary.set_boundary_condition (b, BoundaryCondition.Thermal, False)
         # Set inner and outer temperature
         model.geometry.boundary.boundary_temperature.set([T_in, T_out])
     # Done
