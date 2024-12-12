@@ -45,6 +45,12 @@ Papers about Magritte
 The following list of papers might provide further insights in the inner workings of
 Magritte:
 
+
+* **Magritte, a modern software library for spectral line radiative transfer**
+  *T. Ceulemans, F. De Ceuster, L. Decin, J. Yates*
+  (`arXiv <https://arxiv.org/abs/2411.03040>`_,
+  `Astron. Comput. <https://doi.org/10.1016/j.ascom.2024.100889>`_);
+
 * Magritte: **Adaptive ray-tracing, mesh construction and reduction**,
   *F. De Ceuster, J. Bolte, W. Homan, S. Maes, J. Malfait, L. Decin, J. Yates, P. Boyle, J. Hetherington*, 2020
   (`arXiv <https://arxiv.org/abs/2011.14998>`_,
@@ -60,8 +66,7 @@ Magritte:
   *F. De Ceuster, T. Ceulemans, A. Srivastava, W. Homan, J. Bolte, J. Yates, L. Decin, P. Boyle, J., Hetherington*
   (`JOSS <https://doi.org/10.21105/joss.03905>`_).
 
-Please note that some features presented in these papers might not yet be implemented
-and documented in the latest release of Magritte.
+Please note that some features presented in these papers might have been changed and improved upon in later papers.
 
 
 Issues & Contact
