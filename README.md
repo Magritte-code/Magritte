@@ -39,6 +39,8 @@ for a quick intro.
 ## Papers about Magritte
 The following list of papers might provide further insights in the inner workings of
 Magritte:
+* _Magritte, a modern software library for spectral line radiative transfer_
+([arXiv](https://arxiv.org/abs/2411.03040), [Astron. Comput.](https://doi.org/10.1016/j.ascom.2024.100889))
 * _Magritte II: Adaptive ray-tracing, mesh construction and reduction_
 ([arXiv](https://arxiv.org/abs/2011.14998), [MNRAS](https://doi.org/10.1093/mnras/staa3199));
 * _Magritte I: Non-LTE atomic and molecular line modelling_
@@ -47,8 +49,7 @@ Magritte:
 * _3D Line Radiative Transfer & Synthetic Observations with
 Magritte_ ([JOSS](https://doi.org/10.21105/joss.03905)).
 
-Please note that some features presented in these papers might not yet be implemented
-and documented in the latest release of Magritte.
+Please note that some features presented in these papers might have been changed and improved upon in later papers.
 
 
 ## Issues & Contact
