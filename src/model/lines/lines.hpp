@@ -43,6 +43,8 @@ struct Lines {
 
     void trial_iteration_using_adaptive_Ng_acceleration(const Real pop_prec, const Size order);
 
+    void compute_line_cooling_rates(const Double2& abundance, const Vector<Real>& temperature);
+
     inline Size index(const Size p, const Size line_index) const;
     inline Size line_index(const Size l, const Size k) const;
     inline Size index(const Size p, const Size l, const Size k) const;

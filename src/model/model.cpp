@@ -1133,6 +1133,12 @@ int Model ::set_eta_and_chi(const Size rr) {
     return (0);
 }
 
+int Model::compute_line_cooling_rates() {
+    std::cout << "Computing line cooling rates based on current level populations." << std::endl;
+    lines.compute_line_cooling_rates(chemistry.species.abundance, thermodynamics.temperature.gas);
+    return (0);
+}
+
 int Model ::set_boundary_condition() {
     Solver solver;
     solver.set_boundary_condition(*this);

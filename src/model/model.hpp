@@ -88,6 +88,8 @@ struct Model {
     int compute_image_optical_depth_new(const Size ray_nr); // most similar function formulation
                                                             // to old imager
 
+    int compute_line_cooling_rates();
+
     Double1 error_max;
     Double1 error_mean;
 

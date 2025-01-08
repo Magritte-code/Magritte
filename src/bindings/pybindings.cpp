@@ -258,6 +258,9 @@ PYBIND11_MODULE(core, module) {
             "Compute an image of the optical depth for the model along the "
             "given ray direction, using the new imager, specifying the ray "
             "direction and image resolution.")
+        .def("compute_line_cooling_rates", &Model::compute_line_cooling_rates,
+            "Compute the line cooling rates for the model. Requires the level populations to be in "
+            "NLTE.")
         .def("set_eta_and_chi", &Model::set_eta_and_chi,
             "Set latest emissivity and opacity for the model in the eta and chi "
             "variables respectively.")
@@ -561,6 +564,7 @@ PYBIND11_MODULE(core, module) {
         .def_readonly("RT", &LineProducingSpecies::RT)
         .def_readonly("LambdaStar", &LineProducingSpecies::LambdaStar)
         .def_readonly("LambdaTest", &LineProducingSpecies::LambdaTest)
+        .def_readonly("line_cooling_rate", &LineProducingSpecies::line_cooling_rate)
         // functions
         .def("read", &LineProducingSpecies::read, "Read object from file.")
         .def("write", &LineProducingSpecies::write, "Write object to file.")
