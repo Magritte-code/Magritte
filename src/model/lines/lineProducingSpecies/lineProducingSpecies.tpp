@@ -800,3 +800,37 @@ inline void LineProducingSpecies::correct_negative_populations(
                   << std::endl;
     }
 }
+
+inline void LineProducingSpecies ::compute_line_cooling_rates(
+    const Double2& abundance, const Vector<Real>& temperature) {
+    line_cooling_rate.resize(parameters->npoints());
+    // zero the vector manually, as it might already contain data
+    for (Size p = 0; p < parameters->npoints(); p++) {
+        line_cooling_rate[p] = 0.0;
+    }
+    threaded_for(p, parameters->npoints(), {
+        // Collisional transitions
+        for (CollisionPartner& colpar : linedata.colpar) {
+            Real abn = abundance[p][colpar.num_col_partner];
+            Real tmp = temperature[p];
+
+            colpar.adjust_abundance_for_ortho_or_para(tmp, abn);
+            colpar.interpolate_collision_coefficients(tmp);
+
+            for (Size k = 0; k < colpar.ncol; k++) {
+                const long double v_IJ = colpar.Cd_intpld()[k] * abn;
+                const long double v_JI = colpar.Ce_intpld()[k] * abn;
+
+                const Size I = colpar.icol[k];
+                const Size J = colpar.jcol[k];
+
+                const long double total_rate_IJ = v_IJ * population(index(p, I));
+                const long double total_rate_JI = v_JI * population(index(p, J));
+
+                const Real energy_diff = linedata.energy[I] - linedata.energy[J];
+
+                line_cooling_rate[p] += (total_rate_JI - total_rate_IJ) * energy_diff;
+            }
+        }
+    })
+}

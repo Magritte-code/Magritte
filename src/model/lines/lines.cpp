@@ -149,6 +149,12 @@ void Lines ::iteration_using_statistical_equilibrium_sparse(
     // gather_emissivities_and_opacities ();
 }
 
+void Lines ::compute_line_cooling_rates(const Double2& abundance, const Vector<Real>& temperature) {
+    for (LineProducingSpecies& lspec : lineProducingSpecies) {
+        lspec.compute_line_cooling_rates(abundance, temperature);
+    }
+}
+
 // DEPRECATED: Now try to keep emissivities and opacities local.
 //
 // void Lines :: gather_emissivities_and_opacities ()

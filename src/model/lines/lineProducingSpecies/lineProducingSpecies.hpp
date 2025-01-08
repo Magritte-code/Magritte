@@ -43,8 +43,8 @@ struct LineProducingSpecies {
 
     // For ng-acceleration purposes, the level populations must be stored as accurately as possible
 
-    VectorXld population; ///< level population (most recent)
-    Real1 population_tot; ///< total level population (sum over levels)
+    VectorXld population;        ///< level population (most recent)
+    Vector<Real> population_tot; ///< total level population (sum over levels)
 
     vector<VectorXld> populations; ///< list of populations in previous iterations
     vector<VectorXld> residuals;   ///< list of residuals in the populations
@@ -61,6 +61,8 @@ struct LineProducingSpecies {
     SparseMatrix<long double> RT;
     SparseMatrix<long double> LambdaTest;
     SparseMatrix<long double> LambdaStar;
+
+    Real1 line_cooling_rate; ///< cooling rate due to line emission [W/m^3]
 
     LineProducingSpecies(std::shared_ptr<Parameters> params) :
         parameters(params), quadrature(params), lambda(params){};
@@ -94,6 +96,9 @@ struct LineProducingSpecies {
     inline void update_using_acceleration(const Size order);
     inline void update_using_acceleration_trial(const Size order);
     inline void correct_negative_populations(
+        const Double2& abundance, const Vector<Real>& temperature);
+
+    inline void compute_line_cooling_rates(
         const Double2& abundance, const Vector<Real>& temperature);
 };
 
