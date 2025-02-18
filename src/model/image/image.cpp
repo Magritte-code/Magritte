@@ -11,8 +11,7 @@ const string prefix = "image/";
 //////////////////////////
 Image ::Image(
     const Geometry& geometry, const Frequencies& frequencies, const ImageType it, const Size rr) :
-    imageType(it),
-    imagePointPosition(AllModelPoints), ray_nr(rr),
+    imageType(it), imagePointPosition(AllModelPoints), ray_nr(rr),
     ray_direction(Vector3D(geometry.rays.get_direction<false>(0, ray_nr))) {
     if (geometry.parameters->dimension() == 1) {
         const Vector3D raydir = geometry.rays.get_direction<false>(0, ray_nr);
@@ -29,8 +28,7 @@ Image ::Image(
 //////////////////////////
 Image ::Image(const Geometry& geometry, const Frequencies& frequencies, const ImageType it,
     const Size rr, const Size Nxpix, const Size Nypix) :
-    imageType(it),
-    imagePointPosition(ProjectionSurface), ray_nr(rr),
+    imageType(it), imagePointPosition(ProjectionSurface), ray_nr(rr),
     ray_direction(Vector3D(geometry.rays.get_direction<false>(0, ray_nr))) {
     if (geometry.parameters->dimension() == 1) {
         const Vector3D raydir = geometry.rays.get_direction<false>(0, ray_nr);
@@ -74,8 +72,7 @@ Image ::Image(const Image& image) :
 //////////////////////////
 Image ::Image(const Geometry& geometry, const Frequencies& frequencies, const ImageType it,
     const Vector3D raydir) :
-    imageType(it),
-    imagePointPosition(AllModelPoints), ray_nr(-1), ray_direction(raydir),
+    imageType(it), imagePointPosition(AllModelPoints), ray_nr(-1), ray_direction(raydir),
     closest_bdy_point(geometry.parameters->npoints()) {
     if (geometry.parameters->dimension() == 1) {
         // Same error condition as previous imager. In 1D, it does not matter either
@@ -92,8 +89,7 @@ Image ::Image(const Geometry& geometry, const Frequencies& frequencies, const Im
 //////////////////////////
 Image ::Image(const Geometry& geometry, const Frequencies& frequencies, const ImageType it,
     const Vector3D raydir, const Size Nxpix, const Size Nypix) :
-    imageType(it),
-    imagePointPosition(ProjectionSurface), ray_nr(-1), ray_direction(raydir) {
+    imageType(it), imagePointPosition(ProjectionSurface), ray_nr(-1), ray_direction(raydir) {
     if (geometry.parameters->dimension() == 1) {
         // Same error condition as previous imager. In 1D, it does not matter either
         // way from which direction we image.
