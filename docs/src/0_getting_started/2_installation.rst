@@ -115,7 +115,7 @@ All of these packages can also be found in the `conda environment file <https://
 Compilation
 ***********
 
-Once all dependencies are in place, Magritte can be compiled.
+Once all dependencies are in place, Magritte can be compiled. The compilation with MacOS requires extra care, it is detailed in this :ref:`section <link-macos_compilation>`.
 
 .. hint::
 
@@ -133,11 +133,80 @@ Once all dependencies are in place, Magritte can be compiled.
 
 See :ref:`advanced compilation <link-advanced_compilation>` for further options.
 
+.. _link-macos_compilation:
 
+Compilation on MacOS
+********************
+
+By default, MacOS uses Clang and does not have the GNU compiler (gcc) installed. 
+We do not recommend using Clang to compile Magritte because of compatibility issues with OpenMP.
+However, even when gcc is installed, the gcc command may still point to Clang, so a couple of 
+extra steps are required to ensure that gcc is used when compiling Magritte.
+
+If you have never installed gcc on your machine, it can be done through Homebrew 
+(a package manager for MacOS, see `here <https://brew.sh/>`_ for details on how to install it).
+
+Once homebrew is installed, run the following command to install gcc:
+
+.. code-block:: shell
+
+    brew install gcc
+
+
+Gcc should now be installed, but the default gcc command may still point to Clang.
+To check where the gcc command points, run the following command:
+
+.. code-block:: shell
+
+    gcc --version
+
+If the output shows that the version is Apple Clang, you need manually to set the gcc command to point to the GNU compiler.
+A way to do this is to set the following environment variables:
+
+.. code-block:: shell
+
+    export CC=/path/to/gcc/gcc-<version> 
+
+    export CXX=/path/to/gcc/g++-<version>
+
+Here, you should use the path to your own gcc binaries, and :literal:`<version>` is the version of gcc installed on your machine (e.g. :literal:`gcc-14` and :literal:`g++-14` for gcc.14.x.x).  
+
+.. hint::
+
+    If you installed gcc through brew, its version can be found by running the following command:
+
+    .. code-block:: shell
+
+        brew info gcc
+
+    cropping the version to the first number (e.g. :literal:`gcc-14` and :literal:`g++-14` for gcc.14.x.x), use the following command to find the path to your compiler:
+
+    .. code-block:: shell
+
+        which gcc-<version>
+
+        which g++-<version>
+
+    This should give you the path to your gcc binaries, which can be used in the :literal:`export` commands above. 
+    The paths should look like similar to this: 
+    - :literal:`/opt/homebrew/Cellar/gcc/14.2.0_1/bin/gcc-14`  
+    - :literal:`/opt/homebrew/Cellar/gcc/14.2.0_1/bin/g++-14`
+
+It is also possible to use Homebrew to install the dependencies needed by Magritte.
+You can install CMake and miniconda, which are required to compile Magritte:
+
+.. code-block:: shell
+
+    brew install CMake miniconda
+
+You can also use brew to install the required MPI librairies (open-mpi or mpich, and mpi4py):
+
+.. code-block:: shell
+
+    brew install open-mpi
+    brew install mpi4py
 
 .. _link-advanced_compilation:
-
-
 
 Advanced compilation
 ********************
