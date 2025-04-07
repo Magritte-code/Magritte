@@ -104,6 +104,29 @@ All of these packages can also be found in the `conda environment file <https://
 
     Please ensure that this environment is active whenever Magritte is compiled or used.
 
+.. note::
+
+    You may choose to not use a conda environment to install all the python dependencies for Magritte, and instead replace it with
+    a regular python environment. Create a new python environment in the directory of your choice:
+
+    .. code-block:: shell
+
+        python -m venv magritte_env /your/environment/directory
+
+    Then activate it (make sure it is always activated when using Magritte):
+
+    .. code-block:: shell
+
+        source magritte_env/bin/activate
+    
+    The required packages can be then be installed in your new environment using pip and the dependencies list for Magritte:
+
+    .. code-block:: shell
+
+        pip install -r Magritte/dependencies/requirements.txt
+
+
+
 .. warning::
 
     Magritte uses plotly for some interactive plots. Plotly requires additional
@@ -152,8 +175,7 @@ Once homebrew is installed, run the following command to install gcc:
 
     brew install gcc
 
-
-Gcc should now be installed, but the default gcc command may still point to Clang.
+gcc should now be installed, but the default gcc command may still point to Clang.
 To check where the gcc command points, run the following command:
 
 .. code-block:: shell
@@ -170,6 +192,7 @@ A way to do this is to set the following environment variables:
     export CXX=/path/to/gcc/g++-<version>
 
 Here, you should use the path to your own gcc binaries, and :literal:`<version>` is the version of gcc installed on your machine (e.g. :literal:`gcc-14` and :literal:`g++-14` for gcc.14.x.x).  
+If you recompile the code often, you may want to add these two commands to your .zprofile to make them permanent.
 
 .. hint::
 
@@ -191,6 +214,12 @@ Here, you should use the path to your own gcc binaries, and :literal:`<version>`
     The paths should look like similar to this: 
     - :literal:`/opt/homebrew/Cellar/gcc/14.2.0_1/bin/gcc-14`  
     - :literal:`/opt/homebrew/Cellar/gcc/14.2.0_1/bin/g++-14`
+
+Once the exports are done, you can compile Magritte as described before, using:
+
+.. code-block:: shell
+
+    bash build.sh
 
 It is also possible to use Homebrew to install the dependencies needed by Magritte.
 You can install CMake and miniconda, which are required to compile Magritte:
