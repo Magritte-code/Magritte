@@ -138,7 +138,7 @@ All of these packages can also be found in the `conda environment file <https://
 Compilation
 ***********
 
-Once all dependencies are in place, Magritte can be compiled. The compilation with MacOS requires extra care, it is detailed in this :ref:`section <link-macos_compilation>`.
+Once all dependencies are in place, Magritte can be compiled. The compilation with MacOS requires extra care, it is detailed in the section :ref:`compilation on MacOS<link-macos_compilation>`.
 
 .. hint::
 
@@ -163,11 +163,11 @@ Compilation on MacOS
 
 By default, MacOS uses Clang and does not have the GNU compiler (gcc) installed. 
 We do not recommend using Clang to compile Magritte because of compatibility issues with OpenMP.
-However, even when gcc is installed, the gcc command may still point to Clang, so a couple of 
+Additionally, even when gcc is installed, the gcc command may still point to Clang, so a couple of 
 extra steps are required to ensure that gcc is used when compiling Magritte.
 
 If you have never installed gcc on your machine, it can be done through Homebrew 
-(a package manager for MacOS, see `here <https://brew.sh/>`_ for details on how to install it).
+(a package manager for MacOS, see `their webpage <https://brew.sh/>`_ for details on how to install it).
 
 Once homebrew is installed, run the following command to install gcc:
 
@@ -221,19 +221,12 @@ Once the exports are done, you can compile Magritte as described before, using:
 
     bash build.sh
 
-It is also possible to use Homebrew to install the dependencies needed by Magritte.
-You can install CMake and miniconda, which are required to compile Magritte:
+We also recommend using Homebrew to install the dependencies needed by Magritte.
+You can install CMake and miniconda and MPI librairies (open-mpi or mpich, and mpi4py), which are all required to compile Magritte:
 
 .. code-block:: shell
 
-    brew install CMake miniconda
-
-You can also use brew to install the required MPI librairies (open-mpi or mpich, and mpi4py):
-
-.. code-block:: shell
-
-    brew install open-mpi
-    brew install mpi4py
+    brew install CMake miniconda open-mpi mpi4py
 
 .. _link-advanced_compilation:
 
