@@ -222,7 +222,7 @@ Once the exports are done, you can compile Magritte as described before, using:
     bash build.sh
 
 We also recommend using Homebrew to install the dependencies needed by Magritte.
-You can install CMake and miniconda and MPI librairies (open-mpi or mpich, and mpi4py), which are all required to compile Magritte:
+You can install CMake, miniconda and MPI librairies (open-mpi or mpich, and mpi4py), which are all required to compile Magritte:
 
 .. code-block:: shell
 
