@@ -103,6 +103,7 @@ Developers & Contributors
 * `Mats Esseldeurs <https://matsesseldeurs.github.io>`_
 * Arnout Coenegrachts
 * Owen Vermeulen
+* Camille Landri
 
 Acknowledgements
 ****************
