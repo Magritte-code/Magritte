@@ -25,16 +25,17 @@ struct Model {
     Lines lines;
     Radiation radiation;
     vector<Image> images;
+    Dust dust;
 
     enum SpectralDiscretisation { SD_None, SD_Lines, SD_Image } spectralDiscretisation = SD_None;
 
     Model() :
         parameters(new Parameters()), geometry(parameters), chemistry(parameters),
-        thermodynamics(parameters), lines(parameters), radiation(parameters){};
+        thermodynamics(parameters), lines(parameters), radiation(parameters), dust(parameters){};
 
     Model(const string name) :
         parameters(new Parameters()), geometry(parameters), chemistry(parameters),
-        thermodynamics(parameters), lines(parameters), radiation(parameters) {
+        thermodynamics(parameters), lines(parameters), radiation(parameters), dust(parameters) {
         parameters->set_model_name(name);
         read();
     }

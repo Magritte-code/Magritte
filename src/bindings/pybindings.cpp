@@ -129,6 +129,7 @@ PYBIND11_MODULE(core, module) {
         .def_readonly("thermodynamics", &Model::thermodynamics)
         .def_readonly("radiation", &Model::radiation)
         .def_readonly("images", &Model::images)
+        .def_readonly("dust", &Model::dust)
         .def_readwrite("eta", &Model::eta)
         .def_readwrite("chi", &Model::chi)
         .def_readonly("S_ray", &Model::S_ray)
@@ -496,6 +497,17 @@ PYBIND11_MODULE(core, module) {
         // functions
         .def("read", &Chemistry::read, "Read object from file.")
         .def("write", &Chemistry::write, "Write object to file.");
+
+    // Dust
+    py::class_<Dust>(module, "Dust", "Class containing the dust properties.")
+        // attributes
+        .def_readwrite("dust_opacities", &Chemistry::species,
+            "Array with dust opacities for each point and line transition.")
+        .def_readwrite("dust_emissivities", &Chemistry::species,
+            "Array with dust emissivities for each point and line transition.")
+        // functions
+        .def("read", &Dust::read, "Read object from file.")
+        .def("write", &Dust::write, "Write object to file.");
 
     // Species
     py::class_<Species>(module, "Species", "Class containing the chemical species.")
