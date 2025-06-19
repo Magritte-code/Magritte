@@ -27,6 +27,7 @@ set (SOURCE_FILES
     model/radiation/frequencies/frequencies.cpp
     model/image/image.cpp
     solver/solver.cpp
+    model/dust/dust.cpp
 )
 
 if    (MPI_PARALLEL)

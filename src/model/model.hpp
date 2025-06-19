@@ -1,6 +1,7 @@
 #pragma once
 
 #include "chemistry/chemistry.hpp"
+#include "dust/dust.hpp"
 #include "geometry/geometry.hpp"
 #include "image/image.hpp"
 #include "io/io.hpp"

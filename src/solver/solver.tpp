@@ -1188,9 +1188,12 @@ accel inline void Solver ::get_eta_and_chi_interpolated<None>(const Model& model
     const Size p2, const Real interp_factor,
     const Size ll, // dummy variable
     const Real freq, Real& eta, Real& chi) const {
-    // Initialize
-    eta = model.dust.dust_emissivities(p, ll);
-    chi = model.dust.dust_opacities(p, ll) + model.parameters->min_opacity;
+    // Initialize, interpolating the dust properties
+    eta = interp_helper.interpolate_linear(
+        model.dust.dust_emissivities(p1, ll), model.dust.dust_emissivities(p2, ll), interp_factor);
+    chi = interp_helper.interpolate_linear(
+              model.dust.dust_opacities(p1, ll), model.dust.dust_opacities(p2, ll), interp_factor)
+        + model.parameters->min_opacity;
 
     // Set line emissivity and opacity
     for (Size l = 0; l < model.parameters->nlines(); l++) {
@@ -1268,9 +1271,12 @@ template <>
 accel inline void Solver ::get_eta_and_chi_interpolated<CloseLines>(const Model& model,
     const Size p1, const Size p2, const Real interp_factor, const Size ll, const Real freq,
     Real& eta, Real& chi) const {
-    // Initialize
-    eta = model.dust.dust_emissivities(p, ll);
-    chi = model.dust.dust_opacities(p, ll) + model.parameters->min_opacity;
+    // Initialize, interpolating the dust properties
+    eta = interp_helper.interpolate_linear(
+        model.dust.dust_emissivities(p1, ll), model.dust.dust_emissivities(p2, ll), interp_factor);
+    chi = interp_helper.interpolate_linear(
+              model.dust.dust_opacities(p1, ll), model.dust.dust_opacities(p2, ll), interp_factor)
+        + model.parameters->min_opacity;
 
     const Real upper_bound_line_width =
         model.parameters->max_distance_opacity_contribution
@@ -1343,6 +1349,12 @@ template <>
 accel inline void Solver ::get_eta_and_chi_interpolated<OneLine>(const Model& model, const Size p1,
     const Size p2, const Real interp_factor, const Size l, const Real freq, Real& eta,
     Real& chi) const {
+    // Initialize, interpolating the dust properties
+    eta = interp_helper.interpolate_linear(
+        model.dust.dust_emissivities(p1, l), model.dust.dust_emissivities(p2, l), interp_factor);
+    chi = interp_helper.interpolate_linear(
+              model.dust.dust_opacities(p1, l), model.dust.dust_opacities(p2, l), interp_factor)
+        + model.parameters->min_opacity;
 
     const Real diff             = freq - model.lines.line[l];
     const Real interp_inv_width = interp_helper.interpolate_linear(
@@ -1354,8 +1366,8 @@ accel inline void Solver ::get_eta_and_chi_interpolated<OneLine>(const Model& mo
     const Real interp_opacity = interp_helper.interpolate_log(
         model.lines.opacity(p1, l), model.lines.opacity(p2, l), interp_factor);
 
-    eta = model.dust.dust_emissivities(p, l) + prof * interp_emissivity;
-    chi = model.dust.dust_opacities(p, l) + prof * interp_opacity + model.parameters->min_opacity;
+    eta += prof * interp_emissivity;
+    chi += prof * interp_opacity;
 }
 
 ///  Apply trapezium rule to x_crt and x_nxt
@@ -1889,9 +1901,15 @@ inline void Solver ::compute_S_dtau_line_integrated<OneLine>(Model& model, Size 
     Real currfreq, Real nextfreq, Real curr_interp, Real next_interp, Real dZ, Real& dtau,
     Real& Scurr, Real& Snext) {
     // FIXME: line idx is wrong
-    dtau = dZ * 0.5
-             * (model.dust.dust_opacities(currpoint, lineidx)
-                 + model.dust.dust_opacities(nextpoint, lineidx))
+    // Properly interpolate the dtau from dust using linear interpolation
+    const Real dust_opacity_curr =
+        interp_helper.interpolate_linear(model.dust.dust_opacities(currpoint, lineidx),
+            model.dust.dust_opacities(currpoint_interp_idx, lineidx), curr_interp);
+    const Real dust_opacity_next =
+        interp_helper.interpolate_linear(model.dust.dust_opacities(nextpoint, lineidx),
+            model.dust.dust_opacities(nextpoint_interp_idx, lineidx), next_interp);
+
+    dtau = dZ * 0.5 * (dust_opacity_curr + dust_opacity_next)
          + compute_dtau_single_line(model, currpoint, nextpoint, currpoint_interp_idx,
              nextpoint_interp_idx, lineidx, currfreq, nextfreq, curr_interp, next_interp, dZ);
     // const Real curr_opacity = interp_helper.interpolate_log(model.lines.opacity(currpoint,
@@ -1961,11 +1979,23 @@ inline void Solver ::compute_S_dtau_line_integrated<None>(Model& model, Size cur
     Size nextpoint, Size currpoint_interp_idx, Size nextpoint_interp_idx, Size lineidx,
     Real currfreq, Real nextfreq, Real curr_interp, Real next_interp, Real dZ, Real& dtau,
     Real& Scurr, Real& Snext) {
-    Real sum_dtau = dZ * 0.5
-                  * (model.dust.dust_opacities(currpoint, lineidx)
-                      + model.dust.dust_opacities(nextpoint, lineidx));
-    Real sum_dtau_times_Scurr = dZ * model.dust.dust_emissivities(currpoint, lineidx);
-    Real sum_dtau_times_Snext = dZ * model.dust.dust_emissivities(nextpoint, lineidx);
+    // Properly interpolate the dust properties using linear interpolation
+    const Real dust_opacity_curr =
+        interp_helper.interpolate_linear(model.dust.dust_opacities(currpoint, lineidx),
+            model.dust.dust_opacities(currpoint_interp_idx, lineidx), curr_interp);
+    const Real dust_opacity_next =
+        interp_helper.interpolate_linear(model.dust.dust_opacities(nextpoint, lineidx),
+            model.dust.dust_opacities(nextpoint_interp_idx, lineidx), next_interp);
+    Real sum_dtau = dZ * 0.5 * (dust_opacity_curr + dust_opacity_next);
+
+    const Real dust_emissivity_curr =
+        interp_helper.interpolate_linear(model.dust.dust_emissivities(currpoint, lineidx),
+            model.dust.dust_emissivities(currpoint_interp_idx, lineidx), curr_interp);
+    const Real dust_emissivity_next =
+        interp_helper.interpolate_linear(model.dust.dust_emissivities(nextpoint, lineidx),
+            model.dust.dust_emissivities(nextpoint_interp_idx, lineidx), next_interp);
+    Real sum_dtau_times_Scurr = dZ * dust_emissivity_curr;
+    Real sum_dtau_times_Snext = dZ * dust_emissivity_next;
 
     for (Size l = 0; l < model.parameters->nlines(); l++) {
         Real line_dtau = compute_dtau_single_line(model, currpoint, nextpoint, currpoint_interp_idx,
@@ -2036,11 +2066,24 @@ inline void Solver ::compute_S_dtau_line_integrated<CloseLines>(Model& model, Si
     Size nextpoint, Size currpoint_interp_idx, Size nextpoint_interp_idx, Size lineidx,
     Real currfreq, Real nextfreq, Real curr_interp, Real next_interp, Real dZ, Real& dtau,
     Real& Scurr, Real& Snext) {
-    Real sum_dtau = dZ * 0.5
-                  * (model.dust.dust_opacities(currpoint, lineidx)
-                      + model.dust.dust_opacities(nextpoint, lineidx));
-    Real sum_dtau_times_Scurr = dZ * model.dust.dust_emissivities(currpoint, lineidx);
-    Real sum_dtau_times_Snext = dZ * model.dust.dust_emissivities(nextpoint, lineidx);
+
+    // Properly interpolate the dust properties using linear interpolation
+    const Real dust_opacity_curr =
+        interp_helper.interpolate_linear(model.dust.dust_opacities(currpoint, lineidx),
+            model.dust.dust_opacities(currpoint_interp_idx, lineidx), curr_interp);
+    const Real dust_opacity_next =
+        interp_helper.interpolate_linear(model.dust.dust_opacities(nextpoint, lineidx),
+            model.dust.dust_opacities(nextpoint_interp_idx, lineidx), next_interp);
+    Real sum_dtau = dZ * 0.5 * (dust_opacity_curr + dust_opacity_next);
+
+    const Real dust_emissivity_curr =
+        interp_helper.interpolate_linear(model.dust.dust_emissivities(currpoint, lineidx),
+            model.dust.dust_emissivities(currpoint_interp_idx, lineidx), curr_interp);
+    const Real dust_emissivity_next =
+        interp_helper.interpolate_linear(model.dust.dust_emissivities(nextpoint, lineidx),
+            model.dust.dust_emissivities(nextpoint_interp_idx, lineidx), next_interp);
+    Real sum_dtau_times_Scurr = dZ * dust_emissivity_curr;
+    Real sum_dtau_times_Snext = dZ * dust_emissivity_next;
 
     Real left_freq;
     Real right_freq;

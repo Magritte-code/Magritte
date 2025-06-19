@@ -28,6 +28,7 @@ void Model ::read(const Io& io) {
     thermodynamics.read(io);
     lines.read(io);
     radiation.read(io);
+    dust.read(io);
 
     cout << "                                           " << endl;
     cout << "-------------------------------------------" << endl;

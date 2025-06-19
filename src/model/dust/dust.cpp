@@ -1,4 +1,4 @@
-#include dust.hpp
+#include "dust.hpp"
 
 /// Reader for dust data
 ///    @param[in] io: io data object
@@ -10,7 +10,7 @@ void Dust::read(const Io& io) {
     dust_emissivities.resize(parameters->npoints(), parameters->nlines());
 
     // Note: dust is optional to include in the model, so first check if data is present
-    Real2 temp_dust_opacities(parameters->npoints(), parameters->nlines());
+    Matrix<Real> temp_dust_opacities(parameters->npoints(), parameters->nlines());
     int err = io.read_array("dust/opacities", temp_dust_opacities);
 
     if (err == 0) {

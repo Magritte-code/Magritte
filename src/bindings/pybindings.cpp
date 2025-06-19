@@ -501,9 +501,9 @@ PYBIND11_MODULE(core, module) {
     // Dust
     py::class_<Dust>(module, "Dust", "Class containing the dust properties.")
         // attributes
-        .def_readwrite("dust_opacities", &Chemistry::species,
+        .def_readwrite("dust_opacities", &Dust::dust_opacities,
             "Array with dust opacities for each point and line transition.")
-        .def_readwrite("dust_emissivities", &Chemistry::species,
+        .def_readwrite("dust_emissivities", &Dust::dust_emissivities,
             "Array with dust emissivities for each point and line transition.")
         // functions
         .def("read", &Dust::read, "Read object from file.")
