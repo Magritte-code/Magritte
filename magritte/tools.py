@@ -3,6 +3,7 @@ import os
 
 from datetime          import datetime
 from time              import perf_counter
+import pandas as pd
 from astropy.io        import fits
 from astropy           import units, constants
 from scipy.interpolate import griddata, interp1d
@@ -775,3 +776,97 @@ def check_one_line_approximation(model):
     contribution = np.exp(-diff_max**2)
 
     return contribution
+
+
+def convert_dust_opacity_table_to_SI(wavelengths_wavenumbers_wavefrequencies: units.Quantity, complex_refractory_index: np.ndarray, reference_density: units.Quantity, new_frequency_grid: units.Quantity=None, left_fill_value: float=0.0, right_fill_value: float=0.0):
+    """Convert a dust opacity table (wavelengths, wavenumbers or frequencies) with complex refractive index to absorption coefficient in SI units (m^-1) and rescaled to unit density (kg/m^3).
+
+    Args:
+        wavelengths_wavenumbers_wavefrequencies (Astropy.units.Quantity): 1D array containing the wavelengths, wavenumbers or frequencies in compatible units (m, m^-1 or Hz).
+        complex_refractory_index (np.ndarray): 1D array containing the complex refractive index values (unitless). Same length as `wavelengths_wavenumbers_wavefrequencies`.
+        reference_density (astropy.Quantity): Refernce density in units compatible with kg/m^3, used for rescaling the absorption coefficient.
+        new_frequency_grid (Astropy.units.Quantity, optional): New frequency grid to interpolate values upon. If None, use `wavelengths_wavenumbers_wavefrequencies' instead. Defaults to None.
+        left_fill_value (float, optional): Fill value for dust opacity (in m^2/kg) for frequencies lower than the input frequency range. Defaults to 0.0.
+        right_fill_value (float, optional): Fill value for dust opacity (in m^2/kg) for frequencies higher than the input frequency range. Defaults to 0.0.
+
+    Raises:
+        ValueError: Incompatible units for `wavelengths_wavenumbers_wavefrequencies` or `reference_density` or `new_frequency_grid'.
+        TypeError: `wavelengths_wavenumbers_wavefrequencies` or `reference_density` or `new_frequency_grid' is not an Astropy Quantity.
+
+    Returns:
+        tuple(Astropy.units.Quantity, Astropy.units.Quantity):
+    """
+
+    frequencies_in_hz = None
+    wavelengths_in_m = None
+    reference_density_in_kg_per_m3 = None
+    #first check whether the wavelengths_or_wavenumbers are have astropy units compatible with m (wavelength), m^-1 (wavenumber) of Hz (frequency)
+    #if so, convert to Hz
+    if isinstance(wavelengths_wavenumbers_wavefrequencies, units.Quantity):
+        if wavelengths_wavenumbers_wavefrequencies.unit.is_equivalent(units.m) or wavelengths_wavenumbers_wavefrequencies.unit.is_equivalent(1.0/units.m) or wavelengths_wavenumbers_wavefrequencies.unit.is_equivalent(units.Hz):
+            # Convert to Hz
+            frequencies_in_hz = wavelengths_wavenumbers_wavefrequencies.to(units.Hz, equivalencies=units.spectral())
+            wavelengths_in_m = wavelengths_wavenumbers_wavefrequencies.to(units.m, equivalencies=units.spectral())
+            pass
+        else:
+            raise ValueError("Input must be in units compatible to m or Hz.")
+    else:
+        raise TypeError("Input must be an astropy Quantity. This is for ease of unit conversion.")
+    
+    if isinstance(reference_density, units.Quantity):
+        if not reference_density.unit.is_equivalent(units.kg/units.m**3):
+            raise ValueError("Reference density must be in units compatible to kg/m^3.")
+        # Convert to kg/m^3
+        reference_density_in_kg_per_m3 = reference_density.to(units.kg/units.m**3)
+    else:
+        raise TypeError("Reference density must be an astropy Quantity.")
+    
+
+    # Convert complex refractory index to absorption coefficient
+    absorption_coefficient = 4*np.pi * complex_refractory_index / wavelengths_in_m
+    #rescale to unit density (kg/m^3)
+    rescaled_absorption_coefficient = absorption_coefficient / reference_density_in_kg_per_m3
+
+    #co-sort frequencies and rescaled absorption coefficient (because of possible unit conversion)
+    sorted_indices = np.argsort(frequencies_in_hz)
+    frequencies_in_hz = frequencies_in_hz[sorted_indices]
+    rescaled_absorption_coefficient = rescaled_absorption_coefficient[sorted_indices]
+
+    if new_frequency_grid == None:
+        return frequencies_in_hz, rescaled_absorption_coefficient
+    else: 
+        new_frequency_grid_in_hz = None
+        # Convert new frequency grid to Hz if it is not already
+        if isinstance(new_frequency_grid, units.Quantity):
+            if new_frequency_grid.unit.is_equivalent(units.m) or new_frequency_grid.unit.is_equivalent(1.0/units.m) or new_frequency_grid.unit.is_equivalent(units.Hz):
+                # Convert to Hz
+                new_frequency_grid_in_hz = new_frequency_grid.to(units.Hz, equivalencies=units.spectral())
+            else:
+                raise ValueError("New frequency grid must be in units compatible to m, m^-1 or Hz.")
+        else:
+            raise TypeError("New frequency grid must be an astropy Quantity in Hz.")
+        # Interpolate the data onto the new frequency grid
+        # interpolation = interp1d(frequencies_in_hz, rescaled_absorption_coefficient, bounds_error=False, fill_value=0.0)
+        interpolated_rescaled_absorption_coefficient = np.interp(new_frequency_grid_in_hz, frequencies_in_hz, rescaled_absorption_coefficient, left=left_fill_value, right=right_fill_value)
+        return new_frequency_grid, interpolated_rescaled_absorption_coefficient
+    
+
+def read_dust_opacity_table(filename: str, wavelength_frequency_unit: units.Unit):
+    """Simple script for reading headerless dust opacity data files (with file format like the Jena dust database).
+    Returns the first column (wavelengths, wavenumbers or frequencies) and the third column (complex refractive index).
+
+    Args:
+        filename (str): Location of the dust opacity table file.
+        wavelength_frequency_unit (Astropy.units.Unit): Unit of the first column (wavelengths, wavenumbers or frequencies).
+
+    Returns:
+        tuple(Astropy.units.Quantity, np.ndarray): wavelengths or wavenumbers or frequencies, complex refractive index
+    """
+    reader = pd.read_csv(filename, sep = '\s+', header=None, comment='#')
+    wavelength_frequency = np.array(reader[0]) * wavelength_frequency_unit # wavelengths or wavenumbers or frequencies
+    complex_refractive_index = np.array(reader[2]) # complex refractive index; unitless
+
+
+    return wavelength_frequency, complex_refractive_index
+
+
