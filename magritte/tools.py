@@ -794,7 +794,7 @@ def convert_dust_opacity_table_to_SI(wavelengths_wavenumbers_wavefrequencies: un
         TypeError: `wavelengths_wavenumbers_wavefrequencies` or `reference_density` or `new_frequency_grid' is not an Astropy Quantity.
 
     Returns:
-        tuple(Astropy.units.Quantity, Astropy.units.Quantity):
+        tuple(Astropy.units.Quantity, Astropy.units.Quantity): frequencies in Hz, rescaled absorption coefficient in m^2/kg (needs to be multiplied by density in kg/m^3 to get absorption coefficient in m^-1).
     """
 
     frequencies_in_hz = None
@@ -823,9 +823,9 @@ def convert_dust_opacity_table_to_SI(wavelengths_wavenumbers_wavefrequencies: un
     
 
     # Convert complex refractory index to absorption coefficient
-    absorption_coefficient = 4*np.pi * complex_refractory_index / wavelengths_in_m
+    absorption_coefficient = 4*np.pi * complex_refractory_index / wavelengths_in_m #[m^-1]
     #rescale to unit density (kg/m^3)
-    rescaled_absorption_coefficient = absorption_coefficient / reference_density_in_kg_per_m3
+    rescaled_absorption_coefficient = absorption_coefficient / reference_density_in_kg_per_m3 #[m^2/kg]
 
     #co-sort frequencies and rescaled absorption coefficient (because of possible unit conversion)
     sorted_indices = np.argsort(frequencies_in_hz)

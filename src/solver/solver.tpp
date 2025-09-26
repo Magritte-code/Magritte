@@ -1158,9 +1158,10 @@ template <>
 accel inline void Solver ::get_eta_and_chi<None>(const Model& model, const Size p,
     const Size ll, // dummy variable
     const Real freq, Real& eta, Real& chi) const {
-    // Initialize
-    eta = 0.0;
-    chi = model.parameters->min_opacity;
+
+    // Dust/continuum contribution
+    model.dust.compute_dust_opacity_emissivity(p, freq, chi, eta);
+    chi += model.parameters->min_opacity;
 
     // Set line emissivity and opacity
     for (Size l = 0; l < model.parameters->nlines(); l++) {
@@ -1186,9 +1187,15 @@ accel inline void Solver ::get_eta_and_chi_interpolated<None>(const Model& model
     const Size p2, const Real interp_factor,
     const Size ll, // dummy variable
     const Real freq, Real& eta, Real& chi) const {
-    // Initialize
-    eta = 0.0;
-    chi = model.parameters->min_opacity;
+
+    // Dust/continuum contribution
+    Real chi_dust1, chi_dust2, eta_dust1, eta_dust2;
+    model.dust.compute_dust_opacity_emissivity(p1, freq, chi_dust1, eta_dust1);
+    model.dust.compute_dust_opacity_emissivity(p2, freq, chi_dust2, eta_dust2);
+
+    eta = interp_helper.interpolate_log(eta_dust1, eta_dust2, interp_factor);
+    chi = interp_helper.interpolate_log(chi_dust1, chi_dust2, interp_factor)
+        + model.parameters->min_opacity;
 
     // Set line emissivity and opacity
     for (Size l = 0; l < model.parameters->nlines(); l++) {
@@ -1220,10 +1227,12 @@ template <>
 accel inline void Solver ::get_eta_and_chi<CloseLines>(const Model& model, const Size p,
     const Size ll, // dummy variable
     const Real freq, Real& eta, Real& chi) const {
-    // Initialize
-    eta = 0.0;
-    chi = model.parameters->min_opacity;
 
+    // Dust/continuum contribution
+    model.dust.compute_dust_opacity_emissivity(p, freq, chi, eta);
+    chi += model.parameters->min_opacity;
+
+    // Line contribution
     const Real upper_bound_line_width =
         model.parameters->max_distance_opacity_contribution
         * model.thermodynamics.profile_width_upper_bound_with_linefreq(
@@ -1267,10 +1276,17 @@ accel inline void Solver ::get_eta_and_chi_interpolated<CloseLines>(const Model&
     const Size p1, const Size p2, const Real interp_factor,
     const Size ll, // dummy variable
     const Real freq, Real& eta, Real& chi) const {
-    // Initialize
-    eta = 0.0;
-    chi = model.parameters->min_opacity;
 
+    // Dust/continuum contribution
+    Real chi_dust1, chi_dust2, eta_dust1, eta_dust2;
+    model.dust.compute_dust_opacity_emissivity(p1, freq, chi_dust1, eta_dust1);
+    model.dust.compute_dust_opacity_emissivity(p2, freq, chi_dust2, eta_dust2);
+
+    eta += interp_helper.interpolate_log(eta_dust1, eta_dust2, interp_factor);
+    chi += interp_helper.interpolate_log(chi_dust1, chi_dust2, interp_factor)
+         + model.parameters->min_opacity;
+
+    // Line contribution
     const Real upper_bound_line_width =
         model.parameters->max_distance_opacity_contribution
         * model.thermodynamics.profile_width_upper_bound_with_linefreq(p1, freq,
@@ -1323,8 +1339,12 @@ accel inline void Solver ::get_eta_and_chi<OneLine>(
     const Real diff = freq - model.lines.line[l];
     const Real prof = gaussian(model.lines.inverse_width(p, l), diff);
 
-    eta = prof * model.lines.emissivity(p, l);
-    chi = prof * model.lines.opacity(p, l) + model.parameters->min_opacity;
+    // Dust/continuum contribution
+    model.dust.compute_dust_opacity_emissivity(p, freq, chi, eta);
+
+    // Line contribution
+    eta += prof * model.lines.emissivity(p, l);
+    chi += prof * model.lines.opacity(p, l) + model.parameters->min_opacity;
 }
 
 /// Getter for the emissivity (eta) and the opacity (chi), with interpolation support
@@ -1342,6 +1362,15 @@ accel inline void Solver ::get_eta_and_chi_interpolated<OneLine>(const Model& mo
     const Size p2, const Real interp_factor, const Size l, const Real freq, Real& eta,
     Real& chi) const {
 
+    // Dust/continuum contribution
+    Real chi_dust1, chi_dust2, eta_dust1, eta_dust2;
+    model.dust.compute_dust_opacity_emissivity(p1, freq, chi_dust1, eta_dust1);
+    model.dust.compute_dust_opacity_emissivity(p2, freq, chi_dust2, eta_dust2);
+
+    eta = interp_helper.interpolate_log(eta_dust1, eta_dust2, interp_factor);
+    chi = interp_helper.interpolate_log(chi_dust1, chi_dust2, interp_factor);
+
+    // Line contribution
     const Real diff             = freq - model.lines.line[l];
     const Real interp_inv_width = interp_helper.interpolate_linear(
         model.lines.inverse_width(p1, l), model.lines.inverse_width(p2, l), interp_factor);
@@ -1352,8 +1381,8 @@ accel inline void Solver ::get_eta_and_chi_interpolated<OneLine>(const Model& mo
     const Real interp_opacity = interp_helper.interpolate_log(
         model.lines.opacity(p1, l), model.lines.opacity(p2, l), interp_factor);
 
-    eta = prof * interp_emissivity;
-    chi = prof * interp_opacity + model.parameters->min_opacity;
+    eta += prof * interp_emissivity;
+    chi += prof * interp_opacity + model.parameters->min_opacity;
 }
 
 ///  Apply trapezium rule to x_crt and x_nxt

@@ -129,6 +129,7 @@ PYBIND11_MODULE(core, module) {
         .def_readonly("thermodynamics", &Model::thermodynamics)
         .def_readonly("radiation", &Model::radiation)
         .def_readonly("images", &Model::images)
+        .def_readonly("dust", &Model::dust)
         .def_readwrite("eta", &Model::eta)
         .def_readwrite("chi", &Model::chi)
         .def_readonly("S_ray", &Model::S_ray)
@@ -179,6 +180,12 @@ PYBIND11_MODULE(core, module) {
             "images with the given min and max frequency. Can also specify the "
             "amount of frequency bins to use (instead of defaulting to "
             "parameters.nfreqs).")
+        .def("set_custom_spectral_discretization",
+            (int(Model::*)(
+                const py::array_t<Real, py::array::c_style | py::array::forcecast> frequency_grid))
+                & Model::set_custom_spectral_discretization,
+            "Set a custom spectral discretization for the model, using the "
+            "given frequency grid.")
         .def("compute_LTE_level_populations", &Model::compute_LTE_level_populations,
             "Compute the level populations for the model assuming local "
             "thermodynamic equilibrium (LTE).")
@@ -679,6 +686,21 @@ PYBIND11_MODULE(core, module) {
         // functions
         .def("read", &Frequencies::read, "Read object from file.")
         .def("write", &Frequencies::write, "Write object to file.");
+
+    // Dust
+    py::class_<Dust>(module, "Dust", "Class containing the dust/continuum properties.")
+        // attributes
+        .def_readonly("n_dust_frequencies", &Dust::n_dust_frequencies,
+            "Number of dust/continuum frequency bins.")
+        .def_readwrite("dust_frequencies", &Dust::dust_frequencies,
+            "Array with the dust/continuum frequency bins.")
+        .def_readwrite(
+            "dust_opacities", &Dust::dust_opacities, "Dust/continuum opacity per frequency bin.")
+        .def_readwrite("dust_temperature", &Dust::dust_temperature,
+            "Dust/continuum temperature per model point.")
+        // functions
+        .def("read", &Dust::read, "Read object from file.")
+        .def("write", &Dust::write, "Write object to file.");
 
     // Vector <Size>
     py::class_<Vector<Size>>(module, "VSize", py::buffer_protocol())

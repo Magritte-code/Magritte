@@ -26,6 +26,7 @@ set (SOURCE_FILES
     model/radiation/radiation.cpp
     model/radiation/frequencies/frequencies.cpp
     model/image/image.cpp
+    model/dust/dust.cpp
     solver/solver.cpp
 )
 
