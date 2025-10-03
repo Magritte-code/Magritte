@@ -314,22 +314,18 @@ int Model ::set_custom_spectral_discretization(
     auto frequency_grid_buf = frequency_grid_py.request();
     Real* frequency_grid    = static_cast<Real*>(frequency_grid_buf.ptr);
 
+    std::cout << "Setting custom spectral discretization..." << std::endl;
+
     if (frequency_grid_buf.size < 1) {
         throw std::runtime_error(
             "At least a single frequency is needed to set a spectral discretization.");
     }
 
     radiation.frequencies.resize_data(frequency_grid_buf.size);
-    std::cout << "Frequency grid size: " << frequency_grid_buf.size << std::endl;
-    cout << "Setting custom spectral discretisation..." << endl;
 
     threaded_for(p, parameters->npoints(), {
         for (Size f = 0; f < frequency_grid_buf.size; f++) {
             radiation.frequencies.nu(p, f) = frequency_grid[f];
-            if (p == 0) {
-                std::cout << "Frequency " << f << ": " << radiation.frequencies.nu(p, f)
-                          << std::endl;
-            }
 
             radiation.frequencies.appears_in_line_integral[f] = false;
             radiation.frequencies.corresponding_l_for_spec[f] = parameters->nfreqs();

@@ -1189,13 +1189,18 @@ accel inline void Solver ::get_eta_and_chi_interpolated<None>(const Model& model
     const Real freq, Real& eta, Real& chi) const {
 
     // Dust/continuum contribution
-    Real chi_dust1, chi_dust2, eta_dust1, eta_dust2;
-    model.dust.compute_dust_opacity_emissivity(p1, freq, chi_dust1, eta_dust1);
-    model.dust.compute_dust_opacity_emissivity(p2, freq, chi_dust2, eta_dust2);
-
-    eta = interp_helper.interpolate_log(eta_dust1, eta_dust2, interp_factor);
-    chi = interp_helper.interpolate_log(chi_dust1, chi_dust2, interp_factor)
-        + model.parameters->min_opacity;
+    // if no dust, set emissivity/opacity to zero
+    if (model.dust.n_dust_frequencies == 0) {
+        eta = 0.0;
+        chi = model.parameters->min_opacity;
+    } else { // otherwise interpolate
+        Real chi_dust1, chi_dust2, eta_dust1, eta_dust2;
+        model.dust.compute_dust_opacity_emissivity(p1, freq, chi_dust1, eta_dust1);
+        model.dust.compute_dust_opacity_emissivity(p2, freq, chi_dust2, eta_dust2);
+        eta = interp_helper.interpolate_log(eta_dust1, eta_dust2, interp_factor);
+        chi = interp_helper.interpolate_log(chi_dust1, chi_dust2, interp_factor)
+            + model.parameters->min_opacity;
+    }
 
     // Set line emissivity and opacity
     for (Size l = 0; l < model.parameters->nlines(); l++) {
@@ -1278,13 +1283,18 @@ accel inline void Solver ::get_eta_and_chi_interpolated<CloseLines>(const Model&
     const Real freq, Real& eta, Real& chi) const {
 
     // Dust/continuum contribution
-    Real chi_dust1, chi_dust2, eta_dust1, eta_dust2;
-    model.dust.compute_dust_opacity_emissivity(p1, freq, chi_dust1, eta_dust1);
-    model.dust.compute_dust_opacity_emissivity(p2, freq, chi_dust2, eta_dust2);
-
-    eta += interp_helper.interpolate_log(eta_dust1, eta_dust2, interp_factor);
-    chi += interp_helper.interpolate_log(chi_dust1, chi_dust2, interp_factor)
-         + model.parameters->min_opacity;
+    // if no dust, set emissivity/opacity to zero
+    if (model.dust.n_dust_frequencies == 0) {
+        eta = 0.0;
+        chi = model.parameters->min_opacity;
+    } else { // otherwise interpolate
+        Real chi_dust1, chi_dust2, eta_dust1, eta_dust2;
+        model.dust.compute_dust_opacity_emissivity(p1, freq, chi_dust1, eta_dust1);
+        model.dust.compute_dust_opacity_emissivity(p2, freq, chi_dust2, eta_dust2);
+        eta = interp_helper.interpolate_log(eta_dust1, eta_dust2, interp_factor);
+        chi = interp_helper.interpolate_log(chi_dust1, chi_dust2, interp_factor)
+            + model.parameters->min_opacity;
+    }
 
     // Line contribution
     const Real upper_bound_line_width =
@@ -1363,12 +1373,18 @@ accel inline void Solver ::get_eta_and_chi_interpolated<OneLine>(const Model& mo
     Real& chi) const {
 
     // Dust/continuum contribution
-    Real chi_dust1, chi_dust2, eta_dust1, eta_dust2;
-    model.dust.compute_dust_opacity_emissivity(p1, freq, chi_dust1, eta_dust1);
-    model.dust.compute_dust_opacity_emissivity(p2, freq, chi_dust2, eta_dust2);
-
-    eta = interp_helper.interpolate_log(eta_dust1, eta_dust2, interp_factor);
-    chi = interp_helper.interpolate_log(chi_dust1, chi_dust2, interp_factor);
+    // if no dust, set emissivity/opacity to zero
+    if (model.dust.n_dust_frequencies == 0) {
+        eta = 0.0;
+        chi = model.parameters->min_opacity;
+    } else { // otherwise interpolate
+        Real chi_dust1, chi_dust2, eta_dust1, eta_dust2;
+        model.dust.compute_dust_opacity_emissivity(p1, freq, chi_dust1, eta_dust1);
+        model.dust.compute_dust_opacity_emissivity(p2, freq, chi_dust2, eta_dust2);
+        eta = interp_helper.interpolate_log(eta_dust1, eta_dust2, interp_factor);
+        chi = interp_helper.interpolate_log(chi_dust1, chi_dust2, interp_factor)
+            + model.parameters->min_opacity;
+    }
 
     // Line contribution
     const Real diff             = freq - model.lines.line[l];
@@ -1382,7 +1398,7 @@ accel inline void Solver ::get_eta_and_chi_interpolated<OneLine>(const Model& mo
         model.lines.opacity(p1, l), model.lines.opacity(p2, l), interp_factor);
 
     eta += prof * interp_emissivity;
-    chi += prof * interp_opacity + model.parameters->min_opacity;
+    chi += prof * interp_opacity;
 }
 
 ///  Apply trapezium rule to x_crt and x_nxt
@@ -1915,9 +1931,47 @@ inline void Solver ::compute_S_dtau_line_integrated<OneLine>(Model& model, Size 
     Size nextpoint, Size currpoint_interp_idx, Size nextpoint_interp_idx, Size lineidx,
     Real currfreq, Real nextfreq, Real curr_interp, Real next_interp, Real dZ, Real& dtau,
     Real& Scurr, Real& Snext) {
-    // FIXME: line idx is wrong
+    Real sum_dtau             = 0.0;
+    Real sum_dtau_times_Scurr = 0.0;
+    Real sum_dtau_times_Snext = 0.0;
+
+    // Dust/continuum contribution
+    // if no dust present, do not even bother computing this contribution
+    if (model.dust.n_dust_frequencies != 0) {
+        Real chi_dust1, chi_dust2, eta_dust1, eta_dust2;
+        model.dust.compute_dust_opacity_emissivity(currpoint, currfreq, chi_dust1, eta_dust1);
+        model.dust.compute_dust_opacity_emissivity(nextpoint, nextfreq, chi_dust2, eta_dust2);
+        Real chi_dust_interp1, chi_dust_interp2, eta_dust_interp1, eta_dust_interp2;
+        model.dust.compute_dust_opacity_emissivity(
+            currpoint_interp_idx, currfreq, chi_dust_interp1, eta_dust_interp1);
+        model.dust.compute_dust_opacity_emissivity(
+            nextpoint_interp_idx, nextfreq, chi_dust_interp2, eta_dust_interp2);
+
+        Real S_dust1        = eta_dust1 / chi_dust1;
+        Real S_dust2        = eta_dust2 / chi_dust2;
+        Real S_dust_interp1 = eta_dust_interp1 / chi_dust_interp1;
+        Real S_dust_interp2 = eta_dust_interp2 / chi_dust_interp2;
+
+        Real curr_dust_opacity =
+            interp_helper.interpolate_log(chi_dust1, chi_dust_interp1, curr_interp);
+        Real next_dust_opacity =
+            interp_helper.interpolate_log(chi_dust2, chi_dust_interp2, next_interp);
+        Real dust_Scurr = interp_helper.interpolate_log(S_dust1, S_dust_interp1, curr_interp);
+        Real dust_Snext = interp_helper.interpolate_log(S_dust2, S_dust_interp2, next_interp);
+        Real dust_dtau  = 0.5 * (curr_dust_opacity + next_dust_opacity) * dZ;
+
+        sum_dtau += dust_dtau;
+        sum_dtau_times_Scurr += dust_dtau * dust_Scurr;
+        sum_dtau_times_Snext += dust_dtau * dust_Snext;
+    }
+
+    // Line contribution
+
+    // FIXME: line idx can/will be wrong, if using any other spectral discretization than the
+    // standard NLTE one, given that lineidx will NOT be set properly
     dtau = compute_dtau_single_line(model, currpoint, nextpoint, currpoint_interp_idx,
         nextpoint_interp_idx, lineidx, currfreq, nextfreq, curr_interp, next_interp, dZ);
+
     // const Real curr_opacity = interp_helper.interpolate_log(model.lines.opacity(currpoint,
     // lineidx),
     //     model.lines.opacity(currpoint_interp_idx, lineidx), curr_interp);
@@ -1934,16 +1988,24 @@ inline void Solver ::compute_S_dtau_line_integrated<OneLine>(Model& model, Size 
     // Snext = next_emissivity / next_opacity;
 
     Real Scurr_p =
-        model.lines.emissivity(currpoint, lineidx) / model.lines.opacity(currpoint, lineidx);
+        (model.lines.emissivity(currpoint, lineidx)) / (model.lines.opacity(currpoint, lineidx));
     Real Snext_p =
-        model.lines.emissivity(nextpoint, lineidx) / model.lines.opacity(nextpoint, lineidx);
-    Real Scurr_interp_p = model.lines.emissivity(currpoint_interp_idx, lineidx)
-                        / model.lines.opacity(currpoint_interp_idx, lineidx);
-    Real Snext_interp_p = model.lines.emissivity(nextpoint_interp_idx, lineidx)
-                        / model.lines.opacity(nextpoint_interp_idx, lineidx);
+        (model.lines.emissivity(nextpoint, lineidx)) / (model.lines.opacity(nextpoint, lineidx));
+    Real Scurr_interp_p = (model.lines.emissivity(currpoint_interp_idx, lineidx))
+                        / (model.lines.opacity(currpoint_interp_idx, lineidx));
+    Real Snext_interp_p = (model.lines.emissivity(nextpoint_interp_idx, lineidx))
+                        / (model.lines.opacity(nextpoint_interp_idx, lineidx));
 
-    Scurr = interp_helper.interpolate_log(Scurr_p, Scurr_interp_p, curr_interp);
-    Snext = interp_helper.interpolate_log(Snext_p, Snext_interp_p, next_interp);
+    Real Scurr_line = interp_helper.interpolate_log(Scurr_p, Scurr_interp_p, curr_interp);
+    Real Snext_line = interp_helper.interpolate_log(Snext_p, Snext_interp_p, next_interp);
+
+    sum_dtau += dtau;
+    sum_dtau_times_Scurr += dtau * Scurr_line;
+    sum_dtau_times_Snext += dtau * Snext_line;
+
+    dtau  = sum_dtau;
+    Scurr = sum_dtau_times_Scurr / sum_dtau;
+    Snext = sum_dtau_times_Snext / sum_dtau;
 }
 
 ///  Computer for the optical depth and source function when
@@ -1980,6 +2042,38 @@ inline void Solver ::compute_S_dtau_line_integrated<None>(Model& model, Size cur
     Real sum_dtau             = 0.0;
     Real sum_dtau_times_Scurr = 0.0;
     Real sum_dtau_times_Snext = 0.0;
+
+    // Dust/continuum contribution
+    // if no dust present, do not even bother computing this contribution
+    if (model.dust.n_dust_frequencies != 0) {
+        Real chi_dust1, chi_dust2, eta_dust1, eta_dust2;
+        model.dust.compute_dust_opacity_emissivity(currpoint, currfreq, chi_dust1, eta_dust1);
+        model.dust.compute_dust_opacity_emissivity(nextpoint, nextfreq, chi_dust2, eta_dust2);
+        Real chi_dust_interp1, chi_dust_interp2, eta_dust_interp1, eta_dust_interp2;
+        model.dust.compute_dust_opacity_emissivity(
+            currpoint_interp_idx, currfreq, chi_dust_interp1, eta_dust_interp1);
+        model.dust.compute_dust_opacity_emissivity(
+            nextpoint_interp_idx, nextfreq, chi_dust_interp2, eta_dust_interp2);
+
+        Real S_dust1        = eta_dust1 / chi_dust1;
+        Real S_dust2        = eta_dust2 / chi_dust2;
+        Real S_dust_interp1 = eta_dust_interp1 / chi_dust_interp1;
+        Real S_dust_interp2 = eta_dust_interp2 / chi_dust_interp2;
+
+        Real curr_dust_opacity =
+            interp_helper.interpolate_log(chi_dust1, chi_dust_interp1, curr_interp);
+        Real next_dust_opacity =
+            interp_helper.interpolate_log(chi_dust2, chi_dust_interp2, next_interp);
+        Real dust_Scurr = interp_helper.interpolate_log(S_dust1, S_dust_interp1, curr_interp);
+        Real dust_Snext = interp_helper.interpolate_log(S_dust2, S_dust_interp2, next_interp);
+        Real dust_dtau  = 0.5 * (curr_dust_opacity + next_dust_opacity) * dZ;
+
+        sum_dtau += dust_dtau;
+        sum_dtau_times_Scurr += dust_dtau * dust_Scurr;
+        sum_dtau_times_Snext += dust_dtau * dust_Snext;
+    }
+
+    // Line contributions
     for (Size l = 0; l < model.parameters->nlines(); l++) {
         Real line_dtau = compute_dtau_single_line(model, currpoint, nextpoint, currpoint_interp_idx,
             nextpoint_interp_idx, l, currfreq, nextfreq, curr_interp, next_interp, dZ);
@@ -2055,6 +2149,38 @@ inline void Solver ::compute_S_dtau_line_integrated<CloseLines>(Model& model, Si
     Real sum_dtau_times_Scurr = 0.0;
     Real sum_dtau_times_Snext = 0.0;
 
+    // Dust/continuum contribution
+    // if no dust present, do not even bother computing this contribution
+    if (model.dust.n_dust_frequencies != 0) {
+        Real chi_dust1, chi_dust2, eta_dust1, eta_dust2;
+        model.dust.compute_dust_opacity_emissivity(currpoint, currfreq, chi_dust1, eta_dust1);
+        model.dust.compute_dust_opacity_emissivity(nextpoint, nextfreq, chi_dust2, eta_dust2);
+        Real chi_dust_interp1, chi_dust_interp2, eta_dust_interp1, eta_dust_interp2;
+        model.dust.compute_dust_opacity_emissivity(
+            currpoint_interp_idx, currfreq, chi_dust_interp1, eta_dust_interp1);
+        model.dust.compute_dust_opacity_emissivity(
+            nextpoint_interp_idx, nextfreq, chi_dust_interp2, eta_dust_interp2);
+
+        Real S_dust1        = eta_dust1 / chi_dust1;
+        Real S_dust2        = eta_dust2 / chi_dust2;
+        Real S_dust_interp1 = eta_dust_interp1 / chi_dust_interp1;
+        Real S_dust_interp2 = eta_dust_interp2 / chi_dust_interp2;
+
+        Real curr_dust_opacity =
+            interp_helper.interpolate_log(chi_dust1, chi_dust_interp1, curr_interp);
+        Real next_dust_opacity =
+            interp_helper.interpolate_log(chi_dust2, chi_dust_interp2, next_interp);
+        Real dust_Scurr = interp_helper.interpolate_log(S_dust1, S_dust_interp1, curr_interp);
+        Real dust_Snext = interp_helper.interpolate_log(S_dust2, S_dust_interp2, next_interp);
+        Real dust_dtau  = 0.5 * (curr_dust_opacity + next_dust_opacity) * dZ;
+
+        sum_dtau += dust_dtau;
+        sum_dtau_times_Scurr += dust_dtau * dust_Scurr;
+        sum_dtau_times_Snext += dust_dtau * dust_Snext;
+    }
+
+    // Line contributions
+    // determine frequency bounds for searching nearby
     Real left_freq;
     Real right_freq;
 

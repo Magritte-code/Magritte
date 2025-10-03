@@ -3,12 +3,9 @@
 #include "io/io.hpp"
 #include "model/parameters/parameters.hpp"
 #include "tools/types.hpp"
-// TODO: include interpolation for the dust opacities
-//#include "tools/interpolation.hpp"
 
-/// Data structure for dust
-// or continuum radiation in general; Note: these opacity sources will be treated in LTE, using a
-// single temperature for all at once
+/// Data structure for dust or continuum radiation in general; Note: these opacity sources will be
+/// treated in LTE, using a single temperature for all at once
 struct Dust {
     Size n_dust_frequencies; ///< number of frequencies at which dust opacities are defined
     std::shared_ptr<Parameters> parameters; ///< data structure containing model parameters
@@ -16,8 +13,7 @@ struct Dust {
     Vector<Real> dust_frequencies;          ///< frequency grid at which dust opacities are defined
     Matrix<Real> dust_opacities;            ///< dust opacities (point, dust frequency index)
     // Matrix<Real> dust_emissivities; ///< = dust opacities * B_nu(T_dust)
-    //  Note: dust opacities and emissivities are to be precalculated
-    // err, not really feasible, as B_nu depends on the exact frequency used to evaluate it
+    //  Note: we cannot precalculate dust emissivities, as it depends on the exact frequency
 
     Dust(std::shared_ptr<Parameters> params) : parameters(params){};
 

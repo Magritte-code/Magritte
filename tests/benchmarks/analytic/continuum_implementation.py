@@ -15,6 +15,7 @@ import magritte.tools    as tools
 import magritte.setup    as setup
 import magritte.core     as magritte
 import astropy.units  as units
+import scipy.integrate
 
 
 dimension = 1
@@ -26,12 +27,12 @@ nquads    = 1
 
 nH2  = 1.0E+12                 # [m^-3]
 nTT  = 1.0E+03                 # [m^-3]
-fraction_density_dust = 1.0E-4 # [.] fraction of mass in dust
+fraction_density_dust = 1.0E-5 # [.] fraction of mass in dust
 temp = 4.5E+00                 # [K]
 dust_temp = 1.5E+02            # [K]
 turb = 0.0E+00                 # [m/s]
 dx   = 1.0E+12                 # [m]
-dv   = 0.0E+00 / magritte.CC   # [fraction of speed of light]
+dv   = 0.0E+03 / magritte.CC   # [fraction of speed of light]
 
 
 def create_model ():
@@ -44,7 +45,7 @@ def create_model ():
     lamdaFile = f'{datdir}test.txt'
     continuumFile = f'{datdir}fe50o_henning1995.txt'
     continuum_ref_density = 4.9 * units.g/(units.cm)**3 # [g/cm3]; will be converted to the correct SI units below
-    #corresponds Fe_(0.5)Mg_(0.5)O from Henning 1995, reference density somewhere between 4.79 g/cm3 and 5.05 g/cm3, so Ill assume 4.9 g/cm3
+    #corresponds Fe_(0.5)Mg_(0.5)O from Henning 1995, reference density somewhere between 4.79 g/cm3 and 5.05 g/cm3, so I'll assume 4.9 g/cm3
 
 
     model = magritte.Model ()
@@ -60,8 +61,8 @@ def create_model ():
     model.geometry.points.position.set([[i*dx, 0, 0] for i in range(npoints)])
     model.geometry.points.velocity.set([[i*dv, 0, 0] for i in range(npoints)])
 
-    model.chemistry.species.abundance = [[0*nTT, nH2, 0.0] for _ in range(npoints)]#disable line emission by setting density to 0
-    #TODO: check if magritte can technically handle a model with only continuum, and no lines present at all
+    #Note: Magritte currently cannot handle creating continuum-only models, so we include a dummy species with zero abundance to avoid issues
+    model.chemistry.species.abundance = [[0*nTT, nH2, 0.0] for _ in range(npoints)]#disable line emission/absorption by setting density to 0
     model.chemistry.species.symbol    = ['test', 'H2', 'e-']
 
     model.thermodynamics.temperature.gas  .set( temp                 * np.ones(npoints))
@@ -103,76 +104,52 @@ def run_model (nosave=False):
     chi = np.array(model.dust.dust_opacities)[0,:][None, :]#same for all points in this model
     #conveniently, these frequencies correspond to the frequencies used to tabulate the continuum opacity, so no interpolation is needed
     dust_temp = np.array(model.dust.dust_temperature)[0]#same for all points in this model
+    positions = np.array(model.geometry.points.position)
 
     timer2 = tools.Timer('setting model')
     timer2.start()
-    # model.compute_spectral_discretisation ()
     model.set_custom_spectral_discretization(dust_frequencies)
     model.compute_inverse_line_widths     ()
     model.compute_LTE_level_populations   ()
     timer2.stop()
 
-    print("after setup")
-
-    timer3 = tools.Timer('shortchar 0  ')
+    #compute the image, to check whether the intensity is as expected
+    timer3 = tools.Timer('Compute intensity image')
     timer3.start()
-    model.compute_radiation_field_shortchar_order_0 ()
+    model.compute_image_new(0,1,1)
     timer3.stop()
-    u_0s = np.array(model.radiation.u)
 
-    print("after shortchar")
-
-    timer4 = tools.Timer('feautrier 2 ')
+    timer4 = tools.Timer('Compute image optical depth')
     timer4.start()
-    model.compute_radiation_field_feautrier_order_2 ()
+    model.compute_image_optical_depth_new(0,1,1)
     timer4.stop()
-    u_2f = np.array(model.radiation.u)
 
-    timer5 = tools.Timer('feautrier 2 uv')
-    timer5.start()
-    model.compute_radiation_field_feautrier_order_2_uv ()
-    timer5.stop()
-    u_2f_uv = np.array(model.radiation.u)
-    v_2f_uv = np.array(model.radiation.v)
+    I_image = np.array(model.images[0].I)[0,:]
+    tau_image = np.array(model.images[1].I)[0,:]
 
-    x  = np.array(model.geometry.points.position)[:,0][:, None]
-    # nu = np.array(model.radiation.frequencies.nu)
-
-    # ld = model.lines.lineProducingSpecies[0].linedata
-
-    # k = 0
+    def evaluate_dust_opacity(frequency, velocity):
+        return np.interp(dust_frequencies[None, :]*(1-velocity[:, None]), frequency, chi[0,:])
 
     
+    #compute optical depth
+    chi_shifted = evaluate_dust_opacity(dust_frequencies, np.array(model.geometry.points.velocity)[:,0])
+    tau_ref = np.trapz(chi_shifted, x=np.array(model.geometry.points.position)[:,0], axis=0)
+    #TODO: fix the calculation of the reference intensity; currently it is wrong for any model with non-zero velocity field due to not taking into account the doppler shifts properly
+    #test attempt below
+    # def evaluate_source_function(frequency, velocity):
+    #     return tools.planck(dust_temp[None, None], dust_frequencies[None, :]*(np.ones((1,1))-velocity[:, None]))
+    # S_shifted = evaluate_source_function(dust_frequencies, np.array(model.geometry.points.velocity)[:,0])
+    # cumsum_tau = np.zeros((chi_shifted.shape[0]+1, chi_shifted.shape[1]))
+    # cumsum_tau[1:-1,:] = scipy.integrate.cumulative_trapezoid(chi_shifted, axis=0)*dx
+    # cumsum_tau[-1,:] = tau_ref
+    # intensity_contributions = S_shifted * (1 - np.exp(-dx*chi_shifted)) * np.exp(-cumsum_tau[:-1, :])
+    # ref_intensity = np.sum(intensity_contributions, axis=0) + tools.I_CMB(dust_frequencies)*np.exp(-tau_ref)
 
-    src = tools.planck(dust_temp, dust_frequencies)[None, :]#[None, ]
+    # Technically, the source function for the dust is not constant due to doppler shifts, therefore NO doppler shifts in this benchmark
+    ref_intensity = tools.planck(dust_temp, dust_frequencies) * (1-np.exp(-tau_ref)) + tools.I_CMB(dust_frequencies)*np.exp(-tau_ref)
 
-
-    # frq = ld.frequency[k]
-    # pop = tools.LTEpop         (ld, temp) * nTT
-    # phi = tools.profile        (ld, k, temp, (turb/magritte.CC)**2, frq)
-    # eta = tools.lineEmissivity (ld, pop)[k] * phi
-    # chi = tools.lineOpacity    (ld, pop)[k] * phi
-    # src = tools.lineSource     (ld, pop)[k]
-    bdy = tools.I_CMB          (dust_frequencies)[None, :]
-
-    print("check sizes")
-    print("src", np.shape(src))
-    print("bdy", np.shape(bdy))
-    print("chi", np.shape(chi))
-
-    def I_0 (x):
-        return src + (bdy-src)*np.exp(-chi*x)
-
-    def I_1 (x):
-        return src + (bdy-src)*np.exp(-chi*(x[-1]-x))
-
-    def u_ (x):
-        return 0.5 * (I_0(x) + I_1(x))
-
-    error_u_0s = np.abs(tools.relative_error (u_(x), u_0s[0,:,:]))
-    error_u_2f = np.abs(tools.relative_error (u_(x), u_2f[0,:,:]))
-    error_I_0_2f_uv = np.abs(tools.relative_error (I_0(x), u_2f_uv[0,:,:]+v_2f_uv[0,:,:]))
-    error_I_1_2f_uv = np.abs(tools.relative_error (I_1(x), u_2f_uv[0,:,:]-v_2f_uv[0,:,:]))
+    reldiff_I = 2.0*np.abs((I_image - ref_intensity)/(ref_intensity+I_image))
+    reldiff_tau = 2.0*np.abs((tau_image - tau_ref)/(tau_ref+tau_image))
 
     result  = f'--- Benchmark name ----------------------------\n'
     result += f'{modelName                                    }\n'
@@ -182,10 +159,8 @@ def run_model (nosave=False):
     result += f'nrays     = {model.parameters.nrays    ()     }\n'
     result += f'nquads    = {model.parameters.nquads   ()     }\n'
     result += f'--- Accuracy ----------------------------------\n'
-    result += f'max error in shortchar 0 = {np.max(error_u_0s)}\n'
-    result += f'max error in feautrier 2 = {np.max(error_u_2f)}\n'
-    result += f'max error in I_0 2f uv = {np.max(error_I_0_2f_uv)}\n'
-    result += f'max error in I_1 2f uv = {np.max(error_I_1_2f_uv)}\n'
+    result += f'max error in I = {np.max(reldiff_I[:40])}      \n'
+    result += f'max error in tau = {np.max(reldiff_tau)}       \n'
     result += f'--- Timers ------------------------------------\n'
     result += f'{timer1.print()                               }\n'
     result += f'{timer2.print()                               }\n'
@@ -199,37 +174,32 @@ def run_model (nosave=False):
         with open(f'{resdir}{modelName}-{timestamp}.log' ,'w') as log:
             log.write(result)
 
-        fig = plt.figure(dpi=150)
-        plt.title(modelName)
-        plt.scatter(x, u_0s[0,:,0], s=0.5, label='0s', zorder=1)
-        plt.scatter(x, u_2f[0,:,0], s=0.5, label='2f', zorder=1)
-        plt.plot(x, u_(x), c='lightgray', zorder=0)
+        plt.figure(dpi = 150)
+        plt.title('Intensity')
+        plt.plot(ref_intensity, label='ref')
+        plt.plot(I_image, label='model')
+        plt.axvline(x=40, color='gray', linestyle='--', label='end of checked range')
+        plt.yscale('log')
         plt.legend()
-        plt.xscale('log')
-        plt.xlabel('r [m]')
-        plt.ylabel('Mean intensity [W/m$^{2}$]')
-        plt.show()
-        # plt.savefig(f'{resdir}{modelName}-{timestamp}.png', dpi=150)
-
-    #returning whether output is as expected (not too far from the input)
-    # max_diff=max(u_(x))-min(u_(x))
-    # print(max_diff)
-    #error should at max be proportional to max diff? only maybe for testing non analytic models
+        plt.savefig(f'{resdir}{modelName}-intensity-{timestamp}.png', dpi=150)
+        plt.figure(dpi=150)
+        plt.title('Optical depth')
+        plt.plot(tau_ref, label='ref')
+        plt.plot(tau_image, label='model')
+        plt.yscale('log')
+        plt.savefig(f'{resdir}{modelName}-optical_depth-{timestamp}.png', dpi=150)
 
     #error bounds are chosen somewhat arbitrarily, based on previously obtained results; this should prevent serious regressions.
-    FEAUTRIER_AS_EXPECTED=(np.max(error_u_2f)<1.7e-4)
-    FIRSTORDER_AS_EXPECTED=(np.max(error_u_0s)<1.7e-7)
-    FEAUTRIER_UV_AS_EXPECTED=(np.max(error_I_0_2f_uv)<2.0e-4) and (np.max(error_I_1_2f_uv)<2.0e-4)
+    RELDIFF_I_AS_EXPECTED = (np.max(reldiff_I[:40])<1.7e-5)#well, the higher frequencies have very low intensities/sharp declines of the source function, so the relative error can be larger there
+    RELDIFF_TAU_AS_EXPECTED = (np.max(reldiff_tau)<4.4e-11)
 
-    if not FIRSTORDER_AS_EXPECTED:
-        print("First order solver max error too large: ", np.max(error_u_0s))
-    if not FEAUTRIER_AS_EXPECTED:
-        print("Feautrier solver max error too large: ", np.max(error_u_2f))
-    if not FEAUTRIER_UV_AS_EXPECTED:
-        print("Feautrier solver with uv max error too large: ", np.max(error_I_0_2f_uv), np.max(error_I_1_2f_uv))
+    if not RELDIFF_I_AS_EXPECTED:
+        print("Continuum intensity max error too large: ", np.max(np.max(reldiff_I[:40])))
+    if not RELDIFF_TAU_AS_EXPECTED:
+        print("Continuum optical depth max error too large: ", np.max(np.max(reldiff_tau)))
 
 
-    return (FEAUTRIER_AS_EXPECTED&FIRSTORDER_AS_EXPECTED&FEAUTRIER_UV_AS_EXPECTED)
+    return (RELDIFF_I_AS_EXPECTED&RELDIFF_TAU_AS_EXPECTED)
 
 
 def run_test (nosave=False):

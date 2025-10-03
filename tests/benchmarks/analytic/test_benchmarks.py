@@ -15,6 +15,8 @@ from constant_velocity_gradient_1D_image import create_model as velocity_gradien
 from constant_velocity_gradient_1D_image import run_model as velocity_gradient_image_run
 from constant_velocity_gradient_1D_new_imager import create_model as velocity_gradient_new_imager_setup
 from constant_velocity_gradient_1D_new_imager import run_model as velocity_gradient_new_imager_run
+from continuum_implementation import create_model as continuum_implementation_setup
+from continuum_implementation import run_model as continuum_implementation_run
 
 
 
@@ -83,6 +85,14 @@ class TestAnalytic:
 
         def test_density_distribution1D_image_run(self):
             assert density_dist_image_run('a', nosave=True, use_widgets=False)
+
+    @pytest.mark.incremental
+    class TestContinuumImplementation:
+        def test_continuum_implementation_setup(self):
+            continuum_implementation_setup()
+
+        def test_continuum_implementation_run(self):
+            assert continuum_implementation_run(nosave=True)
 
     @pytest.mark.incremental
     class TestVelocityGradient1D:
