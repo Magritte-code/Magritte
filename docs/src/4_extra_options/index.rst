@@ -11,3 +11,4 @@ we will explain a few interesting options for our users.
    other_solvers
    adaptive_ng_acceleration
    NLTE_in_low_density
+   including_dust_continuum

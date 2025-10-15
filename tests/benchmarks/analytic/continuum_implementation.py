@@ -27,7 +27,8 @@ nquads    = 1
 
 nH2  = 1.0E+12                 # [m^-3]
 nTT  = 1.0E+03                 # [m^-3]
-fraction_density_dust = 1.0E-5 # [.] fraction of mass in dust
+#yes, this dust density is quite high, but this is a benchmark, so I want to reach optical depths of order 1
+fraction_density_dust = 1.0E-2 # [.] fraction of number density in dust
 temp = 4.5E+00                 # [K]
 dust_temp = 1.5E+02            # [K]
 turb = 0.0E+00                 # [m/s]
@@ -70,8 +71,8 @@ def create_model ():
 
     frequency_grid, complex_refractive_index = tools.read_dust_opacity_table(continuumFile, 1e-6*units.m)
     frequency_grid_Hz, absorption_coeff_per_density = tools.convert_dust_opacity_table_to_SI(frequency_grid, complex_refractive_index, continuum_ref_density)
-
-    model.dust.dust_opacities.set((absorption_coeff_per_density * fraction_density_dust * nH2 * 2.016 / 6.022e23).value[None, :]*np.ones(npoints)[:, None])#H2: 2.016 g/mol, 6.022e23 particles/mol -> particles/m3 to g/m3
+    #absorption_coeff_per_density is now in m2/kg, thus needs to be divided by 1000 to get m2/g
+    model.dust.dust_opacities.set((absorption_coeff_per_density/1000 * fraction_density_dust * nH2 * 2.016 / 6.022e23).value[None, :]*np.ones(npoints)[:, None])#H2: 2.016 g/mol, 6.022e23 particles/mol -> particles/m3 to g/m3
     model.dust.dust_frequencies.set((frequency_grid_Hz).value)
     model.dust.dust_temperature.set(dust_temp * np.ones(npoints))
 
