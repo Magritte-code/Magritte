@@ -1073,8 +1073,13 @@ accel inline void Solver ::set_data_for_line(const Model& model, const Size l, c
     const double dshift     = shift_nxt - shift_crt;
     const double dshift_abs = fabs(dshift);
 
+    // for the dust, estimate the comoving frame frequency at which to evaluate the opacity
+    const double freq_line_curr = model.lines.line[l] * shift_crt;
+    const double freq_line_next = model.lines.line[l] * shift_nxt;
+
     // get number of interpolation points
-    Size n_interp_points = interp_helper.get_n_interp_for_line(model, l, crt, nxt);
+    Size n_interp_points =
+        interp_helper.get_n_interp_around_freqs(model, crt, nxt, freq_line_curr, freq_line_next);
 
     if (n_interp_points > 1) {
         const double dZ_interpl     = dZ_loc / n_interp_points;
@@ -2184,15 +2189,8 @@ inline void Solver ::compute_S_dtau_line_integrated<CloseLines>(Model& model, Si
     Real left_freq;
     Real right_freq;
 
-    // err, compiler will probably figure out that I just want
-    // these two values ordered
-    if (currfreq < nextfreq) {
-        left_freq  = currfreq;
-        right_freq = nextfreq;
-    } else {
-        right_freq = currfreq;
-        left_freq  = nextfreq;
-    }
+    left_freq  = std::min(currfreq, nextfreq);
+    right_freq = std::max(currfreq, nextfreq);
 
     // using maximum of bounds on the two points to get an
     // upper bound for the line width
