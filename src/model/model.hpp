@@ -1,16 +1,20 @@
 #pragma once
 
 #include "chemistry/chemistry.hpp"
+#include "dust/dust.hpp"
 #include "geometry/geometry.hpp"
 #include "image/image.hpp"
 #include "io/io.hpp"
 #include "io/python/io_python.hpp"
 #include "lines/lines.hpp"
 #include "parameters/parameters.hpp"
+#include "pybind11/numpy.h"
+#include "pybind11/pybind11.h"
 #include "radiation/radiation.hpp"
 #include "thermodynamics/thermodynamics.hpp"
 #include "tools/timer.hpp"
 #include "tools/types.hpp"
+namespace py = pybind11;
 
 #include <tuple>
 
@@ -25,16 +29,17 @@ struct Model {
     Lines lines;
     Radiation radiation;
     vector<Image> images;
+    Dust dust;
 
     enum SpectralDiscretisation { SD_None, SD_Lines, SD_Image } spectralDiscretisation = SD_None;
 
     Model() :
         parameters(new Parameters()), geometry(parameters), chemistry(parameters),
-        thermodynamics(parameters), lines(parameters), radiation(parameters){};
+        thermodynamics(parameters), lines(parameters), radiation(parameters), dust(parameters){};
 
     Model(const string name) :
         parameters(new Parameters()), geometry(parameters), chemistry(parameters),
-        thermodynamics(parameters), lines(parameters), radiation(parameters) {
+        thermodynamics(parameters), lines(parameters), radiation(parameters), dust(parameters) {
         parameters->set_model_name(name);
         read();
     }
@@ -54,6 +59,8 @@ struct Model {
     int compute_spectral_discretisation(const Real nu_min, const Real nu_max);
     int compute_spectral_discretisation(
         const Real nu_min, const Real nu_max, const Size n_image_freqs);
+    int set_custom_spectral_discretization(
+        const py::array_t<Real, py::array::c_style | py::array::forcecast> frequency_grid);
     int compute_LTE_level_populations();
     int compute_radiation_field();
     int compute_radiation_field_feautrier_order_2();

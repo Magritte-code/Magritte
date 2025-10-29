@@ -13,10 +13,10 @@ Image ::Image(
     const Geometry& geometry, const Frequencies& frequencies, const ImageType it, const Size rr) :
     imageType(it), imagePointPosition(AllModelPoints), ray_nr(rr),
     ray_direction(Vector3D(geometry.rays.get_direction<false>(0, ray_nr))) {
-    if (geometry.parameters->dimension() == 1) {
+    if (geometry.parameters->dimension() == 1 && geometry.parameters->spherical_symmetry()) {
         const Vector3D raydir = geometry.rays.get_direction<false>(0, ray_nr);
         if ((raydir.x() != 0.0) || (raydir.y() != 1.0) || (raydir.z() != 0.0)) {
-            throw std::runtime_error("In 1D, the image ray has to be (0,1,0)");
+            throw std::runtime_error("In 1D spherical symmetry, the image ray has to be (0,1,0)");
         }
     }
 
@@ -30,10 +30,10 @@ Image ::Image(const Geometry& geometry, const Frequencies& frequencies, const Im
     const Size rr, const Size Nxpix, const Size Nypix) :
     imageType(it), imagePointPosition(ProjectionSurface), ray_nr(rr),
     ray_direction(Vector3D(geometry.rays.get_direction<false>(0, ray_nr))) {
-    if (geometry.parameters->dimension() == 1) {
+    if (geometry.parameters->dimension() == 1 && geometry.parameters->spherical_symmetry()) {
         const Vector3D raydir = geometry.rays.get_direction<false>(0, ray_nr);
         if ((raydir.x() != 0.0) || (raydir.y() != 1.0) || (raydir.z() != 0.0)) {
-            throw std::runtime_error("In 1D, the image ray has to be (0,1,0)");
+            throw std::runtime_error("In 1D spherical symmetry, the image ray has to be (0,1,0)");
         }
     }
 
@@ -74,11 +74,11 @@ Image ::Image(const Geometry& geometry, const Frequencies& frequencies, const Im
     const Vector3D raydir) :
     imageType(it), imagePointPosition(AllModelPoints), ray_nr(-1), ray_direction(raydir),
     closest_bdy_point(geometry.parameters->npoints()) {
-    if (geometry.parameters->dimension() == 1) {
+    if (geometry.parameters->dimension() == 1 && geometry.parameters->spherical_symmetry()) {
         // Same error condition as previous imager. In 1D, it does not matter either
         // way from which direction we image.
         if ((raydir.x() != 0.0) || (raydir.y() != 1.0) || (raydir.z() != 0.0)) {
-            throw std::runtime_error("In 1D, the image ray has to be (0,1,0)");
+            throw std::runtime_error("In 1D spherical symmetry, the image ray has to be (0,1,0)");
         }
     }
     set_freqs(frequencies);
@@ -90,11 +90,11 @@ Image ::Image(const Geometry& geometry, const Frequencies& frequencies, const Im
 Image ::Image(const Geometry& geometry, const Frequencies& frequencies, const ImageType it,
     const Vector3D raydir, const Size Nxpix, const Size Nypix) :
     imageType(it), imagePointPosition(ProjectionSurface), ray_nr(-1), ray_direction(raydir) {
-    if (geometry.parameters->dimension() == 1) {
+    if (geometry.parameters->dimension() == 1 && geometry.parameters->spherical_symmetry()) {
         // Same error condition as previous imager. In 1D, it does not matter either
         // way from which direction we image.
         if ((raydir.x() != 0.0) || (raydir.y() != 1.0) || (raydir.z() != 0.0)) {
-            throw std::runtime_error("In 1D, the image ray has to be (0,1,0)");
+            throw std::runtime_error("In 1D spherical symmetry, the image ray has to be (0,1,0)");
         }
     }
     set_freqs(frequencies);

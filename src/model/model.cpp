@@ -1,8 +1,11 @@
 #include "model.hpp"
 
 #include "paracabs.hpp"
+#include "pybind11/numpy.h"
+#include "pybind11/pybind11.h"
 #include "solver/solver.hpp"
 #include "tools/heapsort.hpp"
+namespace py = pybind11;
 
 void Model ::read(const Io& io) {
     // Before reading a model, first check whether a file exists at the given
@@ -28,6 +31,7 @@ void Model ::read(const Io& io) {
     thermodynamics.read(io);
     lines.read(io);
     radiation.read(io);
+    dust.read(io);
 
     cout << "                                           " << endl;
     cout << "-------------------------------------------" << endl;
@@ -47,6 +51,7 @@ void Model ::read(const Io& io) {
 
 void Model ::write(const Io& io) const {
     // Let only root (rank 0) process write output
+    // Huh; why would we even attempt to write the model while in a parallel context?
     if (pc::message_passing::comm_rank() == 0) {
         parameters->write(io);
         geometry.write(io);
@@ -54,6 +59,7 @@ void Model ::write(const Io& io) const {
         thermodynamics.write(io);
         lines.write(io);
         radiation.write(io);
+        dust.write(io);
     }
 }
 
@@ -162,6 +168,7 @@ int Model ::compute_spectral_discretisation() {
 
 ///  Computer for spectral (=frequency) discretisation
 ///  Gives same frequency bins to each point
+///  Cannot be used for the NLTE procedure
 ///    @param[in] width : corresponding line width for frequency bins
 /////////////////////////////////////////////////////////////////////
 int Model ::compute_spectral_discretisation(const Real width) {
@@ -250,6 +257,7 @@ int Model ::compute_spectral_discretisation(const Real nu_min, const Real nu_max
 
 ///  Computer for spectral (=frequency) discretisation
 ///  Gives same frequency bins to each point
+///  Cannot be used for the NLTE procedure
 ///    @param[in] min : minimal frequency
 ///    @param[in] max : maximal frequency
 ///    @param[in] n_image_freqs : number of frequencies in the discretization
@@ -288,6 +296,44 @@ int Model ::compute_spectral_discretisation(const Real nu_min, const Real nu_max
             }
         })
     }
+    // Set spectral discretisation setting
+    spectralDiscretisation = SD_Image;
+
+    // TODO: for all frequencies, set the correct corresponding line. In this way,
+    // the OneLine approximation will be compatible with the imagers
+
+    return (0);
+}
+
+/// Sets the spectral discretization to a custom frequency grid
+/// Cannot be used for the NLTE procedure
+/// @param frequency_grid: vector of frequencies to use as the spectral discretization
+//////////////////////////////////////////////////////////
+int Model ::set_custom_spectral_discretization(
+    const py::array_t<Real, py::array::c_style | py::array::forcecast> frequency_grid_py) {
+    auto frequency_grid_buf = frequency_grid_py.request();
+    Real* frequency_grid    = static_cast<Real*>(frequency_grid_buf.ptr);
+
+    std::cout << "Setting custom spectral discretization..." << std::endl;
+
+    if (frequency_grid_buf.size < 1) {
+        throw std::runtime_error(
+            "At least a single frequency is needed to set a spectral discretization.");
+    }
+
+    radiation.frequencies.resize_data(frequency_grid_buf.size);
+
+    threaded_for(p, parameters->npoints(), {
+        for (Size f = 0; f < frequency_grid_buf.size; f++) {
+            radiation.frequencies.nu(p, f) = frequency_grid[f];
+
+            radiation.frequencies.appears_in_line_integral[f] = false;
+            radiation.frequencies.corresponding_l_for_spec[f] = parameters->nfreqs();
+            radiation.frequencies.corresponding_k_for_tran[f] = parameters->nfreqs();
+            radiation.frequencies.corresponding_z_for_line[f] = parameters->nfreqs();
+        }
+    })
+
     // Set spectral discretisation setting
     spectralDiscretisation = SD_Image;
 

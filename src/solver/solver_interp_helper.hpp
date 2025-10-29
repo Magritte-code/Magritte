@@ -35,8 +35,18 @@ class InterpHelper {
 
     // NOTE: interpolation is done in log space, as linear space would take far too many points
     inline Size get_n_interp(const Model& model, const Size curr_idx, const Size next_idx) const;
+
+  private:
+    // Internal functions for getting number of interpolation points for the different opacity
+    // contributions
     inline Size get_n_interp_for_line(
         const Model& model, const Size l, const Size curr_idx, const Size next_idx) const;
+    inline Size get_n_interp_for_dust(const Model& model, const Size curr_idx, const Size next_idx,
+        const Real curr_freq, const Real next_freq) const;
+
+  public:
+    inline Size get_n_interp_around_freqs(const Model& model, const Size curr_idx,
+        const Size next_idx, const Real curr_freq, const Real next_freq) const;
 
     // Interpolation functions themselves
     inline Real interpolate_linear(const Real f_start, const Real f_end, const Real factor) const;
