@@ -38,4 +38,4 @@ In this release, we also included options to image the model using a custom freq
 .. Warning::
 
     Even though you might have a model for which you only have continuum sources (no line sources), you still need to include a dummy species producing lines.
-    You can even set its abundance to zero, but Magritte needs at least one species to properly initialize a model.
+    You can even set its abundance to zero, but Magritte needs at least one species to properly initialize a model. See tests/benchmarks/analytic/continuum_implementation.py for an example.
