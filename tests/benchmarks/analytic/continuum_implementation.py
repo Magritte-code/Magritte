@@ -134,7 +134,7 @@ def run_model (nosave=False):
     
     #compute optical depth
     chi_shifted = evaluate_dust_opacity(dust_frequencies, np.array(model.geometry.points.velocity)[:,0])
-    tau_ref = np.trapz(chi_shifted, x=np.array(model.geometry.points.position)[:,0], axis=0)
+    tau_ref = np.trapezoid(chi_shifted, x=np.array(model.geometry.points.position)[:,0], axis=0)
     #TODO: fix the calculation of the reference intensity; currently it is wrong for any model with non-zero velocity field due to not taking into account the doppler shifts properly
     #test attempt below
     # def evaluate_source_function(frequency, velocity):
