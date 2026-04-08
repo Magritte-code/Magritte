@@ -1,4 +1,4 @@
-name: magritte
+name: magritte_test_plons
 channels:
   - ensor
   - conda-forge
@@ -6,7 +6,7 @@ channels:
   - defaults
 # The order of the channels above is critical!!!
 dependencies:
-  - python>=3.9
+  - python<=3.13
   - cmake
   - numpy
   - jupyterlab
