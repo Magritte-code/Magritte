@@ -50,12 +50,18 @@ def import_phantom():
     setupData = plons.LoadSetup(datadir, "wind")
     dumpData  = plons.LoadFullDump(dump_file, setupData)
 
-    position = dumpData["position"]*1e-2      # position vectors       [cm   -> m]
-    velocity = dumpData["velocity"]*1e3      # velocity vectors        [km/s -> m/s]
+    pos_x = dumpData["x"]*1e-2      # x position vectors       [cm   -> m]
+    pos_y = dumpData["y"]*1e-2      # y position vectors       [cm   -> m]
+    pos_z = dumpData["z"]*1e-2      # z position vectors       [cm   -> m]
+    position = np.array((pos_x, pos_y, pos_z)).T
+    vel_x = dumpData["vx"]*1e3     # x velocity vectors       [km/s -> m/s]
+    vel_y = dumpData["vy"]*1e3     # y velocity vectors       [km/s -> m/s]
+    vel_z = dumpData["vz"]*1e3     # z velocity vectors       [km/s -> m/s]
+    velocity = np.array((vel_x, vel_y, vel_z)).T
     velocity = velocity/constants.c.si.value # velocity vectors        [m/s  -> 1/c]
     rho      = dumpData["rho"]               # density                 [g/cm^3]
     u        = dumpData["u"]                 # internal energy density [erg/g]
-    tmp      = dumpData["Tgas"]              # temperature             [K]
+    tmp      = dumpData["temp"]              # temperature             [K]
     tmp[tmp<2.725] = 2.725                   # Cut-off temperatures below 2.725 K
 
     # Extract the number of points
