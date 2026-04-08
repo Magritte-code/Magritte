@@ -33,8 +33,9 @@ dependencies:
   - pip:
     - breathe
     - sphinx_rtd_theme 
-    ##install both with pip, otherwise it will install the wrong version, not compatible with sphinx
+    - plons
+    ##install both breathe and sphinx_rtd_theme with pip, otherwise it will install the wrong version, not compatible with sphinx
   - sphinx-copybutton
   - nbsphinx
   - pytest
-  - plons #for importing Phantom models
+
