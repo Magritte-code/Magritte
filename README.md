@@ -84,6 +84,7 @@ examples to facilitate its independent use. Until then, please
 * Atulit Srivastava
 * Arnout Coenegrachts
 * Owen Vermeulen
+* Camille Landri
 
 ## Acknowledgements
 FDC was for most of the development supported by the EPSRC iCASE studentship programme, Intel Corporation and Cray Inc, and is currently a Postdoctoral Research Fellow of the Research Foundation - Flanders (FWO).

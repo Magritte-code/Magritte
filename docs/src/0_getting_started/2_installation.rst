@@ -104,6 +104,29 @@ All of these packages can also be found in the `conda environment file <https://
 
     Please ensure that this environment is active whenever Magritte is compiled or used.
 
+.. note::
+
+    You may choose to not use a conda environment to install all the python dependencies for Magritte, and instead replace it with
+    a regular python environment. Create a new python environment in the directory of your choice:
+
+    .. code-block:: shell
+
+        python -m venv magritte_env /your/environment/directory
+
+    Then activate it (make sure it is always activated when using Magritte):
+
+    .. code-block:: shell
+
+        source magritte_env/bin/activate
+    
+    The required packages can be then be installed in your new environment using pip and the dependencies list for Magritte:
+
+    .. code-block:: shell
+
+        pip install -r Magritte/dependencies/requirements.txt
+
+
+
 .. warning::
 
     Magritte uses plotly for some interactive plots. Plotly requires additional
@@ -115,7 +138,7 @@ All of these packages can also be found in the `conda environment file <https://
 Compilation
 ***********
 
-Once all dependencies are in place, Magritte can be compiled.
+Once all dependencies are in place, Magritte can be compiled. The compilation with MacOS requires extra care, it is detailed in the section :ref:`compilation on MacOS<link-macos_compilation>`.
 
 .. hint::
 
@@ -133,11 +156,79 @@ Once all dependencies are in place, Magritte can be compiled.
 
 See :ref:`advanced compilation <link-advanced_compilation>` for further options.
 
+.. _link-macos_compilation:
 
+Compilation on MacOS
+********************
+
+By default, MacOS uses Clang and does not have the GNU compiler (gcc) installed. 
+We do not recommend using Clang to compile Magritte because of compatibility issues with OpenMP.
+Additionally, even when gcc is installed, the gcc command may still point to Clang, so a couple of 
+extra steps are required to ensure that gcc is used when compiling Magritte.
+
+If you have never installed gcc on your machine, it can be done through Homebrew 
+(a package manager for MacOS, see `their webpage <https://brew.sh/>`_ for details on how to install it).
+
+Once homebrew is installed, run the following command to install gcc:
+
+.. code-block:: shell
+
+    brew install gcc
+
+gcc should now be installed, but the default gcc command may still point to Clang.
+To check where the gcc command points, run the following command:
+
+.. code-block:: shell
+
+    gcc --version
+
+If the output shows that the version is Apple Clang, you need manually to set the gcc command to point to the GNU compiler.
+A way to do this is to set the following environment variables:
+
+.. code-block:: shell
+
+    export CC=/path/to/gcc/gcc-<version> 
+
+    export CXX=/path/to/gcc/g++-<version>
+
+Here, you should use the path to your own gcc binaries, and :literal:`<version>` is the version of gcc installed on your machine (e.g. :literal:`gcc-14` and :literal:`g++-14` for gcc.14.x.x).  
+If you recompile the code often, you may want to add these two commands to your .zprofile to make them permanent.
+
+.. hint::
+
+    If you installed gcc through brew, its version can be found by running the following command:
+
+    .. code-block:: shell
+
+        brew info gcc
+
+    cropping the version to the first number (e.g. :literal:`gcc-14` and :literal:`g++-14` for gcc.14.x.x), use the following command to find the path to your compiler:
+
+    .. code-block:: shell
+
+        which gcc-<version>
+
+        which g++-<version>
+
+    This should give you the path to your gcc binaries, which can be used in the :literal:`export` commands above. 
+    The paths should look like similar to this: 
+    - :literal:`/opt/homebrew/Cellar/gcc/14.2.0_1/bin/gcc-14`  
+    - :literal:`/opt/homebrew/Cellar/gcc/14.2.0_1/bin/g++-14`
+
+Once the exports are done, you can compile Magritte as described before, using:
+
+.. code-block:: shell
+
+    bash build.sh
+
+We also recommend using Homebrew to install the dependencies needed by Magritte.
+You can install CMake, miniconda and MPI librairies (open-mpi or mpich, and mpi4py), which are all required to compile Magritte:
+
+.. code-block:: shell
+
+    brew install CMake miniconda open-mpi mpi4py
 
 .. _link-advanced_compilation:
-
-
 
 Advanced compilation
 ********************
